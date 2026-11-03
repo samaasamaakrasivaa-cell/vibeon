@@ -3,6 +3,7 @@
 import { PrismaClient } from "@prisma/client";
 import { randomUUID } from "node:crypto";
 import bcrypt from "bcryptjs";
+import { PRESET, SAMPLE, type TaskType } from "../src/lib/tasks/catalog";
 
 const db = new PrismaClient();
 const TZ = "Europe/Moscow"; // UTC+3 без перехода на летнее время
@@ -33,6 +34,7 @@ async function main() {
   await db.lessonInstance.deleteMany({ where: { OR: [{ teacherId: teacher.id }, { student: { teacherId: teacher.id } }] } });
   await db.student.deleteMany({ where: { teacherId: teacher.id } });
   await db.notification.deleteMany({ where: { userId: teacher.id } });
+  await db.course.deleteMany({ where: { teacherId: teacher.id } });
 
   // Понедельник текущей недели (по Москве)
   const nowMsk = new Date(Date.now() + 3 * 3600e3);
@@ -96,6 +98,45 @@ async function main() {
       { userId: teacher.id, kind: "question", title: "Eva asked a question about the Past Simple", action: "reply", link: "/teacher/questions", createdAt: new Date(now - 26 * 3600e3), readAt: new Date() },
     ],
   });
+
+  // Курсы: юниты и уроки; урок «Anti-perfectionism» наполнен заданиями разных типов
+  const plan: [string, string, string, [string, [string, string][]][]][] = [
+    ["Speaking B2", "B2", "speaking", [
+      ["Unit 1. Work and life", [["Work-life balance", "Vocabulary: work"], ["Remote or office?", "Speaking: opinions"], ["My dream job", "Present Perfect"], ["Burnout and how to avoid it", "Phrasal verbs"]]],
+      ["Unit 2. City life", [["Living in a big city", "Comparatives"], ["Neighbours", "Small talk"], ["Getting around", "Prepositions of place"], ["City of the future", "Future forms"]]],
+      ["Unit 3. Mindset", [["Anti-perfectionism", "Mistakes and progress"]]],
+    ]],
+    ["Grammar Boost B1", "B1", "grammar", [["Unit 1. Tenses", [["Present Simple vs Continuous", ""], ["Past Simple", ""], ["Present Perfect", ""]]]]],
+    ["IELTS Foundation", "B1–B2", "exams", [["Unit 1. Reading", [["Skimming and scanning", ""], ["True / False / Not given", ""], ["Matching headings", ""]]], ["Unit 2. Writing", [["Task 1: graphs", ""], ["Task 2: opinion essay", ""], ["Linking words", ""]]]]],
+    ["Business English", "B1–C1", "business", [["Unit 1. Meetings", [["Opening a meeting", ""], ["Agreeing and disagreeing", ""], ["Follow-up emails", ""]]]]],
+  ];
+  let richId = "";
+  for (const [ci, [title, level, category, units]] of plan.entries()) {
+    const c = await db.course.create({ data: { teacherId: teacher.id, title, level, category, order: ci, color: [2, 0, 1, 3][ci] } });
+    for (const [ui, [ut, lessons]] of units.entries()) {
+      const u = await db.unit.create({ data: { courseId: c.id, title: ut, order: ui, outcomes: [] } });
+      for (const [li, [lt, sub]] of lessons.entries()) {
+        const rub = [{ id: randomUUID(), title: "Lead-in" }, { id: randomUUID(), title: "Vocabulary" }, { id: randomUUID(), title: "Grammar" }];
+        const l = await db.lessonTemplate.create({
+          data: { unitId: u.id, title: lt, subtitle: sub || null, order: li, sections: rub, outcomes: lt === "Anti-perfectionism" ? ["talk about mistakes and progress", "use 10 new phrases about trying", "give advice with should / it’s worth"] : [] },
+        });
+        if (lt === "Anti-perfectionism") {
+          richId = l.id;
+          const put: [string, TaskType][] = [
+            [rub[0].id, "speak"], [rub[0].id, "image"], [rub[1].id, "drag"], [rub[1].id, "pairs"], [rub[1].id, "crossword"], [rub[1].id, "tf"],
+            [rub[2].id, "gap"], [rub[2].id, "dropdown"], [rub[2].id, "test"], [rub[2].id, "errors"], [rub[2].id, "sentence"], [rub[2].id, "transform"],
+          ];
+          await db.task.createMany({ data: put.map(([rid, ty], i) => ({ templateId: l.id, section: "lesson", rubricId: rid, type: ty, title: PRESET[ty][0], content: SAMPLE[ty] ?? "", options: ty === "drag" ? { mode: "drag", split: true, seriesSize: 5 } : ty === "tf" ? { checkMode: "instant" } : {}, order: i })) });
+          await db.task.createMany({ data: (["open", "translate", "dictation"] as TaskType[]).map((ty, i) => ({ templateId: l.id, section: "homework", type: ty, title: PRESET[ty][0], content: SAMPLE[ty] ?? "", options: {}, order: i })) });
+          await db.task.create({ data: { templateId: l.id, section: "words", type: "wordset", title: PRESET.wordset[0], content: SAMPLE.wordset!, options: {}, order: 0 } });
+        }
+      }
+    }
+  }
+  // Ближайший урок Анны — по «Anti-perfectionism»
+  const annaNext = await db.lessonInstance.findFirst({ where: { student: { userId: annaUser.id }, status: "PLANNED", startsAt: { gt: new Date() } }, orderBy: { startsAt: "asc" } });
+  if (annaNext && richId) await db.lessonInstance.update({ where: { id: annaNext.id }, data: { templateId: richId } });
+
   console.log("Seed OK:", teacher.email, annaUser.email, "· учеников:", people.length);
 }
 

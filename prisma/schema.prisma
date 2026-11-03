@@ -147,6 +147,7 @@ model Student {
   birthday        DateTime?
   startedAt       DateTime?
   privateNote     String? // заметки учителя, видит только он
+  courseId        String? // ведущий курс ученика
   archivedAt      DateTime?
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
@@ -215,6 +216,7 @@ model Course {
   category  String? // general | grammar | vocabulary | exams | ege_oge | speaking | business | kids
   audience  String?
   cover     String?
+  color     Int      @default(0) // цвет обложки, если картинки нет
   order     Int            @default(0)
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
@@ -228,6 +230,7 @@ model Unit {
   title    String
   order    Int              @default(0)
   outcomes String[]
+  collapsed Boolean @default(false)
   course   Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
   lessons  LessonTemplate[]
 }
@@ -238,6 +241,10 @@ model LessonTemplate {
   title      String
   order      Int              @default(0)
   sections   Json             @default("[]") // секции урока: Урок / Домашка / Новые слова + рубрики
+  subtitle    String? // «Vocabulary: work»
+  durationMin Int      @default(60)
+  outcomes    String[] // «После урока ученик сможет»
+  shareOn     Boolean  @default(false)
   shareToken String?          @unique // гостевая ссылка «Поделиться»
   createdAt  DateTime         @default(now())
   updatedAt  DateTime         @updatedAt
@@ -250,6 +257,7 @@ model Task {
   id         String         @id @default(cuid())
   templateId String
   section    String         @default("lesson") // lesson | homework | words
+  rubricId   String? // рубрика части «Урок» (Lead-in, Vocabulary…)
   type       String
   title      String
   content    String         @default("") // разметка, см. Разметка_заданий.md
@@ -491,4 +499,17 @@ model Note {
   done      Boolean  @default(false)
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Загруженные файлы (картинки, аудио, видео, PDF, чеки). Хранилище: локальная папка или S3.
+model Upload {
+  id        String   @id @default(cuid())
+  ownerId   String
+  path      String   @unique // ключ в хранилище
+  name      String
+  mime      String
+  size      Int
+  createdAt DateTime @default(now())
+
+  @@index([ownerId])
 }
