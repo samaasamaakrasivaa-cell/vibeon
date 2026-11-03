@@ -1,0 +1,17 @@
+# Сервисы для разработки на компьютере: база, Redis и Mailpit (локальный почтовый ящик).
+# Запуск:  docker compose -f docker-compose.dev.yml up -d
+# Письма смотреть в браузере: http://localhost:8025
+services:
+  db:
+    image: postgres:16-alpine
+    environment: { POSTGRES_USER: vibeon, POSTGRES_PASSWORD: vibeon, POSTGRES_DB: vibeon }
+    ports: ["5432:5432"]
+    volumes: [devpg:/var/lib/postgresql/data]
+  redis:
+    image: redis:7-alpine
+    ports: ["6379:6379"]
+  mailpit:
+    image: axllent/mailpit:v1.21
+    ports: ["1025:1025", "8025:8025"]
+volumes:
+  devpg:

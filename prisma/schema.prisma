@@ -1,0 +1,472 @@
+// VibeOn — модель данных (см. Архитектура_и_стек.md)
+// Этап 1: полная схема основных сущностей. Логика появится на следующих этапах.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ───────────── Пользователи и вход ─────────────
+
+enum Role {
+  TEACHER
+  STUDENT
+}
+
+enum Lang {
+  RU
+  EN
+}
+
+model User {
+  id              String    @id @default(cuid())
+  email           String    @unique
+  emailVerifiedAt DateTime?
+  passwordHash    String?
+  name            String
+  lastName        String?
+  role            Role
+  lang            Lang      @default(RU)
+  timezone        String    @default("Europe/Moscow")
+  telegramChatId  String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  teacherProfile TeacherProfile?
+  studentRecord  Student?        @relation("StudentUser")
+  sessions       Session[]
+  oauthAccounts  OAuthAccount[]
+  authTokens     AuthToken[]
+  notifications  Notification[]
+  sentMessages   Message[]       @relation("MessageSender")
+  notes          Note[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  userAgent String?
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model OAuthAccount {
+  id                String @id @default(cuid())
+  userId            String
+  provider          String // yandex | vk
+  providerAccountId String
+  user              User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+enum AuthTokenType {
+  VERIFY_EMAIL
+  MAGIC_LINK
+  RESET_PASSWORD
+}
+
+model AuthToken {
+  id        String        @id @default(cuid())
+  userId    String
+  type      AuthTokenType
+  tokenHash String        @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime      @default(now())
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum Tariff {
+  TRIAL
+  START
+  PRO
+}
+
+model TeacherProfile {
+  userId     String    @id
+  tariff     Tariff    @default(TRIAL)
+  trialUntil DateTime?
+  callLink   String? // внешняя ссылка на звонок (Телемост / Zoom / Meet)
+  settings   Json      @default("{}")
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  students Student[]
+  invites  Invite[]
+  courses  Course[]
+  groups   Group[]
+}
+
+// ───────────── Ученики ─────────────
+
+enum StudentStatus {
+  INVITED
+  ACTIVE
+  ARCHIVED
+}
+
+enum PayType {
+  PACK
+  POSTPAID
+}
+
+model Student {
+  id              String        @id @default(cuid())
+  userId          String?       @unique
+  teacherId       String
+  name            String
+  lastName        String?
+  email           String?
+  telegram        String?
+  status          StudentStatus @default(INVITED)
+  form            Json          @default("{}") // стартовая анкета
+  payType         PayType       @default(POSTPAID)
+  price           Int? // цена урока, ₽
+  payerName       String?
+  payerContact    String?
+  billRule        String? // правило выставления счёта
+  remindEveryDays Int?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  user      User?            @relation("StudentUser", fields: [userId], references: [id], onDelete: SetNull)
+  teacher   TeacherProfile   @relation(fields: [teacherId], references: [userId], onDelete: Cascade)
+  invites   Invite[]
+  groups    GroupMember[]
+  lessons   LessonInstance[]
+  answers   Answer[]
+  words     Word[]
+  roadmaps  Roadmap[]
+  packs     Pack[]
+  invoices  Invoice[]
+  messages  Message[]
+  questions Question[]
+  feedback  Feedback[]
+
+  @@index([teacherId, status])
+}
+
+model Group {
+  id        String           @id @default(cuid())
+  teacherId String
+  title     String
+  createdAt DateTime         @default(now())
+  teacher   TeacherProfile   @relation(fields: [teacherId], references: [userId], onDelete: Cascade)
+  members   GroupMember[]
+  lessons   LessonInstance[]
+}
+
+model GroupMember {
+  groupId   String
+  studentId String
+  group     Group   @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@id([groupId, studentId])
+}
+
+enum InviteChannel {
+  EMAIL
+  TELEGRAM
+}
+
+model Invite {
+  id        String         @id @default(cuid())
+  teacherId String
+  studentId String
+  token     String         @unique
+  channel   InviteChannel
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime       @default(now())
+  teacher   TeacherProfile @relation(fields: [teacherId], references: [userId], onDelete: Cascade)
+  student   Student        @relation(fields: [studentId], references: [id], onDelete: Cascade)
+}
+
+// ───────────── Курсы и уроки ─────────────
+
+model Course {
+  id        String         @id @default(cuid())
+  teacherId String
+  title     String
+  level     String?
+  category  String? // general | grammar | vocabulary | exams | ege_oge | speaking | business | kids
+  audience  String?
+  cover     String?
+  order     Int            @default(0)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  teacher   TeacherProfile @relation(fields: [teacherId], references: [userId], onDelete: Cascade)
+  units     Unit[]
+}
+
+model Unit {
+  id       String           @id @default(cuid())
+  courseId String
+  title    String
+  order    Int              @default(0)
+  outcomes String[]
+  course   Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lessons  LessonTemplate[]
+}
+
+model LessonTemplate {
+  id         String           @id @default(cuid())
+  unitId     String
+  title      String
+  order      Int              @default(0)
+  sections   Json             @default("[]") // секции урока: Урок / Домашка / Новые слова + рубрики
+  shareToken String?          @unique // гостевая ссылка «Поделиться»
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+  unit       Unit             @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  tasks      Task[]
+  instances  LessonInstance[]
+}
+
+model Task {
+  id         String         @id @default(cuid())
+  templateId String
+  section    String         @default("lesson") // lesson | homework | words
+  type       String
+  title      String
+  content    String         @default("") // разметка, см. Разметка_заданий.md
+  options    Json           @default("{}")
+  hidden     Boolean        @default(false)
+  order      Int            @default(0)
+  template   LessonTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  answers    Answer[]
+  questions  Question[]
+}
+
+enum LessonStatus {
+  PLANNED
+  DONE
+  CANCELLED
+  MISSED
+}
+
+model LessonInstance {
+  id          String          @id @default(cuid())
+  templateId  String?
+  studentId   String?
+  groupId     String?
+  startsAt    DateTime
+  durationMin Int             @default(60)
+  status      LessonStatus    @default(PLANNED)
+  isTrial     Boolean         @default(false)
+  note        String? // заметка учителя к уроку → видна в «Сегодня»
+  recurrence  String? // правило повтора (RRULE) или null
+  callLink    String?
+  createdAt   DateTime        @default(now())
+  template    LessonTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  student     Student?        @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  group       Group?          @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  answers     Answer[]
+  homework    Homework?
+  feedback    Feedback[]
+
+  @@index([startsAt])
+  @@index([studentId, startsAt])
+}
+
+enum AnswerStatus {
+  DRAFT
+  SUBMITTED
+  AUTO_CHECKED
+  NEEDS_REVIEW
+  REVIEWED
+}
+
+model Answer {
+  id               String         @id @default(cuid())
+  lessonInstanceId String
+  taskId           String
+  studentId        String
+  payload          Json           @default("{}")
+  attempts         Int            @default(0)
+  status           AnswerStatus   @default(DRAFT)
+  aiDraft          Json?
+  teacherReview    Json?
+  shownToStudent   Boolean        @default(false)
+  updatedAt        DateTime       @updatedAt
+  lessonInstance   LessonInstance @relation(fields: [lessonInstanceId], references: [id], onDelete: Cascade)
+  task             Task           @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  student          Student        @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([lessonInstanceId, taskId, studentId])
+}
+
+enum HomeworkStatus {
+  ASSIGNED
+  SUBMITTED
+  REVIEWED
+  NOT_DONE
+}
+
+model Homework {
+  id               String         @id @default(cuid())
+  lessonInstanceId String         @unique
+  taskIds          String[]
+  dueAt            DateTime?
+  status           HomeworkStatus @default(ASSIGNED)
+  teacherComment   String?
+  lessonInstance   LessonInstance @relation(fields: [lessonInstanceId], references: [id], onDelete: Cascade)
+}
+
+// ───────────── Слова и маршрут ─────────────
+
+model Word {
+  id             String    @id @default(cuid())
+  studentId      String
+  word           String
+  translation    String?
+  definition     String?
+  example        String?
+  ownExample     String?
+  level          Int       @default(0) // 0–4
+  sourceLessonId String?
+  nextReviewAt   DateTime?
+  createdAt      DateTime  @default(now())
+  student        Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([studentId])
+}
+
+model Roadmap {
+  id          String       @id @default(cuid())
+  studentId   String
+  type        String
+  goal        String // A1+ … C2
+  deadline    DateTime?
+  showDate    Boolean      @default(false)
+  pace        String?
+  stages      Json         @default("[]")
+  approvedAt  DateTime?
+  createdAt   DateTime     @default(now())
+  student     Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  checkpoints Checkpoint[]
+}
+
+model Checkpoint {
+  id        String   @id @default(cuid())
+  roadmapId String
+  kind      String // entry | slice
+  takenAt   DateTime @default(now())
+  results   Json     @default("{}") // по навыкам
+  roadmap   Roadmap  @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
+}
+
+// ───────────── Оплаты ─────────────
+
+model Pack {
+  id           String    @id @default(cuid())
+  studentId    String
+  lessonsTotal Int
+  lessonsLeft  Int
+  price        Int
+  startsAt     DateTime  @default(now())
+  frozenUntil  DateTime?
+  student      Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+}
+
+enum InvoiceStatus {
+  SENT
+  PROOF_SENT
+  PAID
+  CANCELLED
+}
+
+model Invoice {
+  id           String        @id @default(cuid())
+  studentId    String
+  amount       Int
+  period       String?
+  status       InvoiceStatus @default(SENT)
+  proofKind    String? // screenshot | text
+  proofFile    String?
+  proofText    String?
+  aiRead       Json?
+  autoAccepted Boolean       @default(false)
+  receiptFile  String?
+  closedAt     DateTime?
+  createdAt    DateTime      @default(now())
+  student      Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([studentId, status])
+}
+
+// ───────────── Общение ─────────────
+
+model Message {
+  id         String    @id @default(cuid())
+  studentId  String // переписка учитель ↔ конкретный ученик
+  senderId   String
+  text       String
+  attachment String?
+  readAt     DateTime?
+  createdAt  DateTime  @default(now())
+  student    Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  sender     User      @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([studentId, createdAt])
+}
+
+model Question {
+  id            String    @id @default(cuid())
+  studentId     String
+  taskId        String?
+  context       String? // курс · юнит · урок
+  text          String
+  aiAnswer      String?
+  teacherAnswer String?
+  askedTeacher  Boolean   @default(false)
+  answeredAt    DateTime?
+  createdAt     DateTime  @default(now())
+  student       Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  task          Task?     @relation(fields: [taskId], references: [id], onDelete: SetNull)
+}
+
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  kind      String
+  title     String
+  action    String? // reply | check_screenshot | decide | review …
+  link      String?
+  readAt    DateTime?
+  doneAt    DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+model Feedback {
+  id               String          @id @default(cuid())
+  studentId        String
+  lessonInstanceId String?
+  text             String
+  period           String?
+  createdAt        DateTime        @default(now())
+  student          Student         @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  lessonInstance   LessonInstance? @relation(fields: [lessonInstanceId], references: [id], onDelete: SetNull)
+}
+
+model Note {
+  id        String   @id @default(cuid())
+  userId    String
+  subject   String? // studentId / lessonInstanceId
+  text      String
+  done      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

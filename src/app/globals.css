@@ -1,0 +1,256 @@
+@import "tailwindcss";
+
+/* ───────── VibeOn: токены дизайна (из прототипов) ───────── */
+:root {
+  --bg: #F2F2F7; --surface: #FFFFFF; --surface2: #F2F2F7; --fill: #E3E3E8; --seg-on: #FFFFFF;
+  --text: #1C1C1E; --text2: #6C6C70; --text3: #8E8E93; --sep: #E5E5EA;
+  --accent: #007AFF; --accent-bg: #E5F0FF; --accent-text: #0057B8; --on-accent: #FFFFFF;
+  --ok: #34C759; --ok-bg: #E8F8EC; --ok-text: #1E7B34;
+  --bad: #FF3B30; --bad-bg: #FDECEB; --bad-text: #C4161C;
+  --warn: #FF9500; --warn-bg: #FFF4E0; --warn-text: #8A5300;
+  --grey: #C7C7CC; --grey-bg: #F2F2F7; --grey-text: #6C6C70;
+  --violet: #A55CF5; --violet-bg: #F3EAFE;
+  --bar: rgba(255, 255, 255, .82); --shade: rgba(120, 120, 128, .08); --switch: #34C759;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .04), 0 8px 24px rgba(0, 0, 0, .04);
+  --nav-w: 210px; --top-h: 60px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #000000; --surface: #1C1C1E; --surface2: #2C2C2E; --fill: #2C2C2E; --seg-on: #636366;
+    --text: #F2F2F7; --text2: #AEAEB2; --text3: #8E8E93; --sep: #38383A;
+    --accent: #0A84FF; --accent-bg: #0B2B50; --accent-text: #7DB8FF;
+    --ok: #30D158; --ok-bg: #0F2E18; --ok-text: #5BE38A;
+    --bad: #FF453A; --bad-bg: #3B1514; --bad-text: #FF8A82;
+    --warn: #FF9F0A; --warn-bg: #3A2A0C; --warn-text: #FFC266;
+    --grey: #636366; --grey-bg: #2C2C2E; --grey-text: #AEAEB2;
+    --violet: #BF8CFF; --violet-bg: #2B1F45;
+    --bar: rgba(28, 28, 30, .82); --shade: rgba(255, 255, 255, .04); --switch: #30D158;
+    --shadow: none; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #000000; --surface: #1C1C1E; --surface2: #2C2C2E; --fill: #2C2C2E; --seg-on: #636366;
+  --text: #F2F2F7; --text2: #AEAEB2; --text3: #8E8E93; --sep: #38383A;
+  --accent: #0A84FF; --accent-bg: #0B2B50; --accent-text: #7DB8FF;
+  --ok: #30D158; --ok-bg: #0F2E18; --ok-text: #5BE38A;
+  --bad: #FF453A; --bad-bg: #3B1514; --bad-text: #FF8A82;
+  --warn: #FF9F0A; --warn-bg: #3A2A0C; --warn-text: #FFC266;
+  --grey: #636366; --grey-bg: #2C2C2E; --grey-text: #AEAEB2;
+  --violet: #BF8CFF; --violet-bg: #2B1F45;
+  --bar: rgba(28, 28, 30, .82); --shade: rgba(255, 255, 255, .04); --switch: #30D158;
+  --shadow: none; color-scheme: dark;
+}
+
+/* Токены доступны и как утилиты Tailwind: bg-surface, text-text2, text-accent … */
+@theme inline {
+  --color-bg: var(--bg); --color-surface: var(--surface); --color-surface2: var(--surface2);
+  --color-fill: var(--fill); --color-text: var(--text); --color-text2: var(--text2);
+  --color-text3: var(--text3); --color-sep: var(--sep); --color-accent: var(--accent);
+  --color-accent-bg: var(--accent-bg); --color-ok: var(--ok); --color-ok-bg: var(--ok-bg);
+  --color-bad: var(--bad); --color-bad-bg: var(--bad-bg); --color-warn: var(--warn);
+  --color-warn-bg: var(--warn-bg); --color-violet: var(--violet); --color-violet-bg: var(--violet-bg);
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", "Segoe UI", Helvetica, Arial, sans-serif;
+}
+
+/* Свои стили — в слое components, чтобы утилиты Tailwind (mb-6 и т. п.) могли их уточнять */
+@layer components {
+/* ───────── База ───────── */
+*, *::before, *::after { box-sizing: border-box; }
+html { height: 100%; -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; min-height: 100%; background: var(--bg); color: var(--text);
+  font-family: var(--font-sans); font-size: 15px; line-height: 1.45;
+  -webkit-font-smoothing: antialiased; overflow-x: hidden;
+}
+button, input, textarea, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+a { color: inherit; text-decoration: none; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 8px; }
+svg.i { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+svg.i.sm { width: 14px; height: 14px; }
+svg.i.lg { width: 22px; height: 22px; }
+
+h1, .h1 { font-size: 30px; line-height: 1.15; font-weight: 700; letter-spacing: -.02em; margin: 0; }
+h2, .h2 { font-size: 22px; line-height: 1.2; font-weight: 700; letter-spacing: -.015em; margin: 0; }
+h3, .h3 { font-size: 17px; font-weight: 600; letter-spacing: -.01em; margin: 0; }
+.kicker { font-size: 13px; color: var(--text3); }
+.muted { color: var(--text2); }
+.small { font-size: 13px; }
+
+/* ───────── Шапка ───────── */
+.apptop {
+  position: sticky; top: 0; z-index: 50; height: var(--top-h);
+  display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 0 20px;
+  background: var(--bar); backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border-bottom: .5px solid var(--sep);
+}
+.atl, .atr { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.vlogo { width: 32px; height: 32px; flex: none; filter: drop-shadow(0 3px 8px rgba(165, 92, 245, .35)); }
+.hbrand { font-weight: 800; font-size: 17px; letter-spacing: -.02em; }
+.hbrand span { background: linear-gradient(90deg, #A55CF5, #3D8BFF); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.hdiv { width: 1px; height: 18px; background: var(--sep); }
+.hsub { font-size: 14px; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.atuser { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; border: 0; background: transparent; color: var(--text); border-radius: 999px; padding: 3px 10px 3px 3px; }
+.atuser:hover { background: var(--surface2); }
+.avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--accent-bg); color: var(--accent); display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex: none; }
+.avatar.lg { width: 40px; height: 40px; font-size: 14px; }
+@media (max-width: 760px) {
+  .apptop { padding: 0 12px; }
+  .hsub, .hdiv, .atuser .uname { display: none; }
+}
+
+/* ───────── Каркас: меню + содержимое ───────── */
+.shell { display: grid; grid-template-columns: var(--nav-w) minmax(0, 1fr); min-height: calc(100vh - var(--top-h)); }
+.nav {
+  position: sticky; top: var(--top-h); height: calc(100vh - var(--top-h)); overflow-y: auto;
+  border-right: .5px solid var(--sep); padding: 20px 12px; display: flex; flex-direction: column; gap: 2px;
+}
+.navgroup { display: flex; flex-direction: column; gap: 2px; }
+.navgroup + .navgroup { margin-top: 10px; padding-top: 10px; border-top: .5px solid var(--sep); }
+.navb {
+  position: relative; display: flex; align-items: center; gap: 12px; width: 100%; border: 0; background: transparent;
+  padding: 9px 10px; border-radius: 10px; font-size: 15px; text-align: left; min-height: 42px; color: var(--text);
+}
+.navb:hover { background: var(--fill); }
+.navb[aria-current="page"] { background: var(--accent-bg); color: var(--accent); font-weight: 600; }
+.navb .count { margin-left: auto; font-size: 12px; font-weight: 700; background: var(--accent); color: var(--on-accent); border-radius: 999px; min-width: 21px; height: 21px; padding: 0 6px; display: inline-flex; align-items: center; justify-content: center; }
+.navfoot { margin-top: auto; padding: 16px 10px 0; font-size: 12px; color: var(--text3); line-height: 1.4; }
+.main { padding: 28px 32px 64px; min-width: 0; }
+.page { max-width: 980px; margin: 0 auto; }
+
+/* Компактный режим (≤1200): меню иконками, подписи — при наведении */
+@media (max-width: 1200px) {
+  :root { --nav-w: 68px; }
+  .nav { padding: 16px 10px; align-items: center; }
+  .navgroup { align-items: center; }
+  .navb { width: 46px; height: 46px; padding: 0; justify-content: center; }
+  .navb .label, .navfoot { display: none; }
+  .navb .count { position: absolute; top: 3px; right: 1px; min-width: 17px; height: 17px; font-size: 10px; padding: 0 4px; }
+  .navb[data-tip]:hover::after {
+    content: attr(data-tip); position: absolute; left: calc(100% + 10px); top: 50%; transform: translateY(-50%);
+    background: var(--text); color: var(--bg); font-size: 12px; font-weight: 600; padding: 5px 9px; border-radius: 8px;
+    white-space: nowrap; z-index: 60; pointer-events: none;
+  }
+  .grid-3, .grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+}
+/* Телефон (≤760): одна колонка, меню — горизонтальная лента под шапкой */
+@media (max-width: 760px) {
+  .shell { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+  .nav {
+    position: sticky; top: var(--top-h); z-index: 40; height: auto; flex-direction: row; align-items: center;
+    overflow-x: auto; padding: 8px 10px; border-right: 0; border-bottom: .5px solid var(--sep);
+    background: var(--bar); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); scrollbar-width: none;
+  }
+  .nav::-webkit-scrollbar { display: none; }
+  .navgroup { flex-direction: row; }
+  .navgroup + .navgroup { margin: 0 0 0 6px; padding: 0 0 0 6px; border-top: 0; border-left: .5px solid var(--sep); }
+  .navb { width: auto; height: 40px; padding: 0 12px; }
+  .navb .label { display: inline; white-space: nowrap; font-size: 14px; }
+  .navb[data-tip]:hover::after { display: none; }
+  .navb .count { position: static; }
+  .main { padding: 18px 16px 48px; }
+  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr !important; }
+  .row.wrap-phone { flex-wrap: wrap; }
+  .row.wrap-phone > .grow { flex-basis: calc(100% - 140px); }
+  .row.wrap-phone > .btn { margin-left: auto; }
+  h1, .h1 { font-size: 26px; }
+}
+
+/* ───────── Карточки, списки ───────── */
+.card { background: var(--surface); border-radius: 20px; padding: 24px 28px; box-shadow: var(--shadow); }
+.card.sm { border-radius: 14px; padding: 16px 18px; }
+.card + .card { margin-top: 28px; }
+@media (max-width: 760px) { .card { padding: 18px 16px; border-radius: 16px; } }
+.list { background: var(--surface); border-radius: 14px; overflow: hidden; }
+.row { display: flex; align-items: center; gap: 14px; padding: 12px 16px; border-bottom: .5px solid var(--sep); min-height: 60px; }
+.row:last-child { border-bottom: 0; }
+.row .grow { flex: 1; min-width: 0; }
+.row .t { font-weight: 600; }
+.row .s { font-size: 13px; color: var(--text2); }
+.sechead { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.sechead .grow { flex: 1; }
+.grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.tile { background: var(--surface2); border-radius: 14px; padding: 14px 16px; }
+.tile .v { font-size: 24px; font-weight: 700; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.tile .l { font-size: 13px; color: var(--text2); }
+
+/* ───────── Кнопки ───────── */
+.btn {
+  border: 0; border-radius: 20px; min-height: 40px; padding: 0 18px; font-size: 15px; font-weight: 600;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; transition: filter .15s, transform .05s;
+}
+.btn:active { transform: scale(.97); }
+.btn:disabled { opacity: .45; pointer-events: none; }
+.btn.primary { background: var(--accent); color: var(--on-accent); }
+.btn.primary:hover { filter: brightness(1.06); }
+.btn.secondary { background: var(--fill); color: var(--text); }
+.btn.secondary:hover { filter: brightness(.97); }
+.btn.tinted { background: var(--accent-bg); color: var(--accent); }
+.btn.plain { background: transparent; color: var(--accent); padding: 0 8px; }
+.btn.danger { background: var(--bad-bg); color: var(--bad-text); }
+.btn.sm { min-height: 32px; padding: 0 14px; font-size: 13px; border-radius: 16px; }
+.btn.lg { min-height: 52px; padding: 0 28px; font-size: 17px; border-radius: 26px; }
+.btn.block { width: 100%; }
+.iconbtn { width: 36px; height: 36px; border-radius: 50%; border: 0; background: transparent; color: var(--text2); display: inline-flex; align-items: center; justify-content: center; }
+.iconbtn:hover { background: var(--fill); color: var(--text); }
+
+/* ───────── Сегменты (RU/EN, вкладки) ───────── */
+.seg { display: inline-flex; background: var(--fill); border-radius: 12px; padding: 2px; gap: 2px; flex-wrap: wrap; }
+.seg button, .seg a { border: 0; background: transparent; font-size: 13px; padding: 0 14px; min-height: 30px; border-radius: 9px; display: inline-flex; align-items: center; }
+.seg [aria-pressed="true"], .seg [aria-current="page"] { background: var(--seg-on); font-weight: 600; box-shadow: 0 1px 3px rgba(0, 0, 0, .12); }
+.seg.xs button { min-height: 28px; padding: 0 10px; font-size: 12px; }
+
+/* ───────── Поля ───────── */
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field label, .flabel { font-size: 13px; font-weight: 600; color: var(--text2); }
+.input, .textarea, .select {
+  width: 100%; border: 1px solid transparent; background: var(--surface2); border-radius: 12px;
+  padding: 11px 14px; font-size: 15px; outline: none; transition: border-color .15s, background .15s;
+}
+.input:focus, .textarea:focus, .select:focus { border-color: var(--accent); background: var(--surface); }
+.input[aria-invalid="true"] { border-color: var(--bad); }
+.textarea { min-height: 96px; resize: vertical; }
+.ferr { font-size: 13px; color: var(--bad-text); }
+
+/* Переключатель */
+.switch { position: relative; width: 51px; height: 31px; flex: none; }
+.switch input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
+.switch span { position: absolute; inset: 0; border-radius: 999px; background: var(--fill); transition: background .2s; pointer-events: none; }
+.switch span::after { content: ""; position: absolute; top: 2px; left: 2px; width: 27px; height: 27px; border-radius: 50%; background: #fff; box-shadow: 0 2px 4px rgba(0, 0, 0, .2); transition: transform .2s; }
+.switch input:checked + span { background: var(--switch); }
+.switch input:checked + span::after { transform: translateX(20px); }
+.check { width: 20px; height: 20px; accent-color: var(--accent); }
+
+/* ───────── Метки, бейджи, подсказки ───────── */
+.pill { display: inline-flex; align-items: center; gap: 5px; border-radius: 999px; padding: 3px 10px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+.pill.blue { background: var(--accent-bg); color: var(--accent-text); }
+.pill.green { background: var(--ok-bg); color: var(--ok-text); }
+.pill.orange { background: var(--warn-bg); color: var(--warn-text); }
+.pill.red { background: var(--bad-bg); color: var(--bad-text); }
+.pill.grey { background: var(--grey-bg); color: var(--grey-text); }
+.pill.violet { background: var(--violet-bg); color: var(--violet); }
+.dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex: none; }
+.hint { font-size: 13px; color: var(--text3); font-style: italic; }
+details.how { font-size: 13px; color: var(--text2); background: var(--surface2); border-radius: 12px; padding: 10px 14px; }
+details.how summary { cursor: pointer; font-weight: 600; color: var(--text2); list-style: none; }
+details.how summary::-webkit-details-marker { display: none; }
+details.how[open] summary { margin-bottom: 6px; }
+[data-tip] { position: relative; }
+
+/* Градиентное имя в приветствии */
+.gname { font-size: 44px; font-weight: 800; letter-spacing: -.03em; line-height: 1.1; background: linear-gradient(90deg, #3D8BFF, #A55CF5 55%, #FF6B9A); -webkit-background-clip: text; background-clip: text; color: transparent; }
+@media (max-width: 760px) { .gname { font-size: 36px; } }
+
+/* Экран загрузки с анимированным логотипом */
+.loader { min-height: 100vh; display: flex; align-items: center; justify-content: center; opacity: 0; animation: loaderIn .2s ease .5s forwards; }
+@keyframes loaderIn { to { opacity: 1; } }
+.eq rect { transform-origin: center; transform-box: fill-box; animation: eq 1s ease-in-out infinite; }
+.eq rect:nth-child(2) { animation-delay: .1s; } .eq rect:nth-child(3) { animation-delay: .2s; }
+.eq rect:nth-child(4) { animation-delay: .3s; } .eq rect:nth-child(5) { animation-delay: .4s; }
+@keyframes eq { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(.45); } }
+@media (prefers-reduced-motion: reduce) { .eq rect { animation: none; } }
+
+} /* @layer components */

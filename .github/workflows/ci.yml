@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env: { POSTGRES_USER: vibeon, POSTGRES_PASSWORD: vibeon, POSTGRES_DB: vibeon }
+        ports: ["5432:5432"]
+        options: --health-cmd "pg_isready -U vibeon" --health-interval 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://vibeon:vibeon@localhost:5432/vibeon
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - run: npx prisma migrate deploy
+      - run: npm run typecheck
+      - run: npm run build
+      - name: Smoke test
+        run: |
+          npm run db:seed
+          (PORT=3000 npm start &) && sleep 5
+          curl -fsS localhost:3000/api/health
+          for p in / /teacher /student /ui; do curl -fsS -o /dev/null "localhost:3000$p"; done
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build production image
+        run: docker build -t vibeon:ci .
