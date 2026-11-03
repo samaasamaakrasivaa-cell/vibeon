@@ -1,13 +1,17 @@
-// Демо-данные для разработки: учитель Эльвира и ученица Анна.
+// Демо-данные для разработки: учитель Эльвира и ученица Анна (пароль demo12345).
 import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcryptjs";
 
 const db = new PrismaClient();
 
 async function main() {
+  // Пароль демо-аккаунтов (только для разработки): demo12345
+  const passwordHash = await bcrypt.hash("demo12345", 12);
   const teacher = await db.user.upsert({
     where: { email: "teacher@demo.vibeon" },
-    update: {},
+    update: { passwordHash },
     create: {
+      passwordHash,
       email: "teacher@demo.vibeon",
       name: "Elvira",
       lastName: "K.",
@@ -19,8 +23,8 @@ async function main() {
 
   const studentUser = await db.user.upsert({
     where: { email: "student@demo.vibeon" },
-    update: {},
-    create: { email: "student@demo.vibeon", name: "Anna", lastName: "Kuznetsova", role: "STUDENT", emailVerifiedAt: new Date() },
+    update: { passwordHash },
+    create: { passwordHash, email: "student@demo.vibeon", name: "Anna", lastName: "Kuznetsova", role: "STUDENT", emailVerifiedAt: new Date() },
   });
 
   const student = await db.student.upsert({

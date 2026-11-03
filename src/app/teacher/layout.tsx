@@ -1,13 +1,13 @@
 import { AppHeader } from "@/components/AppHeader";
 import { Sidebar } from "@/components/Sidebar";
 import { getT } from "@/lib/i18n/server";
-import { getCurrentUser } from "@/lib/current-user";
+import { requireUser } from "@/lib/auth/session";
 
 export const dynamic = "force-dynamic";
 
 export default async function TeacherLayout({ children }: { children: React.ReactNode }) {
   const { t } = await getT();
-  const user = await getCurrentUser("TEACHER");
+  const user = await requireUser("TEACHER");
   const groups = [
     [
       { href: "/teacher", label: t("nav.updates"), icon: "bell" as const },
@@ -26,7 +26,7 @@ export default async function TeacherLayout({ children }: { children: React.Reac
   ];
   return (
     <>
-      <AppHeader subtitle={t("ws.teacher")} user={user ?? undefined} homeHref="/teacher" profileHref="/teacher" />
+      <AppHeader subtitle={t("ws.teacher")} user={user} homeHref="/teacher" profileHref="/teacher" />
       <div className="shell">
         <Sidebar groups={groups} ariaLabel={t("ws.teacher")} />
         <main className="main">{children}</main>

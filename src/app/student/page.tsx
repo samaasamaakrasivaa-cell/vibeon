@@ -1,6 +1,6 @@
 import { Dashboard } from "@/components/Dashboard";
-import { getCurrentUser } from "@/lib/current-user";
+import { requireUser } from "@/lib/auth/session";
 
 export default async function StudentHome() {
-  return <Dashboard user={await getCurrentUser("STUDENT")} role="STUDENT" />;
+  return <Dashboard user={await requireUser("STUDENT")} role="STUDENT" />;
 }

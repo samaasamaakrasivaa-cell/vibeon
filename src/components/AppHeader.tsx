@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Brand, LogoMark } from "./Logo";
 import { LangSwitch } from "./LangSwitch";
+import { UserMenu } from "./UserMenu";
 import { getT } from "@/lib/i18n/server";
 
 export async function AppHeader({
@@ -10,12 +11,11 @@ export async function AppHeader({
   profileHref,
 }: {
   subtitle?: string;
-  user?: { name: string; lastName?: string | null };
+  user?: { name: string; lastName?: string | null; email: string };
   homeHref?: string;
   profileHref?: string;
 }) {
   const { lang, t } = await getT();
-  const initials = user ? ((user.name[0] ?? "") + (user.lastName?.[0] ?? "")).toUpperCase() : "";
   return (
     <header className="apptop">
       <Link href={homeHref} className="atl" aria-label="VibeOn">
@@ -30,12 +30,7 @@ export async function AppHeader({
       </Link>
       <div className="atr">
         <LangSwitch lang={lang} label={t("common.language")} />
-        {user && (
-          <Link href={profileHref ?? "#"} className="atuser" title={t("common.profile")}>
-            <span className="avatar">{initials}</span>
-            <span className="uname">{user.name}</span>
-          </Link>
-        )}
+        {user && <UserMenu name={user.name} lastName={user.lastName} email={user.email} profileHref={profileHref ?? homeHref} />}
       </div>
     </header>
   );

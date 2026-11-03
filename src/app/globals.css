@@ -254,3 +254,63 @@ details.how[open] summary { margin-bottom: 6px; }
 @media (prefers-reduced-motion: reduce) { .eq rect { animation: none; } }
 
 } /* @layer components */
+
+/* ───────── Экраны входа и регистрации ───────── */
+@layer components {
+.authtop { position: fixed; top: 0; right: 0; padding: 14px 18px; z-index: 10; }
+.authwrap { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 48px 16px; gap: 20px; }
+.authbrand { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.authbrand .hbrand { font-size: 26px; color: var(--text); }
+.authbrand .hbrand span { background: none; color: inherit; }
+.authcard { width: 100%; max-width: 400px; background: var(--surface); border-radius: 24px; padding: 30px 28px; box-shadow: 0 10px 40px rgba(0, 0, 0, .06); }
+.authcard.wide { max-width: 560px; }
+.authcard h1 { font-size: 24px; text-align: center; }
+.authcard .sub { text-align: center; color: var(--text2); margin: 6px 0 0; }
+.authform { display: flex; flex-direction: column; gap: 14px; margin-top: 18px; }
+.authform .input { background: var(--surface); border: 1px solid var(--grey); }
+.authform .input:focus { border-color: var(--accent); }
+.authform .btn { border-radius: 14px; min-height: 50px; font-size: 17px; }
+.authform .btn.tinted { font-size: 15px; }
+.divider { display: flex; align-items: center; gap: 12px; color: var(--text3); font-size: 13px; }
+.divider::before, .divider::after { content: ""; flex: 1; height: .5px; background: var(--sep); }
+.oauthrow { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.oauthbtn { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; border-radius: 14px; border: 1px solid var(--sep); background: var(--surface); font-weight: 600; font-size: 15px; color: var(--text); }
+.oauthbtn:hover { background: var(--surface2); }
+.oauthbtn[aria-disabled="true"] { opacity: .5; cursor: not-allowed; }
+.oauthbtn .ya { width: 20px; height: 20px; border-radius: 50%; background: #FC3F1D; color: #fff; font-size: 12px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; }
+.oauthbtn .vk { width: 20px; height: 20px; border-radius: 6px; background: #0077FF; color: #fff; font-size: 9px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; }
+.ctacard { width: 100%; max-width: 400px; display: flex; align-items: center; gap: 14px; background: var(--surface); border-radius: 16px; padding: 14px 18px; box-shadow: 0 4px 20px rgba(0, 0, 0, .04); }
+.ctacard:hover { background: var(--surface2); }
+.ctacard .ico { width: 40px; height: 40px; border-radius: 12px; background: var(--violet-bg); color: var(--violet); display: flex; align-items: center; justify-content: center; flex: none; }
+.authnote { max-width: 400px; text-align: center; font-size: 13px; color: var(--text2); }
+.authnote a, .alink { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; background: none; border: 0; padding: 0; font: inherit; cursor: pointer; }
+.alert { border-radius: 12px; padding: 10px 14px; font-size: 14px; background: var(--bad-bg); color: var(--bad-text); }
+.alert.ok { background: var(--ok-bg); color: var(--ok-text); }
+.consent { display: flex; gap: 10px; align-items: flex-start; font-size: 13px; color: var(--text2); line-height: 1.45; }
+.consent input { margin-top: 2px; }
+.bigicon { width: 72px; height: 72px; border-radius: 20px; background: var(--accent-bg); color: var(--accent); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; }
+.bigicon svg.i { width: 32px; height: 32px; }
+.pair { display: flex; justify-content: center; margin-bottom: 16px; }
+.pair .avatar { width: 56px; height: 56px; font-size: 18px; margin-left: -8px; border: 3px solid var(--surface); background: var(--violet-bg); color: var(--violet); }
+/* Анкета */
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { position: relative; }
+.chip input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.chip span { display: inline-flex; align-items: center; min-height: 36px; padding: 6px 14px; border-radius: 18px; background: var(--surface2); border: 1px solid transparent; font-size: 14px; line-height: 1.3; }
+.chip input:checked + span { background: var(--accent-bg); color: var(--accent-text); border-color: var(--accent); font-weight: 600; }
+.chip input:focus-visible + span { outline: 3px solid var(--accent); outline-offset: 2px; }
+.steps { text-align: center; font-size: 13px; color: var(--text3); }
+.tglist { display: flex; flex-direction: column; gap: 10px; margin: 14px 0; }
+.tglist div { display: flex; gap: 10px; align-items: flex-start; }
+.tglist svg { color: var(--accent); margin-top: 2px; }
+/* Меню пользователя в шапке */
+.umenu { position: relative; }
+.umenu summary { list-style: none; cursor: pointer; }
+.umenu summary::-webkit-details-marker { display: none; }
+.umenu .pop { position: absolute; right: 0; top: calc(100% + 8px); min-width: 230px; background: var(--surface); border-radius: 14px; box-shadow: 0 12px 40px rgba(0, 0, 0, .16); padding: 6px; z-index: 70; }
+.umenu .pop .who { padding: 10px 12px; border-bottom: .5px solid var(--sep); margin-bottom: 4px; font-size: 13px; color: var(--text2); }
+.umenu .pop .who b { display: block; color: var(--text); font-size: 15px; }
+.umenu .pop a, .umenu .pop button { display: flex; align-items: center; gap: 10px; width: 100%; border: 0; background: none; padding: 10px 12px; border-radius: 10px; font-size: 15px; text-align: left; color: var(--text); }
+.umenu .pop a:hover, .umenu .pop button:hover { background: var(--surface2); }
+.umenu .pop button.danger { color: var(--bad-text); }
+}

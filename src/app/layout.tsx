@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { getLang } from "@/lib/i18n/server";
+import { I18nProvider } from "@/lib/i18n/client";
 
 export const metadata: Metadata = {
   title: { default: "VibeOn", template: "%s · VibeOn" },
@@ -22,7 +23,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const lang = await getLang();
   return (
     <html lang={lang}>
-      <body>{children}</body>
+      <body>
+        <I18nProvider lang={lang}>{children}</I18nProvider>
+      </body>
     </html>
   );
 }
