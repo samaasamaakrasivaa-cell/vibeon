@@ -2,15 +2,17 @@ import { AppHeader } from "@/components/AppHeader";
 import { Sidebar } from "@/components/Sidebar";
 import { getT } from "@/lib/i18n/server";
 import { requireUser } from "@/lib/auth/session";
+import { db } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
 export default async function StudentLayout({ children }: { children: React.ReactNode }) {
   const { t } = await getT();
   const user = await requireUser("STUDENT");
+  const unread = await db.notification.count({ where: { userId: user.id, readAt: null } });
   const groups = [
     [
-      { href: "/student", label: t("nav.updates"), icon: "bell" as const },
+      { href: "/student", label: t("nav.updates"), icon: "bell" as const, count: unread },
       { href: "/student/schedule", label: t("nav.schedule"), icon: "cal" as const },
     ],
     [

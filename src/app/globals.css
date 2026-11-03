@@ -314,3 +314,116 @@ details.how[open] summary { margin-bottom: 6px; }
 .umenu .pop a:hover, .umenu .pop button:hover { background: var(--surface2); }
 .umenu .pop button.danger { color: var(--bad-text); }
 }
+
+/* ───────── Окна, расписание, анкеты (этап 3) ───────── */
+@layer components {
+.dlg { margin: auto; border: 0; padding: 0; border-radius: 22px; background: var(--surface); color: var(--text); width: min(480px, calc(100vw - 24px)); max-height: calc(100vh - 32px); box-shadow: 0 24px 80px rgba(0, 0, 0, .28); }
+.dlg.wide { width: min(640px, calc(100vw - 24px)); }
+.dlg::backdrop { background: rgba(0, 0, 0, .32); backdrop-filter: blur(2px); }
+.dlgin { position: relative; padding: 24px; }
+.dlgx { position: absolute; top: 14px; right: 14px; }
+.dlg .actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+.setting { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; }
+.pick { max-height: 220px; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; border-radius: 12px; background: var(--surface2); padding: 4px; }
+.pick button { display: flex; align-items: center; gap: 10px; border: 0; background: transparent; border-radius: 10px; padding: 8px 10px; text-align: left; }
+.pick button:hover { background: var(--fill); }
+.pick button[aria-pressed="true"] { background: var(--accent-bg); color: var(--accent-text); font-weight: 600; }
+
+/* Неделя в стиле Apple Calendar */
+.weekwrap { overflow-x: auto; margin: 0 -8px; padding: 0 8px; }
+.week { --px: 44px; display: grid; grid-template-columns: 48px repeat(7, minmax(96px, 1fr)); gap: 0 8px; min-width: 760px; }
+.week .dh { text-align: center; padding: 6px 0 12px; font-size: 13px; color: var(--text2); }
+.week .dh b { color: var(--text); margin-left: 4px; }
+.week .dh.today span { display: inline-block; background: var(--accent-bg); color: var(--accent); border-radius: 999px; padding: 4px 12px; font-weight: 600; }
+.week .dh.today b { color: var(--accent); }
+.hours { position: sticky; left: 0; z-index: 4; background: var(--surface); margin-left: -8px; padding-left: 8px; }
+.hours div { position: absolute; right: 6px; font-size: 11px; color: var(--text3); transform: translateY(-50%); font-variant-numeric: tabular-nums; }
+.daycol { position: relative; background: var(--surface2); border-radius: 14px; cursor: cell; }
+.daycol .hl { position: absolute; left: 0; right: 0; border-top: .5px solid var(--sep); pointer-events: none; }
+.daycol.past { opacity: .85; }
+.lesson { position: absolute; left: 4px; right: 4px; border-radius: 9px; padding: 4px 8px; font-size: 12px; font-weight: 600; overflow: hidden; cursor: pointer; border: 0; text-align: left; display: flex; flex-direction: column; gap: 1px; background: var(--accent-bg); color: var(--accent-text); box-shadow: inset 3px 0 0 var(--accent); line-height: 1.25; }
+.lesson:hover { filter: brightness(.97); }
+.lesson .nm { display: flex; align-items: center; gap: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lesson .tm { font-weight: 500; opacity: .75; }
+.lesson.done { background: var(--ok-bg); color: var(--ok-text); box-shadow: inset 3px 0 0 var(--ok); }
+.lesson.missed { background: var(--bad-bg); color: var(--bad-text); box-shadow: inset 3px 0 0 var(--bad); }
+.lesson.cancelled { background: var(--warn-bg); color: var(--warn-text); box-shadow: inset 3px 0 0 var(--warn); text-decoration: line-through; }
+.lesson.trial { background: repeating-linear-gradient(135deg, var(--violet-bg), var(--violet-bg) 8px, transparent 8px, transparent 14px), var(--surface); color: var(--violet); box-shadow: inset 0 0 0 1.5px var(--violet); }
+.sdot { width: 7px; height: 7px; border-radius: 50%; flex: none; background: var(--accent); }
+.sdot.done { background: var(--ok); } .sdot.missed { background: var(--bad); } .sdot.cancelled { background: var(--warn); } .sdot.trial { background: var(--violet); }
+.nowline { position: absolute; left: -4px; right: 0; height: 2px; background: var(--bad); z-index: 3; pointer-events: none; }
+.nowline::before { content: ""; position: absolute; left: -4px; top: -4px; width: 10px; height: 10px; border-radius: 50%; background: var(--bad); }
+.earned { text-align: center; font-size: 13px; color: var(--text3); padding-top: 10px; font-variant-numeric: tabular-nums; }
+.earned.has { color: var(--ok-text); font-weight: 700; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 13px; color: var(--text2); align-items: center; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+.weeknav { display: inline-flex; align-items: center; gap: 4px; background: var(--fill); border-radius: 12px; padding: 3px; }
+.weeknav a { width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; border-radius: 9px; color: var(--text2); }
+.weeknav a:hover { background: var(--seg-on); }
+.weeknav span { padding: 0 10px; font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* Ученики */
+.invitecard { display: flex; align-items: center; gap: 14px; padding: 16px 20px; border-radius: 18px; border: 0; color: #fff; text-align: left; background: linear-gradient(120deg, #0A84FF, #5E5CE6); box-shadow: 0 10px 30px rgba(10, 132, 255, .3); width: 100%; max-width: 320px; }
+.invitecard .ico { width: 44px; height: 44px; border-radius: 12px; background: rgba(255, 255, 255, .22); display: flex; align-items: center; justify-content: center; }
+.invitecard b { display: block; font-size: 16px; }
+.invitecard small { font-size: 13px; opacity: .85; }
+.scard { display: flex; align-items: center; gap: 12px; background: var(--surface); border-radius: 16px; padding: 14px 16px; min-height: 72px; }
+.scard:hover { box-shadow: var(--shadow); background: var(--surface); filter: brightness(1.01); }
+.scard .grow { flex: 1; min-width: 0; }
+.scard .grow b { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.scard .grow span { font-size: 14px; color: var(--text2); }
+.searchbox { position: relative; }
+.searchbox svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text3); }
+.searchbox input { padding-left: 36px; background: var(--surface); min-width: 240px; }
+.tabsbar { display: flex; background: var(--fill); border-radius: 12px; padding: 3px; gap: 2px; overflow-x: auto; }
+.tabsbar a { flex: 1; text-align: center; padding: 8px 14px; border-radius: 9px; font-size: 14px; white-space: nowrap; color: var(--text); }
+.tabsbar a[aria-current="page"] { background: var(--seg-on); font-weight: 600; box-shadow: 0 1px 3px rgba(0, 0, 0, .12); }
+.tabsbar.fit { display: inline-flex; max-width: 100%; }
+.tabsbar.fit a { flex: none; }
+
+/* Анкета ученика */
+.kv { display: grid; grid-template-columns: 140px 1fr; gap: 8px 16px; font-size: 15px; }
+.kv dt { color: var(--text2); }
+.kv dd { margin: 0; overflow-wrap: anywhere; }
+@media (max-width: 760px) { .kv { grid-template-columns: 1fr; gap: 2px; } .kv dd { margin-bottom: 8px; } }
+.cardtitle { font-size: 13px; font-weight: 600; color: var(--text2); margin: 0 0 12px; }
+.notecard { background: var(--surface); }
+.notecard .cardtitle { color: var(--warn-text); }
+.notecard textarea { background: var(--warn-bg); border: 0; }
+.pring { width: 110px; height: 110px; flex: none; }
+.statt { display: flex; align-items: center; gap: 12px; background: var(--surface2); border-radius: 14px; padding: 12px 14px; }
+.statt .si { width: 40px; height: 40px; border-radius: 11px; color: #fff; display: flex; align-items: center; justify-content: center; flex: none; }
+.statt b { font-size: 20px; display: block; line-height: 1.1; }
+.statt span { font-size: 13px; color: var(--text2); }
+.hist .row { min-height: 48px; padding: 8px 0; }
+.profgrid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+.profgrid > div { display: flex; flex-direction: column; gap: 16px; }
+.profgrid .card + .card { margin-top: 0; }
+@media (max-width: 980px) { .profgrid { grid-template-columns: 1fr; } }
+.radiorow { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 12px; }
+.radiorow:has(input:checked) { background: var(--accent-bg); }
+/* «Сегодня» */
+.today { width: 100%; border-collapse: collapse; }
+.today th { text-align: left; font-size: 12px; font-weight: 500; color: var(--text3); padding: 6px 10px; border-bottom: .5px solid var(--sep); }
+.today td { padding: 10px; border-bottom: .5px solid var(--sep); vertical-align: middle; }
+.today tr:last-child td { border-bottom: 0; }
+.today tr.soon td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
+.today tr.now td { background: linear-gradient(90deg, var(--ok-bg), transparent 70%); }
+.today .cmt { max-width: 220px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; background: var(--fill); border-radius: 10px; padding: 7px 12px; font-size: 13px; }
+.today .cmt.empty { color: var(--text3); }
+@media (max-width: 760px) {
+  .today thead { display: none; }
+  .today tr { display: grid; grid-template-columns: auto 1fr; gap: 6px 10px; padding: 10px 0; border-bottom: .5px solid var(--sep); }
+  .today td { border: 0; padding: 0; }
+  .today td.c-hw, .today td.c-class, .today td.c-cmt { grid-column: 2; }
+}
+.daytile { display: flex; flex-direction: column; align-items: center; border-radius: 16px; padding: 10px 6px; min-width: 84px; }
+.daytile:hover { background: var(--surface2); }
+.daytile.on { background: var(--accent); color: #fff; }
+.daytile.on:hover { background: var(--accent); }
+.nrow { display: flex; align-items: center; gap: 12px; border-radius: 16px; padding: 12px 14px; }
+.nrow.unread { background: var(--accent-bg); }
+.nrow .grow { flex: 1; min-width: 0; }
+.nrow.done .t { color: var(--text2); font-weight: 500; }
+}

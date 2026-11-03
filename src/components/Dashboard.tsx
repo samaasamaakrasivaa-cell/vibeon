@@ -1,40 +1,46 @@
+import Link from "next/link";
 import { Clock } from "./Clock";
 import { Icon } from "./Icon";
+import { NotificationList } from "./NotificationList";
 import { getT } from "@/lib/i18n/server";
 import { greetingKey, hourIn } from "@/lib/greeting";
 import { db } from "@/lib/db";
+import { addDaysIso, dayStart, hhmm, isoDay, mondayOf } from "@/lib/time";
+import { lessonInclude, lessonWho, syncSchedule } from "@/lib/teacher/data";
+import { initials } from "@/lib/invite";
 import type { User } from "@prisma/client";
 
 /** Главный экран «Обновления»: приветствие, часы, «Сегодня», неделя, «Что нового». */
-export async function Dashboard({ user, role }: { user: User | null; role: "TEACHER" | "STUDENT" }) {
+export async function Dashboard({ user, role }: { user: User; role: "TEACHER" | "STUDENT" }) {
   const { t, lang } = await getT();
-  const tz = user?.timezone ?? "Europe/Moscow";
+  const tz = user.timezone;
   const now = new Date();
-  const dayStart = new Date(now); dayStart.setHours(0, 0, 0, 0);
-  const weekEnd = new Date(dayStart); weekEnd.setDate(weekEnd.getDate() + 7);
+  const todayIso = isoDay(now, tz);
+  const from = dayStart(todayIso, tz);
+  const to = dayStart(addDaysIso(todayIso, 7), tz);
+  if (role === "TEACHER") await syncSchedule(user.id);
 
-  const lessonWhere =
-    role === "TEACHER"
-      ? { OR: [{ student: { teacherId: user?.id ?? "-" } }, { group: { teacherId: user?.id ?? "-" } }] }
-      : { student: { userId: user?.id ?? "-" } };
+  const where = role === "TEACHER" ? { teacherId: user.id } : { student: { userId: user.id } };
   const [lessons, notifications] = await Promise.all([
-    db.lessonInstance.findMany({
-      where: { ...lessonWhere, startsAt: { gte: dayStart, lt: weekEnd }, status: { not: "CANCELLED" } },
-      select: { id: true, startsAt: true, durationMin: true, note: true, student: { select: { name: true, lastName: true } }, group: { select: { title: true } } },
-      orderBy: { startsAt: "asc" },
-    }),
-    db.notification.findMany({ where: { userId: user?.id ?? "-" }, orderBy: { createdAt: "desc" }, take: 10 }),
+    db.lessonInstance.findMany({ where: { ...where, startsAt: { gte: from, lt: to }, status: { not: "CANCELLED" } }, include: lessonInclude, orderBy: { startsAt: "asc" } }),
+    db.notification.findMany({ where: { userId: user.id }, orderBy: { createdAt: "desc" }, take: 15 }),
   ]);
 
   const loc = lang === "ru" ? "ru-RU" : "en-GB";
-  const todayLessons = lessons.filter((l) => l.startsAt.toDateString() === now.toDateString());
+  const todayLessons = lessons.filter((l) => isoDay(l.startsAt, tz) === todayIso);
   const days = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(dayStart); d.setDate(d.getDate() + i);
-    const n = lessons.filter((l) => l.startsAt.toDateString() === d.toDateString()).length;
-    return { d, n };
+    const iso = addDaysIso(todayIso, i);
+    return { iso, n: lessons.filter((l) => isoDay(l.startsAt, tz) === iso).length, label: new Date(dayStart(iso, tz).getTime() + 12 * 3600e3).toLocaleDateString(loc, { weekday: "short", day: "numeric", timeZone: tz }).replace(".", "") };
   });
   const lessonsWord = (n: number) =>
     lang === "en" ? `${n} lesson${n === 1 ? "" : "s"}` : `${n} ${n % 10 === 1 && n % 100 !== 11 ? "урок" : [2, 3, 4].includes(n % 10) && ![12, 13, 14].includes(n % 100) ? "урока" : "уроков"}`;
+  const ago = (d: Date) => {
+    const m = Math.round((now.getTime() - d.getTime()) / 60000);
+    if (m < 60) return t("nt.minAgo", { n: Math.max(1, m) });
+    if (m < 24 * 60) return t("nt.hAgo", { n: Math.round(m / 60) });
+    return d.toLocaleDateString(loc, { day: "numeric", month: "long", timeZone: tz });
+  };
+  const scheduleHref = role === "TEACHER" ? "/teacher/schedule" : "/student/schedule";
 
   return (
     <div className="page">
@@ -42,68 +48,69 @@ export async function Dashboard({ user, role }: { user: User | null; role: "TEAC
         <div className="flex flex-wrap items-center justify-between gap-6 border-b border-sep pb-6">
           <div>
             <div className="text-[19px] text-text2">{t(greetingKey(hourIn(tz)))}</div>
-            <div className="gname">{user?.name ?? "—"}</div>
+            <div className="gname">{user.name}</div>
           </div>
-          <Clock lang={lang} />
+          <Clock lang={lang} tz={tz} />
         </div>
 
         <h2 className="mt-6 mb-3">{t("dash.today")}</h2>
         {todayLessons.length === 0 ? (
           <p className="hint m-0">{t("dash.noLessons")}</p>
         ) : (
-          <div className="list">
-            {todayLessons.map((l) => {
-              const who = role === "TEACHER" ? (l.group?.title ?? [l.student?.name, l.student?.lastName].filter(Boolean).join(" ")) : null;
-              const ini = (who ?? "").split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
-              return (
-                <div key={l.id} className="row wrap-phone">
-                  <div className="min-w-[64px] font-semibold" style={{ fontVariantNumeric: "tabular-nums" }}>
-                    {l.startsAt.toLocaleTimeString(loc, { hour: "2-digit", minute: "2-digit", timeZone: tz })}
-                  </div>
-                  {who && <span className="avatar">{ini}</span>}
-                  <div className="grow">
-                    <div className="t">{who ?? t("dash.lesson")}</div>
-                    <div className="s">{l.note ?? t("dash.noComment")} · {l.durationMin} {t("dash.min")}</div>
-                  </div>
-                  <span className="btn secondary sm" aria-disabled="true" title={t("common.soon", { n: 5 })}>
-                    <Icon name="class" size="sm" />{t("dash.openClass")}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
+          <table className="today">
+            <thead>
+              <tr><th>{t("today.time")}</th><th>{role === "TEACHER" ? t("today.student") : t("today.lesson")}</th><th>{t("nav.homework")}</th><th>{t("today.class")}</th><th>{t("today.comment")}</th></tr>
+            </thead>
+            <tbody>
+              {todayLessons.map((l) => {
+                const start = l.startsAt.getTime(), end = start + l.durationMin * 60000;
+                const live = start <= now.getTime() && now.getTime() < end;
+                const inMin = Math.round((start - now.getTime()) / 60000);
+                const soon = inMin > 0 && inMin <= 60;
+                const who = role === "TEACHER" ? lessonWho(l) : t("dash.lesson");
+                return (
+                  <tr key={l.id} className={live ? "now" : soon ? "soon" : ""}>
+                    <td className="whitespace-nowrap" style={{ fontVariantNumeric: "tabular-nums" }}>
+                      <b className={live ? "text-ok" : ""}>{hhmm(l.startsAt, tz)}</b>
+                      {soon && <div className="small font-semibold text-accent">{t("today.startsIn", { n: inMin })}</div>}
+                      {live && <div className="small font-semibold text-ok">{t("today.live")}</div>}
+                    </td>
+                    <td>
+                      <span className="flex items-center gap-3">
+                        <span className="avatar">{l.group ? <Icon name="group" size="sm" /> : initials(...(who.split(" ") as [string, string]))}</span>
+                        {role === "TEACHER" && l.studentId ? <Link href={`/teacher/students/${l.studentId}`} className="font-semibold hover:text-accent">{who}</Link> : <b>{who}</b>}
+                        {l.isTrial && <span className="pill violet">{t("sch.trial")}</span>}
+                      </span>
+                    </td>
+                    <td className="c-hw"><span className="pill grey" title={t("common.soon", { n: 5 })}>{t("today.noHw")}</span></td>
+                    <td className="c-class"><span className={`btn sm ${soon || live ? "primary" : "secondary"}`} aria-disabled="true" title={t("common.soon", { n: 5 })}><Icon name="class" size="sm" />{t("dash.openClass")}</span></td>
+                    <td className="c-cmt">
+                      {role === "TEACHER" ? (
+                        <Link href={`${scheduleHref}?w=${todayIso}`} className={`cmt ${l.note ? "" : "empty"}`} title={l.note ?? t("today.addNote")}>{l.note ?? t("dash.noComment")}</Link>
+                      ) : <span className={`cmt ${l.note ? "" : "empty"}`} title={l.note ?? ""}>{l.note ?? t("dash.noComment")}</span>}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         )}
 
         <h3 className="mt-7 mb-3">{t("dash.week")}</h3>
         <div className="grid grid-cols-7 gap-1 max-[760px]:flex max-[760px]:overflow-x-auto">
-          {days.map(({ d, n }, i) => (
-            <div key={i} className={`flex min-w-[84px] flex-col items-center rounded-2xl px-2 py-3 ${i === 0 ? "bg-accent text-white" : ""}`}>
-              <span className={`text-[12px] ${i === 0 ? "font-semibold" : "text-text3"}`}>
-                {i === 0 ? t("dash.today") : d.toLocaleDateString(loc, { weekday: "short", day: "numeric" })}
-              </span>
-              <span className="text-[15px] font-semibold">{lessonsWord(n)}</span>
-            </div>
+          {days.map((d, i) => (
+            <Link key={d.iso} href={`${scheduleHref}?w=${mondayOf(d.iso)}`} className={`daytile ${i === 0 ? "on" : ""}`}>
+              <span className={`text-[12px] ${i === 0 ? "font-semibold" : "text-text3"}`}>{i === 0 ? t("dash.today") : d.label}</span>
+              <span className="text-[15px] font-semibold">{lessonsWord(d.n)}</span>
+            </Link>
           ))}
         </div>
       </section>
 
       <section className="card">
-        <h2 className="mb-3">{t("dash.whatsNew")}</h2>
-        {notifications.length === 0 ? (
-          <p className="hint m-0">{t("dash.empty")}</p>
-        ) : (
-          <div className="flex flex-col gap-1">
-            {notifications.map((n) => (
-              <div key={n.id} className={`row rounded-2xl ${n.readAt ? "" : "bg-accent-bg"}`} style={{ borderBottom: 0 }}>
-                <input type="checkbox" className="check" defaultChecked={!!n.doneAt} aria-label="done" disabled />
-                <div className="grow">
-                  <div className="t">{n.title}</div>
-                  <div className="s">{n.createdAt.toLocaleString(loc, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        <NotificationList
+          items={notifications.map((n) => ({ id: n.id, title: n.title, when: ago(n.createdAt), unread: !n.readAt, done: !!n.doneAt, link: n.link, action: n.action }))}
+        />
       </section>
     </div>
   );

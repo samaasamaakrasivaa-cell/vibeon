@@ -134,8 +134,20 @@ model Student {
   price           Int? // цена урока, ₽
   payerName       String?
   payerContact    String?
-  billRule        String? // правило выставления счёта
+  billRule        String? // pack_left_1 | pack_left_2 | pack_end | after_5 | after_15 | after_30 | after_60 | next_day | every_4_weeks | manual
   remindEveryDays Int?
+  packPrices      Json          @default("[]") // [{ n: 4, price: 11600 }, …]
+  timezone        String        @default("Europe/Moscow")
+  callLink        String?
+  course          String? // до этапа 4 — текстом
+  level           String?
+  interests       String?
+  examGoal        String?
+  source          String? // откуда пришёл
+  birthday        DateTime?
+  startedAt       DateTime?
+  privateNote     String? // заметки учителя, видит только он
+  archivedAt      DateTime?
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 
@@ -265,6 +277,12 @@ model LessonInstance {
   durationMin Int             @default(60)
   status      LessonStatus    @default(PLANNED)
   isTrial     Boolean         @default(false)
+  trialName   String? // пробный урок с человеком, которого ещё нет в учениках
+  price       Int? // стоимость урока на момент проведения, ₽
+  charged     Boolean         @default(true) // для пропуска: списывать ли урок
+  seriesId    String? // уроки одной еженедельной серии
+  movedFrom   DateTime? // перенесён с этого времени
+  teacherId   String? // владелец урока (нужно для пробных без ученика)
   note        String? // заметка учителя к уроку → видна в «Сегодня»
   recurrence  String? // правило повтора (RRULE) или null
   callLink    String?
@@ -278,6 +296,8 @@ model LessonInstance {
 
   @@index([startsAt])
   @@index([studentId, startsAt])
+  @@index([teacherId, startsAt])
+  @@index([seriesId])
 }
 
 enum AnswerStatus {

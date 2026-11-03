@@ -66,6 +66,7 @@ export const ICONS = {
 // Дополнительные иконки интерфейса
 export const EXTRA_ICONS = {
   right: '<path d="m9 6 6 6-6 6"/>',
+  chevl: '<path d="m15 6-6 6 6 6"/>',
   close: '<path d="M6 6l12 12M18 6 6 18"/>',
   logout: '<path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/>',
   palette: '<circle cx="12" cy="12" r="9"/><circle cx="8" cy="10" r="1.2"/><circle cx="12" cy="7.5" r="1.2"/><circle cx="16" cy="10" r="1.2"/><path d="M12 21a2.5 2.5 0 0 1 0-5h1.5a2.5 2.5 0 0 0 0-5"/>',

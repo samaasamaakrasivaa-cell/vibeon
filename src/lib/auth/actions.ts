@@ -12,7 +12,7 @@ import { MIN_PASSWORD, hashPassword, verifyPassword } from "./password";
 import { createSession, destroySession, homeFor, requireUser } from "./session";
 import { issueToken, useToken } from "./tokens";
 
-export type FormState = { error?: string; fields?: Record<string, string>; ok?: string; link?: string } | undefined;
+export type FormState = { error?: string; fields?: Record<string, string>; ok?: string; link?: string; id?: string } | undefined;
 
 const emailSchema = z.string().trim().toLowerCase().email().max(200);
 const str = (f: FormData, k: string) => String(f.get(k) ?? "").trim();
@@ -150,6 +150,7 @@ export async function inviteStudentAction(_: FormState, f: FormData): Promise<Fo
     data: {
       teacherId: teacher.id,
       name,
+      startedAt: new Date(),
       email: asEmail.success ? asEmail.data : null,
       telegram: tg,
       invites: {
@@ -164,7 +165,7 @@ export async function inviteStudentAction(_: FormState, f: FormData): Promise<Fo
   });
   const link = `${env.appUrl}/invite/${token}`;
   if (asEmail.success) await mailInvite(asEmail.data, name, [teacher.name, teacher.lastName].filter(Boolean).join(" "), link, lang);
-  return { ok: asEmail.success ? t("inviteT.sentEmail", { c: asEmail.data }) : student.name, link };
+  return { ok: asEmail.success ? t("inviteT.sentEmail", { c: asEmail.data }) : student.name, link, id: student.id };
 }
 
 // ───────── Ученик заполняет стартовую анкету по приглашению ─────────
@@ -225,7 +226,7 @@ export async function inviteFormAction(token: string, _: FormState, f: FormData)
         kind: "student_joined",
         title: lang === "en" ? `${u.name} ${u.lastName} filled in the starting form` : `${u.name} ${u.lastName} заполнил(а) стартовую анкету`,
         action: "open_profile",
-        link: `/teacher/students`,
+        link: `/teacher/students/${invite.studentId}`,
       },
     });
     return u;
