@@ -12,7 +12,7 @@ import { MIN_PASSWORD, hashPassword, verifyPassword } from "./password";
 import { createSession, destroySession, homeFor, requireUser } from "./session";
 import { issueToken, useToken } from "./tokens";
 
-export type FormState = { error?: string; fields?: Record<string, string>; ok?: string; link?: string; id?: string } | undefined;
+export type FormState = { error?: string; fields?: Record<string, string>; ok?: string; link?: string; id?: string; warn?: boolean } | undefined;
 
 const emailSchema = z.string().trim().toLowerCase().email().max(200);
 const str = (f: FormData, k: string) => String(f.get(k) ?? "").trim();
@@ -84,8 +84,8 @@ export async function signupAction(_: FormState, f: FormData): Promise<FormState
           teacherProfile: { create: { tariff: "TRIAL", trialUntil: new Date(Date.now() + env.trialDays * 864e5) } },
         },
       });
-  await mailVerify(user.email, user.name, `${env.appUrl}/auth/verify?token=${await issueToken(user.id, "VERIFY_EMAIL")}`, lang);
-  redirect(checkEmailUrl(user.email, "verify"));
+  const sent = await mailVerify(user.email, user.name, `${env.appUrl}/auth/verify?token=${await issueToken(user.id, "VERIFY_EMAIL")}`, lang);
+  redirect(checkEmailUrl(user.email, "verify") + (sent ? "" : "&f=1"));
 }
 
 // ───────── «Отправить ещё раз» ─────────
@@ -166,8 +166,8 @@ export async function inviteStudentAction(_: FormState, f: FormData): Promise<Fo
     },
   });
   const link = `${env.appUrl}/invite/${token}`;
-  if (asEmail.success) await mailInvite(asEmail.data, name, [teacher.name, teacher.lastName].filter(Boolean).join(" "), link, lang);
-  return { ok: asEmail.success ? t("inviteT.sentEmail", { c: asEmail.data }) : student.name, link, id: student.id };
+  const sent = asEmail.success ? await mailInvite(asEmail.data, name, [teacher.name, teacher.lastName].filter(Boolean).join(" "), link, lang) : false;
+  return { ok: asEmail.success ? (sent ? t("inviteT.sentEmail", { c: asEmail.data }) : t("inviteT.mailFailed", { c: asEmail.data })) : student.name, link, id: student.id, warn: asEmail.success && !sent };
 }
 
 // ───────── Ученик заполняет стартовую анкету по приглашению ─────────

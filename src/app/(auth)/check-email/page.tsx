@@ -18,7 +18,7 @@ function webmail(email: string) {
   return null;
 }
 
-export default async function CheckEmail({ searchParams }: { searchParams: Promise<{ e?: string; k?: string }> }) {
+export default async function CheckEmail({ searchParams }: { searchParams: Promise<{ e?: string; k?: string; f?: string }> }) {
   const { t } = await getT();
   const sp = await searchParams;
   const email = (sp.e ?? "").slice(0, 200);
@@ -29,6 +29,7 @@ export default async function CheckEmail({ searchParams }: { searchParams: Promi
     <AuthShell brand={false}>
       <section className="authcard text-center">
         <div className="bigicon"><Icon name="msg" /></div>
+        {sp.f === "1" && <div className="alert mb-4 text-left" role="alert">{t("auth.check.failed")}</div>}
         <h1>{t("auth.check.title")}</h1>
         <p className="mt-3 mb-5 text-[16px] leading-normal text-text2">
           {t("auth.check.sent")} <b className="text-text">{email}</b>.{" "}

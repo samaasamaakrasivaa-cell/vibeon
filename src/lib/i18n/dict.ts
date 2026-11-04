@@ -1122,6 +1122,8 @@ const ru = {
   "auth.err.mismatch": "Пароли не совпадают",
   "auth.pwMatch": "Пароли совпадают",
   "auth.check.spam": "Не видите письмо? Загляните в «Спам» и нажмите «Это не спам» — в папке «Спам» почта отключает кнопки и ссылки в письмах.",
+  "inviteT.mailFailed": "Анкета создана, но письмо на {c} не отправилось. Скопируйте ссылку ниже и отправьте ученику сами — в мессенджере или почтой.",
+  "auth.check.failed": "Письмо не удалось отправить. Нажмите «Отправить ещё раз» через минуту — если не поможет, напишите нам.",
 } as const;
 
 export type DictKey = keyof typeof ru;
@@ -2246,6 +2248,8 @@ const en: Record<DictKey, string> = {
   "auth.err.mismatch": "The passwords don’t match",
   "auth.pwMatch": "The passwords match",
   "auth.check.spam": "Can’t see the email? Check Spam and mark it “Not spam” — mail services disable buttons and links in the Spam folder.",
+  "inviteT.mailFailed": "The profile is created, but the email to {c} wasn’t sent. Copy the link below and send it to the student yourself.",
+  "auth.check.failed": "We couldn’t send the email. Press “Send again” in a minute — if it doesn’t help, contact us.",
 };
 
 export const dictionaries: Record<LangCode, Record<DictKey, string>> = { ru, en };

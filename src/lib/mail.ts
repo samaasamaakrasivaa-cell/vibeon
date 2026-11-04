@@ -31,6 +31,12 @@ export async function sendMail(to: string, subject: string, html: string, text: 
   await t.sendMail({ from: env.smtp.from, to, subject, html, text });
 }
 
+/** Отправить и не уронить страницу: false — письмо не ушло (причина в журнале сервера). */
+async function soft(to: string, subject: string, html: string, text: string) {
+  try { await sendMail(to, subject, html, text); return true; }
+  catch (e) { console.error(`[mail] не отправлено (${subject}):`, (e as Error).message); return false; }
+}
+
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
 
 /** Единый вид письма: логотип, заголовок, текст, синяя кнопка. */
@@ -56,7 +62,7 @@ export async function mailVerify(to: string, name: string, url: string, lang: L)
     lang === "en"
       ? layout(`${name}, confirm your email`, "One click — and you are in your VibeOn workspace.", { label: "Confirm email", url }, "The link is valid for 24 hours. If you didn’t sign up for VibeOn, just ignore this email.")
       : layout(`${esc(name)}, подтвердите почту`, "Один клик — и вы в своём кабинете VibeOn.", { label: "Подтвердить почту", url }, "Ссылка действует 24 часа. Если вы не регистрировались в VibeOn, просто удалите это письмо.");
-  await sendMail(to, lang === "en" ? "Confirm your email — VibeOn" : "Подтвердите почту — VibeOn", m.html, m.text);
+  return soft(to, lang === "en" ? "Confirm your email — VibeOn" : "Подтвердите почту — VibeOn", m.html, m.text);
 }
 
 export async function mailMagic(to: string, url: string, lang: L) {
@@ -64,7 +70,7 @@ export async function mailMagic(to: string, url: string, lang: L) {
     lang === "en"
       ? layout("Sign in to VibeOn", "Press the button to sign in without a password.", { label: "Sign in", url }, "The link is valid for 15 minutes. If you didn’t request it, ignore this email.")
       : layout("Вход в VibeOn", "Нажмите кнопку, чтобы войти без пароля.", { label: "Войти", url }, "Ссылка действует 15 минут. Если вы не запрашивали вход, просто удалите это письмо.");
-  await sendMail(to, lang === "en" ? "Sign-in link — VibeOn" : "Ссылка для входа — VibeOn", m.html, m.text);
+  return soft(to, lang === "en" ? "Sign-in link — VibeOn" : "Ссылка для входа — VibeOn", m.html, m.text);
 }
 
 export async function mailReset(to: string, url: string, lang: L) {
@@ -72,7 +78,7 @@ export async function mailReset(to: string, url: string, lang: L) {
     lang === "en"
       ? layout("Reset your password", "Press the button and set a new password.", { label: "Set a new password", url }, "The link is valid for 1 hour and works once. If you didn’t request it, your password stays the same.")
       : layout("Новый пароль", "Нажмите кнопку и придумайте новый пароль.", { label: "Задать новый пароль", url }, "Ссылка действует 1 час и срабатывает один раз. Если вы не запрашивали сброс, пароль останется прежним.");
-  await sendMail(to, lang === "en" ? "Password reset — VibeOn" : "Сброс пароля — VibeOn", m.html, m.text);
+  return soft(to, lang === "en" ? "Password reset — VibeOn" : "Сброс пароля — VibeOn", m.html, m.text);
 }
 
 export async function mailInvite(to: string, studentName: string, teacherName: string, url: string, lang: L) {
@@ -80,7 +86,7 @@ export async function mailInvite(to: string, studentName: string, teacherName: s
     lang === "en"
       ? layout(`${studentName}, your teacher is waiting`, `<b>${esc(teacherName)}</b> invites you to study English on VibeOn. Fill in a short form — it takes a couple of minutes.`, { label: "Fill in the form", url }, "The invitation is valid for 14 days.")
       : layout(`${esc(studentName)}, вас ждёт преподаватель`, `<b>${esc(teacherName)}</b> приглашает вас заниматься английским на VibeOn. Заполните короткую анкету — это займёт пару минут.`, { label: "Заполнить анкету", url }, "Приглашение действует 14 дней.");
-  await sendMail(to, lang === "en" ? `${teacherName} invites you to VibeOn` : `${teacherName} приглашает вас в VibeOn`, m.html, m.text);
+  return soft(to, lang === "en" ? `${teacherName} invites you to VibeOn` : `${teacherName} приглашает вас в VibeOn`, m.html, m.text);
 }
 
 /** Счёт плательщику (родителю и т. п.), если в анкете указана его почта. */
@@ -91,7 +97,7 @@ export async function mailInvoice(to: string, payer: string, student: string, ti
     { label: "Открыть VibeOn", url },
     "Реквизиты для оплаты — в счёте у ученика. После оплаты пришлите скриншот или напишите, с какого банка и когда была оплата.",
   );
-  await sendMail(to, reminder ? `Напоминание об оплате — ${amount}` : `Счёт на оплату — ${amount}`, m.html, m.text);
+  return soft(to, reminder ? `Напоминание об оплате — ${amount}` : `Счёт на оплату — ${amount}`, m.html, m.text);
 }
 
 /** Уведомление платформы на почту (по настройкам пользователя). */
