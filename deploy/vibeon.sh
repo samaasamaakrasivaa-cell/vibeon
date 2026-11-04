@@ -27,6 +27,8 @@ need() {
   docker compose version >/dev/null 2>&1 || die "Нет docker compose (плагин). Установить: apt-get install -y docker-compose-plugin"
 }
 mode_flags() { if [ "$(getv MODE)" = "https" ]; then echo "--profile https"; fi; }
+# NO_BUILD=1 — образ уже собран в GitHub Actions и загружен (на сервере мало памяти для сборки)
+build_flag() { if [ "${NO_BUILD:-}" = "1" ]; then echo "--no-build"; else echo "--build"; fi; }
 wait_ok() {
   local port; port="$(getv APP_PORT)"
   for _ in $(seq 1 60); do curl -fsS "http://127.0.0.1:$port/api/health" >/dev/null 2>&1 && return 0; sleep 3; done
@@ -91,14 +93,14 @@ case "$cmd" in
     configure "${1:-}"
     say "Сборка и запуск контейнеров vibeon-* (несколько минут)"
     # shellcheck disable=SC2046
-    dc $(mode_flags) up -d --build
+    dc $(mode_flags) up -d $(build_flag)
     wait_ok || { dc logs --tail 80 app; die "Приложение не отвечает — журнал выше"; }
     show_result;;
   domain)
     [ -n "${1:-}" ] || die "Укажите домен: bash deploy/vibeon.sh domain vibeon.ru"
     need; configure "$1"
     # shellcheck disable=SC2046
-    dc $(mode_flags) up -d --build
+    dc $(mode_flags) up -d $(build_flag)
     wait_ok || die "Приложение не отвечает: bash deploy/vibeon.sh logs"
     show_result;;
   update)
@@ -106,7 +108,7 @@ case "$cmd" in
     if [ -d "$DIR/../.git" ]; then say "Новая версия из GitHub"; git -C "$DIR/.." pull --ff-only; fi
     say "Бэкап перед обновлением"; bash "$0" backup || true
     # shellcheck disable=SC2046
-    dc $(mode_flags) up -d --build
+    dc $(mode_flags) up -d $(build_flag)
     wait_ok && say "Обновлено: $(getv APP_URL)" || die "Приложение не отвечает: bash deploy/vibeon.sh logs";;
   status) dc ps; curl -fsS "http://127.0.0.1:$(getv APP_PORT)/api/health" && echo;;
   logs) dc logs --tail "${1:-200}" -f app;;

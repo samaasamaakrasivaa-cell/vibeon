@@ -34,6 +34,13 @@ jobs:
           printf 'Host srv\n  HostName %s\n  User root\n  IdentityFile ~/.ssh/id\n  ServerAliveInterval 30\n' "$SSH_HOST" > ~/.ssh/config
           ssh srv true && echo "SSH: ok"
 
+      # Сборка здесь, а не на сервере: там мало памяти и работают другие проекты
+      - name: Build image and send to server
+        if: inputs.action == 'install' || inputs.action == 'update'
+        run: |
+          docker build -t vibeon-app:latest .
+          docker save vibeon-app:latest | gzip | ssh srv 'old=$(docker image inspect -f "{{.Id}}" vibeon-app:latest 2>/dev/null || true); gunzip | docker load; echo "$old" > /tmp/vibeon-old-image'
+
       - name: Run on server
         env:
           ACTION: ${{ inputs.action }}
@@ -55,8 +62,8 @@ jobs:
           }
           case "$ACTION" in
             check)   ssh srv "bash -s" < deploy/check.sh ;;
-            install) sync; ssh srv "$V install $Q" ;;
-            update)  sync; ssh srv "$V update" ;;
+            install) sync; ssh srv "NO_BUILD=1 $V install $Q" ;;
+            update)  sync; ssh srv "NO_BUILD=1 $V update" ;;
             status)  ssh srv "$V status; echo; echo версия: \$(cat /opt/vibeon/REVISION 2>/dev/null)" ;;
             logs)    ssh srv "docker compose -f /opt/vibeon/deploy/docker-compose.prod.yml --env-file /opt/vibeon/deploy/.env logs --tail 200 --no-color" ;;
             backup)  ssh srv "$V backup" ;;
@@ -70,3 +77,7 @@ jobs:
               if [ -n "$YANDEX_CLOUD_API_KEY" ]; then ssh srv "$V setq AI_PROVIDER=yandex" && echo "записано: AI_PROVIDER=yandex"; fi
               [ "$n" -gt 0 ] && ssh srv "$V restart" || echo "Секретов для записи нет" ;;
           esac
+          # старый образ VibeOn — удалить (только свой, чужие не трогаем)
+          if [ "$ACTION" = install ] || [ "$ACTION" = update ]; then
+            ssh srv 'o=$(cat /tmp/vibeon-old-image 2>/dev/null); n=$(docker image inspect -f "{{.Id}}" vibeon-app:latest); [ -n "$o" ] && [ "$o" != "$n" ] && docker rmi "$o" >/dev/null 2>&1; rm -f /tmp/vibeon-old-image; true'
+          fi
