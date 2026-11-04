@@ -171,6 +171,7 @@ model Student {
   practice  WordPractice[]
 
   @@index([teacherId, status])
+  checkpoints     Checkpoint[]
 }
 
 model Group {
@@ -385,27 +386,53 @@ model Word {
 }
 
 model Roadmap {
-  id          String       @id @default(cuid())
-  studentId   String
-  type        String
-  goal        String // A1+ … C2
-  deadline    DateTime?
-  showDate    Boolean      @default(false)
-  pace        String?
-  stages      Json         @default("[]")
-  approvedAt  DateTime?
-  createdAt   DateTime     @default(now())
-  student     Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  checkpoints Checkpoint[]
+  id           String       @id @default(cuid())
+  studentId    String
+  type         String // ge | lvx | ielts | ege | oge | toefl | camb | biz | talk | move
+  goal         String // A1+ … C2, «IELTS 7.0» …
+  fromLevel    String? // точка A: по входному тесту или вручную
+  deadline     DateTime?
+  showDate     Boolean      @default(false)
+  pace         String? // «2:20» — уроков в неделю : минут в день самостоятельно (рекомендует учитель)
+  paceStudent  String? // темп, который выбрал ученик
+  mood         String? // как занимается: plan | more | slack
+  note         String? // заметки учителя для ИИ
+  courseIds    String[]
+  leadCourseId String?
+  stages       Json         @default("[]") // [{ lvl, title, hours, grammar[], vocabulary[], skills[], feel[], passed? }]
+  criteria     Json         @default("[]") // критерии достижения цели
+  summary      String?
+  units        Json         @default("[]") // юниты ведущего курса — отметки на карте
+  startHours   Float        @default(0) // часы, засчитанные до начала маршрута
+  builtAt      DateTime?
+  approvedAt   DateTime?
+  baseEta      DateTime? // прогноз в момент утверждения — для «отстаёт на N недель»
+  reportAt     DateTime? // последнее уведомление о недельном отчёте
+  createdAt    DateTime     @default(now())
+  student      Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  checkpoints  Checkpoint[]
+
+  @@index([studentId])
 }
 
+/// Входной тест и срезы. Назначаются учителем, проходятся учеником (или результаты вносит учитель).
 model Checkpoint {
-  id        String   @id @default(cuid())
-  roadmapId String
-  kind      String // entry | slice
-  takenAt   DateTime @default(now())
-  results   Json     @default("{}") // по навыкам
-  roadmap   Roadmap  @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
+  id         String    @id @default(cuid())
+  studentId  String
+  roadmapId  String?
+  kind       String // entry | slice | final
+  stage      Int? // номер этапа маршрута для среза
+  status     String    @default("assigned") // assigned | done
+  source     String    @default("test") // test | manual
+  level      String?
+  results    Json      @default("{}") // { skills: { grammar: 64, … }, weak: [...], strong: [...] }
+  answers    Json      @default("{}")
+  assignedAt DateTime  @default(now())
+  takenAt    DateTime?
+  student    Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  roadmap    Roadmap?  @relation(fields: [roadmapId], references: [id], onDelete: SetNull)
+
+  @@index([studentId, status])
 }
 
 // ───────────── Оплаты ─────────────

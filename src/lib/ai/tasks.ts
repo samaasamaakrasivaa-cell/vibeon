@@ -1,10 +1,11 @@
 import "server-only";
 import { HOWTO, PRESET, SAMPLE, TYPES, isType, type TaskType } from "../tasks/catalog";
 import { liteCorrect, type Note } from "./lite";
+import { goalLevel, ROUTE_TYPES, templateCriteria, templateStages, type L2, type Stage } from "../roadmap/cefr";
 
 // Описания задач ИИ: промпт → разбор ответа; для AI_PROVIDER=mock — правдоподобный ответ без сети.
 
-export type Kind = "help" | "file" | "split" | "book" | "explain" | "draft" | "essay" | "speech" | "precheck" | "partner";
+export type Kind = "help" | "file" | "split" | "book" | "explain" | "draft" | "essay" | "speech" | "precheck" | "partner" | "roadmap";
 export type DraftTask = { type: TaskType; title: string; content: string; section?: "lesson" | "homework" | "words"; teacherOnly?: boolean };
 export type Check = { corrected: string; notes: Note[]; summary: string; verdict?: "ok" | "partly" | "wrong" };
 export type Turn = { role: "user" | "assistant"; text: string };
@@ -224,6 +225,36 @@ export const SPECS = {
       return { reply: `${react} ${q}${n === 0 ? words : ""}` };
     },
   } as Spec<{ history: Turn[]; prompt?: string; goal?: string; words?: string; questions?: string; level?: string }, { reply: string }>,
+  roadmap: {
+    strong: true, json: true, maxTokens: 6000,
+    system: () => `${ROLE} Составь маршрут ученика к цели по шкале CEFR (или баллам экзамена). Этапы — от текущего уровня к цели, у каждого: уровень, название, учебные часы (реалистично, по рекомендациям Cambridge: A1→A2 ≈ 100 ч, A2→B1 ≈ 170 ч, B1→B2 ≈ 200 ч, B2→C1 ≈ 200 ч), что входит (грамматика, лексика), что ученик сможет (can-do) и как он будет себя чувствовать. Учитывай слабые места по тесту, темп, как ученик занимается, комментарий учителя и юниты ведущего курса. Пиши по-русски. Ответь только JSON: {"stages": [{"lvl": "B1+", "title": "…", "hours": 90, "grammar": ["…"], "vocabulary": ["…"], "skills": ["…"], "feel": ["…"]}], "criteria": ["критерий достижения цели"], "summary": "2–3 предложения для учителя: на чём фокус и почему"}`,
+    user: (i) => [{ role: "user", text: [
+      `Тип маршрута: ${ROUTE_TYPES[i.type]?.name[1] ?? i.type}. Сейчас: ${i.from}. Цель: ${i.goal} (≈ ${goalLevel(i.type, i.goal)}).`,
+      i.skills ? `Входной тест по навыкам, %: ${Object.entries(i.skills).map(([k, v]) => `${k} ${v}`).join(", ")}.` : "Входного теста нет.",
+      i.weak?.length ? `Слабые места: ${i.weak.join("; ")}.` : "",
+      `Темп: ${i.pace}. Как занимается: ${i.mood === "more" ? "занимается больше плана" : i.mood === "slack" ? "бывают пропуски" : "по плану"}.`,
+      i.units?.length ? `Юниты ведущего курса по порядку: ${i.units.map((u) => u.title).join("; ")}.` : "Ведущего курса нет — общий маршрут по уровням.",
+      i.note ? `Комментарий учителя: ${i.note}` : "",
+    ].filter(Boolean).join("\n") }],
+    parse: (t, i) => {
+      const j = extractJson<{ stages?: Partial<Stage>[]; criteria?: string[]; summary?: string }>(t);
+      const arr = (x: unknown) => (Array.isArray(x) ? x.map(String).slice(0, 8) : []);
+      const stages = (j.stages ?? []).filter((x) => x && x.lvl).slice(0, 12).map((x) => ({ lvl: String(x.lvl).slice(0, 20), title: String(x.title ?? x.lvl).slice(0, 120), hours: Math.max(5, Math.min(400, Math.round(Number(x.hours) || 40))), grammar: arr(x.grammar), vocabulary: arr(x.vocabulary), skills: arr(x.skills), feel: arr(x.feel) }));
+      if (!stages.length) return SPECS.roadmap.mock(i);
+      return { stages, criteria: arr(j.criteria), summary: String(j.summary ?? "").slice(0, 1000) };
+    },
+    mock: (i) => {
+      const stages = templateStages(i.type, i.from, i.goal, i.units);
+      const k = i.mood === "slack" ? 1.1 : i.mood === "more" ? 0.95 : 1;
+      for (const s of stages) s.hours = Math.round((s.hours * k) / 5) * 5;
+      if (i.weak?.length && stages[0]) stages[0].grammar = [...stages[0].grammar, [`Weak spots from the test: ${i.weak.slice(0, 3).join(", ")}`, `Слабые места по тесту: ${i.weak.slice(0, 3).join(", ")}`] as L2];
+      const total = stages.reduce((a, s) => a + s.hours, 0);
+      return {
+        stages, criteria: templateCriteria(i.type, i.goal),
+        summary: `Маршрут ${i.from} → ${i.goal}: ${stages.length} этапов, около ${total} учебных часов.${i.weak?.length ? ` Сначала — слабые места по тесту: ${i.weak.slice(0, 2).join(", ")}.` : ""}${i.units?.length ? ` Опираемся на ведущий курс: ${i.units.length} юнитов.` : ""}${i.mood === "slack" ? " Заложен запас времени на пропуски." : ""}`,
+      };
+    },
+  } as Spec<{ type: string; from: string; goal: string; skills?: Record<string, number>; weak?: string[]; pace: string; mood?: string; note?: string; units?: { title: string }[] }, { stages: Stage[]; criteria: (L2 | string)[]; summary: string }>,
 } satisfies Record<Kind, Spec<never, unknown>>;
 
 export type SpecIn<K extends Kind> = Parameters<(typeof SPECS)[K]["system"]>[0];

@@ -6,6 +6,7 @@ import { env } from "../env";
 import { publish } from "../live/bus";
 import { readStored } from "../storage";
 import { ocr } from "../ai/gateway";
+import { weeklyReports } from "../roadmap/jobs";
 
 // ───────── Цены ─────────
 
@@ -207,6 +208,7 @@ export async function runBilling(now = new Date()) {
     await billPacks();
     await billPostpaid(now);
     await remind(now);
+    await weeklyReports(now);
   } catch (e) {
     console.error("[billing]", e);
   } finally {

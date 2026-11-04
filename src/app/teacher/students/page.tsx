@@ -7,6 +7,7 @@ import { env } from "@/lib/env";
 import { getT } from "@/lib/i18n/server";
 import { initials } from "@/lib/invite";
 import { rub } from "@/lib/teacher/data";
+import { roadmapView } from "@/lib/roadmap/progress";
 
 export const metadata = { title: "Ученики" };
 
@@ -103,9 +104,38 @@ export default async function Students({ searchParams }: { searchParams: Promise
         </section>
       )}
 
-      {(tab === "roadmaps" || tab === "feedback") && (
-        <section className="card">
-          <p className="hint m-0">{t("common.soon", { n: tab === "roadmaps" ? 9 : 5 })}</p>
+      {tab === "roadmaps" && (
+        <div className="rmcards">
+          {active.length === 0 && <section className="card"><p className="hint m-0">{t("inviteT.none")}</p></section>}
+          {await Promise.all(active.map(async (s, i) => {
+            const v = await roadmapView(s.id, me.timezone);
+            const r = v.r;
+            return (
+              <Link key={s.id} href={`/teacher/students/${s.id}?tab=roadmap`} className="card rmcard">
+                <div className="flex items-center gap-3"><span className={`avatar lg c${i % 6}`}>{initials(s.name, s.lastName)}</span><div className="min-w-0 grow"><b className="block truncate">{full(s)}</b><span className="small muted">{r?.builtAt ? `${r.fromLevel ?? "?"} → ${r.goal}` : t("rm.noRoadmap")}</span></div></div>
+                {r?.builtAt && "achievements" in v ? (
+                  <>
+                    <div className="mt-3 flex items-center gap-2"><span className="stbar grow"><span style={{ width: `${v.achievements.pct}%` }} /></span><b>{v.achievements.pct}%</b></div>
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {!r.approvedAt ? <span className="pill orange">{t("rm.draft")}</span> : v.lateWeeks > 0 ? <span className="pill red">{t("rm.late", { n: v.lateWeeks })}</span> : v.lateWeeks < 0 ? <span className="pill green">{t("rm.ahead", { n: -v.lateWeeks })}</span> : <span className="pill green">{t("rm.onTrack")}</span>}
+                      {v.checkpoints.some((c) => c.status === "assigned") && <span className="pill grey">{t("rm.testOpen")}</span>}
+                    </div>
+                  </>
+                ) : <div className="mt-3 flex flex-wrap gap-1.5"><span className="pill grey">{t("rm.build")}</span>{v.checkpoints.some((c) => c.status === "assigned") && <span className="pill orange">{t("rm.testOpen")}</span>}</div>}
+              </Link>
+            );
+          }))}
+        </div>
+      )}
+      {tab === "feedback" && (
+        <section className="list">
+          {(await db.feedback.findMany({ where: { student: { teacherId: me.id } }, include: { student: true }, orderBy: { createdAt: "desc" }, take: 100 })).map((f) => (
+            <Link key={f.id} href={`/teacher/students/${f.studentId}?tab=feedback`} className="qrow hover:bg-fill">
+              <span className="avatar lg">{initials(f.student.name, f.student.lastName)}</span>
+              <div className="grow"><div className="flex flex-wrap justify-between gap-2"><b>{full(f.student)}</b><span className="small text-text3">{f.createdAt.toLocaleDateString(loc, { day: "numeric", month: "short" })}</span></div><p className="mb-0 mt-1 line-clamp-2">{f.text}</p></div>
+            </Link>
+          ))}
+          {(await db.feedback.count({ where: { student: { teacherId: me.id } } })) === 0 && <p className="hint p-5 m-0">{t("pr.noFb")}</p>}
         </section>
       )}
 

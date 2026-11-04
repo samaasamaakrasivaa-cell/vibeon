@@ -4,6 +4,7 @@ import { PrismaClient } from "@prisma/client";
 import { randomUUID } from "node:crypto";
 import bcrypt from "bcryptjs";
 import { PRESET, SAMPLE, type TaskType } from "../src/lib/tasks/catalog";
+import { templateCriteria, templateStages } from "../src/lib/roadmap/cefr";
 
 const db = new PrismaClient();
 const TZ = "Europe/Moscow"; // UTC+3 без перехода на летнее время
@@ -186,6 +187,26 @@ async function main() {
     { studentId: natalia.id, amount: 18400, kind: "pack", title: "Абонемент, 8 занятий", packLessons: 8, status: "PROOF_SENT", proofKind: "text", proofText: "Сбербанк · 16 окт, 11:40 · 2 500 ₽", proofAt: new Date(Date.now() - 864e5), aiRead: { source: "text", amounts: [2500], matches: false }, createdAt: new Date(Date.now() - 2 * 864e5) },
     { studentId: yaroslav.id, amount: 4000, kind: "lessons", title: "Урок 17 окт, 14:00", status: "SENT", createdAt: new Date(Date.now() - 864e5) },
   ] });
+
+  // Маршрут Анны: входной тест (B1), срез, утверждённый маршрут B1 → B2 по курсу Speaking B2. Михаилу назначен входной тест.
+  const speaking = await db.course.findFirst({ where: { teacherId: teacher.id, title: "Speaking B2" }, include: { units: { orderBy: { order: "asc" } } } });
+  const units = speaking?.units.map((u) => ({ title: u.title, outcomes: u.outcomes })) ?? [];
+  const stagesA = templateStages("ge", "B1", "B2", units);
+  stagesA[0].passed = { score: 86, at: new Date(Date.now() - 20 * 864e5).toISOString() };
+  const rmA = await db.roadmap.create({ data: {
+    studentId: anna2.id, type: "ge", goal: "B2", fromLevel: "B1", pace: "2:20", mood: "plan", courseIds: speaking ? [speaking.id] : [], leadCourseId: speaking?.id ?? null,
+    note: "Ответственная, любит говорить, перед дедлайнами на работе пропускает домашку.", stages: stagesA as object[], criteria: templateCriteria("ge", "B2") as object[], units,
+    summary: "Маршрут B1 → B2: 3 этапа, около 230 учебных часов. Сначала — артикли и вопросы в Present Simple, затем свободная речь на встречах.",
+    startHours: 42, builtAt: new Date(Date.now() - 50 * 864e5), approvedAt: new Date(Date.now() - 49 * 864e5), baseEta: new Date(Date.now() + 38 * 7 * 864e5), createdAt: new Date(Date.now() - 50 * 864e5),
+  } });
+  await db.checkpoint.createMany({ data: [
+    { studentId: anna2.id, roadmapId: rmA.id, kind: "entry", status: "done", level: "B1", takenAt: new Date(Date.now() - 52 * 864e5), assignedAt: new Date(Date.now() - 53 * 864e5),
+      results: { skills: { grammar: 64, vocabulary: 70, reading: 68, listening: 55, writing: 58 }, weak: [["Articles", "Артикли"], ["Present Simple questions", "Вопросы в Present Simple"], ["Listening: attitude", "Аудирование: позиция говорящего"]], strong: [["Past Simple", "Past Simple"]], score: 63 } },
+    { studentId: anna2.id, roadmapId: rmA.id, kind: "slice", stage: 0, status: "done", level: "B1+", takenAt: new Date(Date.now() - 20 * 864e5), assignedAt: new Date(Date.now() - 21 * 864e5),
+      results: { skills: { grammar: 78, vocabulary: 82, reading: 78, listening: 70, writing: 72 }, weak: [["Articles", "Артикли"]], strong: [], score: 76 } },
+  ] });
+  const mikhail = await st("Mikhail");
+  await db.checkpoint.create({ data: { studentId: mikhail.id, kind: "entry" } });
 
   console.log("Seed OK:", teacher.email, annaUser.email, "· учеников:", people.length);
 }
