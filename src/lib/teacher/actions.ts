@@ -100,21 +100,35 @@ export async function setLessonStatus(id: string, status: LessonStatus, charged 
   return { ok: true };
 }
 
-export async function moveLesson(id: string, date: string, start: string): Promise<Result> {
+export async function moveLesson(id: string, date: string, start: string, fix = false): Promise<Result> {
   const { t } = await getT();
   const teacher = await me();
   const l = await ownLesson(id, teacher.id);
   const startsAt = parseWhen(date, start, teacher.timezone);
   if (!startsAt) return { ok: false, error: t("sch.err.time") };
   // Переносится только этот урок; еженедельная серия остаётся в своё время.
-  await db.lessonInstance.update({ where: { id }, data: { startsAt, movedFrom: l.movedFrom ?? l.startsAt, seriesId: null, status: "PLANNED" } });
+  // fix — исправление ошибки (неверно поставили дату): не считается переносом и не попадает в статистику переносов.
+  const past = startsAt.getTime() + l.durationMin * 60000 < Date.now();
+  await db.lessonInstance.update({
+    where: { id },
+    data: { startsAt, movedFrom: fix ? l.movedFrom : l.movedFrom ?? l.startsAt, seriesId: null, status: fix && past ? l.status : "PLANNED", ...(!past ? { deductedAt: null } : {}) },
+  });
+  if (!past) await restorePackLesson(l);
   refresh(l.studentId);
   return { ok: true };
+}
+
+/** Урок уже списан из абонемента, а его удалили или перенесли в будущее — вернуть урок в абонемент. */
+async function restorePackLesson(l: { studentId: string | null; deductedAt: Date | null }) {
+  if (!l.studentId || !l.deductedAt) return;
+  const pack = await db.pack.findFirst({ where: { studentId: l.studentId }, orderBy: { startsAt: "desc" } });
+  if (pack && pack.lessonsLeft < pack.lessonsTotal) await db.pack.update({ where: { id: pack.id }, data: { lessonsLeft: { increment: 1 } } });
 }
 
 export async function deleteLesson(id: string, scope: "one" | "following" = "one"): Promise<Result> {
   const teacher = await me();
   const l = await ownLesson(id, teacher.id);
+  await restorePackLesson(l);
   if (scope === "following" && l.seriesId)
     await db.lessonInstance.deleteMany({ where: { seriesId: l.seriesId, startsAt: { gte: l.startsAt }, teacherId: teacher.id } });
   else await db.lessonInstance.delete({ where: { id } });
@@ -188,12 +202,12 @@ export async function savePrivateNote(id: string, text: string): Promise<Result>
 
 export async function savePayment(
   id: string,
-  p: { payType: PayType; billRule: string; remindEveryDays: number | null; price: number | null; packPrices: { n: number; price: number }[]; payerOn: boolean; payerName: string; payerContact: string },
+  p: { payType: PayType; billRule: string; remindEveryDays: number | null; price: number | null; packPrices: { n: number; price: number; main?: boolean }[]; payerOn: boolean; payerName: string; payerContact: string },
 ): Promise<Result> {
   const teacher = await me();
   await ownStudent(id, teacher.id);
   const price = p.price && p.price > 0 && p.price < 1_000_000 ? Math.round(p.price) : null;
-  const packPrices = (p.packPrices ?? []).filter((x) => [4, 8, 12, 16, 20].includes(x.n) && x.price > 0 && x.price < 10_000_000).map((x) => ({ n: x.n, price: Math.round(x.price) }));
+  const packPrices = (p.packPrices ?? []).filter((x) => [4, 8, 12, 16, 20].includes(x.n) && x.price > 0 && x.price < 10_000_000).map((x) => ({ n: x.n, price: Math.round(x.price), ...(x.main ? { main: true } : {}) }));
   await db.student.update({
     where: { id },
     data: {
@@ -272,5 +286,42 @@ export async function updateTeacherProfile(f: { name: string; lastName: string; 
   await db.user.update({ where: { id: u.id }, data: { name, lastName: f.lastName.trim().slice(0, 80) || null, phone: f.phone.trim().slice(0, 40) || null, timezone: f.timezone || u.timezone } });
   await db.teacherProfile.update({ where: { userId: u.id }, data: { callLink: link || null } });
   revalidatePath("/teacher", "layout");
+  return { ok: true };
+}
+
+/** Одно поле анкеты — правка прямо в карточке (сохраняется при уходе с поля). */
+export async function setStudentField(id: string, key: string, value: string): Promise<Result> {
+  const { t } = await getT();
+  const teacher = await me();
+  const s = await ownStudent(id, teacher.id);
+  const v = value.trim();
+  const day = (x: string) => (/^\d{4}-\d{2}-\d{2}$/.test(x) ? new Date(x + "T12:00:00Z") : null);
+  const form = (patch: object) => ({ form: { ...((s.form as object) ?? {}), ...patch } });
+  let data: Record<string, unknown>;
+  switch (key) {
+    case "name": if (!v) return { ok: false, error: t("auth.err.name") }; data = { name: v.slice(0, 80) }; break;
+    case "lastName": data = { lastName: v.slice(0, 80) || null }; break;
+    case "email": if (v && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)) return { ok: false, error: t("auth.err.email") }; data = { email: v.toLowerCase().slice(0, 200) || null }; break;
+    case "telegram": data = { telegram: v ? "@" + v.replace(/^@|^https?:\/\/t\.me\//, "").slice(0, 40) : null }; break;
+    case "callLink": if (v && !/^https?:\/\//.test(v)) return { ok: false, error: t("tp.err.link") }; data = { callLink: v.slice(0, 500) || null }; break;
+    case "timezone": data = { timezone: v || "Europe/Moscow" }; break;
+    case "level": data = { level: v.slice(0, 60) || null }; break;
+    case "interests": data = { interests: v.slice(0, 300) || null }; break;
+    case "examGoal": data = { examGoal: v.slice(0, 120) || null }; break;
+    case "source": data = { source: v.slice(0, 120) || null }; break;
+    case "birthday": data = { birthday: day(v) }; break;
+    case "startedAt": data = { startedAt: day(v) }; break;
+    case "course": {
+      const c = v ? await db.course.findUnique({ where: { id: v } }) : null;
+      if (c && c.teacherId !== teacher.id) return { ok: false, error: "not found" };
+      data = { courseId: c?.id ?? null, course: c?.title ?? null };
+      break;
+    }
+    case "phone": data = form({ phone: v.slice(0, 40) || null }); break;
+    case "vk": data = form({ vk: v.slice(0, 120) || null }); break;
+    default: return { ok: false, error: "field" };
+  }
+  await db.student.update({ where: { id }, data });
+  refresh(id);
   return { ok: true };
 }

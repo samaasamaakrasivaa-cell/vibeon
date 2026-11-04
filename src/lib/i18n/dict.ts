@@ -1124,6 +1124,18 @@ const ru = {
   "auth.check.spam": "Не видите письмо? Загляните в «Спам» и нажмите «Это не спам» — в папке «Спам» почта отключает кнопки и ссылки в письмах.",
   "inviteT.mailFailed": "Анкета создана, но письмо на {c} не отправилось. Скопируйте ссылку ниже и отправьте ученику сами — в мессенджере или почтой.",
   "auth.check.failed": "Письмо не удалось отправить. Нажмите «Отправить ещё раз» через минуту — если не поможет, напишите нам.",
+  "prof.addValue": "добавить",
+  "prof.notChosen": "— не выбрано —",
+  "prof.ownVariant": "Свой вариант…",
+  "prof.ownVariantPh": "Впишите свой вариант",
+  "prof.vk": "ВКонтакте",
+  "prof.noCoursesYet": "Курсов пока нет — создайте их в «Курсах»",
+  "prof.interestsPh": "путешествия, IT, сериалы…",
+  "prof.mainPack": "Основной абонемент",
+  "prof.mainPackHint": "Основной — {n} уроков: по нему выставляется счёт за новый абонемент.",
+  "sch.editTime": "Изменить дату и время",
+  "sch.fixMistake": "Исправление ошибки",
+  "sch.fixMistakeHint": "Урок поставили не туда — не считать переносом в статистике",
 } as const;
 
 export type DictKey = keyof typeof ru;
@@ -2250,6 +2262,18 @@ const en: Record<DictKey, string> = {
   "auth.check.spam": "Can’t see the email? Check Spam and mark it “Not spam” — mail services disable buttons and links in the Spam folder.",
   "inviteT.mailFailed": "The profile is created, but the email to {c} wasn’t sent. Copy the link below and send it to the student yourself.",
   "auth.check.failed": "We couldn’t send the email. Press “Send again” in a minute — if it doesn’t help, contact us.",
+  "prof.addValue": "add",
+  "prof.notChosen": "— not chosen —",
+  "prof.ownVariant": "Other…",
+  "prof.ownVariantPh": "Type your own",
+  "prof.vk": "VK",
+  "prof.noCoursesYet": "No courses yet — create them in Courses",
+  "prof.interestsPh": "travel, IT, series…",
+  "prof.mainPack": "Main pack",
+  "prof.mainPackHint": "Main — {n} lessons: new pack invoices use it.",
+  "sch.editTime": "Change date and time",
+  "sch.fixMistake": "Fixing a mistake",
+  "sch.fixMistakeHint": "The lesson was put in the wrong slot — don’t count it as a reschedule",
 };
 
 export const dictionaries: Record<LangCode, Record<DictKey, string>> = { ru, en };

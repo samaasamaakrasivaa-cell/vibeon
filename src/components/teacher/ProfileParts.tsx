@@ -114,7 +114,7 @@ export function PrivateNote({ id, initial }: { id: string; initial: string }) {
 
 export type PaymentData = {
   id: string; payType: "PACK" | "POSTPAID"; billRule: string; remindEveryDays: number | null; price: number | null;
-  packPrices: { n: number; price: number }[]; payerName: string; payerContact: string;
+  packPrices: { n: number; price: number; main?: boolean }[]; payerName: string; payerContact: string;
   pack: { left: number; total: number; price: number } | null;
 };
 
@@ -129,6 +129,8 @@ export function PaymentCard({ p, earnedMonth }: { p: PaymentData; earnedMonth: s
   const [remind, setRemind] = useState<number | null>(p.remindEveryDays ?? 3);
   const [price, setPrice] = useState(p.price ? String(p.price) : "");
   const [packs, setPacks] = useState(() => [4, 8, 12].map((n) => ({ n, price: p.packPrices.find((x) => x.n === n)?.price ?? 0 })));
+  // основной абонемент: по нему выставляется счёт за новый абонемент
+  const [mainN, setMainN] = useState<number>(() => p.packPrices.find((x) => x.main)?.n ?? p.pack?.total ?? 8);
   const [payerOn, setPayerOn] = useState(!!(p.payerName || p.payerContact));
   const [payerName, setPayerName] = useState(p.payerName);
   const [payerContact, setPayerContact] = useState(p.payerContact);
@@ -138,7 +140,7 @@ export function PaymentCard({ p, earnedMonth }: { p: PaymentData; earnedMonth: s
   const rules = payType === "PACK" ? PACK_RULES : POST_RULES;
 
   const save = () =>
-    run(() => savePayment(p.id, { payType, billRule: rule, remindEveryDays: remind, price: Number(price) || null, packPrices: packs.filter((x) => x.price > 0), payerOn, payerName, payerContact }), () => setSaved(true));
+    run(() => savePayment(p.id, { payType, billRule: rule, remindEveryDays: remind, price: Number(price) || null, packPrices: packs.map((x) => ({ ...x, price: x.price || (x.n === mainN ? (Number(price) || 0) * x.n : 0), main: x.n === mainN })).filter((x) => x.price > 0), payerOn, payerName, payerContact }), () => setSaved(true));
 
   const circ = 2 * Math.PI * 46;
   return (
@@ -175,14 +177,14 @@ export function PaymentCard({ p, earnedMonth }: { p: PaymentData; earnedMonth: s
           <div className="field">
             <span className="flabel">{t("prof.packPrices")}</span>
             {packs.map((x, i) => (
-              <div key={x.n} className="grid grid-cols-[90px_1fr_auto] items-center gap-2">
-                <span className="small">{x.n} {t("prof.lessons")}</span>
+              <div key={x.n} className="grid grid-cols-[110px_1fr_auto] items-center gap-2">
+                <label className="flex items-center gap-2 small"><input type="radio" name={`main-${p.id}`} checked={mainN === x.n} onChange={() => { setMainN(x.n); setSaved(false); }} aria-label={`${t("prof.mainPack")}: ${x.n}`} />{x.n} {t("prof.lessons")}</label>
                 <input className="input" inputMode="numeric" value={x.price || ""} placeholder={price ? String(Number(price) * x.n) : "—"}
                   onChange={(e) => { const v = Number(e.target.value.replace(/\D/g, "")) || 0; setPacks(packs.map((y, j) => (j === i ? { ...y, price: v } : y))); }} aria-label={`${x.n}`} />
                 <span className="small text-text3 min-w-[90px]">{x.price ? `${Math.round(x.price / x.n)} ₽ / ${t("prof.lessonShort")}` : ""}</span>
               </div>
             ))}
-            <span className="hint">{t("prof.packHint")}</span>
+            <span className="hint">{t("prof.mainPackHint", { n: mainN })} {t("prof.packHint")}</span>
           </div>
         )}
         <label className="setting">
@@ -218,7 +220,7 @@ export function PaymentCard({ p, earnedMonth }: { p: PaymentData; earnedMonth: s
           ) : <p className="hint m-0">{t("prof.noPack")}</p>}
           <div className="mt-4 flex flex-wrap gap-2">
             <button className="btn primary sm" disabled={pending} onClick={() => run(() => requestPackPayment(p.id), () => setSaved(false))}><Icon name="msg" size="sm" />{t("prof.requestPay")}</button>
-            <button className="btn secondary sm" onClick={() => { setNp({ n: 8, price: packs.find((x) => x.n === 8)?.price || (Number(price) || 0) * 8 }); setNewPack(true); }}><Icon name="plus" size="sm" />{t("prof.newPack")}</button>
+            <button className="btn secondary sm" onClick={() => { setNp({ n: mainN, price: packs.find((x) => x.n === mainN)?.price || (Number(price) || 0) * mainN }); setNewPack(true); }}><Icon name="plus" size="sm" />{t("prof.newPack")}</button>
           </div>
         </div>
       )}

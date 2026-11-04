@@ -934,4 +934,13 @@ details.how[open] summary { margin-bottom: 6px; }
 .pwwrap .input { padding-right: 48px; width: 100%; }
 .pweye { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--text2); background: transparent; }
 .pweye:hover { background: var(--fill); color: var(--text); }
+
+/* Анкета: поля правятся на месте */
+.ikv dd { min-width: 0; }
+.icell { display: flex; flex-direction: column; min-width: 0; }
+.iedit { width: 100%; min-width: 0; font: inherit; color: var(--text); background: transparent; border: 1px solid transparent; border-radius: 10px; padding: 6px 10px; margin: -6px -10px; transition: background .15s, border-color .15s; }
+.iedit:hover { background: var(--fill); }
+.iedit:focus { outline: none; background: var(--surface); border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-bg); }
+.iedit::placeholder { color: var(--text3); }
+select.iedit { cursor: pointer; appearance: auto; }
 }

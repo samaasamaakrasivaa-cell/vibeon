@@ -99,7 +99,7 @@ export async function requestPackPayment(studentId: string, n?: number): Promise
   const { t } = await getT();
   const s = await ownStudent(studentId);
   const opts = packOptions(s);
-  const opt = opts.find((o) => o.n === n) ?? opts[opts.length - 1];
+  const opt = opts.find((o) => o.n === n) ?? opts.find((o) => o.main) ?? opts[opts.length - 1];
   if (!opt) return { ok: false, error: t("pay.err.noPrices") };
   if (await db.invoice.count({ where: { studentId, kind: "pack", status: { in: ["SENT", "PROOF_SENT"] } } })) return { ok: false, error: t("pay.err.openPack") };
   await createInvoice(s, { amount: opt.price, kind: "pack", title: `Абонемент, ${opt.n} занятий`, packLessons: opt.n });

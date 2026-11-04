@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Icon } from "@/components/Icon";
 import { DeleteStudent, PaymentCard, PrivateNote, ProfileActions } from "@/components/teacher/ProfileParts";
+import { InlineAbout, InlineContacts, type InlineData } from "@/components/teacher/InlineProfile";
 import { CopyLink } from "@/components/teacher/InviteForm";
 import { requireUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
@@ -66,6 +67,13 @@ export default async function StudentProfile({ params, searchParams }: { params:
     PLANNED: ["blue", t("sch.st.planned")], DONE: ["green", t("sch.st.done")], MISSED: ["red", t("sch.st.missed")], CANCELLED: ["orange", t("sch.st.cancelled")],
   };
   const val = (v?: string | null) => v || "—";
+  const courses = await db.course.findMany({ where: { teacherId: me.id }, orderBy: { order: "asc" }, select: { id: true, title: true } });
+  const ymd = (d: Date | null | undefined) => (d ? d.toISOString().slice(0, 10) : "");
+  const inline: InlineData = {
+    id: s.id, email: s.email ?? "", phone: form.phone ?? "", telegram: s.telegram ?? "", vk: (form as { vk?: string }).vk ?? "", timezone: s.timezone, callLink: s.callLink ?? "",
+    courseId: s.courseId ?? "", courseText: s.course ?? "", level: s.level ?? "", interests: s.interests ?? "",
+    birthday: ymd(s.birthday) || (form.birthday ?? ""), examGoal: s.examGoal ?? "", startedAt: ymd(s.startedAt ?? s.createdAt), source: s.source ?? "",
+  };
 
   return (
     <div className="page">
@@ -106,28 +114,8 @@ export default async function StudentProfile({ params, searchParams }: { params:
       {tab === "profile" && (
         <div className="profgrid">
           <div>
-            <section className="card sm">
-              <p className="cardtitle">{t("prof.contact")}</p>
-              <dl className="kv">
-                <dt>{t("auth.email")}</dt><dd>{val(s.email)}</dd>
-                <dt>{t("ob.phone")}</dt><dd>{val(form.phone)}</dd>
-                <dt>Telegram</dt><dd>{val(s.telegram)}</dd>
-                <dt>{t("prof.tz")}</dt><dd>{TIMEZONES.find((x) => x[0] === s.timezone)?.[1] ?? s.timezone}</dd>
-                <dt>{t("prof.callLink")}</dt><dd>{s.callLink ? <a className="alink" href={s.callLink} target="_blank" rel="noreferrer">{s.callLink}</a> : "—"}</dd>
-              </dl>
-            </section>
-            <section className="card sm">
-              <p className="cardtitle">{t("prof.about")}</p>
-              <dl className="kv">
-                <dt>{t("prof.course")}</dt><dd>{val(s.course)}</dd>
-                <dt>{t("prof.level")}</dt><dd>{val(s.level)}</dd>
-                <dt>{t("prof.interests")}</dt><dd>{val(s.interests)}</dd>
-                <dt>{t("prof.birthday")}</dt><dd>{s.birthday ? dateFmt(s.birthday, { day: "numeric", month: "long" }) : form.birthday ? dateFmt(new Date(form.birthday + "T12:00:00Z"), { day: "numeric", month: "long" }) : "—"}</dd>
-                <dt>{t("prof.examGoal")}</dt><dd>{val(s.examGoal)}</dd>
-                <dt>{t("prof.started")}</dt><dd>{dateFmt(since)}</dd>
-                <dt>{t("prof.source")}</dt><dd>{val(s.source)}</dd>
-              </dl>
-            </section>
+            <InlineContacts d={inline} />
+            <InlineAbout d={inline} courses={courses} />
             {form.filledAt && (
               <section className="card sm">
                 <p className="cardtitle">{t("prof.startForm")} · {dateFmt(new Date(form.filledAt), { day: "numeric", month: "long" })}</p>

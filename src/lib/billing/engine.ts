@@ -11,7 +11,7 @@ import { notify } from "../notify";
 
 // ───────── Цены ─────────
 
-export type PackOption = { n: number; price: number };
+export type PackOption = { n: number; price: number; main?: boolean };
 
 /** Варианты абонементов ученика: из анкеты, иначе — цена урока × количество. */
 export function packOptions(s: Pick<Student, "packPrices" | "price">): PackOption[] {
@@ -142,7 +142,7 @@ async function billPacks() {
     const open = await db.invoice.count({ where: { studentId: s.id, kind: "pack", status: { in: ["SENT", "PROOF_SENT"] } } });
     if (open) continue; // счёт за абонемент уже выставлен и ждёт оплаты
     const opts = packOptions(s);
-    const opt = opts.find((o) => o.n === s.packs[0].lessonsTotal) ?? opts[opts.length - 1];
+    const opt = opts.find((o) => o.main) ?? opts.find((o) => o.n === s.packs[0].lessonsTotal) ?? opts[opts.length - 1];
     if (!opt) continue;
     await createInvoice(s, { amount: opt.price, kind: "pack", title: `Абонемент, ${opt.n} занятий`, packLessons: opt.n });
   }

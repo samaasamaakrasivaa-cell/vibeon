@@ -90,7 +90,7 @@ export function WeekGrid(props: {
                 const h = Math.max(22, (l.dur / 60) * PX - 3);
                 return (
                   <button
-                    key={l.id} type="button" className={`lesson ${cls}`}
+                    key={l.id} data-lesson={l.id} type="button" className={`lesson ${cls}`}
                     style={{ top: ((l.startMin - hourFrom * 60) / 60) * PX + 1.5, height: h }}
                     onClick={() => setOpenId(l.id)}
                     title={`${l.start}–${l.end} · ${l.who}${l.note ? "\n" + l.note : ""}`}
@@ -100,7 +100,7 @@ export function WeekGrid(props: {
                       {l.isGroup && <Icon name="group" size="sm" />}
                       {l.who.split(" ")[0]}
                     </span>
-                    {h > 34 && <span className="tm">{l.start}{l.isTrial ? ` · ${t("sch.trial")}` : ""}</span>}
+                    {h > 34 && <span className="tm">{l.start}</span>}
                   </button>
                 );
               })}
@@ -227,6 +227,7 @@ function LessonDialog({ l, onClose }: { l: GridLesson; onClose: () => void }) {
   const { t } = useT();
   const { pending, error, run } = useRun();
   const [mode, setMode] = useState<"main" | "move" | "miss" | "cancel" | "del">("main");
+  const [fix, setFix] = useState(false); // исправление ошибки — не считать переносом
   // Новый статус показываем сразу после успешного действия, не дожидаясь обновления страницы
   const setStatus = (status: GridLesson["status"], charged?: boolean, close = false) =>
     run(() => setLessonStatus(l.id, status, charged), () => {
@@ -249,16 +250,20 @@ function LessonDialog({ l, onClose }: { l: GridLesson; onClose: () => void }) {
     return (
       <Dialog open onClose={onClose}>
         {head}
-        <h3 className="mb-3">{t("sch.move")}</h3>
+        <h3 className="mb-3">{l.past ? t("sch.editTime") : t("sch.move")}</h3>
         <div className="grid grid-cols-2 gap-3">
           <div className="field"><label htmlFor="md">{t("sch.newDate")}</label><input id="md" type="date" className="input" value={date} onChange={(e) => setDate(e.target.value)} /></div>
           <div className="field"><label htmlFor="ms">{t("sch.newTime")}</label><input id="ms" type="time" step={300} className="input" value={start} onChange={(e) => setStart(e.target.value)} /></div>
         </div>
-        <p className="hint mt-3 mb-0">{t("sch.moveHint")}</p>
+        <label className="setting mt-3">
+          <span><b className="block text-[14px]">{t("sch.fixMistake")}</b><span className="small muted">{t("sch.fixMistakeHint")}</span></span>
+          <span className="switch"><input type="checkbox" checked={fix} onChange={(e) => setFix(e.target.checked)} /><span /></span>
+        </label>
+        {!fix && <p className="hint mt-2 mb-0">{t("sch.moveHint")}</p>}
         {error && <div className="alert mt-3">{error}</div>}
         <div className="actions">
           <button className="btn secondary" onClick={() => setMode("main")}>{t("common.back")}</button>
-          <button className="btn primary" disabled={pending} onClick={() => run(() => moveLesson(l.id, date, start), onClose)}>{t("sch.move")}</button>
+          <button className="btn primary" disabled={pending} onClick={() => run(() => moveLesson(l.id, date, start, fix), onClose)}>{l.past ? t("common.save") : t("sch.move")}</button>
         </div>
       </Dialog>
     );
@@ -340,7 +345,7 @@ function LessonDialog({ l, onClose }: { l: GridLesson; onClose: () => void }) {
       {error && <div className="alert mt-3">{error}</div>}
       <div className="actions" style={{ justifyContent: "space-between" }}>
         <div className="flex flex-wrap gap-2">
-          {!l.past && l.status === "PLANNED" && <button className="btn secondary sm" onClick={() => setMode("move")}><Icon name="move" size="sm" />{t("sch.move")}</button>}
+          {(l.status === "PLANNED" || l.past) && <button className="btn secondary sm" onClick={() => { setFix(l.past); setMode("move"); }}><Icon name="move" size="sm" />{l.past ? t("sch.editTime") : t("sch.move")}</button>}
           {!l.past && l.status === "PLANNED" && <button className="btn secondary sm" onClick={() => setMode("cancel")}><Icon name="calx" size="sm" />{t("sch.cancelLesson")}</button>}
           <button className="btn danger sm" onClick={() => setMode("del")}>{t("common.delete")}</button>
         </div>
