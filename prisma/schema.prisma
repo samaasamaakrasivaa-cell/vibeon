@@ -298,6 +298,8 @@ model LessonInstance {
   note        String? // заметка учителя к уроку → видна в «Сегодня»
   recurrence  String? // правило повтора (RRULE) или null
   live        Json            @default("{}") // состояние класса: рубрика, «показать ученику», скрытые задания, таймер, доска заблокирована…
+  billedAt    DateTime? // постоплата: урок включён в счёт
+  deductedAt  DateTime? // абонемент: урок списан
   board       Json            @default("{\"pages\":[[]]}") // доска: страницы с объектами
   studentNote String? // заметки ученика к уроку
   startedAt   DateTime?
@@ -416,6 +418,7 @@ model Pack {
   price        Int
   startsAt     DateTime  @default(now())
   frozenUntil  DateTime?
+  invoiceId    String?   @unique // абонемент создан оплатой этого счёта
   student      Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
 }
 
@@ -438,11 +441,22 @@ model Invoice {
   aiRead       Json?
   autoAccepted Boolean       @default(false)
   receiptFile  String?
-  closedAt     DateTime?
+  closedAt     DateTime? // учитель отметил «ОК» в проверке оплат
+  kind         String        @default("lessons") // lessons — за проведённые уроки | pack — новый абонемент | manual — вручную
+  title        String? // «Абонемент, 10 занятий» / «Урок 13 окт, 20:00»
+  lessonIds    String[] // уроки, за которые выставлен счёт (постоплата)
+  packLessons  Int? // сколько уроков в оплачиваемом абонементе
+  payerName    String? // счёт другому лицу (например, родителю)
+  payerContact String?
+  proofAt      DateTime?
+  paidAt       DateTime?
+  remindedAt   DateTime?
+  remindCount  Int           @default(0)
   createdAt    DateTime      @default(now())
   student      Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@index([studentId, status])
+  @@index([status, createdAt])
 }
 
 // ───────────── Общение ─────────────

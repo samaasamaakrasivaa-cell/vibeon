@@ -9,10 +9,11 @@ export const dynamic = "force-dynamic";
 export default async function StudentLayout({ children }: { children: React.ReactNode }) {
   const { t } = await getT();
   const user = await requireUser("STUDENT");
-  const [unread, msgs, answers] = await Promise.all([
+  const [unread, msgs, answers, bills] = await Promise.all([
     db.notification.count({ where: { userId: user.id, readAt: null } }),
     db.message.count({ where: { student: { userId: user.id }, senderId: { not: user.id }, readAt: null } }),
     db.notification.count({ where: { userId: user.id, kind: "answer", readAt: null } }),
+    db.invoice.count({ where: { student: { userId: user.id }, status: "SENT" } }),
   ]);
   const groups = [
     [
@@ -31,7 +32,7 @@ export default async function StudentLayout({ children }: { children: React.Reac
       { href: "/student/questions", label: t("nav.questions"), icon: "qmark" as const, count: answers },
       { href: "/student/messages", label: t("nav.messages"), icon: "msg" as const, count: msgs },
     ],
-    [{ href: "/student/payments", label: t("nav.payments"), icon: "card" as const }],
+    [{ href: "/student/payments", label: t("nav.payments"), icon: "card" as const, count: bills }],
     [{ href: "/student/profile", label: t("common.profile"), icon: "user" as const }],
   ];
   return (

@@ -750,3 +750,36 @@ details.how[open] summary { margin-bottom: 6px; }
 .opts button.bad { border-color: var(--bad); background: var(--bad-bg); color: var(--bad-text); }
 @media (max-width: 760px) { .opts { grid-template-columns: 1fr; } }
 }
+
+/* ───────── Финансы и оплаты (этап 7) ───────── */
+@layer components {
+.fintile { display: flex; align-items: center; gap: 14px; background: var(--surface); border-radius: 18px; padding: 16px 18px; }
+.fintile .si { width: 44px; height: 44px; border-radius: 12px; color: #fff; display: flex; align-items: center; justify-content: center; flex: none; }
+.fintile b { display: block; font-size: 24px; letter-spacing: -.02em; line-height: 1.15; }
+.fintile span { font-size: 13px; color: var(--text2); }
+.fintile.main { background: linear-gradient(120deg, #34C759, #30B0C7); color: #fff; box-shadow: 0 12px 30px rgba(52, 199, 89, .3); }
+.fintile.main .si { background: rgba(255, 255, 255, .25); }
+.fintile.main span { color: rgba(255, 255, 255, .9); }
+.bars { display: flex; align-items: flex-end; gap: 14px; height: 260px; padding-top: 10px; }
+.barcol { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; justify-content: flex-end; }
+.barpair { flex: 1; width: 100%; display: flex; align-items: flex-end; justify-content: center; gap: 4px; }
+.barpair i { width: 34%; max-width: 26px; min-height: 2px; border-radius: 6px 6px 2px 2px; display: block; }
+.finrow { display: flex; align-items: center; gap: 12px; min-height: 40px; }
+.chkpill { display: flex; align-items: center; gap: 10px; background: var(--surface); border-radius: 16px; padding: 10px 14px; border: 2px solid transparent; }
+.chkpill.on { border-color: var(--accent); }
+.chkpill .si { width: 34px; height: 34px; border-radius: 10px; color: #fff; display: flex; align-items: center; justify-content: center; }
+.chkpill b { font-size: 18px; margin-left: 6px; }
+.chkrow { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; background: var(--surface); border-radius: 16px; padding: 12px 14px; }
+.chkrow.auto { background: linear-gradient(90deg, var(--ok-bg), var(--surface) 60%); }
+.amt { background: var(--accent-bg); color: var(--accent-text); font-weight: 700; border-radius: 10px; padding: 8px 12px; min-width: 110px; text-align: right; }
+.amt.big { background: var(--accent); color: #fff; font-size: 20px; }
+.paycard { color: #fff; border-radius: 22px; padding: 22px 24px; background: linear-gradient(120deg, #0A84FF, #5E5CE6); box-shadow: 0 14px 34px rgba(10, 132, 255, .3); position: relative; }
+.paycard .det { background: rgba(255, 255, 255, .15); border-radius: 12px; padding: 10px 12px; white-space: pre-wrap; font-size: 14px; }
+.paycard .btn.light { background: #fff; color: var(--accent); }
+.paycard .btn.glass { background: rgba(255, 255, 255, .22); color: #fff; }
+.paycard .badge { position: absolute; top: 14px; right: 14px; background: #fff; color: var(--accent); border-radius: 999px; font-size: 12px; font-weight: 700; padding: 4px 10px; }
+.packhead { border-radius: 22px 22px 0 0; padding: 16px 20px; color: #fff; background: linear-gradient(110deg, #34C759, #30B0C7); display: flex; flex-wrap: wrap; align-items: center; gap: 10px; justify-content: space-between; }
+.packbody { background: var(--surface); border-radius: 0 0 22px 22px; padding: 18px 20px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+.offer { background: var(--surface); border: 1px solid var(--sep); border-radius: 16px; padding: 14px; min-width: 200px; }
+@media (max-width: 760px) { .finrow { flex-wrap: wrap; } .finrow .w-48 { width: auto; flex: 1; } .chkrow .w-56 { width: auto; flex: 1; } }
+}

@@ -5,6 +5,7 @@ import { Dialog } from "../Dialog";
 import { Icon } from "../Icon";
 import { useT } from "@/lib/i18n/client";
 import { TIMEZONES } from "@/lib/time";
+import { billNow, requestPackPayment } from "@/lib/billing/actions";
 import {
   addPack, archiveStudent, deleteStudent, savePayment, savePrivateNote, updateStudentProfile, type Result,
 } from "@/lib/teacher/actions";
@@ -216,9 +217,15 @@ export function PaymentCard({ p, earnedMonth }: { p: PaymentData; earnedMonth: s
             </div>
           ) : <p className="hint m-0">{t("prof.noPack")}</p>}
           <div className="mt-4 flex flex-wrap gap-2">
-            <span className="btn primary sm" aria-disabled="true" title={t("common.soon", { n: 7 })} style={{ opacity: 0.55 }}><Icon name="msg" size="sm" />{t("prof.requestPay")}</span>
+            <button className="btn primary sm" disabled={pending} onClick={() => run(() => requestPackPayment(p.id), () => setSaved(false))}><Icon name="msg" size="sm" />{t("prof.requestPay")}</button>
             <button className="btn secondary sm" onClick={() => { setNp({ n: 8, price: packs.find((x) => x.n === 8)?.price || (Number(price) || 0) * 8 }); setNewPack(true); }}><Icon name="plus" size="sm" />{t("prof.newPack")}</button>
           </div>
+        </div>
+      )}
+      {payType === "POSTPAID" && (
+        <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-sep pt-5">
+          <button className="btn primary sm" disabled={pending} onClick={() => run(() => billNow(p.id))}><Icon name="msg" size="sm" />{t("pay.billNow")}</button>
+          <span className="small muted">{t("pay.billNowHint")}</span>
         </div>
       )}
       <div className="mt-5 border-t border-sep pt-4">{t("prof.thisMonth")} <b className="text-[20px]">{earnedMonth}</b> {t("prof.earnedWord")}</div>

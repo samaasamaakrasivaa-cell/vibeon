@@ -81,3 +81,14 @@ export async function mailInvite(to: string, studentName: string, teacherName: s
       : layout(`${esc(studentName)}, вас ждёт преподаватель`, `<b>${esc(teacherName)}</b> приглашает вас заниматься английским на VibeOn. Заполните короткую анкету — это займёт пару минут.`, { label: "Заполнить анкету", url }, "Приглашение действует 14 дней.");
   await sendMail(to, lang === "en" ? `${teacherName} invites you to VibeOn` : `${teacherName} приглашает вас в VibeOn`, m.html, m.text);
 }
+
+/** Счёт плательщику (родителю и т. п.), если в анкете указана его почта. */
+export async function mailInvoice(to: string, payer: string, student: string, title: string, amount: string, url: string, reminder: boolean) {
+  const m = layout(
+    reminder ? `Напоминание об оплате: ${amount}` : `Счёт на оплату: ${amount}`,
+    `${payer ? esc(payer) + ", " : ""}${reminder ? "напоминаем о счёте" : "выставлен счёт"} за занятия английским: <b>${esc(student)}</b>${title ? ` — ${esc(title)}` : ""}.`,
+    { label: "Открыть VibeOn", url },
+    "Реквизиты для оплаты — в счёте у ученика. После оплаты пришлите скриншот или напишите, с какого банка и когда была оплата.",
+  );
+  await sendMail(to, reminder ? `Напоминание об оплате — ${amount}` : `Счёт на оплату — ${amount}`, m.html, m.text);
+}

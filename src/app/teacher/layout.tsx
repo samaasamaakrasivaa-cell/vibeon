@@ -10,11 +10,12 @@ export const dynamic = "force-dynamic";
 export default async function TeacherLayout({ children }: { children: React.ReactNode }) {
   const { t } = await getT();
   const user = await requireUser("TEACHER");
-  const [unread, chat, questions, hwReview] = await Promise.all([
+  const [unread, chat, questions, hwReview, toCheck] = await Promise.all([
     db.notification.count({ where: { userId: user.id, readAt: null } }),
     db.message.count({ where: { student: { teacherId: user.id }, senderId: { not: user.id }, readAt: null } }),
     db.question.count({ where: { student: { teacherId: user.id }, askedTeacher: true, answeredAt: null } }),
     db.answer.count({ where: { lessonInstance: { teacherId: user.id }, status: "NEEDS_REVIEW", teacherReview: { equals: Prisma.DbNull } } }),
+    db.invoice.count({ where: { student: { teacherId: user.id }, status: "PROOF_SENT" } }),
   ]);
   const groups = [
     [
@@ -30,7 +31,7 @@ export default async function TeacherLayout({ children }: { children: React.Reac
       { href: "/teacher/questions", label: t("nav.questions"), icon: "qmark" as const, count: questions },
     ],
     [{ href: "/teacher/courses", label: t("nav.courses"), icon: "book" as const }],
-    [{ href: "/teacher/finance", label: t("nav.finance"), icon: "coin" as const }],
+    [{ href: "/teacher/finance", label: t("nav.finance"), icon: "coin" as const, count: toCheck }],
   ];
   return (
     <>

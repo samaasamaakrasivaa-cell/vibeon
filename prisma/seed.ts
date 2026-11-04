@@ -170,6 +170,23 @@ async function main() {
     ] });
   }
 
+
+  // Оплаты: история прошлого уже оплачена и списана; свежие уроки ждут счёта. Демо-счета для «Проверить постоплаты».
+  const weekAgo = new Date(Date.now() - 6 * 864e5);
+  await db.lessonInstance.updateMany({ where: { teacherId: teacher.id, startsAt: { lt: weekAgo } }, data: { billedAt: new Date(), deductedAt: new Date() } });
+  await db.lessonInstance.updateMany({ where: { teacherId: teacher.id, student: { payType: "PACK" } }, data: { deductedAt: new Date() } });
+  await db.teacherProfile.update({ where: { userId: teacher.id }, data: { settings: { payDetails: "Перевод по номеру телефона: +7 900 000-00-00\nБанк: Т-Банк\nПолучатель: Эльвира К." } } });
+  const st = async (name: string) => db.student.findFirstOrThrow({ where: { teacherId: teacher.id, name } });
+  const viktoria = await st("Viktoria"), natalia = await st("Natalia"), yaroslav = await st("Yaroslav"), anna2 = await st("Anna");
+  await db.invoice.createMany({ data: [
+    { studentId: anna2.id, amount: 24000, kind: "pack", title: "Абонемент, 8 занятий", packLessons: 8, status: "PAID", paidAt: new Date(Date.now() - 58 * 864e5), closedAt: new Date(), createdAt: new Date(Date.now() - 58 * 864e5) },
+    { studentId: anna2.id, amount: 28400, kind: "pack", title: "Абонемент, 10 занятий", packLessons: 10, status: "PAID", paidAt: new Date(Date.now() - 30 * 864e5), closedAt: new Date(), createdAt: new Date(Date.now() - 30 * 864e5) },
+    { studentId: viktoria.id, amount: 3500, kind: "lessons", title: "Урок 13 окт, 20:00", status: "SENT", createdAt: new Date(Date.now() - 4 * 864e5) },
+    { studentId: viktoria.id, amount: 3500, kind: "lessons", title: "Урок 15 окт, 20:00", status: "PROOF_SENT", proofKind: "text", proofText: "Сбербанк, 18 октября, 3 500 ₽", proofAt: new Date(Date.now() - 2 * 864e5), aiRead: { source: "text", amounts: [3500], matches: true }, createdAt: new Date(Date.now() - 3 * 864e5) },
+    { studentId: natalia.id, amount: 18400, kind: "pack", title: "Абонемент, 8 занятий", packLessons: 8, status: "PROOF_SENT", proofKind: "text", proofText: "Сбербанк · 16 окт, 11:40 · 2 500 ₽", proofAt: new Date(Date.now() - 864e5), aiRead: { source: "text", amounts: [2500], matches: false }, createdAt: new Date(Date.now() - 2 * 864e5) },
+    { studentId: yaroslav.id, amount: 4000, kind: "lessons", title: "Урок 17 окт, 14:00", status: "SENT", createdAt: new Date(Date.now() - 864e5) },
+  ] });
+
   console.log("Seed OK:", teacher.email, annaUser.email, "· учеников:", people.length);
 }
 
