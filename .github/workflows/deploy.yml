@@ -9,7 +9,7 @@ on:
       action:
         description: "Что сделать"
         type: choice
-        options: [check, install, update, status, logs, backup, verify, secrets, proxy, dns]
+        options: [check, install, update, status, logs, backup, verify, secrets, proxy, dns, testmail]
         default: check
       arg:
         description: "Параметр: домен для proxy/install, почта для verify"
@@ -71,6 +71,8 @@ jobs:
             logs)    ssh srv "docker compose -f /opt/vibeon/deploy/docker-compose.prod.yml --env-file /opt/vibeon/deploy/.env logs --tail 200 --no-color" ;;
             backup)  ssh srv "$V backup" ;;
             verify)  ssh srv "$V verify $Q" ;;
+            testmail) docker_cp() { cat deploy/testmail.js | ssh srv "docker exec -i vibeon-app-1 sh -c 'cat > /tmp/testmail.js'"; }; docker_cp
+                     ssh srv "docker exec -w /app vibeon-app-1 node /tmp/testmail.js $Q" ;;
             dns)     d="${ARG:-vibeon.online}"
                      for q in "A $d" "A www.$d" "TXT $d" "TXT gokey._domainkey.$d" "CNAME _dmarc.$d" "NS email.$d" "MX $d"; do
                        set -- $q; echo "$1 $2: $(dig +short "$1" "$2" @8.8.8.8 | tr '\n' ' ' | cut -c1-160)"; done ;;
