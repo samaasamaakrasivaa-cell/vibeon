@@ -44,6 +44,7 @@ jobs:
       - name: Run on server
         env:
           ACTION: ${{ inputs.action }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
           ARG: ${{ inputs.arg }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           YANDEX_CLOUD_FOLDER_ID: ${{ secrets.YANDEX_CLOUD_FOLDER_ID }}
@@ -64,7 +65,9 @@ jobs:
             check)   ssh srv "bash -s" < deploy/check.sh ;;
             install) sync; ssh srv "NO_BUILD=1 $V install $Q" ;;
             update)  sync; ssh srv "NO_BUILD=1 $V update" ;;
-            status)  ssh srv "$V status; echo; echo версия: \$(cat /opt/vibeon/REVISION 2>/dev/null)" ;;
+            status)  ssh srv "$V status; echo; echo версия: \$(cat /opt/vibeon/REVISION 2>/dev/null)"
+                     url=$(ssh srv "grep -E '^APP_URL=' /opt/vibeon/deploy/.env | cut -d= -f2-")
+                     echo "Снаружи ($url):"; curl -sS -m 15 "$url/api/health" || echo "недоступно снаружи" ;;
             logs)    ssh srv "docker compose -f /opt/vibeon/deploy/docker-compose.prod.yml --env-file /opt/vibeon/deploy/.env logs --tail 200 --no-color" ;;
             backup)  ssh srv "$V backup" ;;
             verify)  ssh srv "$V verify $Q" ;;
