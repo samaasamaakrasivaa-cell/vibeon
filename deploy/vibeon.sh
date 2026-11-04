@@ -19,7 +19,8 @@ die() { printf '\n\033[1;31m✗ %s\033[0m\n' "$*" >&2; exit 1; }
 # порт занят: по ss, а если его нет — пробным подключением
 busy() { ss -ltnH "( sport = :$1 )" 2>/dev/null | grep -q . || (exec 3<>"/dev/tcp/127.0.0.1/$1") 2>/dev/null; }
 getv() { grep -E "^$1=" "$ENV" 2>/dev/null | tail -1 | cut -d= -f2- || true; }
-setv() { if grep -qE "^$1=" "$ENV"; then sed -i "s|^$1=.*|$1=$2|" "$ENV"; else echo "$1=$2" >> "$ENV"; fi; }
+setv() { # без sed: значение может содержать любые символы
+  local tmp; tmp="$(mktemp)"; grep -vE "^$1=" "$ENV" > "$tmp" || true; printf '%s=%s\n' "$1" "$2" >> "$tmp"; cat "$tmp" > "$ENV"; rm -f "$tmp"; }
 rnd() { (set +o pipefail; LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c "${1:-40}"); }
 need() {
   command -v docker >/dev/null || die "Docker не установлен. Установить: curl -fsSL https://get.docker.com | sh"
@@ -102,7 +103,7 @@ case "$cmd" in
     show_result;;
   update)
     need
-    say "Новая версия из GitHub"; git -C "$DIR/.." pull --ff-only
+    if [ -d "$DIR/../.git" ]; then say "Новая версия из GitHub"; git -C "$DIR/.." pull --ff-only; fi
     say "Бэкап перед обновлением"; bash "$0" backup || true
     # shellcheck disable=SC2046
     dc $(mode_flags) up -d --build
@@ -127,6 +128,11 @@ case "$cmd" in
     setv "${1%%=*}" "${1#*=}"
     # shellcheck disable=SC2046
     dc $(mode_flags) up -d; say "Сохранено и перезапущено: ${1%%=*}";;
+  setq) # записать настройку без перезапуска и без вывода значения (для GitHub Actions)
+    [[ "${1:-}" == *=* ]] || die "Формат: setq КЛЮЧ=значение"; setv "${1%%=*}" "${1#*=}";;
+  restart)
+    # shellcheck disable=SC2046
+    dc $(mode_flags) up -d --force-recreate app; wait_ok && say "Перезапущено: $(getv APP_URL)" || die "Приложение не отвечает: bash deploy/vibeon.sh logs";;
   stop) dc --profile https stop; say "Остановлено. Данные в томах vibeon_* сохранены.";;
   *) sed -n '2,13p' "$0";;
 esac

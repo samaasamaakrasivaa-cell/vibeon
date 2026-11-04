@@ -1,0 +1,72 @@
+name: Server
+
+# Действия на сервере через SSH-ключ из секретов репозитория (SSH_HOST, SSH_KEY).
+# Код передаётся на сервер прямо отсюда (работает и для приватного репозитория).
+# Ключи сервисов берутся из секретов репозитория (action: secrets) — в журнал не попадают.
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Что сделать"
+        type: choice
+        options: [check, install, update, status, logs, backup, verify, secrets]
+        default: check
+      arg:
+        description: "Параметр: домен для install, почта для verify"
+        required: false
+        default: ""
+
+concurrency: { group: server, cancel-in-progress: false }
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: SSH key
+        env: { SSH_KEY: "${{ secrets.SSH_KEY }}", SSH_HOST: "${{ secrets.SSH_HOST }}" }
+        run: |
+          [ -n "$SSH_KEY" ] && [ -n "$SSH_HOST" ] || { echo "Нет секретов SSH_KEY / SSH_HOST в репозитории"; exit 1; }
+          mkdir -p ~/.ssh && printf '%s\n' "$SSH_KEY" > ~/.ssh/id && chmod 600 ~/.ssh/id
+          ssh-keyscan -T 15 "$SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+          printf 'Host srv\n  HostName %s\n  User root\n  IdentityFile ~/.ssh/id\n  ServerAliveInterval 30\n' "$SSH_HOST" > ~/.ssh/config
+          ssh srv true && echo "SSH: ok"
+
+      - name: Run on server
+        env:
+          ACTION: ${{ inputs.action }}
+          ARG: ${{ inputs.arg }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          YANDEX_CLOUD_FOLDER_ID: ${{ secrets.YANDEX_CLOUD_FOLDER_ID }}
+          YANDEX_CLOUD_API_KEY: ${{ secrets.YANDEX_CLOUD_API_KEY }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          MAIL_FROM: ${{ secrets.MAIL_FROM }}
+        run: |
+          set -eo pipefail
+          Q=$(printf '%q' "$ARG")
+          V=bash\ /opt/vibeon/deploy/vibeon.sh
+          sync() { # код из этого коммита → /opt/vibeon (deploy/.env и бэкапы на сервере не трогаются)
+            tar czf - --exclude=.git --exclude=node_modules --exclude=.next . | ssh srv "mkdir -p /opt/vibeon && tar xzf - -C /opt/vibeon && echo '${GITHUB_SHA::7}' > /opt/vibeon/REVISION"
+          }
+          case "$ACTION" in
+            check)   ssh srv "bash -s" < deploy/check.sh ;;
+            install) sync; ssh srv "$V install $Q" ;;
+            update)  sync; ssh srv "$V update" ;;
+            status)  ssh srv "$V status; echo; echo версия: \$(cat /opt/vibeon/REVISION 2>/dev/null)" ;;
+            logs)    ssh srv "docker compose -f /opt/vibeon/deploy/docker-compose.prod.yml --env-file /opt/vibeon/deploy/.env logs --tail 200 --no-color" ;;
+            backup)  ssh srv "$V backup" ;;
+            verify)  ssh srv "$V verify $Q" ;;
+            secrets)
+              n=0
+              for k in TELEGRAM_BOT_TOKEN YANDEX_CLOUD_FOLDER_ID YANDEX_CLOUD_API_KEY SMTP_HOST SMTP_PORT SMTP_USER SMTP_PASS MAIL_FROM; do
+                v="${!k}"; [ -n "$v" ] || continue
+                printf '%s' "$v" | ssh srv "v=\$(cat); $V setq $k=\"\$v\"" && echo "записано: $k" && n=$((n+1))
+              done
+              if [ -n "$YANDEX_CLOUD_API_KEY" ]; then ssh srv "$V setq AI_PROVIDER=yandex" && echo "записано: AI_PROVIDER=yandex"; fi
+              [ "$n" -gt 0 ] && ssh srv "$V restart" || echo "Секретов для записи нет" ;;
+          esac
