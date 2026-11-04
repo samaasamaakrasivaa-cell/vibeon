@@ -72,7 +72,7 @@ jobs:
             backup)  ssh srv "$V backup" ;;
             verify)  ssh srv "$V verify $Q" ;;
             testmail) docker_cp() { cat deploy/testmail.js | ssh srv "docker exec -i vibeon-app-1 sh -c 'cat > /tmp/testmail.js'"; }; docker_cp
-                     ssh srv "docker exec -w /app -e NODE_PATH=/app/node_modules vibeon-app-1 node /tmp/testmail.js $Q" ;;
+                     ssh srv "docker exec vibeon-app-1 sh -c 'cd /tmp && npm i --no-save --no-audit --no-fund --silent nodemailer@6 >/dev/null 2>&1'; docker exec -e NODE_PATH=/tmp/node_modules vibeon-app-1 node /tmp/testmail.js $Q" ;;
             dns)     d="${ARG:-vibeon.online}"
                      for q in "A $d" "A www.$d" "TXT $d" "TXT gokey._domainkey.$d" "CNAME _dmarc.$d" "NS email.$d" "MX $d"; do
                        set -- $q; echo "$1 $2: $(dig +short "$1" "$2" @8.8.8.8 | tr '\n' ' ' | cut -c1-160)"; done ;;
