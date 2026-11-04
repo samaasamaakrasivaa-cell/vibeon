@@ -127,7 +127,7 @@ async function main() {
             [rub[2].id, "gap"], [rub[2].id, "dropdown"], [rub[2].id, "test"], [rub[2].id, "errors"], [rub[2].id, "sentence"], [rub[2].id, "transform"],
           ];
           await db.task.createMany({ data: put.map(([rid, ty], i) => ({ templateId: l.id, section: "lesson", rubricId: rid, type: ty, title: PRESET[ty][0], content: SAMPLE[ty] ?? "", options: ty === "drag" ? { mode: "drag", split: true, seriesSize: 5 } : ty === "tf" ? { checkMode: "instant" } : {}, order: i })) });
-          await db.task.createMany({ data: (["open", "translate", "dictation"] as TaskType[]).map((ty, i) => ({ templateId: l.id, section: "homework", type: ty, title: PRESET[ty][0], content: SAMPLE[ty] ?? "", options: {}, order: i })) });
+          await db.task.createMany({ data: (["open", "translate", "dictation", "essay", "record"] as TaskType[]).map((ty, i) => ({ templateId: l.id, section: "homework", type: ty, title: PRESET[ty][0], content: SAMPLE[ty] ?? "", options: ty === "essay" ? { limitWords: 150, aipre: true } : {}, order: i })) });
           await db.task.create({ data: { templateId: l.id, section: "words", type: "wordset", title: PRESET.wordset[0], content: SAMPLE.wordset!, options: {}, order: 0 } });
         }
       }

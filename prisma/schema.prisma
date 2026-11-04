@@ -549,3 +549,30 @@ model WordPractice {
 
   @@unique([studentId, day])
 }
+
+// ───────────── ИИ ─────────────
+
+/// Каждый вызов ИИ-шлюза: для лимитов по тарифу и учёта расходов.
+model AiCall {
+  id        String   @id @default(cuid())
+  teacherId String? // чей лимит расходуется (у ученика — его преподаватель)
+  userId    String?
+  kind      String // help | file | book | explain | draft | essay | alt | partner | speech | stt | tts | ocr | pay
+  provider  String
+  model     String?
+  tokensIn  Int      @default(0)
+  tokensOut Int      @default(0)
+  ms        Int      @default(0)
+  ok        Boolean  @default(true)
+  cached    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([teacherId, createdAt])
+}
+
+/// Кэш общих результатов (слова урока, распознанный учебник, одинаковые запросы).
+model AiCache {
+  key       String   @id
+  value     Json
+  createdAt DateTime @default(now())
+}

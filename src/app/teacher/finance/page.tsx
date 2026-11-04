@@ -134,7 +134,9 @@ export default async function Finance({ searchParams }: { searchParams: Promise<
                         {i.proofFile && <a href={i.proofFile} target="_blank" rel="noreferrer" className="pill blue"><Icon name="image" size="sm" />{t("fin.screenshot")}</a>}
                         {i.proofText && <span className="small"><Icon name="msg" size="sm" /> {i.proofText}</span>}
                         {ai?.source === "text" && <span className={`pill ${ai.matches ? "green" : "red"}`}>{ai.matches ? t("fin.matches") : t("fin.noMatch")}</span>}
-                        {ai?.source === "screenshot" && <span className="pill grey">{t("fin.aiSoon")}</span>}
+                        {ai?.source === "screenshot" && (ai.matches
+                          ? <span className="pill green"><Icon name="spark" size="sm" />{t("fin.aiRead", { sum: R(i.amount) })}</span>
+                          : <span className="pill orange"><Icon name="spark" size="sm" />{ai.amounts?.length ? t("fin.aiOther", { sum: ai.amounts.map(R).join(", ") }) : t("fin.aiNone")}</span>)}
                       </div>
                     )}
                   </div>

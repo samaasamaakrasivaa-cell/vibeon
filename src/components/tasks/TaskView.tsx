@@ -7,6 +7,10 @@ import type { TaskOptions, TaskType } from "@/lib/tasks/catalog";
 import { buildCrossword, dictationGrade, parse, same, series, shuffle, videoEmbed, type Seg } from "@/lib/tasks/parse";
 import { Icon } from "../Icon";
 import { useSlot, useTaskRole } from "./store";
+import { AiTalk } from "../ai/AiTalk";
+import { AiCheckView, type AiCheck } from "../ai/AiCheckView";
+import { transcribe } from "../ai/audio";
+import { fixSpeech } from "@/lib/ai/actions";
 
 export type TaskData = { id: string; type: TaskType; title: string; content: string; options: TaskOptions };
 type Mark = "ok" | "bad" | "spell" | undefined;
@@ -560,20 +564,37 @@ function Script({ o }: { o: TaskOptions }) {
   );
 }
 
-function Recorder() {
+function Recorder({ task }: { task: TaskData }) {
   const { t } = useT();
   const [rec, setRec] = useState<MediaRecorder | null>(null);
+  const [blob, setBlob] = useState<Blob | null>(null);
   const [url, setUrl] = useState<string | null>(null);
-  const [err, setErr] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [saved, setSaved] = useSlot<{ transcript?: string; check?: AiCheck } | null>(task.id, "rec", null);
   const start = async () => {
+    setErr(null);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const r = new MediaRecorder(stream);
       const chunks: Blob[] = [];
       r.ondataavailable = (e) => chunks.push(e.data);
-      r.onstop = () => { setUrl(URL.createObjectURL(new Blob(chunks, { type: r.mimeType }))); stream.getTracks().forEach((x) => x.stop()); };
+      r.onstop = () => { const b = new Blob(chunks, { type: r.mimeType }); setBlob(b); setUrl(URL.createObjectURL(b)); stream.getTracks().forEach((x) => x.stop()); };
       r.start(); setRec(r);
-    } catch { setErr(true); }
+    } catch { setErr(t("tk.micError")); }
+  };
+  // расшифровка → исправленная версия
+  const decode = async () => {
+    if (!blob) return;
+    setBusy(true); setErr(null);
+    try {
+      const transcript = (await transcribe(blob)).trim();
+      if (!transcript) { setErr(t("ai.notHeard")); return; }
+      const r = await fixSpeech(task.id, transcript).catch(() => ({ ok: false as const, error: t("ai.err.fail") }));
+      setSaved({ transcript, check: r.ok ? { ...r.check, source: transcript } : undefined });
+      if (!r.ok) setErr(r.error);
+    } catch (e) { const c = String((e as Error).message); setErr(["limit", "tariff", "off", "fail"].includes(c) ? t(`ai.err.${c}` as "ai.err.fail") : c); }
+    finally { setBusy(false); }
   };
   return (
     <div className="flex flex-col gap-2">
@@ -583,8 +604,10 @@ function Recorder() {
         <button type="button" className="btn primary lg w-full" onClick={start}><Icon name="mic" />{url ? t("tk.recordAgain") : t("tk.record")}</button>
       )}
       {url && <audio controls src={url} className="w-full" />}
-      {url && <button type="button" className="btn plain sm self-start" disabled title={t("common.soon", { n: 8 })}>{t("tk.transcript")}</button>}
-      {err && <span className="small text-bad">{t("tk.micError")}</span>}
+      {blob && !rec && <button type="button" className="btn tinted sm self-start" disabled={busy} onClick={decode}><Icon name="spark" size="sm" />{busy ? t("ai.thinking") : t("tk.transcript")}</button>}
+      {saved?.transcript && <div className="small"><b>{t("ai.transcript")}:</b> {saved.transcript}</div>}
+      {saved?.check && <AiCheckView check={saved.check} />}
+      {err && <span className="small text-bad">{err}</span>}
     </div>
   );
 }
@@ -646,16 +669,12 @@ export function TaskBody({ task }: { task: TaskData }) {
       return (
         <div className="flex flex-col gap-3">
           {p.kind === "lines" && p.items.map((q, i) => <div key={i}><Num i={i} o={o} /> {q}</div>)}
-          <div className="tk-ai">
-            <div className="flex items-center gap-3"><span className="tk-aiico"><Icon name="spark" size="sm" /></span><b>{t("tk.aiTalk")}</b></div>
-            <button type="button" className="btn primary lg" disabled title={t("common.soon", { n: 8 })}><Icon name="mic" />{t("tk.startTalk")}</button>
-            <span className="hint">{t("tk.aiSoon")}</span>
-          </div>
+          <AiTalk task={task} />
         </div>
       );
     case "open": return <Open task={task} />;
     case "essay": return <Essay task={task} />;
-    case "record": return <div className="flex flex-col gap-3">{task.content && <Rich text={task.content} />}<Recorder /></div>;
+    case "record": return <div className="flex flex-col gap-3">{task.content && <Rich text={task.content} />}<Recorder task={task} /></div>;
     default: return null;
   }
 }

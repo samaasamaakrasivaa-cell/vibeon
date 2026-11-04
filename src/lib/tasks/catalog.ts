@@ -194,4 +194,5 @@ export type TaskOptions = {
   split?: boolean; seriesSize?: number; limitWords?: number; limitSec?: number; showScript?: boolean; script?: string;
   src?: string; images?: { src: string; caption?: string }[]; layout?: "carousel" | "stack"; pics?: string[];
   url?: string; label?: string; ns?: boolean; check?: boolean; multi?: boolean; across?: boolean; teacherOnly?: boolean;
+  aipre?: boolean; ai?: boolean; aiPrompt?: string; aiGoal?: string; aiWords?: string; aiMins?: number;
 };

@@ -7,12 +7,14 @@ import { upload } from "../courses/CourseView";
 import { useT } from "@/lib/i18n/client";
 import { HELP, HOWTO, PRESET, TYPES, type TaskOptions, type TaskType } from "@/lib/tasks/catalog";
 import { thumbSvg } from "@/lib/tasks/thumbs";
+import { fileToTask, helpTask } from "@/lib/ai/actions";
+import { extractFile } from "../ai/BookImport";
 
 const CONTENT_TYPES: TaskType[] = ["gap", "drag", "dropdown", "test", "tf", "pairs", "columns", "picture", "sentence", "textorder", "letters", "essay", "open", "record", "speak", "errors", "transform", "translate", "dictation", "crossword", "wordset", "text", "note"];
 const CHECK_TYPES = (t: TaskType) => !!TYPES[t].checkable;
 
-export function TaskEditor({ initial, onSave, onClose, pending, error }: {
-  initial: TaskData; onSave: (t: TaskData) => void; onClose: () => void; pending: boolean; error: string | null;
+export function TaskEditor({ lessonId, initial, onSave, onClose, pending, error }: {
+  lessonId: string; initial: TaskData; onSave: (t: TaskData) => void; onClose: () => void; pending: boolean; error: string | null;
 }) {
   const { t, lang } = useT();
   const L = (x?: [string, string]) => (x ? (lang === "en" ? x[0] : x[1]) : "");
@@ -23,6 +25,9 @@ export function TaskEditor({ initial, onSave, onClose, pending, error }: {
   const ta = useRef<HTMLTextAreaElement>(null);
   const [uploading, setUploading] = useState(false);
   const [upErr, setUpErr] = useState<string | null>(null);
+  const [ai, setAi] = useState<"help" | "file" | null>(null);
+  const [aiErr, setAiErr] = useState<string | null>(null);
+  const [undo, setUndo] = useState<string | null>(null);
   const type = task.type;
   const isGap = type === "gap" || type === "drag";
 
@@ -49,6 +54,25 @@ export function TaskEditor({ initial, onSave, onClose, pending, error }: {
     try { cb((await Promise.all([...files].map(upload))).map((r) => r.url)); }
     catch (e) { setUpErr(String((e as Error).message)); }
     finally { setUploading(false); }
+  };
+
+  // «Помочь с ИИ» дописывает поле; «Из файла» — распознаёт файл и раскладывает в разметку задания
+  const help = async () => {
+    setAi("help"); setAiErr(null);
+    const r = await helpTask(lessonId, { type: task.type, title: task.title, content: task.content }).catch(() => ({ ok: false as const, error: t("ai.err.fail") }));
+    setAi(null);
+    if (r.ok) { setUndo(task.content); setTask((x) => ({ ...x, content: r.content })); } else setAiErr(r.error);
+  };
+  const fromFile = async (files: FileList | null) => {
+    const f = files?.[0];
+    if (!f) return;
+    setAi("file"); setAiErr(null);
+    try {
+      const text = await extractFile(f);
+      const r = await fileToTask(task.type, text);
+      if (r.ok) { setUndo(task.content); setTask((x) => ({ ...x, content: x.content.trim() ? `${x.content.trimEnd()}\n${r.content}` : r.content })); } else setAiErr(r.error);
+    } catch (e) { const c = String((e as Error).message); setAiErr(["limit", "tariff", "off", "fail", "type", "size"].includes(c) ? t(`ai.err.${c}` as "ai.err.fail") : c); }
+    finally { setAi(null); }
   };
 
   const IconOpt = ({ k, icon, label }: { k: keyof TaskOptions; icon: Parameters<typeof Icon>[0]["name"]; label: string }) => (
@@ -93,10 +117,13 @@ export function TaskEditor({ initial, onSave, onClose, pending, error }: {
                   {(type === "dropdown" || type === "test" || type === "errors") && <button type="button" className="pchip" onClick={() => wrap("star")} title={t("bld.mkRight")}>✓</button>}
                   <button type="button" className="pchip" onClick={() => wrap("num")} title={t("bld.mkNum")}>1.</button>
                   <span className="grow" />
-                  <button type="button" className="pchip" disabled title={t("common.soon", { n: 8 })}><Icon name="clip" size="sm" />{t("bld.fromFile")}</button>
-                  <button type="button" className="pchip ai" disabled title={t("common.soon", { n: 8 })}><Icon name="spark" size="sm" />{t("bld.helpAi")}</button>
+                  {undo !== null && <button type="button" className="pchip" onClick={() => { setTask((x) => ({ ...x, content: undo })); setUndo(null); }}>↶ {t("ai.undo")}</button>}
+                  <label className={`pchip ${ai ? "opacity-60" : ""}`} title={t("ai.fromFileHint")}><Icon name="clip" size="sm" />{ai === "file" ? t("ai.reading") : t("bld.fromFile")}
+                    <input type="file" hidden disabled={!!ai} accept=".docx,.pptx,.pdf,.txt,.md,image/png,image/jpeg,image/webp" onChange={(e) => { void fromFile(e.target.files); e.target.value = ""; }} /></label>
+                  <button type="button" className="pchip ai" disabled={!!ai} onClick={help}><Icon name="spark" size="sm" />{ai === "help" ? t("ai.thinking") : t("bld.helpAi")}</button>
                 </div>
               </div>
+              {aiErr && <div className="alert mt-1">{aiErr}</div>}
               {HELP[type] && <span className="hint">{L(HELP[type])}</span>}
               {HOWTO[type] && <details className="how"><summary>ⓘ {t("bld.howto")}</summary>{L(HOWTO[type])}</details>}
             </div>
@@ -168,6 +195,7 @@ export function TaskEditor({ initial, onSave, onClose, pending, error }: {
                 <IconOpt k="nonum" icon="levelI" label={t("bld.optNonum")} />
                 {CHECK_TYPES(type) && <IconOpt k="noreveal" icon="lock" label={t("bld.optNoreveal")} />}
                 {(TYPES[type].teacherCheck || type === "transform" || type === "translate") && <IconOpt k="check" icon="check" label={t("bld.optTeacher")} />}
+                {(type === "essay" || type === "open" || type === "transform" || type === "translate") && <IconOpt k="aipre" icon="spark" label={t("bld.optAipre")} />}
               </div>
               <div className="mt-3 flex flex-col gap-2">
                 {isGap && (
@@ -198,6 +226,15 @@ export function TaskEditor({ initial, onSave, onClose, pending, error }: {
                 {type === "essay" && <div className="setting"><span>{t("bld.wordLimit")}</span><input className="input" style={{ width: 90 }} inputMode="numeric" value={o.limitWords ?? ""} placeholder="150" onChange={(e) => setO({ limitWords: Number(e.target.value.replace(/\D/g, "")) || undefined })} /></div>}
                 {type === "letters" && <div className="setting"><span>{t("bld.timer")}</span><input className="input" style={{ width: 90 }} inputMode="numeric" value={o.limitSec ?? ""} placeholder="—" onChange={(e) => setO({ limitSec: Number(e.target.value.replace(/\D/g, "")) || undefined })} /></div>}
                 {(type === "video" || type === "audio") && <label className="setting"><span>{t("bld.showScript")}</span><span className="switch"><input type="checkbox" checked={!!o.showScript} onChange={(e) => setO({ showScript: e.target.checked })} /><span /></span></label>}
+                {type === "speak" && (
+                  <div className="flex flex-col gap-2 rounded-xl bg-fill p-3">
+                    <b className="small">{t("tk.aiTalk")}</b>
+                    <div className="field"><label htmlFor="te-aip" className="small muted">{t("bld.aiPrompt")}</label><input id="te-aip" className="input" value={o.aiPrompt ?? ""} placeholder={t("bld.aiPromptPh")} onChange={(e) => setO({ aiPrompt: e.target.value })} /></div>
+                    <div className="field"><label htmlFor="te-aig" className="small muted">{t("ai.goal")}</label><input id="te-aig" className="input" value={o.aiGoal ?? ""} placeholder={t("bld.aiGoalPh")} onChange={(e) => setO({ aiGoal: e.target.value })} /></div>
+                    <div className="field"><label htmlFor="te-aiw" className="small muted">{t("ai.useWords")}</label><input id="te-aiw" className="input" value={o.aiWords ?? ""} placeholder="outcome, worthwhile, give it a go" onChange={(e) => setO({ aiWords: e.target.value })} /></div>
+                    <div className="setting"><span>{t("bld.aiMins")}</span><input className="input" style={{ width: 90 }} inputMode="numeric" value={o.aiMins ?? ""} placeholder="—" onChange={(e) => setO({ aiMins: Number(e.target.value.replace(/\D/g, "")) || undefined })} /></div>
+                  </div>
+                )}
                 {type === "test" && <label className="setting"><span>{t("bld.multi")}</span><span className="switch"><input type="checkbox" checked={!!o.multi} onChange={(e) => setO({ multi: e.target.checked })} /><span /></span></label>}
               </div>
             </div>

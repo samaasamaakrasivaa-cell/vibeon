@@ -12,6 +12,8 @@ import { Catalog } from "../builder/Builder";
 import { TaskEditor } from "../builder/TaskEditor";
 import { Board, type BObj } from "./Board";
 import { useLive } from "./useLive";
+import { AiCheckView, type AiCheck } from "../ai/AiCheckView";
+import { askAi, checkAnswer } from "@/lib/ai/actions";
 import { useT } from "@/lib/i18n/client";
 import { PRESET, SAMPLE, TYPES, type Rubric, type TaskType } from "@/lib/tasks/catalog";
 import { saveTask } from "@/lib/teacher/courses";
@@ -20,12 +22,13 @@ import type { LiveState } from "@/lib/live/access";
 type CTask = TaskData & { section: "lesson" | "homework" | "words"; rubricId: string | null; hidden: boolean };
 type Word = { id: string; word: string; translation: string | null; example: string | null; level: number };
 type Msg = { id: string; text: string; by: string; at: string };
-type Review = { ok: boolean; comment: string | null };
+export type Review = { ok: boolean; comment: string | null; ai?: AiCheck };
+export type { AiCheck };
 export type ClassData = {
   id: string; templateId: string | null; role: "teacher" | "student"; me: { id: string; name: string };
   teacher: { id: string; name: string; lastName: string | null }; student: { id: string; userId: string | null; name: string; lastName: string | null; level: string | null; course: string | null } | null;
   title: string | null; crumbs: string | null; course: { title: string; cover: string | null } | null; rubrics: Rubric[]; tasks: CTask[];
-  answers: Answers; statuses: Record<string, string>; reviews: Record<string, Review>; live: LiveState;
+  answers: Answers; statuses: Record<string, string>; reviews: Record<string, Review>; aiDrafts: Record<string, AiCheck>; live: LiveState;
   board: BObj[][]; homework: { extraTaskIds: string[]; wordTraining: string[]; teacherComment: string | null };
   lessonWords: { word: string; tr: string; ex: string }[]; words: Word[]; messages: Msg[];
   note: string | null; studentNote: string | null; callLink: string | null; when: string; durationMin: number; status: string; goal: string | null;
@@ -138,8 +141,9 @@ export function ClassRoom({ d }: { d: ClassData }) {
       {list.map((task, i) => (
         <div key={task.id} id={`task-${task.id}`} className={`${flash === task.id ? "cls-flash" : ""} ${hidden.has(task.id) ? "opacity-55" : ""}`}>
           <TaskCard task={task} index={i} actions={taskActions(task, inHw)} />
-          {inHw && teacher && (TYPES[task.type].teacherCheck || task.type === "transform" || task.type === "translate") && <ReviewBox task={task} review={reviews[task.id]} send={send} />}
+          {inHw && teacher && (TYPES[task.type].teacherCheck || task.type === "transform" || task.type === "translate") && <ReviewBox lessonId={d.id} task={task} review={reviews[task.id]} draft={d.aiDrafts[task.id]} answered={!!answers[task.id]} send={send} />}
           {inHw && !teacher && reviews[task.id] && <div className={`alert mt-2 ${reviews[task.id].ok ? "ok" : ""}`}>{reviews[task.id].ok ? "✓ " : ""}{t("cls.teacherSays")}: {reviews[task.id].comment || (reviews[task.id].ok ? t("cls.reviewedOk") : "—")}</div>}
+          {inHw && !teacher && reviews[task.id]?.ai && <div className="mt-2"><AiCheckView check={reviews[task.id].ai!} /></div>}
           {teacher && !inHw && <Plus onClick={() => setCatalog({ index: i + 1 })} />}
         </div>
       ))}
@@ -249,7 +253,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
 
         {catalog && <Catalog fav={[]} onClose={() => setCatalog(null)} onPick={(ty: TaskType) => { const idx = catalog.index; setCatalog(null); setEditing({ index: idx, task: { id: "new", type: ty, title: PRESET[ty]?.[0] ?? "", content: SAMPLE[ty] ?? "", options: {}, section: "lesson", rubricId: cur?.id ?? null, hidden: false } }); }} />}
         {editing && (
-          <TaskEditor initial={editing.task} pending={saving} error={null} onClose={() => setEditing(null)}
+          <TaskEditor lessonId={templateOf(d)} initial={editing.task} pending={saving} error={null} onClose={() => setEditing(null)}
             onSave={async (task) => {
               setSaving(true);
               const index = d.tasks.filter((x) => x.section === "lesson" && x.rubricId === editing.task.rubricId).findIndex((x) => x.id === inRubric[editing.index]?.id);
@@ -287,16 +291,39 @@ function AskButton({ task, send, context }: { task: TaskData; send: (type: strin
   const { t } = useT();
   const [open, setOpen] = useState(false);
   const [text, setText] = useState("");
+  const [ai, setAi] = useState<{ id: string; answer: string } | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
+  const reset = () => { setAi(null); setSent(false); setErr(null); setText(""); };
+  const ask = async () => {
+    setBusy(true); setErr(null);
+    const r = await askAi(text, `${context} · ${task.title}`, task.id).catch(() => ({ ok: false as const, error: t("ai.err.fail") }));
+    setBusy(false);
+    if (r.ok) setAi({ id: r.id, answer: r.answer }); else setErr(r.error);
+  };
+  const toTeacher = async () => { await send("question", { taskId: task.id, text, context: `${context} · ${task.title}`, qid: ai?.id }); setSent(true); };
   return (
     <>
-      <button className="btn secondary sm" onClick={() => { setOpen(true); setSent(false); }}><Icon name="qmark" size="sm" />{t("cls.unclear")}</button>
+      <button className="btn secondary sm" onClick={() => { setOpen(true); reset(); }}><Icon name="qmark" size="sm" />{t("cls.unclear")}</button>
       <Dialog open={open} onClose={() => setOpen(false)} title={t("cls.unclear")}>
-        {sent ? <p className="alert ok">{t("cls.askSent")}</p> : (
+        {sent ? <p className="alert ok">{t("cls.askSent")}</p> : ai ? (
+          <>
+            <div className="aianswer"><span className="tk-aiico"><Icon name="spark" size="sm" /></span><div><b className="small">{t("ai.says")}</b><p className="m-0 mt-1">{ai.answer}</p></div></div>
+            <div className="actions">
+              <button className="btn secondary" onClick={toTeacher}>{t("cls.askTeacher")}</button>
+              <button className="btn primary" onClick={() => setOpen(false)}>{t("ai.clear")}</button>
+            </div>
+          </>
+        ) : (
           <>
             <div className="field"><label htmlFor={`q-${task.id}`}>{t("cls.describe")}</label><textarea id={`q-${task.id}`} className="textarea" value={text} onChange={(e) => setText(e.target.value)} autoFocus /></div>
             <p className="hint">{t("cls.aiFirst")}</p>
-            <div className="actions"><button className="btn primary" disabled={!text.trim()} onClick={async () => { await send("question", { taskId: task.id, text, context: `${context} · ${task.title}` }); setSent(true); setText(""); }}>{t("cls.askTeacher")}</button></div>
+            {err && <div className="alert">{err}</div>}
+            <div className="actions">
+              {err && <button className="btn secondary" disabled={!text.trim()} onClick={toTeacher}>{t("cls.askTeacher")}</button>}
+              <button className="btn primary" disabled={!text.trim() || busy} onClick={ask}><Icon name="spark" size="sm" />{busy ? t("ai.thinking") : t("ai.ask")}</button>
+            </div>
           </>
         )}
       </Dialog>
@@ -304,15 +331,35 @@ function AskButton({ task, send, context }: { task: TaskData; send: (type: strin
   );
 }
 
-function ReviewBox({ task, review, send }: { task: TaskData; review?: Review; send: (type: string, d: Record<string, unknown>) => Promise<unknown> }) {
+function ReviewBox({ lessonId, task, review, draft, answered, send }: { lessonId: string; task: TaskData; review?: Review; draft?: AiCheck; answered: boolean; send: (type: string, d: Record<string, unknown>) => Promise<unknown> }) {
   const { t } = useT();
   const [c, setC] = useState(review?.comment ?? "");
+  const [ai, setAi] = useState<AiCheck | null>(review?.ai ?? draft ?? null);
+  const [useAi, setUseAi] = useState(!!review?.ai || !!draft);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const run = useCallback(async () => {
+    setBusy(true); setErr(null);
+    const r = await checkAnswer(lessonId, task.id).catch(() => ({ ok: false as const, error: t("ai.err.fail") }));
+    setBusy(false);
+    if (r.ok) { setAi(r.check); setUseAi(true); } else setErr(r.error);
+  }, [lessonId, task.id, t]);
+  // «Предпроверка ИИ» в опциях задания: черновик готовится сам, как только есть ответ
+  const auto = useRef(false);
+  useEffect(() => { if (task.options.aipre && answered && !ai && !review && !auto.current) { auto.current = true; void run(); } }, [task.options.aipre, answered, ai, review, run]);
+  const payload = () => (useAi && ai ? { ai } : {});
   return (
-    <div className="cls-review">
-      <input className="input" value={c} onChange={(e) => setC(e.target.value)} placeholder={t("cls.reviewPh")} aria-label={t("cls.reviewPh")} />
-      <button className="btn secondary sm" onClick={() => send("review", { taskId: task.id, ok: false, comment: c })}>{t("cls.needsWork")}</button>
-      <button className="btn primary sm" onClick={() => send("review", { taskId: task.id, ok: true, comment: c })}>✓ {t("cls.okShow")}</button>
-      {review && <span className="small text-ok">✓ {t("cls.st.reviewed")}</span>}
+    <div className="flex flex-col gap-2">
+      {ai && useAi && <AiCheckView check={ai} edit onChange={setAi} />}
+      {err && <div className="alert">{err}</div>}
+      <div className="cls-review">
+        <input className="input" value={c} onChange={(e) => setC(e.target.value)} placeholder={t("cls.reviewPh")} aria-label={t("cls.reviewPh")} />
+        <button className="btn tinted sm" disabled={busy} onClick={run}><Icon name="spark" size="sm" />{busy ? t("ai.checking") : ai ? t("ai.recheck") : t("ai.check")}</button>
+        {ai && <button className="btn plain sm" onClick={() => setUseAi(!useAi)}>{useAi ? t("ai.hide") : t("ai.showDraft")}</button>}
+        <button className="btn secondary sm" onClick={() => send("review", { taskId: task.id, ok: false, comment: c, ...payload() })}>{t("cls.needsWork")}</button>
+        <button className="btn primary sm" onClick={() => send("review", { taskId: task.id, ok: true, comment: c, ...payload() })}>✓ {t("cls.okShow")}</button>
+        {review && <span className="small text-ok">✓ {t("cls.st.reviewed")}</span>}
+      </div>
     </div>
   );
 }

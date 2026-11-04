@@ -30,7 +30,7 @@ export default async function Questions({ searchParams }: { searchParams: Promis
         <Link href="?tab=ai" aria-current={tab === "ai" ? "page" : undefined}>{t("qs.askedAi")} ({groups.ai.length})</Link>
       </nav>
       <section className="list">
-        {list.length === 0 && <p className="hint p-5 m-0">{tab === "ai" ? t("qs.aiSoon") : t("qs.none")}</p>}
+        {list.length === 0 && <p className="hint p-5 m-0">{t("qs.none")}</p>}
         {list.map((q) => (
           <div key={q.id} className="qrow">
             <span className="avatar lg">{initials(q.student.name, q.student.lastName)}</span>
@@ -38,6 +38,7 @@ export default async function Questions({ searchParams }: { searchParams: Promis
               <div className="flex flex-wrap items-baseline justify-between gap-2"><b>{[q.student.name, q.student.lastName].filter(Boolean).join(" ")}</b><span className="small text-text3">{ago(q.createdAt)}</span></div>
               {(q.context || q.task) && <div className="small muted">{q.context ?? q.task?.title}</div>}
               <p className="mt-1 mb-0">{q.text}</p>
+              {q.aiAnswer && <div className="aianswer mt-2"><b className="small">{t("ai.says")}</b><p className="m-0 mt-1">{q.aiAnswer}</p></div>}
               {q.teacherAnswer && <div className="alert ok mt-2">{q.teacherAnswer}</div>}
               {!q.answeredAt && <div className="mt-2"><AnswerBox id={q.id} /></div>}
             </div>

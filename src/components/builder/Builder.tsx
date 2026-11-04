@@ -9,6 +9,8 @@ import { Brand, LogoMark } from "../Logo";
 import { TaskCard, type TaskData } from "../tasks/TaskView";
 import { useRun } from "../courses/useRun";
 import { TaskEditor } from "./TaskEditor";
+import { BookDialog, ImportDialog } from "../ai/BookImport";
+import { useRouter } from "next/navigation";
 import { useT } from "@/lib/i18n/client";
 import { GROUPS, PRESET, RTIPS, RUBRICS, SAMPLE, TYPES, rubricKey, type Rubric, type TaskType } from "@/lib/tasks/catalog";
 import { thumbSvg } from "@/lib/tasks/thumbs";
@@ -36,6 +38,8 @@ export function Builder({ d }: { d: BuilderData }) {
   const [editing, setEditing] = useState<{ task: BTask; index?: number } | null>(null);
   const [shareOpen, setShareOpen] = useState(false);
   const [startOpen, setStartOpen] = useState(false);
+  const [imp, setImp] = useState<"file" | "book" | null>(null);
+  const router = useRouter();
   const [saved, setSaved] = useState(true);
   useEffect(() => { if (!pending) setSaved(true); }, [pending, d]);
 
@@ -75,8 +79,8 @@ export function Builder({ d }: { d: BuilderData }) {
           <input className="editable text-center font-bold" defaultValue={d.title} key={d.title} onBlur={(e) => e.target.value.trim() !== d.title && go(() => updateLessonMeta(d.id, { title: e.target.value }))} aria-label={t("crs.title")} />
         </div>
         <div className="atr">
-          <button className="btn plain sm hide-md" disabled title={t("common.soon", { n: 8 })}><Icon name="down" size="sm" />{t("bld.import")}</button>
-          <button className="btn plain sm hide-md" disabled title={t("common.soon", { n: 8 })}><Icon name="book" size="sm" />{t("bld.coursebook")}</button>
+          <button className="btn plain sm hide-md" onClick={() => setImp("file")}><Icon name="down" size="sm" />{t("bld.import")}</button>
+          <button className="btn plain sm hide-md" onClick={() => setImp("book")}><Icon name="book" size="sm" />{t("bld.coursebook")}</button>
           <span className="small hide-md" style={{ color: saved ? "var(--ok)" : "var(--text3)" }}>{saved ? `✓ ${t("common.saved")}` : t("common.saving")}</span>
           <label className="flex items-center gap-2 small"><Icon name="user" size="sm" /><span className="hide-md">{t("bld.studentView")}</span><span className="switch"><input type="checkbox" checked={studentView} onChange={(e) => setStudentView(e.target.checked)} /><span /></span></label>
           <LangSwitch lang={lang} label={t("common.language")} />
@@ -188,9 +192,10 @@ export function Builder({ d }: { d: BuilderData }) {
         </aside>
       </div>
 
-      {catalog && <Catalog fav={d.fav} onClose={() => setCatalog(null)} onPick={(ty) => { const idx = catalog.index; setCatalog(null); newTask(ty, idx); }} />}
+      {catalog && <Catalog fav={d.fav} onImport={() => { setCatalog(null); setImp("file"); }} onClose={() => setCatalog(null)} onPick={(ty) => { const idx = catalog.index; setCatalog(null); newTask(ty, idx); }} />}
       {editing && (
         <TaskEditor
+          lessonId={d.id}
           initial={editing.task}
           pending={pending}
           error={error}
@@ -198,6 +203,8 @@ export function Builder({ d }: { d: BuilderData }) {
           onSave={(task) => go(() => saveTask(d.id, editing.task.id === "new" ? null : editing.task.id, { section: editing.task.section, rubricId: editing.task.rubricId, type: task.type, title: task.title, content: task.content, options: task.options }, editing.index), () => setEditing(null))}
         />
       )}
+      {imp === "file" && <ImportDialog lessonId={d.id} section={part} rubricId={part === "lesson" ? active : null} onClose={() => setImp(null)} onDone={() => setTimeout(() => router.refresh(), 0)} />}
+      {imp === "book" && <BookDialog courseId={d.course.id} onClose={() => setImp(null)} />}
       {shareOpen && <ShareDialog d={d} onClose={() => setShareOpen(false)} />}
       {startOpen && (
         <Dialog open onClose={() => setStartOpen(false)} title={t("bld.start")}>
@@ -232,7 +239,7 @@ function Outcomes({ d, onSave, readOnly }: { d: BuilderData; onSave: (v: string[
   );
 }
 
-export function Catalog({ fav: initialFav, onPick, onClose }: { fav: string[]; onPick: (t: TaskType) => void; onClose: () => void }) {
+export function Catalog({ fav: initialFav, onPick, onClose, onImport }: { fav: string[]; onPick: (t: TaskType) => void; onClose: () => void; onImport?: () => void }) {
   const { t, lang } = useT();
   const [q, setQ] = useState("");
   const [fav, setFav] = useState(initialFav);
@@ -249,7 +256,7 @@ export function Catalog({ fav: initialFav, onPick, onClose }: { fav: string[]; o
   );
   return (
     <Dialog open onClose={onClose} title={t("bld.createTask")} wide>
-      <div className="aiattach"><Icon name="spark" /><span className="grow"><b>{t("bld.attach")}</b><small>{t("bld.attachSub")} · {t("common.soon", { n: 8 })}</small></span></div>
+      {onImport && <button type="button" className="aiattach w-full text-left" onClick={onImport}><Icon name="spark" /><span className="grow"><b>{t("bld.attach")}</b><small>{t("bld.attachSub")}</small></span></button>}
       <label className="searchbox my-4 block"><Icon name="search" size="sm" /><input className="input w-full" placeholder={t("bld.searchTasks")} value={q} onChange={(e) => setQ(e.target.value)} autoFocus /></label>
       <div className="catscroll">
         {!q && fav.length > 0 && <><div className="cardtitle">♡ {t("bld.favourites")}</div><div className="catgrid">{fav.filter((k) => k in TYPES).map((k) => card(k as TaskType))}</div></>}

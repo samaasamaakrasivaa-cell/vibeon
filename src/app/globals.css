@@ -589,7 +589,8 @@ details.how[open] summary { margin-bottom: 6px; }
 .thumbw svg.thumb, .ted-thumb svg.thumb { width: 80px; height: 42px; display: block; margin: 0 auto; }
 .catgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
 .catscroll { max-height: 56vh; overflow-y: auto; padding-right: 4px; }
-.aiattach { display: flex; align-items: center; gap: 12px; color: #fff; border-radius: 16px; padding: 14px 18px; background: linear-gradient(110deg, #5E5CE6, #A55CF5 70%, #C86BFA); opacity: .85; }
+.aiattach { display: flex; align-items: center; gap: 12px; color: #fff; border-radius: 16px; padding: 14px 18px; background: linear-gradient(110deg, #5E5CE6, #A55CF5 70%, #C86BFA); cursor: pointer; }
+.aiattach:hover { filter: brightness(1.06); }
 .aiattach b { display: block; } .aiattach small { opacity: .9; }
 .dlg.wide:has(.ted) { width: min(1100px, calc(100vw - 24px)); }
 .ted { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; }
@@ -782,4 +783,27 @@ details.how[open] summary { margin-bottom: 6px; }
 .packbody { background: var(--surface); border-radius: 0 0 22px 22px; padding: 18px 20px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
 .offer { background: var(--surface); border: 1px solid var(--sep); border-radius: 16px; padding: 14px; min-width: 200px; }
 @media (max-width: 760px) { .finrow { flex-wrap: wrap; } .finrow .w-48 { width: auto; flex: 1; } .chkrow .w-56 { width: auto; flex: 1; } }
+
+/* ── ИИ (этап 8) ── */
+.aicheck { background: var(--violet-bg); border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 6px; }
+.aicheck-h { display: flex; align-items: center; gap: 10px; }
+.aicheck-h .tk-aiico { width: 28px; height: 28px; }
+.aimarks { background: var(--surface); border-radius: 10px; padding: 10px 12px; white-space: pre-wrap; line-height: 1.6; }
+.aimarks del, .ainotes del { color: var(--bad-text); background: var(--bad-bg); text-decoration: line-through; border-radius: 4px; padding: 0 2px; }
+.aimarks ins, .ainotes ins { color: var(--ok-text); background: var(--ok-bg); text-decoration: none; border-radius: 4px; padding: 0 2px; font-weight: 600; }
+.ainotes { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.ainotes li { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; font-size: 14px; }
+.aianswer { display: flex; gap: 10px; align-items: flex-start; background: var(--violet-bg); border-radius: 14px; padding: 12px 14px; }
+.aianswer .tk-aiico { width: 28px; height: 28px; flex: none; }
+.aianswer b { color: var(--violet); }
+.aitalk { width: 100%; max-height: 320px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+.aimsg { display: flex; align-items: flex-start; gap: 6px; max-width: 85%; padding: 8px 12px; border-radius: 14px; line-height: 1.45; }
+.aimsg.ai { background: var(--surface); align-self: flex-start; }
+.aimsg.me { background: var(--accent); color: #fff; align-self: flex-end; }
+.aimsg .iconbtn { flex: none; margin: -4px 0 -4px -6px; }
+.drafttask { display: flex; gap: 10px; align-items: flex-start; padding: 10px; border-radius: 12px; cursor: pointer; }
+.drafttask:hover { background: var(--fill); }
+.drafttask input { margin-top: 4px; }
+.bookfile { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 12px; background: var(--surface2); margin-bottom: 6px; }
+.booklesson { padding: 8px 10px; border-radius: 12px; background: var(--surface2); margin-top: 6px; }
 }

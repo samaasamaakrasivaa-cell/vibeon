@@ -4,6 +4,8 @@ import { db } from "../db";
 import { mailInvoice } from "../mail";
 import { env } from "../env";
 import { publish } from "../live/bus";
+import { readStored } from "../storage";
+import { ocr } from "../ai/gateway";
 
 // ───────── Цены ─────────
 
@@ -77,17 +79,29 @@ export async function undoAccept(inv: Invoice) {
   });
 }
 
-/** Ученик прислал подтверждение. Текст с совпадающей суммой — автоприём; скриншот читает ИИ (этап 8), пока — на проверку учителю. */
+/** Ученик прислал подтверждение. Текст или скриншот (сумму читает ИИ-распознавание): совпала сумма — автоприём, иначе — на проверку учителю. */
 export async function submitProof(inv: Invoice, proof: { text?: string; file?: string }) {
   const text = proof.text?.trim().slice(0, 1000) || null;
-  const found = text ? amountsIn(text) : [];
-  const matches = found.includes(inv.amount);
+  let read: { source: string; amounts: number[]; matches: boolean; text?: string; failed?: boolean };
+  if (text) { const found = amountsIn(text); read = { source: "text", amounts: found, matches: found.includes(inv.amount) }; }
+  else {
+    read = { source: "screenshot", amounts: [], matches: false };
+    try {
+      const key = proof.file!.replace(/^\/api\/files\//, "");
+      const file = await readStored(key);
+      const st = await db.student.findUnique({ where: { id: inv.studentId }, select: { teacherId: true, userId: true } });
+      if (file && st) {
+        const mime = key.endsWith(".png") ? "image/png" : key.endsWith(".pdf") ? "application/pdf" : "image/jpeg";
+        const seen = await ocr(file.buf, mime, { userId: st.userId ?? "", teacherId: st.teacherId });
+        const found = amountsIn(seen);
+        read = { source: "screenshot", amounts: found, matches: found.includes(inv.amount), text: seen.slice(0, 400) };
+      }
+    } catch { read.failed = true; }
+  }
+  const matches = read.matches;
   await db.invoice.update({
     where: { id: inv.id },
-    data: {
-      status: "PROOF_SENT", proofKind: proof.file ? "screenshot" : "text", proofFile: proof.file ?? null, proofText: text, proofAt: new Date(),
-      aiRead: text ? { source: "text", amounts: found, matches } : { source: "screenshot", pending: true },
-    },
+    data: { status: "PROOF_SENT", proofKind: proof.file ? "screenshot" : "text", proofFile: proof.file ?? null, proofText: text, proofAt: new Date(), aiRead: read },
   });
   const fresh = await db.invoice.findUniqueOrThrow({ where: { id: inv.id }, include: { student: true } });
   if (matches) await acceptInvoice(fresh, true);

@@ -133,7 +133,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       const text = str(body.text, 2000).trim();
       const taskId = str(body.taskId, 60) || null;
       if (!text) return bad();
-      const q = await db.question.create({ data: { studentId: lesson.studentId, taskId, text, askedTeacher: true, context: str(body.context, 300) || null } });
+      // вопрос, на который уже ответил ИИ, — тот же вопрос, теперь и преподавателю
+      const qid = str(body.qid, 60);
+      const prev = qid ? await db.question.findUnique({ where: { id: qid } }) : null;
+      const q = prev && prev.studentId === lesson.studentId
+        ? await db.question.update({ where: { id: prev.id }, data: { askedTeacher: true } })
+        : await db.question.create({ data: { studentId: lesson.studentId, taskId, text, askedTeacher: true, context: str(body.context, 300) || null } });
       if (lesson.teacherId)
         await db.notification.create({ data: { userId: lesson.teacherId, kind: "question", title: `${user.name}: ${text.slice(0, 120)}`, action: "reply", link: `/class/${id}` } });
       publish(ch, "question", { id: q.id, taskId, text, by });
@@ -144,8 +149,14 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       if (!teacher || !lesson.studentId) return bad();
       const taskId = str(body.taskId, 60);
       const where = { lessonInstanceId_taskId_studentId: { lessonInstanceId: id, taskId, studentId: lesson.studentId } };
-      const review = { ok: !!body.ok, comment: str(body.comment, 3000) || null, at: new Date().toISOString() };
-      await db.answer.upsert({ where, create: { lessonInstanceId: id, taskId, studentId: lesson.studentId, payload: {}, status: "REVIEWED", teacherReview: review }, update: { status: "REVIEWED", teacherReview: review } });
+      // исправления ИИ (после правки учителем) показываются ученику вместе с отзывом
+      const a = body.ai && typeof body.ai === "object" ? body.ai : null;
+      const ai = a ? {
+        source: str(a.source, 20000), corrected: str(a.corrected, 20000), summary: str(a.summary, 3000),
+        notes: Array.isArray(a.notes) ? a.notes.slice(0, 40).map((n: Record<string, unknown>) => ({ from: str(n.from, 300), to: str(n.to, 300), why: str(n.why, 300) })) : [],
+      } : null;
+      const review = { ok: !!body.ok, comment: str(body.comment, 3000) || null, at: new Date().toISOString(), ...(ai ? { ai } : {}) };
+      await db.answer.upsert({ where, create: { lessonInstanceId: id, taskId, studentId: lesson.studentId, payload: {}, status: "REVIEWED", teacherReview: review, shownToStudent: !!ai }, update: { status: "REVIEWED", teacherReview: review, shownToStudent: !!ai } });
       publish(ch, "review", { taskId, review });
       return NextResponse.json({ ok: true });
     }

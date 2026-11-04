@@ -8,6 +8,7 @@ import { useT } from "@/lib/i18n/client";
 import { COURSE_CATEGORIES } from "@/lib/tasks/catalog";
 import { createCourse, reorderCategories, reorderCourses } from "@/lib/teacher/courses";
 import { moveItem, useRun } from "./useRun";
+import { BookDialog } from "../ai/BookImport";
 
 export type CourseCard = { id: string; title: string; level: string | null; category: string; cover: string | null; color: number; units: number; lessons: number };
 export const COVER = ["#FFF4E0", "#EEEDFF", "#E5F0FF", "#E8F8EC", "#FDECEB", "#E0F7F8"];
@@ -23,6 +24,7 @@ export function CoursesBoard({ courses: initial, order }: { courses: CourseCard[
   useEffect(() => { setCats(order); }, [order]);
   const [drag, setDrag] = useState<{ kind: "course" | "cat"; id: string } | null>(null);
   const [open, setOpen] = useState(false);
+  const [book, setBook] = useState(false);
   const [f, setF] = useState({ title: "", level: "", category: "general" });
   const catName = (k: string) => { const c = COURSE_CATEGORIES.find((x) => x[0] === k); return c ? (lang === "en" ? c[1] : c[2]) : k; };
   const used = cats.filter((k) => courses.some((c) => c.category === k));
@@ -81,6 +83,7 @@ export function CoursesBoard({ courses: initial, order }: { courses: CourseCard[
         );
       })}
 
+      {book && <BookDialog onClose={() => setBook(false)} />}
       <Dialog open={open} onClose={() => setOpen(false)} title={t("crs.new")}>
         <div className="flex flex-col gap-3">
           <div className="field"><label htmlFor="c-t">{t("crs.title")}</label><input id="c-t" className="input" value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} placeholder="Speaking B2" autoFocus /></div>
@@ -92,10 +95,10 @@ export function CoursesBoard({ courses: initial, order }: { courses: CourseCard[
               </select>
             </div>
           </div>
-          <div className="statt" style={{ alignItems: "flex-start" }}>
+          <button type="button" className="statt text-left" style={{ alignItems: "flex-start" }} onClick={() => { setOpen(false); setBook(true); }}>
             <span className="si" style={{ background: "linear-gradient(135deg,#A55CF5,#3D8BFF)" }}><Icon name="spark" /></span>
-            <div><b className="text-[15px]">{t("crs.fromBook")}</b><span>{t("common.soon", { n: 8 })}</span></div>
-          </div>
+            <div><b className="text-[15px]">{t("crs.fromBook")}</b><span>{t("ai.fromBookSub")}</span></div>
+          </button>
           {error && <div className="alert">{error}</div>}
         </div>
         <div className="actions">

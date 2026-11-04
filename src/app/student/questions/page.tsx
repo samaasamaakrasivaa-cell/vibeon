@@ -1,4 +1,4 @@
-import { AskForm } from "@/components/student/AskForm";
+import { AskForm, EscalateButton } from "@/components/student/AskForm";
 import { requireUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { getT } from "@/lib/i18n/server";
@@ -28,8 +28,8 @@ export default async function StudentQuestions() {
             <div className="grow">
               <div className="flex flex-wrap justify-between gap-2"><span className="small muted">{q.context ?? q.task?.title ?? t("sq.general")}</span><span className="small text-text3">{q.createdAt.toLocaleDateString(loc, { day: "numeric", month: "short", timeZone: me.timezone })}</span></div>
               <p className="mt-1 mb-0 font-semibold">{q.text}</p>
-              {q.aiAnswer && <div className="alert mt-2" style={{ background: "var(--violet-bg)", color: "var(--violet)" }}>{q.aiAnswer}</div>}
-              {q.teacherAnswer ? <div className="alert ok mt-2"><b className="block small">{t("cls.teacherSays")}</b>{q.teacherAnswer}</div> : <span className="pill orange mt-2 inline-flex">{t("sq.waiting")}</span>}
+              {q.aiAnswer && <div className="aianswer mt-2"><b className="small">{t("ai.says")}</b><p className="m-0 mt-1">{q.aiAnswer}</p></div>}
+              {q.teacherAnswer ? <div className="alert ok mt-2"><b className="block small">{t("cls.teacherSays")}</b>{q.teacherAnswer}</div> : q.askedTeacher ? <span className="pill orange mt-2 inline-flex">{t("sq.waiting")}</span> : <EscalateButton id={q.id} />}
             </div>
           </div>
         ))}

@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { ClassRoom } from "@/components/class/ClassRoom";
+import { ClassRoom, type AiCheck, type Review } from "@/components/class/ClassRoom";
 import type { BObj } from "@/components/class/Board";
 import type { Answers } from "@/components/tasks/store";
 import { requireUser } from "@/lib/auth/session";
@@ -33,7 +33,9 @@ export default async function ClassPage({ params, searchParams }: { params: Prom
   ]);
   const answers: Answers = Object.fromEntries(answersRows.map((a) => [a.taskId, a.payload as Record<string, unknown>]));
   const statuses = Object.fromEntries(answersRows.map((a) => [a.taskId, a.status]));
-  const reviews = Object.fromEntries(answersRows.filter((a) => a.teacherReview).map((a) => [a.taskId, a.teacherReview as { ok: boolean; comment: string | null }]));
+  const reviews = Object.fromEntries(answersRows.filter((a) => a.teacherReview).map((a) => [a.taskId, a.teacherReview as Review]));
+  // черновики проверки ИИ видит только учитель
+  const aiDrafts = role === "teacher" ? Object.fromEntries(answersRows.filter((a) => a.aiDraft).map((a) => [a.taskId, a.aiDraft as AiCheck])) : {};
   const lessonWords = (data?.tasks ?? []).filter((x) => x.type === "wordset").flatMap((x) => { const p = parse("wordset", x.content); return p.kind === "wordset" ? p.items : []; });
   const tz = user.timezone;
   const loc = lang === "ru" ? "ru-RU" : "en-GB";
@@ -48,7 +50,7 @@ export default async function ClassPage({ params, searchParams }: { params: Prom
         title: data?.l.title ?? null,
         crumbs: data ? `${data.l.unit.course.title} · Unit ${data.unitNo} · Lesson ${data.lessonNo}` : null,
         course: data ? { title: data.l.unit.course.title, cover: data.l.unit.course.cover } : null,
-        rubrics: data?.rubrics ?? [], tasks: data?.tasks ?? [], answers, statuses, reviews,
+        rubrics: data?.rubrics ?? [], tasks: data?.tasks ?? [], answers, statuses, reviews, aiDrafts,
         live: (lesson.live ?? {}) as LiveState, board,
         homework: { extraTaskIds: hw?.extraTaskIds ?? [], wordTraining: hw?.wordTraining ?? [], teacherComment: hw?.teacherComment ?? null },
         lessonWords, words: words.map((w) => ({ id: w.id, word: w.word, translation: w.translation, example: w.example, level: w.level })),
