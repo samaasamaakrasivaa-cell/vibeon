@@ -10,6 +10,7 @@ import { LEVELS, ROUTE_TYPES, SKILLS, type Stage } from "./cefr";
 import { grade, itemsFor, WRITING_PROMPT } from "./testbank";
 import { etaDate, paceKey, PACES, parsePace, routeState } from "./math";
 import { roadmapView } from "./progress";
+import { notify } from "../notify";
 
 type R = { ok: true; id?: string } | { ok: false; error: string };
 const json = (v: unknown) => JSON.parse(JSON.stringify(v)) as Prisma.InputJsonValue;
@@ -31,7 +32,7 @@ export async function assignTest(studentId: string, kind: "entry" | "slice" | "f
   const r = await db.roadmap.findFirst({ where: { studentId }, orderBy: { createdAt: "desc" } });
   await db.checkpoint.deleteMany({ where: { studentId, status: "assigned", kind } }); // один открытый тест одного вида
   const c = await db.checkpoint.create({ data: { studentId, roadmapId: r?.id ?? null, kind, stage: stage ?? null } });
-  if (s.userId) await db.notification.create({ data: { userId: s.userId, kind: "test", title: kind === "entry" ? "Преподаватель назначил входной тест" : "Преподаватель назначил контрольный срез", action: "decide", link: `/student/test/${c.id}` } });
+  if (s.userId) await notify({ userId: s.userId, kind: "test", title: kind === "entry" ? "Преподаватель назначил входной тест" : "Преподаватель назначил контрольный срез", action: "decide", link: `/student/test/${c.id}` });
   refresh(studentId);
   return { ok: true, id: c.id };
 }
@@ -83,7 +84,7 @@ export async function submitTest(id: string, answers: Record<string, number>, wr
     stages[c.stage] = { ...stages[c.stage], passed: { score: res.score, at: new Date().toISOString() } };
     await db.roadmap.update({ where: { id: c.roadmap.id }, data: { stages: json(stages) } });
   }
-  await db.notification.create({ data: { userId: c.student.teacherId, kind: "test", title: `${c.student.name} ${c.kind === "entry" ? "прошёл(ла) входной тест" : "прошёл(ла) срез"}: ${res.level}, ${res.score}%`, action: "review", link: `/teacher/students/${c.studentId}?tab=roadmap` } });
+  await notify({ userId: c.student.teacherId, kind: "test", title: `${c.student.name} ${c.kind === "entry" ? "прошёл(ла) входной тест" : "прошёл(ла) срез"}: ${res.level}, ${res.score}%`, action: "review", link: `/teacher/students/${c.studentId}?tab=roadmap` });
   refresh(c.studentId);
   return { ok: true, level: res.level };
 }
@@ -146,7 +147,7 @@ export async function approveRoadmap(id: string, on = true): Promise<R> {
   const v = await roadmapView(r.studentId, r.student.timezone);
   const left = v.r ? routeState(v.stages, v.done).left : 0;
   await db.roadmap.update({ where: { id }, data: { approvedAt: r.approvedAt ?? new Date(), baseEta: etaDate(left, parsePace(r.paceStudent ?? r.pace), v.r ? v.lessonMin : 60) } });
-  if (r.student.userId) await db.notification.create({ data: { userId: r.student.userId, kind: "roadmap", title: "Твой маршрут к цели готов", action: "review", link: "/student/route" } });
+  if (r.student.userId) await notify({ userId: r.student.userId, kind: "roadmap", title: "Твой маршрут к цели готов", action: "review", link: "/student/route" });
   refresh(r.studentId);
   return { ok: true };
 }

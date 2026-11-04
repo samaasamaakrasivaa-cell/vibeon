@@ -7,6 +7,7 @@ import { publish } from "../live/bus";
 import { readStored } from "../storage";
 import { ocr } from "../ai/gateway";
 import { weeklyReports } from "../roadmap/jobs";
+import { notify } from "../notify";
 
 // ───────── Цены ─────────
 
@@ -46,9 +47,7 @@ export async function createInvoice(s: Student, data: { amount: number; kind: "l
 export async function notifyInvoice(s: Student, inv: Invoice, reminder: boolean) {
   const rub = new Intl.NumberFormat("ru-RU").format(inv.amount) + " ₽";
   if (s.userId)
-    await db.notification.create({
-      data: { userId: s.userId, kind: "invoice", title: reminder ? `Напоминание: счёт на ${rub} ждёт оплаты` : `Новый счёт на оплату: ${rub}`, action: "decide", link: "/student/payments?tab=bills" },
-    });
+    await notify({ userId: s.userId, kind: "invoice", title: reminder ? `Напоминание: счёт на ${rub} ждёт оплаты` : `Новый счёт на оплату: ${rub}`, action: "decide", link: "/student/payments?tab=bills" });
   if (s.payerContact && /@.+\./.test(s.payerContact) && !s.payerContact.startsWith("@"))
     await mailInvoice(s.payerContact, s.payerName ?? "", `${s.name} ${s.lastName ?? ""}`.trim(), inv.title ?? "", rub, `${env.appUrl}/login`, reminder);
   publish(`student:${s.id}`, "invoice", { id: inv.id });
@@ -106,13 +105,11 @@ export async function submitProof(inv: Invoice, proof: { text?: string; file?: s
   });
   const fresh = await db.invoice.findUniqueOrThrow({ where: { id: inv.id }, include: { student: true } });
   if (matches) await acceptInvoice(fresh, true);
-  await db.notification.create({
-    data: {
+  await notify({
       userId: fresh.student.teacherId, kind: "payment",
       title: `${fresh.student.name} ${matches ? "оплатил(а)" : "прислал(а) подтверждение оплаты"}: ${new Intl.NumberFormat("ru-RU").format(inv.amount)} ₽`,
       action: matches ? "review" : "check_screenshot", link: "/teacher/finance?tab=check",
-    },
-  });
+    });
   return matches;
 }
 

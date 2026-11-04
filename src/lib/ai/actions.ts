@@ -12,6 +12,7 @@ import { aiCode, aiCtx } from "./ctx";
 import { run } from "./gateway";
 import { sameAnswer } from "./lite";
 import type { Check, DraftTask, Turn } from "./tasks";
+import { notify } from "../notify";
 
 type Ok<T> = ({ ok: true } & T) | { ok: false; error: string };
 const str = (v: unknown, max = 2000) => (typeof v === "string" ? v.trim().slice(0, max) : "");
@@ -174,7 +175,7 @@ export async function escalateQuestion(id: string): Promise<Ok<object>> {
   const q = await db.question.findUnique({ where: { id }, include: { student: true } });
   if (!q || q.student.userId !== user.id) return { ok: false, error: "not found" };
   await db.question.update({ where: { id }, data: { askedTeacher: true } });
-  await db.notification.create({ data: { userId: q.student.teacherId, kind: "question", title: `${q.student.name}: ${q.text.slice(0, 120)}`, action: "reply", link: "/teacher/questions" } });
+  await notify({ userId: q.student.teacherId, kind: "question", title: `${q.student.name}: ${q.text.slice(0, 120)}`, action: "reply", link: "/teacher/questions" });
   revalidatePath("/student/questions");
   revalidatePath("/teacher/questions");
   return { ok: true };

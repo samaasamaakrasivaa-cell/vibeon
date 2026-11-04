@@ -35,7 +35,7 @@ export default async function TeacherLayout({ children }: { children: React.Reac
   ];
   return (
     <>
-      <AppHeader subtitle={t("ws.teacher")} user={user} homeHref="/teacher" profileHref="/teacher" />
+      <AppHeader subtitle={t("ws.teacher")} user={user} homeHref="/teacher" profileHref="/teacher/profile" />
       <div className="shell">
         <Sidebar groups={groups} ariaLabel={t("ws.teacher")} />
         <main className="main">{children}</main>

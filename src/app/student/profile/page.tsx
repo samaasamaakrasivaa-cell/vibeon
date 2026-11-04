@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { Icon } from "@/components/Icon";
 import { ProfileForm } from "@/components/student/ProfileForm";
+import { NotifySettings } from "@/components/NotifySettings";
+import { settingsOf } from "@/lib/notify/settings";
+import { tgEnabled } from "@/lib/notify/telegram";
 import { requireUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { getT } from "@/lib/i18n/server";
@@ -15,12 +18,7 @@ export default async function StudentProfile() {
     <div className="page" style={{ maxWidth: 820 }}>
       <h1 className="mb-5">{t("common.profile")}</h1>
       <ProfileForm hasPassword={!!me.passwordHash} init={{ name: me.name, lastName: me.lastName ?? "", phone: me.phone ?? "", telegram: s?.telegram ?? "", timezone: me.timezone, email: me.email }} />
-      <section className="card">
-        <h2 className="mb-2">Telegram</h2>
-        <p className="muted mt-0">{t("tg.lead")}</p>
-        <button className="btn primary" disabled title={t("tg.soon")}><Icon name="telegram" size="sm" />{t("tg.connect")}</button>
-        <p className="hint mb-0">{t("tg.soon")}</p>
-      </section>
+      <NotifySettings role="STUDENT" init={settingsOf("STUDENT", me.notify)} linked={!!me.telegramChatId} enabled={tgEnabled()} email={me.email} />
       {s && (
         <section className="card">
           <h2 className="mb-2">{t("prf.teacher")}</h2>

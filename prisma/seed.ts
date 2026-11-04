@@ -35,6 +35,8 @@ async function main() {
   await db.lessonInstance.deleteMany({ where: { OR: [{ teacherId: teacher.id }, { student: { teacherId: teacher.id } }] } });
   await db.student.deleteMany({ where: { teacherId: teacher.id } });
   await db.notification.deleteMany({ where: { userId: { in: [teacher.id, annaUser.id] } } });
+  await db.delivery.deleteMany({ where: { userId: { in: [teacher.id, annaUser.id] } } });
+  await db.user.updateMany({ where: { id: { in: [teacher.id, annaUser.id] } }, data: { telegramChatId: null, tgLinkToken: null, notify: {} } });
   await db.course.deleteMany({ where: { teacherId: teacher.id } });
 
   // Понедельник текущей недели (по Москве)

@@ -260,3 +260,17 @@ export async function markAllRead(): Promise<Result> {
   revalidatePath("/student");
   return { ok: true };
 }
+
+/** Профиль учителя: имя, часовой пояс, ссылка на звонок по умолчанию. */
+export async function updateTeacherProfile(f: { name: string; lastName: string; phone: string; timezone: string; callLink: string }): Promise<{ ok: true } | { ok: false; error: string }> {
+  const { t } = await getT();
+  const u = await requireUser("TEACHER");
+  const name = f.name.trim().slice(0, 80);
+  if (!name) return { ok: false, error: t("auth.err.name") };
+  const link = f.callLink.trim().slice(0, 500);
+  if (link && !/^https?:\/\//.test(link)) return { ok: false, error: t("tp.err.link") };
+  await db.user.update({ where: { id: u.id }, data: { name, lastName: f.lastName.trim().slice(0, 80) || null, phone: f.phone.trim().slice(0, 40) || null, timezone: f.timezone || u.timezone } });
+  await db.teacherProfile.update({ where: { userId: u.id }, data: { callLink: link || null } });
+  revalidatePath("/teacher", "layout");
+  return { ok: true };
+}

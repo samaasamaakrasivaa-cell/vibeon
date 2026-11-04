@@ -7,6 +7,7 @@ import { publish, withLock } from "@/lib/live/bus";
 import { rateLimit } from "@/lib/rate-limit";
 import { parse } from "@/lib/tasks/parse";
 import type { TaskType } from "@/lib/tasks/catalog";
+import { notify } from "@/lib/notify";
 
 type Board = { pages: Record<string, unknown>[][] };
 const json = (v: unknown) => JSON.parse(JSON.stringify(v)) as Prisma.InputJsonValue;
@@ -140,7 +141,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         ? await db.question.update({ where: { id: prev.id }, data: { askedTeacher: true } })
         : await db.question.create({ data: { studentId: lesson.studentId, taskId, text, askedTeacher: true, context: str(body.context, 300) || null } });
       if (lesson.teacherId)
-        await db.notification.create({ data: { userId: lesson.teacherId, kind: "question", title: `${user.name}: ${text.slice(0, 120)}`, action: "reply", link: `/class/${id}` } });
+        await notify({ userId: lesson.teacherId, kind: "question", title: `${user.name}: ${text.slice(0, 120)}`, action: "reply", link: `/class/${id}` });
       publish(ch, "question", { id: q.id, taskId, text, by });
       return NextResponse.json({ ok: true });
     }
@@ -181,7 +182,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       const text = str(body.text, 5000).trim();
       if (!text) return bad();
       await db.feedback.create({ data: { studentId: lesson.studentId, lessonInstanceId: id, text } });
-      if (lesson.student?.userId) await db.notification.create({ data: { userId: lesson.student.userId, kind: "feedback", title: `${user.name}: ${text.slice(0, 120)}`, action: "open_profile", link: "/student/progress" } });
+      if (lesson.student?.userId) await notify({ userId: lesson.student.userId, kind: "feedback", title: `${user.name}: ${text.slice(0, 120)}`, action: "open_profile", link: "/student/progress" });
       return NextResponse.json({ ok: true });
     }
     // ── выбрать урок из курсов для этого занятия
@@ -213,7 +214,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       }
       await db.lessonInstance.update({ where: { id }, data: { status: "DONE", finishedAt: new Date() } });
       if (lesson.student?.userId)
-        await db.notification.create({ data: { userId: lesson.student.userId, kind: "lesson_done", title: hasHw ? (user.lang === "EN" ? "The lesson is over — homework is waiting" : "Урок окончен — тебя ждёт домашка") : (user.lang === "EN" ? "The lesson is over" : "Урок окончен"), action: "review", link: `/class/${id}?tab=homework` } });
+        await notify({ userId: lesson.student.userId, kind: "lesson_done", title: hasHw ? (user.lang === "EN" ? "The lesson is over — homework is waiting" : "Урок окончен — тебя ждёт домашка") : (user.lang === "EN" ? "The lesson is over" : "Урок окончен"), action: "review", link: `/class/${id}?tab=homework` });
       publish(ch, "finished", { hasHw });
       return NextResponse.json({ ok: true });
     }

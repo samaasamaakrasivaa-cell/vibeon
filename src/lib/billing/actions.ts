@@ -5,6 +5,7 @@ import { requireUser } from "../auth/session";
 import { getT } from "../i18n/server";
 import { acceptInvoice, createInvoice, notifyInvoice, packOptions, submitProof, undoAccept } from "./engine";
 import { sendMessage } from "../student/actions";
+import { notify } from "../notify";
 
 export type R = { ok: true; auto?: boolean } | { ok: false; error: string };
 const refresh = () => { revalidatePath("/teacher", "layout"); revalidatePath("/student", "layout"); };
@@ -35,7 +36,7 @@ export async function markPaid(id: string): Promise<R> {
   const inv = await teacherInvoice(id);
   if (inv.status === "PAID") return { ok: true };
   await acceptInvoice(inv, false);
-  if (inv.student.userId) await db.notification.create({ data: { userId: inv.student.userId, kind: "paid", title: `Оплата получена: ${new Intl.NumberFormat("ru-RU").format(inv.amount)} ₽. Спасибо!`, link: "/student/payments?tab=bills" } });
+  if (inv.student.userId) await notify({ userId: inv.student.userId, kind: "paid", title: `Оплата получена: ${new Intl.NumberFormat("ru-RU").format(inv.amount)} ₽. Спасибо!`, link: "/student/payments?tab=bills" });
   refresh();
   return { ok: true };
 }
@@ -60,7 +61,7 @@ export async function undoAuto(id: string): Promise<R> {
 export async function rejectProof(id: string, comment: string): Promise<R> {
   const inv = await teacherInvoice(id);
   await db.invoice.update({ where: { id }, data: { status: "SENT", autoAccepted: false } });
-  if (inv.student.userId) await db.notification.create({ data: { userId: inv.student.userId, kind: "invoice", title: `Оплата не найдена${comment ? `: ${comment.slice(0, 100)}` : ""}. Проверь, пожалуйста`, action: "decide", link: "/student/payments?tab=bills" } });
+  if (inv.student.userId) await notify({ userId: inv.student.userId, kind: "invoice", title: `Оплата не найдена${comment ? `: ${comment.slice(0, 100)}` : ""}. Проверь, пожалуйста`, action: "decide", link: "/student/payments?tab=bills" });
   refresh();
   return { ok: true };
 }
@@ -120,7 +121,7 @@ export async function attachReceipt(id: string, url: string): Promise<R> {
   const inv = await teacherInvoice(id);
   if (!url.startsWith("/api/files/")) return { ok: false, error: "file" };
   await db.invoice.update({ where: { id }, data: { receiptFile: url } });
-  if (inv.student.userId) await db.notification.create({ data: { userId: inv.student.userId, kind: "receipt", title: "Преподаватель прикрепил чек к оплате", link: "/student/payments?tab=bills" } });
+  if (inv.student.userId) await notify({ userId: inv.student.userId, kind: "receipt", title: "Преподаватель прикрепил чек к оплате", link: "/student/payments?tab=bills" });
   refresh();
   return { ok: true };
 }
@@ -158,7 +159,7 @@ export async function buyPack(n: number): Promise<R> {
   if (!opt) return { ok: false, error: t("pay.err.noPrices") };
   if (await db.invoice.count({ where: { studentId: s.id, kind: "pack", status: { in: ["SENT", "PROOF_SENT"] } } })) return { ok: false, error: t("pay.err.openPack") };
   await createInvoice(s, { amount: opt.price, kind: "pack", title: `Абонемент, ${opt.n} занятий`, packLessons: opt.n });
-  if (s.payType === "POSTPAID") await db.notification.create({ data: { userId: s.teacherId, kind: "pack_request", title: `${s.name} хочет перейти на абонемент (${opt.n} занятий)`, action: "decide", link: `/teacher/students/${s.id}` } });
+  if (s.payType === "POSTPAID") await notify({ userId: s.teacherId, kind: "pack_request", title: `${s.name} хочет перейти на абонемент (${opt.n} занятий)`, action: "decide", link: `/teacher/students/${s.id}` });
   refresh();
   return { ok: true };
 }

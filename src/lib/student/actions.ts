@@ -7,6 +7,7 @@ import { getT } from "../i18n/server";
 import { publish } from "../live/bus";
 import { hashPassword, MIN_PASSWORD, verifyPassword } from "../auth/password";
 import { isoDay } from "../time";
+import { notify } from "../notify";
 
 export type R = { ok: true } | { ok: false; error: string };
 const str = (v: unknown, max = 2000) => (typeof v === "string" ? v.trim().slice(0, max) : "");
@@ -31,7 +32,7 @@ export async function sendMessage(studentId: string, text: string): Promise<R> {
     const last = await db.notification.findFirst({ where: { userId: to, kind: "message", readAt: null }, orderBy: { createdAt: "desc" } });
     // одно непрочитанное уведомление на переписку, а не на каждое сообщение
     if (!last || !last.link?.includes(studentId))
-      await db.notification.create({ data: { userId: to, kind: "message", title: `${acc.u.name}: ${body.slice(0, 100)}`, action: "reply", link: acc.u.role === "TEACHER" ? "/student/messages" : `/teacher/chat?s=${studentId}` } });
+      await notify({ userId: to, kind: "message", title: `${acc.u.name}: ${body.slice(0, 100)}`, action: "reply", link: acc.u.role === "TEACHER" ? "/student/messages" : `/teacher/chat?s=${studentId}` });
   }
   return { ok: true };
 }
@@ -60,7 +61,7 @@ export async function answerQuestion(id: string, text: string): Promise<R> {
   const answer = str(text, 4000);
   if (!answer) return { ok: false, error: t("qs.err.empty") };
   await db.question.update({ where: { id }, data: { teacherAnswer: answer, answeredAt: new Date() } });
-  if (q.student.userId) await db.notification.create({ data: { userId: q.student.userId, kind: "answer", title: `${me.name}: ${answer.slice(0, 100)}`, action: "reply", link: "/student/questions" } });
+  if (q.student.userId) await notify({ userId: q.student.userId, kind: "answer", title: `${me.name}: ${answer.slice(0, 100)}`, action: "reply", link: "/student/questions" });
   revalidatePath("/teacher/questions");
   return { ok: true };
 }
@@ -71,7 +72,7 @@ export async function askQuestion(text: string, context: string): Promise<R> {
   const body = str(text, 2000);
   if (!body) return { ok: false, error: "empty" };
   await db.question.create({ data: { studentId: s.id, text: body, context: str(context, 300) || null, askedTeacher: true } });
-  await db.notification.create({ data: { userId: s.teacherId, kind: "question", title: `${u.name}: ${body.slice(0, 120)}`, action: "reply", link: "/teacher/questions" } });
+  await notify({ userId: s.teacherId, kind: "question", title: `${u.name}: ${body.slice(0, 120)}`, action: "reply", link: "/teacher/questions" });
   revalidatePath("/student/questions");
   return { ok: true };
 }

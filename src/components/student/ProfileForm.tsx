@@ -2,10 +2,11 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { changePassword, updateMyProfile } from "@/lib/student/actions";
+import { updateTeacherProfile } from "@/lib/teacher/actions";
 import { useT } from "@/lib/i18n/client";
 import { TIMEZONES } from "@/lib/time";
 
-export function ProfileForm({ init, hasPassword }: { init: { name: string; lastName: string; phone: string; telegram: string; timezone: string; email: string }; hasPassword: boolean }) {
+export function ProfileForm({ init, hasPassword, teacher }: { init: { name: string; lastName: string; phone: string; telegram: string; timezone: string; email: string; callLink?: string }; hasPassword: boolean; teacher?: boolean }) {
   const { t } = useT();
   const router = useRouter();
   const [f, setF] = useState(init);
@@ -13,7 +14,8 @@ export function ProfileForm({ init, hasPassword }: { init: { name: string; lastN
   const [pw, setPw] = useState({ old: "", new: "" });
   const [pwMsg, setPwMsg] = useState<string | null>(null);
   const [pending, start] = useTransition();
-  const field = (k: keyof typeof f, label: string, type = "text") => (
+  const [f2, setF2] = useState({ callLink: init.callLink ?? "" });
+  const field = (k: Exclude<keyof typeof f, "callLink">, label: string, type = "text") => (
     <div className="field"><label htmlFor={`p-${k}`}>{label}</label><input id={`p-${k}`} type={type} className="input" value={f[k]} onChange={(e) => setF({ ...f, [k]: e.target.value })} disabled={k === "email"} /></div>
   );
   return (
@@ -21,11 +23,11 @@ export function ProfileForm({ init, hasPassword }: { init: { name: string; lastN
       <section className="card">
         <h2 className="mb-4">{t("prf.data")}</h2>
         <div className="grid-2">
-          {field("name", t("ob.first"))}{field("lastName", t("ob.last"))}{field("email", t("auth.email"))}{field("phone", t("ob.phone"), "tel")}{field("telegram", "Telegram")}
+          {field("name", t("ob.first"))}{field("lastName", t("ob.last"))}{field("email", t("auth.email"))}{field("phone", t("ob.phone"), "tel")}{teacher ? <div className="field"><label htmlFor="p-call">{t("tp.callLink")}</label><input id="p-call" className="input" value={f2.callLink} placeholder="https://telemost.yandex.ru/…" onChange={(e) => setF2({ callLink: e.target.value })} /></div> : field("telegram", "Telegram")}
           <div className="field"><label htmlFor="p-tz">{t("prof.tz")}</label><select id="p-tz" className="select" value={f.timezone} onChange={(e) => setF({ ...f, timezone: e.target.value })}>{TIMEZONES.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select></div>
         </div>
         <div className="mt-4 flex items-center gap-3">
-          <button className="btn primary" disabled={pending} onClick={() => start(async () => { const r = await updateMyProfile(f); setMsg(r.ok ? `✓ ${t("common.saved")}` : r.error); })}>{t("common.save")}</button>
+          <button className="btn primary" disabled={pending} onClick={() => start(async () => { const r = teacher ? await updateTeacherProfile({ ...f, callLink: f2.callLink }) : await updateMyProfile(f); setMsg(r.ok ? `✓ ${t("common.saved")}` : r.error); })}>{t("common.save")}</button>
           {msg && <span className="small">{msg}</span>}
         </div>
       </section>

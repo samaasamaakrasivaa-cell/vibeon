@@ -33,6 +33,8 @@ model User {
   lang            Lang      @default(RU)
   timezone        String    @default("Europe/Moscow")
   telegramChatId  String?
+  tgLinkToken     String?   @unique // одноразовый код привязки Telegram (/start <код>)
+  notify          Json      @default("{}") // настройки уведомлений: каналы по темам, напоминание об уроке, тихие часы
   phone           String?
   consentAt       DateTime? // согласие на обработку ПД (152-ФЗ)
   createdAt       DateTime  @default(now())
@@ -526,10 +528,32 @@ model Notification {
   link      String?
   readAt    DateTime?
   doneAt    DateTime?
+  dedupe    String?   @unique // напоминания: одно на событие (lesson:<id>:<user>, words:<student>:<день>…)
   createdAt DateTime  @default(now())
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deliveries Delivery[]
 
   @@index([userId, createdAt])
+}
+
+/// Доставка уведомления в Telegram или на почту (с повторами при ошибке).
+model Delivery {
+  id             String        @id @default(cuid())
+  notificationId String?
+  userId         String
+  channel        String // telegram | email
+  to             String
+  text           String
+  link           String?
+  status         String        @default("pending") // pending | sent | failed
+  attempts       Int           @default(0)
+  error          String?
+  notBefore      DateTime      @default(now()) // тихие часы: отправить утром
+  sentAt         DateTime?
+  createdAt      DateTime      @default(now())
+  notification   Notification? @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+
+  @@index([status, notBefore])
 }
 
 model Feedback {

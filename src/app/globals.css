@@ -216,7 +216,7 @@ h3, .h3 { font-size: 17px; font-weight: 600; letter-spacing: -.01em; margin: 0; 
 .ferr { font-size: 13px; color: var(--bad-text); }
 
 /* Переключатель */
-.switch { position: relative; width: 51px; height: 31px; flex: none; }
+.switch { position: relative; display: inline-block; vertical-align: middle; width: 51px; height: 31px; flex: none; }
 .switch input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
 .switch span { position: absolute; inset: 0; border-radius: 999px; background: var(--fill); transition: background .2s; pointer-events: none; }
 .switch span::after { content: ""; position: absolute; top: 2px; left: 2px; width: 27px; height: 27px; border-radius: 50%; background: #fff; box-shadow: 0 2px 4px rgba(0, 0, 0, .2); transition: transform .2s; }
@@ -919,4 +919,13 @@ details.how[open] summary { margin-bottom: 6px; }
 .sdcol { display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .sdbars { display: flex; align-items: flex-end; gap: 4px; height: 125px; }
 .sdbars span { width: 16px; border-radius: 4px 4px 2px 2px; display: block; }
+
+/* ── Уведомления (этап 10) ── */
+.tgbox { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 14px; border-radius: 16px; background: var(--surface2); }
+.tgico { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #fff; background: linear-gradient(135deg, #2AABEE, #229ED9); flex: none; }
+.nftable { width: 100%; border-collapse: collapse; }
+.nftable th { text-align: left; font-size: 13px; color: var(--text2); font-weight: 600; padding: 6px 8px; }
+.nftable th:not(:first-child), .nftable td:not(:first-child) { text-align: center; width: 110px; }
+.nftable td { padding: 10px 8px; border-top: 1px solid var(--sep); vertical-align: middle; }
+.tgmsg { padding: 10px 12px; border-radius: 14px; background: var(--surface2); }
 }

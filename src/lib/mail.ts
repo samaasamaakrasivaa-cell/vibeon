@@ -92,3 +92,11 @@ export async function mailInvoice(to: string, payer: string, student: string, ti
   );
   await sendMail(to, reminder ? `Напоминание об оплате — ${amount}` : `Счёт на оплату — ${amount}`, m.html, m.text);
 }
+
+/** Уведомление платформы на почту (по настройкам пользователя). */
+export async function mailNotice(to: string, title: string, url: string, settingsUrl: string, lang: L) {
+  const m = lang === "en"
+    ? layout(title, "There is news in your VibeOn workspace.", { label: "Open VibeOn", url }, `You can choose which emails you get in <a href="${esc(settingsUrl)}">notification settings</a>.`)
+    : layout(esc(title), "В вашем кабинете VibeOn есть новости.", { label: "Открыть VibeOn", url }, `Какие письма приходят, можно выбрать в <a href="${esc(settingsUrl)}">настройках уведомлений</a>.`);
+  await sendMail(to, `${title} — VibeOn`, m.html, m.text);
+}
