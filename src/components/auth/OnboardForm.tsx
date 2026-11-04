@@ -1,5 +1,6 @@
 "use client";
 import { useActionState } from "react";
+import { NewPassword } from "./PasswordInput";
 import { inviteFormAction, type FormState } from "@/lib/auth/actions";
 import { useT } from "@/lib/i18n/client";
 import { GOALS, SINCE, SKILLS } from "@/lib/onboarding";
@@ -38,11 +39,7 @@ export function OnboardForm({ token, init }: { token: string; init: Init }) {
       <div className="field"><span className="flabel">{t("ob.easy")}</span>{chips("easy", SKILLS)}</div>
       <div className="field"><span className="flabel">{t("ob.hard")}</span>{chips("hard", SKILLS)}</div>
       <div className="field"><label htmlFor="problem">{t("ob.problem")}</label><textarea id="problem" name="problem" className="textarea input" placeholder={t("ob.problemPh")} defaultValue={v("problem")} /></div>
-      <div className="field">
-        <label htmlFor="password">{t("ob.password")}</label>
-        <input id="password" name="password" type="password" className="input" placeholder={t("auth.newPasswordPh")} autoComplete="new-password" />
-        <span className="hint">{t("ob.passwordHint")}</span>
-      </div>
+      <NewPassword label={t("ob.password")} hint={t("ob.passwordHint")} required={false} />
       <label className="consent">
         <input type="checkbox" name="consent" className="check" />
         <span>

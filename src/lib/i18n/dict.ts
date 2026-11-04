@@ -1115,6 +1115,13 @@ const ru = {
   "nf.toCabinet": "В кабинет",
   "tp.callLink": "Ссылка на звонок по умолчанию",
   "tp.err.link": "Ссылка должна начинаться с https://",
+  "auth.pwShow": "Показать пароль",
+  "auth.pwHide": "Скрыть пароль",
+  "auth.password2": "Повторите пароль",
+  "auth.password2Ph": "Ещё раз тот же пароль",
+  "auth.err.mismatch": "Пароли не совпадают",
+  "auth.pwMatch": "Пароли совпадают",
+  "auth.check.spam": "Не видите письмо? Загляните в «Спам» и нажмите «Это не спам» — в папке «Спам» почта отключает кнопки и ссылки в письмах.",
 } as const;
 
 export type DictKey = keyof typeof ru;
@@ -2232,6 +2239,13 @@ const en: Record<DictKey, string> = {
   "nf.toCabinet": "To my workspace",
   "tp.callLink": "Default call link",
   "tp.err.link": "The link must start with https://",
+  "auth.pwShow": "Show password",
+  "auth.pwHide": "Hide password",
+  "auth.password2": "Repeat the password",
+  "auth.password2Ph": "The same password again",
+  "auth.err.mismatch": "The passwords don’t match",
+  "auth.pwMatch": "The passwords match",
+  "auth.check.spam": "Can’t see the email? Check Spam and mark it “Not spam” — mail services disable buttons and links in the Spam folder.",
 };
 
 export const dictionaries: Record<LangCode, Record<DictKey, string>> = { ru, en };

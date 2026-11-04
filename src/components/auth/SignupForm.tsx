@@ -4,6 +4,7 @@ import { signupAction, type FormState } from "@/lib/auth/actions";
 import { useT } from "@/lib/i18n/client";
 import { Submit } from "./Submit";
 import { OAuthButtons } from "./OAuthButtons";
+import { NewPassword } from "./PasswordInput";
 
 export function SignupForm({ oauth }: { oauth: { yandex: boolean; vk: boolean } }) {
   const { t } = useT();
@@ -20,10 +21,7 @@ export function SignupForm({ oauth }: { oauth: { yandex: boolean; vk: boolean } 
         <label htmlFor="email">{t("auth.email")}</label>
         <input id="email" name="email" type="email" className="input" placeholder="you@mail.ru" autoComplete="email" defaultValue={st?.fields?.email} required />
       </div>
-      <div className="field">
-        <label htmlFor="password">{t("auth.newPassword")}</label>
-        <input id="password" name="password" type="password" className="input" placeholder={t("auth.newPasswordPh")} autoComplete="new-password" minLength={8} required />
-      </div>
+      <NewPassword label={t("auth.newPassword")} />
       <label className="consent">
         <input type="checkbox" name="consent" className="check" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
         <span>

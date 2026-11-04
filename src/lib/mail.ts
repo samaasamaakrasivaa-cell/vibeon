@@ -42,6 +42,7 @@ function layout(title: string, body: string, button: { label: string; url: strin
 <tr><td align="center" style="font-size:22px;font-weight:700;padding-bottom:12px">${esc(title)}</td></tr>
 <tr><td align="center" style="font-size:15px;line-height:1.5;color:#3A3A3C;padding-bottom:24px">${body}</td></tr>
 <tr><td align="center" style="padding-bottom:24px"><a href="${esc(button.url)}" style="display:inline-block;background:#007AFF;color:#fff;text-decoration:none;font-weight:600;font-size:16px;padding:14px 28px;border-radius:24px">${esc(button.label)}</a></td></tr>
+<tr><td align="center" style="font-size:12px;color:#8E8E93;line-height:1.5;padding-bottom:16px">Если кнопка не нажимается, скопируйте ссылку в браузер:<br><a href="${esc(button.url)}" style="color:#007AFF;word-break:break-all">${esc(button.url)}</a></td></tr>
 <tr><td align="center" style="font-size:12px;color:#8E8E93;line-height:1.5">${foot}</td></tr>
 </table><div style="font-size:12px;color:#8E8E93;padding-top:16px">VibeOn</div></td></tr></table></body></html>`;
   const text = `${title}\n\n${body.replace(/<[^>]+>/g, "")}\n\n${button.label}: ${button.url}\n\n${foot.replace(/<[^>]+>/g, "")}`;

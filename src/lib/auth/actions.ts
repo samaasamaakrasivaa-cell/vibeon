@@ -67,6 +67,7 @@ export async function signupAction(_: FormState, f: FormData): Promise<FormState
   if (!email.success) return { error: t("auth.err.email"), fields };
   const password = str(f, "password");
   if (password.length < MIN_PASSWORD) return { error: t("auth.err.password"), fields };
+  if (f.has("password2") && str(f, "password2") !== password) return { error: t("auth.err.mismatch"), fields };
   if (f.get("consent") !== "on") return { error: t("auth.err.consent"), fields };
 
   const existing = await db.user.findUnique({ where: { email: email.data } });
@@ -118,6 +119,7 @@ export async function resetAction(_: FormState, f: FormData): Promise<FormState>
   const { t } = await getT();
   const password = str(f, "password");
   if (password.length < MIN_PASSWORD) return { error: t("auth.err.password") };
+  if (f.has("password2") && str(f, "password2") !== password) return { error: t("auth.err.mismatch") };
   const tok = await useToken(str(f, "token"), "RESET_PASSWORD");
   if (!tok) return { error: t("auth.reset.bad") };
   const user = await db.user.update({
@@ -183,6 +185,7 @@ export async function inviteFormAction(token: string, _: FormState, f: FormData)
   if (!email.success) return { error: t("auth.err.email"), fields };
   const password = str(f, "password");
   if (password && password.length < MIN_PASSWORD) return { error: t("auth.err.password"), fields };
+  if (password && f.has("password2") && str(f, "password2") !== password) return { error: t("auth.err.mismatch"), fields };
   if (f.get("consent") !== "on") return { error: t("auth.err.consent"), fields };
 
   const taken = await db.user.findUnique({ where: { email: email.data } });

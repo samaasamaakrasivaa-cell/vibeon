@@ -1,5 +1,6 @@
 "use client";
 import { useActionState } from "react";
+import { PasswordInput } from "./PasswordInput";
 import { loginAction, magicAction, type FormState } from "@/lib/auth/actions";
 import { useT } from "@/lib/i18n/client";
 import { Submit } from "./Submit";
@@ -22,7 +23,7 @@ export function LoginForm({ oauth, initialError, next }: { oauth: { yandex: bool
       </div>
       <div className="field">
         <label htmlFor="password">{t("auth.password")}</label>
-        <input id="password" name="password" type="password" className="input" placeholder="••••••••" autoComplete="current-password" />
+        <PasswordInput id="password" name="password" placeholder="••••••••" autoComplete="current-password" />
       </div>
       <div className="flex items-center justify-between">
         <label className="flex items-center gap-2 text-[14px] text-text2">

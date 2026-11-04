@@ -928,4 +928,10 @@ details.how[open] summary { margin-bottom: 6px; }
 .nftable th:not(:first-child), .nftable td:not(:first-child) { text-align: center; width: 110px; }
 .nftable td { padding: 10px 8px; border-top: 1px solid var(--sep); vertical-align: middle; }
 .tgmsg { padding: 10px 12px; border-radius: 14px; background: var(--surface2); }
+
+/* Поле пароля с «глазом» */
+.pwwrap { position: relative; }
+.pwwrap .input { padding-right: 48px; width: 100%; }
+.pweye { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--text2); background: transparent; }
+.pweye:hover { background: var(--fill); color: var(--text); }
 }
