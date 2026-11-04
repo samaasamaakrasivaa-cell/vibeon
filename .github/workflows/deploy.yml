@@ -9,7 +9,7 @@ on:
       action:
         description: "Что сделать"
         type: choice
-        options: [check, install, update, status, logs, backup, verify, secrets, proxy, dns, testmail]
+        options: [check, install, update, status, logs, backup, verify, secrets, proxy, dns, testmail, errors]
         default: check
       arg:
         description: "Параметр: домен для proxy/install, почта для verify"
@@ -73,6 +73,7 @@ jobs:
             verify)  ssh srv "$V verify $Q" ;;
             testmail) docker_cp() { cat deploy/testmail.js | ssh srv "docker exec -i vibeon-app-1 sh -c 'cat > /tmp/testmail.js'"; }; docker_cp
                      ssh srv "docker exec -e HOME=/tmp -e npm_config_cache=/tmp/.npm vibeon-app-1 sh -c 'mkdir -p /tmp/tm && cd /tmp/tm && npm i --no-save --no-audit --no-fund --loglevel=error nodemailer@6 2>&1 | tail -5'; docker exec -e NODE_PATH=/tmp/tm/node_modules vibeon-app-1 node /tmp/testmail.js $Q" ;;
+            errors)  ssh srv "docker logs vibeon-app-1 --since \${ARG:-60m} 2>&1 | grep -iE -B2 -A8 'error|exception|digest' | sed -E 's/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]+/[email]/g' | tail -80" ;;
             dns)     d="${ARG:-vibeon.online}"
                      for q in "A $d" "A www.$d" "TXT $d" "TXT gokey._domainkey.$d" "CNAME _dmarc.$d" "CNAME email.$d" "CNAME dkey._domainkey.email.$d" "MX $d"; do
                        set -- $q; echo "$1 $2: $(dig +short "$1" "$2" @8.8.8.8 | tr '\n' ' ' | cut -c1-160)"; done ;;
