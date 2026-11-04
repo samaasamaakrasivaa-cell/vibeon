@@ -52,24 +52,23 @@ npm run dev                       # http://localhost:3000
 - Роли: учитель не видит кабинет ученика и наоборот; без входа кабинеты закрыты.
 - Защита: пароли — bcrypt, сессии — httpOnly-кука, токены в базе только в виде хэша, ограничение частоты попыток входа и регистрации.
 
-## Запуск на сервере (TimeWeb VPS, Ubuntu 24.04)
+## Запуск на сервере (TimeWeb VPS)
+
+Всё работает только в контейнерах проекта `vibeon` (`vibeon-app-1`, `vibeon-db-1`, `vibeon-backup-1`, при своём HTTPS — `vibeon-caddy-1`) со своей сетью и томами. Другие контейнеры на сервере не затрагиваются, база наружу не открыта.
 
 ```bash
-# 1. Один раз: установить Docker
-curl -fsSL https://get.docker.com | sh
+# 0. Проверка сервера — ничего не меняет
+curl -fsSL https://raw.githubusercontent.com/samaasamaakrasivaa-cell/vibeon/main/deploy/check.sh | bash
 
-# 2. Забрать код
-git clone https://github.com/<владелец>/vibeon.git && cd vibeon
+# 1. Установка (без домена — временно по http://IP:порт; свободный порт выбирается сам)
+git clone https://github.com/samaasamaakrasivaa-cell/vibeon.git /opt/vibeon
+bash /opt/vibeon/deploy/vibeon.sh install
 
-# 3. Настройки
-cp .env.example .env && nano .env   # NODE_ENV=production, APP_URL, AUTH_SECRET, POSTGRES_PASSWORD
-
-# 4. Запуск (миграции базы применяются автоматически)
-docker compose up -d --build
+# 2. Когда есть домен: свой HTTPS, если порты 80/443 свободны, иначе — подсказка для уже стоящего nginx
+bash /opt/vibeon/deploy/vibeon.sh domain vibeon.ru
 ```
 
-Обновление: `git pull && docker compose up -d --build`.
-HTTPS (Let's Encrypt), бэкапы базы и автодеплой из GitHub настраиваются на этапе 11.
+Пароли и ключи генерируются на сервере в `deploy/.env` и никуда не отправляются. Остальное — `bash /opt/vibeon/deploy/vibeon.sh` без параметров: `update`, `status`, `logs`, `backup`, `restore`, `verify <почта>` (подтвердить почту, пока не настроен SMTP), `set КЛЮЧ=значение` (например, `TELEGRAM_BOT_TOKEN`), `stop`. Бэкап базы — каждые сутки в `deploy/backups`, хранится 14 дней.
 
 ## Кабинет учителя (этап 3)
 

@@ -1,0 +1,63 @@
+# VibeOn на общем сервере: всё в контейнерах проекта «vibeon», своя сеть, свои тома.
+# Чужие контейнеры не трогаются, база наружу не открыта.
+# Управление — через deploy/vibeon.sh (он сам подставляет этот файл).
+name: vibeon
+
+services:
+  app:
+    build: { context: .., dockerfile: Dockerfile }
+    image: vibeon-app:latest
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://vibeon:${POSTGRES_PASSWORD:?нет POSTGRES_PASSWORD в deploy/.env}@db:5432/vibeon
+      UPLOAD_DIR: /app/uploads
+    depends_on:
+      db: { condition: service_healthy }
+    volumes:
+      - uploads:/app/uploads
+    # Только на localhost сервера: снаружи — через Caddy (свой HTTPS) или через уже стоящий на сервере прокси.
+    ports: ["${APP_BIND:-127.0.0.1}:${APP_PORT:-3100}:3000"]
+    networks: [vibeon]
+    mem_limit: ${APP_MEM:-1g}
+
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment: { POSTGRES_USER: vibeon, POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}", POSTGRES_DB: vibeon }
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck: { test: ["CMD-SHELL", "pg_isready -U vibeon"], interval: 5s, timeout: 5s, retries: 20 }
+    networks: [vibeon]
+    mem_limit: 512m
+
+  # Бэкап базы раз в сутки в /opt/vibeon/deploy/backups, хранится 14 дней (скрипт — backup.sh)
+  backup:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment: { PGPASSWORD: "${POSTGRES_PASSWORD}" }
+    volumes: ["./backups:/backups", "./backup.sh:/backup.sh:ro"]
+    entrypoint: ["/bin/sh", "/backup.sh"]
+    depends_on: { db: { condition: service_healthy } }
+    networks: [vibeon]
+    mem_limit: 256m
+
+  # Свой HTTPS — только если порты 80/443 на сервере свободны (включается профилем https)
+  caddy:
+    image: caddy:2.8-alpine
+    profiles: [https]
+    restart: unless-stopped
+    ports: ["80:80", "443:443"]
+    environment: { DOMAIN: "${DOMAIN:-localhost}" }
+    volumes: ["./Caddyfile:/etc/caddy/Caddyfile:ro", "caddydata:/data", "caddyconf:/config"]
+    depends_on: [app]
+    networks: [vibeon]
+
+networks:
+  vibeon: {}
+
+volumes:
+  pgdata: {}
+  uploads: {}
+  caddydata: {}
+  caddyconf: {}
