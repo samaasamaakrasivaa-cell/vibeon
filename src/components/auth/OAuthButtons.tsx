@@ -3,7 +3,7 @@ import { useT } from "@/lib/i18n/client";
 
 type Props = { enabled: { yandex: boolean; vk: boolean }; intent?: "login" | "signup"; consent?: boolean };
 
-/** Кнопки Яндекс ID и VK ID. Неактивны, пока не заданы ключи; при регистрации — пока нет согласия на ПД. */
+/** Кнопки Яндекс ID и VK ID — только подключённые (заданы ключи); при регистрации неактивны, пока нет согласия на ПД. */
 export function OAuthButtons({ enabled, intent = "login", consent = true }: Props) {
   const { t } = useT();
   const item = (p: "yandex" | "vk", label: string, badge: React.ReactNode) => {
@@ -24,8 +24,8 @@ export function OAuthButtons({ enabled, intent = "login", consent = true }: Prop
   };
   return (
     <div className="oauthrow">
-      {item("yandex", t("auth.yandex"), <span className="ya">Я</span>)}
-      {item("vk", t("auth.vk"), <span className="vk">VK</span>)}
+      {enabled.yandex && item("yandex", t("auth.yandex"), <span className="ya">Я</span>)}
+      {enabled.vk && item("vk", t("auth.vk"), <span className="vk">VK</span>)}
     </div>
   );
 }

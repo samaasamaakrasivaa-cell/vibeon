@@ -24,7 +24,7 @@ export default async function Finance({ searchParams }: { searchParams: Promise<
   const loc = lang === "ru" ? "ru-RU" : "en-GB";
   const R = (n: number) => rub(n, lang);
   const pct = (n: number) => (d.total ? Math.round((n / d.total) * 100) : 0);
-  const title = range === "month" ? new Date().toLocaleDateString(loc, { month: "long", year: "numeric", timeZone: me.timezone }) : range === "week" ? t("fin.thisWeek") : t("fin.allTime");
+  const title = range === "month" ? ((m) => m.charAt(0).toUpperCase() + m.slice(1))(new Date().toLocaleDateString(loc, { month: "long", year: "numeric", timeZone: me.timezone }).replace(/\s*г\.$/, "")) : range === "week" ? t("fin.thisWeek") : t("fin.allTime");
   const q = (p: Record<string, string>) => `?${new URLSearchParams({ tab, r: range, ...p })}`;
   const checkTab = sp.c === "toCheck" || sp.c === "auto" ? sp.c : "waiting";
   const rows = d.check[checkTab as keyof typeof d.check];
@@ -38,9 +38,9 @@ export default async function Finance({ searchParams }: { searchParams: Promise<
     <div className="page">
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <h1>{t("nav.finance")}</h1>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <PayDetails initial={((prof?.settings as { payDetails?: string })?.payDetails) ?? ""} />
-          <div className="seg">{(["week", "month", "all"] as const).map((r) => <Link key={r} href={q({ r })} aria-current={range === r ? "page" : undefined}>{t(`fin.r.${r}`)}</Link>)}</div>
+          <div className="seg nowrap">{(["week", "month", "all"] as const).map((r) => <Link key={r} href={q({ r })} aria-current={range === r ? "page" : undefined}>{t(`fin.r.${r}`)}</Link>)}</div>
         </div>
       </div>
       <nav className="tabsbar mb-6">
@@ -49,7 +49,7 @@ export default async function Finance({ searchParams }: { searchParams: Promise<
 
       {tab === "updates" && (
         <>
-          <h2 className="mb-4 capitalize">{title}</h2>
+          <h2 className="mb-4">{title}</h2>
           <div className="grid-3">
             <div className="fintile main"><span className="si"><Icon name="coin" /></span><div><b>{R(d.earned)}</b><span>{t("fin.earned")}</span></div></div>
             <div className="fintile"><span className="si" style={{ background: "var(--accent)" }}><Icon name="wallet" /></span><div><b>{R(d.received)}</b><span>{t("fin.received")}</span></div></div>
@@ -94,16 +94,16 @@ export default async function Finance({ searchParams }: { searchParams: Promise<
 
       {tab === "students" && (
         <section className="card">
-          <h2 className="mb-4 capitalize">{title}</h2>
+          <h2 className="mb-4">{title}</h2>
           <div className="flex flex-col gap-2">
             {d.perStudent.map((p, i) => (
               <div key={p.s.id} className="finrow">
-                <span className="w-6 small text-text3">{i + 1}</span>
-                <Link href={`/teacher/students/${p.s.id}`} className="w-48 truncate font-semibold hover:text-accent">{p.s.name} {p.s.lastName}</Link>
-                <span className="hwbar"><i style={{ width: `${(p.earned / maxS) * 100}%` }} /></span>
-                <b className="w-28 text-right">{R(p.earned)}</b>
-                <span className="w-20 text-right small muted">{t("fin.lessonsN", { n: p.lessons })}</span>
-                <span className={`w-28 text-right small ${p.debt ? "text-bad font-semibold" : "text-text3"}`}>{p.debt ? t("fin.debt", { sum: R(p.debt) }) : "—"}</span>
+                <span className="fr-n small text-text3">{i + 1}</span>
+                <Link href={`/teacher/students/${p.s.id}`} className="fr-name truncate font-semibold hover:text-accent">{p.s.name} {p.s.lastName}</Link>
+                <span className="fr-bar hwbar"><i style={{ width: `${(p.earned / maxS) * 100}%` }} /></span>
+                <b className="fr-sum text-right">{R(p.earned)}</b>
+                <span className="fr-cnt text-right small muted">{t("fin.lessonsN", { n: p.lessons })}</span>
+                <span className={`fr-debt text-right small ${p.debt ? "text-bad font-semibold" : "text-text3"}`}>{p.debt ? t("fin.debt", { sum: R(p.debt) }) : "—"}</span>
               </div>
             ))}
             {d.perStudent.length === 0 && <p className="hint m-0">{t("inviteT.none")}</p>}
@@ -161,7 +161,7 @@ async function RecentPaid({ teacherId, R, loc, tz, t }: { teacherId: string; R: 
     <section className="card mt-6">
       <h3 className="mb-3">{t("fin.recentPaid" as never)}</h3>
       {paid.map((i) => (
-        <div key={i.id} className="row">
+        <div key={i.id} className="row wrap-phone">
           <span className="pill green">✓</span>
           <div className="grow"><b className="block">{i.student.name} {i.student.lastName}</b><span className="small muted">{i.title} · {i.paidAt?.toLocaleDateString(loc, { day: "numeric", month: "short", timeZone: tz })}</span></div>
           <b>{R(i.amount)}</b>

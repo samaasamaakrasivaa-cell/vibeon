@@ -7,7 +7,7 @@ export default function NotFound() {
       <LogoMark size={56} />
       <h1>404</h1>
       <p className="muted m-0">Страница не найдена · Page not found</p>
-      <Link href="/" className="btn primary">VibeOn</Link>
+      <Link href="/" className="btn primary">На главную · Home</Link>
     </main>
   );
 }

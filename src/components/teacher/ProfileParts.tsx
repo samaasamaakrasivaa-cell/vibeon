@@ -128,9 +128,10 @@ export function PaymentCard({ p, earnedMonth }: { p: PaymentData; earnedMonth: s
   const [rule, setRule] = useState(p.billRule || (p.payType === "PACK" ? "pack_left_1" : "after_15"));
   const [remind, setRemind] = useState<number | null>(p.remindEveryDays ?? 3);
   const [price, setPrice] = useState(p.price ? String(p.price) : "");
-  const [packs, setPacks] = useState(() => [4, 8, 12].map((n) => ({ n, price: p.packPrices.find((x) => x.n === n)?.price ?? 0 })));
+  // 4 / 8 / 12 и любые другие размеры, которые уже есть у ученика (например, 10) — чтобы не потерять их при сохранении
+  const [packs, setPacks] = useState(() => [...new Set([4, 8, 12, ...p.packPrices.map((x) => x.n)])].sort((a, b) => a - b).map((n) => ({ n, price: p.packPrices.find((x) => x.n === n)?.price ?? 0 })));
   // основной абонемент: по нему выставляется счёт за новый абонемент
-  const [mainN, setMainN] = useState<number>(() => p.packPrices.find((x) => x.main)?.n ?? p.pack?.total ?? 8);
+  const [mainN, setMainN] = useState<number>(() => p.packPrices.find((x) => x.main)?.n ?? (p.pack && p.packPrices.some((x) => x.n === p.pack!.total) ? p.pack.total : p.packPrices.find((x) => x.n === 8 && x.price > 0)?.n ?? p.packPrices.find((x) => x.price > 0)?.n ?? 8));
   const [payerOn, setPayerOn] = useState(!!(p.payerName || p.payerContact));
   const [payerName, setPayerName] = useState(p.payerName);
   const [payerContact, setPayerContact] = useState(p.payerContact);

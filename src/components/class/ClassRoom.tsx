@@ -164,6 +164,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
             ))}
           </nav>
           <div className="atr">
+            {d.callLink && <a href={d.callLink} target="_blank" rel="noreferrer" className="btn sm cls-call cls-call-top" aria-label={t("cls.joinCall")}><Icon name="phone" size="sm" /></a>}
             {teacher && <button className="btn secondary sm" onClick={() => setDlg("about")}><Icon name="info" size="sm" />{t("cls.about")}</button>}
             <LangSwitch lang={lang} label={t("common.language")} />
             <span className={`dot`} title={connected ? t("cls.online") : t("cls.offline")} style={{ background: connected ? "var(--ok)" : "var(--warn)" }} />
@@ -203,7 +204,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
                   </div>
                   {renderTasks(inRubric)}
                   <div className="bld-foot">
-                    <button className="btn secondary" disabled={ri <= 0} onClick={() => go(d.rubrics[ri - 1].id)}><Icon name="chevl" size="sm" />{d.rubrics[ri - 1]?.title ?? ""}</button>
+                    <button className="btn secondary" disabled={ri <= 0} aria-label={t("sch.prev")} onClick={() => go(d.rubrics[ri - 1].id)}><Icon name="chevl" size="sm" />{d.rubrics[ri - 1]?.title ?? ""}</button>
                     <span />
                     <button className="btn secondary" disabled={ri >= d.rubrics.length - 1} onClick={() => go(d.rubrics[ri + 1].id)}>{d.rubrics[ri + 1]?.title ?? ""}<Icon name="right" size="sm" /></button>
                   </div>
@@ -247,7 +248,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
                 <button className="btn primary w-full" onClick={() => setDlg("finish")}><Icon name="check" size="sm" />{t("cls.finish")}</button>
               </div>
             )}
-            {!teacher && hw.teacherComment && <div className="alert mt-3" style={{ background: "var(--accent-bg)", color: "var(--accent-text)" }}><b className="block small">{t("cls.hwComment")}</b>{hw.teacherComment}</div>}
+            {!teacher && tab !== "homework" && hw.teacherComment && <div className="alert mt-3" style={{ background: "var(--accent-bg)", color: "var(--accent-text)" }}><b className="block small">{t("cls.hwComment")}</b>{hw.teacherComment}</div>}
           </aside>
         </div>
 

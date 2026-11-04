@@ -101,7 +101,6 @@ export default async function Students({ searchParams }: { searchParams: Promise
               ))}
             </div>
           )}
-          <p className="hint mt-3 mb-0">{t("common.soon", { n: 7 })}</p>
         </section>
       )}
 
@@ -133,7 +132,7 @@ export default async function Students({ searchParams }: { searchParams: Promise
           {(await db.feedback.findMany({ where: { student: { teacherId: me.id } }, include: { student: true }, orderBy: { createdAt: "desc" }, take: 100 })).map((f) => (
             <Link key={f.id} href={`/teacher/students/${f.studentId}?tab=feedback`} className="qrow hover:bg-fill">
               <span className="avatar lg">{initials(f.student.name, f.student.lastName)}</span>
-              <div className="grow"><div className="flex flex-wrap justify-between gap-2"><b>{full(f.student)}</b><span className="small text-text3">{f.createdAt.toLocaleDateString(loc, { day: "numeric", month: "short" })}</span></div><p className="mb-0 mt-1 line-clamp-2">{f.text}</p></div>
+              <div className="grow"><div className="flex flex-wrap justify-between gap-2"><b>{full(f.student)}</b><span className="small text-text3">{f.createdAt.toLocaleDateString(loc, { day: "numeric", month: "short", timeZone: me.timezone })}</span></div><p className="mb-0 mt-1 line-clamp-2">{f.text}</p></div>
             </Link>
           ))}
           {(await db.feedback.count({ where: { student: { teacherId: me.id } } })) === 0 && <p className="hint p-5 m-0">{t("pr.noFb")}</p>}

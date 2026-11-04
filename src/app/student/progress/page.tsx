@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { requireUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { getT } from "@/lib/i18n/server";
@@ -30,7 +31,7 @@ export default async function Progress() {
           <div key={f.id} className="tile mb-2"><div className="small muted mb-1">{f.createdAt.toLocaleDateString(loc, { day: "numeric", month: "long", timeZone: me.timezone })}</div>{f.text}</div>
         ))}
       </section>
-      <section className="card"><p className="hint m-0">{t("pg.soon")}</p></section>
+      <Link href="/student/route" className="card flex items-center justify-between gap-3 hover:bg-fill"><span className="muted">{t("pg.soon")}</span><span className="alink whitespace-nowrap">{t("nav.route")} →</span></Link>
     </div>
   );
 }

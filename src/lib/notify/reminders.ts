@@ -3,6 +3,7 @@ import { db } from "../db";
 import { hhmm, isoDay, minutesOfDay, partsIn } from "../time";
 import { deliverPending, notify } from "./index";
 import { settingsOf } from "./settings";
+import { pluralForm } from "@/lib/i18n/dict";
 
 /** Напоминание об уроке: за N минут (из настроек), ученику и учителю; ссылка на класс. */
 async function lessonReminders(now: Date) {
@@ -45,7 +46,7 @@ async function wordReminders(now: Date) {
     if (done >= s.wordGoal) continue;
     const due = await db.word.count({ where: { studentId: s.id, level: { lt: 4 } } });
     if (!due) continue;
-    await notify({ userId: s.userId!, kind: "words", title: done ? `Ещё ${s.wordGoal - done} слов до цели дня — 5 минут, и готово!` : `Пора потренировать слова: цель на сегодня — ${s.wordGoal} слов`, link: "/student/words", dedupe: `words:${s.id}:${day}` });
+    await notify({ userId: s.userId!, kind: "words", title: done ? `Ещё ${s.wordGoal - done} ${pluralForm("ru", s.wordGoal - done, ["слово", "слова", "слов"])} до цели дня — 5 минут, и готово!` : `Пора потренировать слова: цель на сегодня — ${s.wordGoal} слов`, link: "/student/words", dedupe: `words:${s.id}:${day}` });
   }
 }
 

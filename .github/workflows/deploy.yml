@@ -54,6 +54,9 @@ jobs:
           SMTP_USER: ${{ secrets.SMTP_USER }}
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
           MAIL_FROM: ${{ secrets.MAIL_FROM }}
+          LEGAL_OPERATOR: ${{ secrets.LEGAL_OPERATOR }}
+          LEGAL_INN: ${{ secrets.LEGAL_INN }}
+          LEGAL_EMAIL: ${{ secrets.LEGAL_EMAIL }}
         run: |
           set -eo pipefail
           Q=$(printf '%q' "$ARG")
@@ -80,7 +83,7 @@ jobs:
             proxy)   sync; ssh srv "bash /opt/vibeon/deploy/attach-proxy.sh $Q" ;;
             secrets)
               n=0
-              for k in TELEGRAM_BOT_TOKEN YANDEX_CLOUD_FOLDER_ID YANDEX_CLOUD_API_KEY SMTP_HOST SMTP_PORT SMTP_USER SMTP_PASS MAIL_FROM; do
+              for k in TELEGRAM_BOT_TOKEN YANDEX_CLOUD_FOLDER_ID YANDEX_CLOUD_API_KEY SMTP_HOST SMTP_PORT SMTP_USER SMTP_PASS MAIL_FROM LEGAL_OPERATOR LEGAL_INN LEGAL_EMAIL; do
                 v="${!k}"; [ -n "$v" ] || continue
                 printf '%s' "$v" | ssh srv "v=\$(cat); $V setq $k=\"\$v\"" && echo "записано: $k" && n=$((n+1))
               done

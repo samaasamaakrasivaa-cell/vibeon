@@ -34,7 +34,7 @@ export default async function TeacherChat({ searchParams }: { searchParams: Prom
                   <span className="small muted block truncate">{s.messages[0]?.text ?? t("msg.noMessages")}</span>
                 </span>
                 <span className="flex flex-col items-end gap-1">
-                  {s.messages[0] && <span className="small text-text3">{s.messages[0].createdAt.toLocaleDateString(loc, { day: "numeric", month: "short", timeZone: me.timezone })}</span>}
+                  {s.messages[0] && <span className="small whitespace-nowrap text-text3">{s.messages[0].createdAt.toLocaleDateString(loc, { day: "numeric", month: "short", timeZone: me.timezone })}</span>}
                   {s._count.messages > 0 && <span className="count-pill">{s._count.messages}</span>}
                 </span>
               </Link>

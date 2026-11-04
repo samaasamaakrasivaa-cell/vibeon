@@ -17,8 +17,8 @@ export function NotificationList({ items }: { items: Note[] }) {
   const unread = list.filter((n) => n.unread).length;
   return (
     <>
-      <div className="mb-3 flex items-center justify-between">
-        <h2>{t("dash.whatsNew")}</h2>
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+        <h2 className="whitespace-nowrap">{t("dash.whatsNew")}</h2>
         {unread > 0 && (
           <button className="btn plain sm" onClick={() => start(async () => { set("read"); await markAllRead(); })}>{t("nt.markAll")}</button>
         )}
@@ -31,7 +31,7 @@ export function NotificationList({ items }: { items: Note[] }) {
                 onChange={(e) => { const done = e.target.checked; start(async () => { set({ id: n.id, done }); await setNotificationDone(n.id, done); }); }} />
               <div className="grow"><div className="t font-semibold">{n.title}</div><div className="small muted">{n.when}</div></div>
               {n.link && (
-                <Link href={n.link} className="small inline-flex items-center gap-1 font-semibold whitespace-nowrap text-accent">
+                <Link href={n.link} className="nact small inline-flex items-center gap-1 font-semibold whitespace-nowrap text-accent">
                   {t((ACTION[n.action ?? ""] ?? "nt.open") as never)} <Icon name="right" size="sm" />
                 </Link>
               )}

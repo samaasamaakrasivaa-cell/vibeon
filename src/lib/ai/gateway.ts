@@ -36,7 +36,8 @@ async function guard(kind: Kind | "stt" | "tts" | "ocr", ctx: Ctx) {
 /** Личные данные в ИИ не уходят: почта, телефоны и имена заменяются (152-ФЗ). */
 export function scrub(text: string, names: (string | null | undefined)[] = []) {
   let s = text.replace(/[\w.+-]+@[\w-]+\.[\w.]+/g, "[email]").replace(/(?:\+7|8)[\s(-]*\d{3}[\s)-]*\d{3}[\s-]*\d{2}[\s-]*\d{2}/g, "[телефон]");
-  for (const n of names) if (n && n.length > 1) s = s.replace(new RegExp(`\\b${n.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "gi"), "[имя]");
+  // \b в JS не видит границ кириллических слов — границы задаём через Unicode-классы
+  for (const n of names) if (n && n.length > 1) s = s.replace(new RegExp(`(?<![\\p{L}\\p{N}_])${n.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?![\\p{L}\\p{N}_])`, "giu"), "[имя]");
   return s;
 }
 

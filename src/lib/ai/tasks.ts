@@ -2,6 +2,7 @@ import "server-only";
 import { HOWTO, PRESET, SAMPLE, TYPES, isType, type TaskType } from "../tasks/catalog";
 import { liteCorrect, type Note } from "./lite";
 import { goalLevel, ROUTE_TYPES, templateCriteria, templateStages, type L2, type Stage } from "../roadmap/cefr";
+import { pluralForm } from "@/lib/i18n/dict";
 
 // Описания задач ИИ: промпт → разбор ответа; для AI_PROVIDER=mock — правдоподобный ответ без сети.
 
@@ -251,7 +252,7 @@ export const SPECS = {
       const total = stages.reduce((a, s) => a + s.hours, 0);
       return {
         stages, criteria: templateCriteria(i.type, i.goal),
-        summary: `Маршрут ${i.from} → ${i.goal}: ${stages.length} этапов, около ${total} учебных часов.${i.weak?.length ? ` Сначала — слабые места по тесту: ${i.weak.slice(0, 2).join(", ")}.` : ""}${i.units?.length ? ` Опираемся на ведущий курс: ${i.units.length} юнитов.` : ""}${i.mood === "slack" ? " Заложен запас времени на пропуски." : ""}`,
+        summary: `Маршрут ${i.from} → ${i.goal}: ${stages.length} ${pluralForm("ru", stages.length, ["этап", "этапа", "этапов"])}, около ${total} ${pluralForm("ru", total, ["учебного часа", "учебных часов", "учебных часов"])}.${i.weak?.length ? ` Сначала — слабые места по тесту: ${i.weak.slice(0, 2).join(", ")}.` : ""}${i.units?.length ? ` Опираемся на ведущий курс: ${i.units.length} юнитов.` : ""}${i.mood === "slack" ? " Заложен запас времени на пропуски." : ""}`,
       };
     },
   } as Spec<{ type: string; from: string; goal: string; skills?: Record<string, number>; weak?: string[]; pace: string; mood?: string; note?: string; units?: { title: string }[] }, { stages: Stage[]; criteria: (L2 | string)[]; summary: string }>,

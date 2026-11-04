@@ -13,6 +13,7 @@ export type GridLesson = {
   id: string; day: number; startMin: number; dur: number; status: "PLANNED" | "DONE" | "MISSED" | "CANCELLED";
   who: string; isTrial: boolean; isGroup: boolean; note: string | null; date: string; start: string; end: string;
   weekly: boolean; past: boolean; studentId: string | null; charged: boolean; moved: boolean; price: number;
+  hw: "review" | "notdone" | "checked" | null;
 };
 export type GridStudent = { id: string; name: string; initials: string };
 type Day = { iso: string; dow: string; num: number; today: boolean; past: boolean; earned: string | null };
@@ -323,7 +324,7 @@ function LessonDialog({ l, onClose }: { l: GridLesson; onClose: () => void }) {
         <span className={`pill ${statusPill[l.status][0]}`}>{t(statusPill[l.status][1])}</span>
         {l.status === "MISSED" && <span className="pill grey">{l.charged ? t("sch.charged") : t("sch.notCharged")}</span>}
         {l.moved && <span className="pill violet">{t("sch.moved")}</span>}
-        <span className="pill grey" title={t("common.soon", { n: 5 })}>{t("today.noHw")}</span>
+        {l.hw ? <Link href={`/class/${l.id}?tab=homework`} className={`pill ${{ review: "orange", notdone: "red", checked: "green" }[l.hw]}`}>{t("nav.homework")}: {t(({ review: "hwT.review", notdone: "hwT.notdone", checked: "hwT.checked" } as const)[l.hw])}</Link> : l.status === "DONE" && <span className="pill grey">{t("today.noHw")}</span>}
       </div>
       <div className="field mt-4">
         <label htmlFor="ln">{t("sch.note")}</label>

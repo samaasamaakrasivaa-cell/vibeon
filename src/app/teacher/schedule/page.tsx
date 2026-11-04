@@ -4,9 +4,10 @@ import { WeekGrid, type GridLesson } from "@/components/teacher/WeekGrid";
 import { requireUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { getT } from "@/lib/i18n/server";
-import { addDaysIso, dayStart, hhmm, isoDay, minutesOfDay, mondayOf, parseIsoDay, partsIn } from "@/lib/time";
+import { addDaysIso, dayStart, hhmm, isoDay, minutesOfDay, mondayOf, parseIsoDay, partsIn, weekRange } from "@/lib/time";
 import { earnedOf, lessonInclude, lessonWho, rub, syncSchedule } from "@/lib/teacher/data";
 import { initials } from "@/lib/invite";
+import { homeworkFor } from "@/lib/homework";
 
 export const metadata = { title: "Расписание" };
 
@@ -22,10 +23,12 @@ export default async function Schedule({ searchParams }: { searchParams: Promise
   const from = dayStart(monday, tz);
   const to = dayStart(addDaysIso(monday, 7), tz);
 
-  const [rows, students] = await Promise.all([
+  const [rows, students, hws] = await Promise.all([
     db.lessonInstance.findMany({ where: { teacherId: me.id, startsAt: { gte: from, lt: to } }, include: lessonInclude, orderBy: { startsAt: "asc" } }),
     db.student.findMany({ where: { teacherId: me.id, status: { in: ["ACTIVE", "INVITED"] } }, orderBy: [{ status: "asc" }, { name: "asc" }] }),
+    homeworkFor({ teacherId: me.id }),
   ]);
+  const hwOf = new Map(hws.map((h) => [h.lesson.id, h.state]));
 
   const loc = lang === "ru" ? "ru-RU" : "en-GB";
   const now = new Date();
@@ -36,6 +39,7 @@ export default async function Schedule({ searchParams }: { searchParams: Promise
       id: l.id, day, startMin: minutesOfDay(l.startsAt, tz), dur: l.durationMin, status: l.status, who: lessonWho(l),
       isTrial: l.isTrial, isGroup: !!l.group, note: l.note, date: isoDay(l.startsAt, tz), start: hhmm(l.startsAt, tz), end: hhmm(end, tz),
       weekly: !!l.seriesId, past: end <= now, studentId: l.studentId, charged: l.charged, moved: !!l.movedFrom, price: l.price ?? 0,
+      hw: hwOf.get(l.id) ?? null,
     };
   });
 
@@ -57,7 +61,6 @@ export default async function Schedule({ searchParams }: { searchParams: Promise
     };
   });
   const nowDay = days.findIndex((d) => d.today);
-  const rangeLabel = (iso: string) => new Date(dayStart(iso, tz).getTime() + 12 * 3600e3).toLocaleDateString(loc, { day: "numeric", month: "short", timeZone: tz }).replace(".", "");
 
   return (
     <div className="page" style={{ maxWidth: 1100 }}>
@@ -67,7 +70,7 @@ export default async function Schedule({ searchParams }: { searchParams: Promise
           {monday !== mondayOf(todayIso) && <Link href="/teacher/schedule" className="btn secondary sm">{t("dash.today")}</Link>}
           <div className="weeknav">
             <Link href={`/teacher/schedule?w=${addDaysIso(monday, -7)}`} aria-label={t("sch.prev")}><Icon name="chevl" size="sm" /></Link>
-            <span>{rangeLabel(monday)} – {rangeLabel(addDaysIso(monday, 6))}</span>
+            <span>{weekRange(monday, tz, loc)}</span>
             <Link href={`/teacher/schedule?w=${addDaysIso(monday, 7)}`} aria-label={t("sch.next")}><Icon name="right" size="sm" /></Link>
           </div>
         </div>

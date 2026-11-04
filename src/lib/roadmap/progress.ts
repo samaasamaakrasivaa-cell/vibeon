@@ -49,7 +49,7 @@ export async function roadmapView(studentId: string, tz: string, weekBack = 0) {
   const lateWeeks = r.baseEta ? Math.round((eta.getTime() - r.baseEta.getTime()) / (7 * 864e5)) : 0;
   const [lessonsTotal, wordsLearned] = await Promise.all([
     db.lessonInstance.count({ where: { studentId, status: "DONE", isTrial: false } }),
-    db.word.count({ where: { studentId, level: { gte: 3 } } }),
+    db.word.count({ where: { studentId, level: { gte: 4 } } }), // «выучено» — как на странице «Слова»
   ]);
   return {
     r, checkpoints, stages, lessonMin, done, st, paceT, paceS, eta, lateWeeks,

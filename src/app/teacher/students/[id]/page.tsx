@@ -71,7 +71,7 @@ export default async function StudentProfile({ params, searchParams }: { params:
   const ymd = (d: Date | null | undefined) => (d ? d.toISOString().slice(0, 10) : "");
   const inline: InlineData = {
     id: s.id, email: s.email ?? "", phone: form.phone ?? "", telegram: s.telegram ?? "", vk: (form as { vk?: string }).vk ?? "", timezone: s.timezone, callLink: s.callLink ?? "",
-    courseId: s.courseId ?? "", courseText: s.course ?? "", level: s.level ?? "", interests: s.interests ?? "",
+    courseId: s.courseId ?? courses.find((c) => c.title.trim().toLowerCase() === (s.course ?? "").trim().toLowerCase())?.id ?? "", courseText: s.course ?? "", level: s.level ?? "", interests: s.interests ?? "",
     birthday: ymd(s.birthday) || (form.birthday ?? ""), examGoal: s.examGoal ?? "", startedAt: ymd(s.startedAt ?? s.createdAt), source: s.source ?? "",
   };
 
@@ -181,9 +181,12 @@ export default async function StudentProfile({ params, searchParams }: { params:
               <p className="cardtitle">{t("prof.lessonsList")}</p>
               {s.lessons.length === 0 ? <p className="hint m-0">{t("prof.noLessons")}</p> : (
                 <div>
-                  {s.lessons.slice(0, 200).map((l) => (
-                    <div key={l.id} className="row">
-                      <b className="min-w-[96px]">{dateFmt(l.startsAt, { weekday: "short", day: "numeric", month: "short" }).replace(".", "")}</b>
+                  {[
+                    ...s.lessons.filter((l) => l.startsAt > now).slice(-3).map((l) => ({ l, up: true })),
+                    ...pastLessons.slice(0, 200).map((l) => ({ l, up: false })),
+                  ].map(({ l, up }, i, arr) => (
+                    <div key={l.id} className={`row ${up ? "opacity-80" : ""} ${!up && i > 0 && arr[i - 1].up ? "histsep" : ""}`}>
+                      <b className="min-w-[96px]">{dateFmt(l.startsAt, { weekday: "short", day: "numeric", month: "short", ...(isoDay(l.startsAt, tz).slice(0, 4) !== isoDay(now, tz).slice(0, 4) ? { year: "numeric" } : {}) }).replace(".", "")}</b>
                       <span className="min-w-[44px] text-text2" style={{ fontVariantNumeric: "tabular-nums" }}>{hhmm(l.startsAt, tz)}</span>
                       <span className={`pill ${st[l.status][0]}`}>{st[l.status][1]}</span>
                       <span className="grow small muted">{l.isTrial ? t("sch.trial") : l.note ?? ""}</span>
@@ -200,7 +203,7 @@ export default async function StudentProfile({ params, searchParams }: { params:
                   <b className="min-w-[60px]">{dateFmt(iv.createdAt, { day: "numeric", month: "short" })}</b>
                   <span className="grow">{iv.period ?? ""}</span>
                   <b>{rub(iv.amount, lang)}</b>
-                  <span className={`pill ${iv.status === "PAID" ? "green" : "orange"}`}>{iv.status}</span>
+                  <span className={`pill ${iv.status === "PAID" ? "green" : iv.status === "CANCELLED" ? "grey" : "orange"}`}>{t(`inv.${iv.status}` as "inv.PAID")}</span>
                 </div>
               ))}
             </section>
@@ -238,16 +241,19 @@ async function ProgressTab({ studentId, tz, lang, t, topics }: { studentId: stri
       <section className="card">
         <h3 className="mt-0">{t("pr.skills")}</h3>
         {last ? <>
-          <div className="mb-3 small muted">{last.level} · {last.at.toLocaleDateString(loc, { day: "numeric", month: "long" })}</div>
+          <div className="mb-3 small muted">{last.level} · {last.at.toLocaleDateString(loc, { day: "numeric", month: "long", timeZone: tz })}</div>
           <SkillBars skills={last.skills} prev={prev?.skills} />
         </> : <p className="hint m-0">{t("rm.noTest")}</p>}
       </section>
       {p.tests.length > 1 && (
         <section className="card lg:col-span-2">
-          <h3 className="mt-0">{t("pr.dynamics")}</h3>
+          <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
+            <h3 className="m-0">{t("pr.dynamics")}</h3>
+            <span className="small muted">{p.tests.map((x) => `${x.level ?? ""} ${x.at.toLocaleDateString(loc, { day: "numeric", month: "short", timeZone: tz })}`.trim()).join("  →  ")}</span>
+          </div>
           <div className="skilldyn">
             {RM_SKILLS.filter((k) => p.tests.some((x) => x.skills[k] !== undefined)).map((k) => (
-              <div key={k} className="sdcol"><div className="sdbars">{p.tests.map((x, i) => <span key={i} title={`${x.at.toLocaleDateString(loc)}: ${x.skills[k] ?? "—"}%`} style={{ height: `${(x.skills[k] ?? 0) * 1.2}px`, background: SKILL_COLOR[k], opacity: 0.45 + (0.55 * (i + 1)) / p.tests.length }} />)}</div><span className="small">{txt(SKILL_NAME[k], lang)}</span></div>
+              <div key={k} className="sdcol"><div className="sdbars">{p.tests.map((x, i) => <span key={i} className="sdbar" title={`${x.at.toLocaleDateString(loc, { timeZone: tz })}: ${x.skills[k] ?? "—"}%`}><em>{x.skills[k] ?? "—"}</em><i style={{ height: `${(x.skills[k] ?? 0) * 1.2}px`, background: SKILL_COLOR[k], opacity: 0.45 + (0.55 * (i + 1)) / p.tests.length }} /></span>)}</div><span className="small">{txt(SKILL_NAME[k], lang)}</span></div>
             ))}
           </div>
         </section>

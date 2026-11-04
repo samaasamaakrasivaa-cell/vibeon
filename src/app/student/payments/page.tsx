@@ -39,7 +39,7 @@ export default async function Payments({ searchParams }: { searchParams: Promise
         <>
           <section>
             <div className="packhead">
-              <div><div className="small opacity-90">{t("pay.yourPack")}</div><b className="text-[19px]">{weekly ? t("pay.perWeek", { n: weekly }) : pack ? t("pay.lessonsN", { n: pack.lessonsTotal }) : t("pay.noPack")}</b></div>
+              <div><div className="small opacity-90">{t("pay.yourPack")}</div><b className="text-[19px]">{pack ? t("pay.lessonsN", { n: pack.lessonsTotal }) : t("pay.noPack")}</b>{weekly ? <div className="small opacity-90">{t("pay.perWeek", { n: weekly })}</div> : null}</div>
               <div className="flex gap-2">
                 <MessageButton label={t("pay.freeze")} icon="clock" className="btn sm" text={t("pay.freezeText")} />
                 {opts.length > 0 && <BuyPack n={(opts.find((o) => o.n === pack?.lessonsTotal) ?? opts[opts.length - 1]).n} label={`+ ${t("pay.extend")}`} className="btn secondary sm" />}

@@ -42,7 +42,7 @@ export async function financeData(teacherId: string, tz: string, range: Range) {
   const perStudent = students.map((s) => {
     const ls = inRange.filter((l) => l.studentId === s.id);
     return {
-      s, earned: ls.reduce((a, l) => a + earnedOf(l), 0), lessons: ls.filter((l) => l.status === "DONE").length,
+      s, earned: ls.reduce((a, l) => a + earnedOf(l), 0), lessons: ls.filter((l) => earnedOf(l) > 0).length,
       cancelRate: ls.length ? ls.filter((l) => l.status === "CANCELLED").length / ls.length : 0,
       moveRate: ls.length ? ls.filter((l) => l.movedFrom).length / ls.length : 0,
       debt: invoices.filter((i) => i.studentId === s.id && (i.status === "SENT" || i.status === "PROOF_SENT")).reduce((a, i) => a + i.amount, 0),

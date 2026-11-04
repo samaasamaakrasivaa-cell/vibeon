@@ -8,6 +8,7 @@ import { db } from "@/lib/db";
 import { addDaysIso, dayStart, hhmm, isoDay, mondayOf } from "@/lib/time";
 import { lessonInclude, lessonWho, syncSchedule } from "@/lib/teacher/data";
 import { initials } from "@/lib/invite";
+import { homeworkFor, type HwState } from "@/lib/homework";
 import type { User } from "@prisma/client";
 
 /** Главный экран «Обновления»: приветствие, часы, «Сегодня», неделя, «Что нового». */
@@ -21,10 +22,14 @@ export async function Dashboard({ user, role }: { user: User; role: "TEACHER" | 
   if (role === "TEACHER") await syncSchedule(user.id);
 
   const where = role === "TEACHER" ? { teacherId: user.id } : { student: { userId: user.id } };
-  const [lessons, notifications] = await Promise.all([
+  const [lessons, notifications, hws] = await Promise.all([
     db.lessonInstance.findMany({ where: { ...where, startsAt: { gte: from, lt: to }, status: { not: "CANCELLED" } }, include: lessonInclude, orderBy: { startsAt: "asc" } }),
     db.notification.findMany({ where: { userId: user.id }, orderBy: { createdAt: "desc" }, take: 15 }),
+    role === "TEACHER" ? homeworkFor({ teacherId: user.id }) : Promise.resolve([]),
   ]);
+  // домашка к уроку = домашка с предыдущего занятия этого ученика
+  const hwBefore = (studentId: string | null, at: Date) => (studentId ? hws.find((h) => h.lesson.studentId === studentId && h.lesson.startsAt < at) ?? null : null);
+  const hwPill = { review: ["orange", "hwT.review"], notdone: ["red", "hwT.notdone"], checked: ["green", "hwT.checked"] } as const satisfies Record<HwState, readonly [string, string]>;
 
   const loc = lang === "ru" ? "ru-RU" : "en-GB";
   const todayLessons = lessons.filter((l) => isoDay(l.startsAt, tz) === todayIso);
@@ -119,7 +124,7 @@ export async function Dashboard({ user, role }: { user: User; role: "TEACHER" | 
                         {l.isTrial && <span className="pill violet">{t("sch.trial")}</span>}
                       </span>
                     </td>
-                    <td className="c-hw"><span className="pill grey" title={t("common.soon", { n: 5 })}>{t("today.noHw")}</span></td>
+                    <td className="c-hw">{(() => { const h = hwBefore(l.studentId, l.startsAt); return h ? <Link href={`/class/${h.lesson.id}?tab=homework`} className={`pill ${hwPill[h.state][0]}`} title={`${h.title} · ${h.done}/${h.total}`}>{t(hwPill[h.state][1])}</Link> : <span className="pill grey">{t("today.noHw")}</span>; })()}</td>
                     <td className="c-class"><Link href={`/class/${l.id}`} className={`btn sm ${soon || live ? "primary" : "secondary"}`}><Icon name="class" size="sm" />{role === "TEACHER" ? t("dash.openClass") : t("cls.enter")}</Link></td>
                     <td className="c-cmt">
                       {role === "TEACHER" ? (

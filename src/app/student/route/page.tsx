@@ -75,7 +75,7 @@ export default async function MyRoute({ searchParams }: { searchParams: Promise<
         {(st.feel ?? []).length > 0 && <div className="feel"><div className="plab">{t("rt.feel")}</div>{st.feel!.map((g, k) => <div key={k} className="can"><Icon name="check" size="sm" /><span>{txt(g, L)}</span></div>)}</div>}
         <div className="plab mt-4">{t("rt.inside")}</div>
         <div className="blocks">
-          {([["rm.grammar", st.grammar, "#007AFF"], ["rm.vocab", st.vocabulary, "#FF9500"], ["rm.can", st.skills, "#AF52DE"]] as const).map(([k, list, c]) => list.length > 0 && (
+          {([["rm.grammar", st.grammar, "#007AFF"], ["rm.vocab", st.vocabulary, "#FF9500"], ["rm.canYou", st.skills, "#AF52DE"]] as const).map(([k, list, c]) => list.length > 0 && (
             <div key={k} className="blk2"><div className="blkh"><i style={{ background: c }} /><b>{t(k)}</b></div>{list.map((g, j) => <div key={j} className="can"><Icon name="check" size="sm" /><span>{txt(g, L)}</span></div>)}</div>
           ))}
         </div>
@@ -180,7 +180,7 @@ export default async function MyRoute({ searchParams }: { searchParams: Promise<
                 <section key={cls} className={`card nowcol ${cls}`}>
                   <div className="mb-2 flex items-center gap-3"><span className="lvlbig">{lvl}</span><div><b>{title}</b><div className="small muted">{t("rt.pctDone", { n: pct })}</div></div></div>
                   <div className="stbar"><div style={{ width: `${pct}%` }} /></div>
-                  <div className="mgrid three"><div><b>≈ {lessonsWord(Math.round(w * v.paceS.lessons), L)}</b><span>{t("rt.left")}</span></div><div><b>{fmtHM((w * v.paceS.min * 7) / 60, L)}</b><span>{t("rt.self")}</span></div><div className="dlbox"><b>{eta(left)}</b><span>{dated ? t("rt.approx") : t("rt.toPoint")}</span></div></div>
+                  <div className="mgrid three"><div><b>≈ {lessonsWord(Math.round(w * v.paceS.lessons), L)}</b><span>{t("rt.left")}</span></div><div><b>{fmtHM((w * v.paceS.min * 7) / 60, L)}</b><span>{t("rt.self")}</span></div><div className="dlbox"><b>{eta(left)}</b><span>{dated ? t("rt.approx") : cls === "goal" ? t("rt.toGoalShort") : t("rt.toPoint")}</span></div></div>
                 </section>
               );
             })}

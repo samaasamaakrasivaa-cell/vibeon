@@ -30,8 +30,10 @@ export function SignupForm({ oauth }: { oauth: { yandex: boolean; vk: boolean } 
         </span>
       </label>
       <Submit>{t("auth.create")}</Submit>
-      <div className="divider">{t("auth.or")}</div>
-      <OAuthButtons enabled={oauth} intent="signup" consent={consent} />
+      {(oauth.yandex || oauth.vk) && <>
+        <div className="divider">{t("auth.or")}</div>
+        <OAuthButtons enabled={oauth} intent="signup" consent={consent} />
+      </>}
     </form>
   );
 }

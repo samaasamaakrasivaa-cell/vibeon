@@ -6,6 +6,9 @@ import { getT } from "../i18n/server";
 import { acceptInvoice, createInvoice, notifyInvoice, packOptions, submitProof, undoAccept } from "./engine";
 import { sendMessage } from "../student/actions";
 import { notify } from "../notify";
+import { pluralForm } from "@/lib/i18n/dict";
+
+const zan = (n: number) => `${n} ${pluralForm("ru", n, ["занятие", "занятия", "занятий"])}`;
 
 export type R = { ok: true; auto?: boolean } | { ok: false; error: string };
 const refresh = () => { revalidatePath("/teacher", "layout"); revalidatePath("/student", "layout"); };
@@ -99,10 +102,10 @@ export async function requestPackPayment(studentId: string, n?: number): Promise
   const { t } = await getT();
   const s = await ownStudent(studentId);
   const opts = packOptions(s);
-  const opt = opts.find((o) => o.n === n) ?? opts.find((o) => o.main) ?? opts[opts.length - 1];
+  const opt = opts.find((o) => o.n === n) ?? opts.find((o) => o.main) ?? opts.find((o) => o.n === 8) ?? opts[opts.length - 1];
   if (!opt) return { ok: false, error: t("pay.err.noPrices") };
   if (await db.invoice.count({ where: { studentId, kind: "pack", status: { in: ["SENT", "PROOF_SENT"] } } })) return { ok: false, error: t("pay.err.openPack") };
-  await createInvoice(s, { amount: opt.price, kind: "pack", title: `Абонемент, ${opt.n} занятий`, packLessons: opt.n });
+  await createInvoice(s, { amount: opt.price, kind: "pack", title: `Абонемент, ${zan(opt.n)}`, packLessons: opt.n });
   refresh();
   return { ok: true };
 }
@@ -158,8 +161,8 @@ export async function buyPack(n: number): Promise<R> {
   const opt = packOptions(s).find((o) => o.n === n);
   if (!opt) return { ok: false, error: t("pay.err.noPrices") };
   if (await db.invoice.count({ where: { studentId: s.id, kind: "pack", status: { in: ["SENT", "PROOF_SENT"] } } })) return { ok: false, error: t("pay.err.openPack") };
-  await createInvoice(s, { amount: opt.price, kind: "pack", title: `Абонемент, ${opt.n} занятий`, packLessons: opt.n });
-  if (s.payType === "POSTPAID") await notify({ userId: s.teacherId, kind: "pack_request", title: `${s.name} хочет перейти на абонемент (${opt.n} занятий)`, action: "decide", link: `/teacher/students/${s.id}` });
+  await createInvoice(s, { amount: opt.price, kind: "pack", title: `Абонемент, ${zan(opt.n)}`, packLessons: opt.n });
+  if (s.payType === "POSTPAID") await notify({ userId: s.teacherId, kind: "pack_request", title: `${s.name} хочет перейти на абонемент (${zan(opt.n)})`, action: "decide", link: `/teacher/students/${s.id}` });
   refresh();
   return { ok: true };
 }

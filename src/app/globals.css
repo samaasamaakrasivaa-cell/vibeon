@@ -161,6 +161,8 @@ h3, .h3 { font-size: 17px; font-weight: 600; letter-spacing: -.01em; margin: 0; 
 .card { background: var(--surface); border-radius: 20px; padding: 24px 28px; box-shadow: var(--shadow); }
 .card.sm { border-radius: 14px; padding: 16px 18px; }
 .card + .card { margin-top: 28px; }
+/* в сетках отступы задаёт gap — иначе соседние карточки «съезжают» вниз */
+:is(.grid, .grid-2, .grid-3, .rmcards, .profgrid, .chatgrid, .nowcols, .flex-col[class*="gap-"]) > .card + .card { margin-top: 0; }
 @media (max-width: 760px) { .card { padding: 18px 16px; border-radius: 16px; } }
 .list { background: var(--surface); border-radius: 14px; overflow: hidden; }
 .row { display: flex; align-items: center; gap: 14px; padding: 12px 16px; border-bottom: .5px solid var(--sep); min-height: 60px; }
@@ -331,7 +333,7 @@ details.how[open] summary { margin-bottom: 6px; }
 .pick button[aria-pressed="true"] { background: var(--accent-bg); color: var(--accent-text); font-weight: 600; }
 
 /* Неделя в стиле Apple Calendar */
-.weekwrap { overflow-x: auto; margin: 0 -8px; padding: 0 8px; }
+.weekwrap { overflow-x: auto; margin: 0 -8px; padding: 0 8px 10px; }
 .week { --px: 44px; display: grid; grid-template-columns: 48px repeat(7, minmax(96px, 1fr)); gap: 0 8px; min-width: 760px; }
 .week .dh { text-align: center; padding: 6px 0 12px; font-size: 13px; color: var(--text2); }
 .week .dh b { color: var(--text); margin-left: 4px; }
@@ -659,6 +661,9 @@ details.how[open] summary { margin-bottom: 6px; }
 .cls-side { position: sticky; top: 92px; background: var(--surface); border-radius: 22px; padding: 12px; max-height: calc(100vh - 112px); overflow-y: auto; }
 .cls-call { background: var(--ok); color: #fff; border-radius: 14px; min-height: 46px; }
 .cls-call.off { background: var(--fill); color: var(--text3); cursor: default; }
+/* на телефоне звонок — сразу в шапке, без прокрутки до боковой панели */
+.cls-call-top { display: none; min-height: 34px; border-radius: 10px; padding: 0 12px; }
+@media (max-width: 1200px) { .cls-call-top { display: inline-flex; } }
 .cls-flash > .tk { animation: flash 1.2s ease 3; }
 @keyframes flash { 50% { box-shadow: 0 0 0 4px var(--accent); } }
 .cls-review { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 8px; padding: 10px; border-radius: 14px; background: var(--warn-bg); }
@@ -782,7 +787,16 @@ details.how[open] summary { margin-bottom: 6px; }
 .packhead { border-radius: 22px 22px 0 0; padding: 16px 20px; color: #fff; background: linear-gradient(110deg, #34C759, #30B0C7); display: flex; flex-wrap: wrap; align-items: center; gap: 10px; justify-content: space-between; }
 .packbody { background: var(--surface); border-radius: 0 0 22px 22px; padding: 18px 20px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
 .offer { background: var(--surface); border: 1px solid var(--sep); border-radius: 16px; padding: 14px; min-width: 200px; }
-@media (max-width: 760px) { .finrow { flex-wrap: wrap; } .finrow .w-48 { width: auto; flex: 1; } .chkrow .w-56 { width: auto; flex: 1; } }
+.finrow .fr-n { width: 24px; } .finrow .fr-name { width: 12rem; } .finrow .fr-sum { width: 7rem; } .finrow .fr-cnt { width: 5rem; } .finrow .fr-debt { width: 7rem; }
+.seg.nowrap { flex-wrap: nowrap; white-space: nowrap; }
+@media (max-width: 760px) {
+  /* телефон: имя и сумма — в строку, полоска и счётчики — под ними */
+  .finrow { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; grid-template-areas: "n name sum" "n bar bar" "n cnt debt"; gap: 4px 10px; padding: 6px 0; border-bottom: .5px solid var(--sep); }
+  .finrow:last-child { border-bottom: 0; }
+  .finrow .fr-n { grid-area: n; width: auto; } .finrow .fr-name { grid-area: name; width: auto; } .finrow .fr-sum { grid-area: sum; width: auto; }
+  .finrow .fr-bar { grid-area: bar; } .finrow .fr-cnt { grid-area: cnt; width: auto; text-align: left; } .finrow .fr-debt { grid-area: debt; width: auto; }
+  .chkrow .w-56 { width: auto; flex: 1 1 calc(100% - 64px); } .chkrow > .grow { flex-basis: 100%; }
+}
 
 /* ── ИИ (этап 8) ── */
 .aicheck { background: var(--violet-bg); border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 6px; }
@@ -918,7 +932,10 @@ details.how[open] summary { margin-bottom: 6px; }
 .skilldyn { display: flex; gap: 18px; flex-wrap: wrap; align-items: flex-end; }
 .sdcol { display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .sdbars { display: flex; align-items: flex-end; gap: 4px; height: 125px; }
-.sdbars span { width: 16px; border-radius: 4px 4px 2px 2px; display: block; }
+.sdbars .sdbar { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 3px; height: 100%; }
+.sdbars .sdbar em { font-style: normal; font-size: 11px; color: var(--text3); font-variant-numeric: tabular-nums; }
+.sdbars .sdbar i { width: 18px; border-radius: 4px 4px 2px 2px; display: block; }
+.sdbars { height: 145px; }
 
 /* ── Уведомления (этап 10) ── */
 .tgbox { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 14px; border-radius: 16px; background: var(--surface2); }
@@ -954,3 +971,21 @@ select.iedit { cursor: pointer; appearance: auto; }
 
 .invlink { display: block; width: 100%; padding: 8px 10px; border-radius: 10px; background: var(--surface); color: var(--text); font-size: 13px; word-break: break-all; user-select: all; }
 }
+
+/* история уроков: граница между ближайшими и прошедшими */
+.hist .row.histsep { border-top: 2px solid var(--sep); margin-top: 6px; padding-top: 14px; }
+
+/* «Что нового» на телефоне: действие — под текстом, текст не сжимается в столбик */
+@media (max-width: 560px) {
+  .nrow { flex-wrap: wrap; }
+  .nrow > .grow { flex-basis: calc(100% - 40px); }
+  .nrow > .nact { margin-left: 34px; }
+}
+
+/* юридические страницы */
+.authcard.legal { max-width: 760px; padding: 34px 40px; line-height: 1.6; }
+.authcard.legal h2 { font-size: 17px; margin: 24px 0 6px; }
+.authcard.legal p { margin: 8px 0; color: var(--text2); }
+.authcard.legal ul { margin: 6px 0 8px; padding-left: 22px; list-style: disc; color: var(--text2); }
+.authcard.legal li { margin: 3px 0; }
+@media (max-width: 560px) { .authcard.legal { padding: 24px 18px; } }

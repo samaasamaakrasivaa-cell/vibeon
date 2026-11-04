@@ -8,6 +8,9 @@ import { readStored } from "../storage";
 import { ocr } from "../ai/gateway";
 import { weeklyReports } from "../roadmap/jobs";
 import { notify } from "../notify";
+import { pluralForm } from "@/lib/i18n/dict";
+
+const zan = (n: number) => `${n} ${pluralForm("ru", n, ["занятие", "занятия", "занятий"])}`;
 
 // ───────── Цены ─────────
 
@@ -142,9 +145,9 @@ async function billPacks() {
     const open = await db.invoice.count({ where: { studentId: s.id, kind: "pack", status: { in: ["SENT", "PROOF_SENT"] } } });
     if (open) continue; // счёт за абонемент уже выставлен и ждёт оплаты
     const opts = packOptions(s);
-    const opt = opts.find((o) => o.main) ?? opts.find((o) => o.n === s.packs[0].lessonsTotal) ?? opts[opts.length - 1];
+    const opt = opts.find((o) => o.main) ?? opts.find((o) => o.n === s.packs[0].lessonsTotal) ?? opts.find((o) => o.n === 8) ?? opts[opts.length - 1];
     if (!opt) continue;
-    await createInvoice(s, { amount: opt.price, kind: "pack", title: `Абонемент, ${opt.n} занятий`, packLessons: opt.n });
+    await createInvoice(s, { amount: opt.price, kind: "pack", title: `Абонемент, ${zan(opt.n)}`, packLessons: opt.n });
   }
 }
 

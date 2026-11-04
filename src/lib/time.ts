@@ -96,3 +96,17 @@ export const TIMEZONES: [string, string][] = [
   ["Europe/Berlin", "Берлин (UTC+1/+2)"],
   ["Europe/London", "Лондон (UTC+0/+1)"],
 ];
+
+/** Подпись недели: «2–8 ноября», «28 окт. – 3 нояб.», «Dec 29 – Jan 4». */
+export function weekRange(mondayIso: string, tz: string, loc: string) {
+  const a = new Date(dayStart(mondayIso, tz).getTime() + 12 * 3600e3);
+  const b = new Date(dayStart(addDaysIso(mondayIso, 6), tz).getTime() + 12 * 3600e3);
+  const ma = a.toLocaleDateString(loc, { month: "numeric", timeZone: tz }), mb = b.toLocaleDateString(loc, { month: "numeric", timeZone: tz });
+  if (ma === mb) {
+    const da = a.toLocaleDateString(loc, { day: "numeric", timeZone: tz });
+    const full = b.toLocaleDateString(loc, { day: "numeric", month: "long", timeZone: tz });
+    return `${da}–${full}`;
+  }
+  const f = (d: Date) => d.toLocaleDateString(loc, { day: "numeric", month: "short", timeZone: tz });
+  return `${f(a)} – ${f(b)}`;
+}

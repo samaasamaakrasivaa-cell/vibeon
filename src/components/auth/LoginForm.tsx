@@ -34,8 +34,10 @@ export function LoginForm({ oauth, initialError, next }: { oauth: { yandex: bool
       </div>
       <Submit>{t("auth.signIn")}</Submit>
       <Submit className="btn tinted w-full" formAction={magic}>{t("auth.magic")}</Submit>
-      <div className="divider">{t("auth.or")}</div>
-      <OAuthButtons enabled={oauth} />
+      {(oauth.yandex || oauth.vk) && <>
+        <div className="divider">{t("auth.or")}</div>
+        <OAuthButtons enabled={oauth} />
+      </>}
     </form>
   );
 }

@@ -10,7 +10,7 @@ export type SLesson = { id: string; day: number; startMin: number; dur: number; 
 type Day = { iso: string; dow: string; num: number; today: boolean; past: boolean; long: string };
 const PX = 44;
 
-export function StudentWeek({ days, lessons, hourFrom, hourTo, nowDay, nowMin }: { days: Day[]; lessons: SLesson[]; hourFrom: number; hourTo: number; nowDay: number; nowMin: number }) {
+export function StudentWeek({ days, lessons, hourFrom, hourTo, nowDay, nowMin, title, nav }: { days: Day[]; lessons: SLesson[]; hourFrom: number; hourTo: number; nowDay: number; nowMin: number; title: string; nav: React.ReactNode }) {
   const { t } = useT();
   const [req, setReq] = useState<string | null>(null);
   const [open, setOpen] = useState<SLesson | null>(null);
@@ -24,7 +24,10 @@ export function StudentWeek({ days, lessons, hourFrom, hourTo, nowDay, nowMin }:
   };
   return (
     <>
-      <div className="mb-4 flex justify-end"><button className="btn primary" onClick={() => setReq(t("sts.reqTextAny"))}><Icon name="plus" size="sm" />{t("sts.extra")}</button></div>
+      <div className="mb-4 mt-5 flex flex-wrap items-center justify-between gap-3">
+        <h2 className="m-0">{title}</h2>
+        <div className="flex flex-wrap items-center gap-2">{nav}<button className="btn primary" onClick={() => setReq(t("sts.reqTextAny"))}><Icon name="plus" size="sm" />{t("sts.extra")}</button></div>
+      </div>
       <section className="card" style={{ padding: "20px 20px 18px" }}>
         <div className="weekwrap">
           <div className="week">
@@ -39,7 +42,7 @@ export function StudentWeek({ days, lessons, hourFrom, hourTo, nowDay, nowMin }:
                   const cls = l.status === "PLANNED" ? "" : l.status.toLowerCase();
                   return (
                     <button key={l.id} type="button" className={`lesson ${cls}`} style={{ top: ((l.startMin - hourFrom * 60) / 60) * PX + 1.5, height: Math.max(22, (l.dur / 60) * PX - 3) }} onClick={() => setOpen(l)} title={`${l.start}–${l.end}${l.moved ? " · " + t("sch.moved") : ""}`}>
-                      <span className="nm" style={{ whiteSpace: "normal" }}>{l.title}</span>
+                      <span className="nm">{l.title}</span>{l.dur >= 40 && <span className="tm">{l.start}</span>}
                     </button>
                   );
                 })}
