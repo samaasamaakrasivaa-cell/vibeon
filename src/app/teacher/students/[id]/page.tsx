@@ -156,7 +156,7 @@ export default async function StudentProfile({ params, searchParams }: { params:
                   <b className="block text-[17px]">{dateFmt(next.startsAt, { weekday: "long", day: "numeric", month: "long" })}, {hhmm(next.startsAt, tz)}</b>
                   <span className="small muted">{next.durationMin} {t("dash.min")}{next.seriesId ? ` · ${t("sch.everyWeek")}` : ""}</span>
                   <div className="mt-3 flex flex-wrap gap-2">
-                    <span className="btn primary sm" aria-disabled="true" title={t("common.soon", { n: 5 })} style={{ opacity: 0.55 }}><Icon name="class" size="sm" />{t("dash.openClass")}</span>
+                    <Link className="btn primary sm" href={`/class/${next.id}`}><Icon name="class" size="sm" />{t("dash.openClass")}</Link>
                     <Link className="btn secondary sm" href={`/teacher/schedule?w=${isoDay(next.startsAt, tz)}`}><Icon name="cal" size="sm" />{t("nav.schedule")}</Link>
                   </div>
                 </>

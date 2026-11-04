@@ -32,7 +32,7 @@ export function LoginForm({ oauth, initialError, next }: { oauth: { yandex: bool
         <Link href="/forgot" className="text-[14px] text-accent">{t("auth.forgot")}</Link>
       </div>
       <Submit>{t("auth.signIn")}</Submit>
-      <Submit className="btn tinted block" formAction={magic}>{t("auth.magic")}</Submit>
+      <Submit className="btn tinted w-full" formAction={magic}>{t("auth.magic")}</Submit>
       <div className="divider">{t("auth.or")}</div>
       <OAuthButtons enabled={oauth} />
     </form>

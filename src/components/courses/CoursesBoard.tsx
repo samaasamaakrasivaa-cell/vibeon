@@ -19,8 +19,8 @@ export function CoursesBoard({ courses: initial, order }: { courses: CourseCard[
   const { pending, error, run } = useRun();
   const [courses, setCourses] = useState(initial);
   const [cats, setCats] = useState(order);
-  useEffect(() => setCourses(initial), [initial]);
-  useEffect(() => setCats(order), [order]);
+  useEffect(() => { setCourses(initial); }, [initial]);
+  useEffect(() => { setCats(order); }, [order]);
   const [drag, setDrag] = useState<{ kind: "course" | "cat"; id: string } | null>(null);
   const [open, setOpen] = useState(false);
   const [f, setF] = useState({ title: "", level: "", category: "general" });

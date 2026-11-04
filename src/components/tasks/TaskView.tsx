@@ -6,15 +6,16 @@ import { useT } from "@/lib/i18n/client";
 import type { TaskOptions, TaskType } from "@/lib/tasks/catalog";
 import { buildCrossword, dictationGrade, parse, same, series, shuffle, videoEmbed, type Seg } from "@/lib/tasks/parse";
 import { Icon } from "../Icon";
+import { useSlot, useTaskRole } from "./store";
 
 export type TaskData = { id: string; type: TaskType; title: string; content: string; options: TaskOptions };
 type Mark = "ok" | "bad" | "spell" | undefined;
 
 /** Общая логика проверки: «сразу» (до 3 попыток) или кнопкой «Проверить». */
-function useChecker(o: TaskOptions) {
+function useChecker(o: TaskOptions, id: string) {
   const instant = (o.checkMode ?? "button") === "instant";
-  const [checked, setChecked] = useState(false);
-  const [tries, setTries] = useState<Record<string, number>>({});
+  const [checked, setChecked] = useSlot(id, "checked", false);
+  const [tries, setTries] = useSlot<Record<string, number>>(id, "tries", {});
   const bump = (k: string) => setTries((t) => ({ ...t, [k]: (t[k] ?? 0) + 1 }));
   const reveal = (k: string) => !o.noreveal && (tries[k] ?? 0) >= 3;
   return { instant, checked: instant || checked, setChecked, tries, bump, reveal, reset: () => { setChecked(false); setTries({}); } };
@@ -22,7 +23,10 @@ function useChecker(o: TaskOptions) {
 
 function CheckBar({ ck, errors, total, onReset, onCheck }: { ck: ReturnType<typeof useChecker>; errors: number; total: number; onReset: () => void; onCheck?: () => void }) {
   const { t } = useT();
+  const role = useTaskRole();
   if (ck.instant) return null; // в режиме «сразу» каждое поле проверяется само
+  if (role === "teacher")
+    return ck.checked ? <div className="tk-bar"><span className={`small font-semibold ${errors ? "text-bad" : "text-ok"}`}>{errors ? t("tk.right", { n: total - errors, total }) : `✓ ${t("tk.allRight")}`}</span></div> : null;
   return (
     <div className="tk-bar">
       {!ck.checked ? (
@@ -47,8 +51,8 @@ function Gaps({ task, kind }: { task: TaskData; kind: "gap" | "dropdown" }) {
   const o = task.options;
   const p = useMemo(() => parse(task.type, task.content), [task.type, task.content]);
   const drag = kind === "gap" && (task.type === "drag" || o.mode === "drag");
-  const ck = useChecker(o);
-  const [val, setVal] = useState<Record<string, string>>({});
+  const ck = useChecker(o, task.id);
+  const [val, setVal] = useSlot<Record<string, string>>(task.id, "val", {});
   const [pick, setPick] = useState<string | null>(null);
   if (p.kind !== "gaps") return null;
   const groups = series(p.lines.map((l, i) => ({ l, i })), o.split ? (o.seriesSize ?? 5) : undefined);
@@ -90,21 +94,21 @@ function Gaps({ task, kind }: { task: TaskData; kind: "gap" | "dropdown" }) {
                       const shown = ck.reveal(k) && m === "bad";
                       if (kind === "dropdown")
                         return (
-                          <select key={si} className={`tk-sel ${m ?? ""}`} value={val[k] ?? ""} onChange={(e) => set(k, e.target.value)} aria-label={`gap ${i + 1}`}>
+                          <select key={si} data-ans={s.answers.join(" / ")} className={`tk-sel ${m ?? ""}`} value={val[k] ?? ""} onChange={(e) => set(k, e.target.value)} aria-label={`gap ${i + 1}`}>
                             <option value="">…</option>
                             {s.options!.map((x) => <option key={x}>{x}</option>)}
                           </select>
                         );
                       if (drag)
                         return (
-                          <button key={si} type="button" className={`tk-slot ${m ?? ""} ${val[k] ? "full" : ""}`}
+                          <button key={si} type="button" data-ans={s.answers.join(" / ")} className={`tk-slot ${m ?? ""} ${val[k] ? "full" : ""}`}
                             onClick={() => { if (pick) { set(k, pick); setPick(null); } else set(k, ""); }}
                             onDragOver={(e) => e.preventDefault()} onDrop={(e) => { e.preventDefault(); set(k, e.dataTransfer.getData("text/plain")); }}>
                             {val[k] || " "}
                           </button>
                         );
                       return (
-                        <span key={si} className="tk-gapw">
+                        <span key={si} className="tk-gapw" data-ans={s.answers.join(" / ")}>
                           <input className={`tk-gap ${m ?? ""}`} value={val[k] ?? ""} size={Math.max(4, (s.answers[0] ?? "").length + 1)}
                             onChange={(e) => setVal((x) => ({ ...x, [k]: e.target.value }))} onBlur={(e) => ck.instant && e.target.value && ck.bump(k)}
                             aria-label={`gap ${i + 1}`} />
@@ -130,10 +134,10 @@ function Errors({ task }: { task: TaskData }) {
   const { t } = useT();
   const o = task.options;
   const p = useMemo(() => parse("errors", task.content), [task.content]);
-  const ck = useChecker(o);
-  const [found, setFound] = useState<Record<number, boolean>>({});
-  const [miss, setMiss] = useState<Record<string, boolean>>({});
-  const [fix, setFix] = useState<Record<number, string>>({});
+  const ck = useChecker(o, task.id);
+  const [found, setFound] = useSlot<Record<number, boolean>>(task.id, "found", {});
+  const [miss, setMiss] = useSlot<Record<string, boolean>>(task.id, "miss", {});
+  const [fix, setFix] = useSlot<Record<number, string>>(task.id, "fix", {});
   if (p.kind !== "gaps") return null;
   const errors = p.lines.filter((l, i) => { const g = l.find((s) => s.t === "gap") as Extract<Seg, { t: "gap" }> | undefined; return !g || !found[i] || !same(fix[i] ?? "", g.answers); }).length;
   return (
@@ -173,8 +177,8 @@ function Errors({ task }: { task: TaskData }) {
 function Test({ task }: { task: TaskData }) {
   const o = task.options;
   const p = useMemo(() => parse("test", task.content), [task.content]);
-  const ck = useChecker(o);
-  const [ans, setAns] = useState<Record<number, number[]>>({});
+  const ck = useChecker(o, task.id);
+  const [ans, setAns] = useSlot<Record<number, number[]>>(task.id, "ans", {});
   if (p.kind !== "test") return null;
   const ok = (qi: number) => { const a = [...(ans[qi] ?? [])].sort().join(); return a === [...p.qs[qi].correct].sort().join(); };
   const errors = p.qs.filter((_, i) => !ok(i)).length;
@@ -190,7 +194,7 @@ function Test({ task }: { task: TaskData }) {
                 const sel = (ans[qi] ?? []).includes(oi);
                 const m: Mark = ck.checked && sel ? (q.correct.includes(oi) ? "ok" : "bad") : undefined;
                 return (
-                  <label key={oi} className={`tk-opt ${sel ? "sel" : ""} ${m ?? ""}`}>
+                  <label key={oi} data-right={q.correct.includes(oi) ? "1" : undefined} className={`tk-opt ${sel ? "sel" : ""} ${m ?? ""}`}>
                     <input type={multi ? "checkbox" : "radio"} name={`${task.id}-${qi}`} checked={sel}
                       onChange={() => { setAns((a) => ({ ...a, [qi]: multi ? (sel ? (a[qi] ?? []).filter((x) => x !== oi) : [...(a[qi] ?? []), oi]) : [oi] })); if (ck.instant) ck.bump(String(qi)); }} />
                     <span>{String.fromCharCode(65 + oi)}. {op}</span>
@@ -211,8 +215,8 @@ function TF({ task }: { task: TaskData }) {
   const { t } = useT();
   const o = task.options;
   const p = useMemo(() => parse("tf", task.content), [task.content]);
-  const ck = useChecker(o);
-  const [ans, setAns] = useState<Record<number, string>>({});
+  const ck = useChecker(o, task.id);
+  const [ans, setAns] = useSlot<Record<number, string>>(task.id, "ans", {});
   if (p.kind !== "tf") return null;
   const opts: ["T" | "F" | "NS", string][] = [["T", t("tk.true")], ["F", t("tk.false")], ...(p.ns || o.ns ? [["NS", t("tk.ns")] as ["NS", string]] : [])];
   const errors = p.items.filter((it, i) => ans[i] !== it.a).length;
@@ -241,8 +245,8 @@ function Pairs({ task }: { task: TaskData }) {
   const { t } = useT();
   const o = task.options;
   const p = useMemo(() => parse("pairs", task.content), [task.content]);
-  const ck = useChecker(o);
-  const [link, setLink] = useState<Record<number, number>>({}); // левый → индекс правого
+  const ck = useChecker(o, task.id);
+  const [link, setLink] = useSlot<Record<number, number>>(task.id, "link", {}); // левый → индекс правого
   const [sel, setSel] = useState<number | null>(null);
   if (p.kind !== "pairs") return null;
   const right = shuffle(p.pairs.map((_, i) => i), task.id);
@@ -289,8 +293,8 @@ function Sort({ task, pictures }: { task: TaskData; pictures?: boolean }) {
   const { t } = useT();
   const o = task.options;
   const p = useMemo(() => parse(task.type, task.content), [task.type, task.content]);
-  const ck = useChecker(o);
-  const [place, setPlace] = useState<Record<string, number>>({});
+  const ck = useChecker(o, task.id);
+  const [place, setPlace] = useSlot<Record<string, number>>(task.id, "place", {});
   const [pick, setPick] = useState<string | null>(null);
   const buckets: { name: string; words: string[]; pic?: string }[] = p.kind === "columns" ? p.cols.map((c) => ({ name: c.name, words: c.words })) : p.kind === "words" ? p.items.map((x, i) => ({ name: x.word, words: [x.word], pic: o.pics?.[i] })) : [];
   const all = shuffle(buckets.flatMap((b) => b.words), task.id);
@@ -331,9 +335,9 @@ function Build({ task, letters }: { task: TaskData; letters?: boolean }) {
   const { t } = useT();
   const o = task.options;
   const p = useMemo(() => parse(task.type, task.content), [task.type, task.content]);
-  const ck = useChecker(o);
+  const ck = useChecker(o, task.id);
   const items = p.kind === "sentences" ? p.items.map((toks) => ({ toks, hint: "" })) : p.kind === "words" ? p.items.map((x) => ({ toks: x.word.split(""), hint: x.hint })) : [];
-  const [built, setBuilt] = useState<Record<number, number[]>>({});
+  const [built, setBuilt] = useSlot<Record<number, number[]>>(task.id, "built", {});
   const [left, setLeft] = useState(o.limitSec ?? 0);
   useEffect(() => {
     if (!letters || !o.limitSec || left <= 0) return;
@@ -382,9 +386,8 @@ function Order({ task }: { task: TaskData }) {
   const o = task.options;
   const p = useMemo(() => parse("textorder", task.content), [task.content]);
   const items = p.kind === "lines" ? p.items : [];
-  const [ord, setOrd] = useState(() => shuffle(items.map((_, i) => i), task.id));
-  useEffect(() => setOrd(shuffle(items.map((_, i) => i), task.id)), [task.content]); // eslint-disable-line react-hooks/exhaustive-deps
-  const ck = useChecker(o);
+  const [ord, setOrd] = useSlot<number[]>(task.id, "ord", () => shuffle(items.map((_, i) => i), task.id));
+  const ck = useChecker(o, task.id);
   const [drag, setDrag] = useState<number | null>(null);
   const move = (from: number, to: number) => setOrd((x) => { const y = [...x]; const [v] = y.splice(from, 1); y.splice(to, 0, v); return y; });
   const errors = ord.filter((v, i) => v !== i).length;
@@ -409,8 +412,8 @@ function Arrow({ task }: { task: TaskData }) {
   const { t } = useT();
   const o = task.options;
   const p = useMemo(() => parse(task.type, task.content), [task.type, task.content]);
-  const ck = useChecker(o);
-  const [val, setVal] = useState<Record<number, string>>({});
+  const ck = useChecker(o, task.id);
+  const [val, setVal] = useSlot<Record<number, string>>(task.id, "val", {});
   if (p.kind !== "pairsArrow") return null;
   const errors = p.items.filter((it, i) => it.answers.length && !same(val[i] ?? "", it.answers)).length;
   return (
@@ -442,8 +445,8 @@ function Dictation({ task }: { task: TaskData }) {
   const { t } = useT();
   const o = task.options;
   const p = useMemo(() => parse("dictation", task.content), [task.content]);
-  const ck = useChecker(o);
-  const [val, setVal] = useState<Record<number, string>>({});
+  const ck = useChecker(o, task.id);
+  const [val, setVal] = useSlot<Record<number, string>>(task.id, "val", {});
   if (p.kind !== "lines") return null;
   const grade = (i: number) => dictationGrade(val[i] ?? "", p.items[i]);
   const errors = p.items.filter((_, i) => grade(i) !== "exact").length;
@@ -473,8 +476,8 @@ function CrosswordView({ task }: { task: TaskData }) {
   const { t } = useT();
   const o = task.options;
   const cw = useMemo(() => { const p = parse("crossword", task.content); return p.kind === "words" && p.items.length ? buildCrossword(p.items) : null; }, [task.content]);
-  const ck = useChecker(o);
-  const [cell, setCell] = useState<Record<string, string>>({});
+  const ck = useChecker(o, task.id);
+  const [cell, setCell] = useSlot<Record<string, string>>(task.id, "cell", {});
   const refs = useRef<Record<string, HTMLInputElement | null>>({});
   if (!cw) return <p className="hint">{t("tk.empty")}</p>;
   const nums = new Map(cw.words.map((w) => [`${w.row},${w.col}`, w.n]));
@@ -575,9 +578,9 @@ function Recorder() {
   return (
     <div className="flex flex-col gap-2">
       {rec ? (
-        <button type="button" className="btn danger lg block" onClick={() => { rec.stop(); setRec(null); }}><span className="dot" style={{ background: "var(--bad)" }} />{t("tk.stop")}</button>
+        <button type="button" className="btn danger lg w-full" onClick={() => { rec.stop(); setRec(null); }}><span className="dot" style={{ background: "var(--bad)" }} />{t("tk.stop")}</button>
       ) : (
-        <button type="button" className="btn primary lg block" onClick={start}><Icon name="mic" />{url ? t("tk.recordAgain") : t("tk.record")}</button>
+        <button type="button" className="btn primary lg w-full" onClick={start}><Icon name="mic" />{url ? t("tk.recordAgain") : t("tk.record")}</button>
       )}
       {url && <audio controls src={url} className="w-full" />}
       {url && <button type="button" className="btn plain sm self-start" disabled title={t("common.soon", { n: 8 })}>{t("tk.transcript")}</button>}
@@ -650,17 +653,31 @@ export function TaskBody({ task }: { task: TaskData }) {
           </div>
         </div>
       );
-    case "open":
-      return <div className="flex flex-col gap-4">{p.kind === "lines" && p.items.map((q, i) => <div key={i}><div className="mb-1.5"><Num i={i} o={o} /> {q}</div><textarea className="textarea" aria-label={q} /></div>)}<span className="hint">{t("tk.teacherChecks")}</span></div>;
+    case "open": return <Open task={task} />;
     case "essay": return <Essay task={task} />;
     case "record": return <div className="flex flex-col gap-3">{task.content && <Rich text={task.content} />}<Recorder /></div>;
     default: return null;
   }
 }
 
+function Open({ task }: { task: TaskData }) {
+  const { t } = useT();
+  const p = parse("open", task.content);
+  const [val, setVal] = useSlot<Record<number, string>>(task.id, "val", {});
+  return (
+    <div className="flex flex-col gap-4">
+      {p.kind === "lines" && p.items.map((q, i) => (
+        <div key={i}><div className="mb-1.5"><Num i={i} o={task.options} /> {q}</div>
+          <textarea className="textarea" aria-label={q} value={val[i] ?? ""} onChange={(e) => setVal((x) => ({ ...x, [i]: e.target.value }))} /></div>
+      ))}
+      <span className="hint">{t("tk.teacherChecks")}</span>
+    </div>
+  );
+}
+
 function Essay({ task }: { task: TaskData }) {
   const { t } = useT();
-  const [v, setV] = useState("");
+  const [v, setV] = useSlot<string>(task.id, "text", "");
   const words = v.trim() ? v.trim().split(/\s+/).length : 0;
   const lim = task.options.limitWords;
   return (

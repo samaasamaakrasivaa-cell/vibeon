@@ -83,7 +83,7 @@ export async function Dashboard({ user, role }: { user: User; role: "TEACHER" | 
                       </span>
                     </td>
                     <td className="c-hw"><span className="pill grey" title={t("common.soon", { n: 5 })}>{t("today.noHw")}</span></td>
-                    <td className="c-class"><span className={`btn sm ${soon || live ? "primary" : "secondary"}`} aria-disabled="true" title={t("common.soon", { n: 5 })}><Icon name="class" size="sm" />{t("dash.openClass")}</span></td>
+                    <td className="c-class"><Link href={`/class/${l.id}`} className={`btn sm ${soon || live ? "primary" : "secondary"}`}><Icon name="class" size="sm" />{role === "TEACHER" ? t("dash.openClass") : t("cls.enter")}</Link></td>
                     <td className="c-cmt">
                       {role === "TEACHER" ? (
                         <Link href={`${scheduleHref}?w=${todayIso}`} className={`cmt ${l.note ? "" : "empty"}`} title={l.note ?? t("today.addNote")}>{l.note ?? t("dash.noComment")}</Link>

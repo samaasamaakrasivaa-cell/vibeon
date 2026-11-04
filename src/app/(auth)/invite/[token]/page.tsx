@@ -38,9 +38,9 @@ export default async function InvitePage({ params }: { params: Promise<{ token: 
           <b className="text-text">{[tu.name, tu.lastName].filter(Boolean).join(" ")}</b> {t("inv.text")}
         </p>
         {preview ? (
-          <span className="btn primary block" aria-disabled="true" style={{ borderRadius: 14, minHeight: 50, opacity: 0.6 }}>{t("inv.fill")}</span>
+          <span className="btn primary w-full" aria-disabled="true" style={{ borderRadius: 14, minHeight: 50, opacity: 0.6 }}>{t("inv.fill")}</span>
         ) : (
-          <Link href={`/invite/${token}/form`} className="btn primary block" style={{ borderRadius: 14, minHeight: 50, fontSize: 17 }}>{t("inv.fill")}</Link>
+          <Link href={`/invite/${token}/form`} className="btn primary w-full" style={{ borderRadius: 14, minHeight: 50, fontSize: 17 }}>{t("inv.fill")}</Link>
         )}
         <p className="mt-4 mb-3 text-[13px] text-text2">{preview ? t("inv.preview") : t("inv.note")}</p>
         <Link href="/login" className="alink text-[14px]">{t("inv.have")}</Link>

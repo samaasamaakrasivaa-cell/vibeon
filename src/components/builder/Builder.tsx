@@ -28,7 +28,7 @@ export function Builder({ d }: { d: BuilderData }) {
   const { pending, error, run, setError } = useRun();
   const [part, setPart] = useState<Part>("lesson");
   const [rubrics, setRub] = useState(d.rubrics);
-  useEffect(() => setRub(d.rubrics), [d.rubrics]);
+  useEffect(() => { setRub(d.rubrics); }, [d.rubrics]);
   const [active, setActive] = useState(d.rubrics[0]?.id ?? null);
   useEffect(() => { if (!rubrics.some((r) => r.id === active)) setActive(rubrics[0]?.id ?? null); }, [rubrics, active]);
   const [studentView, setStudentView] = useState(false);
@@ -221,7 +221,7 @@ export function Builder({ d }: { d: BuilderData }) {
 function Outcomes({ d, onSave, readOnly }: { d: BuilderData; onSave: (v: string[]) => void; readOnly: boolean }) {
   const { t } = useT();
   const [v, setV] = useState(d.outcomes.join("\n"));
-  useEffect(() => setV(d.outcomes.join("\n")), [d.outcomes]);
+  useEffect(() => { setV(d.outcomes.join("\n")); }, [d.outcomes]);
   return (
     <div className="bld-out mt-5">
       <div className="cardtitle">{t("bld.outcomes")}</div>
@@ -232,7 +232,7 @@ function Outcomes({ d, onSave, readOnly }: { d: BuilderData; onSave: (v: string[
   );
 }
 
-function Catalog({ fav: initialFav, onPick, onClose }: { fav: string[]; onPick: (t: TaskType) => void; onClose: () => void }) {
+export function Catalog({ fav: initialFav, onPick, onClose }: { fav: string[]; onPick: (t: TaskType) => void; onClose: () => void }) {
   const { t, lang } = useT();
   const [q, setQ] = useState("");
   const [fav, setFav] = useState(initialFav);

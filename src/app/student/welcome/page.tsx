@@ -22,11 +22,11 @@ export default async function Welcome() {
         </div>
         <details className="how"><summary>ⓘ {t("tg.connect")}</summary>{t("tg.how")}</details>
         <div className="mt-5 flex flex-col gap-3">
-          <button className="btn primary lg block" disabled={!bot} title={bot ? undefined : t("tg.soon")}>
+          <button className="btn primary lg w-full" disabled={!bot} title={bot ? undefined : t("tg.soon")}>
             <Icon name="telegram" />{t("tg.connect")}
           </button>
           {!bot && <p className="hint m-0 text-center">{t("tg.soon")}</p>}
-          <Link href="/student" className="btn secondary block">{t("tg.later")}</Link>
+          <Link href="/student" className="btn secondary w-full">{t("tg.later")}</Link>
         </div>
         <div className="steps mt-4">{t("ob.step", { n: 2 })}</div>
       </section>

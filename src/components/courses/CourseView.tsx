@@ -28,7 +28,7 @@ export async function upload(file: File) {
 /** Поле, которое редактируется на месте и сохраняется при уходе с него. */
 function Editable({ value, onSave, className = "", placeholder }: { value: string; onSave: (v: string) => void; className?: string; placeholder?: string }) {
   const [v, setV] = useState(value);
-  useEffect(() => setV(value), [value]);
+  useEffect(() => { setV(value); }, [value]);
   return (
     <input className={`editable ${className}`} value={v} placeholder={placeholder} onChange={(e) => setV(e.target.value)}
       onBlur={() => v.trim() !== value && onSave(v)} onKeyDown={(e) => e.key === "Enter" && (e.target as HTMLInputElement).blur()} onClick={(e) => e.preventDefault()} />
@@ -39,7 +39,7 @@ export function CourseView({ c, students }: { c: CourseData; students: AssignStu
   const { t, lang } = useT();
   const { pending, error, run } = useRun();
   const [units, setUnits] = useState(c.units);
-  useEffect(() => setUnits(c.units), [c.units]);
+  useEffect(() => { setUnits(c.units); }, [c.units]);
   const [drag, setDrag] = useState<{ kind: "unit" | "lesson"; id: string } | null>(null);
   const [checked, setChecked] = useState<string[]>([]);
   const [assign, setAssign] = useState<Lesson | null>(null);

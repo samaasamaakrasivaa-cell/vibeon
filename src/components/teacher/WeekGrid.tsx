@@ -327,7 +327,7 @@ function LessonDialog({ l, onClose }: { l: GridLesson; onClose: () => void }) {
           {!l.past && l.status === "PLANNED" && <button className="btn secondary sm" onClick={() => setMode("cancel")}><Icon name="calx" size="sm" />{t("sch.cancelLesson")}</button>}
           <button className="btn danger sm" onClick={() => setMode("del")}>{t("common.delete")}</button>
         </div>
-        <span className="btn primary sm" aria-disabled="true" title={t("common.soon", { n: 5 })} style={{ opacity: 0.55 }}><Icon name="class" size="sm" />{t("dash.openClass")}</span>
+        <Link href={`/class/${l.id}`} className="btn primary sm"><Icon name="class" size="sm" />{t("dash.openClass")}</Link>
       </div>
       {l.studentId && <Link href={`/teacher/students/${l.studentId}`} className="alink mt-3 inline-block text-[14px]">{t("sch.openProfile")}</Link>}
     </Dialog>

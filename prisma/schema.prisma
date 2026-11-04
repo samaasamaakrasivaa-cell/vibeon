@@ -293,6 +293,11 @@ model LessonInstance {
   teacherId   String? // владелец урока (нужно для пробных без ученика)
   note        String? // заметка учителя к уроку → видна в «Сегодня»
   recurrence  String? // правило повтора (RRULE) или null
+  live        Json            @default("{}") // состояние класса: рубрика, «показать ученику», скрытые задания, таймер, доска заблокирована…
+  board       Json            @default("{\"pages\":[[]]}") // доска: страницы с объектами
+  studentNote String? // заметки ученика к уроку
+  startedAt   DateTime?
+  finishedAt  DateTime?
   callLink    String?
   createdAt   DateTime        @default(now())
   template    LessonTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
@@ -349,6 +354,8 @@ model Homework {
   dueAt            DateTime?
   status           HomeworkStatus @default(ASSIGNED)
   teacherComment   String?
+  extraTaskIds     String[] // задания урока, отправленные в домашку во время занятия
+  wordTraining     String[] // «new» — тренировать новые слова, «review» — общее повторение
   lessonInstance   LessonInstance @relation(fields: [lessonInstanceId], references: [id], onDelete: Cascade)
 }
 

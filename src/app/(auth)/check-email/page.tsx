@@ -34,7 +34,7 @@ export default async function CheckEmail({ searchParams }: { searchParams: Promi
           {t("auth.check.sent")} <b className="text-text">{email}</b>.{" "}
           {t(kind === "verify" ? "auth.check.verify" : kind === "magic" ? "auth.check.magic" : "auth.check.reset")}
         </p>
-        {open && <a href={open} target="_blank" rel="noreferrer" className="btn primary block mb-5" style={{ borderRadius: 14, minHeight: 48 }}>{t("auth.check.open")}</a>}
+        {open && <a href={open} target="_blank" rel="noreferrer" className="btn primary w-full mb-5" style={{ borderRadius: 14, minHeight: 48 }}>{t("auth.check.open")}</a>}
         {email && <Resend email={email} kind={kind} />}
         <p className="mt-4 mb-0 text-[14px]"><Link href={back} className="alink">{t("auth.check.change")}</Link></p>
       </section>
