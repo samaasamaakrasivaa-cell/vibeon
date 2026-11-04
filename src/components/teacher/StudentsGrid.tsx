@@ -14,10 +14,10 @@ const COLORS = [
 export const avatarStyle = (i: number) => ({ background: COLORS[i % COLORS.length][0], color: COLORS[i % COLORS.length][1] });
 
 /** Поиск по имени в шапке страницы — фильтрует карточки на месте. */
-export function StudentsGrid({ cards, invite, empty }: { cards: Card[]; invite?: boolean; empty: string }) {
+export function StudentsGrid({ cards, invite, empty, openInvite }: { cards: Card[]; invite?: boolean; empty: string; openInvite?: boolean }) {
   const { t } = useT();
   const [q, setQ] = useState("");
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(!!openInvite); // ?invite=1 — сразу открыть «Пригласить ученика»
   const list = cards.filter((c) => c.name.toLowerCase().includes(q.trim().toLowerCase()));
   return (
     <>

@@ -13,7 +13,7 @@ export const metadata = { title: "Ученики" };
 
 const TABS = ["profiles", "roadmaps", "payments", "feedback"] as const;
 
-export default async function Students({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
+export default async function Students({ searchParams }: { searchParams: Promise<{ tab?: string; invite?: string }> }) {
   const { t, lang } = await getT();
   const me = await requireUser("TEACHER");
   const sp = await searchParams;
@@ -57,6 +57,7 @@ export default async function Students({ searchParams }: { searchParams: Promise
       {tab === "profiles" && (
         <>
           <StudentsGrid
+            openInvite={sp.invite === "1"}
             invite
             cards={active.map((s, i) => card(s, i, s.course ?? s.level ?? s.email ?? ""))}
             empty={t("inviteT.none")}

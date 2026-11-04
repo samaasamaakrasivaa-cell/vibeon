@@ -943,4 +943,14 @@ details.how[open] summary { margin-bottom: 6px; }
 .iedit:focus { outline: none; background: var(--surface); border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-bg); }
 .iedit::placeholder { color: var(--text3); }
 select.iedit { cursor: pointer; appearance: auto; }
+
+/* «С чего начать» */
+.fsteps { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; }
+.fstep { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 16px; background: var(--surface2); transition: background .15s; }
+.fstep:hover { background: var(--fill); }
+.fstep.done { opacity: .6; }
+.fsnum { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; background: var(--accent); color: #fff; flex: none; }
+.fstep.done .fsnum { background: var(--ok); }
+
+.invlink { display: block; width: 100%; padding: 8px 10px; border-radius: 10px; background: var(--surface); color: var(--text); font-size: 13px; word-break: break-all; user-select: all; }
 }

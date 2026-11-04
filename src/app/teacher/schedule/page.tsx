@@ -79,6 +79,7 @@ export default async function Schedule({ searchParams }: { searchParams: Promise
           hourFrom={hourFrom}
           hourTo={hourTo}
           nowDay={nowDay}
+          todayIso={todayIso}
           nowMin={partsIn(now, tz).h * 60 + partsIn(now, tz).min}
           students={students.map((s) => ({ id: s.id, name: [s.name, s.lastName].filter(Boolean).join(" "), initials: initials(s.name, s.lastName) }))}
           weekTotal={rub(weekTotal, lang)}

@@ -19,13 +19,14 @@ export default async function StudentHome() {
   const s = await db.student.findUnique({ where: { userId: me.id } });
   const tz = me.timezone;
   const now = new Date();
-  const [next, last, hws, practice, dueWords, notifications] = await Promise.all([
+  const [next, last, hws, practice, dueWords, notifications, wordsTotal] = await Promise.all([
     s ? db.lessonInstance.findFirst({ where: { studentId: s.id, status: "PLANNED", startsAt: { gt: new Date(now.getTime() - 90 * 60000) } }, orderBy: { startsAt: "asc" }, include: { template: true } }) : null,
     s ? db.lessonInstance.findFirst({ where: { studentId: s.id, status: "DONE" }, orderBy: { startsAt: "desc" }, include: { template: true } }) : null,
     s ? homeworkFor({ studentId: s.id }) : [],
     s ? db.wordPractice.findUnique({ where: { studentId_day: { studentId: s.id, day: isoDay(now, tz) } } }) : null,
     s ? db.word.count({ where: { studentId: s.id, level: { lt: 4 }, OR: [{ nextReviewAt: null }, { nextReviewAt: { lte: now } }] } }) : 0,
     db.notification.findMany({ where: { userId: me.id }, orderBy: { createdAt: "desc" }, take: 15 }),
+    s ? db.word.count({ where: { studentId: s.id } }) : 0,
   ]);
   const loc = lang === "ru" ? "ru-RU" : "en-GB";
   const hw = hws.find((h) => h.done < h.total);
@@ -34,7 +35,7 @@ export default async function StudentHome() {
   const inMin = next ? Math.round((next.startsAt.getTime() - now.getTime()) / 60000) : null;
   const isToday = next && isoDay(next.startsAt, tz) === isoDay(now, tz);
   const whenLabel = next ? `${isToday ? t("dash.today") : next.startsAt.toLocaleDateString(loc, { weekday: "long", day: "numeric", month: "long", timeZone: tz })}, ${hhmm(next.startsAt, tz)}` : "";
-  const allDone = !hw && done >= goal;
+  const allDone = !hw && done >= goal && wordsTotal > 0;
   const ago = (d: Date) => { const m = Math.round((now.getTime() - d.getTime()) / 60000); return m < 60 ? t("nt.minAgo", { n: Math.max(1, m) }) : m < 1440 ? t("nt.hAgo", { n: Math.round(m / 60) }) : d.toLocaleDateString(loc, { day: "numeric", month: "long", timeZone: tz }); };
 
   return (
@@ -78,6 +79,12 @@ export default async function StudentHome() {
             </div>
           )}
 
+          {wordsTotal === 0 ? (
+            <div className="tk">
+              <div className="small font-semibold text-accent">{t("nav.words")}</div>
+              <p className="muted mb-0 mt-1">{t("st.noWordsYet")}</p>
+            </div>
+          ) : (
           <div className="tk flex flex-wrap items-center gap-4">
             <div className="grow min-w-[220px] flex-1">
               <div className="small font-semibold text-accent">{t("nav.words")}</div>
@@ -87,6 +94,7 @@ export default async function StudentHome() {
             </div>
             <Link href="/student/words?train=today" className="btn primary lg">{t("st.startTraining")}</Link>
           </div>
+          )}
           {allDone && <div className="alert ok">🎉 {t("st.allDone")}</div>}
         </div>
       </section>

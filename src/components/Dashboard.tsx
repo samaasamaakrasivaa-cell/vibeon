@@ -42,8 +42,45 @@ export async function Dashboard({ user, role }: { user: User; role: "TEACHER" | 
   };
   const scheduleHref = role === "TEACHER" ? "/teacher/schedule" : "/student/schedule";
 
+  // «С чего начать» — пока учитель не сделал главное: курс, ученик, первый урок
+  let steps: { done: boolean; href: string; label: string; sub: string }[] = [];
+  if (role === "TEACHER") {
+    const [courses, students, anyLesson, prof] = await Promise.all([
+      db.course.count({ where: { teacherId: user.id } }),
+      db.student.count({ where: { teacherId: user.id } }),
+      db.lessonInstance.count({ where: { teacherId: user.id } }),
+      db.teacherProfile.findUnique({ where: { userId: user.id }, select: { callLink: true, settings: true } }),
+    ]);
+    const pay = !!(prof?.settings as { payDetails?: string } | null)?.payDetails;
+    steps = [
+      { done: students > 0, href: "/teacher/students?invite=1", label: t("fs.invite"), sub: t("fs.inviteSub") },
+      { done: anyLesson > 0, href: "/teacher/schedule?new=1", label: t("fs.lesson"), sub: t("fs.lessonSub") },
+      { done: courses > 0, href: "/teacher/courses", label: t("fs.course"), sub: t("fs.courseSub") },
+      { done: !!prof?.callLink, href: "/teacher/profile", label: t("fs.call"), sub: t("fs.callSub") },
+      { done: !!user.telegramChatId, href: "/teacher/profile#notify", label: t("fs.tg"), sub: t("fs.tgSub") },
+      { done: pay, href: "/teacher/finance?tab=check", label: t("fs.pay"), sub: t("fs.paySub") },
+    ];
+    if (steps.slice(0, 3).every((s) => s.done)) steps = [];
+  }
+
   return (
     <div className="page">
+      {steps.length > 0 && (
+        <section className="card">
+          <h2 className="mb-1">{t("fs.title")}</h2>
+          <p className="muted mt-0 mb-4">{t("fs.lead", { n: steps.filter((x) => x.done).length, total: steps.length })}</p>
+          <div className="fsteps">
+            {steps.map((x, i) => (
+              <Link key={i} href={x.href} className={`fstep ${x.done ? "done" : ""}`}>
+                <span className="fsnum">{x.done ? "✓" : i + 1}</span>
+                <span className="grow"><b>{x.label}</b><span className="small muted block">{x.sub}</span></span>
+                {!x.done && <Icon name="right" size="sm" />}
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
       <section className="card">
         <div className="flex flex-wrap items-center justify-between gap-6 border-b border-sep pb-6">
           <div>

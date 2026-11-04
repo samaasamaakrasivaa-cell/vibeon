@@ -44,7 +44,8 @@ export function InviteForm() {
       {st?.error && <div className="alert mt-3" role="alert">{st.error}</div>}
       {st?.link && (
         <div className={`alert ${st.warn ? "" : "ok"} mt-3 flex flex-wrap items-center gap-3`} role={st.warn ? "alert" : undefined}>
-          <span className="grow">{st.ok?.includes("@") ? st.ok : `${st.ok} — ${t("inviteT.copy").toLowerCase()}:`} <code className="break-all text-[13px]">{st.link}</code></span>
+          <span className="w-full">{st.ok?.includes("@") ? st.ok : `${st.ok} — ${t("inviteT.copy").toLowerCase()}:`}</span>
+          <code className="invlink">{st.link}</code>
           <CopyLink link={st.link} />
           {st.id && <a className="btn primary sm" href={`/teacher/schedule?new=1&trial=1&student=${st.id}`}><Icon name="cal" size="sm" />{t("inviteT.trial")}</a>}
         </div>

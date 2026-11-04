@@ -20,7 +20,7 @@ type Day = { iso: string; dow: string; num: number; today: boolean; past: boolea
 const PX = 44; // высота часа, px
 
 export function WeekGrid(props: {
-  days: Day[]; lessons: GridLesson[]; hourFrom: number; hourTo: number; nowDay: number; nowMin: number;
+  days: Day[]; lessons: GridLesson[]; hourFrom: number; hourTo: number; nowDay: number; nowMin: number; todayIso: string;
   students: GridStudent[]; weekTotal: string; legend: boolean; preset?: { studentId?: string; trial?: boolean };
 }) {
   const { t } = useT();
@@ -40,10 +40,7 @@ export function WeekGrid(props: {
 
   // ?new=1 из «Пригласить → Поставить пробный урок»
   useEffect(() => {
-    if (props.preset) {
-      const d = days.find((x) => !x.past) ?? days[0];
-      setNewAt({ date: d.iso, start: "18:00" });
-    }
+    if (props.preset) setNewAt(nextSlot(props.todayIso, props.nowMin));
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // На узком экране сетка листается вбок — сразу показываем сегодняшний день
@@ -124,7 +121,7 @@ export function WeekGrid(props: {
       </div>
 
       {newAt && (
-        <NewLessonDialog at={newAt} students={props.students} preset={props.preset} onClose={() => setNewAt(null)} />
+        <NewLessonDialog now={{ iso: props.todayIso, min: props.nowMin }} at={newAt} students={props.students} preset={props.preset} onClose={() => setNewAt(null)} />
       )}
       {open && <LessonDialog l={open} onClose={() => setOpenId(null)} />}
     </>
@@ -148,7 +145,17 @@ function useRun() {
   return { pending, error, run };
 }
 
-function NewLessonDialog({ at, students, preset, onClose }: { at: { date: string; start: string }; students: GridStudent[]; preset?: { studentId?: string; trial?: boolean }; onClose: () => void }) {
+/** Ближайшее разумное время для нового урока по часам учителя (его пояс): сегодня 18:00, ближайший час до 21:00 или завтра 18:00. */
+function nextSlot(todayIso: string, nowMin: number) {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const h = Math.floor(nowMin / 60);
+  if (h < 17) return { date: todayIso, start: "18:00" };
+  if (h < 21) return { date: todayIso, start: `${pad(h + 1)}:00` };
+  const d = new Date(`${todayIso}T12:00:00Z`); d.setUTCDate(d.getUTCDate() + 1);
+  return { date: d.toISOString().slice(0, 10), start: "18:00" };
+}
+
+function NewLessonDialog({ at, students, preset, onClose, now }: { at: { date: string; start: string }; students: GridStudent[]; preset?: { studentId?: string; trial?: boolean }; onClose: () => void; now: { iso: string; min: number } }) {
   const { t } = useT();
   const { pending, error, run } = useRun();
   const [studentId, setStudentId] = useState<string | null>(preset?.studentId ?? null);
@@ -161,6 +168,9 @@ function NewLessonDialog({ at, students, preset, onClose }: { at: { date: string
   const [q, setQ] = useState("");
   const list = useMemo(() => students.filter((s) => s.name.toLowerCase().includes(q.trim().toLowerCase())), [students, q]);
   const needName = trial && !studentId;
+  // прошло ли выбранное время — по часам учителя
+  const [hh, mm] = (start || "00:00").split(":").map(Number);
+  const inPast = date < now.iso || (date === now.iso && hh * 60 + mm < now.min);
   return (
     <Dialog open onClose={onClose} title={t("sch.new")}>
       <div className="flex flex-col gap-4">
@@ -194,6 +204,7 @@ function NewLessonDialog({ at, students, preset, onClose }: { at: { date: string
           <div className="field"><label htmlFor="nd">{t("sch.date")}</label><input id="nd" type="date" className="input" value={date} onChange={(e) => setDate(e.target.value)} /></div>
           <div className="field"><label htmlFor="ns">{t("sch.start")}</label><input id="ns" type="time" step={300} className="input" value={start} onChange={(e) => setStart(e.target.value)} /></div>
         </div>
+        {inPast && <div className="alert -mt-1 m-0" role="alert">{t("sch.pastWarn")}</div>}
         <div className="field">
           <span className="flabel">{t("sch.length")}</span>
           <div className="seg">
