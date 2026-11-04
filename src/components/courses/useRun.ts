@@ -9,12 +9,15 @@ export function useRun() {
   const router = useRouter();
   const [pending, start] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const run = (fn: () => Promise<Res>, after?: (r: Res & { ok: true }) => void) =>
+  /** navigates: после действия будет переход на другую страницу — тогда текущую не обновляем, чтобы не мешать переходу. */
+  const run = (fn: () => Promise<Res>, after?: (r: Res & { ok: true }) => void, navigates = false) =>
     start(async () => {
       setError(null);
       const r = await fn().catch(() => ({ ok: false as const, error: "Error" }));
       if (!r.ok) return setError(r.error);
-      router.refresh();
+      // Обновление страницы — после завершения действия, вне этой операции (внутри неё два обновления
+      // иногда блокировали друг друга). Само действие тоже обновляет страницу через revalidatePath.
+      if (!navigates) setTimeout(() => router.refresh(), 0);
       after?.(r);
     });
   return { pending, error, run, setError };

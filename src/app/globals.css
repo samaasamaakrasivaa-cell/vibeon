@@ -245,6 +245,7 @@ details.how[open] summary { margin-bottom: 6px; }
 @media (max-width: 760px) { .gname { font-size: 36px; } }
 
 /* Экран загрузки с анимированным логотипом */
+.navloader { position: fixed; inset: 0; z-index: 200; display: flex; align-items: center; justify-content: center; background: color-mix(in srgb, var(--bg) 82%, transparent); backdrop-filter: blur(6px); }
 .loader { min-height: 100vh; display: flex; align-items: center; justify-content: center; opacity: 0; animation: loaderIn .2s ease .5s forwards; }
 @keyframes loaderIn { to { opacity: 1; } }
 .eq rect { transform-origin: center; transform-box: fill-box; animation: eq 1s ease-in-out infinite; }
@@ -704,4 +705,48 @@ details.how[open] summary { margin-bottom: 6px; }
 .bd-pages button.on { background: var(--accent); color: #fff; }
 .bd-sticky { width: 100%; height: 100%; font: 22px/1.3 -apple-system, system-ui, sans-serif; color: #1C1C1E; overflow: hidden; white-space: pre-wrap; }
 @media (max-width: 760px) { .bd-body { grid-template-columns: 1fr; } .bd-tools { flex-direction: row; flex-wrap: wrap; } }
+}
+
+/* ───────── Кабинет ученика, чат, вопросы (этап 6) ───────── */
+@layer components {
+.thread { display: flex; flex-direction: column; gap: 10px; }
+.thread-list { display: flex; flex-direction: column; gap: 6px; min-height: 280px; max-height: 58vh; overflow-y: auto; padding: 4px; }
+.thread-day { align-self: center; font-size: 12px; color: var(--text3); background: var(--surface2); border-radius: 999px; padding: 2px 10px; margin: 6px 0; }
+.thread-form { display: flex; gap: 8px; align-items: flex-end; }
+.thread-form .textarea { min-height: 46px; }
+.chatgrid { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 16px; align-items: start; }
+.chatgrid .card + .card { margin-top: 0; }
+.chatlist { padding: 6px; display: flex; flex-direction: column; gap: 2px; max-height: 70vh; overflow-y: auto; }
+.chatrow { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 12px; }
+.chatrow:hover { background: var(--surface2); }
+.chatrow.on { background: var(--accent-bg); }
+.count-pill { font-size: 11px; font-weight: 700; background: var(--accent); color: #fff; border-radius: 999px; min-width: 19px; height: 19px; display: inline-flex; align-items: center; justify-content: center; padding: 0 5px; }
+@media (max-width: 900px) { .chatgrid { grid-template-columns: 1fr; } .chatlist { max-height: 240px; } }
+.hwcard { background: var(--surface); border-radius: 18px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.hwbar { flex: 1; height: 8px; border-radius: 4px; background: var(--fill); overflow: hidden; }
+.hwbar i { display: block; height: 100%; background: linear-gradient(90deg, #34C759, #0A84FF, #A55CF5); border-radius: 4px; }
+.qrow { display: flex; gap: 12px; padding: 14px 16px; border-bottom: .5px solid var(--sep); align-items: flex-start; }
+.qrow:last-child { border-bottom: 0; }
+.qrow .grow { flex: 1; min-width: 0; }
+.nextcard { background: linear-gradient(120deg, #0A84FF, #3D8BFF); color: #fff; border-radius: 20px; padding: 20px 22px; }
+.nextcard .btn { background: #fff; color: var(--accent); }
+.goalring { width: 132px; height: 132px; flex: none; }
+.wstat { border-radius: 18px; padding: 14px; text-align: center; background: var(--surface); border: 1.5px solid var(--sep); }
+.wstat b { display: block; font-size: 26px; line-height: 1.2; }
+.wstat span { font-size: 13px; color: var(--text2); }
+.daydot { width: 26px; height: 26px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; border: 1.5px solid var(--grey); color: var(--text2); }
+.daydot.done { background: var(--ok); border-color: var(--ok); color: #fff; }
+.daydot.off { border-color: var(--fill); background: var(--fill); color: var(--text3); }
+.daydot.today { box-shadow: 0 0 0 2px var(--accent); }
+.traincard { display: flex; align-items: center; gap: 14px; border-radius: 20px; padding: 18px 20px; text-align: left; border: 0; width: 100%; }
+.traincard.primary { color: #fff; background: linear-gradient(120deg, #0A84FF, #5E5CE6); box-shadow: 0 12px 30px rgba(10, 132, 255, .3); }
+.traincard.plain { background: var(--surface); color: var(--text); }
+.traincard .grow { flex: 1; } .traincard b { display: block; font-size: 17px; } .traincard small { opacity: .85; font-size: 13px; }
+.flash { min-height: 240px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; text-align: center; background: var(--surface2); border-radius: 22px; padding: 26px; cursor: pointer; }
+.flash .w { font-size: 34px; font-weight: 800; letter-spacing: -.02em; }
+.opts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.opts button { border: 1.5px solid var(--sep); background: var(--surface); border-radius: 14px; padding: 14px; font-size: 16px; text-align: center; }
+.opts button.ok { border-color: var(--ok); background: var(--ok-bg); color: var(--ok-text); }
+.opts button.bad { border-color: var(--bad); background: var(--bad-bg); color: var(--bad-text); }
+@media (max-width: 760px) { .opts { grid-template-columns: 1fr; } }
 }

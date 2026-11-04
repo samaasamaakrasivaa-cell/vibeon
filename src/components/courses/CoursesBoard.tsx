@@ -100,7 +100,7 @@ export function CoursesBoard({ courses: initial, order }: { courses: CourseCard[
         </div>
         <div className="actions">
           <button className="btn secondary" onClick={() => setOpen(false)}>{t("common.cancel")}</button>
-          <button className="btn primary" disabled={pending} onClick={() => run(() => createCourse(f), (r) => router.push(`/teacher/courses/${r.id}`))}>{t("crs.create")}</button>
+          <button className="btn primary" disabled={pending} onClick={() => run(() => createCourse(f), (r) => router.push(`/teacher/courses/${r.id}`), true)}>{t("crs.create")}</button>
         </div>
       </Dialog>
     </>

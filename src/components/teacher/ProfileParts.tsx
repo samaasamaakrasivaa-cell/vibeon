@@ -18,7 +18,9 @@ function useRun() {
       setError(null);
       const r = await fn().catch(() => ({ ok: false as const, error: "Error" }));
       if (!r.ok) return setError(r.error);
-      router.refresh();
+      // Обновление страницы — после завершения действия, вне этой операции (внутри неё два обновления
+      // иногда блокировали друг друга). Само действие тоже обновляет страницу через revalidatePath.
+      setTimeout(() => router.refresh(), 0);
       after?.();
     });
   return { pending, error, run };

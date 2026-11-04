@@ -24,7 +24,16 @@ export function WeekGrid(props: {
   students: GridStudent[]; weekTotal: string; legend: boolean; preset?: { studentId?: string; trial?: boolean };
 }) {
   const { t } = useT();
-  const { days, lessons, hourFrom, hourTo } = props;
+  const { days, hourFrom, hourTo } = props;
+  const [over, setOver] = useState<Record<string, { status: GridLesson["status"]; charged: boolean }>>({});
+  useEffect(() => {
+    const h = (e: Event) => { const d = (e as CustomEvent).detail; setOver((o) => ({ ...o, [d.id]: { status: d.status, charged: d.charged } })); };
+    window.addEventListener("vibeon-status", h);
+    return () => window.removeEventListener("vibeon-status", h);
+  }, []);
+  // когда сервер прислал тот же статус — наложение больше не нужно
+  useEffect(() => { setOver((o) => Object.fromEntries(Object.entries(o).filter(([id, v]) => props.lessons.find((l) => l.id === id)?.status !== v.status))); }, [props.lessons]);
+  const lessons = props.lessons.map((l) => (over[l.id] ? { ...l, ...over[l.id] } : l));
   const [newAt, setNewAt] = useState<{ date: string; start: string } | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
   const open = lessons.find((l) => l.id === openId) ?? null;
@@ -131,7 +140,9 @@ function useRun() {
       setError(null);
       const r = await fn().catch(() => ({ ok: false as const, error: "Error" }));
       if (!r.ok) return setError(r.error);
-      router.refresh();
+      // Обновление страницы — после завершения действия, вне этой операции (внутри неё два обновления
+      // иногда блокировали друг друга). Само действие тоже обновляет страницу через revalidatePath.
+      setTimeout(() => router.refresh(), 0);
       after?.();
     });
   return { pending, error, run };
@@ -216,6 +227,12 @@ function LessonDialog({ l, onClose }: { l: GridLesson; onClose: () => void }) {
   const { t } = useT();
   const { pending, error, run } = useRun();
   const [mode, setMode] = useState<"main" | "move" | "miss" | "cancel" | "del">("main");
+  // Новый статус показываем сразу после успешного действия, не дожидаясь обновления страницы
+  const setStatus = (status: GridLesson["status"], charged?: boolean, close = false) =>
+    run(() => setLessonStatus(l.id, status, charged), () => {
+      window.dispatchEvent(new CustomEvent("vibeon-status", { detail: { id: l.id, status, charged: charged ?? status === "DONE" } }));
+      if (close) onClose();
+    });
   const [note, setNote] = useState(l.note ?? "");
   const [saved, setSaved] = useState(false);
   const [date, setDate] = useState(l.date);
@@ -252,8 +269,8 @@ function LessonDialog({ l, onClose }: { l: GridLesson; onClose: () => void }) {
         <h3 className="mb-2">{t("sch.chargeQ")}</h3>
         <p className="muted m-0">{t("sch.chargeHint")}</p>
         <div className="actions">
-          <button className="btn secondary" disabled={pending} onClick={() => run(() => setLessonStatus(l.id, "MISSED", false), onClose)}>{t("sch.noCharge")}</button>
-          <button className="btn primary" disabled={pending} onClick={() => run(() => setLessonStatus(l.id, "MISSED", true), onClose)}>{t("sch.charge")}</button>
+          <button className="btn secondary" disabled={pending} onClick={() => setStatus("MISSED", false, true)}>{t("sch.noCharge")}</button>
+          <button className="btn primary" disabled={pending} onClick={() => setStatus("MISSED", true, true)}>{t("sch.charge")}</button>
         </div>
       </Dialog>
     );
@@ -265,7 +282,7 @@ function LessonDialog({ l, onClose }: { l: GridLesson; onClose: () => void }) {
         <p className="muted m-0">{t("sch.cancelHint")}</p>
         <div className="actions">
           <button className="btn secondary" onClick={() => setMode("main")}>{t("common.back")}</button>
-          <button className="btn danger" disabled={pending} onClick={() => run(() => setLessonStatus(l.id, "CANCELLED"), onClose)}>{t("sch.cancelLesson")}</button>
+          <button className="btn danger" disabled={pending} onClick={() => setStatus("CANCELLED", undefined, true)}>{t("sch.cancelLesson")}</button>
         </div>
       </Dialog>
     );
@@ -311,14 +328,14 @@ function LessonDialog({ l, onClose }: { l: GridLesson; onClose: () => void }) {
         <div className="mt-3">
           <span className="flabel">{t("sch.whatHappened")}</span>
           <div className="seg mt-2">
-            <button aria-pressed={l.status === "DONE"} onClick={() => run(() => setLessonStatus(l.id, "DONE"))}>{t("sch.st.done")}</button>
+            <button aria-pressed={l.status === "DONE"} onClick={() => setStatus("DONE")}>{t("sch.st.done")}</button>
             <button aria-pressed={l.status === "MISSED"} onClick={() => setMode("miss")}>{t("sch.st.missed")}</button>
             <button onClick={() => setMode("cancel")}>{t("sch.st.cancelled")}</button>
           </div>
         </div>
       )}
       {l.status === "CANCELLED" && (
-        <button className="btn plain sm mt-3" disabled={pending} onClick={() => run(() => setLessonStatus(l.id, l.past ? "DONE" : "PLANNED"))}>{t("sch.restore")}</button>
+        <button className="btn plain sm mt-3" disabled={pending} onClick={() => setStatus(l.past ? "DONE" : "PLANNED")}>{t("sch.restore")}</button>
       )}
       {error && <div className="alert mt-3">{error}</div>}
       <div className="actions" style={{ justifyContent: "space-between" }}>

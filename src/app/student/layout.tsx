@@ -9,7 +9,11 @@ export const dynamic = "force-dynamic";
 export default async function StudentLayout({ children }: { children: React.ReactNode }) {
   const { t } = await getT();
   const user = await requireUser("STUDENT");
-  const unread = await db.notification.count({ where: { userId: user.id, readAt: null } });
+  const [unread, msgs, answers] = await Promise.all([
+    db.notification.count({ where: { userId: user.id, readAt: null } }),
+    db.message.count({ where: { student: { userId: user.id }, senderId: { not: user.id }, readAt: null } }),
+    db.notification.count({ where: { userId: user.id, kind: "answer", readAt: null } }),
+  ]);
   const groups = [
     [
       { href: "/student", label: t("nav.updates"), icon: "bell" as const, count: unread },
@@ -24,8 +28,8 @@ export default async function StudentLayout({ children }: { children: React.Reac
       { href: "/student/progress", label: t("nav.progress"), icon: "chart" as const },
     ],
     [
-      { href: "/student/questions", label: t("nav.questions"), icon: "qmark" as const },
-      { href: "/student/messages", label: t("nav.messages"), icon: "msg" as const },
+      { href: "/student/questions", label: t("nav.questions"), icon: "qmark" as const, count: answers },
+      { href: "/student/messages", label: t("nav.messages"), icon: "msg" as const, count: msgs },
     ],
     [{ href: "/student/payments", label: t("nav.payments"), icon: "card" as const }],
     [{ href: "/student/profile", label: t("common.profile"), icon: "user" as const }],

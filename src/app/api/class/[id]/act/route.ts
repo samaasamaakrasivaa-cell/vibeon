@@ -118,6 +118,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       if (!text) return bad();
       const m = await db.message.create({ data: { studentId: lesson.studentId, senderId: user.id, text } });
       publish(ch, "chat", { id: m.id, text, by, at: m.createdAt });
+      publish(`chat:${lesson.studentId}`, "chat", { id: m.id, text, by, at: m.createdAt });
       return NextResponse.json({ ok: true });
     }
     case "note": {

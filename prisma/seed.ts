@@ -33,7 +33,7 @@ async function main() {
   // Чистим демо-данные учителя
   await db.lessonInstance.deleteMany({ where: { OR: [{ teacherId: teacher.id }, { student: { teacherId: teacher.id } }] } });
   await db.student.deleteMany({ where: { teacherId: teacher.id } });
-  await db.notification.deleteMany({ where: { userId: teacher.id } });
+  await db.notification.deleteMany({ where: { userId: { in: [teacher.id, annaUser.id] } } });
   await db.course.deleteMany({ where: { teacherId: teacher.id } });
 
   // Понедельник текущей недели (по Москве)
@@ -136,6 +136,39 @@ async function main() {
   // Ближайший урок Анны — по «Anti-perfectionism»
   const annaNext = await db.lessonInstance.findFirst({ where: { student: { userId: annaUser.id }, status: "PLANNED", startsAt: { gt: new Date() } }, orderBy: { startsAt: "asc" } });
   if (annaNext && richId) await db.lessonInstance.update({ where: { id: annaNext.id }, data: { templateId: richId } });
+
+
+  // Кабинет ученика (Анна): слова, тренировки, прошлый урок с домашкой, вопрос, фидбэк, переписка
+  const anna = await db.student.findFirst({ where: { userId: annaUser.id } });
+  if (anna && richId) {
+    await db.word.deleteMany({ where: { studentId: anna.id } });
+    await db.wordPractice.deleteMany({ where: { studentId: anna.id } });
+    const words: [string, string, string, number][] = [
+      ["hold you back", "сдерживать, мешать", "Don’t let fear of mistakes hold you back.", 1], ["give it a go", "попробовать", "She decided to give it a go.", 2],
+      ["get it right", "сделать правильно", "You don’t have to get it right the first time.", 0], ["worthwhile", "стоящий", "It’s a worthwhile project.", 1],
+      ["outcome", "результат, исход", "We can’t control the outcome.", 3], ["attempt", "попытка", "It was my first attempt.", 2], ["embrace", "принимать", "Embrace your mistakes.", 0],
+      ["deadline", "срок", "The deadline is on Friday.", 4], ["commute", "дорога на работу", "My commute takes an hour.", 4], ["burnout", "выгорание", "Burnout is common in IT.", 4],
+      ["remote", "удалённый", "I work remote three days a week.", 2], ["colleague", "коллега", "My colleague helped me.", 3], ["schedule", "расписание", "My schedule is busy.", 1], ["overtime", "сверхурочно", "I never work overtime.", 0],
+    ];
+    await db.word.createMany({ data: words.map(([word, translation, example, level], i) => ({ studentId: anna.id, word, translation, example, level, nextReviewAt: level >= 4 ? new Date(Date.now() + 10 * 864e5) : i % 3 === 0 ? new Date(Date.now() + 864e5) : null })) });
+    const dayIso = (n: number) => new Date(Date.now() + 3 * 3600e3 - n * 864e5).toISOString().slice(0, 10);
+    await db.wordPractice.createMany({ data: [1, 2, 3, 4, 5].map((n) => ({ studentId: anna.id, day: dayIso(n), count: 15 })).concat([{ studentId: anna.id, day: dayIso(0), count: 9 }]) });
+    // прошлый проведённый урок Анны — тоже «Anti-perfectionism», с домашкой
+    const lastDone = await db.lessonInstance.findFirst({ where: { studentId: anna.id, status: "DONE" }, orderBy: { startsAt: "desc" } });
+    if (lastDone) {
+      const hwTasks = await db.task.findMany({ where: { templateId: richId, section: "homework" }, orderBy: { order: "asc" } });
+      await db.lessonInstance.update({ where: { id: lastDone.id }, data: { templateId: richId, finishedAt: lastDone.startsAt, note: "Повторить Present Simple: вопросы с do и does.", studentNote: "Закончить задания из Unit 3\nПотренировать Present Perfect" } });
+      await db.homework.create({ data: { lessonInstanceId: lastDone.id, taskIds: hwTasks.map((t) => t.id), wordTraining: ["new"], teacherComment: "Обрати внимание на артикли." } });
+      const open = hwTasks.find((t) => t.type === "open");
+      if (open) await db.answer.create({ data: { lessonInstanceId: lastDone.id, taskId: open.id, studentId: anna.id, payload: { val: { 0: "I try again and don’t give up.", 1: "I’m proud of my progress in English." } }, status: "NEEDS_REVIEW" } });
+      await db.feedback.create({ data: { studentId: anna.id, lessonInstanceId: lastDone.id, text: "Отличный урок! Ты уверенно используешь новые фразы. Поработай над Present Perfect в вопросах." } });
+    }
+    await db.question.create({ data: { studentId: anna.id, text: "Is “work with home” always wrong?", context: "Speaking B2 · Unit 1 · Work-life balance", askedTeacher: true } });
+    await db.message.createMany({ data: [
+      { studentId: anna.id, senderId: teacher.id, text: "Анна, не забудь домашку к четвергу 🙂", createdAt: new Date(Date.now() - 26 * 3600e3), readAt: new Date() },
+      { studentId: anna.id, senderId: annaUser.id, text: "Спасибо! Можно перенести урок в четверг на 18:00?", createdAt: new Date(Date.now() - 2 * 3600e3) },
+    ] });
+  }
 
   console.log("Seed OK:", teacher.email, annaUser.email, "· учеников:", people.length);
 }

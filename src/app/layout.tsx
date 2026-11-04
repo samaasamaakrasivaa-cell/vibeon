@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { getLang } from "@/lib/i18n/server";
 import { I18nProvider } from "@/lib/i18n/client";
+import { Suspense } from "react";
+import { NavLoader } from "@/components/NavLoader";
 
 export const metadata: Metadata = {
   title: { default: "VibeOn", template: "%s · VibeOn" },
@@ -25,6 +27,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang={lang}>
       <body>
         <I18nProvider lang={lang}>{children}</I18nProvider>
+        <Suspense fallback={null}><NavLoader /></Suspense>
       </body>
     </html>
   );

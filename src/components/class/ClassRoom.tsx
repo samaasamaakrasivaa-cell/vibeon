@@ -29,14 +29,14 @@ export type ClassData = {
   board: BObj[][]; homework: { extraTaskIds: string[]; wordTraining: string[]; teacherComment: string | null };
   lessonWords: { word: string; tr: string; ex: string }[]; words: Word[]; messages: Msg[];
   note: string | null; studentNote: string | null; callLink: string | null; when: string; durationMin: number; status: string; goal: string | null;
-  templates: { id: string; label: string }[]; homeHref: string;
+  templates: { id: string; label: string }[]; homeHref: string; initialTab?: "lesson" | "homework" | "words" | "board";
 };
 
 export function ClassRoom({ d }: { d: ClassData }) {
   const { t, lang } = useT();
   const router = useRouter();
   const teacher = d.role === "teacher";
-  const [tab, setTab] = useState<"lesson" | "homework" | "words" | "board">(() => (typeof window !== "undefined" && new URLSearchParams(location.search).get("tab") === "homework" ? "homework" : "lesson"));
+  const [tab, setTab] = useState<"lesson" | "homework" | "words" | "board">(d.initialTab ?? "lesson");
   const [answers, setAnswers] = useState<Answers>(d.answers);
   const [live, setLive] = useState<LiveState>(d.live ?? {});
   const [hw, setHw] = useState(d.homework);

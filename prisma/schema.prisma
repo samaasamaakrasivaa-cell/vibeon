@@ -148,6 +148,9 @@ model Student {
   startedAt       DateTime?
   privateNote     String? // заметки учителя, видит только он
   courseId        String? // ведущий курс ученика
+  wordGoal        Int           @default(15) // слов в день
+  wordDays        Int[]         @default([0, 1, 2, 3, 4]) // дни тренировок: 0 = Пн … 6 = Вс
+  remindAt        String        @default("19:00") // время напоминания (Telegram — этап 10)
   archivedAt      DateTime?
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
@@ -165,6 +168,7 @@ model Student {
   messages  Message[]
   questions Question[]
   feedback  Feedback[]
+  practice  WordPractice[]
 
   @@index([teacherId, status])
 }
@@ -519,4 +523,15 @@ model Upload {
   createdAt DateTime @default(now())
 
   @@index([ownerId])
+}
+
+// Сколько слов ученик потренировал за день — для цели дня и серии «дней подряд».
+model WordPractice {
+  id        String  @id @default(cuid())
+  studentId String
+  day       String // YYYY-MM-DD в поясе ученика
+  count     Int     @default(0)
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, day])
 }

@@ -33,6 +33,7 @@ async function ownTask(id: string, tid: string) {
   if (!t || t.template.unit.course.teacherId !== tid) throw new Error("not found");
   return t;
 }
+const refreshBuilder = (lessonId: string) => revalidatePath(`/builder/${lessonId}`);
 const refreshCourse = (courseId: string) => { revalidatePath("/teacher/courses"); revalidatePath(`/teacher/courses/${courseId}`); };
 
 // ───────── Курсы ─────────
@@ -234,6 +235,7 @@ export async function setRubrics(lessonId: string, rubrics: Rubric[]): Promise<R
   await db.lessonTemplate.update({ where: { id: lessonId }, data: { sections: list } });
   // задания удалённых рубрик переходят в первую
   await db.task.updateMany({ where: { templateId: lessonId, section: "lesson", rubricId: { notIn: list.map((r) => r.id) } }, data: { rubricId: list[0].id } });
+  refreshBuilder(lessonId);
   return { ok: true };
 }
 
@@ -272,6 +274,7 @@ export async function saveTask(lessonId: string, taskId: string | null, input: T
     const t = await ownTask(taskId, teacher.id);
     if (t.templateId !== lessonId) return { ok: false, error: "not found" };
     await db.task.update({ where: { id: taskId }, data });
+    refreshBuilder(lessonId);
     return { ok: true, id: taskId };
   }
   // вставка на позицию index внутри своей секции/рубрики
@@ -281,13 +284,15 @@ export async function saveTask(lessonId: string, taskId: string | null, input: T
   const ids = [...siblings.map((s) => s.id)];
   ids.splice(at, 0, created.id);
   await db.$transaction(ids.map((id, i) => db.task.update({ where: { id }, data: { order: i } })));
+  refreshBuilder(lessonId);
   return { ok: true, id: created.id };
 }
 
 export async function deleteTask(id: string): Promise<R> {
   const teacher = await me();
-  await ownTask(id, teacher.id);
+  const t = await ownTask(id, teacher.id);
   await db.task.delete({ where: { id } });
+  refreshBuilder(t.templateId);
   return { ok: true };
 }
 
@@ -296,6 +301,7 @@ export async function toggleTaskHidden(id: string): Promise<R> {
   const t = await ownTask(id, teacher.id);
   const options = { ...((t.options as object) ?? {}), hidden: !t.hidden || undefined };
   await db.task.update({ where: { id }, data: { hidden: !t.hidden, options: JSON.parse(JSON.stringify(options)) } });
+  refreshBuilder(t.templateId);
   return { ok: true };
 }
 
@@ -306,6 +312,7 @@ export async function placeTasks(lessonId: string, section: "lesson" | "homework
   const own = await db.task.count({ where: { id: { in: ids }, templateId: lessonId } });
   if (own !== ids.length) return { ok: false, error: "not found" };
   await db.$transaction(ids.map((id, i) => db.task.update({ where: { id }, data: { order: i, section, rubricId: section === "lesson" ? rubricId : null } })));
+  refreshBuilder(lessonId);
   return { ok: true };
 }
 
@@ -321,6 +328,7 @@ export async function setShare(lessonId: string, on: boolean): Promise<R> {
   const l = await ownLesson(lessonId, teacher.id);
   const token = l.shareToken ?? randomToken(16);
   await db.lessonTemplate.update({ where: { id: lessonId }, data: { shareOn: on, shareToken: token } });
+  refreshBuilder(lessonId);
   return { ok: true, token };
 }
 
@@ -330,6 +338,7 @@ export async function resetShare(lessonId: string): Promise<R> {
   await ownLesson(lessonId, teacher.id);
   const token = randomToken(16);
   await db.lessonTemplate.update({ where: { id: lessonId }, data: { shareToken: token, shareOn: true } });
+  refreshBuilder(lessonId);
   return { ok: true, token };
 }
 
