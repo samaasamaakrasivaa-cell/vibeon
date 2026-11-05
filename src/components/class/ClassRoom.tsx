@@ -32,7 +32,7 @@ export type ClassData = {
   board: BObj[][]; homework: { extraTaskIds: string[]; wordTraining: string[]; teacherComment: string | null };
   lessonWords: { word: string; tr: string; ex: string }[]; words: Word[]; messages: Msg[];
   note: string | null; studentNote: string | null; callLink: string | null; when: string; durationMin: number; status: string; goal: string | null;
-  templates: { id: string; label: string }[]; homeHref: string; initialTab?: "lesson" | "homework" | "words" | "board";
+  templates: { id: string; label: string }[]; homeHref: string; initialTab?: "lesson" | "homework" | "words" | "board"; addHw?: boolean;
 };
 
 export function ClassRoom({ d }: { d: ClassData }) {
@@ -40,6 +40,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
   const router = useRouter();
   const teacher = d.role === "teacher";
   const [tab, setTab] = useState<"lesson" | "homework" | "words" | "board">(d.initialTab ?? "lesson");
+  const [addHwTip, setAddHwTip] = useState(!!d.addHw); // пришли из «Домашки» по «+»: подсказать, как добавить задания
   const [answers, setAnswers] = useState<Answers>(d.answers);
   const [live, setLive] = useState<LiveState>(d.live ?? {});
   const [hw, setHw] = useState(d.homework);
@@ -190,6 +191,12 @@ export function ClassRoom({ d }: { d: ClassData }) {
           )}
 
           <main className="cls-main">
+            {teacher && addHwTip && tab === "lesson" && (
+              <div className="alert ok mb-4 flex items-start justify-between gap-3">
+                <span><b className="block">{t("cls.addHwTitle")}</b>{t("cls.addHwText")}</span>
+                <button type="button" className="iconbtn" aria-label={t("fs.hide")} onClick={() => setAddHwTip(false)}><Icon name="close" size="sm" /></button>
+              </div>
+            )}
             {tab === "lesson" && (
               !templateId ? (
                 <div className="tk-empty">

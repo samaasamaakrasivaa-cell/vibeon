@@ -136,6 +136,8 @@ model Student {
   price           Int? // цена урока, ₽
   payerName       String?
   payerContact    String?
+  payerTgToken    String?       @unique // код для t.me/<бот>?start=p_<код>: плательщик подключает уведомления
+  payerChatId     String? // Telegram плательщика (мама, папа): счета, уроки, отзывы
   billRule        String? // pack_left_1 | pack_left_2 | pack_end | after_5 | after_15 | after_30 | after_60 | next_day | every_4_weeks | manual
   remindEveryDays Int?
   packPrices      Json          @default("[]") // [{ n: 4, price: 11600 }, …]

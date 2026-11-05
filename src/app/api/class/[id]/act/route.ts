@@ -7,7 +7,7 @@ import { publish, withLock } from "@/lib/live/bus";
 import { rateLimit } from "@/lib/rate-limit";
 import { parse } from "@/lib/tasks/parse";
 import type { TaskType } from "@/lib/tasks/catalog";
-import { completeNotes, notify } from "@/lib/notify";
+import { completeNotes, notify, notifyPayer } from "@/lib/notify";
 
 type Board = { pages: Record<string, unknown>[][] };
 const json = (v: unknown) => JSON.parse(JSON.stringify(v)) as Prisma.InputJsonValue;
@@ -185,6 +185,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       const text = str(body.text, 5000).trim();
       if (!text) return bad();
       await db.feedback.create({ data: { studentId: lesson.studentId, lessonInstanceId: id, text } });
+      await notifyPayer(lesson.studentId, `Отзыв преподавателя об уроке (${lesson.student?.name ?? ""}):\n${text.slice(0, 1500)}`);
       if (lesson.student?.userId) await notify({ userId: lesson.student.userId, kind: "feedback", title: `${user.name}: ${text.slice(0, 120)}`, action: "open_profile", link: "/student/progress" });
       return NextResponse.json({ ok: true });
     }
@@ -216,6 +217,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         if (add.length) await db.word.createMany({ data: add.map((w) => ({ studentId: lesson.studentId!, word: w.word, translation: w.tr || null, example: w.ex || null, sourceLessonId: id })) });
       }
       await db.lessonInstance.update({ where: { id }, data: { status: "DONE", finishedAt: new Date() } });
+      if (lesson.studentId) await notifyPayer(lesson.studentId, `Урок английского прошёл: ${lesson.student?.name ?? ""}, ${new Date().toLocaleDateString("ru-RU", { day: "numeric", month: "long", timeZone: user.timezone })}.${hasHw ? " Домашнее задание выдано." : ""}`);
       if (lesson.student?.userId)
         await notify({ userId: lesson.student.userId, kind: "lesson_done", title: hasHw ? (user.lang === "EN" ? "The lesson is over — homework is waiting" : "Урок окончен — тебя ждёт домашка") : (user.lang === "EN" ? "The lesson is over" : "Урок окончен"), action: "review", link: `/class/${id}?tab=homework` });
       publish(ch, "finished", { hasHw });

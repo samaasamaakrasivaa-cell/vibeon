@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Icon } from "@/components/Icon";
 import { StudentsSearch } from "@/components/teacher/StudentsSearch";
 import { requireUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
@@ -21,6 +22,9 @@ export default async function TeacherHomework({ searchParams }: { searchParams: 
   for (const h of items) if (h.lesson.studentId && !latest.has(h.lesson.studentId)) latest.set(h.lesson.studentId, h);
   const students = await db.student.findMany({ where: { teacherId: me.id, status: "ACTIVE" }, orderBy: { name: "asc" } });
   const noHw = students.filter((s) => !latest.has(s.id));
+  // последний проведённый урок — туда «+»: в классе задания отмечаются «в домашку» (материал можно выбрать там же)
+  const lastDone = new Map((await db.lessonInstance.findMany({ where: { teacherId: me.id, status: "DONE", studentId: { in: noHw.map((s) => s.id) } }, orderBy: { startsAt: "desc" }, select: { id: true, studentId: true, startsAt: true, template: { select: { title: true } } } }))
+    .reverse().map((l) => [l.studentId!, l]));
   const list = [...latest.values()];
   const by = { review: list.filter((h) => h.state === "review"), notdone: list.filter((h) => h.state === "notdone"), checked: list.filter((h) => h.state === "checked") };
   const shown = (tab === "none" ? [] : by[tab as keyof typeof by] ?? by.review).filter((h) => !q || `${h.lesson.student?.name} ${h.lesson.student?.lastName}`.toLowerCase().includes(q));
@@ -40,7 +44,16 @@ export default async function TeacherHomework({ searchParams }: { searchParams: 
       </nav>
       {tab === "none" ? (
         <div className="grid-3">
-          {noHw.map((s) => <Link key={s.id} href={`/teacher/students/${s.id}`} className="scard"><span className="avatar lg">{initials(s.name, s.lastName)}</span><span className="grow"><b>{[s.name, s.lastName].filter(Boolean).join(" ")}</b><span>{t("hwT.noHwSub")}</span></span></Link>)}
+          {noHw.map((s) => {
+            const last = lastDone.get(s.id);
+            return (
+              <div key={s.id} className="scard">
+                <span className="avatar lg">{initials(s.name, s.lastName)}</span>
+                <Link href={`/teacher/students/${s.id}`} className="grow min-w-0"><b className="block truncate">{[s.name, s.lastName].filter(Boolean).join(" ")}</b><span className="block truncate">{last ? t("hwT.lastLesson", { t: last.template?.title ?? last.startsAt.toLocaleDateString(loc, { day: "numeric", month: "long", timeZone: me.timezone }) }) : t("hwT.noHwSub")}</span></Link>
+                {last && <Link href={`/class/${last.id}?addhw=1`} className="hwplus" title={t("hwT.add")} aria-label={t("hwT.add")}><Icon name="plus" size="sm" /></Link>}
+              </div>
+            );
+          })}
           {noHw.length === 0 && <p className="hint">{t("hwT.empty")}</p>}
         </div>
       ) : shown.length === 0 ? <div className="card"><p className="hint m-0">{t("hwT.empty")}</p></div> : (

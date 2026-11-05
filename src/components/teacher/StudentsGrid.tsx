@@ -1,6 +1,8 @@
 "use client";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { deleteInvite } from "@/lib/teacher/actions";
 import { Icon } from "../Icon";
 import { Dialog } from "../Dialog";
 import { InviteForm } from "./InviteForm";
@@ -13,21 +15,34 @@ const COLORS = [
 ];
 export const avatarStyle = (i: number) => ({ background: COLORS[i % COLORS.length][0], color: COLORS[i % COLORS.length][1] });
 
-/** Поиск по имени в шапке страницы — фильтрует карточки на месте. */
-export function StudentsGrid({ cards, invite, empty, openInvite }: { cards: Card[]; invite?: boolean; empty: string; openInvite?: boolean }) {
+/** Главная кнопка раздела: «Пригласить ученика» — окно со ссылкой. */
+export function InviteButton({ openInvite }: { openInvite?: boolean }) {
   const { t } = useT();
-  const [q, setQ] = useState("");
   const [open, setOpen] = useState(!!openInvite); // ?invite=1 — сразу открыть «Пригласить ученика»
-  const list = cards.filter((c) => c.name.toLowerCase().includes(q.trim().toLowerCase()));
   return (
     <>
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        {invite ? (
-          <button type="button" className="invitecard" onClick={() => setOpen(true)}>
-            <span className="ico"><Icon name="plus" /></span>
-            <span><b>{t("inviteT.title")}</b><small>{t("stu.inviteSub")}</small></span>
-          </button>
-        ) : <span />}
+      <button type="button" className="invitecard wide" onClick={() => setOpen(true)}>
+        <span className="ico"><Icon name="plus" /></span>
+        <span className="grow"><b>{t("inviteT.title")}</b><small>{t("stu.inviteSub")}</small></span>
+        <Icon name="right" />
+      </button>
+      <Dialog open={open} onClose={() => setOpen(false)} title={t("inviteT.title")} wide>
+        <p className="muted mt-0">{t("stu.inviteLead")}</p>
+        <InviteForm />
+      </Dialog>
+    </>
+  );
+}
+
+/** Зарегистрированные ученики: заголовок с числом, поиск по имени прямо над списком, карточки. */
+export function StudentsGrid({ cards, empty, title }: { cards: Card[]; empty: string; title: string }) {
+  const { t } = useT();
+  const [q, setQ] = useState("");
+  const list = cards.filter((c) => c.name.toLowerCase().includes(q.trim().toLowerCase()));
+  return (
+    <section>
+      <div className="secthead">
+        <h2>{title} <span className="secnum">{cards.length}</span></h2>
         {cards.length > 0 && (
           <label className="searchbox">
             <Icon name="search" size="sm" />
@@ -50,10 +65,19 @@ export function StudentsGrid({ cards, invite, empty, openInvite }: { cards: Card
           {list.length === 0 && <p className="hint">{t("stu.nothing")}</p>}
         </div>
       )}
-      <Dialog open={open} onClose={() => setOpen(false)} title={t("inviteT.title")} wide>
-        <p className="muted mt-0">{t("stu.inviteLead")}</p>
-        <InviteForm />
-      </Dialog>
-    </>
+    </section>
+  );
+}
+
+/** Крестик у приглашения: удалить анкету-приглашение, ссылка сразу перестаёт работать. */
+export function DeleteInvite({ id, name }: { id: string; name: string }) {
+  const { t } = useT();
+  const router = useRouter();
+  const [pending, start] = useTransition();
+  return (
+    <button type="button" className="iconbtn" disabled={pending} aria-label={t("inviteT.delete")} title={t("inviteT.delete")}
+      onClick={() => { if (window.confirm(t("inviteT.deleteConfirm", { name }))) start(async () => { await deleteInvite(id); router.refresh(); }); }}>
+      <Icon name="close" size="sm" />
+    </button>
   );
 }

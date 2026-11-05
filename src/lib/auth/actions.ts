@@ -5,11 +5,10 @@ import { z } from "zod";
 import { db } from "../db";
 import { env } from "../env";
 import { getT } from "../i18n/server";
-import { translate } from "../i18n/dict";
 import { mailMagic, mailReset, mailVerify } from "../mail";
 import { rateLimit } from "../rate-limit";
 import { shortCode } from "./crypto";
-import { accessUrl, inviteMessage, inviteUrl } from "../invite";
+import { accessUrl, buildMessage, inviteUrl } from "../invite";
 import { MIN_PASSWORD, hashPassword, verifyPassword } from "./password";
 import { createSession, destroySession, homeFor, requireUser } from "./session";
 import { issueToken, useToken } from "./tokens";
@@ -142,10 +141,14 @@ export async function inviteStudentAction(_: FormState, f: FormData): Promise<Fo
   const fields = { name: str(f, "name") };
   const name = fields.name.slice(0, 80);
   if (!name) return { error: t("auth.err.name"), fields };
-  const student = await db.student.create({ data: { teacherId: teacher.id, name, startedAt: new Date() } });
+  // цена урока — последняя, что учитель ставил ученику (поправить можно в анкете)
+  const prof = await db.teacherProfile.findUnique({ where: { userId: teacher.id }, select: { settings: true } });
+  const lastPrice = (prof?.settings as { lastPrice?: number } | null)?.lastPrice ?? null;
+  const student = await db.student.create({ data: { teacherId: teacher.id, name, startedAt: new Date(), price: lastPrice } });
   const link = await newInvite(teacher.id, student.id);
   const { lang } = await getT();
-  return { ok: student.name, link, msg: inviteMessage(lang, student.name, [teacher.name, teacher.lastName].filter(Boolean).join(" "), link), id: student.id };
+  const tname = [teacher.name, teacher.lastName].filter(Boolean).join(" ");
+  return { ok: student.name, link, msg: await buildMessage(teacher.id, "invite", lang, { name: student.name, teacher: tname, link }), id: student.id, fields: { teacher: tname } };
 }
 
 /** Новая короткая ссылка-приглашение (старые неиспользованные — гасим). Письмо не отправляется: ссылку учитель пересылает сам. */
@@ -169,7 +172,7 @@ export async function renewInviteAction(studentId: string): Promise<{ ok: boolea
   const s = await db.student.findFirst({ where: { id: studentId, teacherId: teacher.id, userId: null } });
   if (!s) return { ok: false };
   const link = await newInvite(teacher.id, s.id);
-  return { ok: true, link, msg: inviteMessage(lang, s.name, [teacher.name, teacher.lastName].filter(Boolean).join(" "), link) };
+  return { ok: true, link, msg: await buildMessage(teacher.id, "invite", lang, { name: s.name, teacher: [teacher.name, teacher.lastName].filter(Boolean).join(" "), link }) };
 }
 
 /** Ссылка восстановления доступа: ученик забыл пароль, а письмо до его почты не доходит — учитель пересылает ссылку сам. */
@@ -181,7 +184,7 @@ export async function accessLinkAction(studentId: string): Promise<{ ok: boolean
   await issueToken(s.userId, "RESET_PASSWORD", { token: code, ttlMs: 48 * 3600e3 });
   const { lang } = await getT();
   const link = accessUrl(code);
-  return { ok: true, link, msg: translate(lang, "inviteT.accessMsg", { name: s.name, link }) };
+  return { ok: true, link, msg: await buildMessage(teacher.id, "access", lang, { name: s.name, teacher: [teacher.name, teacher.lastName].filter(Boolean).join(" "), link }) };
 }
 
 // ───────── Ученик заполняет стартовую анкету по приглашению ─────────

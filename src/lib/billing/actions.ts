@@ -5,7 +5,10 @@ import { requireUser } from "../auth/session";
 import { getT } from "../i18n/server";
 import { acceptInvoice, createInvoice, notifyInvoice, packOptions, submitProof, undoAccept } from "./engine";
 import { sendMessage } from "../student/actions";
-import { completeNotes, notify } from "../notify";
+import { completeNotes, notify, notifyPayer } from "../notify";
+import { buildMessage } from "../invite";
+import { shortCode } from "../auth/crypto";
+import { tgEnabled, botUsername } from "../notify/telegram";
 import { pluralForm } from "@/lib/i18n/dict";
 
 const zan = (n: number) => `${n} ${pluralForm("ru", n, ["занятие", "занятия", "занятий"])}`;
@@ -46,6 +49,7 @@ export async function markPaid(id: string): Promise<R> {
   if (inv.status === "PAID") return { ok: true };
   await acceptInvoice(inv, false);
   await checksDone(inv.student.teacherId);
+  await notifyPayer(inv.studentId, `Оплата ${new Intl.NumberFormat("ru-RU").format(inv.amount)} ₽ за занятия английским (${inv.student.name}) получена. Спасибо!`);
   if (inv.student.userId) await notify({ userId: inv.student.userId, kind: "paid", title: `Оплата получена: ${new Intl.NumberFormat("ru-RU").format(inv.amount)} ₽. Спасибо!`, link: "/student/payments?tab=bills" });
   refresh();
   return { ok: true };
@@ -182,4 +186,18 @@ export async function payMessage(text: string): Promise<R> {
   const r = await sendMessage(s.id, text);
   refresh();
   return r;
+}
+
+/** Ссылка для плательщика: открывает бота VibeOn в Telegram, «Старт» — и ему приходят уроки, отзывы, счета. */
+export async function payerLinkAction(studentId: string): Promise<{ ok: boolean; link?: string; msg?: string; error?: string }> {
+  const { lang } = await getT();
+  const u = await requireUser("TEACHER");
+  const s = await db.student.findFirst({ where: { id: studentId, teacherId: u.id } });
+  if (!s?.payerName) return { ok: false, error: "no payer" };
+  if (!tgEnabled()) return { ok: false, error: "bot off" };
+  const token = s.payerTgToken ?? shortCode(12);
+  if (!s.payerTgToken) await db.student.update({ where: { id: s.id }, data: { payerTgToken: token } });
+  const link = `https://t.me/${await botUsername()}?start=p_${token}`;
+  const name = (s.payerName.split(/\s[—–-]\s/).pop() ?? s.payerName).trim();
+  return { ok: true, link, msg: await buildMessage(u.id, "payer", lang, { name, teacher: [u.name, u.lastName].filter(Boolean).join(" "), link, child: s.name }) };
 }

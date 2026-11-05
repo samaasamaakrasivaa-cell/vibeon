@@ -7,7 +7,7 @@ import { publish } from "../live/bus";
 import { readStored } from "../storage";
 import { ocr } from "../ai/gateway";
 import { weeklyReports } from "../roadmap/jobs";
-import { notify } from "../notify";
+import { notify, notifyPayer } from "../notify";
 import { pluralForm } from "@/lib/i18n/dict";
 
 const zan = (n: number) => `${n} ${pluralForm("ru", n, ["занятие", "занятия", "занятий"])}`;
@@ -53,6 +53,11 @@ export async function notifyInvoice(s: Student, inv: Invoice, reminder: boolean)
     await notify({ userId: s.userId, kind: "invoice", title: reminder ? `Напоминание: счёт на ${rub} ждёт оплаты` : `Новый счёт на оплату: ${rub}`, action: "decide", link: "/student/payments?tab=bills" });
   if (s.payerContact && /@.+\./.test(s.payerContact) && !s.payerContact.startsWith("@"))
     await mailInvoice(s.payerContact, s.payerName ?? "", `${s.name} ${s.lastName ?? ""}`.trim(), inv.title ?? "", rub, `${env.appUrl}/login`, reminder);
+  if (s.payerChatId) {
+    const prof = await db.teacherProfile.findUnique({ where: { userId: s.teacherId }, select: { settings: true } });
+    const details = (prof?.settings as { payDetails?: string } | null)?.payDetails;
+    await notifyPayer(s.id, `${reminder ? "Напоминание: ждёт оплаты счёт" : "Новый счёт"} за занятия английским (${s.name}): ${rub}${inv.title ? ` — ${inv.title}` : ""}.${details ? `\nРеквизиты: ${details}` : ""}`);
+  }
   publish(`student:${s.id}`, "invoice", { id: inv.id });
 }
 

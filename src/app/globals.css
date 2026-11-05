@@ -973,7 +973,7 @@ details.how[open] summary { margin-bottom: 6px; }
 .iedit:hover { background: var(--fill); }
 .iedit:focus { outline: none; background: var(--surface); border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-bg); }
 .iedit::placeholder { color: var(--text3); }
-select.iedit { cursor: pointer; appearance: auto; }
+select.iedit { cursor: pointer; }
 
 /* «С чего начать» */
 .fsteps { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; }
@@ -1061,3 +1061,50 @@ select.iedit { cursor: pointer; appearance: auto; }
   .fscard .fstep.done { background: rgba(255, 255, 255, .03); }
 }
 .tl .pill.grey { background: var(--surface); color: var(--text2); }
+.btn.shmax { background: linear-gradient(135deg, #2D6BFF, #8B3DFF); color: #fff; }
+.msgedit { min-height: 104px; font-size: 14px; line-height: 1.45; background: var(--surface); }
+
+/* «Ученики»: главная кнопка на всю ширину, заголовки секций с числом, воздух между блоками */
+.invitecard.wide { max-width: none; padding: 18px 22px; }
+.invitecard.wide b { font-size: 17px; }
+.secthead { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; margin-bottom: 14px; }
+.secthead h2 { font-size: 20px; display: flex; align-items: center; gap: 8px; }
+.secnum { font-size: 13px; font-weight: 700; color: var(--text2); background: var(--fill); border-radius: 999px; padding: 2px 9px; letter-spacing: 0; }
+.invrow { gap: 12px; }
+@media (max-width: 760px) { .searchbox, .searchbox input { width: 100%; min-width: 0; } }
+
+/* Выпадающие списки: своя стрелка с воздухом от края, а не прижатая к рамке */
+:root { --chev: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238E8E93' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); }
+select.input, select.select, select.iedit, .field select, .setting select { -webkit-appearance: none; appearance: none; cursor: pointer; padding-right: 40px !important; }
+select.input, select.select, select.iedit, .field select, .setting select,
+select.input:focus, select.select:focus, select.iedit:hover, select.iedit:focus {
+  background-image: var(--chev); background-repeat: no-repeat; background-position: right 14px center; background-size: 12px;
+}
+select.iedit, select.iedit:hover, select.iedit:focus { background-position: right 12px center; padding-right: 34px !important; }
+
+/* Сегменты-вкладки: разделители между пунктами, как в iOS */
+.tabsbar a { position: relative; }
+.tabsbar a + a::before { content: ""; position: absolute; left: -1px; top: 28%; height: 44%; width: 1px; background: var(--sep2, rgba(60, 60, 67, .22)); transition: opacity .15s; }
+.tabsbar a[aria-current="page"]::before, .tabsbar a[aria-current="page"] + a::before { opacity: 0; }
+.tabsbar.lg { padding: 4px; border-radius: 14px; }
+.tabsbar.lg a { padding: 10px 14px; font-size: 15px; border-radius: 11px; }
+
+/* Заголовки карточек — фирменным шрифтом с цветной меткой */
+.cardtitle { font-family: "Unbounded Variable", var(--font-sans); font-size: 13px; font-weight: 600; letter-spacing: .02em; color: var(--text); display: flex; align-items: center; gap: 8px; margin: 0 0 16px; }
+.cardtitle::before { content: ""; width: 4px; height: 16px; border-radius: 2px; background: linear-gradient(180deg, #A55CF5, #3D8BFF); flex: none; }
+.notecard .cardtitle::before { background: linear-gradient(180deg, #FFB340, #FF8A00); }
+.cardtitle .muted, .cardtitle .text-text3 { font-family: var(--font-sans); font-weight: 500; letter-spacing: 0; }
+
+/* Поле Telegram: «@» уже стоит */
+.iprefix { display: flex; align-items: center; width: 100%; }
+.iprefix > span { color: var(--text3); margin-right: -6px; position: relative; z-index: 1; }
+.iprefix .iedit { padding-left: 14px; }
+.goalq { display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; margin-bottom: 14px; border-radius: 12px; background: var(--accent-bg); box-shadow: inset 3px 0 0 var(--accent); }
+.goalq b { font-size: 15px; color: var(--text); }
+.hwplus { width: 36px; height: 36px; flex: none; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; background: var(--accent); color: #fff; box-shadow: 0 4px 12px rgba(10, 132, 255, .35); transition: transform .15s; }
+.hwplus:hover { transform: scale(1.08); }
+.forgotst { display: flex; gap: 12px; align-items: flex-start; padding: 14px 16px; border-radius: 16px; background: var(--accent-bg); text-align: left; }
+.forgotst .fsicon { flex: none; }
+.payerbox .invlink, .card .sharebox .invlink { background: var(--surface2); }
+.payerbox { padding: 12px 14px; border-radius: 14px; background: var(--surface2); }
+.payerbox .sharebox .invlink, .payerbox .msgedit { background: var(--surface); }

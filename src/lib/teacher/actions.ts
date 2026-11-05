@@ -7,6 +7,7 @@ import { db } from "../db";
 import { requireUser } from "../auth/session";
 import { fromZoned, parseIsoDay } from "../time";
 import { getT } from "../i18n/server";
+import { notify, notifyPayer } from "../notify";
 
 export type Result = { ok: true; id?: string } | { ok: false; error: string };
 
@@ -42,6 +43,12 @@ function parseWhen(date: string, start: string, tz: string) {
 }
 
 // ───────── Уроки ─────────
+
+/** Ник Telegram в одном виде: «@nick». Понимает «nick», «@nick», «@@nick», «t.me/nick», «https://t.me/nick». */
+function tgNick(v: string) {
+  const n = v.trim().replace(/^(https?:\/\/)?(www\.)?(t|telegram)\.me\//i, "").replace(/^@+/, "").replace(/[/?#].*$/, "").trim().slice(0, 40);
+  return n ? "@" + n : null;
+}
 
 export async function createLesson(input: {
   studentId?: string | null;
@@ -180,7 +187,7 @@ export async function updateStudentProfile(id: string, f: Record<string, string>
   await db.student.update({
     where: { id },
     data: {
-      name, lastName: clean(f.lastName, 80), email: clean(f.email)?.toLowerCase() ?? null, telegram: clean(f.telegram, 40),
+      name, lastName: clean(f.lastName, 80), email: clean(f.email)?.toLowerCase() ?? null, telegram: tgNick(f.telegram ?? ""),
       timezone: clean(f.timezone, 60) ?? "Europe/Moscow", callLink: clean(f.callLink, 500), course: clean(f.course, 120),
       level: clean(f.level, 60), interests: clean(f.interests, 300), examGoal: clean(f.examGoal, 120), source: clean(f.source, 120),
       birthday: bday, startedAt: started,
@@ -208,7 +215,12 @@ export async function savePayment(
   const teacher = await me();
   await ownStudent(id, teacher.id);
   const price = p.price && p.price > 0 && p.price < 1_000_000 ? Math.round(p.price) : null;
-  const packPrices = (p.packPrices ?? []).filter((x) => [4, 8, 12, 16, 20].includes(x.n) && x.price > 0 && x.price < 10_000_000).map((x) => ({ n: x.n, price: Math.round(x.price), ...(x.main ? { main: true } : {}) }));
+  const packPrices = (p.packPrices ?? []).filter((x) => Number.isInteger(x.n) && x.n >= 1 && x.n <= 60 && x.price > 0 && x.price < 10_000_000).map((x) => ({ n: x.n, price: Math.round(x.price), ...(x.main ? { main: true } : {}) }));
+  // последняя цена урока — подставится новым ученикам (можно поправить)
+  if (price) {
+    const prof = await db.teacherProfile.findUnique({ where: { userId: teacher.id }, select: { settings: true } });
+    await db.teacherProfile.update({ where: { userId: teacher.id }, data: { settings: { ...((prof?.settings as object) ?? {}), lastPrice: price } } });
+  }
   await db.student.update({
     where: { id },
     data: {
@@ -258,6 +270,40 @@ export async function deleteStudent(id: string): Promise<never> {
 }
 
 /** Отметка «сделано» в «Что нового». */
+/** Фидбэк ученику из анкеты (не привязан к уроку): в историю, ученику — уведомление, плательщику — в Telegram. */
+export async function addFeedback(studentId: string, text: string): Promise<Result> {
+  const teacher = await me();
+  const st = await ownStudent(studentId, teacher.id);
+  const body = text.trim().slice(0, 5000);
+  if (!body) return { ok: false, error: "empty" };
+  await db.feedback.create({ data: { studentId, text: body } });
+  if (st.userId) await notify({ userId: st.userId, kind: "feedback", title: `${teacher.name}: ${body.slice(0, 120)}`, action: "open_profile", link: "/student/progress" });
+  await notifyPayer(studentId, `Отзыв преподавателя (${st.name}):\n${body.slice(0, 1500)}`);
+  revalidatePath(`/teacher/students/${studentId}`);
+  return { ok: true };
+}
+
+/** Удалить приглашение (ученик ещё не зарегистрировался): анкета удаляется, ссылка перестаёт работать. */
+export async function deleteInvite(studentId: string): Promise<Result> {
+  const u = await requireUser("TEACHER");
+  const n = await db.student.deleteMany({ where: { id: studentId, teacherId: u.id, userId: null, status: "INVITED" } });
+  revalidatePath("/teacher/students");
+  return n.count ? { ok: true } : { ok: false, error: "not found" };
+}
+
+/** Свой шаблон сообщения (приглашение / ссылка для входа / плательщику). Пустой — вернуть стандартный. */
+export async function saveMsgTemplate(kind: "invite" | "access" | "payer", tpl: string): Promise<Result> {
+  const u = await requireUser("TEACHER");
+  if (!["invite", "access", "payer"].includes(kind)) return { ok: false, error: "bad kind" };
+  const prof = await db.teacherProfile.findUnique({ where: { userId: u.id }, select: { settings: true } });
+  const st = ((prof?.settings as Record<string, unknown>) ?? {}) as { msgTpl?: Record<string, string> };
+  const msgTpl = { ...(st.msgTpl ?? {}) };
+  const v = tpl.trim().slice(0, 1500);
+  if (v) msgTpl[kind] = v; else delete msgTpl[kind];
+  await db.teacherProfile.update({ where: { userId: u.id }, data: { settings: { ...st, msgTpl } } });
+  return { ok: true };
+}
+
 /** Скрыть блок «С чего начать» на главной (крестик). */
 export async function hideFirstSteps(): Promise<Result> {
   const u = await requireUser("TEACHER");
@@ -322,7 +368,7 @@ export async function setStudentField(id: string, key: string, value: string): P
     case "name": if (!v) return { ok: false, error: t("auth.err.name") }; data = { name: v.slice(0, 80) }; break;
     case "lastName": data = { lastName: v.slice(0, 80) || null }; break;
     case "email": if (v && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)) return { ok: false, error: t("auth.err.email") }; data = { email: v.toLowerCase().slice(0, 200) || null }; break;
-    case "telegram": data = { telegram: v ? "@" + v.replace(/^@|^https?:\/\/t\.me\//, "").slice(0, 40) : null }; break;
+    case "telegram": data = { telegram: tgNick(v) }; break;
     case "callLink": if (v && !/^https?:\/\//.test(v)) return { ok: false, error: t("tp.err.link") }; data = { callLink: v.slice(0, 500) || null }; break;
     case "timezone": data = { timezone: v || "Europe/Moscow" }; break;
     case "level": data = { level: v.slice(0, 60) || null }; break;

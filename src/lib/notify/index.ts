@@ -81,3 +81,10 @@ export async function completeNotes(userId: string, where: { link?: string; link
     data: { doneAt: new Date(), readAt: new Date() },
   }).catch(() => undefined);
 }
+
+/** Сообщение плательщику (мама, папа) в Telegram — если он подключил бота по ссылке от учителя. */
+export async function notifyPayer(studentId: string, text: string, link?: string) {
+  const s = await db.student.findUnique({ where: { id: studentId }, select: { payerChatId: true } });
+  if (!s?.payerChatId || !tgEnabled()) return;
+  await tgSend(s.payerChatId, text, link).catch((e) => console.error("[payer tg]", (e as Error).message));
+}

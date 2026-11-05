@@ -12,21 +12,23 @@ export type InlineData = {
 };
 
 const SOURCES: [string, string][] = [
-  ["По рекомендации", "Recommendation"], ["Instagram", "Instagram"], ["ВКонтакте", "VK"], ["Telegram", "Telegram"],
-  ["Авито", "Avito"], ["Профи.ру", "Profi.ru"], ["Сайт / поиск", "Website / search"], ["Бывший ученик", "Former student"],
+  ["По рекомендации", "Recommendation"], ["Instagram", "Instagram"], ["Профи.ру", "Profi.ru"],
+  ["ВКонтакте", "VK"], ["Telegram", "Telegram"], ["Авито", "Avito"], ["Сайт / поиск", "Website / search"], ["Бывший ученик", "Former student"],
 ];
 
 /** Поле, которое правится прямо в карточке: нажали, вписали, ушли с поля — сохранилось. */
-function Cell({ id, k, init, type = "text", placeholder, link }: { id: string; k: string; init: string; type?: string; placeholder?: string; link?: boolean }) {
+function Cell({ id, k, init, type = "text", placeholder, link, prefix }: { id: string; k: string; init: string; type?: string; placeholder?: string; link?: boolean; prefix?: string }) {
   const { t } = useT();
   const router = useRouter();
-  const [v, setV] = useState(init);
-  const [saved, setSaved] = useState(init);
+  // с префиксом (Telegram «@») в поле — только ник: «@» уже стоит и не дублируется при вставке
+  const strip = (x: string) => (prefix === "@" ? x.trim().replace(/^(https?:\/\/)?(www\.)?(t|telegram)\.me\//i, "").replace(/^@+/, "") : x);
+  const [v, setV] = useState(strip(init));
+  const [saved, setSaved] = useState(strip(init));
   const [err, setErr] = useState<string | null>(null);
   const [ok, setOk] = useState(false);
   const [pending, start] = useTransition();
   // данные поменялись в другом месте (окно «Изменить анкету») — показать новые
-  useEffect(() => { setV(init); setSaved(init); }, [init]);
+  useEffect(() => { setV(strip(init)); setSaved(strip(init)); }, [init]); // eslint-disable-line react-hooks/exhaustive-deps
   const save = () => {
     if (v.trim() === saved.trim()) return;
     start(async () => {
@@ -37,8 +39,9 @@ function Cell({ id, k, init, type = "text", placeholder, link }: { id: string; k
   return (
     <div className="icell">
       <div className="flex items-center gap-2">
-        <input className="iedit" type={type} value={v} placeholder={placeholder ?? t("prof.addValue")} aria-label={k}
-          onChange={(e) => setV(e.target.value)} onBlur={save} onKeyDown={(e) => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); if (e.key === "Escape") { setV(saved); (e.target as HTMLInputElement).blur(); } }} />
+        {prefix ? <span className="iprefix"><span aria-hidden="true">{prefix}</span><input className="iedit" type={type} value={v} placeholder={placeholder ?? t("prof.addValue")} aria-label={k}
+          onChange={(e) => setV(strip(e.target.value))} onBlur={save} onKeyDown={(e) => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); if (e.key === "Escape") { setV(saved); (e.target as HTMLInputElement).blur(); } }} /></span> : <input className="iedit" type={type} value={v} placeholder={placeholder ?? t("prof.addValue")} aria-label={k}
+          onChange={(e) => setV(e.target.value)} onBlur={save} onKeyDown={(e) => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); if (e.key === "Escape") { setV(saved); (e.target as HTMLInputElement).blur(); } }} />}
         {pending ? <span className="small text-text3">…</span> : ok ? <span className="small text-ok">✓</span> : link && saved && /^https?:\/\//.test(saved) ? <a className="small alink" href={saved} target="_blank" rel="noreferrer">↗</a> : null}
       </div>
       {err && <span className="small text-bad">{err}</span>}
@@ -80,7 +83,7 @@ export function InlineContacts({ d }: { d: InlineData }) {
       <dl className="kv ikv">
         <dt>{t("auth.email")}</dt><dd><Cell id={d.id} k="email" init={d.email} type="email" placeholder="name@mail.ru" /></dd>
         <dt>{t("ob.phone")}</dt><dd><Cell id={d.id} k="phone" init={d.phone} type="tel" placeholder="+7 900 000-00-00" /></dd>
-        <dt>Telegram</dt><dd><Cell id={d.id} k="telegram" init={d.telegram} placeholder="@nick" /></dd>
+        <dt>Telegram</dt><dd><Cell id={d.id} k="telegram" init={d.telegram} placeholder="nick" prefix="@" /></dd>
         <dt>{t("prof.vk")}</dt><dd><Cell id={d.id} k="vk" init={d.vk} placeholder="vk.com/…" /></dd>
         <dt>{t("prof.tz")}</dt><dd><Choice id={d.id} k="timezone" init={d.timezone} options={TIMEZONES} /></dd>
         <dt>{t("prof.callLink")}</dt><dd><Cell id={d.id} k="callLink" init={d.callLink} placeholder="https://telemost.yandex.ru/…" link /></dd>

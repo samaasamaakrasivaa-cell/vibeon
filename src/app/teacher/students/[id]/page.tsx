@@ -1,14 +1,14 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Icon } from "@/components/Icon";
-import { DeleteStudent, PaymentCard, PrivateNote, ProfileActions } from "@/components/teacher/ProfileParts";
+import { DeleteStudent, FeedbackForm, PaymentCard, PrivateNote, ProfileActions } from "@/components/teacher/ProfileParts";
 import { InlineAbout, InlineContacts, type InlineData } from "@/components/teacher/InlineProfile";
 import { LinkMaker, ShareLink } from "@/components/teacher/InviteForm";
 import { accessLinkAction, renewInviteAction } from "@/lib/auth/actions";
 import { requireUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { getT } from "@/lib/i18n/server";
-import { initials, inviteMessage, inviteUrl } from "@/lib/invite";
+import { buildMessage, initials, inviteUrl } from "@/lib/invite";
 import { GOALS, SINCE, SKILLS } from "@/lib/onboarding";
 import { earnedOf, rub, syncSchedule } from "@/lib/teacher/data";
 import { hhmm, isoDay, TIMEZONES } from "@/lib/time";
@@ -58,6 +58,7 @@ export default async function StudentProfile({ params, searchParams }: { params:
   const since = s.startedAt ?? s.createdAt;
   const months = Math.max(0, Math.floor((now.getTime() - since.getTime()) / (30.44 * 864e5)));
   const inv = s.invites[0];
+  const meName = [me.name, me.lastName].filter(Boolean).join(" ");
   const inviteValid = s.status === "INVITED" && inv && !inv.usedAt && inv.expiresAt > now;
 
   const tabLabel: Record<string, string> = {
@@ -102,17 +103,17 @@ export default async function StudentProfile({ params, searchParams }: { params:
         <div className="alert ok mb-5">
           <p className="mt-0 mb-3">{inviteValid ? t("prof.inviteWaiting") : t("inviteT.expired")}</p>
           {inviteValid
-            ? <ShareLink link={inviteUrl(inv.token)} msg={inviteMessage(lang, s.name, [me.name, me.lastName].filter(Boolean).join(" "), inviteUrl(inv.token))} />
-            : <LinkMaker label={t("inviteT.renew")} make={renewInviteAction.bind(null, s.id)} />}
+            ? <ShareLink link={inviteUrl(inv.token)} msg={await buildMessage(me.id, "invite", lang, { name: s.name, teacher: meName, link: inviteUrl(inv.token) })} kind="invite" vars={{ name: s.name, teacher: meName }} />
+            : <LinkMaker label={t("inviteT.renew")} make={renewInviteAction.bind(null, s.id)} kind="invite" vars={{ name: s.name, teacher: meName }} />}
         </div>
       )}
       {s.userId && (
         <div className="mb-5 flex flex-wrap items-center gap-3">
-          <LinkMaker label={t("inviteT.access")} hint={t("inviteT.accessHint")} icon="lock" make={accessLinkAction.bind(null, s.id)} />
+          <LinkMaker label={t("inviteT.access")} hint={t("inviteT.accessHint")} icon="lock" make={accessLinkAction.bind(null, s.id)} kind="access" vars={{ name: s.name, teacher: meName }} />
         </div>
       )}
 
-      <nav className="tabsbar fit mb-5">
+      <nav className="tabsbar lg mb-6">
         {TABS.map((k) => (
           <Link key={k} href={`/teacher/students/${s.id}?tab=${k}`} aria-current={tab === k ? "page" : undefined}>{tabLabel[k]}</Link>
         ))}
@@ -126,8 +127,11 @@ export default async function StudentProfile({ params, searchParams }: { params:
             {form.filledAt && (
               <section className="card sm">
                 <p className="cardtitle">{t("prof.startForm")} · {dateFmt(new Date(form.filledAt), { day: "numeric", month: "long" })}</p>
+                <div className="goalq">
+                  <span className="small muted">{t("prof.goalBy")}</span>
+                  <b>{[...(form.goals ?? []).map((g) => tr(GOALS, g)), form.otherGoal].filter(Boolean).join("; ") || "—"}</b>
+                </div>
                 <dl className="kv">
-                  <dt>{t("prof.goals")}</dt><dd>{[...(form.goals ?? []).map((g) => tr(GOALS, g)), form.otherGoal].filter(Boolean).join("; ") || "—"}</dd>
                   <dt>{t("prof.since")}</dt><dd>{form.since ? tr(SINCE, form.since) : "—"}</dd>
                   <dt>{t("prof.easy")}</dt><dd>{(form.easy ?? []).map((x) => tr(SKILLS, x)).join(", ") || "—"}</dd>
                   <dt>{t("prof.hard")}</dt><dd>{(form.hard ?? []).map((x) => tr(SKILLS, x)).join(", ") || "—"}</dd>
@@ -145,6 +149,7 @@ export default async function StudentProfile({ params, searchParams }: { params:
                 id: s.id, payType: s.payType, billRule: s.billRule ?? "", remindEveryDays: s.remindEveryDays, price: s.price,
                 packPrices: (s.packPrices as { n: number; price: number }[]) ?? [], payerName: s.payerName ?? "", payerContact: s.payerContact ?? "",
                 pack: s.packs[0] ? { left: s.packs[0].lessonsLeft, total: s.packs[0].lessonsTotal, price: s.packs[0].price } : null,
+                payerLinked: !!s.payerChatId, studentName: s.name, teacherName: meName,
               }}
             />
             <section className="card sm">
@@ -273,6 +278,8 @@ async function FeedbackTab({ studentId, tz, lang, t }: { studentId: string; tz: 
   const list = await db.feedback.findMany({ where: { studentId }, orderBy: { createdAt: "desc" }, include: { lessonInstance: { include: { template: true } } } });
   const loc = lang === "ru" ? "ru-RU" : "en-GB";
   return (
+    <>
+    <FeedbackForm studentId={studentId} />
     <section className="list">
       {list.length === 0 && <p className="hint p-5 m-0">{t("pr.noFb")}</p>}
       {list.map((f) => (
@@ -282,5 +289,6 @@ async function FeedbackTab({ studentId, tz, lang, t }: { studentId: string; tz: 
         </div></div>
       ))}
     </section>
+    </>
   );
 }

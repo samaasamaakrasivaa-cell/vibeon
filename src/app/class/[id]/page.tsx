@@ -14,7 +14,7 @@ export const metadata = { title: "Урок" };
 export const dynamic = "force-dynamic";
 
 /** Класс: урок в реальном времени для учителя и ученика. */
-export default async function ClassPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ tab?: string }> }) {
+export default async function ClassPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ tab?: string; addhw?: string }> }) {
   const { lang } = await getT();
   const user = await requireUser();
   const { id } = await params;
@@ -61,6 +61,7 @@ export default async function ClassPage({ params, searchParams }: { params: Prom
         durationMin: lesson.durationMin, status: lesson.status, goal: roadmap?.goal ?? null,
         templates: templates.map((x) => ({ id: x.id, label: `${x.unit.course.title} · ${x.unit.title} · ${x.title}` })),
         homeHref: role === "teacher" ? "/teacher" : "/student",
+        addHw: (await searchParams).addhw === "1",
         initialTab: ((t) => (t === "homework" || t === "words" || t === "board" ? t : "lesson"))((await searchParams).tab),
       }}
     />

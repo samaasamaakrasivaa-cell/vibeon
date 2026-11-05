@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { StudentsGrid, type Card } from "@/components/teacher/StudentsGrid";
+import { DeleteInvite, InviteButton, StudentsGrid, type Card } from "@/components/teacher/StudentsGrid";
 import { CopyLink, LinkMaker } from "@/components/teacher/InviteForm";
 import { renewInviteAction } from "@/lib/auth/actions";
 import { requireUser } from "@/lib/auth/session";
@@ -11,7 +11,7 @@ import { roadmapView } from "@/lib/roadmap/progress";
 
 export const metadata = { title: "Ученики" };
 
-const TABS = ["profiles", "roadmaps", "payments", "feedback"] as const;
+const TABS = ["profiles", "roadmaps", "payments"] as const;
 
 export default async function Students({ searchParams }: { searchParams: Promise<{ tab?: string; invite?: string }> }) {
   const { t, lang } = await getT();
@@ -34,7 +34,7 @@ export default async function Students({ searchParams }: { searchParams: Promise
   const loc = lang === "ru" ? "ru-RU" : "en-GB";
 
   const tabLabel: Record<string, string> = {
-    profiles: t("stu.tab.profiles"), roadmaps: t("stu.tab.roadmaps"), payments: t("stu.tab.payments"), feedback: t("stu.tab.feedback"),
+    profiles: t("stu.tab.profiles"), roadmaps: t("stu.tab.roadmaps"), payments: t("stu.tab.payments"),
   };
 
   return (
@@ -46,8 +46,10 @@ export default async function Students({ searchParams }: { searchParams: Promise
         </Link>
       </div>
 
+      {tab !== "archive" && <div className="mb-6"><InviteButton openInvite={sp.invite === "1"} /></div>}
+
       {tab !== "archive" && (
-        <nav className="tabsbar mb-5">
+        <nav className="tabsbar mb-6">
           {TABS.map((k) => (
             <Link key={k} href={`/teacher/students?tab=${k}`} aria-current={tab === k ? "page" : undefined}>{tabLabel[k]}</Link>
           ))}
@@ -56,29 +58,28 @@ export default async function Students({ searchParams }: { searchParams: Promise
 
       {tab === "profiles" && (
         <>
-          <StudentsGrid
-            openInvite={sp.invite === "1"}
-            invite
-            cards={active.map((s, i) => card(s, i, s.course ?? s.level ?? s.email ?? ""))}
-            empty={t("inviteT.none")}
-          />
+          <StudentsGrid title={t("stu.registered")} cards={active.map((s, i) => card(s, i, s.course ?? s.level ?? s.email ?? ""))} empty={t("inviteT.none")} />
           {invited.length > 0 && (
-            <section className="card">
-              <h2 className="mb-3">{t("inviteT.invited")}</h2>
-              <div className="list" style={{ background: "var(--surface2)" }}>
+            <section className="mt-10">
+              <div className="secthead">
+                <h2>{t("inviteT.invited")} <span className="secnum">{invited.length}</span></h2>
+                <span className="small muted">{t("inviteT.invitedSub")}</span>
+              </div>
+              <div className="list card p-0 overflow-hidden">
                 {invited.map((s) => {
                   const inv = s.invites[0];
                   const expired = !inv || !!inv.usedAt || inv.expiresAt < new Date();
                   return (
-                    <div key={s.id} className="row wrap-phone">
+                    <div key={s.id} className="row wrap-phone invrow">
                       <span className="avatar lg" style={{ background: "var(--grey-bg)", color: "var(--grey-text)" }}>{initials(s.name, s.lastName)}</span>
                       <div className="grow">
                         <Link href={`/teacher/students/${s.id}`} className="t hover:text-accent">{s.name}</Link>
-                        <div className="s">
+                        <div className={`s ${expired ? "text-bad" : ""}`}>
                           {expired ? t("inviteT.expired") : t("inviteT.expires", { d: inv.expiresAt.toLocaleDateString(loc, { day: "numeric", month: "long", timeZone: me.timezone }) })}
                         </div>
                       </div>
-                      {inv && !expired ? <CopyLink link={inviteUrl(inv.token)} /> : <LinkMaker label={t("inviteT.renew")} make={renewInviteAction.bind(null, s.id)} />}
+                      {inv && !expired ? <CopyLink link={inviteUrl(inv.token)} /> : <LinkMaker label={t("inviteT.renew")} make={renewInviteAction.bind(null, s.id)} kind="invite" vars={{ name: s.name, teacher: [me.name, me.lastName].filter(Boolean).join(" ") }} />}
+                      <DeleteInvite id={s.id} name={s.name} />
                     </div>
                   );
                 })}
@@ -127,22 +128,11 @@ export default async function Students({ searchParams }: { searchParams: Promise
           }))}
         </div>
       )}
-      {tab === "feedback" && (
-        <section className="list">
-          {(await db.feedback.findMany({ where: { student: { teacherId: me.id } }, include: { student: true }, orderBy: { createdAt: "desc" }, take: 100 })).map((f) => (
-            <Link key={f.id} href={`/teacher/students/${f.studentId}?tab=feedback`} className="qrow hover:bg-fill">
-              <span className="avatar lg">{initials(f.student.name, f.student.lastName)}</span>
-              <div className="grow"><div className="flex flex-wrap justify-between gap-2"><b>{full(f.student)}</b><span className="small text-text3">{f.createdAt.toLocaleDateString(loc, { day: "numeric", month: "short", timeZone: me.timezone })}</span></div><p className="mb-0 mt-1 line-clamp-2">{f.text}</p></div>
-            </Link>
-          ))}
-          {(await db.feedback.count({ where: { student: { teacherId: me.id } } })) === 0 && <p className="hint p-5 m-0">{t("pr.noFb")}</p>}
-        </section>
-      )}
 
       {tab === "archive" && (
         <>
           <p className="hint mt-0 mb-4">{t("stu.archiveHint")}</p>
-          <StudentsGrid cards={archived.map((s, i) => card(s, i, s.course ?? s.email ?? "", t("stu.archived")))} empty={t("stu.archiveEmpty")} />
+          <StudentsGrid title={t("stu.archive")} cards={archived.map((s, i) => card(s, i, s.course ?? s.email ?? "", t("stu.archived")))} empty={t("stu.archiveEmpty")} />
         </>
       )}
     </div>

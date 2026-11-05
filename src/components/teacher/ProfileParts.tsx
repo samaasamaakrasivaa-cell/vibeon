@@ -1,4 +1,7 @@
 "use client";
+import { LinkMaker } from "./InviteForm";
+import { addFeedback } from "@/lib/teacher/actions";
+import { payerLinkAction } from "@/lib/billing/actions";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Dialog } from "../Dialog";
@@ -116,10 +119,14 @@ export type PaymentData = {
   id: string; payType: "PACK" | "POSTPAID"; billRule: string; remindEveryDays: number | null; price: number | null;
   packPrices: { n: number; price: number; main?: boolean }[]; payerName: string; payerContact: string;
   pack: { left: number; total: number; price: number } | null;
+  payerLinked?: boolean; studentName?: string; teacherName?: string;
 };
 
 const PACK_RULES = ["pack_left_1", "pack_left_2", "pack_end"];
-const POST_RULES = ["after_5", "after_15", "after_30", "after_60", "next_day", "every_4_weeks", "manual"];
+const POST_RULES = ["after_5", "after_15", "after_30", "after_60", "next_day", "every_4_weeks"];
+
+/** «Мама — Ирина» → «Ирина»: для обращения в сообщении. */
+const payerFirst = (s: string) => (s.split(/\s[—–-]\s/).pop() ?? s).trim();
 
 export function PaymentCard({ p, earnedMonth }: { p: PaymentData; earnedMonth: string }) {
   const { t } = useT();
@@ -138,7 +145,8 @@ export function PaymentCard({ p, earnedMonth }: { p: PaymentData; earnedMonth: s
   const [saved, setSaved] = useState(false);
   const [newPack, setNewPack] = useState(false);
   const [np, setNp] = useState({ n: 8, price: 0 });
-  const rules = payType === "PACK" ? PACK_RULES : POST_RULES;
+  // «Вручную» больше не предлагаем; у тех, у кого оно уже стоит, — оставляем видимым
+  const rules = payType === "PACK" ? PACK_RULES : rule === "manual" ? [...POST_RULES, "manual"] : POST_RULES;
 
   const save = () =>
     run(() => savePayment(p.id, { payType, billRule: rule, remindEveryDays: remind, price: Number(price) || null, packPrices: packs.map((x) => ({ ...x, price: x.price || (x.n === mainN ? (Number(price) || 0) * x.n : 0), main: x.n === mainN })).filter((x) => x.price > 0), payerOn, payerName, payerContact }), () => setSaved(true));
@@ -195,9 +203,16 @@ export function PaymentCard({ p, earnedMonth }: { p: PaymentData; earnedMonth: s
         {payerOn && (
           <div className="grid-2">
             <div className="field"><label htmlFor="py-n">{t("prof.payerName")}</label><input id="py-n" className="input" value={payerName} onChange={(e) => setPayerName(e.target.value)} placeholder={t("prof.payerNamePh")} /></div>
-            <div className="field"><label htmlFor="py-c">{t("prof.payerContact")}</label><input id="py-c" className="input" value={payerContact} onChange={(e) => setPayerContact(e.target.value)} placeholder="@mama / mama@mail.ru" /></div>
+            <div className="field"><label htmlFor="py-c">{t("prof.payerContact")}</label><input id="py-c" className="input" value={payerContact} onChange={(e) => setPayerContact(e.target.value)} placeholder="@mama / +7 900 …" /></div>
           </div>
         )}
+        {payerOn && (p.payerLinked ? (
+          <p className="small text-ok m-0">✓ {t("payer.linked")}</p>
+        ) : p.payerName ? (
+          <div className="payerbox">
+            <LinkMaker label={t("payer.make")} hint={t("payer.hint")} icon="send" make={payerLinkAction.bind(null, p.id)} kind="payer" vars={{ name: payerFirst(p.payerName), teacher: p.teacherName }} />
+          </div>
+        ) : <p className="hint m-0">{t("payer.saveFirst")}</p>)}
         {error && <div className="alert">{error}</div>}
         <div className="flex items-center gap-3">
           <button className="btn primary sm" disabled={pending} onClick={save}>{t("common.save")}</button>
@@ -266,5 +281,26 @@ export function DeleteStudent({ id, name }: { id: string; name: string }) {
         </div>
       </Dialog>
     </>
+  );
+}
+
+/** «Отправить фидбэк» из анкеты: сохраняется в историю, ученик видит его в «Прогрессе». */
+export function FeedbackForm({ studentId }: { studentId: string }) {
+  const { t } = useT();
+  const router = useRouter();
+  const [text, setText] = useState("");
+  const [done, setDone] = useState(false);
+  const [pending, start] = useTransition();
+  return (
+    <section className="card sm mb-4">
+      <p className="cardtitle">{t("fb.new")}</p>
+      <textarea className="textarea" rows={3} value={text} onChange={(e) => { setText(e.target.value); setDone(false); }} placeholder={t("fb.ph")} />
+      <div className="mt-3 flex flex-wrap items-center gap-3">
+        <button type="button" className="btn primary sm" disabled={pending || !text.trim()} onClick={() => start(async () => { const r = await addFeedback(studentId, text); if (r.ok) { setText(""); setDone(true); router.refresh(); } })}>
+          <Icon name="send" size="sm" />{t("fb.send")}
+        </button>
+        {done ? <span className="small text-ok">✓ {t("fb.sent")}</span> : <span className="hint">{t("fb.hint")}</span>}
+      </div>
+    </section>
   );
 }
