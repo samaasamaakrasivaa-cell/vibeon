@@ -1137,7 +1137,7 @@ const ru = {
   "sch.fixMistake": "Исправление ошибки",
   "sch.fixMistakeHint": "Урок поставили не туда — не считать переносом в статистике",
   "fs.title": "С чего начать",
-  "fs.lead": "Сделано {n} из {total}. Этот блок исчезнет, когда будут ученик, урок и курс.",
+  "fs.lead": "Сделано {n} из {total}. Блок исчезнет сам, когда будут ученик, урок и курс, — или скройте его крестиком.",
   "fs.invite": "Пригласить первого ученика",
   "fs.inviteSub": "Создайте ссылку и отправьте в мессенджер — он заполнит анкету",
   "fs.lesson": "Поставить пробный урок",
@@ -1168,6 +1168,8 @@ const ru = {
   "inviteT.access": "Ссылка для входа",
   "inviteT.accessHint": "Ученик забыл пароль? Отправьте ему эту ссылку — он задаст новый пароль. Действует 48 часов.",
   "auth.forgot.student": "Вы ученик и письмо не пришло? Попросите преподавателя прислать «Ссылку для входа» — по ней зададите новый пароль.",
+  "dash.noLessonsDay": "В этот день уроков нет.",
+  "fs.hide": "Скрыть блок",
 } as const;
 
 export type DictKey = keyof typeof ru;
@@ -2307,7 +2309,7 @@ const en: Record<DictKey, string> = {
   "sch.fixMistake": "Fixing a mistake",
   "sch.fixMistakeHint": "The lesson was put in the wrong slot — don’t count it as a reschedule",
   "fs.title": "Getting started",
-  "fs.lead": "{n} of {total} done. This block disappears once you have a student, a lesson and a course.",
+  "fs.lead": "{n} of {total} done. It disappears once you have a student, a lesson and a course — or hide it with the cross.",
   "fs.invite": "Invite your first student",
   "fs.inviteSub": "Create a link and send it in a messenger — they fill in a short form",
   "fs.lesson": "Schedule a trial lesson",
@@ -2338,6 +2340,8 @@ const en: Record<DictKey, string> = {
   "inviteT.access": "Sign-in link",
   "inviteT.accessHint": "Student forgot the password? Send them this link to set a new one. It works for 48 hours.",
   "auth.forgot.student": "A student and the email didn’t arrive? Ask your teacher for a “Sign-in link” — it lets you set a new password.",
+  "dash.noLessonsDay": "No lessons on this day.",
+  "fs.hide": "Hide this block",
 };
 
 export const dictionaries: Record<LangCode, Record<DictKey, string>> = { ru, en };

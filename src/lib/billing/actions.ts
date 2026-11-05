@@ -5,7 +5,7 @@ import { requireUser } from "../auth/session";
 import { getT } from "../i18n/server";
 import { acceptInvoice, createInvoice, notifyInvoice, packOptions, submitProof, undoAccept } from "./engine";
 import { sendMessage } from "../student/actions";
-import { notify } from "../notify";
+import { completeNotes, notify } from "../notify";
 import { pluralForm } from "@/lib/i18n/dict";
 
 const zan = (n: number) => `${n} ${pluralForm("ru", n, ["занятие", "занятия", "занятий"])}`;
@@ -35,10 +35,17 @@ async function me() {
 // ───────── Учитель ─────────
 
 /** «Отметить оплату» — учитель сам подтверждает оплату. */
+/** Все чеки проверены — уведомления «Проверить скриншот» сделаны. */
+async function checksDone(teacherId: string) {
+  if (!(await db.invoice.count({ where: { student: { teacherId }, status: "PROOF_SENT" } })))
+    await completeNotes(teacherId, { linkStarts: "/teacher/finance" });
+}
+
 export async function markPaid(id: string): Promise<R> {
   const inv = await teacherInvoice(id);
   if (inv.status === "PAID") return { ok: true };
   await acceptInvoice(inv, false);
+  await checksDone(inv.student.teacherId);
   if (inv.student.userId) await notify({ userId: inv.student.userId, kind: "paid", title: `Оплата получена: ${new Intl.NumberFormat("ru-RU").format(inv.amount)} ₽. Спасибо!`, link: "/student/payments?tab=bills" });
   refresh();
   return { ok: true };
@@ -47,7 +54,8 @@ export async function markPaid(id: string): Promise<R> {
 /** «ОК» у автоматически принятой оплаты — строка закрывается. */
 export async function closeInvoice(id: string): Promise<R> {
   await teacherInvoice(id);
-  await db.invoice.update({ where: { id }, data: { closedAt: new Date() } });
+  const inv = await db.invoice.update({ where: { id }, data: { closedAt: new Date() }, include: { student: true } });
+  await checksDone(inv.student.teacherId);
   refresh();
   return { ok: true };
 }

@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import type { Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { getSessionUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { classAccess, type LiveState } from "@/lib/live/access";
@@ -7,7 +7,7 @@ import { publish, withLock } from "@/lib/live/bus";
 import { rateLimit } from "@/lib/rate-limit";
 import { parse } from "@/lib/tasks/parse";
 import type { TaskType } from "@/lib/tasks/catalog";
-import { notify } from "@/lib/notify";
+import { completeNotes, notify } from "@/lib/notify";
 
 type Board = { pages: Record<string, unknown>[][] };
 const json = (v: unknown) => JSON.parse(JSON.stringify(v)) as Prisma.InputJsonValue;
@@ -159,6 +159,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       const review = { ok: !!body.ok, comment: str(body.comment, 3000) || null, at: new Date().toISOString(), ...(ai ? { ai } : {}) };
       await db.answer.upsert({ where, create: { lessonInstanceId: id, taskId, studentId: lesson.studentId, payload: {}, status: "REVIEWED", teacherReview: review, shownToStudent: !!ai }, update: { status: "REVIEWED", teacherReview: review, shownToStudent: !!ai } });
       publish(ch, "review", { taskId, review });
+      // всё в домашке проверено — уведомления о ней у учителя сделаны
+      if (!(await db.answer.count({ where: { lessonInstanceId: id, status: "NEEDS_REVIEW", teacherReview: { equals: Prisma.AnyNull } } })))
+        if (lesson.teacherId) await completeNotes(lesson.teacherId, { kind: ["homework"], linkStarts: `/class/${id}` });
       return NextResponse.json({ ok: true });
     }
     // ── слова урока у ученика

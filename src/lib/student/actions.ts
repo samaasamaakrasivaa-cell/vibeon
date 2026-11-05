@@ -7,7 +7,7 @@ import { getT } from "../i18n/server";
 import { publish } from "../live/bus";
 import { hashPassword, MIN_PASSWORD, verifyPassword } from "../auth/password";
 import { isoDay } from "../time";
-import { notify } from "../notify";
+import { completeNotes, notify } from "../notify";
 
 export type R = { ok: true } | { ok: false; error: string };
 const str = (v: unknown, max = 2000) => (typeof v === "string" ? v.trim().slice(0, max) : "");
@@ -27,6 +27,7 @@ export async function sendMessage(studentId: string, text: string): Promise<R> {
   if (!body) return { ok: false, error: "empty" };
   const m = await db.message.create({ data: { studentId, senderId: acc.u.id, text: body } });
   publish(`chat:${studentId}`, "chat", { id: m.id, text: body, by: acc.u.id, at: m.createdAt });
+  await completeNotes(acc.u.id, { kind: ["message"], link: acc.u.role === "TEACHER" ? `/teacher/chat?s=${studentId}` : "/student/messages" });
   const to = acc.u.role === "TEACHER" ? acc.s.userId : acc.s.teacherId;
   if (to) {
     const last = await db.notification.findFirst({ where: { userId: to, kind: "message", readAt: null }, orderBy: { createdAt: "desc" } });
@@ -61,6 +62,8 @@ export async function answerQuestion(id: string, text: string): Promise<R> {
   const answer = str(text, 4000);
   if (!answer) return { ok: false, error: t("qs.err.empty") };
   await db.question.update({ where: { id }, data: { teacherAnswer: answer, answeredAt: new Date() } });
+  // все вопросы отвечены — уведомления «Ответить» сделаны
+  if (!(await db.question.count({ where: { student: { teacherId: me.id }, answeredAt: null } }))) await completeNotes(me.id, { kind: ["question"], link: "/teacher/questions" });
   if (q.student.userId) await notify({ userId: q.student.userId, kind: "answer", title: `${me.name}: ${answer.slice(0, 100)}`, action: "reply", link: "/student/questions" });
   revalidatePath("/teacher/questions");
   return { ok: true };

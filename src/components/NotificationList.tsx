@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useOptimistic, useTransition } from "react";
-import { markAllRead, setNotificationDone } from "@/lib/teacher/actions";
+import { markAllRead, openNotification, setNotificationDone } from "@/lib/teacher/actions";
 import { useT } from "@/lib/i18n/client";
 import { Icon } from "./Icon";
 
@@ -31,7 +31,7 @@ export function NotificationList({ items }: { items: Note[] }) {
                 onChange={(e) => { const done = e.target.checked; start(async () => { set({ id: n.id, done }); await setNotificationDone(n.id, done); }); }} />
               <div className="grow"><div className="t font-semibold">{n.title}</div><div className="small muted">{n.when}</div></div>
               {n.link && (
-                <Link href={n.link} className="nact small inline-flex items-center gap-1 font-semibold whitespace-nowrap text-accent">
+                <Link href={n.link} onClick={() => { const viewOnly = !n.action || n.action === "open_profile" || n.action === "open"; start(async () => { set({ id: n.id, done: viewOnly || n.done }); await openNotification(n.id); }); }} className="nact small inline-flex items-center gap-1 font-semibold whitespace-nowrap text-accent">
                   {t((ACTION[n.action ?? ""] ?? "nt.open") as never)} <Icon name="right" size="sm" />
                 </Link>
               )}

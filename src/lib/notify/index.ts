@@ -65,3 +65,19 @@ export async function deliverPending(now = new Date()) {
     }
   } finally { busy = false; }
 }
+
+/**
+ * Галочка «сделано» ставится сама, когда выполнено действие из уведомления:
+ * ответили в чате, ответили на вопрос, проверили домашку, подтвердили оплату.
+ */
+export async function completeNotes(userId: string, where: { link?: string; linkStarts?: string; kind?: string[] }) {
+  await db.notification.updateMany({
+    where: {
+      userId, doneAt: null,
+      ...(where.link ? { link: where.link } : {}),
+      ...(where.linkStarts ? { link: { startsWith: where.linkStarts } } : {}),
+      ...(where.kind ? { kind: { in: where.kind } } : {}),
+    },
+    data: { doneAt: new Date(), readAt: new Date() },
+  }).catch(() => undefined);
+}

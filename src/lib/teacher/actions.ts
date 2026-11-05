@@ -257,6 +257,25 @@ export async function deleteStudent(id: string): Promise<never> {
 }
 
 /** Отметка «сделано» в «Что нового». */
+/** Скрыть блок «С чего начать» на главной (крестик). */
+export async function hideFirstSteps(): Promise<Result> {
+  const u = await requireUser("TEACHER");
+  const prof = await db.teacherProfile.findUnique({ where: { userId: u.id }, select: { settings: true } });
+  await db.teacherProfile.update({ where: { userId: u.id }, data: { settings: { ...((prof?.settings as object) ?? {}), firstStepsHidden: true } } });
+  revalidatePath("/teacher");
+  return { ok: true };
+}
+
+/** Открыли уведомление: прочитано; если действие — просто посмотреть (анкету, отзыв), оно и сделано. */
+export async function openNotification(id: string): Promise<Result> {
+  const user = await requireUser();
+  const n = await db.notification.findUnique({ where: { id } });
+  if (!n || n.userId !== user.id) return { ok: false, error: "not found" };
+  const viewOnly = !n.action || n.action === "open_profile" || n.action === "open";
+  await db.notification.update({ where: { id }, data: { readAt: n.readAt ?? new Date(), ...(viewOnly && !n.doneAt ? { doneAt: new Date() } : {}) } });
+  return { ok: true };
+}
+
 export async function setNotificationDone(id: string, done: boolean): Promise<Result> {
   const user = await requireUser();
   const n = await db.notification.findUnique({ where: { id } });

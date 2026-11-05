@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Clock } from "./Clock";
 import { Icon } from "./Icon";
 import { NotificationList } from "./NotificationList";
+import { HideSteps } from "./teacher/HideSteps";
 import { getT } from "@/lib/i18n/server";
 import { greetingKey, hourIn } from "@/lib/greeting";
 import { db } from "@/lib/db";
@@ -12,7 +13,7 @@ import { homeworkFor, type HwState } from "@/lib/homework";
 import type { User } from "@prisma/client";
 
 /** Главный экран «Обновления»: приветствие, часы, «Сегодня», неделя, «Что нового». */
-export async function Dashboard({ user, role }: { user: User; role: "TEACHER" | "STUDENT" }) {
+export async function Dashboard({ user, role, day }: { user: User; role: "TEACHER" | "STUDENT"; day?: string }) {
   const { t, lang } = await getT();
   const tz = user.timezone;
   const now = new Date();
@@ -32,7 +33,11 @@ export async function Dashboard({ user, role }: { user: User; role: "TEACHER" | 
   const hwPill = { review: ["orange", "hwT.review"], notdone: ["red", "hwT.notdone"], checked: ["green", "hwT.checked"] } as const satisfies Record<HwState, readonly [string, string]>;
 
   const loc = lang === "ru" ? "ru-RU" : "en-GB";
-  const todayLessons = lessons.filter((l) => isoDay(l.startsAt, tz) === todayIso);
+  // выбранный в полосе «Эта неделя» день (по умолчанию — сегодня)
+  const sel = day && day >= todayIso && day < addDaysIso(todayIso, 7) ? day : todayIso;
+  const isToday = sel === todayIso;
+  const todayLessons = lessons.filter((l) => isoDay(l.startsAt, tz) === sel);
+  const selTitle = isToday ? t("dash.today") : ((x) => x.charAt(0).toUpperCase() + x.slice(1))(new Date(dayStart(sel, tz).getTime() + 12 * 3600e3).toLocaleDateString(loc, { weekday: "long", day: "numeric", month: "long", timeZone: tz }));
   const days = Array.from({ length: 7 }, (_, i) => {
     const iso = addDaysIso(todayIso, i);
     return { iso, n: lessons.filter((l) => isoDay(l.startsAt, tz) === iso).length, label: new Date(dayStart(iso, tz).getTime() + 12 * 3600e3).toLocaleDateString(loc, { weekday: "short", day: "numeric", timeZone: tz }).replace(".", "") };
@@ -65,14 +70,14 @@ export async function Dashboard({ user, role }: { user: User; role: "TEACHER" | 
       { done: !!user.telegramChatId, href: "/teacher/profile#notify", label: t("fs.tg"), sub: t("fs.tgSub") },
       { done: pay, href: "/teacher/finance?tab=check", label: t("fs.pay"), sub: t("fs.paySub") },
     ];
-    if (steps.slice(0, 3).every((s) => s.done)) steps = [];
+    if (steps.slice(0, 3).every((s) => s.done) || (prof?.settings as { firstStepsHidden?: boolean } | null)?.firstStepsHidden) steps = [];
   }
 
   return (
     <div className="page">
       {steps.length > 0 && (
         <section className="card">
-          <h2 className="mb-1">{t("fs.title")}</h2>
+          <div className="flex items-start justify-between gap-3"><h2 className="mb-1">{t("fs.title")}</h2><HideSteps /></div>
           <p className="muted mt-0 mb-4">{t("fs.lead", { n: steps.filter((x) => x.done).length, total: steps.length })}</p>
           <div className="fsteps">
             {steps.map((x, i) => (
@@ -95,13 +100,13 @@ export async function Dashboard({ user, role }: { user: User; role: "TEACHER" | 
           <Clock lang={lang} tz={tz} />
         </div>
 
-        <h2 className="mt-6 mb-3">{t("dash.today")}</h2>
+        <h2 className="mt-6 mb-3">{selTitle}</h2>
         {todayLessons.length === 0 ? (
-          <p className="hint m-0">{t("dash.noLessons")}</p>
+          <p className="hint m-0">{isToday ? t("dash.noLessons") : t("dash.noLessonsDay")}</p>
         ) : (
           <table className="today">
             <thead>
-              <tr><th>{t("today.time")}</th><th>{role === "TEACHER" ? t("today.student") : t("today.lesson")}</th><th>{t("nav.homework")}</th><th>{t("today.class")}</th><th>{t("today.comment")}</th></tr>
+              <tr><th>{t("today.time")}</th><th>{role === "TEACHER" ? t("today.student") : t("today.lesson")}</th><th>{t("nav.homework")}</th><th>{t("today.class")}</th></tr>
             </thead>
             <tbody>
               {todayLessons.map((l) => {
@@ -123,14 +128,10 @@ export async function Dashboard({ user, role }: { user: User; role: "TEACHER" | 
                         {role === "TEACHER" && l.studentId ? <Link href={`/teacher/students/${l.studentId}`} className="font-semibold hover:text-accent">{who}</Link> : <b>{who}</b>}
                         {l.isTrial && <span className="pill violet">{t("sch.trial")}</span>}
                       </span>
+                      {l.note && <span className="tnote" title={l.note}>{l.note}</span>}
                     </td>
                     <td className="c-hw">{(() => { const h = hwBefore(l.studentId, l.startsAt); return h ? <Link href={`/class/${h.lesson.id}?tab=homework`} className={`pill ${hwPill[h.state][0]}`} title={`${h.title} · ${h.done}/${h.total}`}>{t(hwPill[h.state][1])}</Link> : <span className="pill grey">{t("today.noHw")}</span>; })()}</td>
                     <td className="c-class"><Link href={`/class/${l.id}`} className={`btn sm ${soon || live ? "primary" : "secondary"}`}><Icon name="class" size="sm" />{role === "TEACHER" ? t("dash.openClass") : t("cls.enter")}</Link></td>
-                    <td className="c-cmt">
-                      {role === "TEACHER" ? (
-                        <Link href={`${scheduleHref}?w=${todayIso}`} className={`cmt ${l.note ? "" : "empty"}`} title={l.note ?? t("today.addNote")}>{l.note ?? t("dash.noComment")}</Link>
-                      ) : <span className={`cmt ${l.note ? "" : "empty"}`} title={l.note ?? ""}>{l.note ?? t("dash.noComment")}</span>}
-                    </td>
                   </tr>
                 );
               })}
@@ -138,11 +139,14 @@ export async function Dashboard({ user, role }: { user: User; role: "TEACHER" | 
           </table>
         )}
 
-        <h3 className="mt-7 mb-3">{t("dash.week")}</h3>
+        <div className="mt-7 mb-3 flex items-baseline justify-between gap-3">
+          <h3 className="m-0">{t("dash.week")}</h3>
+          <Link href={`${scheduleHref}?w=${mondayOf(sel)}`} className="alink small whitespace-nowrap">{t("nav.schedule")} →</Link>
+        </div>
         <div className="grid grid-cols-7 gap-1 max-[760px]:flex max-[760px]:overflow-x-auto">
           {days.map((d, i) => (
-            <Link key={d.iso} href={`${scheduleHref}?w=${mondayOf(d.iso)}`} className={`daytile ${i === 0 ? "on" : ""}`}>
-              <span className={`text-[12px] ${i === 0 ? "font-semibold" : "text-text3"}`}>{i === 0 ? t("dash.today") : d.label}</span>
+            <Link key={d.iso} href={i === 0 ? "?" : `?d=${d.iso}`} scroll={false} aria-current={d.iso === sel ? "true" : undefined} className={`daytile ${d.iso === sel ? "on" : ""}`}>
+              <span className={`text-[12px] ${d.iso === sel ? "font-semibold" : "text-text3"}`}>{i === 0 ? t("dash.today") : d.label}</span>
               <span className="text-[15px] font-semibold">{lessonsWord(d.n)}</span>
             </Link>
           ))}
