@@ -156,7 +156,8 @@ async function billPostpaid(now: Date) {
   const students = await db.student.findMany({ where: { payType: "POSTPAID", status: "ACTIVE", billRule: { in: [...Object.keys(RULE_DELAY_MIN), "every_4_weeks"] } } });
   for (const s of students) {
     const unbilled = await db.lessonInstance.findMany({
-      where: { studentId: s.id, billedAt: null, isTrial: false, OR: [{ status: "DONE" }, { status: "MISSED", charged: true }] },
+      where: { studentId: s.id, billedAt: null, NOT: { isTrial: true, OR: [{ price: null }, { price: { lte: 0 } }] }, // платный пробный — в счёт; бесплатный — нет
+       OR: [{ status: "DONE" }, { status: "MISSED", charged: true }] },
       orderBy: { startsAt: "asc" },
     });
     if (!unbilled.length) continue;

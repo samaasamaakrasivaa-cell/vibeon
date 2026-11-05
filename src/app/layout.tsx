@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import "@fontsource-variable/unbounded/index.css";
 import "./globals.css";
 import { getLang } from "@/lib/i18n/server";
 import { I18nProvider } from "@/lib/i18n/client";

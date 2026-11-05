@@ -51,6 +51,7 @@ export async function createLesson(input: {
   start: string;
   durationMin: number;
   repeat: boolean;
+  trialPrice?: number; // платный пробный урок: > 0 — попадает в финансы
 }): Promise<Result> {
   const { t } = await getT();
   const teacher = await me();
@@ -69,7 +70,7 @@ export async function createLesson(input: {
     durationMin,
     isTrial: input.isTrial,
     trialName: student ? null : trialName,
-    price: input.isTrial ? 0 : (student?.price ?? null),
+    price: input.isTrial ? Math.max(0, Math.min(1_000_000, Math.round(input.trialPrice ?? 0))) : (student?.price ?? null),
   };
   if (input.repeat && !input.isTrial) {
     const seriesId = randomUUID();

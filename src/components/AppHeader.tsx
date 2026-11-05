@@ -18,19 +18,19 @@ export async function AppHeader({
   const { lang, t } = await getT();
   return (
     <header className="apptop">
-      <Link href={homeHref} className="atl" aria-label="VibeOn">
+      {/* слева — логотип над меню, справа — подпись и действия ровно по краям центрального блока */}
+      <Link href={homeHref} className="atbrand" aria-label="VibeOn">
         <LogoMark />
         <Brand />
-        {subtitle && (
-          <>
-            <span className="hdiv" />
-            <span className="hsub">{subtitle}</span>
-          </>
-        )}
       </Link>
-      <div className="atr">
-        <LangSwitch lang={lang} label={t("common.language")} />
-        {user && <UserMenu name={user.name} lastName={user.lastName} email={user.email} profileHref={profileHref ?? homeHref} />}
+      <div className="atbar">
+        <div className="atin">
+          {subtitle ? <span className="hsub">{subtitle}</span> : <span />}
+          <div className="atr">
+            <LangSwitch lang={lang} label={t("common.language")} />
+            {user && <UserMenu name={user.name} lastName={user.lastName} email={user.email} profileHref={profileHref ?? homeHref} />}
+          </div>
+        </div>
       </div>
     </header>
   );

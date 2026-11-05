@@ -46,7 +46,8 @@ export function lessonWho(l: { trialName: string | null; student: { name: string
 
 /** Сколько заработано: проведённые уроки и оплачиваемые пропуски (пробные не считаются). */
 export function earnedOf(l: { status: string; charged: boolean; isTrial: boolean; price: number | null }) {
-  if (l.isTrial) return 0;
+  // пробный: бесплатный (цена 0) не считается; платный — как проведённый урок
+  if (l.isTrial) return l.status === "DONE" ? (l.price ?? 0) : 0;
   return (l.status === "DONE" || (l.status === "MISSED" && l.charged)) ? (l.price ?? 0) : 0;
 }
 

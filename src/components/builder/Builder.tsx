@@ -69,7 +69,7 @@ export function Builder({ d }: { d: BuilderData }) {
 
   return (
     <div className="bld">
-      <header className="apptop">
+      <header className="apptop flexbar">
         <div className="atl">
           <Link href={`/teacher/courses/${d.course.id}`} className="atl" aria-label="VibeOn"><LogoMark /><Brand /></Link>
           <span className="hdiv" /><span className="hsub">{t("bld.name")}</span>

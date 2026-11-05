@@ -9,6 +9,7 @@ export const ICONS = {
   flame: "<path d=\"M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-3 2-4 2-7 1 1 2 2 3 4 0-3 0-5 0-7z\"/>",
   pencil: "<path d=\"M4 20h4L19 9l-4-4L4 16z\"/>",
   mic: "<rect x=\"9\" y=\"3\" width=\"6\" height=\"11\" rx=\"3\"/><path d=\"M5 11a7 7 0 0 0 14 0M12 18v3\"/>",
+  chevd: "<path d=\"M6 9l6 6 6-6\"/>",
   down: "<path d=\"M12 5v14M6 13l6 6 6-6\"/>",
   route: "<path d=\"M5 19c3 0 3-5 7-5s4 5 7 5\"/><path d=\"M12 14V4l6 3-6 3\"/>",
   info: "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M12 11v5M12 8h.01\"/>",

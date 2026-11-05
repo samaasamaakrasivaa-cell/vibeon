@@ -81,22 +81,34 @@ h3, .h3 { font-size: 17px; font-weight: 600; letter-spacing: -.01em; margin: 0; 
 /* ───────── Шапка ───────── */
 .apptop {
   position: sticky; top: 0; z-index: 50; height: var(--top-h);
-  display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 0 20px;
+  display: grid; grid-template-columns: var(--nav-w) minmax(0, 1fr); align-items: center;
   background: var(--bar); backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px);
   border-bottom: .5px solid var(--sep);
 }
+/* шапки без бокового меню (конструктор, гостевая страница) — обычная строка */
+.apptop.flexbar { display: flex; justify-content: space-between; gap: 16px; padding: 0 20px; }
+.atbrand { display: flex; align-items: center; gap: 10px; padding-left: 20px; min-width: 0; height: 100%; }
+.atbar { padding: 0 32px; min-width: 0; }
+.atin { max-width: 980px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .atl, .atr { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .vlogo { width: 32px; height: 32px; flex: none; filter: drop-shadow(0 3px 8px rgba(165, 92, 245, .35)); }
 .hbrand { font-weight: 800; font-size: 17px; letter-spacing: -.02em; }
 .hbrand span { background: linear-gradient(90deg, #A55CF5, #3D8BFF); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .hdiv { width: 1px; height: 18px; background: var(--sep); }
-.hsub { font-size: 14px; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* «Кабинет учителя» — фирменным шрифтом, по левому краю центрального блока */
+.hsub {
+  font-family: "Unbounded Variable", var(--font-sans); font-size: 15px; font-weight: 600; letter-spacing: .01em;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  background: linear-gradient(90deg, #7B5CF5, #3D8BFF); -webkit-background-clip: text; background-clip: text; color: transparent;
+}
 .atuser { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; border: 0; background: transparent; color: var(--text); border-radius: 999px; padding: 3px 10px 3px 3px; }
 .atuser:hover { background: var(--surface2); }
 .avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--accent-bg); color: var(--accent); display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex: none; }
 .avatar.lg { width: 40px; height: 40px; font-size: 14px; }
 @media (max-width: 760px) {
-  .apptop { padding: 0 12px; }
+  .apptop { display: flex; justify-content: space-between; padding: 0 12px; }
+  .atbrand { padding-left: 0; }
+  .atbar { padding: 0; }
   .hsub, .hdiv, .atuser .uname { display: none; }
 }
 
@@ -119,19 +131,20 @@ h3, .h3 { font-size: 17px; font-weight: 600; letter-spacing: -.01em; margin: 0; 
 .main { padding: 28px 32px 64px; min-width: 0; }
 .page { max-width: 980px; margin: 0 auto; }
 
-/* Компактный режим (≤1200): меню иконками, подписи — при наведении */
+/* Компактный режим (≤1200): узкое меню — иконка и короткая подпись под ней */
 @media (max-width: 1200px) {
-  :root { --nav-w: 68px; }
-  .nav { padding: 16px 10px; align-items: center; }
-  .navgroup { align-items: center; }
-  .navb { width: 46px; height: 46px; padding: 0; justify-content: center; }
-  .navb .label, .navfoot { display: none; }
-  .navb .count { position: absolute; top: 3px; right: 1px; min-width: 17px; height: 17px; font-size: 10px; padding: 0 4px; }
-  .navb[data-tip]:hover::after {
-    content: attr(data-tip); position: absolute; left: calc(100% + 10px); top: 50%; transform: translateY(-50%);
-    background: var(--text); color: var(--bg); font-size: 12px; font-weight: 600; padding: 5px 9px; border-radius: 8px;
-    white-space: nowrap; z-index: 60; pointer-events: none;
-  }
+  :root { --nav-w: 92px; }
+  .atbrand { padding-left: 0; justify-content: center; }
+  .atbrand .hbrand { display: none; }
+  .atbar { padding: 0 24px; }
+  .nav { padding: 14px 8px; align-items: stretch; }
+  .navgroup { align-items: stretch; }
+  .navb { flex-direction: column; justify-content: center; gap: 4px; width: 100%; min-height: 58px; padding: 7px 2px 6px; border-radius: 12px; text-align: center; }
+  .navb .label { display: block; font-size: 11px; line-height: 1.15; font-weight: 500; letter-spacing: -.01em; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .navb[aria-current="page"] .label { font-weight: 650; }
+  .navfoot { display: none; }
+  .navb .count { position: absolute; top: 4px; left: calc(50% + 6px); right: auto; min-width: 17px; height: 17px; font-size: 10px; padding: 0 4px; }
+  .main { padding: 24px 24px 56px; }
   .grid-3, .grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
 }
 /* Телефон (≤760): одна колонка, меню — горизонтальная лента под шапкой */
@@ -145,8 +158,9 @@ h3, .h3 { font-size: 17px; font-weight: 600; letter-spacing: -.01em; margin: 0; 
   .nav::-webkit-scrollbar { display: none; }
   .navgroup { flex-direction: row; }
   .navgroup + .navgroup { margin: 0 0 0 6px; padding: 0 0 0 6px; border-top: 0; border-left: .5px solid var(--sep); }
-  .navb { width: auto; height: 40px; padding: 0 12px; }
-  .navb .label { display: inline; white-space: nowrap; font-size: 14px; }
+  .navb { flex-direction: row; width: auto; height: 40px; min-height: 40px; padding: 0 12px; gap: 8px; }
+  .navb .label { display: inline; white-space: nowrap; font-size: 14px; font-weight: inherit; }
+  .atbrand .hbrand { display: inline; }
   .navb[data-tip]:hover::after { display: none; }
   .navb .count { position: static; }
   .main { padding: 18px 16px 48px; }
@@ -1000,3 +1014,50 @@ select.iedit { cursor: pointer; appearance: auto; }
 .today td:nth-child(2) { width: 100%; }
 .today td.c-class { white-space: nowrap; }
 .daytile[aria-current] { cursor: default; }
+
+/* «Сегодня»: урок — карточка-строка: время · ученик, материал, важное · класс */
+.tlist { display: flex; flex-direction: column; gap: 8px; }
+.tl { display: grid; grid-template-columns: 74px minmax(0, 1fr) auto; gap: 16px; align-items: center; padding: 14px 16px; border-radius: 16px; background: var(--surface2); }
+.tl.soon { box-shadow: inset 3px 0 0 var(--accent); }
+.tl.now { background: linear-gradient(90deg, var(--ok-bg), var(--surface2) 70%); }
+.tl-time { display: flex; flex-direction: column; font-variant-numeric: tabular-nums; line-height: 1.2; }
+.tl-time b { font-size: 19px; letter-spacing: -.01em; }
+.tl-time span { font-size: 12px; color: var(--text3); margin-top: 2px; }
+.tl-time em { font-style: normal; font-size: 11.5px; font-weight: 600; margin-top: 4px; }
+.tl-who { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; font-weight: 600; font-size: 15.5px; }
+.tl-what { margin: 4px 0 0 40px; font-size: 13px; color: var(--text2); }
+.tl-tags { margin: 8px 0 0 40px; display: flex; flex-wrap: wrap; gap: 6px; }
+.tl-note { margin: 8px 0 0 40px; display: flex; gap: 6px; align-items: flex-start; font-size: 13px; color: var(--text2); overflow: hidden; }
+.tl-note svg { margin-top: 2px; color: var(--text3); }
+.tl-act .btn { white-space: nowrap; }
+.tempty { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding: 14px 16px; border-radius: 16px; background: var(--surface2); }
+@media (max-width: 640px) {
+  .tl { grid-template-columns: 58px minmax(0, 1fr); gap: 10px 12px; padding: 12px; }
+  .tl-act { grid-column: 1 / -1; }
+  .tl-act .btn { width: 100%; justify-content: center; }
+  .tl-what, .tl-tags, .tl-note { margin-left: 0; }
+}
+
+/* выбор ученика в окне нового урока */
+.spick { position: relative; }
+.spick-btn { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; cursor: pointer; }
+.spick-pop { position: absolute; z-index: 30; left: 0; right: 0; top: calc(100% + 6px); background: var(--surface); border-radius: 14px; box-shadow: 0 12px 40px rgba(0, 0, 0, .16); padding: 8px; display: flex; flex-direction: column; gap: 6px; }
+.spick-list { display: flex; flex-direction: column; gap: 2px; max-height: 260px; overflow-y: auto; }
+.spick-list button { display: flex; align-items: center; gap: 10px; border: 0; background: transparent; border-radius: 10px; padding: 7px 8px; font-size: 14.5px; }
+.spick-list button:hover, .spick-list button[aria-selected="true"] { background: var(--accent-bg); }
+.spick-list .spick-none { color: var(--text3); font-size: 13px; }
+.trialbox { margin-top: -6px; padding: 12px 14px; border-radius: 14px; background: var(--violet-bg); }
+.trialbox .setting { padding: 0; }
+
+/* «С чего начать» — отдельная подложка, чтобы блок для новичка был заметен */
+.card.fscard { position: relative; overflow: hidden; background: linear-gradient(135deg, #F1ECFF 0%, #E8F1FF 55%, #E9FBF3 100%); box-shadow: 0 10px 30px rgba(123, 92, 245, .12); }
+.card.fscard::after { content: ""; position: absolute; right: -60px; top: -60px; width: 220px; height: 220px; border-radius: 50%; background: radial-gradient(circle, rgba(165, 92, 245, .18), transparent 70%); pointer-events: none; }
+.fscard .fstep { background: rgba(255, 255, 255, .78); backdrop-filter: blur(6px); }
+.fscard .fstep.done { background: rgba(255, 255, 255, .45); }
+.fsicon { width: 38px; height: 38px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; font-size: 20px; background: linear-gradient(135deg, #A55CF5, #3D8BFF); box-shadow: 0 6px 16px rgba(123, 92, 245, .35); }
+@media (prefers-color-scheme: dark) {
+  .card.fscard { background: linear-gradient(135deg, #241B3A 0%, #16223A 55%, #12291F 100%); }
+  .fscard .fstep { background: rgba(255, 255, 255, .06); }
+  .fscard .fstep.done { background: rgba(255, 255, 255, .03); }
+}
+.tl .pill.grey { background: var(--surface); color: var(--text2); }

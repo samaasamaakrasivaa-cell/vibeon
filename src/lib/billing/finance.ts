@@ -18,7 +18,7 @@ export async function financeData(teacherId: string, tz: string, range: Range) {
     db.student.findMany({ where: { teacherId, status: "ACTIVE" }, include: { packs: { where: { lessonsLeft: { gt: 0 } } } }, orderBy: { name: "asc" } }),
   ]);
 
-  const inRange = lessons.filter((l) => l.startsAt >= from && !l.isTrial);
+  const inRange = lessons.filter((l) => l.startsAt >= from && (!l.isTrial || (l.price ?? 0) > 0)); // платный пробный — в финансах
   const earned = inRange.reduce((a, l) => a + earnedOf(l), 0);
   const received = invoices.filter((i) => i.status === "PAID" && i.paidAt && i.paidAt >= from).reduce((a, i) => a + i.amount, 0);
   const waiting = invoices.filter((i) => i.status === "SENT" || i.status === "PROOF_SENT").reduce((a, i) => a + i.amount, 0);

@@ -97,7 +97,8 @@ export async function cancelInvoice(id: string): Promise<R> {
 export async function billNow(studentId: string): Promise<R> {
   const { t } = await getT();
   const s = await ownStudent(studentId);
-  const lessons = await db.lessonInstance.findMany({ where: { studentId, billedAt: null, isTrial: false, OR: [{ status: "DONE" }, { status: "MISSED", charged: true }] }, orderBy: { startsAt: "asc" } });
+  const lessons = await db.lessonInstance.findMany({ where: { studentId, billedAt: null, NOT: { isTrial: true, OR: [{ price: null }, { price: { lte: 0 } }] }, // платный пробный — в счёт; бесплатный — нет
+       OR: [{ status: "DONE" }, { status: "MISSED", charged: true }] }, orderBy: { startsAt: "asc" } });
   if (!lessons.length) return { ok: false, error: t("pay.err.nothingToBill") };
   const amount = lessons.reduce((a, l) => a + (l.price ?? s.price ?? 0), 0);
   await createInvoice(s, { amount, kind: "lessons", lessonIds: lessons.map((l) => l.id), title: lessons.length === 1 ? "Урок" : `Уроки: ${lessons.length}` });

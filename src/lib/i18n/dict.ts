@@ -195,7 +195,7 @@ const ru = {
   "sch.noStudents": "Пока нет учеников. Пригласите ученика или поставьте пробный урок по имени.",
   "sch.trial": "Пробный урок",
   "sch.trialName": "Имя",
-  "sch.trialHint": "Пробный урок не оплачивается и не попадает в финансы.",
+  "sch.trialHint": "Бесплатный: не попадает в финансы. Если за пробный урок платят — включите «С оплатой».",
   "sch.date": "Дата",
   "sch.start": "Начало",
   "sch.length": "Длительность",
@@ -1170,6 +1170,17 @@ const ru = {
   "auth.forgot.student": "Вы ученик и письмо не пришло? Попросите преподавателя прислать «Ссылку для входа» — по ней зададите новый пароль.",
   "dash.noLessonsDay": "В этот день уроков нет.",
   "fs.hide": "Скрыть блок",
+  "dash.addLesson": "Добавить урок",
+  "today.first": "Первый урок",
+  "today.bday": "День рождения",
+  "today.noMaterial": "Материал урока не выбран",
+  "today.debt": "Долг {sum}",
+  "sch.pickStudent": "Выберите ученика",
+  "sch.noOne": "— Без ученика (новый человек) —",
+  "sch.nothingFound": "Никого не нашлось",
+  "sch.trialPaid": "С оплатой",
+  "sch.trialPrice": "Стоимость пробного урока, ₽",
+  "sch.trialPaidHint": "Платный пробный урок попадёт в финансы, когда будет проведён.",
 } as const;
 
 export type DictKey = keyof typeof ru;
@@ -1367,7 +1378,7 @@ const en: Record<DictKey, string> = {
   "sch.noStudents": "No students yet. Invite a student or set a trial lesson by name.",
   "sch.trial": "Trial lesson",
   "sch.trialName": "Name",
-  "sch.trialHint": "A trial lesson isn’t charged and isn’t counted in Finance.",
+  "sch.trialHint": "Free: not counted in Finance. If the trial is paid, turn on “Paid”.",
   "sch.date": "Date",
   "sch.start": "Start",
   "sch.length": "Length",
@@ -2342,6 +2353,17 @@ const en: Record<DictKey, string> = {
   "auth.forgot.student": "A student and the email didn’t arrive? Ask your teacher for a “Sign-in link” — it lets you set a new password.",
   "dash.noLessonsDay": "No lessons on this day.",
   "fs.hide": "Hide this block",
+  "dash.addLesson": "Add a lesson",
+  "today.first": "First lesson",
+  "today.bday": "Birthday",
+  "today.noMaterial": "No lesson material chosen",
+  "today.debt": "Owes {sum}",
+  "sch.pickStudent": "Choose a student",
+  "sch.noOne": "— No student (a new person) —",
+  "sch.nothingFound": "Nobody found",
+  "sch.trialPaid": "Paid",
+  "sch.trialPrice": "Trial lesson price, ₽",
+  "sch.trialPaidHint": "A paid trial lesson is counted in finance once it’s done.",
 };
 
 export const dictionaries: Record<LangCode, Record<DictKey, string>> = { ru, en };

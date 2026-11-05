@@ -22,7 +22,7 @@ const PX = 44; // высота часа, px
 
 export function WeekGrid(props: {
   days: Day[]; lessons: GridLesson[]; hourFrom: number; hourTo: number; nowDay: number; nowMin: number; todayIso: string;
-  students: GridStudent[]; weekTotal: string; legend: boolean; preset?: { studentId?: string; trial?: boolean };
+  students: GridStudent[]; weekTotal: string; legend: boolean; preset?: { studentId?: string; trial?: boolean; date?: string };
 }) {
   const { t } = useT();
   const { days, hourFrom, hourTo } = props;
@@ -41,7 +41,8 @@ export function WeekGrid(props: {
 
   // ?new=1 из «Пригласить → Поставить пробный урок»
   useEffect(() => {
-    if (props.preset) setNewAt(nextSlot(props.todayIso, props.nowMin));
+    // «Добавить урок» с главной на конкретный день — этот день, 18:00; иначе ближайшее время
+    if (props.preset) setNewAt(props.preset.date && props.preset.date > props.todayIso ? { date: props.preset.date, start: "18:00" } : nextSlot(props.todayIso, props.nowMin));
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // На узком экране сетка листается вбок — сразу показываем сегодняшний день
@@ -156,7 +157,45 @@ function nextSlot(todayIso: string, nowMin: number) {
   return { date: d.toISOString().slice(0, 10), start: "18:00" };
 }
 
-function NewLessonDialog({ at, students, preset, onClose, now }: { at: { date: string; start: string }; students: GridStudent[]; preset?: { studentId?: string; trial?: boolean }; onClose: () => void; now: { iso: string; min: number } }) {
+/** Выбор ученика: выпадающий список; если учеников больше 5 — поиск по имени сверху. */
+function StudentPicker({ students, value, onChange }: { students: GridStudent[]; value: string | null; onChange: (id: string | null) => void }) {
+  const { t } = useT();
+  const [open, setOpen] = useState(false);
+  const [q, setQ] = useState("");
+  const box = useRef<HTMLDivElement>(null);
+  const cur = students.find((s) => s.id === value);
+  const list = useMemo(() => students.filter((s) => s.name.toLowerCase().includes(q.trim().toLowerCase())), [students, q]);
+  useEffect(() => {
+    if (!open) return;
+    const h = (e: MouseEvent) => { if (box.current && !box.current.contains(e.target as Node)) setOpen(false); };
+    document.addEventListener("mousedown", h);
+    return () => document.removeEventListener("mousedown", h);
+  }, [open]);
+  return (
+    <div className="spick" ref={box}>
+      <button type="button" className="input spick-btn" aria-expanded={open} aria-haspopup="listbox" onClick={() => setOpen(!open)}>
+        {cur ? <><span className="avatar">{cur.initials}</span><span className="grow truncate text-left">{cur.name}</span></> : <span className="grow text-left text-text3">{t("sch.pickStudent")}</span>}
+        <Icon name="chevd" size="sm" />
+      </button>
+      {open && (
+        <div className="spick-pop" role="listbox">
+          {students.length > 5 && <input className="input" placeholder={t("sch.search")} value={q} onChange={(e) => setQ(e.target.value)} autoFocus onKeyDown={(e) => { if (e.key === "Enter" && list[0]) { e.preventDefault(); onChange(list[0].id); setOpen(false); } }} />}
+          <div className="spick-list">
+            {value && <button type="button" className="spick-none" onClick={() => { onChange(null); setOpen(false); }}>{t("sch.noOne")}</button>}
+            {list.map((s) => (
+              <button key={s.id} type="button" role="option" aria-selected={value === s.id} onClick={() => { onChange(s.id); setOpen(false); setQ(""); }}>
+                <span className="avatar">{s.initials}</span><span className="grow truncate text-left">{s.name}</span>{value === s.id && <Icon name="check" size="sm" />}
+              </button>
+            ))}
+            {list.length === 0 && <p className="hint m-0 p-2">{t("sch.nothingFound")}</p>}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function NewLessonDialog({ at, students, preset, onClose, now }: { at: { date: string; start: string }; students: GridStudent[]; preset?: { studentId?: string; trial?: boolean; date?: string }; onClose: () => void; now: { iso: string; min: number } }) {
   const { t } = useT();
   const { pending, error, run } = useRun();
   const [studentId, setStudentId] = useState<string | null>(preset?.studentId ?? null);
@@ -166,8 +205,8 @@ function NewLessonDialog({ at, students, preset, onClose, now }: { at: { date: s
   const [start, setStart] = useState(at.start);
   const [dur, setDur] = useState(60);
   const [repeat, setRepeat] = useState(false);
-  const [q, setQ] = useState("");
-  const list = useMemo(() => students.filter((s) => s.name.toLowerCase().includes(q.trim().toLowerCase())), [students, q]);
+  const [paid, setPaid] = useState(false); // пробный урок по умолчанию бесплатный
+  const [price, setPrice] = useState("");
   const needName = trial && !studentId;
   // прошло ли выбранное время — по часам учителя
   const [hh, mm] = (start || "00:00").split(":").map(Number);
@@ -177,22 +216,11 @@ function NewLessonDialog({ at, students, preset, onClose, now }: { at: { date: s
       <div className="flex flex-col gap-4">
         <div className="field">
           <span className="flabel">{t("sch.who")}</span>
-          {students.length > 5 && <input className="input" placeholder={t("sch.search")} value={q} onChange={(e) => setQ(e.target.value)} autoFocus />}
-          {students.length === 0 ? (
-            <p className="hint m-0">{t("sch.noStudents")}</p>
-          ) : (
-            <div className="pick">
-              {list.map((s) => (
-                <button key={s.id} type="button" aria-pressed={studentId === s.id} onClick={() => setStudentId(studentId === s.id ? null : s.id)}>
-                  <span className="avatar">{s.initials}</span>{s.name}
-                </button>
-              ))}
-            </div>
-          )}
+          {students.length === 0 ? <p className="hint m-0">{t("sch.noStudents")}</p> : <StudentPicker students={students} value={studentId} onChange={setStudentId} />}
         </div>
         <label className="setting">
           <span>{t("sch.trial")}</span>
-          <span className="switch"><input type="checkbox" checked={trial} onChange={(e) => { setTrial(e.target.checked); if (e.target.checked) setRepeat(false); }} /><span /></span>
+          <span className="switch"><input type="checkbox" checked={trial} onChange={(e) => { setTrial(e.target.checked); if (e.target.checked) setRepeat(false); else setPaid(false); }} /><span /></span>
         </label>
         {needName && (
           <div className="field">
@@ -200,7 +228,21 @@ function NewLessonDialog({ at, students, preset, onClose, now }: { at: { date: s
             <input id="tn" className="input" value={trialName} onChange={(e) => setTrialName(e.target.value)} placeholder={t("auth.namePh") === "Elvira" ? "Olga" : "Ольга"} />
           </div>
         )}
-        {trial && <p className="hint -mt-2 m-0">{t("sch.trialHint")}</p>}
+        {trial && (
+          <div className="trialbox">
+            <label className="setting">
+              <span>{t("sch.trialPaid")}</span>
+              <span className="switch"><input type="checkbox" checked={paid} onChange={(e) => setPaid(e.target.checked)} /><span /></span>
+            </label>
+            {paid && (
+              <div className="field mt-2">
+                <label htmlFor="tp">{t("sch.trialPrice")}</label>
+                <input id="tp" className="input" inputMode="numeric" value={price} onChange={(e) => setPrice(e.target.value.replace(/\D/g, "").slice(0, 7))} placeholder="1500" />
+              </div>
+            )}
+            <p className="hint mt-2 mb-0">{paid ? t("sch.trialPaidHint") : t("sch.trialHint")}</p>
+          </div>
+        )}
         <div className="grid grid-cols-2 gap-3">
           <div className="field"><label htmlFor="nd">{t("sch.date")}</label><input id="nd" type="date" className="input" value={date} onChange={(e) => setDate(e.target.value)} /></div>
           <div className="field"><label htmlFor="ns">{t("sch.start")}</label><input id="ns" type="time" step={300} className="input" value={start} onChange={(e) => setStart(e.target.value)} /></div>
@@ -226,7 +268,7 @@ function NewLessonDialog({ at, students, preset, onClose, now }: { at: { date: s
         <button type="button" className="btn secondary" onClick={onClose}>{t("common.cancel")}</button>
         <button
           type="button" className="btn primary" disabled={pending}
-          onClick={() => run(() => createLesson({ studentId, isTrial: trial, trialName, date, start, durationMin: dur, repeat }), onClose)}
+          onClick={() => run(() => createLesson({ studentId, isTrial: trial, trialName, date, start, durationMin: dur, repeat, trialPrice: trial && paid ? Number(price) || 0 : 0 }), onClose)}
         >
           {t("sch.add")}
         </button>

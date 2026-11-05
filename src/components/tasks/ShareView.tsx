@@ -9,7 +9,7 @@ export function ShareView({ title, course, groups, homework, words }: { title: s
   const list = (tasks: TaskData[]) => tasks.map((task) => <TaskCard key={task.id} task={task} index={task.type === "divider" ? -1 : ++n} />);
   return (
     <>
-      <header className="apptop"><a href="/" className="atl"><LogoMark /><Brand /></a><span className="small muted">{t("shr.guest")}</span></header>
+      <header className="apptop flexbar"><a href="/" className="atl"><LogoMark /><Brand /></a><span className="small muted">{t("shr.guest")}</span></header>
       <main className="main"><div className="page" style={{ maxWidth: 820 }}>
         <div className="small muted">{course}</div>
         <h1 className="mb-2">{title}</h1>

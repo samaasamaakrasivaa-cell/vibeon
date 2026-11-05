@@ -37,6 +37,15 @@ export async function Dashboard({ user, role, day }: { user: User; role: "TEACHE
   const sel = day && day >= todayIso && day < addDaysIso(todayIso, 7) ? day : todayIso;
   const isToday = sel === todayIso;
   const todayLessons = lessons.filter((l) => isoDay(l.startsAt, tz) === sel);
+  // подробности уроков выбранного дня: материал, абонемент, долг, первый урок, день рождения
+  const extra = new Map((await db.lessonInstance.findMany({
+    where: { id: { in: todayLessons.map((l) => l.id) } },
+    select: {
+      id: true, movedFrom: true,
+      template: { select: { title: true, subtitle: true, unit: { select: { title: true, course: { select: { title: true } } } } } },
+      student: { select: { payType: true, birthday: true, packs: { orderBy: { startsAt: "desc" }, take: 1, select: { lessonsLeft: true, lessonsTotal: true } }, invoices: { where: { status: { in: ["SENT", "PROOF_SENT"] } }, select: { amount: true } }, _count: { select: { lessons: { where: { status: "DONE" } } } } } },
+    },
+  })).map((x) => [x.id, x]));
   const selTitle = isToday ? t("dash.today") : ((x) => x.charAt(0).toUpperCase() + x.slice(1))(new Date(dayStart(sel, tz).getTime() + 12 * 3600e3).toLocaleDateString(loc, { weekday: "long", day: "numeric", month: "long", timeZone: tz }));
   const days = Array.from({ length: 7 }, (_, i) => {
     const iso = addDaysIso(todayIso, i);
@@ -76,9 +85,9 @@ export async function Dashboard({ user, role, day }: { user: User; role: "TEACHE
   return (
     <div className="page">
       {steps.length > 0 && (
-        <section className="card">
-          <div className="flex items-start justify-between gap-3"><h2 className="mb-1">{t("fs.title")}</h2><HideSteps /></div>
-          <p className="muted mt-0 mb-4">{t("fs.lead", { n: steps.filter((x) => x.done).length, total: steps.length })}</p>
+        <section className="card fscard">
+          <div className="flex items-start justify-between gap-3"><div className="flex items-center gap-3"><span className="fsicon">🚀</span><h2 className="m-0">{t("fs.title")}</h2></div><HideSteps /></div>
+          <p className="muted mt-2 mb-4">{t("fs.lead", { n: steps.filter((x) => x.done).length, total: steps.length })}</p>
           <div className="fsteps">
             {steps.map((x, i) => (
               <Link key={i} href={x.href} className={`fstep ${x.done ? "done" : ""}`}>
@@ -102,41 +111,61 @@ export async function Dashboard({ user, role, day }: { user: User; role: "TEACHE
 
         <h2 className="mt-6 mb-3">{selTitle}</h2>
         {todayLessons.length === 0 ? (
-          <p className="hint m-0">{isToday ? t("dash.noLessons") : t("dash.noLessonsDay")}</p>
+          <div className="tempty">
+            <p className="hint m-0">{isToday ? t("dash.noLessons") : t("dash.noLessonsDay")}</p>
+            {role === "TEACHER" && <Link href={`${scheduleHref}?w=${mondayOf(sel)}&new=1&date=${sel}`} className="btn secondary sm"><Icon name="plus" size="sm" />{t("dash.addLesson")}</Link>}
+          </div>
         ) : (
-          <table className="today">
-            <thead>
-              <tr><th>{t("today.time")}</th><th>{role === "TEACHER" ? t("today.student") : t("today.lesson")}</th><th>{t("nav.homework")}</th><th>{t("today.class")}</th></tr>
-            </thead>
-            <tbody>
-              {todayLessons.map((l) => {
-                const start = l.startsAt.getTime(), end = start + l.durationMin * 60000;
-                const live = start <= now.getTime() && now.getTime() < end;
-                const inMin = Math.round((start - now.getTime()) / 60000);
-                const soon = inMin > 0 && inMin <= 60;
-                const who = role === "TEACHER" ? lessonWho(l) : t("dash.lesson");
-                return (
-                  <tr key={l.id} className={live ? "now" : soon ? "soon" : ""}>
-                    <td className="whitespace-nowrap" style={{ fontVariantNumeric: "tabular-nums" }}>
-                      <b className={live ? "text-ok" : ""}>{hhmm(l.startsAt, tz)}</b>
-                      {soon && <div className="small font-semibold text-accent">{t("today.startsIn", { n: inMin })}</div>}
-                      {live && <div className="small font-semibold text-ok">{t("today.live")}</div>}
-                    </td>
-                    <td>
-                      <span className="flex items-center gap-3">
-                        <span className="avatar">{l.group ? <Icon name="group" size="sm" /> : initials(...(who.split(" ") as [string, string]))}</span>
-                        {role === "TEACHER" && l.studentId ? <Link href={`/teacher/students/${l.studentId}`} className="font-semibold hover:text-accent">{who}</Link> : <b>{who}</b>}
-                        {l.isTrial && <span className="pill violet">{t("sch.trial")}</span>}
-                      </span>
-                      {l.note && <span className="tnote" title={l.note}>{l.note}</span>}
-                    </td>
-                    <td className="c-hw">{(() => { const h = hwBefore(l.studentId, l.startsAt); return h ? <Link href={`/class/${h.lesson.id}?tab=homework`} className={`pill ${hwPill[h.state][0]}`} title={`${h.title} · ${h.done}/${h.total}`}>{t(hwPill[h.state][1])}</Link> : <span className="pill grey">{t("today.noHw")}</span>; })()}</td>
-                    <td className="c-class"><Link href={`/class/${l.id}`} className={`btn sm ${soon || live ? "primary" : "secondary"}`}><Icon name="class" size="sm" />{role === "TEACHER" ? t("dash.openClass") : t("cls.enter")}</Link></td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+          <div className="tlist">
+            {todayLessons.map((l) => {
+              const start = l.startsAt.getTime(), end = start + l.durationMin * 60000;
+              const live = start <= now.getTime() && now.getTime() < end;
+              const inMin = Math.round((start - now.getTime()) / 60000);
+              const soon = inMin > 0 && inMin <= 60;
+              const who = role === "TEACHER" ? lessonWho(l) : t("dash.lesson");
+              const x = extra.get(l.id);
+              const st = x?.student;
+              const pack = st?.payType === "PACK" ? st.packs[0] : null;
+              const debt = st?.invoices.reduce((a, i) => a + i.amount, 0) ?? 0;
+              const hw = hwBefore(l.studentId, l.startsAt);
+              const bday = st?.birthday && isoDay(st.birthday, "UTC").slice(5) === sel.slice(5);
+              const first = !!st && !l.isTrial && st._count.lessons === 0;
+              return (
+                <div key={l.id} className={`tl ${live ? "now" : soon ? "soon" : ""}`}>
+                  <div className="tl-time">
+                    <b className={live ? "text-ok" : ""}>{hhmm(l.startsAt, tz)}</b>
+                    <span>{hhmm(new Date(end), tz)}</span>
+                    {soon && <em className="text-accent">{t("today.startsIn", { n: inMin })}</em>}
+                    {live && <em className="text-ok">{t("today.live")}</em>}
+                  </div>
+                  <div className="tl-main">
+                    <div className="tl-who">
+                      <span className="avatar">{l.group ? <Icon name="group" size="sm" /> : initials(...(who.split(" ") as [string, string]))}</span>
+                      {role === "TEACHER" && l.studentId ? <Link href={`/teacher/students/${l.studentId}`} className="hover:text-accent">{who}</Link> : <span>{who}</span>}
+                      {l.isTrial && <span className="pill violet">{t("sch.trial")}</span>}
+                      {first && <span className="pill violet">{t("today.first")}</span>}
+                      {bday && <span className="pill orange">🎂 {t("today.bday")}</span>}
+                    </div>
+                    <div className="tl-what">
+                      {x?.template ? <><b>{x.template.title}</b>{x.template.subtitle ? ` · ${x.template.subtitle}` : ""}<span className="text-text3"> — {x.template.unit.course.title}, {x.template.unit.title}</span></> : <span className="text-text3">{t("today.noMaterial")}</span>}
+                    </div>
+                    {(hw || pack || debt > 0 || x?.movedFrom) && (
+                      <div className="tl-tags">
+                        {hw && <Link href={`/class/${hw.lesson.id}?tab=homework`} className={`pill ${hwPill[hw.state][0]}`} title={`${hw.title} · ${hw.done}/${hw.total}`}>{t("nav.homework")}: {t(hwPill[hw.state][1]).toLowerCase()}</Link>}
+                        {pack && <span className={`pill ${pack.lessonsLeft <= 1 ? "orange" : "grey"}`}>{t("prof.left", { n: pack.lessonsLeft, total: pack.lessonsTotal })}</span>}
+                        {debt > 0 && <span className="pill red">{t("today.debt", { sum: new Intl.NumberFormat(loc).format(debt) + " ₽" })}</span>}
+                        {x?.movedFrom && <span className="pill grey">{t("sch.moved")}</span>}
+                      </div>
+                    )}
+                    {l.note && <div className="tl-note" title={l.note}><Icon name="msg" size="sm" />{l.note}</div>}
+                  </div>
+                  <div className="tl-act">
+                    <Link href={`/class/${l.id}`} className={`btn sm ${soon || live ? "primary" : "secondary"}`}><Icon name="class" size="sm" />{role === "TEACHER" ? t("dash.openClass") : t("cls.enter")}</Link>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         )}
 
         <div className="mt-7 mb-3 flex items-baseline justify-between gap-3">

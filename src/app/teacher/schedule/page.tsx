@@ -11,7 +11,7 @@ import { homeworkFor } from "@/lib/homework";
 
 export const metadata = { title: "Расписание" };
 
-export default async function Schedule({ searchParams }: { searchParams: Promise<{ w?: string; new?: string; student?: string; trial?: string }> }) {
+export default async function Schedule({ searchParams }: { searchParams: Promise<{ w?: string; new?: string; student?: string; trial?: string; date?: string }> }) {
   const { t, lang } = await getT();
   const me = await requireUser("TEACHER");
   const tz = me.timezone;
@@ -87,7 +87,7 @@ export default async function Schedule({ searchParams }: { searchParams: Promise
           students={students.map((s) => ({ id: s.id, name: [s.name, s.lastName].filter(Boolean).join(" "), initials: initials(s.name, s.lastName) }))}
           weekTotal={rub(weekTotal, lang)}
           legend
-          preset={sp.new ? { studentId: sp.student, trial: sp.trial === "1" } : undefined}
+          preset={sp.new ? { studentId: sp.student, trial: sp.trial === "1", date: parseIsoDay(sp.date) ? sp.date : undefined } : undefined}
         />
       </section>
       <p className="hint mt-3">{t("sch.hint")}</p>
