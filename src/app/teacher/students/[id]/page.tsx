@@ -3,12 +3,12 @@ import { notFound } from "next/navigation";
 import { Icon } from "@/components/Icon";
 import { DeleteStudent, PaymentCard, PrivateNote, ProfileActions } from "@/components/teacher/ProfileParts";
 import { InlineAbout, InlineContacts, type InlineData } from "@/components/teacher/InlineProfile";
-import { CopyLink } from "@/components/teacher/InviteForm";
+import { LinkMaker, ShareLink } from "@/components/teacher/InviteForm";
+import { accessLinkAction, renewInviteAction } from "@/lib/auth/actions";
 import { requireUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
-import { env } from "@/lib/env";
 import { getT } from "@/lib/i18n/server";
-import { initials } from "@/lib/invite";
+import { initials, inviteMessage, inviteUrl } from "@/lib/invite";
 import { GOALS, SINCE, SKILLS } from "@/lib/onboarding";
 import { earnedOf, rub, syncSchedule } from "@/lib/teacher/data";
 import { hhmm, isoDay, TIMEZONES } from "@/lib/time";
@@ -98,10 +98,17 @@ export default async function StudentProfile({ params, searchParams }: { params:
         />
       </div>
 
-      {inviteValid && (
-        <div className="alert ok mb-5 flex flex-wrap items-center gap-3">
-          <span className="grow">{t("prof.inviteWaiting")}</span>
-          <CopyLink link={`${env.appUrl}/invite/${inv.token}`} />
+      {s.status === "INVITED" && !s.userId && (
+        <div className="alert ok mb-5">
+          <p className="mt-0 mb-3">{inviteValid ? t("prof.inviteWaiting") : t("inviteT.expired")}</p>
+          {inviteValid
+            ? <ShareLink link={inviteUrl(inv.token)} msg={inviteMessage(lang, s.name, [me.name, me.lastName].filter(Boolean).join(" "), inviteUrl(inv.token))} />
+            : <LinkMaker label={t("inviteT.renew")} make={renewInviteAction.bind(null, s.id)} />}
+        </div>
+      )}
+      {s.userId && (
+        <div className="mb-5 flex flex-wrap items-center gap-3">
+          <LinkMaker label={t("inviteT.access")} hint={t("inviteT.accessHint")} icon="lock" make={accessLinkAction.bind(null, s.id)} />
         </div>
       )}
 

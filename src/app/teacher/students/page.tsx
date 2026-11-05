@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { StudentsGrid, type Card } from "@/components/teacher/StudentsGrid";
-import { CopyLink } from "@/components/teacher/InviteForm";
+import { CopyLink, LinkMaker } from "@/components/teacher/InviteForm";
+import { renewInviteAction } from "@/lib/auth/actions";
 import { requireUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
-import { env } from "@/lib/env";
 import { getT } from "@/lib/i18n/server";
-import { initials } from "@/lib/invite";
+import { initials, inviteUrl } from "@/lib/invite";
 import { rub } from "@/lib/teacher/data";
 import { roadmapView } from "@/lib/roadmap/progress";
 
@@ -75,10 +75,10 @@ export default async function Students({ searchParams }: { searchParams: Promise
                       <div className="grow">
                         <Link href={`/teacher/students/${s.id}`} className="t hover:text-accent">{s.name}</Link>
                         <div className="s">
-                          {s.email ?? s.telegram} · {expired ? t("inviteT.expired") : t("inviteT.expires", { d: inv.expiresAt.toLocaleDateString(loc, { day: "numeric", month: "long" }) })}
+                          {expired ? t("inviteT.expired") : t("inviteT.expires", { d: inv.expiresAt.toLocaleDateString(loc, { day: "numeric", month: "long", timeZone: me.timezone }) })}
                         </div>
                       </div>
-                      {inv && !expired && <CopyLink link={`${env.appUrl}/invite/${inv.token}`} />}
+                      {inv && !expired ? <CopyLink link={inviteUrl(inv.token)} /> : <LinkMaker label={t("inviteT.renew")} make={renewInviteAction.bind(null, s.id)} />}
                     </div>
                   );
                 })}

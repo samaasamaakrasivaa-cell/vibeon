@@ -5,14 +5,16 @@ import { z } from "zod";
 import { db } from "../db";
 import { env } from "../env";
 import { getT } from "../i18n/server";
-import { mailInvite, mailMagic, mailReset, mailVerify } from "../mail";
+import { translate } from "../i18n/dict";
+import { mailMagic, mailReset, mailVerify } from "../mail";
 import { rateLimit } from "../rate-limit";
-import { randomToken } from "./crypto";
+import { shortCode } from "./crypto";
+import { accessUrl, inviteMessage, inviteUrl } from "../invite";
 import { MIN_PASSWORD, hashPassword, verifyPassword } from "./password";
 import { createSession, destroySession, homeFor, requireUser } from "./session";
 import { issueToken, useToken } from "./tokens";
 
-export type FormState = { error?: string; fields?: Record<string, string>; ok?: string; link?: string; id?: string; warn?: boolean } | undefined;
+export type FormState = { error?: string; fields?: Record<string, string>; ok?: string; link?: string; msg?: string; id?: string; warn?: boolean } | undefined;
 
 const emailSchema = z.string().trim().toLowerCase().email().max(200);
 const str = (f: FormData, k: string) => String(f.get(k) ?? "").trim();
@@ -21,7 +23,7 @@ const checkEmailUrl = (email: string, kind: "verify" | "magic" | "reset") => `/c
 
 // ───────── Вход по паролю ─────────
 export async function loginAction(_: FormState, f: FormData): Promise<FormState> {
-  const { t, lang } = await getT();
+  const { t } = await getT();
   const fields = { email: str(f, "email") };
   if (!(await rateLimit("login", 10))) return { error: t("auth.err.rate"), fields };
   const email = emailSchema.safeParse(fields.email);
@@ -30,10 +32,8 @@ export async function loginAction(_: FormState, f: FormData): Promise<FormState>
   if (!user) return { error: t("auth.err.wrong"), fields };
   if (!user.passwordHash) return { error: t("auth.err.noPassword"), fields };
   if (!(await verifyPassword(str(f, "password"), user.passwordHash))) return { error: t("auth.err.wrong"), fields };
-  if (!user.emailVerifiedAt) {
-    await mailVerify(user.email, user.name, `${env.appUrl}/auth/verify?token=${await issueToken(user.id, "VERIFY_EMAIL")}`, lang);
-    redirect(checkEmailUrl(user.email, "verify"));
-  }
+  // Подтверждение почты не обязательно для входа: письма доходят не до всех почтовых сервисов,
+  // а заблокированный вход — худший первый опыт. Письмо-подтверждение уходит при регистрации.
   await createSession(user.id, f.get("remember") === "on", await ua());
   redirect(safeNext(str(f, "next")) ?? homeFor(user.role));
 }
@@ -70,22 +70,21 @@ export async function signupAction(_: FormState, f: FormData): Promise<FormState
   if (f.has("password2") && str(f, "password2") !== password) return { error: t("auth.err.mismatch"), fields };
   if (f.get("consent") !== "on") return { error: t("auth.err.consent"), fields };
 
-  const existing = await db.user.findUnique({ where: { email: email.data } });
-  if (existing?.emailVerifiedAt || (existing && existing.role !== "TEACHER")) return { error: t("auth.err.exists"), fields };
+  // Вход теперь не ждёт подтверждения почты — значит, занятую почту нельзя «перезаписать» повторной регистрацией.
+  if (await db.user.findUnique({ where: { email: email.data } })) return { error: t("auth.err.exists"), fields };
 
-  const data = { name, passwordHash: await hashPassword(password), consentAt: new Date(), lang: lang === "en" ? ("EN" as const) : ("RU" as const) };
-  const user = existing
-    ? await db.user.update({ where: { id: existing.id }, data })
-    : await db.user.create({
-        data: {
-          ...data,
-          email: email.data,
-          role: "TEACHER",
-          teacherProfile: { create: { tariff: "TRIAL", trialUntil: new Date(Date.now() + env.trialDays * 864e5) } },
-        },
-      });
-  const sent = await mailVerify(user.email, user.name, `${env.appUrl}/auth/verify?token=${await issueToken(user.id, "VERIFY_EMAIL")}`, lang);
-  redirect(checkEmailUrl(user.email, "verify") + (sent ? "" : "&f=1"));
+  const user = await db.user.create({
+    data: {
+      name, passwordHash: await hashPassword(password), consentAt: new Date(), lang: lang === "en" ? "EN" : "RU",
+      email: email.data,
+      role: "TEACHER",
+      teacherProfile: { create: { tariff: "TRIAL", trialUntil: new Date(Date.now() + env.trialDays * 864e5) } },
+    },
+  });
+  // письмо-подтверждение — по желанию: не дошло — ничего не блокирует
+  await mailVerify(user.email, user.name, `${env.appUrl}/auth/verify?token=${await issueToken(user.id, "VERIFY_EMAIL")}`, lang);
+  await createSession(user.id, true, await ua());
+  redirect(homeFor(user.role));
 }
 
 // ───────── «Отправить ещё раз» ─────────
@@ -138,36 +137,51 @@ export async function logoutAction() {
 
 // ───────── Учитель приглашает ученика ─────────
 export async function inviteStudentAction(_: FormState, f: FormData): Promise<FormState> {
-  const { t, lang } = await getT();
+  const { t } = await getT();
   const teacher = await requireUser("TEACHER");
-  const fields = { name: str(f, "name"), contact: str(f, "contact") };
+  const fields = { name: str(f, "name") };
   const name = fields.name.slice(0, 80);
   if (!name) return { error: t("auth.err.name"), fields };
-  const asEmail = emailSchema.safeParse(fields.contact);
-  const tg = /^@?[a-zA-Z0-9_]{5,32}$/.test(fields.contact) ? "@" + fields.contact.replace(/^@/, "") : null;
-  if (!asEmail.success && !tg) return { error: t("inviteT.err.contact"), fields };
+  const student = await db.student.create({ data: { teacherId: teacher.id, name, startedAt: new Date() } });
+  const link = await newInvite(teacher.id, student.id);
+  const { lang } = await getT();
+  return { ok: student.name, link, msg: inviteMessage(lang, student.name, [teacher.name, teacher.lastName].filter(Boolean).join(" "), link), id: student.id };
+}
 
-  const token = randomToken(24);
-  const student = await db.student.create({
-    data: {
-      teacherId: teacher.id,
-      name,
-      startedAt: new Date(),
-      email: asEmail.success ? asEmail.data : null,
-      telegram: tg,
-      invites: {
-        create: {
-          teacherId: teacher.id,
-          token,
-          channel: asEmail.success ? "EMAIL" : "TELEGRAM",
-          expiresAt: new Date(Date.now() + 14 * 864e5),
-        },
-      },
-    },
-  });
-  const link = `${env.appUrl}/invite/${token}`;
-  const sent = asEmail.success ? await mailInvite(asEmail.data, name, [teacher.name, teacher.lastName].filter(Boolean).join(" "), link, lang) : false;
-  return { ok: asEmail.success ? (sent ? t("inviteT.sentEmail", { c: asEmail.data }) : t("inviteT.mailFailed", { c: asEmail.data })) : student.name, link, id: student.id, warn: asEmail.success && !sent };
+/** Новая короткая ссылка-приглашение (старые неиспользованные — гасим). Письмо не отправляется: ссылку учитель пересылает сам. */
+async function newInvite(teacherId: string, studentId: string) {
+  await db.invite.deleteMany({ where: { studentId, usedAt: null } });
+  for (let i = 0; ; i++) {
+    const token = shortCode(10);
+    try {
+      await db.invite.create({ data: { teacherId, studentId, token, channel: "LINK", expiresAt: new Date(Date.now() + 30 * 864e5) } });
+      return inviteUrl(token);
+    } catch (e) {
+      if (i >= 3) throw e; // совпадение кода — почти невозможно, но пробуем другой
+    }
+  }
+}
+
+/** «Новая ссылка» для ученика, который ещё не заполнил анкету (старая истекла или потерялась). */
+export async function renewInviteAction(studentId: string): Promise<{ ok: boolean; link?: string; msg?: string }> {
+  const { lang } = await getT();
+  const teacher = await requireUser("TEACHER");
+  const s = await db.student.findFirst({ where: { id: studentId, teacherId: teacher.id, userId: null } });
+  if (!s) return { ok: false };
+  const link = await newInvite(teacher.id, s.id);
+  return { ok: true, link, msg: inviteMessage(lang, s.name, [teacher.name, teacher.lastName].filter(Boolean).join(" "), link) };
+}
+
+/** Ссылка восстановления доступа: ученик забыл пароль, а письмо до его почты не доходит — учитель пересылает ссылку сам. */
+export async function accessLinkAction(studentId: string): Promise<{ ok: boolean; link?: string; msg?: string }> {
+  const teacher = await requireUser("TEACHER");
+  const s = await db.student.findFirst({ where: { id: studentId, teacherId: teacher.id, userId: { not: null } } });
+  if (!s?.userId) return { ok: false };
+  const code = shortCode(10);
+  await issueToken(s.userId, "RESET_PASSWORD", { token: code, ttlMs: 48 * 3600e3 });
+  const { lang } = await getT();
+  const link = accessUrl(code);
+  return { ok: true, link, msg: translate(lang, "inviteT.accessMsg", { name: s.name, link }) };
 }
 
 // ───────── Ученик заполняет стартовую анкету по приглашению ─────────
@@ -184,8 +198,8 @@ export async function inviteFormAction(token: string, _: FormState, f: FormData)
   const email = emailSchema.safeParse(fields.email);
   if (!email.success) return { error: t("auth.err.email"), fields };
   const password = str(f, "password");
-  if (password && password.length < MIN_PASSWORD) return { error: t("auth.err.password"), fields };
-  if (password && f.has("password2") && str(f, "password2") !== password) return { error: t("auth.err.mismatch"), fields };
+  if (password.length < MIN_PASSWORD) return { error: t("auth.err.password"), fields };
+  if (str(f, "password2") !== password) return { error: t("auth.err.mismatch"), fields };
   if (f.get("consent") !== "on") return { error: t("auth.err.consent"), fields };
 
   const taken = await db.user.findUnique({ where: { email: email.data } });
@@ -213,9 +227,8 @@ export async function inviteFormAction(token: string, _: FormState, f: FormData)
         role: "STUDENT",
         lang: lang === "en" ? "EN" : "RU",
         consentAt: new Date(),
-        passwordHash: password ? await hashPassword(password) : null,
-        // Ссылка-приглашение пришла на эту почту — значит, она подтверждена.
-        emailVerifiedAt: invite.student.email === email.data ? new Date() : null,
+        passwordHash: await hashPassword(password),
+        emailVerifiedAt: null, // подтверждение — по желанию, на вход не влияет
       },
     });
     await tx.student.update({

@@ -53,6 +53,7 @@ export const ICONS = {
   card: "<rect x=\"2\" y=\"5\" width=\"20\" height=\"14\" rx=\"2\"/><path d=\"M2 10h20M6 15h4\"/>",
   user: "<circle cx=\"12\" cy=\"8\" r=\"4\"/><path d=\"M4 21c1-4 4-6 8-6s7 2 8 6\"/>",
   sound: "<path d=\"M4 9h4l5-4v14l-5-4H4z\"/><path d=\"M16 9a4 4 0 0 1 0 6M19 6a8 8 0 0 1 0 12\"/>",
+  copy: "<rect x=\"9\" y=\"9\" width=\"11\" height=\"11\" rx=\"2\"/><path d=\"M5 15V6a2 2 0 0 1 2-2h9\"/>",
   send: "<path d=\"M5 12h14M13 6l6 6-6 6\"/>",
   clip: "<path d=\"M20 11l-8.5 8.5a5 5 0 0 1-7-7L13 4a3.5 3.5 0 0 1 5 5l-8.5 8.5a2 2 0 0 1-3-3L14 7\"/>",
   note: "<path d=\"M5 3h10l4 4v14H5z\"/><path d=\"M9 12h6M9 16h4\"/>",

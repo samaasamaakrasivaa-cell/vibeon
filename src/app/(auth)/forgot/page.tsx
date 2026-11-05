@@ -13,6 +13,7 @@ export default async function Forgot() {
         <h1>{t("auth.forgot.title")}</h1>
         <p className="sub">{t("auth.forgot.sub")}</p>
         <ForgotForm />
+        <p className="hint mt-4 mb-0">{t("auth.forgot.student")}</p>
       </section>
       <p className="authnote m-0"><Link href="/login">{t("auth.back")}</Link></p>
     </AuthShell>

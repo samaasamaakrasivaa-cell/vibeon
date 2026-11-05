@@ -39,7 +39,7 @@ export function OnboardForm({ token, init }: { token: string; init: Init }) {
       <div className="field"><span className="flabel">{t("ob.easy")}</span>{chips("easy", SKILLS)}</div>
       <div className="field"><span className="flabel">{t("ob.hard")}</span>{chips("hard", SKILLS)}</div>
       <div className="field"><label htmlFor="problem">{t("ob.problem")}</label><textarea id="problem" name="problem" className="textarea input" placeholder={t("ob.problemPh")} defaultValue={v("problem")} /></div>
-      <NewPassword label={t("ob.password")} hint={t("ob.passwordHint")} required={false} />
+      <NewPassword label={`${t("ob.password")} *`} hint={t("ob.passwordHint")} />
       <label className="consent">
         <input type="checkbox" name="consent" className="check" />
         <span>

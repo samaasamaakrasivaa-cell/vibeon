@@ -9,9 +9,9 @@ const TTL: Record<AuthTokenType, number> = {
   RESET_PASSWORD: 3600 * 1000,
 };
 
-export async function issueToken(userId: string, type: AuthTokenType) {
-  const token = randomToken();
-  await db.authToken.create({ data: { userId, type, tokenHash: sha256(token), expiresAt: new Date(Date.now() + TTL[type]) } });
+export async function issueToken(userId: string, type: AuthTokenType, o: { token?: string; ttlMs?: number } = {}) {
+  const token = o.token ?? randomToken();
+  await db.authToken.create({ data: { userId, type, tokenHash: sha256(token), expiresAt: new Date(Date.now() + (o.ttlMs ?? TTL[type])) } });
   return token;
 }
 

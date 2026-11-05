@@ -198,6 +198,7 @@ model GroupMember {
 enum InviteChannel {
   EMAIL
   TELEGRAM
+  LINK // учитель сам отправляет короткую ссылку (мессенджер, соцсеть)
 }
 
 model Invite {
