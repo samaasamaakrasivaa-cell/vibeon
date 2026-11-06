@@ -44,7 +44,7 @@
     "type": "mcq",
     "q": "I ___ a shower when my phone rang.",
     "options": [
-      "have",
+      "have been having",
       "was having",
       "have had",
       "am having"
@@ -65,7 +65,7 @@
     "options": [
       "Has",
       "Have",
-      "Do",
+      "Were",
       "Are"
     ],
     "answer": 1,
@@ -119,7 +119,7 @@
     "options": [
       "is going to",
       "will to",
-      "goes to",
+      "will going to",
       "going"
     ],
     "answer": 0,
@@ -283,7 +283,7 @@
       "mustn't",
       "don't have to",
       "have to",
-      "has to"
+      "doesn't have to"
     ],
     "answer": 1,
     "explain_ru": "Отсутствие необходимости выражается через don't have to."

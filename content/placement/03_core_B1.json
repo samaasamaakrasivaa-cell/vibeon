@@ -25,7 +25,7 @@
     "type": "mcq",
     "q": "I've known my best friend ___ we were at university together.",
     "options": [
-      "for",
+      "until",
       "from",
       "when",
       "since"
@@ -66,7 +66,7 @@
       "prepare",
       "have been preparing",
       "was preparing",
-      "prepared"
+      "have being preparing"
     ],
     "answer": 1,
     "explain_ru": "Действие началось в прошлом и продолжается до сих пор (since September) — Present Perfect Continuous."
@@ -300,7 +300,7 @@
     "q": "The trains weren't running, but we ___ get home before midnight.",
     "options": [
       "could",
-      "can",
+      "have managed",
       "managed to",
       "were able"
     ],
@@ -371,7 +371,7 @@
     "type": "mcq",
     "q": "I've got two sisters, but ___ of them lives near me.",
     "options": [
-      "both",
+      "anybody",
       "neither",
       "none",
       "either"
@@ -412,7 +412,7 @@
       "Although",
       "However",
       "Despite",
-      "But"
+      "In spite"
     ],
     "answer": 0,
     "explain_ru": "Although + подлежащее и сказуемое передаёт уступку «хотя»."
@@ -584,7 +584,7 @@
       "salary",
       "degree",
       "promotion",
-      "career"
+      "colleague"
     ],
     "answer": 2,
     "explain_ru": "Повышение в должности — promotion."

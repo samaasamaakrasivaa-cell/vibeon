@@ -219,7 +219,7 @@
     "q": "We ___ leave when it started pouring with rain.",
     "options": [
       "were going",
-      "would",
+      "had been about",
       "are about to",
       "were about to"
     ],
@@ -278,7 +278,7 @@
       "The introduction",
       "Introducing",
       "The introduce",
-      "Introduced"
+      "The introducement"
     ],
     "answer": 0,
     "explain_ru": "Перед of нужно существительное: the introduction of."
@@ -533,7 +533,7 @@
       "butterflies",
       "bees",
       "birds",
-      "flies"
+      "caterpillars"
     ],
     "answer": 0,
     "explain_ru": "Have butterflies in your stomach — сильно волноваться."
@@ -666,7 +666,7 @@
       "attractive",
       "breathtaking",
       "very nice",
-      "pretty"
+      "very beautiful"
     ],
     "answer": 1,
     "explain_ru": "С absolutely сочетаются «крайние» прилагательные: breathtaking."

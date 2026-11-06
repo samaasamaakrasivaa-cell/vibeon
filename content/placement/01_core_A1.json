@@ -250,7 +250,7 @@
       "Don't be",
       "Not be",
       "Don't",
-      "Be not"
+      "Not to be"
     ],
     "answer": 0,
     "explain_ru": "Отрицательное повелительное наклонение: Don't + глагол, с to be — Don't be."
@@ -288,7 +288,7 @@
       "have",
       "having",
       "am having",
-      "has"
+      "is having"
     ],
     "answer": 2,
     "explain_ru": "Действие происходит прямо сейчас, поэтому Present Continuous."
@@ -342,7 +342,7 @@
     "type": "mcq",
     "q": "___ like to come to my birthday dinner on Friday?",
     "options": [
-      "Do you",
+      "Could you",
       "Would you",
       "Are you",
       "Will you"
@@ -488,7 +488,7 @@
     "options": [
       "driver",
       "programmer",
-      "waiter",
+      "hairdresser",
       "doctor"
     ],
     "answer": 1,
@@ -647,7 +647,7 @@
     "options": [
       "sunny",
       "raining",
-      "windy",
+      "freezing",
       "hot"
     ],
     "answer": 1,
