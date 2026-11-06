@@ -8,3 +8,4 @@ next-env.d.ts
 uploads
 backups
 .DS_Store
+__pycache__/
