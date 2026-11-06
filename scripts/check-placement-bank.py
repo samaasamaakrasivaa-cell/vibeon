@@ -17,7 +17,8 @@ he she it they we you i me him her us them his its their our my your conditional
 modal verb verbs noun nouns adjective adverb adverbs phrasal phrase infinitive gerund participle clause clauses
 article articles reported speech question questions negative positive plural singular uncountable countable
 there is are was were do does did have has had will would can could may might must should shall
-not someone something somebody one""".split())
+not someone something somebody one
+ful less ness ment tion sion able ible ly un dis im in ir il mis re pre""".split())
 APOS = str.maketrans({"’": "'", "‘": "'", "“": '"', "”": '"'})
 
 topics = {t["topic_id"]: t for t in json.load(open(os.path.join(ROOT, "00_topics.json")))}
@@ -61,7 +62,7 @@ def check_explain(i, it, text_pool):
     ex = it.get("explain_ru", "")
     if not ex:
         return err(i, "нет explain_ru")
-    stem = lambda w: re.sub(r"(ing|ed|es|s)$", "", w)
+    stem = lambda w: re.sub(r"e$", "", re.sub(r"(ing|ed|es|s)$", "", w))
     pool = {stem(w) for w in latin_words(text_pool)}
     stray = {w for w in latin_words(ex) - GRAMMAR_WORDS if stem(w) not in pool}
     if stray:
