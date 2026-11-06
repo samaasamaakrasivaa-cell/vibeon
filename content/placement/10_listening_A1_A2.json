@@ -1,0 +1,555 @@
+[
+  {
+    "id": "L-A1-01",
+    "skill": "listening",
+    "level": "A1",
+    "band": 1,
+    "topic_en": "Voicemail from a friend",
+    "topic_ru": "Голосовое сообщение от подруги",
+    "type": "listening",
+    "title": "A message from Lucy",
+    "situation_ru": "Подруга оставляет голосовое сообщение и приглашает в пиццерию.",
+    "speakers": [
+      {
+        "name": "Lucy",
+        "gender": "female",
+        "accent": "British"
+      }
+    ],
+    "script": "Lucy: Hi Tom, it's Lucy. [pause 1s] Are you free on Saturday? There's a new pizza place in the city centre. It's called Luigi's, and it's on Green Street, next to the cinema. The pizza is really good, and it isn't expensive. Let's meet there at half past seven. My sister is coming too. She really wants to meet you. [pause 1s] Oh, and I'm paying, because you helped me with my flat last week! Call me back, OK? Bye!",
+    "words": 75,
+    "duration_sec": 43,
+    "plays": 2,
+    "questions": [
+      {
+        "id": "L-A1-01-q1",
+        "q": "Where is the pizza place?",
+        "options": [
+          "Next to the station",
+          "Next to the cinema",
+          "On Park Street",
+          "Opposite the bank"
+        ],
+        "answer": 1,
+        "checks": "number-time-place",
+        "topic_id": "l-number-time-place",
+        "explain_ru": "Пиццерия на Green Street, рядом с кинотеатром."
+      },
+      {
+        "id": "L-A1-01-q2",
+        "q": "What time are they meeting?",
+        "options": [
+          "At seven o'clock",
+          "At a quarter past seven",
+          "At half past eight",
+          "At half past seven"
+        ],
+        "answer": 3,
+        "checks": "number-time-place",
+        "topic_id": "l-number-time-place",
+        "explain_ru": "Let's meet there at half past seven — в 19:30."
+      },
+      {
+        "id": "L-A1-01-q3",
+        "q": "Why is Lucy paying?",
+        "options": [
+          "Tom helped her last week",
+          "It's Tom's birthday",
+          "Tom has no money this week",
+          "She has a new job"
+        ],
+        "answer": 0,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "Том помог ей с квартирой на прошлой неделе."
+      }
+    ]
+  },
+  {
+    "id": "L-A1-02",
+    "skill": "listening",
+    "level": "A1",
+    "band": 2,
+    "topic_en": "Ordering in a café",
+    "topic_ru": "Заказ в кафе",
+    "type": "listening",
+    "title": "At the café",
+    "situation_ru": "Посетитель заказывает еду и кофе в кафе.",
+    "speakers": [
+      {
+        "name": "Waiter",
+        "gender": "male",
+        "accent": "American"
+      },
+      {
+        "name": "Customer",
+        "gender": "female",
+        "accent": "American"
+      }
+    ],
+    "script": "Waiter: Hi there! What can I get you?\nCustomer: Hi. Can I have a large coffee with milk, please?\nWaiter: Sure. Anything to eat?\nCustomer: Do you have any sandwiches?\nWaiter: Yes, we have cheese, chicken or egg.\nCustomer: Chicken, please. Oh, and a bottle of water.\nWaiter: OK. Is that to go, or are you staying here?\nCustomer: Here, please. By the window.\nWaiter: Great. That's nine dollars fifty.\nCustomer: Can I pay by card?\nWaiter: Of course.",
+    "words": 68,
+    "duration_sec": 41,
+    "plays": 2,
+    "questions": [
+      {
+        "id": "L-A1-02-q1",
+        "q": "What sandwich does the customer order?",
+        "options": [
+          "Cheese",
+          "Egg",
+          "Chicken",
+          "Tuna and egg"
+        ],
+        "answer": 2,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "Посетительница выбирает сэндвич с курицей."
+      },
+      {
+        "id": "L-A1-02-q2",
+        "q": "How much does she pay?",
+        "options": [
+          "Nine dollars fifteen",
+          "Nine dollars fifty",
+          "Five dollars ninety",
+          "Nineteen dollars fifty"
+        ],
+        "answer": 1,
+        "checks": "number-time-place",
+        "topic_id": "l-number-time-place",
+        "explain_ru": "That's nine dollars fifty — 9,50 доллара."
+      },
+      {
+        "id": "L-A1-02-q3",
+        "q": "Where is she going to have her food?",
+        "options": [
+          "By the window",
+          "Outside on the street",
+          "At home after work",
+          "Near the door"
+        ],
+        "answer": 0,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "Она остаётся в кафе и садится у окна."
+      }
+    ]
+  },
+  {
+    "id": "L-A1-03",
+    "skill": "listening",
+    "level": "A1",
+    "band": 2,
+    "topic_en": "Announcement at a train station",
+    "topic_ru": "Объявление на вокзале",
+    "type": "listening",
+    "title": "A train announcement",
+    "situation_ru": "Объявление на вокзале о поезде в Брайтон.",
+    "speakers": [
+      {
+        "name": "Announcer",
+        "gender": "male",
+        "accent": "British"
+      }
+    ],
+    "script": "Announcer: Good morning. This is an announcement for passengers travelling to Brighton. [pause 1s] The ten fifteen train to Brighton is ten minutes late. It will now leave at ten twenty-five from platform four. [pause 1s] I repeat: the train to Brighton will now leave at ten twenty-five from platform four. Passengers for London, your train is on time and leaves from platform one. There is a café on platform two. We are sorry for the delay.",
+    "words": 72,
+    "duration_sec": 41,
+    "plays": 2,
+    "questions": [
+      {
+        "id": "L-A1-03-q1",
+        "q": "How late is the train to Brighton?",
+        "options": [
+          "Five minutes",
+          "Fifteen minutes",
+          "Twenty-five minutes",
+          "Ten minutes"
+        ],
+        "answer": 3,
+        "checks": "number-time-place",
+        "topic_id": "l-number-time-place",
+        "explain_ru": "The train is ten minutes late — поезд опаздывает на 10 минут."
+      },
+      {
+        "id": "L-A1-03-q2",
+        "q": "Which platform does the Brighton train leave from?",
+        "options": [
+          "Platform one",
+          "Platform fourteen",
+          "Platform four",
+          "Platform two"
+        ],
+        "answer": 2,
+        "checks": "number-time-place",
+        "topic_id": "l-number-time-place",
+        "explain_ru": "Поезд отправляется с четвёртой платформы."
+      },
+      {
+        "id": "L-A1-03-q3",
+        "q": "Where is the café?",
+        "options": [
+          "On platform four",
+          "On platform two",
+          "Next to the ticket office",
+          "Outside the station"
+        ],
+        "answer": 1,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "There is a café on platform two."
+      }
+    ]
+  },
+  {
+    "id": "L-A1-04",
+    "skill": "listening",
+    "level": "A1",
+    "band": 3,
+    "topic_en": "Friends planning the weekend",
+    "topic_ru": "Друзья планируют выходные",
+    "type": "listening",
+    "title": "Plans for the weekend",
+    "situation_ru": "Двое друзей договариваются о поездке на пляж.",
+    "speakers": [
+      {
+        "name": "Kate",
+        "gender": "female",
+        "accent": "British"
+      },
+      {
+        "name": "Josh",
+        "gender": "male",
+        "accent": "British"
+      }
+    ],
+    "script": "Kate: Hi, Josh! What are you doing this weekend?\nJosh: Nothing much. Why?\nKate: The weather is going to be nice on Sunday. Do you want to go to the beach?\nJosh: I'd love to, but I can't on Sunday. My parents are visiting. What about Saturday?\nKate: Saturday? Hmm, I have a dance class in the morning, but I'm free after twelve.\nJosh: Great. Let's go in the afternoon, then. I can drive.\nKate: Perfect! I'll bring some sandwiches.\nJosh: And I'll bring a ball. See you on Saturday!",
+    "words": 82,
+    "duration_sec": 48,
+    "plays": 2,
+    "questions": [
+      {
+        "id": "L-A1-04-q1",
+        "q": "Why can't Josh go on Sunday?",
+        "options": [
+          "He has to work all day on Sunday",
+          "The weather will be bad on Sunday",
+          "His parents are visiting",
+          "He has a dance class"
+        ],
+        "answer": 2,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "В воскресенье к Джошу приезжают родители."
+      },
+      {
+        "id": "L-A1-04-q2",
+        "q": "When are they going to the beach?",
+        "options": [
+          "On Saturday morning",
+          "On Saturday afternoon",
+          "On Sunday morning",
+          "On Sunday afternoon"
+        ],
+        "answer": 1,
+        "checks": "number-time-place",
+        "topic_id": "l-number-time-place",
+        "explain_ru": "Утром у Кейт занятие, поэтому едут в субботу днём."
+      },
+      {
+        "id": "L-A1-04-q3",
+        "q": "What is Kate going to bring?",
+        "options": [
+          "A football",
+          "Some cold drinks",
+          "A big blanket",
+          "Some sandwiches"
+        ],
+        "answer": 3,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "I'll bring some sandwiches — мяч берёт Джош."
+      }
+    ]
+  },
+  {
+    "id": "L-A2-01",
+    "skill": "listening",
+    "level": "A2",
+    "band": 1,
+    "topic_en": "Checking in at a hotel",
+    "topic_ru": "Заселение в отель",
+    "type": "listening",
+    "title": "At the hotel",
+    "situation_ru": "Гость заселяется в отель и уточняет детали.",
+    "speakers": [
+      {
+        "name": "Receptionist",
+        "gender": "female",
+        "accent": "American"
+      },
+      {
+        "name": "Daniel",
+        "gender": "male",
+        "accent": "American"
+      }
+    ],
+    "script": "Receptionist: Good evening, welcome to the Harbor View Hotel. How can I help you?\nDaniel: Hi, I have a reservation. My name's Daniel Ross.\nReceptionist: Let me check. Yes, Mr. Ross, a double room for three nights.\nDaniel: Actually, it should be four nights. I'm leaving on Friday morning.\nReceptionist: Oh, I'm sorry about that. Let me fix it. OK, that's four nights now. Your room is 312, on the third floor. Breakfast is from seven to ten in the restaurant.\nDaniel: Great. And is there Wi-Fi in the room?\nReceptionist: Yes, it's free. The password is on the card with your key.\nDaniel: Thanks. Oh, one more thing. Is there somewhere I can leave my bike?\nReceptionist: Sure, there's a bike room next to the parking lot.\nDaniel: Perfect, thank you. What time do I need to leave the room on Friday?\nReceptionist: By eleven, please.",
+    "words": 136,
+    "duration_sec": 67,
+    "plays": 2,
+    "questions": [
+      {
+        "id": "L-A2-01-q1",
+        "q": "What was the problem with Daniel's booking?",
+        "options": [
+          "It had the wrong number of nights",
+          "His room wasn't ready when he arrived",
+          "There were no double rooms left",
+          "His surname was spelled wrongly"
+        ],
+        "answer": 0,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "В брони было три ночи вместо четырёх."
+      },
+      {
+        "id": "L-A2-01-q2",
+        "q": "Which floor is Daniel's room on?",
+        "options": [
+          "The first floor",
+          "The second floor",
+          "The third floor",
+          "The fourth floor"
+        ],
+        "answer": 2,
+        "checks": "number-time-place",
+        "topic_id": "l-number-time-place",
+        "explain_ru": "Номер 312 на третьем этаже."
+      },
+      {
+        "id": "L-A2-01-q3",
+        "q": "Where can Daniel leave his bike?",
+        "options": [
+          "In his room on the third floor",
+          "Behind the hotel restaurant",
+          "At the front desk",
+          "Next to the parking lot"
+        ],
+        "answer": 3,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "Велосипедная комната рядом с парковкой."
+      }
+    ]
+  },
+  {
+    "id": "L-A2-02",
+    "skill": "listening",
+    "level": "A2",
+    "band": 2,
+    "topic_en": "A guide at the start of a walking tour",
+    "topic_ru": "Гид перед пешеходной экскурсией",
+    "type": "listening",
+    "title": "The Old Town tour",
+    "situation_ru": "Гид рассказывает группе туристов о плане экскурсии.",
+    "speakers": [
+      {
+        "name": "Sophie",
+        "gender": "female",
+        "accent": "British"
+      }
+    ],
+    "script": "Sophie: OK, everyone, welcome to the Old Town walking tour. My name's Sophie, and I'll be your guide today. The tour takes about two hours, and we'll stop for a coffee break halfway, at a lovely little bakery near the river. [pause 1s] First, we're going to walk to the old market square. It's only five minutes from here. Then we'll visit the castle, but please remember that we can't go inside today because it's closed for repairs. [pause 1s] If you need the toilet, there are some at the tourist office, just behind me. And please stay together, because the streets are very busy on Saturdays. We'll finish at about one o'clock at the old bridge, where you can take some great photos of the river. Right, any questions? No? Then let's go!",
+    "words": 129,
+    "duration_sec": 62,
+    "plays": 2,
+    "questions": [
+      {
+        "id": "L-A2-02-q1",
+        "q": "How long does the tour take?",
+        "options": [
+          "About one hour",
+          "About two hours",
+          "About three hours",
+          "Half a day"
+        ],
+        "answer": 1,
+        "checks": "number-time-place",
+        "topic_id": "l-number-time-place",
+        "explain_ru": "The tour takes about two hours."
+      },
+      {
+        "id": "L-A2-02-q2",
+        "q": "Why can't the group go inside the castle?",
+        "options": [
+          "It's too expensive for groups",
+          "It's always closed on Saturdays",
+          "It's full of other tourists",
+          "It's closed for repairs"
+        ],
+        "answer": 3,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "Замок закрыт на ремонт."
+      },
+      {
+        "id": "L-A2-02-q3",
+        "q": "Where will the group have a coffee break?",
+        "options": [
+          "At a bakery near the river",
+          "At the old market square",
+          "At the tourist office behind her",
+          "At a café inside the castle"
+        ],
+        "answer": 0,
+        "checks": "number-time-place",
+        "topic_id": "l-number-time-place",
+        "explain_ru": "Перерыв на кофе в пекарне у реки."
+      }
+    ]
+  },
+  {
+    "id": "L-A2-03",
+    "skill": "listening",
+    "level": "A2",
+    "band": 3,
+    "topic_en": "Friends talking about a climbing class",
+    "topic_ru": "Друзья обсуждают занятие скалолазанием",
+    "type": "listening",
+    "title": "The first climbing class",
+    "situation_ru": "Друзья обсуждают первое занятие скалолазанием.",
+    "speakers": [
+      {
+        "name": "Maya",
+        "gender": "female",
+        "accent": "American"
+      },
+      {
+        "name": "Leo",
+        "gender": "male",
+        "accent": "American"
+      }
+    ],
+    "script": "Maya: So, how was your first climbing class?\nLeo: Honestly? I was really nervous before it started. Everyone looked so strong!\nMaya: And?\nLeo: Well, it was hard. My arms were shaking after twenty minutes. But the instructor was great. She was really patient, and she didn't laugh when I fell off the wall.\nMaya: You fell off?\nLeo: Only from about a meter! You wear a rope, so it's totally safe.\nMaya: So are you going back?\nLeo: Definitely. I've already booked five more classes.\nMaya: Isn't it expensive?\nLeo: Twenty-five dollars a class, so it's not cheap. But I think it's worth it. And I slept really well that night, too.\nMaya: Maybe I'll come with you next time. I've always wanted to try it.\nLeo: You should! The Tuesday class is for beginners.",
+    "words": 124,
+    "duration_sec": 62,
+    "plays": 2,
+    "questions": [
+      {
+        "id": "L-A2-03-q1",
+        "q": "How did Leo feel before the class?",
+        "options": [
+          "Excited and confident",
+          "Nervous",
+          "Tired after work",
+          "Angry with Maya"
+        ],
+        "answer": 1,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "Лео очень волновался: все казались такими сильными."
+      },
+      {
+        "id": "L-A2-03-q2",
+        "q": "What does Leo say about the instructor?",
+        "options": [
+          "She laughed at his mistakes",
+          "She was very strict",
+          "She was kind and patient",
+          "She arrived late"
+        ],
+        "answer": 2,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "Инструктор была терпеливой и не смеялась, когда он упал."
+      },
+      {
+        "id": "L-A2-03-q3",
+        "q": "What does Leo think about climbing now?",
+        "options": [
+          "He enjoys it and wants to continue",
+          "It's too dangerous for someone like him",
+          "It's too expensive to continue",
+          "He'd prefer to find a different instructor"
+        ],
+        "answer": 0,
+        "checks": "speaker's attitude",
+        "topic_id": "l-speakers-attitude",
+        "explain_ru": "Он уже записался ещё на пять занятий и считает, что они того стоят."
+      }
+    ]
+  },
+  {
+    "id": "L-A2-04",
+    "skill": "listening",
+    "level": "A2",
+    "band": 2,
+    "topic_en": "Colleagues talking about a weekend trip",
+    "topic_ru": "Коллеги обсуждают поездку на выходные",
+    "type": "listening",
+    "title": "A weekend in Edinburgh",
+    "situation_ru": "Коллега рассказывает о поездке в Эдинбург.",
+    "speakers": [
+      {
+        "name": "Ben",
+        "gender": "male",
+        "accent": "British"
+      },
+      {
+        "name": "Hannah",
+        "gender": "female",
+        "accent": "British"
+      }
+    ],
+    "script": "Ben: Morning, Hannah! How was your weekend in Edinburgh?\nHannah: Oh, it was lovely, but the journey there was a bit of a disaster.\nBen: Really? What happened?\nHannah: Well, our train was cancelled, so we had to take a bus instead. It took nearly seven hours!\nBen: Seven hours? That's awful.\nHannah: I know. But the city was amazing. We walked up a hill on Saturday and saw the whole city, and on Sunday we went to a small museum about its history. And the food was fantastic.\nBen: Where did you stay?\nHannah: In a tiny flat near the station. It was cheap and really comfortable.\nBen: Did the weather stay nice?\nHannah: Not really. It rained on Sunday afternoon, so we spent hours in a bookshop. Actually, that was one of the best parts!\nBen: Sounds great. Would you go back?\nHannah: Definitely, but next time I'm flying.",
+    "words": 139,
+    "duration_sec": 69,
+    "plays": 2,
+    "questions": [
+      {
+        "id": "L-A2-04-q1",
+        "q": "What went wrong with the journey to Edinburgh?",
+        "options": [
+          "The bus broke down",
+          "They missed their flight",
+          "The train was cancelled",
+          "The hotel was full"
+        ],
+        "answer": 2,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "Поезд отменили, и пришлось ехать на автобусе."
+      },
+      {
+        "id": "L-A2-04-q2",
+        "q": "What did Hannah do when it rained?",
+        "options": [
+          "Spent hours in a bookshop",
+          "Watched a film at the cinema",
+          "Stayed in their hotel room",
+          "Went home a day early"
+        ],
+        "answer": 0,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "Когда пошёл дождь, они провели несколько часов в книжном."
+      },
+      {
+        "id": "L-A2-04-q3",
+        "q": "How will Hannah probably travel to Edinburgh next time?",
+        "options": [
+          "By bus",
+          "By train",
+          "By car",
+          "By plane"
+        ],
+        "answer": 3,
+        "checks": "inference",
+        "topic_id": "l-inference",
+        "explain_ru": "Next time I'm flying — значит, на самолёте."
+      }
+    ]
+  }
+]
