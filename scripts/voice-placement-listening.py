@@ -39,6 +39,57 @@ VOICE_SPEED = {"bf_emma": 0.88}  # этот голос говорит замет
 TURN_GAP = {"A1": 0.55, "A2": 0.45, "B1": 0.4, "B2": 0.35, "C1": 0.3}
 
 
+PAUSE_STRETCH = os.environ.get("PAUSE_STRETCH", "1") == "1"
+COMMA_PAUSE = {"A1": 0.28, "A2": 0.24, "B1": 0.2, "B2": 0.17, "C1": 0.14}   # добавка к паузе на запятой, с
+STOP_PAUSE = {"A1": 0.4, "A2": 0.34, "B1": 0.28, "B2": 0.24, "C1": 0.2}    # … на точке / ? / ! внутри реплики
+
+
+def stretch_pauses(audio, sr, text, level):
+    """Фраза озвучена целиком (интонация не обрывается); на запятых и точках модель оставляет лишь
+    короткий провал громкости. Для каждого знака ищем провал рядом с тем местом, где знак примерно
+    звучит (по доле текста), и удлиняем его. Нет подходящего провала — паузу не трогаем."""
+    marks = [(m.end() / max(1, len(text)), m.group(0)) for m in re.finditer(r"[,;:—]|[.!?]+(?=\s+\S)", text)]
+    if not marks:
+        return audio
+    hop = int(sr * 0.01)
+    frames = len(audio) // hop
+    dur = frames * 0.01
+    rms = np.array([np.sqrt(np.mean(audio[i * hop:(i + 1) * hop] ** 2)) for i in range(frames)])
+    thr = max(0.015, 0.06 * float(np.percentile(rms, 95)))
+    gaps, i = [], 0
+    while i < frames:
+        if rms[i] < thr:
+            j = i
+            while j < frames and rms[j] < thr:
+                j += 1
+            if i > 5 and j < frames - 5 and j - i >= 6:  # тихий участок ≥ 60 мс внутри речи
+                gaps.append(((i + j) // 2, j - i))
+            i = j
+        else:
+            i += 1
+    used, cuts = set(), []
+    for frac, mark in marks:
+        want = frac * dur
+        best = None
+        for c, n in gaps:
+            dist = abs(c * 0.01 - want)
+            if c in used or dist > max(0.45, 0.12 * dur):
+                continue
+            score = dist - n * 0.004  # ближе к ожидаемому месту и длиннее — лучше
+            if best is None or score < best[0]:
+                best = (score, c)
+        if best:
+            used.add(best[1])
+            cuts.append((best[1], mark))
+    out, prev = [], 0
+    for c, mark in sorted(cuts):
+        cut = c * hop
+        out += [audio[prev:cut], np.zeros(int(sr * (COMMA_PAUSE if mark in ",;:—" else STOP_PAUSE)[level]), dtype=np.float32)]
+        prev = cut
+    out.append(audio[prev:])
+    return np.concatenate(out)
+
+
 def silence(sec, sr):
     return np.zeros(int(sec * sr), dtype=np.float32)
 
@@ -84,7 +135,10 @@ def render(item):
                 if not sent.strip():
                     continue
                 audio, sr = k.create(sent, voice=vm[name], speed=speed * SPEED_SCALE * VOICE_SPEED.get(vm[name], 1.0), lang=lang[accent[name]])
-                parts.append(audio.astype(np.float32))
+                audio = audio.astype(np.float32)
+                if PAUSE_STRETCH:
+                    audio = stretch_pauses(audio, sr, sent, item["level"])
+                parts.append(audio)
                 parts.append(silence(SENT_GAP[item["level"]], sr))
         parts.append(silence(gap, sr))
     parts.append(silence(0.5, sr))
