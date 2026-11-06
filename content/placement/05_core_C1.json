@@ -1,0 +1,719 @@
+[
+  {
+    "id": "G-C1-01",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 2,
+    "topic_id": "g-c1-inversion",
+    "topic_en": "Inversion after negative adverbials",
+    "topic_ru": "Инверсия после отрицательных наречий",
+    "type": "transform",
+    "q": "I had no idea how expensive the trip would be.",
+    "key": "LITTLE",
+    "frame": "___ how expensive the trip would be.",
+    "accept": [
+      "little did i know",
+      "little did i realise",
+      "little did i realize",
+      "little did i suspect",
+      "little did i imagine"
+    ],
+    "explain_ru": "После little в начале предложения — инверсия: Little did I know."
+  },
+  {
+    "id": "G-C1-02",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 2,
+    "topic_id": "g-c1-cleft",
+    "topic_en": "Cleft sentences: It is... / What...",
+    "topic_ru": "Эмфатические конструкции It is... / What...",
+    "type": "transform",
+    "q": "The noise from the street really annoys me.",
+    "key": "WHAT",
+    "frame": "___ the noise from the street.",
+    "accept": [
+      "what really annoys me is",
+      "what annoys me is",
+      "what i find annoying is"
+    ],
+    "explain_ru": "Эмфатическая конструкция What ... is выделяет главное."
+  },
+  {
+    "id": "G-C1-03",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 3,
+    "topic_id": "g-c1-inverted-conditionals",
+    "topic_en": "Inverted conditionals: Had I known / Should you",
+    "topic_ru": "Условные с инверсией: Had I known / Should you",
+    "type": "transform",
+    "q": "If you need any help, just give me a call.",
+    "key": "SHOULD",
+    "frame": "___ any help, just give me a call.",
+    "accept": [
+      "should you need",
+      "should you require"
+    ],
+    "explain_ru": "Условие с инверсией: Should you need = If you need."
+  },
+  {
+    "id": "G-C1-04",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 3,
+    "topic_id": "g-c1-passive-reporting",
+    "topic_en": "Advanced passive: is thought to have...",
+    "topic_ru": "Сложный пассив: is thought to have...",
+    "type": "transform",
+    "q": "People believe that the castle was built in the 12th century.",
+    "key": "BELIEVED",
+    "frame": "The castle is ___ in the 12th century.",
+    "accept": [
+      "believed to have been built"
+    ],
+    "explain_ru": "Сложный пассив о прошлом: is believed to have been + третья форма."
+  },
+  {
+    "id": "G-C1-05",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 3,
+    "topic_id": "g-c1-unreal-past",
+    "topic_en": "Unreal past: as if / would rather / suppose",
+    "topic_ru": "Нереальное прошлое: as if / would rather / suppose",
+    "type": "transform",
+    "q": "I'd prefer you not to tell anyone about this yet.",
+    "key": "RATHER",
+    "frame": "I'd ___ anyone about this yet.",
+    "accept": [
+      "rather you didn't tell",
+      "rather you did not tell",
+      "rather you not tell"
+    ],
+    "explain_ru": "I'd rather + подлежащее + Past Simple — «я бы предпочёл, чтобы ты...»."
+  },
+  {
+    "id": "G-C1-06",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-modal-nuance",
+    "topic_en": "Modal nuances: may well / might as well / bound to",
+    "topic_ru": "Оттенки модальности: may well / might as well / bound to",
+    "type": "transform",
+    "q": "It's very likely that it will rain this afternoon.",
+    "key": "WELL",
+    "frame": "It ___ this afternoon.",
+    "accept": [
+      "may well rain",
+      "might well rain",
+      "could well rain"
+    ],
+    "explain_ru": "May/might well — «вполне вероятно»."
+  },
+  {
+    "id": "G-C1-07",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-inversion",
+    "topic_en": "Inversion after negative adverbials",
+    "topic_ru": "Инверсия после отрицательных наречий",
+    "type": "mcq",
+    "q": "Not only ___ late, but she also forgot the tickets.",
+    "options": [
+      "was she",
+      "she was",
+      "she is",
+      "did she was"
+    ],
+    "answer": 0,
+    "explain_ru": "После Not only в начале предложения — инверсия: was she."
+  },
+  {
+    "id": "G-C1-08",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 2,
+    "topic_id": "g-c1-subjunctive",
+    "topic_en": "Subjunctive: It's essential that he be...",
+    "topic_ru": "Сослагательное наклонение: It's essential that he be...",
+    "type": "mcq",
+    "q": "It's essential that everyone ___ the safety training before Monday.",
+    "options": [
+      "will complete",
+      "complete",
+      "completing",
+      "to complete"
+    ],
+    "answer": 1,
+    "explain_ru": "После it's essential that используется форма глагола без окончания (сослагательное наклонение)."
+  },
+  {
+    "id": "G-C1-09",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-participle-advanced",
+    "topic_en": "Advanced participle and reduced relative clauses",
+    "topic_ru": "Сложные причастные обороты",
+    "type": "mcq",
+    "q": "___ in 1890, the hotel still has its original staircase.",
+    "options": [
+      "Built",
+      "Building",
+      "Having built",
+      "Being building"
+    ],
+    "answer": 0,
+    "explain_ru": "Пассивное причастие Built — «построенный»: отель построили."
+  },
+  {
+    "id": "G-C1-10",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-emphasis",
+    "topic_en": "Emphasis: do / at all / whatsoever",
+    "topic_ru": "Усиление: do / at all / whatsoever",
+    "type": "mcq",
+    "q": "I ___ enjoy the course. It's just a bit too long.",
+    "options": [
+      "am",
+      "does",
+      "do",
+      "have"
+    ],
+    "answer": 2,
+    "explain_ru": "Do перед глаголом усиливает утверждение: «мне правда нравится»."
+  },
+  {
+    "id": "G-C1-11",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 2,
+    "topic_id": "g-c1-ellipsis-substitution",
+    "topic_en": "Ellipsis and substitution",
+    "topic_ru": "Эллипсис и замещение",
+    "type": "mcq",
+    "q": "Are you coming to the party? — I hope ___, but I might have to work.",
+    "options": [
+      "it",
+      "that",
+      "so",
+      "yes"
+    ],
+    "answer": 2,
+    "explain_ru": "So заменяет целое придаточное: I hope so."
+  },
+  {
+    "id": "G-C1-12",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 3,
+    "topic_id": "g-c1-future-in-past",
+    "topic_en": "Future in the past: was about to / was to",
+    "topic_ru": "Будущее в прошлом: was about to / was to",
+    "type": "mcq",
+    "q": "We ___ leave when it started pouring with rain.",
+    "options": [
+      "were going",
+      "would",
+      "are about to",
+      "were about to"
+    ],
+    "answer": 3,
+    "explain_ru": "Were about to — «собирались вот-вот» (будущее в прошлом)."
+  },
+  {
+    "id": "G-C1-13",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-conditionals-alternatives",
+    "topic_en": "provided that / as long as / unless / otherwise",
+    "topic_ru": "provided that / as long as / unless / otherwise",
+    "type": "mcq",
+    "q": "You can borrow my car ___ you bring it back by Sunday.",
+    "options": [
+      "unless",
+      "provided",
+      "in case",
+      "otherwise"
+    ],
+    "answer": 1,
+    "explain_ru": "Provided (that) — «при условии, что»."
+  },
+  {
+    "id": "G-C1-14",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 2,
+    "topic_id": "g-c1-relatives-prepositions",
+    "topic_en": "Relative clauses with prepositions: in which / whereby",
+    "topic_ru": "Придаточные с предлогами: in which / whereby",
+    "type": "mcq",
+    "q": "This is the café ___ I first met my husband.",
+    "options": [
+      "on which",
+      "to which",
+      "for which",
+      "in which"
+    ],
+    "answer": 3,
+    "explain_ru": "О месте внутри помещения — in which (= where)."
+  },
+  {
+    "id": "G-C1-15",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 3,
+    "topic_id": "g-c1-nominalisation",
+    "topic_en": "Nominalisation and complex noun phrases",
+    "topic_ru": "Номинализация и сложные именные группы",
+    "type": "mcq",
+    "q": "___ of the new rules caused a lot of confusion among staff.",
+    "options": [
+      "The introduction",
+      "Introducing",
+      "The introduce",
+      "Introduced"
+    ],
+    "answer": 0,
+    "explain_ru": "Перед of нужно существительное: the introduction of."
+  },
+  {
+    "id": "G-C1-16",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 3,
+    "topic_id": "g-c1-unreal-past",
+    "topic_en": "Unreal past: as if / would rather / suppose",
+    "topic_ru": "Нереальное прошлое: as if / would rather / suppose",
+    "type": "mcq",
+    "q": "It's high time we ___ a proper holiday. We haven't been away for years.",
+    "options": [
+      "take",
+      "have taken",
+      "took",
+      "will take"
+    ],
+    "answer": 2,
+    "explain_ru": "После it's high time we используется Past Simple."
+  },
+  {
+    "id": "G-C1-17",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 3,
+    "topic_id": "g-c1-inversion",
+    "topic_en": "Inversion after negative adverbials",
+    "topic_ru": "Инверсия после отрицательных наречий",
+    "type": "gap",
+    "q": "Under no circumstances ___ you share your password with anyone.",
+    "accept": [
+      "should",
+      "must",
+      "can",
+      "may"
+    ],
+    "explain_ru": "После Under no circumstances в начале — инверсия с модальным глаголом."
+  },
+  {
+    "id": "G-C1-18",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-cleft",
+    "topic_en": "Cleft sentences: It is... / What...",
+    "topic_ru": "Эмфатические конструкции It is... / What...",
+    "type": "gap",
+    "q": "It ___ my sister who first got me into running.",
+    "accept": [
+      "was",
+      "is"
+    ],
+    "explain_ru": "Эмфатическая конструкция It was (it's) ... who выделяет человека."
+  },
+  {
+    "id": "G-C1-19",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 2,
+    "topic_id": "g-c1-modal-nuance",
+    "topic_en": "Modal nuances: may well / might as well / bound to",
+    "topic_ru": "Оттенки модальности: may well / might as well / bound to",
+    "type": "gap",
+    "q": "The film doesn't start for another hour, so we ___ as well have dinner first.",
+    "accept": [
+      "might",
+      "may"
+    ],
+    "explain_ru": "Might/may as well — «почему бы не...», раз нет лучшего варианта."
+  },
+  {
+    "id": "G-C1-20",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 2,
+    "topic_id": "g-c1-future-in-past",
+    "topic_en": "Future in the past: was about to / was to",
+    "topic_ru": "Будущее в прошлом: was about to / was to",
+    "type": "gap",
+    "q": "I had a feeling that something exciting ___ about to happen.",
+    "accept": [
+      "was"
+    ],
+    "explain_ru": "Be about to в прошлом — was about to."
+  },
+  {
+    "id": "V-C1-01",
+    "skill": "vocabulary",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "v-c1-word-formation-advanced",
+    "topic_en": "Advanced word formation: over- / mis- / counter-",
+    "topic_ru": "Сложное словообразование: over- / mis- / counter-",
+    "type": "wordform",
+    "q": "The conference was completely ___: nobody knew which room to go to, and the speakers arrived late.",
+    "base": "ORGANISE",
+    "accept": [
+      "disorganised",
+      "disorganized"
+    ],
+    "explain_ru": "По смыслу нужна противоположность organised с приставкой dis-: disorganised — плохо организованный."
+  },
+  {
+    "id": "V-C1-02",
+    "skill": "vocabulary",
+    "level": "C1",
+    "band": 2,
+    "topic_id": "v-c1-word-formation-advanced",
+    "topic_en": "Advanced word formation: over- / mis- / counter-",
+    "topic_ru": "Сложное словообразование: over- / mis- / counter-",
+    "type": "wordform",
+    "q": "I clearly ___ how long the journey would take. We arrived two hours late.",
+    "base": "ESTIMATE",
+    "accept": [
+      "underestimated"
+    ],
+    "explain_ru": "Приставка under- значит «недо-»: underestimate — недооценить."
+  },
+  {
+    "id": "V-C1-03",
+    "skill": "vocabulary",
+    "level": "C1",
+    "band": 3,
+    "topic_id": "v-c1-word-formation-advanced",
+    "topic_en": "Advanced word formation: over- / mis- / counter-",
+    "topic_ru": "Сложное словообразование: over- / mis- / counter-",
+    "type": "wordform",
+    "q": "His ___ rude reply surprised everyone. He's usually so polite.",
+    "base": "CHARACTER",
+    "accept": [
+      "uncharacteristically"
+    ],
+    "explain_ru": "Нужно наречие с отрицательной приставкой: uncharacteristically — нетипично для него."
+  },
+  {
+    "id": "V-C1-04",
+    "skill": "vocabulary",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "v-c1-academic",
+    "topic_en": "Academic vocabulary",
+    "topic_ru": "Академическая лексика",
+    "type": "wordform",
+    "q": "There is growing ___ that spending time in nature reduces stress.",
+    "base": "EVIDENT",
+    "accept": [
+      "evidence"
+    ],
+    "explain_ru": "Существительное от evident — evidence (доказательства)."
+  },
+  {
+    "id": "V-C1-05",
+    "skill": "vocabulary",
+    "level": "C1",
+    "band": 2,
+    "topic_id": "v-c1-academic",
+    "topic_en": "Academic vocabulary",
+    "topic_ru": "Академическая лексика",
+    "type": "wordform",
+    "q": "The survey found a strong ___ between sleep and productivity.",
+    "base": "RELATE",
+    "accept": [
+      "relationship",
+      "relation"
+    ],
+    "explain_ru": "Существительное от relate — relationship (связь)."
+  },
+  {
+    "id": "V-C1-06",
+    "skill": "vocabulary",
+    "level": "C1",
+    "band": 3,
+    "topic_id": "v-c1-academic",
+    "topic_en": "Academic vocabulary",
+    "topic_ru": "Академическая лексика",
+    "type": "wordform",
+    "q": "The ___ of the results is limited, as only 50 people took part.",
+    "base": "RELY",
+    "accept": [
+      "reliability"
+    ],
+    "explain_ru": "Существительное от rely — reliability (надёжность)."
+  },
+  {
+    "id": "V-C1-07",
+    "skill": "vocabulary",
+    "level": "C1",
+    "band": 2,
+    "topic_id": "v-c1-discourse-markers",
+    "topic_en": "Discourse markers and hedging",
+    "topic_ru": "Дискурсивные маркеры и смягчение",
+    "type": "wordform",
+    "q": "___ speaking, the project was a success, although there were a few problems.",
+    "base": "GENERAL",
+    "accept": [
+      "generally"
+    ],
+    "explain_ru": "Generally speaking — «в целом»."
+  },
+  {
+    "id": "V-C1-08",
+    "skill": "vocabulary",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "v-c1-strong-collocations",
+    "topic_en": "Strong collocations: bitterly disappointed",
+    "topic_ru": "Устойчивые коллокации: bitterly disappointed",
+    "type": "mcq",
+    "q": "I was ___ disappointed when the concert was cancelled.",
+    "options": [
+      "heavily",
+      "bitterly",
+      "strongly",
+      "highly"
+    ],
+    "answer": 1,
+    "explain_ru": "Устойчивое сочетание bitterly disappointed — «горько разочарован»."
+  },
+  {
+    "id": "V-C1-09",
+    "skill": "vocabulary",
+    "level": "C1",
+    "band": 2,
+    "topic_id": "v-c1-strong-collocations",
+    "topic_en": "Strong collocations: bitterly disappointed",
+    "topic_ru": "Устойчивые коллокации: bitterly disappointed",
+    "type": "mcq",
+    "q": "I'm a ___ believer in taking regular breaks.",
+    "options": [
+      "hard",
+      "solid",
+      "firm",
+      "tight"
+    ],
+    "answer": 2,
+    "explain_ru": "Устойчивое сочетание a firm believer — «убеждённый сторонник»."
+  },
+  {
+    "id": "V-C1-10",
+    "skill": "vocabulary",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "v-c1-idioms",
+    "topic_en": "Idioms and fixed expressions",
+    "topic_ru": "Идиомы и устойчивые выражения",
+    "type": "mcq",
+    "q": "I was so nervous before the interview. I had ___ in my stomach.",
+    "options": [
+      "butterflies",
+      "bees",
+      "birds",
+      "flies"
+    ],
+    "answer": 0,
+    "explain_ru": "Have butterflies in your stomach — сильно волноваться."
+  },
+  {
+    "id": "V-C1-11",
+    "skill": "vocabulary",
+    "level": "C1",
+    "band": 3,
+    "topic_id": "v-c1-idioms",
+    "topic_en": "Idioms and fixed expressions",
+    "topic_ru": "Идиомы и устойчивые выражения",
+    "type": "mcq",
+    "q": "Let's not ___ around the bush. Are you leaving the company or not?",
+    "options": [
+      "hit",
+      "walk",
+      "run",
+      "beat"
+    ],
+    "answer": 3,
+    "explain_ru": "Beat around the bush — ходить вокруг да около."
+  },
+  {
+    "id": "V-C1-12",
+    "skill": "vocabulary",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "v-c1-idioms",
+    "topic_en": "Idioms and fixed expressions",
+    "topic_ru": "Идиомы и устойчивые выражения",
+    "type": "mcq",
+    "q": "Don't worry about the mistake. It's not the end of the ___.",
+    "options": [
+      "day",
+      "world",
+      "road",
+      "story"
+    ],
+    "answer": 1,
+    "explain_ru": "It's not the end of the world — это не конец света."
+  },
+  {
+    "id": "V-C1-13",
+    "skill": "vocabulary",
+    "level": "C1",
+    "band": 3,
+    "topic_id": "v-c1-phrasal-advanced",
+    "topic_en": "Advanced phrasal verbs",
+    "topic_ru": "Продвинутые фразовые глаголы",
+    "type": "mcq",
+    "q": "It took me months to ___ the courage to ask for a pay rise.",
+    "options": [
+      "pick out",
+      "take up",
+      "pluck up",
+      "make up"
+    ],
+    "answer": 2,
+    "explain_ru": "Pluck up the courage — набраться смелости."
+  },
+  {
+    "id": "V-C1-14",
+    "skill": "vocabulary",
+    "level": "C1",
+    "band": 3,
+    "topic_id": "v-c1-phrasal-advanced",
+    "topic_en": "Advanced phrasal verbs",
+    "topic_ru": "Продвинутые фразовые глаголы",
+    "type": "mcq",
+    "q": "The plan sounded great at first, but it didn't ___ in practice.",
+    "options": [
+      "turn up",
+      "break out",
+      "set off",
+      "pan out"
+    ],
+    "answer": 3,
+    "explain_ru": "Pan out — сложиться, получиться (о плане)."
+  },
+  {
+    "id": "V-C1-15",
+    "skill": "vocabulary",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "v-c1-register",
+    "topic_en": "Register: formal, neutral, informal",
+    "topic_ru": "Регистр: формальный, нейтральный, разговорный",
+    "type": "mcq",
+    "q": "(In a formal complaint) I would be grateful if you could ___ this matter as soon as possible.",
+    "options": [
+      "address",
+      "fix up",
+      "get on with",
+      "mess about with"
+    ],
+    "answer": 0,
+    "explain_ru": "В официальном письме уместен глагол address — заняться вопросом."
+  },
+  {
+    "id": "V-C1-16",
+    "skill": "vocabulary",
+    "level": "C1",
+    "band": 2,
+    "topic_id": "v-c1-binomials",
+    "topic_en": "Binomials and fixed pairs: pros and cons",
+    "topic_ru": "Парные выражения: pros and cons",
+    "type": "mcq",
+    "q": "After months of hard work, the project is finally done and ___.",
+    "options": [
+      "cleaned",
+      "polished",
+      "dried",
+      "dusted"
+    ],
+    "answer": 3,
+    "explain_ru": "Done and dusted — полностью завершено."
+  },
+  {
+    "id": "V-C1-17",
+    "skill": "vocabulary",
+    "level": "C1",
+    "band": 3,
+    "topic_id": "v-c1-near-synonyms",
+    "topic_en": "Near-synonyms and nuance",
+    "topic_ru": "Синонимы и оттенки значения",
+    "type": "mcq",
+    "q": "The view from the top of the mountain was absolutely ___.",
+    "options": [
+      "attractive",
+      "breathtaking",
+      "very nice",
+      "pretty"
+    ],
+    "answer": 1,
+    "explain_ru": "С absolutely сочетаются «крайние» прилагательные: breathtaking."
+  },
+  {
+    "id": "V-C1-18",
+    "skill": "vocabulary",
+    "level": "C1",
+    "band": 2,
+    "topic_id": "v-c1-dependent-prepositions-c1",
+    "topic_en": "Advanced dependent prepositions",
+    "topic_ru": "Сложное управление предлогами",
+    "type": "gap",
+    "q": "The success of the event was largely due ___ the volunteers.",
+    "accept": [
+      "to"
+    ],
+    "explain_ru": "Due to — благодаря, из-за."
+  },
+  {
+    "id": "V-C1-19",
+    "skill": "vocabulary",
+    "level": "C1",
+    "band": 3,
+    "topic_id": "v-c1-dependent-prepositions-c1",
+    "topic_en": "Advanced dependent prepositions",
+    "topic_ru": "Сложное управление предлогами",
+    "type": "gap",
+    "q": "I'm not ___ favour of changing the plan at such a late stage.",
+    "accept": [
+      "in"
+    ],
+    "explain_ru": "Be in favour of — поддерживать, быть за."
+  },
+  {
+    "id": "V-C1-20",
+    "skill": "vocabulary",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "v-c1-binomials",
+    "topic_en": "Binomials and fixed pairs: pros and cons",
+    "topic_ru": "Парные выражения: pros and cons",
+    "type": "gap",
+    "q": "We've had our ups and ___, but we're still best friends.",
+    "accept": [
+      "downs"
+    ],
+    "explain_ru": "Ups and downs — взлёты и падения."
+  }
+]

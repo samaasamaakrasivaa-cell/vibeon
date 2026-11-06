@@ -18,7 +18,7 @@ modal verb verbs noun nouns adjective adverb adverbs phrasal phrase infinitive g
 article articles reported speech question questions negative positive plural singular uncountable countable
 there is are was were do does did have has had will would can could may might must should shall
 not someone something somebody one
-ful less ness ment tion sion able ible ly un dis im in ir il mis re pre that which who whose done""".split())
+ful less ness ment tion sion able ible ly un dis im in ir il mis re pre that which who whose done where when it's under over counter""".split())
 APOS = str.maketrans({"’": "'", "‘": "'", "“": '"', "”": '"'})
 
 topics = {t["topic_id"]: t for t in json.load(open(os.path.join(ROOT, "00_topics.json")))}
@@ -193,9 +193,23 @@ def check_file(path):
     return items
 
 
+ALL_IDS, ALL_Q = {}, {}
+
+
+def cross_check(path, items):
+    for it in items:
+        i, q = it.get("id"), norm(it.get("q", ""))
+        if i in ALL_IDS and ALL_IDS[i] != path:
+            err(i, f"этот id уже есть в {os.path.basename(ALL_IDS[i])}")
+        ALL_IDS.setdefault(i, path)
+        if q and q in ALL_Q and ALL_Q[q] != i:
+            note(i, f"такой же вопрос, как в {ALL_Q[q]}: «{q[:50]}»")
+        ALL_Q.setdefault(q, i)
+
+
 files = sys.argv[1:] or sorted(f for f in glob.glob(os.path.join(ROOT, "*.json")) if not os.path.basename(f).startswith("00_"))
 for f in files:
-    check_file(f)
+    cross_check(f, check_file(f) or [])
 print(f"\nОШИБКИ ({len(errors)}):")
 for e in errors:
     print("  ✗", e)
