@@ -1,0 +1,1150 @@
+[
+  {
+    "topic_id": "g-a1-to-be",
+    "skill": "grammar",
+    "level": "A1",
+    "topic_en": "Verb to be: am / is / are",
+    "topic_ru": "Глагол to be: am / is / are"
+  },
+  {
+    "topic_id": "g-a1-pronouns",
+    "skill": "grammar",
+    "level": "A1",
+    "topic_en": "Subject and object pronouns",
+    "topic_ru": "Личные и объектные местоимения"
+  },
+  {
+    "topic_id": "g-a1-possessives",
+    "skill": "grammar",
+    "level": "A1",
+    "topic_en": "Possessive adjectives and 's",
+    "topic_ru": "Притяжательные местоимения и 's"
+  },
+  {
+    "topic_id": "g-a1-demonstratives",
+    "skill": "grammar",
+    "level": "A1",
+    "topic_en": "this / that / these / those",
+    "topic_ru": "this / that / these / those"
+  },
+  {
+    "topic_id": "g-a1-articles-basic",
+    "skill": "grammar",
+    "level": "A1",
+    "topic_en": "Articles a / an / the (basic use)",
+    "topic_ru": "Артикли a / an / the (базовое употребление)"
+  },
+  {
+    "topic_id": "g-a1-plural-nouns",
+    "skill": "grammar",
+    "level": "A1",
+    "topic_en": "Plural nouns (regular and irregular)",
+    "topic_ru": "Множественное число существительных"
+  },
+  {
+    "topic_id": "g-a1-there-is-are",
+    "skill": "grammar",
+    "level": "A1",
+    "topic_en": "there is / there are",
+    "topic_ru": "Оборот there is / there are"
+  },
+  {
+    "topic_id": "g-a1-have-got",
+    "skill": "grammar",
+    "level": "A1",
+    "topic_en": "have got",
+    "topic_ru": "Конструкция have got"
+  },
+  {
+    "topic_id": "g-a1-present-simple",
+    "skill": "grammar",
+    "level": "A1",
+    "topic_en": "Present simple",
+    "topic_ru": "Present Simple"
+  },
+  {
+    "topic_id": "g-a1-frequency-adverbs",
+    "skill": "grammar",
+    "level": "A1",
+    "topic_en": "Adverbs of frequency",
+    "topic_ru": "Наречия частотности"
+  },
+  {
+    "topic_id": "g-a1-present-continuous-now",
+    "skill": "grammar",
+    "level": "A1",
+    "topic_en": "Present continuous for now",
+    "topic_ru": "Present Continuous (действие сейчас)"
+  },
+  {
+    "topic_id": "g-a1-can",
+    "skill": "grammar",
+    "level": "A1",
+    "topic_en": "can / can't for ability and permission",
+    "topic_ru": "can / can't: умение и разрешение"
+  },
+  {
+    "topic_id": "g-a1-imperatives",
+    "skill": "grammar",
+    "level": "A1",
+    "topic_en": "Imperatives",
+    "topic_ru": "Повелительное наклонение"
+  },
+  {
+    "topic_id": "g-a1-prepositions-time",
+    "skill": "grammar",
+    "level": "A1",
+    "topic_en": "Prepositions of time: in / on / at",
+    "topic_ru": "Предлоги времени: in / on / at"
+  },
+  {
+    "topic_id": "g-a1-prepositions-place",
+    "skill": "grammar",
+    "level": "A1",
+    "topic_en": "Prepositions of place",
+    "topic_ru": "Предлоги места"
+  },
+  {
+    "topic_id": "g-a1-some-any",
+    "skill": "grammar",
+    "level": "A1",
+    "topic_en": "Countable and uncountable nouns with some / any",
+    "topic_ru": "Исчисляемые и неисчисляемые с some / any"
+  },
+  {
+    "topic_id": "g-a1-question-words",
+    "skill": "grammar",
+    "level": "A1",
+    "topic_en": "Question words",
+    "topic_ru": "Вопросительные слова"
+  },
+  {
+    "topic_id": "g-a1-was-were",
+    "skill": "grammar",
+    "level": "A1",
+    "topic_en": "Past simple of be: was / were",
+    "topic_ru": "Прошедшее время to be: was / were"
+  },
+  {
+    "topic_id": "g-a1-past-simple-basic",
+    "skill": "grammar",
+    "level": "A1",
+    "topic_en": "Past simple: regular and common irregular verbs",
+    "topic_ru": "Past Simple: правильные и частые неправильные глаголы"
+  },
+  {
+    "topic_id": "g-a1-like-ing",
+    "skill": "grammar",
+    "level": "A1",
+    "topic_en": "like / love / hate + -ing",
+    "topic_ru": "like / love / hate + -ing"
+  },
+  {
+    "topic_id": "g-a1-would-like",
+    "skill": "grammar",
+    "level": "A1",
+    "topic_en": "would like",
+    "topic_ru": "Конструкция would like"
+  },
+  {
+    "topic_id": "g-a1-conjunctions-basic",
+    "skill": "grammar",
+    "level": "A1",
+    "topic_en": "Conjunctions: and / but / or / because",
+    "topic_ru": "Союзы and / but / or / because"
+  },
+  {
+    "topic_id": "g-a2-past-simple",
+    "skill": "grammar",
+    "level": "A2",
+    "topic_en": "Past simple: irregular verbs, negatives and questions",
+    "topic_ru": "Past Simple: неправильные глаголы, отрицания и вопросы"
+  },
+  {
+    "topic_id": "g-a2-past-continuous",
+    "skill": "grammar",
+    "level": "A2",
+    "topic_en": "Past continuous",
+    "topic_ru": "Past Continuous"
+  },
+  {
+    "topic_id": "g-a2-pp-experience",
+    "skill": "grammar",
+    "level": "A2",
+    "topic_en": "Present perfect for experience: ever / never",
+    "topic_ru": "Present Perfect для опыта: ever / never"
+  },
+  {
+    "topic_id": "g-a2-pp-just-already-yet",
+    "skill": "grammar",
+    "level": "A2",
+    "topic_en": "Present perfect with just / already / yet",
+    "topic_ru": "Present Perfect с just / already / yet"
+  },
+  {
+    "topic_id": "g-a2-going-to",
+    "skill": "grammar",
+    "level": "A2",
+    "topic_en": "be going to for plans and predictions",
+    "topic_ru": "be going to: планы и прогнозы"
+  },
+  {
+    "topic_id": "g-a2-will",
+    "skill": "grammar",
+    "level": "A2",
+    "topic_en": "will for predictions, offers and decisions",
+    "topic_ru": "will: прогнозы, предложения, спонтанные решения"
+  },
+  {
+    "topic_id": "g-a2-pc-future",
+    "skill": "grammar",
+    "level": "A2",
+    "topic_en": "Present continuous for future arrangements",
+    "topic_ru": "Present Continuous для договорённостей о будущем"
+  },
+  {
+    "topic_id": "g-a2-comparatives",
+    "skill": "grammar",
+    "level": "A2",
+    "topic_en": "Comparative and superlative adjectives",
+    "topic_ru": "Сравнительная и превосходная степень"
+  },
+  {
+    "topic_id": "g-a2-as-as",
+    "skill": "grammar",
+    "level": "A2",
+    "topic_en": "(not) as ... as",
+    "topic_ru": "Сравнение (not) as ... as"
+  },
+  {
+    "topic_id": "g-a2-too-enough",
+    "skill": "grammar",
+    "level": "A2",
+    "topic_en": "too / enough",
+    "topic_ru": "too / enough"
+  },
+  {
+    "topic_id": "g-a2-quantifiers",
+    "skill": "grammar",
+    "level": "A2",
+    "topic_en": "much / many / a lot of / a few / a little",
+    "topic_ru": "much / many / a lot of / a few / a little"
+  },
+  {
+    "topic_id": "g-a2-adverbs-manner",
+    "skill": "grammar",
+    "level": "A2",
+    "topic_en": "Adverbs of manner",
+    "topic_ru": "Наречия образа действия"
+  },
+  {
+    "topic_id": "g-a2-obligation",
+    "skill": "grammar",
+    "level": "A2",
+    "topic_en": "must / have to / don't have to",
+    "topic_ru": "must / have to / don't have to"
+  },
+  {
+    "topic_id": "g-a2-should",
+    "skill": "grammar",
+    "level": "A2",
+    "topic_en": "should / shouldn't for advice",
+    "topic_ru": "should / shouldn't: совет"
+  },
+  {
+    "topic_id": "g-a2-might-may",
+    "skill": "grammar",
+    "level": "A2",
+    "topic_en": "might / may for possibility",
+    "topic_ru": "might / may: возможность"
+  },
+  {
+    "topic_id": "g-a2-first-conditional",
+    "skill": "grammar",
+    "level": "A2",
+    "topic_en": "First conditional",
+    "topic_ru": "Условные предложения первого типа"
+  },
+  {
+    "topic_id": "g-a2-verb-patterns-basic",
+    "skill": "grammar",
+    "level": "A2",
+    "topic_en": "Verb + to-infinitive / -ing (want to, enjoy -ing)",
+    "topic_ru": "Глагол + инфинитив / -ing (want to, enjoy -ing)"
+  },
+  {
+    "topic_id": "g-a2-infinitive-purpose",
+    "skill": "grammar",
+    "level": "A2",
+    "topic_en": "Infinitive of purpose",
+    "topic_ru": "Инфинитив цели (to + глагол)"
+  },
+  {
+    "topic_id": "g-a2-possessive-pronouns",
+    "skill": "grammar",
+    "level": "A2",
+    "topic_en": "Possessive pronouns: mine / yours",
+    "topic_ru": "Притяжательные местоимения mine / yours"
+  },
+  {
+    "topic_id": "g-a2-indefinite-pronouns",
+    "skill": "grammar",
+    "level": "A2",
+    "topic_en": "something / anyone / nowhere",
+    "topic_ru": "Неопределённые местоимения something / anyone / nowhere"
+  },
+  {
+    "topic_id": "g-a2-prepositions-movement",
+    "skill": "grammar",
+    "level": "A2",
+    "topic_en": "Prepositions of movement",
+    "topic_ru": "Предлоги движения"
+  },
+  {
+    "topic_id": "g-b1-pp-for-since",
+    "skill": "grammar",
+    "level": "B1",
+    "topic_en": "Present perfect with for / since",
+    "topic_ru": "Present Perfect с for / since"
+  },
+  {
+    "topic_id": "g-b1-pp-vs-past",
+    "skill": "grammar",
+    "level": "B1",
+    "topic_en": "Present perfect vs past simple",
+    "topic_ru": "Present Perfect или Past Simple"
+  },
+  {
+    "topic_id": "g-b1-ppc",
+    "skill": "grammar",
+    "level": "B1",
+    "topic_en": "Present perfect continuous",
+    "topic_ru": "Present Perfect Continuous"
+  },
+  {
+    "topic_id": "g-b1-past-perfect",
+    "skill": "grammar",
+    "level": "B1",
+    "topic_en": "Past perfect",
+    "topic_ru": "Past Perfect"
+  },
+  {
+    "topic_id": "g-b1-used-to",
+    "skill": "grammar",
+    "level": "B1",
+    "topic_en": "used to for past habits",
+    "topic_ru": "used to: привычки в прошлом"
+  },
+  {
+    "topic_id": "g-b1-zero-conditional",
+    "skill": "grammar",
+    "level": "B1",
+    "topic_en": "Zero conditional",
+    "topic_ru": "Условные предложения нулевого типа"
+  },
+  {
+    "topic_id": "g-b1-second-conditional",
+    "skill": "grammar",
+    "level": "B1",
+    "topic_en": "Second conditional",
+    "topic_ru": "Условные предложения второго типа"
+  },
+  {
+    "topic_id": "g-b1-passive-basic",
+    "skill": "grammar",
+    "level": "B1",
+    "topic_en": "Passive: present and past simple",
+    "topic_ru": "Пассивный залог: Present и Past Simple"
+  },
+  {
+    "topic_id": "g-b1-defining-relatives",
+    "skill": "grammar",
+    "level": "B1",
+    "topic_en": "Defining relative clauses",
+    "topic_ru": "Определительные придаточные (who / which / that)"
+  },
+  {
+    "topic_id": "g-b1-reported-statements",
+    "skill": "grammar",
+    "level": "B1",
+    "topic_en": "Reported speech: statements",
+    "topic_ru": "Косвенная речь: утверждения"
+  },
+  {
+    "topic_id": "g-b1-reported-questions",
+    "skill": "grammar",
+    "level": "B1",
+    "topic_en": "Reported speech: questions",
+    "topic_ru": "Косвенная речь: вопросы"
+  },
+  {
+    "topic_id": "g-b1-indirect-questions",
+    "skill": "grammar",
+    "level": "B1",
+    "topic_en": "Indirect questions",
+    "topic_ru": "Косвенные вопросы (Could you tell me...)"
+  },
+  {
+    "topic_id": "g-b1-deduction-present",
+    "skill": "grammar",
+    "level": "B1",
+    "topic_en": "Modals of deduction: must / might / can't (present)",
+    "topic_ru": "Модальные глаголы предположения в настоящем"
+  },
+  {
+    "topic_id": "g-b1-be-able-to",
+    "skill": "grammar",
+    "level": "B1",
+    "topic_en": "be able to / manage to",
+    "topic_ru": "be able to / manage to"
+  },
+  {
+    "topic_id": "g-b1-verb-patterns",
+    "skill": "grammar",
+    "level": "B1",
+    "topic_en": "Verb patterns: -ing vs to-infinitive",
+    "topic_ru": "Глагол + -ing или инфинитив"
+  },
+  {
+    "topic_id": "g-b1-question-tags",
+    "skill": "grammar",
+    "level": "B1",
+    "topic_en": "Question tags",
+    "topic_ru": "Разделительные вопросы"
+  },
+  {
+    "topic_id": "g-b1-so-such",
+    "skill": "grammar",
+    "level": "B1",
+    "topic_en": "so / such",
+    "topic_ru": "so / such"
+  },
+  {
+    "topic_id": "g-b1-quantifiers-both",
+    "skill": "grammar",
+    "level": "B1",
+    "topic_en": "both / either / neither / each / every",
+    "topic_ru": "both / either / neither / each / every"
+  },
+  {
+    "topic_id": "g-b1-future-forms",
+    "skill": "grammar",
+    "level": "B1",
+    "topic_en": "Future forms: will / going to / present continuous",
+    "topic_ru": "Способы выражения будущего"
+  },
+  {
+    "topic_id": "g-b1-contrast-basic",
+    "skill": "grammar",
+    "level": "B1",
+    "topic_en": "although / however / even though",
+    "topic_ru": "although / however / even though"
+  },
+  {
+    "topic_id": "g-b1-articles-general",
+    "skill": "grammar",
+    "level": "B1",
+    "topic_en": "Articles: general vs specific meaning",
+    "topic_ru": "Артикли: общее и конкретное значение"
+  },
+  {
+    "topic_id": "g-b2-third-conditional",
+    "skill": "grammar",
+    "level": "B2",
+    "topic_en": "Third conditional",
+    "topic_ru": "Условные предложения третьего типа"
+  },
+  {
+    "topic_id": "g-b2-mixed-conditionals",
+    "skill": "grammar",
+    "level": "B2",
+    "topic_en": "Mixed conditionals",
+    "topic_ru": "Смешанные условные предложения"
+  },
+  {
+    "topic_id": "g-b2-wish",
+    "skill": "grammar",
+    "level": "B2",
+    "topic_en": "wish / if only (present and past)",
+    "topic_ru": "wish / if only (настоящее и прошлое)"
+  },
+  {
+    "topic_id": "g-b2-deduction-past",
+    "skill": "grammar",
+    "level": "B2",
+    "topic_en": "Past modals of deduction: must have / can't have",
+    "topic_ru": "Модальные глаголы предположения о прошлом"
+  },
+  {
+    "topic_id": "g-b2-past-modals-regret",
+    "skill": "grammar",
+    "level": "B2",
+    "topic_en": "should have / needn't have / could have",
+    "topic_ru": "should have / needn't have / could have"
+  },
+  {
+    "topic_id": "g-b2-passive-advanced",
+    "skill": "grammar",
+    "level": "B2",
+    "topic_en": "Passive with modals and perfect forms",
+    "topic_ru": "Пассив с модальными глаголами и перфектом"
+  },
+  {
+    "topic_id": "g-b2-causative",
+    "skill": "grammar",
+    "level": "B2",
+    "topic_en": "have / get something done",
+    "topic_ru": "Каузатив have / get something done"
+  },
+  {
+    "topic_id": "g-b2-reporting-verbs",
+    "skill": "grammar",
+    "level": "B2",
+    "topic_en": "Reporting verbs (suggest, deny, advise...)",
+    "topic_ru": "Глаголы косвенной речи (suggest, deny, advise...)"
+  },
+  {
+    "topic_id": "g-b2-non-defining-relatives",
+    "skill": "grammar",
+    "level": "B2",
+    "topic_en": "Non-defining relative clauses",
+    "topic_ru": "Неопределительные придаточные"
+  },
+  {
+    "topic_id": "g-b2-future-perfect-continuous",
+    "skill": "grammar",
+    "level": "B2",
+    "topic_en": "Future continuous and future perfect",
+    "topic_ru": "Future Continuous и Future Perfect"
+  },
+  {
+    "topic_id": "g-b2-verb-patterns-meaning",
+    "skill": "grammar",
+    "level": "B2",
+    "topic_en": "Verbs that change meaning: -ing vs to-infinitive",
+    "topic_ru": "Глаголы с разным значением: -ing и инфинитив"
+  },
+  {
+    "topic_id": "g-b2-used-to-be-get",
+    "skill": "grammar",
+    "level": "B2",
+    "topic_en": "be used to / get used to",
+    "topic_ru": "be used to / get used to"
+  },
+  {
+    "topic_id": "g-b2-linkers-contrast",
+    "skill": "grammar",
+    "level": "B2",
+    "topic_en": "despite / in spite of / whereas",
+    "topic_ru": "despite / in spite of / whereas"
+  },
+  {
+    "topic_id": "g-b2-linkers-purpose-result",
+    "skill": "grammar",
+    "level": "B2",
+    "topic_en": "so that / in order to / as a result",
+    "topic_ru": "Связки цели и результата"
+  },
+  {
+    "topic_id": "g-b2-participle-clauses",
+    "skill": "grammar",
+    "level": "B2",
+    "topic_en": "Participle clauses",
+    "topic_ru": "Причастные обороты"
+  },
+  {
+    "topic_id": "g-b2-would-rather",
+    "skill": "grammar",
+    "level": "B2",
+    "topic_en": "would rather / it's time",
+    "topic_ru": "would rather / it's time"
+  },
+  {
+    "topic_id": "g-b2-impersonal-passive",
+    "skill": "grammar",
+    "level": "B2",
+    "topic_en": "Impersonal passive: it is said that...",
+    "topic_ru": "Безличный пассив: it is said that..."
+  },
+  {
+    "topic_id": "g-b2-narrative-tenses",
+    "skill": "grammar",
+    "level": "B2",
+    "topic_en": "Narrative tenses",
+    "topic_ru": "Времена для рассказа о прошлом"
+  },
+  {
+    "topic_id": "g-c1-inversion",
+    "skill": "grammar",
+    "level": "C1",
+    "topic_en": "Inversion after negative adverbials",
+    "topic_ru": "Инверсия после отрицательных наречий"
+  },
+  {
+    "topic_id": "g-c1-cleft",
+    "skill": "grammar",
+    "level": "C1",
+    "topic_en": "Cleft sentences: It is... / What...",
+    "topic_ru": "Эмфатические конструкции It is... / What..."
+  },
+  {
+    "topic_id": "g-c1-inverted-conditionals",
+    "skill": "grammar",
+    "level": "C1",
+    "topic_en": "Inverted conditionals: Had I known / Should you",
+    "topic_ru": "Условные с инверсией: Had I known / Should you"
+  },
+  {
+    "topic_id": "g-c1-modal-nuance",
+    "skill": "grammar",
+    "level": "C1",
+    "topic_en": "Modal nuances: may well / might as well / bound to",
+    "topic_ru": "Оттенки модальности: may well / might as well / bound to"
+  },
+  {
+    "topic_id": "g-c1-subjunctive",
+    "skill": "grammar",
+    "level": "C1",
+    "topic_en": "Subjunctive: It's essential that he be...",
+    "topic_ru": "Сослагательное наклонение: It's essential that he be..."
+  },
+  {
+    "topic_id": "g-c1-unreal-past",
+    "skill": "grammar",
+    "level": "C1",
+    "topic_en": "Unreal past: as if / would rather / suppose",
+    "topic_ru": "Нереальное прошлое: as if / would rather / suppose"
+  },
+  {
+    "topic_id": "g-c1-participle-advanced",
+    "skill": "grammar",
+    "level": "C1",
+    "topic_en": "Advanced participle and reduced relative clauses",
+    "topic_ru": "Сложные причастные обороты"
+  },
+  {
+    "topic_id": "g-c1-emphasis",
+    "skill": "grammar",
+    "level": "C1",
+    "topic_en": "Emphasis: do / at all / whatsoever",
+    "topic_ru": "Усиление: do / at all / whatsoever"
+  },
+  {
+    "topic_id": "g-c1-ellipsis-substitution",
+    "skill": "grammar",
+    "level": "C1",
+    "topic_en": "Ellipsis and substitution",
+    "topic_ru": "Эллипсис и замещение"
+  },
+  {
+    "topic_id": "g-c1-future-in-past",
+    "skill": "grammar",
+    "level": "C1",
+    "topic_en": "Future in the past: was about to / was to",
+    "topic_ru": "Будущее в прошлом: was about to / was to"
+  },
+  {
+    "topic_id": "g-c1-conditionals-alternatives",
+    "skill": "grammar",
+    "level": "C1",
+    "topic_en": "provided that / as long as / unless / otherwise",
+    "topic_ru": "provided that / as long as / unless / otherwise"
+  },
+  {
+    "topic_id": "g-c1-relatives-prepositions",
+    "skill": "grammar",
+    "level": "C1",
+    "topic_en": "Relative clauses with prepositions: in which / whereby",
+    "topic_ru": "Придаточные с предлогами: in which / whereby"
+  },
+  {
+    "topic_id": "g-c1-nominalisation",
+    "skill": "grammar",
+    "level": "C1",
+    "topic_en": "Nominalisation and complex noun phrases",
+    "topic_ru": "Номинализация и сложные именные группы"
+  },
+  {
+    "topic_id": "g-c1-passive-reporting",
+    "skill": "grammar",
+    "level": "C1",
+    "topic_en": "Advanced passive: is thought to have...",
+    "topic_ru": "Сложный пассив: is thought to have..."
+  },
+  {
+    "topic_id": "v-a1-numbers-time",
+    "skill": "vocabulary",
+    "level": "A1",
+    "topic_en": "Numbers, dates and time",
+    "topic_ru": "Числа, даты и время"
+  },
+  {
+    "topic_id": "v-a1-family",
+    "skill": "vocabulary",
+    "level": "A1",
+    "topic_en": "Family and people",
+    "topic_ru": "Семья и люди"
+  },
+  {
+    "topic_id": "v-a1-jobs",
+    "skill": "vocabulary",
+    "level": "A1",
+    "topic_en": "Jobs",
+    "topic_ru": "Профессии"
+  },
+  {
+    "topic_id": "v-a1-daily-routine",
+    "skill": "vocabulary",
+    "level": "A1",
+    "topic_en": "Daily routine",
+    "topic_ru": "Распорядок дня"
+  },
+  {
+    "topic_id": "v-a1-food-drink",
+    "skill": "vocabulary",
+    "level": "A1",
+    "topic_en": "Food and drink",
+    "topic_ru": "Еда и напитки"
+  },
+  {
+    "topic_id": "v-a1-home",
+    "skill": "vocabulary",
+    "level": "A1",
+    "topic_en": "Home and furniture",
+    "topic_ru": "Дом и мебель"
+  },
+  {
+    "topic_id": "v-a1-clothes-colours",
+    "skill": "vocabulary",
+    "level": "A1",
+    "topic_en": "Clothes and colours",
+    "topic_ru": "Одежда и цвета"
+  },
+  {
+    "topic_id": "v-a1-calendar",
+    "skill": "vocabulary",
+    "level": "A1",
+    "topic_en": "Days, months and seasons",
+    "topic_ru": "Дни, месяцы, времена года"
+  },
+  {
+    "topic_id": "v-a1-town",
+    "skill": "vocabulary",
+    "level": "A1",
+    "topic_en": "Places in town",
+    "topic_ru": "Места в городе"
+  },
+  {
+    "topic_id": "v-a1-transport",
+    "skill": "vocabulary",
+    "level": "A1",
+    "topic_en": "Transport",
+    "topic_ru": "Транспорт"
+  },
+  {
+    "topic_id": "v-a1-adjectives-basic",
+    "skill": "vocabulary",
+    "level": "A1",
+    "topic_en": "Common adjectives and opposites",
+    "topic_ru": "Частые прилагательные и антонимы"
+  },
+  {
+    "topic_id": "v-a1-weather",
+    "skill": "vocabulary",
+    "level": "A1",
+    "topic_en": "Weather",
+    "topic_ru": "Погода"
+  },
+  {
+    "topic_id": "v-a1-free-time",
+    "skill": "vocabulary",
+    "level": "A1",
+    "topic_en": "Hobbies and free time",
+    "topic_ru": "Хобби и свободное время"
+  },
+  {
+    "topic_id": "v-a1-basic-collocations",
+    "skill": "vocabulary",
+    "level": "A1",
+    "topic_en": "Collocations with have / go / do",
+    "topic_ru": "Сочетания с have / go / do"
+  },
+  {
+    "topic_id": "v-a2-shopping-money",
+    "skill": "vocabulary",
+    "level": "A2",
+    "topic_en": "Shopping and money",
+    "topic_ru": "Покупки и деньги"
+  },
+  {
+    "topic_id": "v-a2-health-body",
+    "skill": "vocabulary",
+    "level": "A2",
+    "topic_en": "Health and the body",
+    "topic_ru": "Здоровье и тело"
+  },
+  {
+    "topic_id": "v-a2-travel",
+    "skill": "vocabulary",
+    "level": "A2",
+    "topic_en": "Travel and holidays",
+    "topic_ru": "Путешествия и отдых"
+  },
+  {
+    "topic_id": "v-a2-work",
+    "skill": "vocabulary",
+    "level": "A2",
+    "topic_en": "Work and the workplace",
+    "topic_ru": "Работа"
+  },
+  {
+    "topic_id": "v-a2-feelings-personality",
+    "skill": "vocabulary",
+    "level": "A2",
+    "topic_en": "Feelings and personality",
+    "topic_ru": "Чувства и характер"
+  },
+  {
+    "topic_id": "v-a2-technology",
+    "skill": "vocabulary",
+    "level": "A2",
+    "topic_en": "Technology and communication",
+    "topic_ru": "Технологии и общение"
+  },
+  {
+    "topic_id": "v-a2-sport",
+    "skill": "vocabulary",
+    "level": "A2",
+    "topic_en": "Sport and fitness",
+    "topic_ru": "Спорт"
+  },
+  {
+    "topic_id": "v-a2-make-do",
+    "skill": "vocabulary",
+    "level": "A2",
+    "topic_en": "make / do",
+    "topic_ru": "make / do"
+  },
+  {
+    "topic_id": "v-a2-phrasal-basic",
+    "skill": "vocabulary",
+    "level": "A2",
+    "topic_en": "Basic phrasal verbs",
+    "topic_ru": "Базовые фразовые глаголы"
+  },
+  {
+    "topic_id": "v-a2-prepositional-phrases",
+    "skill": "vocabulary",
+    "level": "A2",
+    "topic_en": "Prepositional phrases: on time, by car",
+    "topic_ru": "Устойчивые фразы с предлогами: on time, by car"
+  },
+  {
+    "topic_id": "v-a2-home-chores",
+    "skill": "vocabulary",
+    "level": "A2",
+    "topic_en": "Housework and home life",
+    "topic_ru": "Домашние дела"
+  },
+  {
+    "topic_id": "v-b1-phrasal-everyday",
+    "skill": "vocabulary",
+    "level": "B1",
+    "topic_en": "Everyday phrasal verbs",
+    "topic_ru": "Бытовые фразовые глаголы"
+  },
+  {
+    "topic_id": "v-b1-ed-ing",
+    "skill": "vocabulary",
+    "level": "B1",
+    "topic_en": "-ed / -ing adjectives",
+    "topic_ru": "Прилагательные на -ed / -ing"
+  },
+  {
+    "topic_id": "v-b1-suffixes",
+    "skill": "vocabulary",
+    "level": "B1",
+    "topic_en": "Word formation: suffixes",
+    "topic_ru": "Словообразование: суффиксы"
+  },
+  {
+    "topic_id": "v-b1-prefixes-negative",
+    "skill": "vocabulary",
+    "level": "B1",
+    "topic_en": "Negative prefixes: un- / dis- / im-",
+    "topic_ru": "Отрицательные приставки un- / dis- / im-"
+  },
+  {
+    "topic_id": "v-b1-collocations-basic",
+    "skill": "vocabulary",
+    "level": "B1",
+    "topic_en": "Collocations with make / do / take / have",
+    "topic_ru": "Сочетания с make / do / take / have"
+  },
+  {
+    "topic_id": "v-b1-career",
+    "skill": "vocabulary",
+    "level": "B1",
+    "topic_en": "Work and career",
+    "topic_ru": "Работа и карьера"
+  },
+  {
+    "topic_id": "v-b1-education",
+    "skill": "vocabulary",
+    "level": "B1",
+    "topic_en": "Education and learning",
+    "topic_ru": "Учёба"
+  },
+  {
+    "topic_id": "v-b1-environment",
+    "skill": "vocabulary",
+    "level": "B1",
+    "topic_en": "Environment and nature",
+    "topic_ru": "Природа и экология"
+  },
+  {
+    "topic_id": "v-b1-media",
+    "skill": "vocabulary",
+    "level": "B1",
+    "topic_en": "Media and the internet",
+    "topic_ru": "СМИ и интернет"
+  },
+  {
+    "topic_id": "v-b1-relationships",
+    "skill": "vocabulary",
+    "level": "B1",
+    "topic_en": "Relationships",
+    "topic_ru": "Отношения"
+  },
+  {
+    "topic_id": "v-b1-confusing-words",
+    "skill": "vocabulary",
+    "level": "B1",
+    "topic_en": "Easily confused words: borrow / lend",
+    "topic_ru": "Слова, которые легко перепутать: borrow / lend"
+  },
+  {
+    "topic_id": "v-b1-dependent-prepositions",
+    "skill": "vocabulary",
+    "level": "B1",
+    "topic_en": "Dependent prepositions: good at, interested in",
+    "topic_ru": "Предлоги после слов: good at, interested in"
+  },
+  {
+    "topic_id": "v-b2-phrasal-multi",
+    "skill": "vocabulary",
+    "level": "B2",
+    "topic_en": "Phrasal verbs with several meanings",
+    "topic_ru": "Многозначные фразовые глаголы"
+  },
+  {
+    "topic_id": "v-b2-collocations",
+    "skill": "vocabulary",
+    "level": "B2",
+    "topic_en": "Adjective + noun and verb + noun collocations",
+    "topic_ru": "Коллокации прилагательное + существительное и глагол + существительное"
+  },
+  {
+    "topic_id": "v-b2-word-formation",
+    "skill": "vocabulary",
+    "level": "B2",
+    "topic_en": "Word formation: nouns, adjectives, adverbs",
+    "topic_ru": "Словообразование: существительные, прилагательные, наречия"
+  },
+  {
+    "topic_id": "v-b2-idioms-common",
+    "skill": "vocabulary",
+    "level": "B2",
+    "topic_en": "Common idioms",
+    "topic_ru": "Частые идиомы"
+  },
+  {
+    "topic_id": "v-b2-dependent-prepositions-b2",
+    "skill": "vocabulary",
+    "level": "B2",
+    "topic_en": "Dependent prepositions",
+    "topic_ru": "Управление предлогами"
+  },
+  {
+    "topic_id": "v-b2-business-money",
+    "skill": "vocabulary",
+    "level": "B2",
+    "topic_en": "Business and finance",
+    "topic_ru": "Бизнес и финансы"
+  },
+  {
+    "topic_id": "v-b2-lifestyle",
+    "skill": "vocabulary",
+    "level": "B2",
+    "topic_en": "Health and lifestyle",
+    "topic_ru": "Здоровье и образ жизни"
+  },
+  {
+    "topic_id": "v-b2-science-tech",
+    "skill": "vocabulary",
+    "level": "B2",
+    "topic_en": "Science and technology",
+    "topic_ru": "Наука и технологии"
+  },
+  {
+    "topic_id": "v-b2-confusing-words-b2",
+    "skill": "vocabulary",
+    "level": "B2",
+    "topic_en": "Easily confused words",
+    "topic_ru": "Слова, которые легко перепутать"
+  },
+  {
+    "topic_id": "v-b2-register-basic",
+    "skill": "vocabulary",
+    "level": "B2",
+    "topic_en": "Formal and informal language",
+    "topic_ru": "Формальный и неформальный стиль"
+  },
+  {
+    "topic_id": "v-b2-linking-words",
+    "skill": "vocabulary",
+    "level": "B2",
+    "topic_en": "Linking words and discourse markers",
+    "topic_ru": "Слова-связки"
+  },
+  {
+    "topic_id": "v-c1-strong-collocations",
+    "skill": "vocabulary",
+    "level": "C1",
+    "topic_en": "Strong collocations: bitterly disappointed",
+    "topic_ru": "Устойчивые коллокации: bitterly disappointed"
+  },
+  {
+    "topic_id": "v-c1-idioms",
+    "skill": "vocabulary",
+    "level": "C1",
+    "topic_en": "Idioms and fixed expressions",
+    "topic_ru": "Идиомы и устойчивые выражения"
+  },
+  {
+    "topic_id": "v-c1-phrasal-advanced",
+    "skill": "vocabulary",
+    "level": "C1",
+    "topic_en": "Advanced phrasal verbs",
+    "topic_ru": "Продвинутые фразовые глаголы"
+  },
+  {
+    "topic_id": "v-c1-register",
+    "skill": "vocabulary",
+    "level": "C1",
+    "topic_en": "Register: formal, neutral, informal",
+    "topic_ru": "Регистр: формальный, нейтральный, разговорный"
+  },
+  {
+    "topic_id": "v-c1-word-formation-advanced",
+    "skill": "vocabulary",
+    "level": "C1",
+    "topic_en": "Advanced word formation: over- / mis- / counter-",
+    "topic_ru": "Сложное словообразование: over- / mis- / counter-"
+  },
+  {
+    "topic_id": "v-c1-binomials",
+    "skill": "vocabulary",
+    "level": "C1",
+    "topic_en": "Binomials and fixed pairs: pros and cons",
+    "topic_ru": "Парные выражения: pros and cons"
+  },
+  {
+    "topic_id": "v-c1-academic",
+    "skill": "vocabulary",
+    "level": "C1",
+    "topic_en": "Academic vocabulary",
+    "topic_ru": "Академическая лексика"
+  },
+  {
+    "topic_id": "v-c1-near-synonyms",
+    "skill": "vocabulary",
+    "level": "C1",
+    "topic_en": "Near-synonyms and nuance",
+    "topic_ru": "Синонимы и оттенки значения"
+  },
+  {
+    "topic_id": "v-c1-dependent-prepositions-c1",
+    "skill": "vocabulary",
+    "level": "C1",
+    "topic_en": "Advanced dependent prepositions",
+    "topic_ru": "Сложное управление предлогами"
+  },
+  {
+    "topic_id": "v-c1-discourse-markers",
+    "skill": "vocabulary",
+    "level": "C1",
+    "topic_en": "Discourse markers and hedging",
+    "topic_ru": "Дискурсивные маркеры и смягчение"
+  },
+  {
+    "topic_id": "r-detail",
+    "skill": "reading",
+    "level": null,
+    "topic_en": "Reading for detail",
+    "topic_ru": "Поиск деталей"
+  },
+  {
+    "topic_id": "r-main-idea",
+    "skill": "reading",
+    "level": null,
+    "topic_en": "Main idea",
+    "topic_ru": "Основная мысль"
+  },
+  {
+    "topic_id": "r-inference",
+    "skill": "reading",
+    "level": null,
+    "topic_en": "Inference",
+    "topic_ru": "Вывод из прочитанного"
+  },
+  {
+    "topic_id": "r-vocabulary-in-context",
+    "skill": "reading",
+    "level": null,
+    "topic_en": "Vocabulary in context",
+    "topic_ru": "Значение слова из контекста"
+  },
+  {
+    "topic_id": "r-writers-attitude",
+    "skill": "reading",
+    "level": null,
+    "topic_en": "Writer's attitude",
+    "topic_ru": "Отношение автора"
+  },
+  {
+    "topic_id": "l-detail",
+    "skill": "listening",
+    "level": null,
+    "topic_en": "Listening for detail",
+    "topic_ru": "Детали"
+  },
+  {
+    "topic_id": "l-number-time-place",
+    "skill": "listening",
+    "level": null,
+    "topic_en": "Numbers, times and places",
+    "topic_ru": "Числа, время и места"
+  },
+  {
+    "topic_id": "l-main-idea",
+    "skill": "listening",
+    "level": null,
+    "topic_en": "Main idea",
+    "topic_ru": "Основная мысль"
+  },
+  {
+    "topic_id": "l-inference",
+    "skill": "listening",
+    "level": null,
+    "topic_en": "Inference",
+    "topic_ru": "Вывод из услышанного"
+  },
+  {
+    "topic_id": "l-speakers-attitude",
+    "skill": "listening",
+    "level": null,
+    "topic_en": "Speaker's attitude",
+    "topic_ru": "Отношение говорящего"
+  }
+]

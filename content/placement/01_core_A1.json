@@ -1,0 +1,730 @@
+[
+  {
+    "id": "G-A1-01",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-to-be",
+    "topic_en": "Verb to be: am / is / are",
+    "topic_ru": "Глагол to be: am / is / are",
+    "type": "mcq",
+    "q": "My flatmate ___ never at home. She works from cafés.",
+    "options": [
+      "am",
+      "is",
+      "are",
+      "be"
+    ],
+    "answer": 1,
+    "explain_ru": "My flatmate = she, поэтому нужна форма is."
+  },
+  {
+    "id": "G-A1-02",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-to-be",
+    "topic_en": "Verb to be: am / is / are",
+    "topic_ru": "Глагол to be: am / is / are",
+    "type": "gap",
+    "q": "Hi, I'm Kate from the dance class. Where ___ you from?",
+    "accept": [
+      "are"
+    ],
+    "explain_ru": "С местоимением you глагол to be имеет форму are."
+  },
+  {
+    "id": "G-A1-03",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-pronouns",
+    "topic_en": "Subject and object pronouns",
+    "topic_ru": "Личные и объектные местоимения",
+    "type": "mcq",
+    "q": "I really like my new neighbour. I often have coffee with ___.",
+    "options": [
+      "she",
+      "hers",
+      "her",
+      "she's"
+    ],
+    "answer": 2,
+    "explain_ru": "После предлога with нужно объектное местоимение her."
+  },
+  {
+    "id": "G-A1-04",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 3,
+    "topic_id": "g-a1-like-ing",
+    "topic_en": "like / love / hate + -ing",
+    "topic_ru": "like / love / hate + -ing",
+    "type": "mcq",
+    "q": "I love ___ in bed late on Sunday mornings.",
+    "options": [
+      "stay",
+      "staying",
+      "stays",
+      "to staying"
+    ],
+    "answer": 1,
+    "explain_ru": "После love используется глагол с окончанием -ing."
+  },
+  {
+    "id": "G-A1-05",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-possessives",
+    "topic_en": "Possessive adjectives and 's",
+    "topic_ru": "Притяжательные местоимения и 's",
+    "type": "mcq",
+    "q": "My bike is broken, so I'm using ___ bike today.",
+    "options": [
+      "Kate",
+      "Kates",
+      "Kate's",
+      "Kates'"
+    ],
+    "answer": 2,
+    "explain_ru": "Принадлежность человеку выражается через 's: Kate's bike."
+  },
+  {
+    "id": "G-A1-06",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "g-a1-demonstratives",
+    "topic_en": "this / that / these / those",
+    "topic_ru": "this / that / these / those",
+    "type": "mcq",
+    "q": "___ are my new running shoes. Do you like them?",
+    "options": [
+      "This",
+      "That",
+      "It",
+      "These"
+    ],
+    "answer": 3,
+    "explain_ru": "Shoes во множественном числе, предмет рядом, поэтому These."
+  },
+  {
+    "id": "G-A1-07",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-articles-basic",
+    "topic_en": "Articles a / an / the (basic use)",
+    "topic_ru": "Артикли a / an / the (базовое употребление)",
+    "type": "mcq",
+    "q": "My friend is ___ yoga teacher, so she's always calm.",
+    "options": [
+      "an",
+      "the",
+      "—",
+      "a"
+    ],
+    "answer": 3,
+    "explain_ru": "Перед профессией нужен артикль a; an ставится только перед гласным звуком."
+  },
+  {
+    "id": "G-A1-08",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "g-a1-plural-nouns",
+    "topic_en": "Plural nouns (regular and irregular)",
+    "topic_ru": "Множественное число существительных",
+    "type": "mcq",
+    "q": "Two ___ from my team are on holiday this week.",
+    "options": [
+      "woman",
+      "womans",
+      "women",
+      "womens"
+    ],
+    "answer": 2,
+    "explain_ru": "Woman — неправильное существительное, во множественном числе women."
+  },
+  {
+    "id": "G-A1-09",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-there-is-are",
+    "topic_en": "there is / there are",
+    "topic_ru": "Оборот there is / there are",
+    "type": "mcq",
+    "q": "___ a nice little café near my flat.",
+    "options": [
+      "There is",
+      "There are",
+      "It is",
+      "Is there"
+    ],
+    "answer": 0,
+    "explain_ru": "Чтобы сказать, что что-то где-то находится, используем there is (один предмет)."
+  },
+  {
+    "id": "G-A1-10",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "g-a1-conjunctions-basic",
+    "topic_en": "Conjunctions: and / but / or / because",
+    "topic_ru": "Союзы and / but / or / because",
+    "type": "gap",
+    "q": "I want to go to the gym, ___ I'm too tired today.",
+    "accept": [
+      "but",
+      "yet"
+    ],
+    "explain_ru": "Союз but соединяет противоположные по смыслу части."
+  },
+  {
+    "id": "G-A1-11",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "g-a1-have-got",
+    "topic_en": "have got",
+    "topic_ru": "Конструкция have got",
+    "type": "mcq",
+    "q": "___ you got any plans for the weekend?",
+    "options": [
+      "Do",
+      "Are",
+      "Have",
+      "Has"
+    ],
+    "answer": 2,
+    "explain_ru": "Вопрос с have got строится с Have в начале."
+  },
+  {
+    "id": "G-A1-12",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "g-a1-present-simple",
+    "topic_en": "Present simple",
+    "topic_ru": "Present Simple",
+    "type": "mcq",
+    "q": "My flatmate ___ to bed very late every night.",
+    "options": [
+      "go",
+      "going",
+      "is go",
+      "goes"
+    ],
+    "answer": 3,
+    "explain_ru": "В Present Simple с he/she/it к глаголу добавляется окончание: goes."
+  },
+  {
+    "id": "G-A1-13",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 3,
+    "topic_id": "g-a1-present-simple",
+    "topic_en": "Present simple",
+    "topic_ru": "Present Simple",
+    "type": "gap",
+    "q": "I ___ like big parties. I prefer small dinners with friends.",
+    "accept": [
+      "don't",
+      "do not",
+      "dont",
+      "never"
+    ],
+    "explain_ru": "Отрицание в Present Simple с I образуется с помощью don't."
+  },
+  {
+    "id": "G-A1-14",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 3,
+    "topic_id": "g-a1-present-simple",
+    "topic_en": "Present simple",
+    "topic_ru": "Present Simple",
+    "type": "mcq",
+    "q": "What time ___ your kids finish school?",
+    "options": [
+      "do",
+      "does",
+      "are",
+      "is"
+    ],
+    "answer": 0,
+    "explain_ru": "Kids — множественное число, поэтому вспомогательный глагол do."
+  },
+  {
+    "id": "G-A1-15",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 3,
+    "topic_id": "g-a1-frequency-adverbs",
+    "topic_en": "Adverbs of frequency",
+    "topic_ru": "Наречия частотности",
+    "type": "mcq",
+    "q": "I ___ tired on Monday mornings.",
+    "options": [
+      "always am",
+      "am always",
+      "always",
+      "always be"
+    ],
+    "answer": 1,
+    "explain_ru": "Наречия частотности стоят после глагола to be: am always."
+  },
+  {
+    "id": "G-A1-16",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "g-a1-present-continuous-now",
+    "topic_en": "Present continuous for now",
+    "topic_ru": "Present Continuous (действие сейчас)",
+    "type": "mcq",
+    "q": "Sorry, I can't talk now. I ___ dinner with my parents.",
+    "options": [
+      "have",
+      "having",
+      "am having",
+      "has"
+    ],
+    "answer": 2,
+    "explain_ru": "Действие происходит прямо сейчас, поэтому Present Continuous."
+  },
+  {
+    "id": "G-A1-17",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-can",
+    "topic_en": "can / can't for ability and permission",
+    "topic_ru": "can / can't: умение и разрешение",
+    "type": "mcq",
+    "q": "___ I sit here? Is this chair free?",
+    "options": [
+      "Can",
+      "Do",
+      "Am",
+      "Have"
+    ],
+    "answer": 0,
+    "explain_ru": "Разрешение спрашиваем с помощью Can I...?"
+  },
+  {
+    "id": "G-A1-18",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "g-a1-prepositions-time",
+    "topic_en": "Prepositions of time: in / on / at",
+    "topic_ru": "Предлоги времени: in / on / at",
+    "type": "mcq",
+    "q": "Let's meet ___ 6 p.m. at the station.",
+    "explain_ru": "С точным временем используется предлог at.",
+    "options": [
+      "in",
+      "on",
+      "to",
+      "at"
+    ],
+    "answer": 3
+  },
+  {
+    "id": "G-A1-19",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 3,
+    "topic_id": "g-a1-would-like",
+    "topic_en": "would like",
+    "topic_ru": "Конструкция would like",
+    "type": "mcq",
+    "q": "___ like to come to my birthday dinner on Friday?",
+    "options": [
+      "Do you",
+      "Would you",
+      "Are you",
+      "Will you"
+    ],
+    "answer": 1,
+    "explain_ru": "Вежливое приглашение: Would you like to...?"
+  },
+  {
+    "id": "G-A1-20",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-prepositions-place",
+    "topic_en": "Prepositions of place",
+    "topic_ru": "Предлоги места",
+    "type": "mcq",
+    "q": "Your phone is ___ the kitchen table.",
+    "options": [
+      "on",
+      "at",
+      "to",
+      "of"
+    ],
+    "answer": 0,
+    "explain_ru": "На поверхности — предлог on."
+  },
+  {
+    "id": "G-A1-21",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 3,
+    "topic_id": "g-a1-some-any",
+    "topic_en": "Countable and uncountable nouns with some / any",
+    "topic_ru": "Исчисляемые и неисчисляемые с some / any",
+    "type": "mcq",
+    "q": "We haven't got ___ eggs. Can you buy some on your way home?",
+    "options": [
+      "some",
+      "any",
+      "a",
+      "no"
+    ],
+    "answer": 1,
+    "explain_ru": "В отрицательных предложениях используется any; no здесь не подходит — отрицание уже есть в haven't."
+  },
+  {
+    "id": "G-A1-22",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-question-words",
+    "topic_en": "Question words",
+    "topic_ru": "Вопросительные слова",
+    "type": "gap",
+    "q": "___ much is a ticket to the city centre?",
+    "accept": [
+      "how"
+    ],
+    "explain_ru": "Цену спрашивают с помощью How much."
+  },
+  {
+    "id": "G-A1-23",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "g-a1-was-were",
+    "topic_en": "Past simple of be: was / were",
+    "topic_ru": "Прошедшее время to be: was / were",
+    "type": "mcq",
+    "q": "We ___ at the beach all day yesterday. It was great!",
+    "options": [
+      "was",
+      "are",
+      "been",
+      "were"
+    ],
+    "answer": 3,
+    "explain_ru": "Прошедшее время to be с we — were."
+  },
+  {
+    "id": "G-A1-24",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 3,
+    "topic_id": "g-a1-past-simple-basic",
+    "topic_en": "Past simple: regular and common irregular verbs",
+    "topic_ru": "Past Simple: правильные и частые неправильные глаголы",
+    "type": "mcq",
+    "q": "Last weekend we ___ to the mountains and had no Wi-Fi for two days.",
+    "options": [
+      "go",
+      "goes",
+      "went",
+      "gone"
+    ],
+    "answer": 2,
+    "explain_ru": "Действие в прошлом, go — неправильный глагол: went."
+  },
+  {
+    "id": "V-A1-01",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "v-a1-calendar",
+    "topic_en": "Days, months and seasons",
+    "topic_ru": "Дни, месяцы, времена года",
+    "type": "mcq",
+    "q": "I don't work on Saturdays and Sundays, so I love the ___.",
+    "options": [
+      "weekend",
+      "week",
+      "morning",
+      "month"
+    ],
+    "answer": 0,
+    "explain_ru": "Суббота и воскресенье — это выходные, weekend."
+  },
+  {
+    "id": "V-A1-02",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "v-a1-family",
+    "topic_en": "Family and people",
+    "topic_ru": "Семья и люди",
+    "type": "mcq",
+    "q": "This is my ___, my dad's brother. He's only 30!",
+    "options": [
+      "cousin",
+      "nephew",
+      "grandfather",
+      "uncle"
+    ],
+    "answer": 3,
+    "explain_ru": "Брат папы — это дядя, uncle."
+  },
+  {
+    "id": "V-A1-03",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "v-a1-jobs",
+    "topic_en": "Jobs",
+    "topic_ru": "Профессии",
+    "type": "mcq",
+    "q": "My friend writes code for apps. She's a ___.",
+    "options": [
+      "driver",
+      "programmer",
+      "waiter",
+      "doctor"
+    ],
+    "answer": 1,
+    "explain_ru": "Человек, который пишет код, — programmer."
+  },
+  {
+    "id": "V-A1-04",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "v-a1-daily-routine",
+    "topic_en": "Daily routine",
+    "topic_ru": "Распорядок дня",
+    "type": "gap",
+    "q": "On Sundays I get ___ late and have a big breakfast.",
+    "accept": [
+      "up"
+    ],
+    "explain_ru": "Get up — вставать с кровати."
+  },
+  {
+    "id": "V-A1-05",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "v-a1-food-drink",
+    "topic_en": "Food and drink",
+    "topic_ru": "Еда и напитки",
+    "type": "mcq",
+    "q": "Can I have a ___ of orange juice, please?",
+    "options": [
+      "glass",
+      "piece",
+      "slice",
+      "plate"
+    ],
+    "answer": 0,
+    "explain_ru": "Сок подают в стакане — a glass of orange juice."
+  },
+  {
+    "id": "V-A1-06",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "v-a1-home",
+    "topic_en": "Home and furniture",
+    "topic_ru": "Дом и мебель",
+    "type": "mcq",
+    "q": "My flat is small, but the ___ is big, so I cook a lot.",
+    "options": [
+      "bedroom",
+      "bathroom",
+      "kitchen",
+      "hall"
+    ],
+    "answer": 2,
+    "explain_ru": "Готовят на кухне — kitchen."
+  },
+  {
+    "id": "V-A1-07",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 3,
+    "topic_id": "v-a1-clothes-colours",
+    "topic_en": "Clothes and colours",
+    "topic_ru": "Одежда и цвета",
+    "type": "mcq",
+    "q": "It's cold today. Don't forget your ___.",
+    "options": [
+      "shorts",
+      "jacket",
+      "sandals",
+      "T-shirt"
+    ],
+    "answer": 1,
+    "explain_ru": "В холод берут куртку — jacket."
+  },
+  {
+    "id": "V-A1-08",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "v-a1-numbers-time",
+    "topic_en": "Numbers, dates and time",
+    "topic_ru": "Числа, даты и время",
+    "type": "gap",
+    "q": "My train is at half ___ six.",
+    "accept": [
+      "past"
+    ],
+    "explain_ru": "Половина седьмого по-английски — half past six."
+  },
+  {
+    "id": "V-A1-09",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 3,
+    "topic_id": "v-a1-town",
+    "topic_en": "Places in town",
+    "topic_ru": "Места в городе",
+    "type": "mcq",
+    "q": "I buy fresh fruit and vegetables at the ___ on Saturdays.",
+    "options": [
+      "market",
+      "bank",
+      "museum",
+      "library"
+    ],
+    "answer": 0,
+    "explain_ru": "Свежие фрукты и овощи покупают на рынке — market."
+  },
+  {
+    "id": "V-A1-10",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 3,
+    "topic_id": "v-a1-transport",
+    "topic_en": "Transport",
+    "topic_ru": "Транспорт",
+    "type": "gap",
+    "q": "I usually go to work ___ bike. It's good for me.",
+    "accept": [
+      "by"
+    ],
+    "explain_ru": "Вид транспорта обозначается предлогом by: by bike."
+  },
+  {
+    "id": "V-A1-11",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "v-a1-adjectives-basic",
+    "topic_en": "Common adjectives and opposites",
+    "topic_ru": "Частые прилагательные и антонимы",
+    "type": "mcq",
+    "q": "My new suitcase isn't heavy. It's really ___.",
+    "options": [
+      "light",
+      "thin",
+      "short",
+      "dark"
+    ],
+    "answer": 0,
+    "explain_ru": "Противоположность heavy (тяжёлый) — light (лёгкий)."
+  },
+  {
+    "id": "V-A1-12",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 3,
+    "topic_id": "v-a1-weather",
+    "topic_en": "Weather",
+    "topic_ru": "Погода",
+    "type": "mcq",
+    "q": "Take an umbrella. It's ___ outside.",
+    "options": [
+      "sunny",
+      "raining",
+      "windy",
+      "hot"
+    ],
+    "answer": 1,
+    "explain_ru": "Зонт нужен, когда идёт дождь — it's raining."
+  },
+  {
+    "id": "V-A1-13",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 3,
+    "topic_id": "v-a1-free-time",
+    "topic_en": "Hobbies and free time",
+    "topic_ru": "Хобби и свободное время",
+    "type": "gap",
+    "q": "After a long week, I like to ___ for a walk in the park.",
+    "accept": [
+      "go"
+    ],
+    "explain_ru": "Устойчивое сочетание go for a walk — пойти погулять."
+  },
+  {
+    "id": "V-A1-14",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 3,
+    "topic_id": "v-a1-basic-collocations",
+    "topic_en": "Collocations with have / go / do",
+    "topic_ru": "Сочетания с have / go / do",
+    "type": "mcq",
+    "q": "I ___ yoga every morning before work.",
+    "options": [
+      "make",
+      "have",
+      "go",
+      "do"
+    ],
+    "answer": 3,
+    "explain_ru": "Йогой занимаются с глаголом do: do yoga."
+  },
+  {
+    "id": "V-A1-15",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "v-a1-calendar",
+    "topic_en": "Days, months and seasons",
+    "topic_ru": "Дни, месяцы, времена года",
+    "type": "gap",
+    "q": "Today is Friday, so tomorrow is ___. No work!",
+    "accept": [
+      "saturday"
+    ],
+    "explain_ru": "После пятницы идёт суббота — Saturday."
+  },
+  {
+    "id": "V-A1-16",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "v-a1-free-time",
+    "topic_en": "Hobbies and free time",
+    "topic_ru": "Хобби и свободное время",
+    "type": "mcq",
+    "q": "My dad ___ tennis with his friends every Sunday.",
+    "options": [
+      "does",
+      "goes",
+      "makes",
+      "plays"
+    ],
+    "answer": 3,
+    "explain_ru": "В спортивные игры играют с глаголом play: play tennis."
+  }
+]

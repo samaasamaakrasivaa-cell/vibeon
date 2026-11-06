@@ -1,0 +1,34 @@
+{
+  "mcq": {
+    "ru": "Выберите правильный вариант.",
+    "en": "Choose the correct answer."
+  },
+  "gap": {
+    "ru": "Впишите одно слово в пропуск.",
+    "en": "Write one word in the gap."
+  },
+  "wordform": {
+    "ru": "Образуйте от слова в скобках подходящее по смыслу слово и впишите его в пропуск.",
+    "en": "Use the word in capitals to form a word that fits the gap."
+  },
+  "transform": {
+    "ru": "Закончите второе предложение так, чтобы оно значило то же, что и первое. Используйте слово в скобках без изменений, всего от 2 до 5 слов.",
+    "en": "Complete the second sentence so that it means the same as the first. Use the word given without changing it and write 2–5 words."
+  },
+  "reading": {
+    "ru": "Прочитайте текст и ответьте на вопросы.",
+    "en": "Read the text and answer the questions."
+  },
+  "listening": {
+    "ru": "Прослушайте запись и ответьте на вопросы. Запись можно прослушать дважды.",
+    "en": "Listen and answer the questions. You can listen twice."
+  },
+  "writing": {
+    "ru": "Выполните письменное задание. Следите за количеством слов.",
+    "en": "Complete the writing task. Keep to the word limit."
+  },
+  "speaking": {
+    "ru": "Ответьте на вопросы вслух. Сначала есть время подготовиться, затем начнётся запись.",
+    "en": "Answer the questions out loud. You will have time to prepare before recording starts."
+  }
+}
