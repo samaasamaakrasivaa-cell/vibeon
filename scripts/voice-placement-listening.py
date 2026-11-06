@@ -9,7 +9,8 @@
 # Озвучка файла банка (mp3 кладутся в content/placement/audio/<id>.mp3):
 #   ttsenv/bin/python -I scripts/voice-placement-listening.py model_quantized.onnx voices.npz content/placement/audio content/placement/10_listening_A1_A2.json [id …]
 # Голоса выбраны на слух: женский британский bf_emma, мужской британский bm_fable,
-# женский американский af_heart, мужской американский am_michael.
+# женский американский af_bella, мужской американский am_fenrir
+# (записи A1–A2 озвучены раньше голосами af_heart / am_michael и одобрены — их не перезаписываем без нужды).
 import json, re, subprocess, sys, os
 import numpy as np
 import soundfile as sf
@@ -30,8 +31,8 @@ k = Kokoro(model, voices)
 VOICES = {
     ("female", "British"): ["bf_emma", "bf_isabella"],
     ("male", "British"): ["bm_fable", "bm_lewis"],  # выбран на слух (bm_george не подошёл)
-    ("female", "American"): ["af_heart", "af_sarah"],
-    ("male", "American"): ["am_michael", "am_adam"],
+    ("female", "American"): ["af_bella", "af_heart"],  # выбраны на слух (B1): живее, чем heart / michael
+    ("male", "American"): ["am_fenrir", "am_michael"],
 }
 SPEED = {"A1": 0.8, "A2": 0.86, "B1": 0.93, "B2": 0.98, "C1": 1.02}
 SENT_GAP = {"A1": 0.45, "A2": 0.32, "B1": 0.22, "B2": 0.15, "C1": 0.1}  # пауза между предложениями
@@ -94,7 +95,8 @@ def silence(sec, sr):
     return np.zeros(int(sec * sr), dtype=np.float32)
 
 
-WHOLE_TURN = os.environ.get("WHOLE_TURN") == "1"
+# реплика целиком + паузы на знаках — естественнее; для A1–A2 по умолчанию — по предложениям (медленнее, с паузами)
+WHOLE_TURN_ENV = os.environ.get("WHOLE_TURN")
 SPEED_SCALE = float(os.environ.get("SPEED_SCALE", "1"))
 OVERRIDE = dict(x.split("=") for x in os.environ.get("VOICE_OVERRIDE", "").split(",") if "=" in x)
 SUFFIX = os.environ.get("OUT_SUFFIX", "")
@@ -131,7 +133,8 @@ def render(item):
             chunk = chunk.strip()
             if not chunk:
                 continue
-            for sent in ([chunk] if WHOLE_TURN else re.split(r"(?<=[.!?])\s+", chunk)):
+            whole = WHOLE_TURN_ENV == "1" if WHOLE_TURN_ENV in ("0", "1") else item["level"] not in ("A1", "A2")
+            for sent in ([chunk] if whole else re.split(r"(?<=[.!?])\s+", chunk)):
                 if not sent.strip():
                     continue
                 audio, sr = k.create(sent, voice=vm[name], speed=speed * SPEED_SCALE * VOICE_SPEED.get(vm[name], 1.0), lang=lang[accent[name]])
