@@ -16,10 +16,10 @@
         "id": "R-B2-01-q1",
         "q": "What did most of the trials show?",
         "options": [
-          "Companies lost a lot of money",
-          "Productivity fell sharply",
+          "Companies lost money but employees felt more motivated",
+          "Productivity fell sharply, although staff felt less stressed",
           "Employees were less stressed and productivity didn't fall",
-          "Most workers wanted to return to a five-day week"
+          "Most workers wanted to return to a five-day week afterwards"
         ],
         "answer": 2,
         "checks": "detail",
@@ -31,9 +31,9 @@
         "q": "Why did some workers in the trials find the four-day week difficult?",
         "options": [
           "Their working days became longer and more intense",
-          "They earned less money",
-          "They missed their colleagues",
-          "They had too much free time"
+          "They earned less money than in a normal five-day week",
+          "They missed seeing their colleagues on the fifth day",
+          "They didn't know what to do with their free time"
         ],
         "answer": 0,
         "checks": "detail",
@@ -44,9 +44,9 @@
         "id": "R-B2-01-q3",
         "q": "In the last paragraph, squeezing means:",
         "options": [
-          "sharing something equally",
-          "reducing something slowly",
-          "planning something carefully",
+          "sharing something equally between several people",
+          "reducing something slowly over a long period",
+          "planning something carefully before you start",
           "forcing something into too little space or time"
         ],
         "answer": 3,
@@ -58,10 +58,10 @@
         "id": "R-B2-01-q4",
         "q": "What is the writer's opinion of the four-day week?",
         "options": [
-          "It's a magic solution for every company",
+          "It's a magic solution that will work for every company",
           "It's a good idea, but only if work is organised differently",
-          "It's a bad idea that will never work",
-          "It's only suitable for hospitals and schools"
+          "It's a bad idea that will never work for most real companies",
+          "It's only really suitable for hospitals, shops and schools"
         ],
         "answer": 1,
         "checks": "writer's attitude",
@@ -87,9 +87,9 @@
         "id": "R-B2-02-q1",
         "q": "Why did the writer use to accept every invitation?",
         "options": [
-          "Their job required it",
+          "Their job required them to attend most events",
           "They were afraid of missing something fun",
-          "Their friends got angry otherwise",
+          "Their friends got angry if they stayed at home",
           "They wanted to meet new people for work"
         ],
         "answer": 1,
@@ -103,7 +103,7 @@
         "options": [
           "A quieter life made them feel better",
           "They had lost most of their friends",
-          "They needed a new job",
+          "They needed a new job with fewer evening events",
           "Social media was more important than they thought"
         ],
         "answer": 0,
@@ -115,9 +115,9 @@
         "id": "R-B2-02-q3",
         "q": "In the second paragraph, restless means:",
         "options": [
-          "very sleepy",
-          "full of happy energy",
-          "seriously ill",
+          "very sleepy most of the day",
+          "full of happy energy and ideas",
+          "too ill to get out of bed",
           "unable to relax or keep still"
         ],
         "answer": 3,
@@ -130,7 +130,7 @@
         "q": "How does the writer feel about saying no to invitations now?",
         "options": [
           "It's rude and should be avoided",
-          "It's only acceptable when you're ill",
+          "It's only OK when you're ill",
           "It's a healthy choice, not a failure",
           "It always damages friendships"
         ],
@@ -159,7 +159,7 @@
         "q": "What is the main idea of the book?",
         "options": [
           "You can change your life completely in thirty days",
-          "Big decisions are the key to success",
+          "Big decisions are the real key to lasting success",
           "Lasting change comes from small daily habits",
           "Statistics show that habits don't really work"
         ],
@@ -172,10 +172,10 @@
         "id": "R-B2-03-q2",
         "q": "In the text, without drowning the reader in statistics means:",
         "options": [
-          "without telling sad stories",
+          "without telling the reader too many sad stories",
           "without giving the reader far too many numbers",
-          "without making the reader fall asleep",
-          "without asking difficult questions"
+          "without making the reader fall asleep with boredom",
+          "without asking the reader difficult questions"
         ],
         "answer": 1,
         "checks": "vocabulary in context",
@@ -187,7 +187,7 @@
         "q": "What does the reviewer criticise?",
         "options": [
           "The second half repeats itself",
-          "The book is too short",
+          "The book is too short to be useful",
           "The challenges are too difficult",
           "The science is explained badly"
         ],
@@ -200,9 +200,9 @@
         "id": "R-B2-03-q4",
         "q": "What is the reviewer's overall opinion of the book?",
         "options": [
-          "Very negative",
+          "Very negative overall",
           "Completely neutral",
-          "Disappointed overall",
+          "Disappointed, despite a good start",
           "Mostly positive, with a few reservations"
         ],
         "answer": 3,
@@ -232,7 +232,7 @@
           "A council project",
           "A new neighbour's party",
           "A storm that blocked the road",
-          "A problem with parking"
+          "An argument about parking"
         ],
         "answer": 2,
         "checks": "detail",
@@ -244,9 +244,9 @@
         "q": "What can we infer about the street before the storm?",
         "options": [
           "Neighbours had little contact with each other",
-          "People argued a lot",
-          "Most residents were elderly",
-          "It already had a shared garden"
+          "People argued a lot about parking and noise",
+          "Most of the residents were elderly and lived alone",
+          "It already had a shared garden and a swap shop"
         ],
         "answer": 0,
         "checks": "inference",
@@ -257,9 +257,9 @@
         "id": "R-B2-04-q3",
         "q": "In the last paragraph, tackle loneliness means:",
         "options": [
-          "study loneliness",
-          "increase loneliness",
-          "ignore loneliness",
+          "study the causes of loneliness",
+          "make loneliness worse for older people",
+          "ignore the problem of loneliness",
           "deal with the problem of loneliness"
         ],
         "answer": 3,
@@ -271,10 +271,10 @@
         "id": "R-B2-04-q4",
         "q": "What is the writer's view of sharing schemes?",
         "options": [
-          "They mainly cause arguments",
+          "They mainly cause arguments between neighbours",
           "They bring several benefits to communities",
-          "They only help older people",
-          "They are just a passing fashion"
+          "They only really help older people who live alone",
+          "They are just a passing fashion on a few streets"
         ],
         "answer": 1,
         "checks": "writer's attitude",

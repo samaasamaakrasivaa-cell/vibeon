@@ -88,9 +88,9 @@
         "q": "Where is the money?",
         "options": [
           "On the kitchen table",
-          "In Mia's bag",
-          "In the fridge",
-          "At Mia's work"
+          "In Mia's bag in the hall",
+          "In the fridge next to the milk",
+          "On the desk at Mia's work"
         ],
         "answer": 0,
         "checks": "detail",
@@ -102,8 +102,8 @@
         "q": "Who is coming tonight?",
         "options": [
           "Mia's mother",
-          "Sam's friend",
-          "Mia's boss",
+          "Sam's best friend",
+          "Mia's boss from work",
           "Mia's sister"
         ],
         "answer": 3,
@@ -131,9 +131,9 @@
         "q": "How old is the bike?",
         "options": [
           "One year old",
-          "Six years old",
+          "Two years old",
           "Three years old",
-          "Eight years old"
+          "Five years old"
         ],
         "answer": 2,
         "checks": "detail",
@@ -158,9 +158,9 @@
         "id": "R-A1-03-q3",
         "q": "What is the bike good for?",
         "options": [
-          "Long holidays",
-          "Mountain roads",
-          "Small children",
+          "Long trips abroad",
+          "Country roads",
+          "Children under ten",
           "Short trips in the city"
         ],
         "answer": 3,
@@ -215,10 +215,10 @@
         "id": "R-A1-04-q3",
         "q": "Why does the writer go to bed early on Sunday?",
         "options": [
-          "They are tired after the walk",
-          "They can't sleep",
+          "They are very tired after the long walk",
+          "They can't sleep well on Sundays",
           "They start work early the next day",
-          "They have a party on Monday"
+          "They have a party at work on Monday evening"
         ],
         "answer": 2,
         "checks": "inference",
@@ -273,7 +273,7 @@
         "q": "What does the writer think of Green Corner?",
         "options": [
           "It's too busy to visit",
-          "The food is bad",
+          "The food isn't good",
           "It's a good place to visit",
           "It's only good for coffee"
         ],
@@ -301,10 +301,10 @@
         "id": "R-A2-02-q1",
         "q": "Why did the writer fall asleep?",
         "options": [
-          "The train was late",
-          "They were bored",
+          "The train journey was very long",
+          "They were bored on the train",
           "They were very tired",
-          "They felt ill"
+          "They felt ill after lunch"
         ],
         "answer": 2,
         "checks": "detail",
@@ -315,10 +315,10 @@
         "id": "R-A2-02-q2",
         "q": "Why did the writer feel terrible?",
         "options": [
-          "They missed their stop",
+          "They had missed their stop",
           "They thought the phone was lost",
           "They were late for work",
-          "They didn't have a ticket"
+          "They had lost their ticket"
         ],
         "answer": 1,
         "checks": "inference",
@@ -330,9 +330,9 @@
         "q": "What did the young woman do?",
         "options": [
           "She left the train to return the phone",
-          "She called the police",
-          "She kept the phone",
-          "She phoned the writer's friend"
+          "She called the police about the phone",
+          "She took the phone to the station office",
+          "She phoned the writer's friend to explain"
         ],
         "answer": 0,
         "checks": "detail",
@@ -358,9 +358,9 @@
         "id": "R-A2-03-q1",
         "q": "What is the main idea of the article?",
         "options": [
-          "Sitting at work is very dangerous",
-          "Doctors want everyone to join a gym",
-          "Phones are bad for your health",
+          "Sitting at work all day is dangerous",
+          "Doctors want everyone to go to a gym",
+          "Phones are bad for your sleep",
           "Short walks are good for body and mind"
         ],
         "answer": 3,
@@ -388,7 +388,7 @@
         "options": [
           "change things a lot",
           "cost a lot of money",
-          "be very difficult",
+          "be very difficult to do",
           "take a lot of time"
         ],
         "answer": 0,
@@ -415,10 +415,10 @@
         "id": "R-A2-04-q1",
         "q": "How did the kids feel on Saturday morning?",
         "options": [
-          "Excited",
+          "Excited and happy",
           "Bored and unhappy",
-          "Calm",
-          "Proud"
+          "Calm and relaxed",
+          "Proud and confident"
         ],
         "answer": 1,
         "checks": "detail",
@@ -429,7 +429,7 @@
         "id": "R-A2-04-q2",
         "q": "What did the family do on Saturday evening?",
         "options": [
-          "They went to the forest",
+          "They went to the woods",
           "They cooked sausages",
           "They watched a film",
           "They played board games"
@@ -444,9 +444,9 @@
         "q": "What does the family plan to do now?",
         "options": [
           "Have one day without phones every month",
-          "Stop using phones completely",
-          "Buy new phones",
-          "Go to the forest every weekend"
+          "Stop using their phones completely at home",
+          "Buy new phones for the kids next month",
+          "Go to the forest every weekend together"
         ],
         "answer": 0,
         "checks": "detail",

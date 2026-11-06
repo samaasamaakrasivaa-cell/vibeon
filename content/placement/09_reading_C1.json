@@ -1,0 +1,286 @@
+[
+  {
+    "id": "R-C1-01",
+    "skill": "reading",
+    "level": "C1",
+    "band": 1,
+    "topic_en": "Opinion article: the value of boredom",
+    "topic_ru": "Колонка: польза скуки",
+    "type": "reading",
+    "title": "In praise of boredom",
+    "text_type": "article",
+    "passage": "Somewhere along the way, we decided that boredom was a problem to be solved. The moment a queue slows down or a train is delayed, out come our phones, and the empty minutes are filled before we have had a chance to notice them. It feels efficient. I am no longer convinced it is.\nPsychologists who study boredom tend to describe it not as an absence of thought but as a signal: a slightly uncomfortable nudge telling us that what we are doing isn't meeting our needs. Respond to that nudge with an endless scroll, and the signal is silenced rather than answered. Respond to it with nothing at all, and something more interesting can happen. The mind starts to wander, and wandering minds have a habit of making unexpected connections. Many people report that their best ideas arrive not at their desks but in the shower or on a long walk, precisely when nothing else is competing for their attention.\nNone of this is an argument for deliberately making our lives tedious. Chronic boredom, the kind that comes from work that feels pointless or from a lack of options, is genuinely harmful, and it would be glib to romanticise it. But there is a difference between that and the brief, harmless boredom of waiting for a kettle to boil.\nSo the next time you find yourself with five spare minutes, try leaving your phone where it is. You may find the experience mildly irritating at first. You may also, if you are patient, discover that your own thoughts are better company than you expected.",
+    "words": 265,
+    "questions": [
+      {
+        "id": "R-C1-01-q1",
+        "q": "What is the writer's main argument?",
+        "options": [
+          "Boredom is always harmful",
+          "Short periods of boredom can be valuable",
+          "Phones make people creative",
+          "Life should be more tedious"
+        ],
+        "answer": 1,
+        "checks": "writer's attitude",
+        "topic_id": "r-writers-attitude",
+        "explain_ru": "Автор считает, что короткая скука полезна и не стоит сразу её заглушать."
+      },
+      {
+        "id": "R-C1-01-q2",
+        "q": "What does the writer imply about filling every spare minute with a phone?",
+        "options": [
+          "It is the most efficient way to use short periods of free time",
+          "It helps the mind to make new and unexpected connections",
+          "It stops us from hearing what boredom is telling us",
+          "It is what most psychologists now recommend to people"
+        ],
+        "answer": 2,
+        "checks": "inference",
+        "topic_id": "r-inference",
+        "explain_ru": "Бесконечная лента заглушает сигнал скуки вместо того, чтобы на него ответить."
+      },
+      {
+        "id": "R-C1-01-q3",
+        "q": "In the third paragraph, glib means:",
+        "options": [
+          "extremely cruel to people who suffer",
+          "completely accurate and fair to everyone",
+          "very polite but rather boring to read",
+          "too simple and not showing real thought"
+        ],
+        "answer": 3,
+        "checks": "vocabulary in context",
+        "topic_id": "r-vocabulary-in-context",
+        "explain_ru": "Glib — поверхностный, легковесный, без глубокого понимания."
+      },
+      {
+        "id": "R-C1-01-q4",
+        "q": "Why does the writer mention the shower and long walks?",
+        "options": [
+          "To show that ideas often come when the mind is free to wander",
+          "To suggest that people should work fewer hours at their desks",
+          "To prove that most offices are badly designed for creative work",
+          "To recommend more physical exercise to people who sit all day long"
+        ],
+        "answer": 0,
+        "checks": "inference",
+        "topic_id": "r-inference",
+        "explain_ru": "Это примеры ситуаций, когда ум свободен и рождает идеи."
+      }
+    ]
+  },
+  {
+    "id": "R-C1-02",
+    "skill": "reading",
+    "level": "C1",
+    "band": 2,
+    "topic_en": "Restaurant review",
+    "topic_ru": "Ресторанная рецензия",
+    "type": "reading",
+    "title": "Hedgerow: local to a fault?",
+    "text_type": "review",
+    "passage": "Hedgerow, which opened in a converted barn on the edge of town last spring, has a single rule: nothing on the plate may travel more than thirty miles. It is an admirable principle, and the chef, a former engineer who retrained in her forties, clearly takes it seriously. The menu changes daily, is chalked on a board by the door and is, the staff will tell you, more of a conversation than a list.\nSome of that conversation is delightful. A starter of beetroot, smoked in-house and served with a sharp, creamy goat's cheese, was the best thing I have eaten this year. A slow-cooked lamb shoulder, falling apart at the touch of a fork, would have been worth the drive on its own.\nOther parts of the conversation were harder to follow. Dessert, described with great enthusiasm as a celebration of the hedgerow, turned out to be a small pile of foraged berries, a spoonful of something the waiter called wild cream and a single leaf. It was, I am sure, very local. It was also over in two mouthfuls.\nThen there is the price. At £75 a head before drinks, Hedgerow is not cheap, and the policy of not writing prices on the board means the bill can come as a surprise. Still, I left with the feeling that I had eaten somewhere with real character, which is more than can be said for many places charging twice as much. Go for the lamb, order the beetroot twice, and perhaps stop for an ice cream on the way home.",
+    "words": 261,
+    "questions": [
+      {
+        "id": "R-C1-02-q1",
+        "q": "What is the reviewer's overall view of Hedgerow?",
+        "options": [
+          "Entirely negative about the food, the atmosphere, the service and the prices",
+          "Uncritically delighted with every single dish and perfectly happy with the bill",
+          "Enthusiastic about some dishes but critical of others and of the pricing",
+          "Mainly interested in the chef's career rather than the food itself"
+        ],
+        "answer": 2,
+        "checks": "writer's attitude",
+        "topic_id": "r-writers-attitude",
+        "explain_ru": "Рецензент хвалит закуску и ягнёнка, но критикует десерт и цены."
+      },
+      {
+        "id": "R-C1-02-q2",
+        "q": "What does the reviewer suggest by saying the dessert was very local?",
+        "options": [
+          "It was the best and most memorable part of the meal",
+          "It was disappointing, despite the idea behind it",
+          "It was so big that the reviewer couldn't finish it",
+          "It was secretly made with imported ingredients"
+        ],
+        "answer": 1,
+        "checks": "inference",
+        "topic_id": "r-inference",
+        "explain_ru": "Это ирония: идея хорошая, но десерт крошечный и не впечатлил."
+      },
+      {
+        "id": "R-C1-02-q3",
+        "q": "Why does the reviewer recommend stopping for an ice cream on the way home?",
+        "options": [
+          "The restaurant has no desserts",
+          "The chef owns an ice cream shop",
+          "It's cheaper than the restaurant",
+          "The dessert may leave you unsatisfied"
+        ],
+        "answer": 3,
+        "checks": "inference",
+        "topic_id": "r-inference",
+        "explain_ru": "Намёк на то, что десерт в ресторане слишком маленький."
+      },
+      {
+        "id": "R-C1-02-q4",
+        "q": "In the first paragraph, more of a conversation than a list means the menu is:",
+        "options": [
+          "flexible and open to discussion",
+          "impossible to read from the door",
+          "written in a local dialect",
+          "extremely short and rather simple"
+        ],
+        "answer": 0,
+        "checks": "vocabulary in context",
+        "topic_id": "r-vocabulary-in-context",
+        "explain_ru": "Меню не жёсткий список, его обсуждают с персоналом."
+      }
+    ]
+  },
+  {
+    "id": "R-C1-03",
+    "skill": "reading",
+    "level": "C1",
+    "band": 3,
+    "topic_en": "Short story: a grandmother's notebook",
+    "topic_ru": "Рассказ: тетрадь бабушки",
+    "type": "reading",
+    "title": "The notebook",
+    "text_type": "story",
+    "passage": "The notebook turned up in a box of things my mother had been meaning to sort through for years. It was small, with a cracked brown cover, and almost every page was filled with my grandmother's tiny, slanting handwriting. Recipes, mostly, though she had never been one for precise measurements. A handful of flour. Enough milk. Bake until it smells right.\nI had spent most of my childhood summers in her kitchen, so I assumed I would recognise everything. I didn't. Alongside the familiar plum cake and the cabbage soup she made every Sunday, there were dishes I had never seen her cook, named after places she had never, as far as I knew, visited. One page, headed simply Marseille, 1961, contained a recipe for fish stew and, underneath it, a single line: Must learn to make this properly for him.\nI asked my mother who he might have been. She looked at the page for a long time before saying she had no idea, in a tone that made it clear the conversation was over.\nI have made the fish stew four times now. The first attempt was a disaster; the third was almost good. I still don't know who it was meant for, and I've stopped trying to find out. What strikes me is how little I knew about a woman I thought I knew completely, and how a few lines in the margin of a cookbook can rearrange a person you have loved all your life.",
+    "words": 249,
+    "questions": [
+      {
+        "id": "R-C1-03-q1",
+        "q": "What can we infer about the grandmother's way of cooking?",
+        "options": [
+          "She always followed recipes from famous cookbooks exactly",
+          "She relied on instinct rather than exact quantities",
+          "She rarely cooked at home except on Sundays",
+          "She mostly cooked food from countries she had visited"
+        ],
+        "answer": 1,
+        "checks": "inference",
+        "topic_id": "r-inference",
+        "explain_ru": "Пригоршня муки, сколько надо молока — она готовила на глаз."
+      },
+      {
+        "id": "R-C1-03-q2",
+        "q": "What does the mother's reaction suggest?",
+        "options": [
+          "She isn't interested in her mother's old notebook",
+          "She doesn't recognise her mother's handwriting",
+          "She wants to throw the notebook away soon",
+          "She may know more than she is willing to say"
+        ],
+        "answer": 3,
+        "checks": "inference",
+        "topic_id": "r-inference",
+        "explain_ru": "Долгая пауза и тон, закрывающий тему, намекают, что мать что-то знает."
+      },
+      {
+        "id": "R-C1-03-q3",
+        "q": "How does the narrator feel about the discovery?",
+        "options": [
+          "Moved by how much of their grandmother's life was unknown to them",
+          "Angry that the family has kept important secrets from them for years",
+          "Bored by recipes that have no precise measurements in them",
+          "Determined to find out who the man in Marseille really was"
+        ],
+        "answer": 0,
+        "checks": "writer's attitude",
+        "topic_id": "r-writers-attitude",
+        "explain_ru": "Рассказчика трогает, как мало он знал о бабушке; искать ответ он перестал."
+      },
+      {
+        "id": "R-C1-03-q4",
+        "q": "In the last sentence, rearrange a person means:",
+        "options": [
+          "move them to a new home",
+          "organise all their belongings",
+          "change the way you see them",
+          "make you forget them completely"
+        ],
+        "answer": 2,
+        "checks": "vocabulary in context",
+        "topic_id": "r-vocabulary-in-context",
+        "explain_ru": "Несколько строк меняют твоё представление о близком человеке."
+      }
+    ]
+  },
+  {
+    "id": "R-C1-04",
+    "skill": "reading",
+    "level": "C1",
+    "band": 2,
+    "topic_en": "Article: a village and its visitors",
+    "topic_ru": "Статья: деревня и туристы",
+    "type": "reading",
+    "title": "Too pretty for its own good?",
+    "text_type": "article",
+    "passage": "For centuries, Valdoro was a fishing village of a few hundred people, known mainly to the families who lived there. Then, about ten years ago, a photograph of its pastel houses tumbling down to the harbour began circulating online, and everything changed. Today, on a summer weekend, as many as five thousand visitors squeeze into its narrow streets.\nThe benefits are obvious, and many residents are quick to point them out. Cafés and guesthouses have opened, young people who would once have left for the cities now have reasons to stay, and the old harbour wall, crumbling for decades, has finally been repaired.\nYet the costs are just as real, if harder to photograph. Rents have soared as homes are converted into holiday lets, pushing out long-term residents, including some of the very families whose fishing boats appear in the famous picture. The village shop now sells more souvenirs than bread. As one fisherman put it, the village is more popular than ever, but there are fewer and fewer people left to call it home.\nThe local council has begun to respond, introducing a limit on new holiday rentals and a small fee for day visitors. Critics argue that these measures are too little, too late; others worry they will scare away the visitors the economy now depends on. What is clear is that the problem is not tourism itself, but the speed at which it arrived and how little anyone had planned for it. Valdoro's challenge now is to remain a place people live in, not just a place people look at.",
+    "words": 264,
+    "questions": [
+      {
+        "id": "R-C1-04-q1",
+        "q": "What is the writer's view of tourism in Valdoro?",
+        "options": [
+          "It should be banned completely to protect the village",
+          "It has brought both real benefits and serious problems",
+          "The village was better in every way before tourism arrived",
+          "The council's measures have solved the problem"
+        ],
+        "answer": 1,
+        "checks": "writer's attitude",
+        "topic_id": "r-writers-attitude",
+        "explain_ru": "Автор признаёт пользу туризма, но показывает и его цену."
+      },
+      {
+        "id": "R-C1-04-q2",
+        "q": "What does the writer imply with the words if harder to photograph?",
+        "options": [
+          "Visitors are no longer allowed to take photos there",
+          "The village is less beautiful than in the photograph",
+          "The problems are less visible than the benefits",
+          "Photographers no longer visit the village"
+        ],
+        "answer": 2,
+        "checks": "inference",
+        "topic_id": "r-inference",
+        "explain_ru": "Проблемы реальны, но их не видно на открытках, в отличие от пользы."
+      },
+      {
+        "id": "R-C1-04-q3",
+        "q": "Why does the writer mention the families whose boats appear in the famous picture?",
+        "options": [
+          "To show that they have become rich thanks to tourism",
+          "To suggest that the famous photo was not real",
+          "To criticise the photographer for not asking permission",
+          "To highlight the irony that they are being forced out"
+        ],
+        "answer": 3,
+        "checks": "inference",
+        "topic_id": "r-inference",
+        "explain_ru": "Ирония: люди с той самой фотографии вынуждены уезжать."
+      },
+      {
+        "id": "R-C1-04-q4",
+        "q": "In the third paragraph, soared means:",
+        "options": [
+          "risen very quickly",
+          "fallen slightly",
+          "stayed the same",
+          "become unclear"
+        ],
+        "answer": 0,
+        "checks": "vocabulary in context",
+        "topic_id": "r-vocabulary-in-context",
+        "explain_ru": "Soar — резко взлететь, о ценах."
+      }
+    ]
+  }
+]

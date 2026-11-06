@@ -16,10 +16,10 @@
         "id": "R-B1-01-q1",
         "q": "Why is Anna writing to Jess?",
         "options": [
-          "To complain about her new job",
+          "To complain about her new job and her small flat",
           "To tell her about her new life and invite her",
-          "To ask her for help with Portuguese",
-          "To say that she is coming back home"
+          "To ask her for help with Portuguese at work",
+          "To say that she is coming back home in spring"
         ],
         "answer": 1,
         "checks": "main idea",
@@ -30,10 +30,10 @@
         "id": "R-B1-01-q2",
         "q": "Why does Anna go to the language exchange group?",
         "options": [
-          "Her boss asked her to",
-          "It's next to her flat",
+          "Her boss asked her to join it after work",
+          "It meets in a café next to her flat",
           "To improve her Portuguese and meet people",
-          "To teach English to other people"
+          "To teach English to the people in her office"
         ],
         "answer": 2,
         "checks": "detail",
@@ -45,9 +45,9 @@
         "q": "What can we understand about Anna's flat?",
         "options": [
           "It doesn't have a spare bedroom",
-          "It's close to the beach",
-          "It's too expensive for her",
-          "It's very noisy"
+          "It's right next to the sea",
+          "It's too expensive for her new salary",
+          "It's very noisy in the mornings"
         ],
         "answer": 0,
         "checks": "inference",
@@ -73,9 +73,9 @@
         "id": "R-B1-02-q1",
         "q": "What is the main idea of the article?",
         "options": [
-          "Trains are cheaper than planes",
-          "Hotels are becoming more expensive",
-          "Everyone should take three weeks off work",
+          "Travelling by train is always cheaper than by plane",
+          "Hotels are becoming too expensive for most travellers",
+          "Everyone should take three weeks off work every year",
           "Slow travel means spending more time in fewer places"
         ],
         "answer": 3,
@@ -87,10 +87,10 @@
         "id": "R-B1-02-q2",
         "q": "Why do many slow travellers rent a flat?",
         "options": [
-          "It's always cheaper than a hotel",
+          "It's always cheaper than a hotel room",
           "They can cook and live like local people",
-          "Hotels are often full",
-          "They usually travel in big groups"
+          "Hotels are often full in the summer",
+          "They usually travel in big groups of friends"
         ],
         "answer": 1,
         "checks": "detail",
@@ -101,10 +101,10 @@
         "id": "R-B1-02-q3",
         "q": "What does the writer suggest about people who don't have much free time?",
         "options": [
-          "They can't enjoy slow travel at all",
-          "They should always travel by plane",
+          "They can't enjoy slow travel in any way",
+          "They should always travel by plane to save time",
           "They can still use some ideas of slow travel",
-          "They should stay at home"
+          "They should stay at home until they have more time"
         ],
         "answer": 2,
         "checks": "inference",
@@ -130,10 +130,10 @@
         "id": "R-B1-03-q1",
         "q": "What is the main message of the blog post?",
         "options": [
-          "Piano lessons are too expensive for adults",
+          "Piano lessons are usually too expensive for busy adults",
           "It's never too late to learn something for yourself",
-          "Young teachers are better than older ones",
-          "You have to practise every day to be good"
+          "Young teachers are better for adults than older ones",
+          "You have to practise every single day to be any good"
         ],
         "answer": 1,
         "checks": "main idea",
@@ -145,9 +145,9 @@
         "q": "In the text, I felt guilty means the writer felt:",
         "options": [
           "bad because they didn't do what they should",
-          "happy and proud of themselves",
-          "too tired to do anything",
-          "angry with their teacher"
+          "happy and proud of how much they had practised",
+          "too tired to do anything after a long day",
+          "angry with their teacher for giving homework"
         ],
         "answer": 0,
         "checks": "vocabulary in context",
@@ -158,9 +158,9 @@
         "id": "R-B1-03-q3",
         "q": "What does playing the piano give the writer now?",
         "options": [
-          "A chance to earn some extra money",
+          "A chance to earn extra money",
           "A way to meet new friends",
-          "Preparation for giving concerts",
+          "Practice for giving concerts",
           "A way to relax and forget about work"
         ],
         "answer": 3,
@@ -187,10 +187,10 @@
         "id": "R-B1-04-q1",
         "q": "What is the review mainly about?",
         "options": [
-          "How to make a bowl at home",
-          "The history of the old town",
+          "How to make your own bowls at home without a wheel",
+          "The history of the studio in the old part of town",
           "The writer's experience at a pottery class",
-          "Why the writer's sister loves pottery"
+          "Why the writer's sister loves pottery so much"
         ],
         "answer": 2,
         "checks": "main idea",
@@ -202,9 +202,9 @@
         "q": "How did the writer's sister probably feel about her bowl?",
         "options": [
           "Proud of it",
-          "Disappointed with it",
-          "Bored by the class",
-          "Embarrassed about it"
+          "Upset",
+          "Bored",
+          "Ashamed"
         ],
         "answer": 0,
         "checks": "inference",
@@ -215,9 +215,9 @@
         "id": "R-B1-04-q3",
         "q": "Why couldn't they take their bowls home?",
         "options": [
-          "The bowls broke",
-          "The bowls cost extra",
-          "The studio was closing",
+          "The bowls broke when they fell apart twice",
+          "The bowls cost extra money to take home",
+          "The studio was closing early on Saturday afternoon",
           "The bowls had to dry and go in an oven first"
         ],
         "answer": 3,
