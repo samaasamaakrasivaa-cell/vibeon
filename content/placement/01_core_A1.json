@@ -121,7 +121,7 @@
     "q": "My friend is ___ yoga teacher, so she's always calm.",
     "options": [
       "an",
-      "the",
+      "some",
       "—",
       "a"
     ],
@@ -190,15 +190,12 @@
     "topic_id": "g-a1-have-got",
     "topic_en": "have got",
     "topic_ru": "Конструкция have got",
-    "type": "mcq",
+    "type": "gap",
     "q": "___ you got any plans for the weekend?",
-    "options": [
-      "Do",
-      "Are",
-      "Have",
-      "Has"
+    "accept": [
+      "have",
+      "haven't"
     ],
-    "answer": 2,
     "explain_ru": "Вопрос с have got строится с Have в начале."
   },
   {
@@ -228,14 +225,15 @@
     "topic_id": "g-a1-present-simple",
     "topic_en": "Present simple",
     "topic_ru": "Present Simple",
-    "type": "gap",
+    "type": "mcq",
     "q": "I ___ like big parties. I prefer small dinners with friends.",
-    "accept": [
-      "don't",
-      "do not",
-      "dont",
-      "never"
+    "options": [
+      "doesn't",
+      "not",
+      "am not",
+      "don't"
     ],
+    "answer": 3,
     "explain_ru": "Отрицание в Present Simple с I образуется с помощью don't."
   },
   {
@@ -243,19 +241,19 @@
     "skill": "grammar",
     "level": "A1",
     "band": 3,
-    "topic_id": "g-a1-present-simple",
-    "topic_en": "Present simple",
-    "topic_ru": "Present Simple",
+    "topic_id": "g-a1-imperatives",
+    "topic_en": "Imperatives",
+    "topic_ru": "Повелительное наклонение",
     "type": "mcq",
-    "q": "What time ___ your kids finish school?",
+    "q": "___ late tomorrow! The train leaves at 7.",
     "options": [
-      "do",
-      "does",
-      "are",
-      "is"
+      "Don't be",
+      "Not be",
+      "Don't",
+      "Be not"
     ],
     "answer": 0,
-    "explain_ru": "Kids — множественное число, поэтому вспомогательный глагол do."
+    "explain_ru": "Отрицательное повелительное наклонение: Don't + глагол, с to be — Don't be."
   },
   {
     "id": "G-A1-15",
@@ -324,14 +322,14 @@
     "topic_ru": "Предлоги времени: in / on / at",
     "type": "mcq",
     "q": "Let's meet ___ 6 p.m. at the station.",
-    "explain_ru": "С точным временем используется предлог at.",
     "options": [
       "in",
       "on",
-      "to",
-      "at"
+      "at",
+      "to"
     ],
-    "answer": 3
+    "answer": 2,
+    "explain_ru": "С точным временем используется предлог at."
   },
   {
     "id": "G-A1-19",
@@ -364,7 +362,7 @@
     "q": "Your phone is ___ the kitchen table.",
     "options": [
       "on",
-      "at",
+      "for",
       "to",
       "of"
     ],
@@ -385,10 +383,10 @@
       "some",
       "any",
       "a",
-      "no"
+      "much"
     ],
     "answer": 1,
-    "explain_ru": "В отрицательных предложениях используется any; no здесь не подходит — отрицание уже есть в haven't."
+    "explain_ru": "В отрицательных предложениях используется any; much не сочетается с исчисляемыми eggs."
   },
   {
     "id": "G-A1-22",
@@ -470,15 +468,11 @@
     "topic_id": "v-a1-family",
     "topic_en": "Family and people",
     "topic_ru": "Семья и люди",
-    "type": "mcq",
+    "type": "gap",
     "q": "This is my ___, my dad's brother. He's only 30!",
-    "options": [
-      "cousin",
-      "nephew",
-      "grandfather",
+    "accept": [
       "uncle"
     ],
-    "answer": 3,
     "explain_ru": "Брат папы — это дядя, uncle."
   },
   {
@@ -633,9 +627,9 @@
     "q": "My new suitcase isn't heavy. It's really ___.",
     "options": [
       "light",
-      "thin",
-      "short",
-      "dark"
+      "tall",
+      "young",
+      "slow"
     ],
     "answer": 0,
     "explain_ru": "Противоположность heavy (тяжёлый) — light (лёгкий)."
