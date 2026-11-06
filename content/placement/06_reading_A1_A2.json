@@ -1,0 +1,458 @@
+[
+  {
+    "id": "R-A1-01",
+    "skill": "reading",
+    "level": "A1",
+    "band": 1,
+    "topic_en": "Notice: swimming pool",
+    "topic_ru": "Объявление: бассейн",
+    "type": "reading",
+    "title": "City Swimming Pool",
+    "text_type": "notice",
+    "passage": "City Swimming Pool\nOpen every day from 7 a.m. to 9 p.m.\nOn Saturdays and Sundays, from 10 a.m. to 12 p.m., the pool is for families only.\nPlease bring a towel. You can buy water and snacks at the café next to the pool.\nThe pool is closed on 1 January.",
+    "words": 52,
+    "questions": [
+      {
+        "id": "R-A1-01-q1",
+        "q": "When is the pool open?",
+        "options": [
+          "Only at the weekend",
+          "Every day",
+          "From Monday to Friday",
+          "Only in the morning"
+        ],
+        "answer": 1,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "В объявлении сказано: Open every day."
+      },
+      {
+        "id": "R-A1-01-q2",
+        "q": "What do you need to bring?",
+        "options": [
+          "Water",
+          "Snacks",
+          "A ticket",
+          "A towel"
+        ],
+        "answer": 3,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "Please bring a towel — нужно взять полотенце; воду и снеки можно купить."
+      },
+      {
+        "id": "R-A1-01-q3",
+        "q": "Who can swim on Sunday at 11 a.m.?",
+        "options": [
+          "Families",
+          "Children only",
+          "Swimming teachers",
+          "Nobody"
+        ],
+        "answer": 0,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "По выходным с 10 до 12 бассейн только для семей."
+      }
+    ]
+  },
+  {
+    "id": "R-A1-02",
+    "skill": "reading",
+    "level": "A1",
+    "band": 2,
+    "topic_en": "Message from a flatmate",
+    "topic_ru": "Сообщение от соседки по квартире",
+    "type": "reading",
+    "title": "A message from Mia",
+    "text_type": "email",
+    "passage": "Hi Sam,\nI'm at work until 7 today. Can you buy some bread and milk on your way home? There's money on the kitchen table. Also, my sister is coming for dinner tonight. I'm making pasta. Is that OK with you?\nSee you later!\nMia",
+    "words": 45,
+    "questions": [
+      {
+        "id": "R-A1-02-q1",
+        "q": "Why does Mia write to Sam?",
+        "options": [
+          "To say sorry",
+          "To invite him to a party",
+          "To ask him for help",
+          "To ask him for money"
+        ],
+        "answer": 2,
+        "checks": "main idea",
+        "topic_id": "r-main-idea",
+        "explain_ru": "Мия просит Сэма купить хлеб и молоко."
+      },
+      {
+        "id": "R-A1-02-q2",
+        "q": "Where is the money?",
+        "options": [
+          "On the kitchen table",
+          "In Mia's bag",
+          "In the fridge",
+          "At Mia's work"
+        ],
+        "answer": 0,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "There's money on the kitchen table."
+      },
+      {
+        "id": "R-A1-02-q3",
+        "q": "Who is coming tonight?",
+        "options": [
+          "Mia's mother",
+          "Sam's friend",
+          "Mia's boss",
+          "Mia's sister"
+        ],
+        "answer": 3,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "My sister is coming for dinner tonight."
+      }
+    ]
+  },
+  {
+    "id": "R-A1-03",
+    "skill": "reading",
+    "level": "A1",
+    "band": 2,
+    "topic_en": "Advert: bike for sale",
+    "topic_ru": "Объявление о продаже велосипеда",
+    "type": "reading",
+    "title": "Bike for sale",
+    "text_type": "advert",
+    "passage": "Bike for sale\nI'm selling my blue bike. It's three years old, but it's in very good condition. It's great for short trips in the city. The price is £80. You can see it at my flat on Park Road. Call or text Ben after 6 p.m.: 07700 900123.",
+    "words": 49,
+    "questions": [
+      {
+        "id": "R-A1-03-q1",
+        "q": "How old is the bike?",
+        "options": [
+          "One year old",
+          "Six years old",
+          "Three years old",
+          "Eight years old"
+        ],
+        "answer": 2,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "It's three years old."
+      },
+      {
+        "id": "R-A1-03-q2",
+        "q": "When can you call Ben?",
+        "options": [
+          "In the morning",
+          "In the evening",
+          "At lunchtime",
+          "Only at the weekend"
+        ],
+        "answer": 1,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "После 6 вечера — значит, вечером."
+      },
+      {
+        "id": "R-A1-03-q3",
+        "q": "What is the bike good for?",
+        "options": [
+          "Long holidays",
+          "Mountain roads",
+          "Small children",
+          "Short trips in the city"
+        ],
+        "answer": 3,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "It's great for short trips in the city."
+      }
+    ]
+  },
+  {
+    "id": "R-A1-04",
+    "skill": "reading",
+    "level": "A1",
+    "band": 3,
+    "topic_en": "Blog: my Sundays",
+    "topic_ru": "Блог: мои воскресенья",
+    "type": "reading",
+    "title": "My favourite day",
+    "text_type": "blog",
+    "passage": "Sunday is my favourite day. I get up at about ten and make pancakes. Then I go for a long walk with my dog by the river. In the afternoon, I call my parents on video because they live in another city. In the evening, I read and go to bed early. On Monday I start work at eight!",
+    "words": 59,
+    "questions": [
+      {
+        "id": "R-A1-04-q1",
+        "q": "What does the writer do in the morning?",
+        "options": [
+          "Makes pancakes",
+          "Goes to work",
+          "Calls their parents",
+          "Reads a book"
+        ],
+        "answer": 0,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "Утром автор встаёт около десяти и готовит блины."
+      },
+      {
+        "id": "R-A1-04-q2",
+        "q": "Why does the writer call their parents on video?",
+        "options": [
+          "The parents don't have a phone",
+          "The parents live far away",
+          "The parents are at work",
+          "The parents don't like walking"
+        ],
+        "answer": 1,
+        "checks": "inference",
+        "topic_id": "r-inference",
+        "explain_ru": "Родители живут в другом городе, то есть далеко."
+      },
+      {
+        "id": "R-A1-04-q3",
+        "q": "Why does the writer go to bed early on Sunday?",
+        "options": [
+          "They are tired after the walk",
+          "They can't sleep",
+          "They start work early the next day",
+          "They have a party on Monday"
+        ],
+        "answer": 2,
+        "checks": "inference",
+        "topic_id": "r-inference",
+        "explain_ru": "В понедельник работа начинается в восемь, поэтому автор ложится рано."
+      }
+    ]
+  },
+  {
+    "id": "R-A2-01",
+    "skill": "reading",
+    "level": "A2",
+    "band": 1,
+    "topic_en": "Café review",
+    "topic_ru": "Отзыв о кафе",
+    "type": "reading",
+    "title": "Green Corner café",
+    "text_type": "review",
+    "passage": "I went to Green Corner, a small café near the station, last Saturday. The place is bright and friendly, and there are plants everywhere. I ordered a vegetable soup and a slice of carrot cake. The soup was hot and tasty, but the cake was a bit dry. The prices are good: I paid only £9 for everything. The only problem is that the café is very popular, so it's hard to find a free table at lunchtime. Next time I'll go earlier. I recommend it!",
+    "words": 86,
+    "questions": [
+      {
+        "id": "R-A2-01-q1",
+        "q": "What didn't the writer like?",
+        "options": [
+          "The soup",
+          "The prices",
+          "The plants",
+          "The cake"
+        ],
+        "answer": 3,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "Торт был суховат: the cake was a bit dry."
+      },
+      {
+        "id": "R-A2-01-q2",
+        "q": "What is the problem with the café?",
+        "options": [
+          "It's expensive",
+          "It's often full",
+          "It's far from the station",
+          "It closes early"
+        ],
+        "answer": 1,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "Кафе очень популярное, в обед трудно найти свободный столик."
+      },
+      {
+        "id": "R-A2-01-q3",
+        "q": "What does the writer think of Green Corner?",
+        "options": [
+          "It's too busy to visit",
+          "The food is bad",
+          "It's a good place to visit",
+          "It's only good for coffee"
+        ],
+        "answer": 2,
+        "checks": "writer's attitude",
+        "topic_id": "r-writers-attitude",
+        "explain_ru": "Автор рекомендует кафе: I recommend it!"
+      }
+    ]
+  },
+  {
+    "id": "R-A2-02",
+    "skill": "reading",
+    "level": "A2",
+    "band": 2,
+    "topic_en": "Story: a lost phone",
+    "topic_ru": "История: потерянный телефон",
+    "type": "reading",
+    "title": "A kind stranger",
+    "text_type": "story",
+    "passage": "Last month, I was on the train home after a long day at work. I was so tired that I fell asleep. When I woke up, it was my stop, so I jumped up and ran out. On the platform, I suddenly realised that my phone wasn't in my pocket. I felt terrible because all my photos were on it! Then I heard someone calling me. A young woman was running towards me with my phone in her hand. She got off the train just to give it back to me.",
+    "words": 91,
+    "questions": [
+      {
+        "id": "R-A2-02-q1",
+        "q": "Why did the writer fall asleep?",
+        "options": [
+          "The train was late",
+          "They were bored",
+          "They were very tired",
+          "They felt ill"
+        ],
+        "answer": 2,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "После долгого рабочего дня автор очень устал."
+      },
+      {
+        "id": "R-A2-02-q2",
+        "q": "Why did the writer feel terrible?",
+        "options": [
+          "They missed their stop",
+          "They thought the phone was lost",
+          "They were late for work",
+          "They didn't have a ticket"
+        ],
+        "answer": 1,
+        "checks": "inference",
+        "topic_id": "r-inference",
+        "explain_ru": "Автор понял, что телефона нет в кармане, и подумал, что потерял его."
+      },
+      {
+        "id": "R-A2-02-q3",
+        "q": "What did the young woman do?",
+        "options": [
+          "She left the train to return the phone",
+          "She called the police",
+          "She kept the phone",
+          "She phoned the writer's friend"
+        ],
+        "answer": 0,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "She got off the train just to give it back to me."
+      }
+    ]
+  },
+  {
+    "id": "R-A2-03",
+    "skill": "reading",
+    "level": "A2",
+    "band": 3,
+    "topic_en": "Article: short walks",
+    "topic_ru": "Статья: короткие прогулки",
+    "type": "reading",
+    "title": "Ten minutes that change your day",
+    "text_type": "article",
+    "passage": "Many of us spend most of the day sitting: at work, in the car or on the sofa. Doctors say that even a short walk can make a big difference. A ten-minute walk after lunch is good for your body and can make you feel less tired in the afternoon. It's also good for your mood. People who walk outside every day often feel calmer and sleep better. You don't need special clothes or a gym. Just put your phone in your pocket, look around and enjoy the fresh air.",
+    "words": 90,
+    "questions": [
+      {
+        "id": "R-A2-03-q1",
+        "q": "What is the main idea of the article?",
+        "options": [
+          "Sitting at work is very dangerous",
+          "Doctors want everyone to join a gym",
+          "Phones are bad for your health",
+          "Short walks are good for body and mind"
+        ],
+        "answer": 3,
+        "checks": "main idea",
+        "topic_id": "r-main-idea",
+        "explain_ru": "Статья о том, что даже короткая прогулка полезна для тела и настроения."
+      },
+      {
+        "id": "R-A2-03-q2",
+        "q": "When does the article suggest a short walk?",
+        "options": [
+          "Before breakfast",
+          "Late at night",
+          "After lunch",
+          "Before work"
+        ],
+        "answer": 2,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "A ten-minute walk after lunch."
+      },
+      {
+        "id": "R-A2-03-q3",
+        "q": "In the text, make a big difference means:",
+        "options": [
+          "change things a lot",
+          "cost a lot of money",
+          "be very difficult",
+          "take a lot of time"
+        ],
+        "answer": 0,
+        "checks": "vocabulary in context",
+        "topic_id": "r-vocabulary-in-context",
+        "explain_ru": "Make a big difference — сильно изменить ситуацию к лучшему."
+      }
+    ]
+  },
+  {
+    "id": "R-A2-04",
+    "skill": "reading",
+    "level": "A2",
+    "band": 2,
+    "topic_en": "Blog: a weekend without phones",
+    "topic_ru": "Блог: выходные без телефонов",
+    "type": "reading",
+    "title": "Our phone-free weekend",
+    "text_type": "blog",
+    "passage": "Last weekend, my family tried something new: two days without phones. At first, my kids weren't happy about it. On Saturday morning, they were bored and kept asking when they could have their phones back. But in the afternoon, we went to the forest, made a fire and cooked sausages. In the evening, we played board games, and everyone laughed a lot. On Sunday, my son said it was the best weekend in a long time! We're not going to stop using our phones, but now we want to have one day without them every month.",
+    "words": 96,
+    "questions": [
+      {
+        "id": "R-A2-04-q1",
+        "q": "How did the kids feel on Saturday morning?",
+        "options": [
+          "Excited",
+          "Bored and unhappy",
+          "Calm",
+          "Proud"
+        ],
+        "answer": 1,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "Дети скучали и спрашивали, когда им вернут телефоны."
+      },
+      {
+        "id": "R-A2-04-q2",
+        "q": "What did the family do on Saturday evening?",
+        "options": [
+          "They went to the forest",
+          "They cooked sausages",
+          "They watched a film",
+          "They played board games"
+        ],
+        "answer": 3,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "Вечером семья играла в настольные игры; лес и сосиски были днём."
+      },
+      {
+        "id": "R-A2-04-q3",
+        "q": "What does the family plan to do now?",
+        "options": [
+          "Have one day without phones every month",
+          "Stop using phones completely",
+          "Buy new phones",
+          "Go to the forest every weekend"
+        ],
+        "answer": 0,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "Семья хочет устраивать один день без телефонов каждый месяц."
+      }
+    ]
+  }
+]
