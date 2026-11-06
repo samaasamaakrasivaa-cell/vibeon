@@ -1,0 +1,342 @@
+[
+  {
+    "id": "L-B1-01",
+    "skill": "listening",
+    "level": "B1",
+    "band": 1,
+    "topic_en": "Voicemail about a new job",
+    "topic_ru": "Голосовое сообщение о новой работе",
+    "type": "listening",
+    "title": "A message from Emma",
+    "situation_ru": "Подруга оставляет длинное голосовое сообщение о первой неделе на новой работе.",
+    "speakers": [
+      {
+        "name": "Emma",
+        "gender": "female",
+        "age": "30-45",
+        "accent": "British"
+      }
+    ],
+    "script": "Emma: Hi Sarah, it's Emma. Sorry I missed your call, I was still at work. I just wanted to tell you how my first week at the new job went. [pause 1s] Well, it's been tiring, to be honest. The office is much bigger than my old one, and I got lost twice on Monday! But everyone has been really friendly. My manager, Paul, took me out for lunch on my first day, and the woman who sits next to me has already shown me all the best places to get coffee. Oh, and the canteen is amazing: the food is cheap and really healthy. [pause 1s] The work itself is more interesting than I expected. In my old job I did the same thing every day, but here every project is different. The only thing I'm not happy about is the journey. It takes almost an hour each way, and the trains are always packed. I'm thinking about cycling instead when the weather gets better. [pause 1s] Anyway, are you free on Friday evening? I'd love to celebrate surviving my first week! Text me, OK? Bye.",
+    "words": 180,
+    "duration_sec": 75,
+    "pace": "natural",
+    "plays": 2,
+    "questions": [
+      {
+        "id": "L-B1-01-q1",
+        "q": "What happened to Emma on Monday?",
+        "options": [
+          "She got lost in the office",
+          "She was late for her first meeting",
+          "She had lunch on her own",
+          "She missed her train home"
+        ],
+        "answer": 0,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "Офис большой, и в понедельник Эмма дважды заблудилась."
+      },
+      {
+        "id": "L-B1-01-q2",
+        "q": "How does Emma feel about the work itself?",
+        "options": [
+          "It's the same as in her old job",
+          "It's more interesting than she expected",
+          "It's too difficult for her at the moment",
+          "It's boring, but the pay is good"
+        ],
+        "answer": 1,
+        "checks": "speaker's attitude",
+        "topic_id": "l-speakers-attitude",
+        "explain_ru": "Работа интереснее, чем она ожидала: каждый проект разный."
+      },
+      {
+        "id": "L-B1-01-q3",
+        "q": "What is Emma unhappy about?",
+        "options": [
+          "Her new manager",
+          "The people in her team",
+          "The long, crowded journey",
+          "The coffee in the office"
+        ],
+        "answer": 2,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "Дорога занимает почти час, а поезда переполнены."
+      },
+      {
+        "id": "L-B1-01-q4",
+        "q": "Why is Emma calling Sarah?",
+        "options": [
+          "To ask her for help with a difficult project",
+          "To say that she can't meet this Friday after all",
+          "To complain about her new manager and colleagues",
+          "To tell her about her week and suggest meeting"
+        ],
+        "answer": 3,
+        "checks": "main idea",
+        "topic_id": "l-main-idea",
+        "explain_ru": "Эмма рассказывает о неделе и зовёт подругу в пятницу отметить."
+      }
+    ]
+  },
+  {
+    "id": "L-B1-02",
+    "skill": "listening",
+    "level": "B1",
+    "band": 2,
+    "topic_en": "Flatmates discussing a dog",
+    "topic_ru": "Соседи по квартире обсуждают собаку",
+    "type": "listening",
+    "title": "Getting a dog?",
+    "situation_ru": "Двое соседей по квартире обсуждают, не завести ли собаку.",
+    "speakers": [
+      {
+        "name": "Jake",
+        "gender": "male",
+        "age": "20-30",
+        "accent": "American"
+      },
+      {
+        "name": "Nina",
+        "gender": "female",
+        "age": "20-30",
+        "accent": "American"
+      }
+    ],
+    "script": "Jake: So, I've been thinking. What do you think about getting a dog?\nNina: A dog? In this apartment? Jake, we can barely fit the two of us in here.\nJake: I know it's small, but there's a big park just across the street. I'd walk him every morning before work.\nNina: Every morning? You can't even get up in time for breakfast!\nJake: OK, that's fair. But I really think it would be good for us. We both work from home a lot, so he wouldn't be alone all day.\nNina: That's true. But what about when we go away? Last summer we were away for three weeks.\nJake: My parents could look after him. They've always had dogs.\nNina: Hmm. I'm not saying no. I just don't want us to rush into it. Dogs live for fifteen years or more.\nJake: So how about this? My cousin needs someone to look after her dog for a week in May. We could try it and see how it goes.\nNina: Now that's a good idea. Let's do that first.",
+    "words": 170,
+    "duration_sec": 72,
+    "pace": "natural",
+    "plays": 2,
+    "questions": [
+      {
+        "id": "L-B1-02-q1",
+        "q": "How does Nina react to Jake's idea at first?",
+        "options": [
+          "She's excited and wants a dog soon",
+          "She's angry that Jake didn't ask her opinion earlier",
+          "She's doubtful because the apartment is small",
+          "She says she doesn't like dogs at all"
+        ],
+        "answer": 2,
+        "checks": "speaker's attitude",
+        "topic_id": "l-speakers-attitude",
+        "explain_ru": "Нина сомневается: в квартире им и двоим тесно."
+      },
+      {
+        "id": "L-B1-02-q2",
+        "q": "Why does Jake think the dog wouldn't be lonely?",
+        "options": [
+          "They often work from home",
+          "His parents live very close by",
+          "There's a park across the street",
+          "Nina doesn't go out very much"
+        ],
+        "answer": 0,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "Они оба часто работают из дома."
+      },
+      {
+        "id": "L-B1-02-q3",
+        "q": "Why does Nina doubt that Jake will walk the dog every morning?",
+        "options": [
+          "He doesn't like walking",
+          "He usually gets up late",
+          "The park opens late",
+          "She wants to walk it herself"
+        ],
+        "answer": 1,
+        "checks": "inference",
+        "topic_id": "l-inference",
+        "explain_ru": "Джек даже на завтрак не успевает встать — значит, встаёт поздно."
+      },
+      {
+        "id": "L-B1-02-q4",
+        "q": "What do they decide to do?",
+        "options": [
+          "Buy a puppy together in May",
+          "Move to a bigger apartment with a garden for a dog",
+          "Forget the idea completely",
+          "Look after his cousin's dog for a week first"
+        ],
+        "answer": 3,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "Сначала попробуют неделю присмотреть за собакой кузины."
+      }
+    ]
+  },
+  {
+    "id": "L-B1-03",
+    "skill": "listening",
+    "level": "B1",
+    "band": 3,
+    "topic_en": "Colleagues talking about stress",
+    "topic_ru": "Коллеги говорят о стрессе",
+    "type": "listening",
+    "title": "Working late",
+    "situation_ru": "Коллега замечает, что сотрудница перерабатывает, и даёт совет.",
+    "speakers": [
+      {
+        "name": "Tom",
+        "gender": "male",
+        "age": "30-45",
+        "accent": "British"
+      },
+      {
+        "name": "Rachel",
+        "gender": "female",
+        "age": "20-30",
+        "accent": "British"
+      }
+    ],
+    "script": "Tom: You look exhausted, Rachel. Are you OK?\nRachel: Not really. I've been working until ten every night this week, and I still haven't finished the report.\nTom: Ten? That's crazy. When's the deadline?\nRachel: Friday. And the client keeps changing what they want.\nTom: Have you told Mark? He's your manager, he should know.\nRachel: I don't want him to think I can't cope.\nTom: Honestly, I think he'd rather know now than find out on Friday. Last year I did exactly what you're doing, and I ended up getting ill for two weeks. It wasn't worth it.\nRachel: I didn't know that.\nTom: Yeah, it was a horrible time. I was so stressed that I couldn't sleep properly. Now I try to stop at six, even when I'm busy, and I go for a run instead of checking emails. It really helps.\nRachel: I'm not sure I can stop at six this week. But maybe I'll talk to Mark tomorrow morning.\nTom: Good. And if you need help with the charts, just ask. I've got some free time on Thursday.\nRachel: Thanks, Tom. That would really help.",
+    "words": 177,
+    "duration_sec": 75,
+    "pace": "natural",
+    "plays": 2,
+    "questions": [
+      {
+        "id": "L-B1-03-q1",
+        "q": "Why is Rachel so tired?",
+        "options": [
+          "She's been working very late on a report",
+          "She's had an argument with her manager Mark",
+          "She's just been ill for two weeks",
+          "She's been going running every evening"
+        ],
+        "answer": 0,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "Всю неделю она работает до десяти вечера над отчётом."
+      },
+      {
+        "id": "L-B1-03-q2",
+        "q": "Why hasn't Rachel spoken to her manager?",
+        "options": [
+          "He's on holiday this week",
+          "He told her not to disturb him before Friday",
+          "She's worried he'll think she can't cope",
+          "She thinks he's far too busy"
+        ],
+        "answer": 2,
+        "checks": "speaker's attitude",
+        "topic_id": "l-speakers-attitude",
+        "explain_ru": "Рэйчел боится, что менеджер решит, будто она не справляется."
+      },
+      {
+        "id": "L-B1-03-q3",
+        "q": "Why does Tom mention what happened to him last year?",
+        "options": [
+          "To show he's more experienced",
+          "To explain why he left his old job",
+          "To complain about Mark",
+          "To show what can happen if you overwork"
+        ],
+        "answer": 3,
+        "checks": "inference",
+        "topic_id": "l-inference",
+        "explain_ru": "Пример Тома показывает, чем кончаются переработки: он заболел."
+      },
+      {
+        "id": "L-B1-03-q4",
+        "q": "What does Rachel decide to do?",
+        "options": [
+          "Stop work at six every day",
+          "Talk to her manager",
+          "Ask Tom to finish the report",
+          "Go for a run after work"
+        ],
+        "answer": 1,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "Она решает завтра утром поговорить с Марком."
+      }
+    ]
+  },
+  {
+    "id": "L-B1-04",
+    "skill": "listening",
+    "level": "B1",
+    "band": 2,
+    "topic_en": "Podcast: cycling to work",
+    "topic_ru": "Подкаст: на работу на велосипеде",
+    "type": "listening",
+    "title": "Small Changes",
+    "situation_ru": "Ведущий подкаста рассказывает, как начал ездить на работу на велосипеде.",
+    "speakers": [
+      {
+        "name": "Host",
+        "gender": "male",
+        "age": "45-60",
+        "accent": "American"
+      }
+    ],
+    "script": "Host: Hi, and welcome back to Small Changes, the podcast about little things that can make a big difference. Today I want to talk about something I started two years ago: cycling to work. [pause 1s] I'll be honest, the first month was terrible. I live about five miles from my office, and on my first day I arrived red, sweaty and twenty minutes late. My colleagues thought it was hilarious. But I didn't give up. I bought a better bike, found a quieter route along the river, and started keeping a clean shirt at the office. [pause 1s] Now, two years later, I can't imagine going back to the car. I save around a hundred dollars a month on gas and parking, I've lost a few pounds, and, most importantly, I arrive at work in a much better mood. There's something about starting the day outside that clears your head. [pause 1s] Of course, it's not perfect. When it's raining hard, I still take the bus. And it isn't for everyone. If you live thirty miles away, it's probably not realistic. But if your office is close, why not try it just once a week?",
+    "words": 189,
+    "duration_sec": 79,
+    "pace": "natural",
+    "plays": 2,
+    "questions": [
+      {
+        "id": "L-B1-04-q1",
+        "q": "What happened on his first day of cycling?",
+        "options": [
+          "His bike broke down on the way",
+          "He got lost and had to take a taxi",
+          "He arrived late and very hot",
+          "He fell off his bike near the river"
+        ],
+        "answer": 2,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "Он приехал красный, вспотевший и на 20 минут позже."
+      },
+      {
+        "id": "L-B1-04-q2",
+        "q": "How does he feel about cycling now?",
+        "options": [
+          "He can't imagine driving again",
+          "He's thinking of stopping very soon",
+          "He only enjoys it in summer",
+          "He finds it too tiring"
+        ],
+        "answer": 0,
+        "checks": "speaker's attitude",
+        "topic_id": "l-speakers-attitude",
+        "explain_ru": "Он не может представить, что вернётся к машине."
+      },
+      {
+        "id": "L-B1-04-q3",
+        "q": "What does he say is the most important benefit?",
+        "options": [
+          "Saving money on gas and parking",
+          "Arriving at work in a better mood",
+          "Losing a few pounds since he started",
+          "Meeting other cyclists"
+        ],
+        "answer": 1,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "Most importantly — он приезжает на работу в хорошем настроении."
+      },
+      {
+        "id": "L-B1-04-q4",
+        "q": "What does he suggest listeners do?",
+        "options": [
+          "Buy a better and more expensive bike",
+          "Move house so they can live closer to the office",
+          "Stop using the car completely from now on",
+          "Try cycling once a week if they live close"
+        ],
+        "answer": 3,
+        "checks": "main idea",
+        "topic_id": "l-main-idea",
+        "explain_ru": "Если работа рядом, он советует попробовать хотя бы раз в неделю."
+      }
+    ]
+  }
+]

@@ -35,6 +35,7 @@ VOICES = {
 }
 SPEED = {"A1": 0.8, "A2": 0.86, "B1": 0.93, "B2": 0.98, "C1": 1.02}
 SENT_GAP = {"A1": 0.45, "A2": 0.32, "B1": 0.22, "B2": 0.15, "C1": 0.1}  # пауза между предложениями
+VOICE_SPEED = {"bf_emma": 0.88}  # этот голос говорит заметно быстрее остальных — выравниваем темп
 TURN_GAP = {"A1": 0.55, "A2": 0.45, "B1": 0.4, "B2": 0.35, "C1": 0.3}
 
 
@@ -80,7 +81,7 @@ def render(item):
             for sent in re.split(r"(?<=[.!?])\s+", chunk):
                 if not sent.strip():
                     continue
-                audio, sr = k.create(sent, voice=vm[name], speed=speed, lang=lang[accent[name]])
+                audio, sr = k.create(sent, voice=vm[name], speed=speed * VOICE_SPEED.get(vm[name], 1.0), lang=lang[accent[name]])
                 parts.append(audio.astype(np.float32))
                 parts.append(silence(SENT_GAP[item["level"]], sr))
         parts.append(silence(gap, sr))
