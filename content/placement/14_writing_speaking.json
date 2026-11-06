@@ -1,0 +1,810 @@
+[
+  {
+    "id": "W-A1-01",
+    "skill": "writing",
+    "level": "A1",
+    "band": 1,
+    "topic_en": "Writing: a short message",
+    "topic_ru": "Письмо: короткое сообщение",
+    "type": "writing",
+    "prompt_en": "Your friend Sam wants to meet for coffee today, but you can't. Write a message to Sam. Say sorry, say why you can't meet, and say when you are free.",
+    "prompt_ru": "Напишите другу: извинитесь, что не можете встретиться сегодня, объясните почему и скажите, когда вы свободны.",
+    "min_words": 25,
+    "max_words": 40,
+    "time_min": 6,
+    "expects": [
+      "Все пункты задания раскрыты",
+      "Простые предложения с базовыми связками and, but, because",
+      "Слова на бытовые темы без грубых ошибок в написании",
+      "Present Simple, can, to be в основном верны"
+    ],
+    "explain_ru": "Проверяет умение написать короткое бытовое сообщение."
+  },
+  {
+    "id": "W-A1-02",
+    "skill": "writing",
+    "level": "A1",
+    "band": 2,
+    "topic_en": "Writing: a note to a flatmate",
+    "topic_ru": "Письмо: записка соседу по квартире",
+    "type": "writing",
+    "prompt_en": "You are going away for the weekend. Write a note to your flatmate. Say where you are going and when you are coming back. Ask your flatmate to do two things for you at home.",
+    "prompt_ru": "Записка соседу: куда уезжаете, когда вернётесь и две просьбы по дому.",
+    "min_words": 25,
+    "max_words": 40,
+    "time_min": 6,
+    "expects": [
+      "Все пункты задания раскрыты",
+      "Простые предложения с базовыми связками and, but, because",
+      "Слова на бытовые темы без грубых ошибок в написании",
+      "Present Simple, can, to be в основном верны"
+    ],
+    "explain_ru": "Проверяет умение сообщить информацию и вежливо попросить."
+  },
+  {
+    "id": "W-A1-03",
+    "skill": "writing",
+    "level": "A1",
+    "band": 3,
+    "topic_en": "Writing: introducing yourself",
+    "topic_ru": "Письмо: рассказ о себе",
+    "type": "writing",
+    "prompt_en": "You have a new neighbour. Write a message to introduce yourself. Write about where you are from, what you do, and what you like doing at the weekend.",
+    "prompt_ru": "Сообщение новому соседу: откуда вы, чем занимаетесь, что любите делать в выходные.",
+    "min_words": 25,
+    "max_words": 40,
+    "time_min": 7,
+    "expects": [
+      "Все пункты задания раскрыты",
+      "Простые предложения с базовыми связками and, but, because",
+      "Слова на бытовые темы без грубых ошибок в написании",
+      "Present Simple, can, to be в основном верны"
+    ],
+    "explain_ru": "Проверяет умение рассказать о себе простыми фразами."
+  },
+  {
+    "id": "W-A2-01",
+    "skill": "writing",
+    "level": "A2",
+    "band": 1,
+    "topic_en": "Writing: email about the weekend",
+    "topic_ru": "Письмо другу о выходных",
+    "type": "writing",
+    "prompt_en": "Write an email to a friend about your last weekend. Say where you went, who you were with and what you enjoyed most.",
+    "prompt_ru": "Письмо другу о прошлых выходных: где были, с кем и что понравилось больше всего.",
+    "min_words": 40,
+    "max_words": 60,
+    "time_min": 10,
+    "expects": [
+      "Все пункты задания раскрыты, есть приветствие и завершение письма",
+      "Связки and, but, because, so, then",
+      "Past Simple и способы говорить о будущем (going to, will) в основном верны",
+      "Достаточно слов, чтобы описать события, места и впечатления"
+    ],
+    "explain_ru": "Проверяет умение рассказать о прошлом в дружеском письме."
+  },
+  {
+    "id": "W-A2-02",
+    "skill": "writing",
+    "level": "A2",
+    "band": 2,
+    "topic_en": "Writing: tips for a visiting friend",
+    "topic_ru": "Письмо: советы другу, который приезжает в гости",
+    "type": "writing",
+    "prompt_en": "A friend from another country is visiting your city next month. Write an email. Suggest two places to visit and one local dish to try, and tell your friend how to get from the airport or station to the city centre.",
+    "prompt_ru": "Друг приезжает в ваш город: посоветуйте два места, одно блюдо и расскажите, как добраться до центра.",
+    "min_words": 40,
+    "max_words": 60,
+    "time_min": 10,
+    "expects": [
+      "Все пункты задания раскрыты, есть приветствие и завершение письма",
+      "Связки and, but, because, so, then",
+      "Past Simple и способы говорить о будущем (going to, will) в основном верны",
+      "Достаточно слов, чтобы описать события, места и впечатления"
+    ],
+    "explain_ru": "Проверяет умение давать советы и практическую информацию."
+  },
+  {
+    "id": "W-A2-03",
+    "skill": "writing",
+    "level": "A2",
+    "band": 3,
+    "topic_en": "Writing: giving advice",
+    "topic_ru": "Письмо: совет другу",
+    "type": "writing",
+    "prompt_en": "Your friend writes: \"I want to do more exercise, but I'm always busy. What do you do? Have you got any ideas?\" Write a reply. Tell your friend what you do and give two ideas.",
+    "prompt_ru": "Ответьте другу, который хочет больше двигаться, но занят: что делаете вы и две идеи для него.",
+    "min_words": 40,
+    "max_words": 60,
+    "time_min": 12,
+    "expects": [
+      "Все пункты задания раскрыты, есть приветствие и завершение письма",
+      "Связки and, but, because, so, then",
+      "Past Simple и способы говорить о будущем (going to, will) в основном верны",
+      "Достаточно слов, чтобы описать события, места и впечатления"
+    ],
+    "explain_ru": "Проверяет умение отвечать на письмо и давать советы."
+  },
+  {
+    "id": "W-B1-01",
+    "skill": "writing",
+    "level": "B1",
+    "band": 1,
+    "topic_en": "Writing: email about a new hobby",
+    "topic_ru": "Письмо другу о новом хобби",
+    "type": "writing",
+    "prompt_en": "Write an email to an English-speaking friend about a new hobby or activity you have started. Explain how you got interested in it, what you enjoy about it and what has been difficult.",
+    "prompt_ru": "Письмо другу о новом хобби: как увлеклись, что нравится и что трудно.",
+    "min_words": 80,
+    "max_words": 100,
+    "time_min": 15,
+    "expects": [
+      "Все пункты раскрыты, текст логично разбит на абзацы",
+      "Разнообразные связки (although, however, when, after that)",
+      "Смесь времён: Past Simple, Present Perfect, будущее — с редкими ошибками",
+      "Ученик выражает мнение и чувства, а не только перечисляет факты",
+      "Стиль подходит адресату (дружеский или нейтральный)"
+    ],
+    "explain_ru": "Проверяет умение рассказывать о своём опыте с деталями и чувствами."
+  },
+  {
+    "id": "W-B1-02",
+    "skill": "writing",
+    "level": "B1",
+    "band": 2,
+    "topic_en": "Writing: a short story",
+    "topic_ru": "Письмо: короткий рассказ",
+    "type": "writing",
+    "prompt_en": "Write a short story that begins with this sentence: \"When I opened the door, I couldn't believe what I saw.\"",
+    "prompt_ru": "Короткий рассказ, который начинается с фразы «When I opened the door, I couldn't believe what I saw.»",
+    "min_words": 80,
+    "max_words": 100,
+    "time_min": 15,
+    "expects": [
+      "Задание выполнено: рассказ начинается с заданной фразы",
+      "У истории есть начало, развитие и концовка, текст разбит на абзацы",
+      "Разнообразные связки (when, while, suddenly, after that, in the end)",
+      "Повествовательные времена: Past Simple, Past Continuous, Past Perfect — с редкими ошибками",
+      "Переданы чувства героя, а не только перечислены события"
+    ],
+    "explain_ru": "Проверяет умение строить повествование в прошедших временах."
+  },
+  {
+    "id": "W-B1-03",
+    "skill": "writing",
+    "level": "B1",
+    "band": 3,
+    "topic_en": "Writing: an enquiry email",
+    "topic_ru": "Письмо с запросом информации",
+    "type": "writing",
+    "prompt_en": "You have seen an advert for a weekend cooking course at a local cookery school. Write an email to the school. Ask about the dates and the price, ask what you need to bring, and explain why you are interested in the course.",
+    "prompt_ru": "Письмо в кулинарную школу: даты, цена, что взять с собой и почему вам интересен курс.",
+    "min_words": 80,
+    "max_words": 100,
+    "time_min": 15,
+    "expects": [
+      "Все пункты раскрыты, текст логично разбит на абзацы",
+      "Разнообразные связки (although, however, when, after that)",
+      "Смесь времён: Past Simple, Present Perfect, будущее — с редкими ошибками",
+      "Вопросы заданы вежливо, в том числе косвенно (Could you tell me…, I was wondering if…)",
+      "Нейтральный стиль письма: уместные приветствие и завершение"
+    ],
+    "explain_ru": "Проверяет умение написать нейтральное письмо с вопросами."
+  },
+  {
+    "id": "W-B2-01",
+    "skill": "writing",
+    "level": "B2",
+    "band": 1,
+    "topic_en": "Writing: a review",
+    "topic_ru": "Письмо: отзыв",
+    "type": "writing",
+    "prompt_en": "A travel website is asking readers to review a place they have recently visited, such as a café, a hotel, a market or a museum. Write a review describing the place, what was good and not so good about it, and who you would recommend it to.",
+    "prompt_ru": "Отзыв для сайта о месте, где вы недавно были: что понравилось, что нет и кому порекомендуете.",
+    "min_words": 120,
+    "max_words": 150,
+    "time_min": 20,
+    "expects": [
+      "Чёткая позиция и аргументы с примерами",
+      "Вступление, основная часть и вывод; абзацы связаны (On the other hand, What is more)",
+      "Разнообразная лексика по теме, есть коллокации",
+      "Сложные конструкции (условные, пассив, относительные придаточные) в основном верны",
+      "Стиль соответствует жанру (эссе или отзыв)"
+    ],
+    "explain_ru": "Проверяет умение описывать и оценивать с аргументами."
+  },
+  {
+    "id": "W-B2-02",
+    "skill": "writing",
+    "level": "B2",
+    "band": 2,
+    "topic_en": "Writing: an opinion essay",
+    "topic_ru": "Письмо: эссе-мнение",
+    "type": "writing",
+    "prompt_en": "Write an essay giving your opinion on this statement: Children should help with housework without being paid for it. Give reasons and examples to support your view.",
+    "prompt_ru": "Эссе-мнение: должны ли дети помогать по дому бесплатно. Аргументы и примеры.",
+    "min_words": 120,
+    "max_words": 150,
+    "time_min": 20,
+    "expects": [
+      "Чёткая позиция и аргументы с примерами",
+      "Вступление, основная часть и вывод; абзацы связаны (On the other hand, What is more)",
+      "Разнообразная лексика по теме, есть коллокации",
+      "Сложные конструкции (условные, пассив, относительные придаточные) в основном верны",
+      "Стиль соответствует жанру (эссе или отзыв)"
+    ],
+    "explain_ru": "Проверяет умение аргументировать мнение в эссе."
+  },
+  {
+    "id": "W-B2-03",
+    "skill": "writing",
+    "level": "B2",
+    "band": 3,
+    "topic_en": "Writing: a for-and-against essay",
+    "topic_ru": "Письмо: эссе «за и против»",
+    "type": "writing",
+    "prompt_en": "Some people believe that taking a year off to travel or work before starting university or a career is a waste of time. Others think it is a valuable experience. Write an essay discussing both views and giving your own opinion.",
+    "prompt_ru": "Эссе: полезен ли год перерыва перед учёбой или карьерой. Обе точки зрения и ваше мнение.",
+    "min_words": 120,
+    "max_words": 150,
+    "time_min": 25,
+    "expects": [
+      "Чёткая позиция и аргументы с примерами",
+      "Вступление, основная часть и вывод; абзацы связаны (On the other hand, What is more)",
+      "Разнообразная лексика по теме, есть коллокации",
+      "Сложные конструкции (условные, пассив, относительные придаточные) в основном верны",
+      "Стиль соответствует жанру (эссе или отзыв)"
+    ],
+    "explain_ru": "Проверяет умение сравнивать позиции и делать вывод."
+  },
+  {
+    "id": "W-C1-01",
+    "skill": "writing",
+    "level": "C1",
+    "band": 1,
+    "topic_en": "Writing: a report",
+    "topic_ru": "Письмо: отчёт",
+    "type": "writing",
+    "prompt_en": "Your manager has asked you to write a report on how your team could reduce stress at work. Staff were asked for their views, and these were the most common answers: too many meetings, unclear priorities, emails late in the evening, no quiet space to work. Write a report summarising the main problems and recommending practical changes.",
+    "prompt_ru": "Отчёт для руководителя: основные причины стресса в команде (по опросу) и практические рекомендации.",
+    "min_words": 180,
+    "max_words": 220,
+    "time_min": 30,
+    "expects": [
+      "Задача выполнена полностью, жанр выдержан (эссе, отчёт или предложение)",
+      "Ясная структура, заголовки или абзацы, плавные переходы между идеями",
+      "Точная, разнообразная лексика, уместный формальный регистр",
+      "Широкий диапазон грамматики с редкими ошибками",
+      "Позиция взвешена: учтены разные точки зрения, сделан обоснованный вывод"
+    ],
+    "explain_ru": "Проверяет умение писать структурированный отчёт с рекомендациями."
+  },
+  {
+    "id": "W-C1-02",
+    "skill": "writing",
+    "level": "C1",
+    "band": 2,
+    "topic_en": "Writing: a proposal",
+    "topic_ru": "Письмо: предложение",
+    "type": "writing",
+    "prompt_en": "Your local council has invited residents to suggest ways of improving a public space in your area, such as a park, a square or a riverside path. Write a proposal describing the space as it is now, explaining what you would change and why, and outlining how the changes would benefit different groups of people.",
+    "prompt_ru": "Предложение для местной администрации: как улучшить общественное место и кому это поможет.",
+    "min_words": 180,
+    "max_words": 220,
+    "time_min": 30,
+    "expects": [
+      "Задача выполнена полностью, жанр выдержан (эссе, отчёт или предложение)",
+      "Ясная структура, заголовки или абзацы, плавные переходы между идеями",
+      "Точная, разнообразная лексика, уместный формальный регистр",
+      "Широкий диапазон грамматики с редкими ошибками",
+      "Позиция взвешена: учтены разные точки зрения, сделан обоснованный вывод"
+    ],
+    "explain_ru": "Проверяет умение убеждать в формальном жанре предложения."
+  },
+  {
+    "id": "W-C1-03",
+    "skill": "writing",
+    "level": "C1",
+    "band": 3,
+    "topic_en": "Writing: a discursive essay",
+    "topic_ru": "Письмо: эссе-рассуждение",
+    "type": "writing",
+    "prompt_en": "Some people argue that the constant search for convenience, such as faster deliveries, ready meals and apps for everything, has made modern life less satisfying. Write an essay discussing this view and reaching a balanced conclusion.",
+    "prompt_ru": "Эссе: не сделала ли погоня за удобством (быстрая доставка, готовая еда, приложения на все случаи) жизнь менее радостной. Взвешенный вывод.",
+    "min_words": 180,
+    "max_words": 220,
+    "time_min": 35,
+    "expects": [
+      "Задача выполнена полностью, жанр выдержан (эссе, отчёт или предложение)",
+      "Ясная структура, заголовки или абзацы, плавные переходы между идеями",
+      "Точная, разнообразная лексика, уместный формальный регистр",
+      "Широкий диапазон грамматики с редкими ошибками",
+      "Позиция взвешена: учтены разные точки зрения, сделан обоснованный вывод"
+    ],
+    "explain_ru": "Проверяет умение рассуждать на абстрактную тему и взвешивать позиции."
+  },
+  {
+    "id": "S-A1-01",
+    "skill": "speaking",
+    "level": "A1",
+    "band": 1,
+    "topic_en": "Speaking: personal information",
+    "topic_ru": "Говорение: о себе",
+    "type": "speaking",
+    "intro_ru": "Ответьте на три простых вопроса о себе.",
+    "questions": [
+      {
+        "q": "What's your name, and where do you live?",
+        "prep_sec": 10,
+        "speak_sec": 20
+      },
+      {
+        "q": "What do you do? Do you work or study?",
+        "prep_sec": 10,
+        "speak_sec": 20
+      },
+      {
+        "q": "What do you like doing in your free time?",
+        "prep_sec": 10,
+        "speak_sec": 25
+      }
+    ],
+    "expects": [
+      "Отвечает на все вопросы простыми фразами",
+      "Использует базовую лексику о себе и быте",
+      "Простые предложения с to be, have, like, Present Simple",
+      "Речь понятна, даже с паузами и акцентом"
+    ],
+    "explain_ru": "Проверяет умение рассказать о себе простыми фразами."
+  },
+  {
+    "id": "S-A1-02",
+    "skill": "speaking",
+    "level": "A1",
+    "band": 2,
+    "topic_en": "Speaking: home and daily life",
+    "topic_ru": "Говорение: дом и быт",
+    "type": "speaking",
+    "intro_ru": "Ответьте на три вопроса о своём доме и вечерах.",
+    "questions": [
+      {
+        "q": "Tell me about your home. Is it a house or a flat?",
+        "prep_sec": 10,
+        "speak_sec": 25
+      },
+      {
+        "q": "What is your favourite room, and why?",
+        "prep_sec": 10,
+        "speak_sec": 25
+      },
+      {
+        "q": "What do you usually do in the evening?",
+        "prep_sec": 10,
+        "speak_sec": 25
+      }
+    ],
+    "expects": [
+      "Отвечает на все вопросы простыми фразами",
+      "Использует базовую лексику о себе и быте",
+      "Простые предложения с to be, have, like, Present Simple",
+      "Речь понятна, даже с паузами и акцентом"
+    ],
+    "explain_ru": "Проверяет умение описать дом и распорядок."
+  },
+  {
+    "id": "S-A1-03",
+    "skill": "speaking",
+    "level": "A1",
+    "band": 3,
+    "topic_en": "Speaking: routines and weekends",
+    "topic_ru": "Говорение: распорядок и выходные",
+    "type": "speaking",
+    "intro_ru": "Ответьте на три вопроса о своих привычках.",
+    "questions": [
+      {
+        "q": "What do you usually eat for breakfast?",
+        "prep_sec": 10,
+        "speak_sec": 25
+      },
+      {
+        "q": "What is your favourite day of the week, and why?",
+        "prep_sec": 10,
+        "speak_sec": 30
+      },
+      {
+        "q": "What do you do at the weekend?",
+        "prep_sec": 10,
+        "speak_sec": 30
+      }
+    ],
+    "expects": [
+      "Отвечает на все вопросы простыми фразами",
+      "Использует базовую лексику о себе и быте",
+      "Простые предложения с to be, have, like, Present Simple",
+      "Речь понятна, даже с паузами и акцентом"
+    ],
+    "explain_ru": "Проверяет умение говорить о привычках и предпочтениях."
+  },
+  {
+    "id": "S-A2-01",
+    "skill": "speaking",
+    "level": "A2",
+    "band": 1,
+    "topic_en": "Speaking: past experience and plans",
+    "topic_ru": "Говорение: опыт и планы",
+    "type": "speaking",
+    "intro_ru": "Ответьте на три вопроса о прошлом и планах.",
+    "questions": [
+      {
+        "q": "Tell me about your last holiday. Where did you go?",
+        "prep_sec": 15,
+        "speak_sec": 30
+      },
+      {
+        "q": "What did you do on your last birthday?",
+        "prep_sec": 15,
+        "speak_sec": 30
+      },
+      {
+        "q": "What are you going to do next weekend?",
+        "prep_sec": 15,
+        "speak_sec": 30
+      }
+    ],
+    "expects": [
+      "Говорит о прошлом опыте (Past Simple) и о планах (going to, want to)",
+      "Связывает предложения: and, but, because, then",
+      "Достаточно слов, чтобы описать события и впечатления",
+      "Паузы есть, но мысль понятна слушателю"
+    ],
+    "explain_ru": "Проверяет умение говорить о прошлом и ближайших планах."
+  },
+  {
+    "id": "S-A2-02",
+    "skill": "speaking",
+    "level": "A2",
+    "band": 2,
+    "topic_en": "Speaking: new experiences",
+    "topic_ru": "Говорение: новый опыт",
+    "type": "speaking",
+    "intro_ru": "Ответьте на три вопроса о новом опыте и желаниях.",
+    "questions": [
+      {
+        "q": "Have you ever tried a new sport or hobby? Tell me about it.",
+        "prep_sec": 15,
+        "speak_sec": 30
+      },
+      {
+        "q": "What is the best thing you did last month?",
+        "prep_sec": 15,
+        "speak_sec": 30
+      },
+      {
+        "q": "What would you like to learn next year, and why?",
+        "prep_sec": 15,
+        "speak_sec": 30
+      }
+    ],
+    "expects": [
+      "Говорит о прошлом опыте (Past Simple) и о планах (going to, want to)",
+      "Связывает предложения: and, but, because, then",
+      "Достаточно слов, чтобы описать события и впечатления",
+      "Паузы есть, но мысль понятна слушателю"
+    ],
+    "explain_ru": "Проверяет Present Perfect и Past Simple в рассказе об опыте."
+  },
+  {
+    "id": "S-A2-03",
+    "skill": "speaking",
+    "level": "A2",
+    "band": 3,
+    "topic_en": "Speaking: friends and plans",
+    "topic_ru": "Говорение: друзья и планы",
+    "type": "speaking",
+    "intro_ru": "Ответьте на три вопроса о друге и своих планах.",
+    "questions": [
+      {
+        "q": "Tell me about a friend you see often. How did you meet?",
+        "prep_sec": 15,
+        "speak_sec": 30
+      },
+      {
+        "q": "What do you usually do together?",
+        "prep_sec": 15,
+        "speak_sec": 30
+      },
+      {
+        "q": "What are your plans for the summer?",
+        "prep_sec": 15,
+        "speak_sec": 30
+      }
+    ],
+    "expects": [
+      "Говорит о прошлом опыте (Past Simple) и о планах (going to, want to)",
+      "Связывает предложения: and, but, because, then",
+      "Достаточно слов, чтобы описать события и впечатления",
+      "Паузы есть, но мысль понятна слушателю"
+    ],
+    "explain_ru": "Проверяет умение описывать людей, привычки и планы."
+  },
+  {
+    "id": "S-B1-01",
+    "skill": "speaking",
+    "level": "B1",
+    "band": 1,
+    "topic_en": "Speaking: describing a place and a story",
+    "topic_ru": "Говорение: описание места и история",
+    "type": "speaking",
+    "intro_ru": "Опишите место и расскажите историю из жизни.",
+    "questions": [
+      {
+        "q": "Describe a place where you like to relax. What is it like, and why do you like it?",
+        "prep_sec": 30,
+        "speak_sec": 45
+      },
+      {
+        "q": "Tell me about a time when something went wrong on a trip. What happened in the end?",
+        "prep_sec": 30,
+        "speak_sec": 60
+      }
+    ],
+    "expects": [
+      "Говорит связно 45–60 секунд по теме",
+      "Описывает и рассказывает с деталями и причинами",
+      "Связки first, after that, although, because, so",
+      "Разные времена с ошибками, которые не мешают пониманию",
+      "Произношение понятное, ученик сам исправляет часть ошибок"
+    ],
+    "explain_ru": "Проверяет описание с деталями и рассказ о прошлом."
+  },
+  {
+    "id": "S-B1-02",
+    "skill": "speaking",
+    "level": "B1",
+    "band": 2,
+    "topic_en": "Speaking: people and memories",
+    "topic_ru": "Говорение: люди и воспоминания",
+    "type": "speaking",
+    "intro_ru": "Расскажите о человеке и о запомнившемся дне.",
+    "questions": [
+      {
+        "q": "Describe a person who has helped you in your life. How did they help?",
+        "prep_sec": 30,
+        "speak_sec": 60
+      },
+      {
+        "q": "Tell me about a day you will never forget.",
+        "prep_sec": 30,
+        "speak_sec": 60
+      }
+    ],
+    "expects": [
+      "Говорит связно 45–60 секунд по теме",
+      "Описывает и рассказывает с деталями и причинами",
+      "Связки first, after that, although, because, so",
+      "Разные времена с ошибками, которые не мешают пониманию",
+      "Произношение понятное, ученик сам исправляет часть ошибок"
+    ],
+    "explain_ru": "Проверяет описание человека и связный рассказ."
+  },
+  {
+    "id": "S-B1-03",
+    "skill": "speaking",
+    "level": "B1",
+    "band": 3,
+    "topic_en": "Speaking: decisions and possibilities",
+    "topic_ru": "Говорение: решения и возможности",
+    "type": "speaking",
+    "intro_ru": "Ответьте на три вопроса о решениях и планах.",
+    "questions": [
+      {
+        "q": "Describe a typical working or study day for you.",
+        "prep_sec": 20,
+        "speak_sec": 45
+      },
+      {
+        "q": "Tell me about a decision you made that changed your life.",
+        "prep_sec": 30,
+        "speak_sec": 60
+      },
+      {
+        "q": "If you had a whole week free, what would you do?",
+        "prep_sec": 30,
+        "speak_sec": 60
+      }
+    ],
+    "expects": [
+      "Говорит связно 45–60 секунд по теме",
+      "Описывает и рассказывает с деталями и причинами",
+      "Связки first, after that, although, because, so",
+      "Разные времена с ошибками, которые не мешают пониманию",
+      "Произношение понятное, ученик сам исправляет часть ошибок"
+    ],
+    "explain_ru": "Проверяет описание, рассказ и гипотетические ситуации."
+  },
+  {
+    "id": "S-B2-01",
+    "skill": "speaking",
+    "level": "B2",
+    "band": 1,
+    "topic_en": "Speaking: lifestyle opinions",
+    "topic_ru": "Говорение: мнение об образе жизни",
+    "type": "speaking",
+    "intro_ru": "Выскажите мнение и приведите аргументы.",
+    "questions": [
+      {
+        "q": "Some people prefer to live alone, while others prefer to live with friends or family. Which do you prefer, and why?",
+        "prep_sec": 30,
+        "speak_sec": 60
+      },
+      {
+        "q": "Do you think technology has made people more or less sociable? Give examples.",
+        "prep_sec": 30,
+        "speak_sec": 60
+      }
+    ],
+    "expects": [
+      "Высказывает мнение и подкрепляет его аргументами и примерами",
+      "Сравнивает варианты и учитывает другую точку зрения",
+      "Разнообразная лексика, есть коллокации и фразы для выражения мнения",
+      "Сложные конструкции в основном верны, ошибки не мешают пониманию",
+      "Говорит достаточно бегло, паузы — на поиск идей, а не слов"
+    ],
+    "explain_ru": "Проверяет аргументацию и сравнение вариантов."
+  },
+  {
+    "id": "S-B2-02",
+    "skill": "speaking",
+    "level": "B2",
+    "band": 2,
+    "topic_en": "Speaking: work opinions",
+    "topic_ru": "Говорение: мнение о работе",
+    "type": "speaking",
+    "intro_ru": "Выскажите мнение и приведите аргументы.",
+    "questions": [
+      {
+        "q": "Is it better to stay in one job for many years or to change jobs often? Why?",
+        "prep_sec": 30,
+        "speak_sec": 60
+      },
+      {
+        "q": "Should employers let people choose their own working hours? What are the advantages and disadvantages?",
+        "prep_sec": 30,
+        "speak_sec": 60
+      }
+    ],
+    "expects": [
+      "Высказывает мнение и подкрепляет его аргументами и примерами",
+      "Сравнивает варианты и учитывает другую точку зрения",
+      "Разнообразная лексика, есть коллокации и фразы для выражения мнения",
+      "Сложные конструкции в основном верны, ошибки не мешают пониманию",
+      "Говорит достаточно бегло, паузы — на поиск идей, а не слов"
+    ],
+    "explain_ru": "Проверяет мнение с аргументами за и против."
+  },
+  {
+    "id": "S-B2-03",
+    "skill": "speaking",
+    "level": "B2",
+    "band": 3,
+    "topic_en": "Speaking: time and balance",
+    "topic_ru": "Говорение: время и баланс",
+    "type": "speaking",
+    "intro_ru": "Ответьте на три вопроса, приводя аргументы.",
+    "questions": [
+      {
+        "q": "Do you think people today are too busy? Why, or why not?",
+        "prep_sec": 30,
+        "speak_sec": 60
+      },
+      {
+        "q": "What could people do to have a better balance between work and free time?",
+        "prep_sec": 30,
+        "speak_sec": 60
+      },
+      {
+        "q": "Is it important to have hobbies that have nothing to do with work?",
+        "prep_sec": 30,
+        "speak_sec": 60
+      }
+    ],
+    "expects": [
+      "Высказывает мнение и подкрепляет его аргументами и примерами",
+      "Сравнивает варианты и учитывает другую точку зрения",
+      "Разнообразная лексика, есть коллокации и фразы для выражения мнения",
+      "Сложные конструкции в основном верны, ошибки не мешают пониманию",
+      "Говорит достаточно бегло, паузы — на поиск идей, а не слов"
+    ],
+    "explain_ru": "Проверяет развёрнутое мнение и предложения решений."
+  },
+  {
+    "id": "S-C1-01",
+    "skill": "speaking",
+    "level": "C1",
+    "band": 1,
+    "topic_en": "Speaking: success and responsibility",
+    "topic_ru": "Говорение: успех и ответственность",
+    "type": "speaking",
+    "intro_ru": "Порассуждайте на две абстрактные темы и сравните разные точки зрения.",
+    "questions": [
+      {
+        "q": "Some people argue that success mainly comes from hard work, while others believe that luck and circumstances matter more. Compare these views and give your own opinion.",
+        "prep_sec": 45,
+        "speak_sec": 75
+      },
+      {
+        "q": "To what extent should individuals, rather than businesses, be responsible for protecting the environment?",
+        "prep_sec": 45,
+        "speak_sec": 75
+      }
+    ],
+    "expects": [
+      "Развёрнуто рассуждает на абстрактную тему, сравнивает позиции",
+      "Чёткая структура ответа: тезис, аргументы, вывод",
+      "Точная, гибкая лексика, идиоматичные выражения",
+      "Широкий диапазон грамматики с редкими оговорками",
+      "Речь беглая и естественная, интонация помогает выделять главное"
+    ],
+    "explain_ru": "Проверяет рассуждение и сравнение позиций на абстрактную тему."
+  },
+  {
+    "id": "S-C1-02",
+    "skill": "speaking",
+    "level": "C1",
+    "band": 2,
+    "topic_en": "Speaking: careers and the past",
+    "topic_ru": "Говорение: карьера и прошлое",
+    "type": "speaking",
+    "intro_ru": "Порассуждайте на две абстрактные темы и сравните разные точки зрения.",
+    "questions": [
+      {
+        "q": "In today's world, is it better to be a specialist in one area or to have a wide range of skills? Compare the two positions.",
+        "prep_sec": 45,
+        "speak_sec": 90
+      },
+      {
+        "q": "Some people think nostalgia holds us back, while others think it helps us. What is your view?",
+        "prep_sec": 45,
+        "speak_sec": 90
+      }
+    ],
+    "expects": [
+      "Развёрнуто рассуждает на абстрактную тему, сравнивает позиции",
+      "Чёткая структура ответа: тезис, аргументы, вывод",
+      "Точная, гибкая лексика, идиоматичные выражения",
+      "Широкий диапазон грамматики с редкими оговорками",
+      "Речь беглая и естественная, интонация помогает выделять главное"
+    ],
+    "explain_ru": "Проверяет рассуждение и сравнение позиций на абстрактную тему."
+  },
+  {
+    "id": "S-C1-03",
+    "skill": "speaking",
+    "level": "C1",
+    "band": 3,
+    "topic_en": "Speaking: choice and creativity",
+    "topic_ru": "Говорение: выбор и творчество",
+    "type": "speaking",
+    "intro_ru": "Порассуждайте на две абстрактные темы и сравните разные точки зрения.",
+    "questions": [
+      {
+        "q": "Does having more choice make people happier, or does it make life more stressful? Discuss both sides.",
+        "prep_sec": 45,
+        "speak_sec": 90
+      },
+      {
+        "q": "Can creativity be taught, or is it something people are born with? Explain your position.",
+        "prep_sec": 45,
+        "speak_sec": 90
+      }
+    ],
+    "expects": [
+      "Развёрнуто рассуждает на абстрактную тему, сравнивает позиции",
+      "Чёткая структура ответа: тезис, аргументы, вывод",
+      "Точная, гибкая лексика, идиоматичные выражения",
+      "Широкий диапазон грамматики с редкими оговорками",
+      "Речь беглая и естественная, интонация помогает выделять главное"
+    ],
+    "explain_ru": "Проверяет рассуждение и сравнение позиций на абстрактную тему."
+  }
+]
