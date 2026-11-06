@@ -63,8 +63,9 @@ def check_explain(i, it, text_pool):
     if not ex:
         return err(i, "нет explain_ru")
     stem = lambda w: re.sub(r"e$", "", re.sub(r"(ing|ed|es|s)$", "", w))
-    pool = {stem(w) for w in latin_words(text_pool)}
-    stray = {w for w in latin_words(ex) - GRAMMAR_WORDS if stem(w) not in pool}
+    raw = latin_words(text_pool)
+    pool = raw | {stem(w) for w in raw}
+    stray = {w for w in latin_words(ex) - GRAMMAR_WORDS if w not in pool and stem(w) not in pool}
     if stray:
         note(i, f"в разборе слова, которых нет в задании: {', '.join(sorted(stray))} — разбор может быть от другого вопроса")
 
