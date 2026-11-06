@@ -9,8 +9,8 @@
 # Озвучка файла банка (mp3 кладутся в content/placement/audio/<id>.mp3):
 #   ttsenv/bin/python -I scripts/voice-placement-listening.py model_quantized.onnx voices.npz content/placement/audio content/placement/10_listening_A1_A2.json [id …]
 # Голоса выбраны на слух: женский британский bf_emma, мужской британский bm_fable,
-# женский американский af_bella, мужской американский am_fenrir
-# (записи A1–A2 озвучены раньше голосами af_heart / am_michael и одобрены — их не перезаписываем без нужды).
+# женский американский af_heart, мужской американский am_michael; озвучка по предложениям.
+# Исключения по отдельным записям — в словаре ITEM (например, L-B1-02: Fenrir и Bella, реплики целиком).
 import json, re, subprocess, sys, os
 import numpy as np
 import soundfile as sf
@@ -31,8 +31,8 @@ k = Kokoro(model, voices)
 VOICES = {
     ("female", "British"): ["bf_emma", "bf_isabella"],
     ("male", "British"): ["bm_fable", "bm_lewis"],  # выбран на слух (bm_george не подошёл)
-    ("female", "American"): ["af_bella", "af_heart"],  # выбраны на слух (B1): живее, чем heart / michael
-    ("male", "American"): ["am_fenrir", "am_michael"],
+    ("female", "American"): ["af_heart", "af_sarah"],
+    ("male", "American"): ["am_michael", "am_adam"],
 }
 SPEED = {"A1": 0.8, "A2": 0.86, "B1": 0.93, "B2": 0.98, "C1": 1.02}
 SENT_GAP = {"A1": 0.45, "A2": 0.32, "B1": 0.22, "B2": 0.15, "C1": 0.1}  # пауза между предложениями
@@ -98,6 +98,10 @@ def silence(sec, sr):
 # реплика целиком + паузы на знаках — естественнее; для A1–A2 по умолчанию — по предложениям (медленнее, с паузами)
 WHOLE_TURN_ENV = os.environ.get("WHOLE_TURN")
 SPEED_SCALE = float(os.environ.get("SPEED_SCALE", "1"))
+# Отдельные записи, которые по решению методиста озвучены иначе (голоса и способ выбраны на слух)
+ITEM = {
+    "L-B1-02": {"voices": {"Jake": "am_fenrir", "Nina": "af_bella"}, "whole_turn": True},
+}
 OVERRIDE = dict(x.split("=") for x in os.environ.get("VOICE_OVERRIDE", "").split(",") if "=" in x)
 SUFFIX = os.environ.get("OUT_SUFFIX", "")
 
@@ -109,6 +113,7 @@ def voice_map(item):
         n = used.get(key, 0)
         res[s["name"]] = VOICES[key][min(n, len(VOICES[key]) - 1)]
         used[key] = n + 1
+    res.update(ITEM.get(item["id"], {}).get("voices", {}))
     res.update({k_: v for k_, v in OVERRIDE.items() if k_ in res})
     return res
 
@@ -133,13 +138,13 @@ def render(item):
             chunk = chunk.strip()
             if not chunk:
                 continue
-            whole = WHOLE_TURN_ENV == "1" if WHOLE_TURN_ENV in ("0", "1") else item["level"] not in ("A1", "A2")
+            whole = WHOLE_TURN_ENV == "1" if WHOLE_TURN_ENV in ("0", "1") else ITEM.get(item["id"], {}).get("whole_turn", False)
             for sent in ([chunk] if whole else re.split(r"(?<=[.!?])\s+", chunk)):
                 if not sent.strip():
                     continue
                 audio, sr = k.create(sent, voice=vm[name], speed=speed * SPEED_SCALE * VOICE_SPEED.get(vm[name], 1.0), lang=lang[accent[name]])
                 audio = audio.astype(np.float32)
-                if PAUSE_STRETCH:
+                if PAUSE_STRETCH and whole:  # паузы на знаках — только для реплик целиком
                     audio = stretch_pauses(audio, sr, sent, item["level"])
                 parts.append(audio)
                 parts.append(silence(SENT_GAP[item["level"]], sr))
