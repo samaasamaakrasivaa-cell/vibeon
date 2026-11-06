@@ -43,6 +43,8 @@ def silence(sec, sr):
     return np.zeros(int(sec * sr), dtype=np.float32)
 
 
+WHOLE_TURN = os.environ.get("WHOLE_TURN") == "1"
+SPEED_SCALE = float(os.environ.get("SPEED_SCALE", "1"))
 OVERRIDE = dict(x.split("=") for x in os.environ.get("VOICE_OVERRIDE", "").split(",") if "=" in x)
 SUFFIX = os.environ.get("OUT_SUFFIX", "")
 
@@ -78,10 +80,10 @@ def render(item):
             chunk = chunk.strip()
             if not chunk:
                 continue
-            for sent in re.split(r"(?<=[.!?])\s+", chunk):
+            for sent in ([chunk] if WHOLE_TURN else re.split(r"(?<=[.!?])\s+", chunk)):
                 if not sent.strip():
                     continue
-                audio, sr = k.create(sent, voice=vm[name], speed=speed * VOICE_SPEED.get(vm[name], 1.0), lang=lang[accent[name]])
+                audio, sr = k.create(sent, voice=vm[name], speed=speed * SPEED_SCALE * VOICE_SPEED.get(vm[name], 1.0), lang=lang[accent[name]])
                 parts.append(audio.astype(np.float32))
                 parts.append(silence(SENT_GAP[item["level"]], sr))
         parts.append(silence(gap, sr))
