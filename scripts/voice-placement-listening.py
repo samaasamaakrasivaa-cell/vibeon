@@ -10,6 +10,7 @@
 #   ttsenv/bin/python -I scripts/voice-placement-listening.py model_quantized.onnx voices.npz content/placement/audio content/placement/10_listening_A1_A2.json [id …]
 # Голоса выбраны на слух: женский британский bf_emma, мужской британский bm_fable,
 # женский американский af_heart, мужской американский am_michael; озвучка по предложениям.
+# Файл говорения (14_…) озвучивается так же: вопросы — голосами Emma и Heart по очереди.
 # Исключения по отдельным записям — в словаре ITEM (например, L-B1-02: Fenrir и Bella, реплики целиком).
 import json, re, subprocess, sys, os
 import numpy as np
@@ -161,8 +162,40 @@ def render(item):
     return len(audio) / sr, vm
 
 
+def save(audio, sr, name):
+    peak = float(np.max(np.abs(audio))) or 1.0
+    audio = audio / peak * 0.89
+    wav, mp3 = os.path.join(out_dir, name + ".wav"), os.path.join(out_dir, name + ".mp3")
+    sf.write(wav, audio, sr)
+    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", wav, "-ac", "1", "-b:a", "64k", mp3], check=True)
+    os.remove(wav)
+
+
+# Говорение: каждый вопрос — отдельный файл <id>-q<n>.mp3, голос «экзаменатора» — Emma и Heart по очереди
+EXAMINERS = [("bf_emma", "en-gb"), ("af_heart", "en-us")]
+
+
+def render_speaking(item, n):
+    voice, lang = EXAMINERS[n % 2]
+    out = []
+    for qi, q in enumerate(item["questions"], 1):
+        audio, sr = k.create(q["q"], voice=voice, speed=SPEED[item["level"]] * SPEED_SCALE * VOICE_SPEED.get(voice, 1.0), lang=lang)
+        audio = stretch_pauses(audio.astype(np.float32), sr, q["q"], item["level"]) if PAUSE_STRETCH else audio.astype(np.float32)
+        audio = np.concatenate([silence(0.3, sr), audio, silence(0.4, sr)])
+        save(audio, sr, f"{item['id']}-q{qi}" + SUFFIX)
+        out.append(len(audio) / sr)
+    return out, voice
+
+
+n_speaking = 0
 for item in json.load(open(bank)):
-    if only and item["id"] not in only:
+    if item.get("type") == "speaking":
+        if not only or item["id"] in only:
+            durs, voice = render_speaking(item, n_speaking)
+            print(f"{item['id']}: {voice}, " + ", ".join(f"{d:.1f} с" for d in durs), flush=True)
+        n_speaking += 1
+        continue
+    if item.get("type") != "listening" or (only and item["id"] not in only):
         continue
     dur, vm = render(item)
     print(f"{item['id']}: {dur:.1f} с (ожидалось ≈{item.get('duration_sec')} с) — " + ", ".join(f"{n} → {v}" for n, v in vm.items()), flush=True)
