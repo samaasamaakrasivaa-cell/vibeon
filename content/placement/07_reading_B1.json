@@ -1,0 +1,230 @@
+[
+  {
+    "id": "R-B1-01",
+    "skill": "reading",
+    "level": "B1",
+    "band": 1,
+    "topic_en": "Email: life in a new city",
+    "topic_ru": "Письмо: жизнь в новом городе",
+    "type": "reading",
+    "title": "News from Lisbon",
+    "text_type": "email",
+    "passage": "Hi Jess,\nSorry it's taken me so long to write! It's been a crazy month. As you know, I moved to Lisbon for my new job in September, and I'm finally starting to feel at home. My flat is small, but it has a tiny balcony where I have breakfast in the sun every morning. The job is going well, although my Portuguese is still terrible, so I mostly speak English at work. I've joined a language exchange group that meets every Thursday in a café near my office. It's a great way to practise and make friends at the same time. Last weekend, a few people from the group took me to a beach just thirty minutes from the city. I couldn't believe how beautiful it was!\nWhy don't you come and visit in spring? You can stay with me, but I'm afraid you'll have to sleep on the sofa.\nLove,\nAnna",
+    "words": 153,
+    "questions": [
+      {
+        "id": "R-B1-01-q1",
+        "q": "Why is Anna writing to Jess?",
+        "options": [
+          "To complain about her new job",
+          "To tell her about her new life and invite her",
+          "To ask her for help with Portuguese",
+          "To say that she is coming back home"
+        ],
+        "answer": 1,
+        "checks": "main idea",
+        "topic_id": "r-main-idea",
+        "explain_ru": "Анна рассказывает о жизни в Лиссабоне и зовёт Джесс в гости."
+      },
+      {
+        "id": "R-B1-01-q2",
+        "q": "Why does Anna go to the language exchange group?",
+        "options": [
+          "Her boss asked her to",
+          "It's next to her flat",
+          "To improve her Portuguese and meet people",
+          "To teach English to other people"
+        ],
+        "answer": 2,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "Группа помогает практиковать язык и заводить друзей одновременно."
+      },
+      {
+        "id": "R-B1-01-q3",
+        "q": "What can we understand about Anna's flat?",
+        "options": [
+          "It doesn't have a spare bedroom",
+          "It's close to the beach",
+          "It's too expensive for her",
+          "It's very noisy"
+        ],
+        "answer": 0,
+        "checks": "inference",
+        "topic_id": "r-inference",
+        "explain_ru": "Гостье придётся спать на диване — значит, отдельной комнаты нет."
+      }
+    ]
+  },
+  {
+    "id": "R-B1-02",
+    "skill": "reading",
+    "level": "B1",
+    "band": 2,
+    "topic_en": "Article: slow travel",
+    "topic_ru": "Статья: медленные путешествия",
+    "type": "reading",
+    "title": "Why slow travel is growing",
+    "text_type": "article",
+    "passage": "More and more people are choosing what is called slow travel. Instead of visiting five cities in a week, slow travellers stay in one place for longer and get to know it properly. They often travel by train or bus rather than by plane, and they see the journey as part of the holiday, not just a way to get somewhere.\nSupporters of slow travel say it is less stressful and better for the environment. You spend less time packing and checking in, and more time enjoying local food, markets and conversations with people who live there. Many slow travellers rent a flat instead of staying in a hotel, so they can cook and live like locals.\nOf course, slow travel isn't for everyone. It needs more time, and not everyone can take three weeks off work. But even on a short break, you can try some of its ideas: visit fewer places and take your time.",
+    "words": 157,
+    "questions": [
+      {
+        "id": "R-B1-02-q1",
+        "q": "What is the main idea of the article?",
+        "options": [
+          "Trains are cheaper than planes",
+          "Hotels are becoming more expensive",
+          "Everyone should take three weeks off work",
+          "Slow travel means spending more time in fewer places"
+        ],
+        "answer": 3,
+        "checks": "main idea",
+        "topic_id": "r-main-idea",
+        "explain_ru": "Главная мысль — путешествовать медленнее: меньше мест, больше времени в каждом."
+      },
+      {
+        "id": "R-B1-02-q2",
+        "q": "Why do many slow travellers rent a flat?",
+        "options": [
+          "It's always cheaper than a hotel",
+          "They can cook and live like local people",
+          "Hotels are often full",
+          "They usually travel in big groups"
+        ],
+        "answer": 1,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "Квартира позволяет готовить самим и жить как местные."
+      },
+      {
+        "id": "R-B1-02-q3",
+        "q": "What does the writer suggest about people who don't have much free time?",
+        "options": [
+          "They can't enjoy slow travel at all",
+          "They should always travel by plane",
+          "They can still use some ideas of slow travel",
+          "They should stay at home"
+        ],
+        "answer": 2,
+        "checks": "inference",
+        "topic_id": "r-inference",
+        "explain_ru": "Даже в короткой поездке можно посетить меньше мест и не спешить."
+      }
+    ]
+  },
+  {
+    "id": "R-B1-03",
+    "skill": "reading",
+    "level": "B1",
+    "band": 3,
+    "topic_en": "Blog: learning the piano as an adult",
+    "topic_ru": "Блог: учиться играть на пианино взрослым",
+    "type": "reading",
+    "title": "Never too late",
+    "text_type": "blog",
+    "passage": "Last year, just before my fortieth birthday, I finally did something I'd wanted to do since I was a child: I started piano lessons. I was really nervous before the first one. My teacher was about twenty years younger than me, and I was sure I would look silly.\nThe first few months were hard. My fingers didn't want to do what I asked, and I made the same mistakes again and again. Some evenings I was so tired after work that I didn't practise at all, and then I felt guilty.\nBut slowly things got better. Now I practise for twenty minutes most days, usually before dinner, and it has become my favourite part of the day. When I play, I forget about emails and deadlines. I'm not going to give concerts, and that's fine. I'm not playing for anyone else, just for me.",
+    "words": 145,
+    "questions": [
+      {
+        "id": "R-B1-03-q1",
+        "q": "What is the main message of the blog post?",
+        "options": [
+          "Piano lessons are too expensive for adults",
+          "It's never too late to learn something for yourself",
+          "Young teachers are better than older ones",
+          "You have to practise every day to be good"
+        ],
+        "answer": 1,
+        "checks": "main idea",
+        "topic_id": "r-main-idea",
+        "explain_ru": "Автор начал учиться в 40 лет и играет для себя — учиться никогда не поздно."
+      },
+      {
+        "id": "R-B1-03-q2",
+        "q": "In the text, I felt guilty means the writer felt:",
+        "options": [
+          "bad because they didn't do what they should",
+          "happy and proud of themselves",
+          "too tired to do anything",
+          "angry with their teacher"
+        ],
+        "answer": 0,
+        "checks": "vocabulary in context",
+        "topic_id": "r-vocabulary-in-context",
+        "explain_ru": "Feel guilty — чувствовать вину за то, что не сделал нужного."
+      },
+      {
+        "id": "R-B1-03-q3",
+        "q": "What does playing the piano give the writer now?",
+        "options": [
+          "A chance to earn some extra money",
+          "A way to meet new friends",
+          "Preparation for giving concerts",
+          "A way to relax and forget about work"
+        ],
+        "answer": 3,
+        "checks": "inference",
+        "topic_id": "r-inference",
+        "explain_ru": "Во время игры автор забывает о письмах и дедлайнах — это способ отдохнуть."
+      }
+    ]
+  },
+  {
+    "id": "R-B1-04",
+    "skill": "reading",
+    "level": "B1",
+    "band": 2,
+    "topic_en": "Review: a pottery workshop",
+    "topic_ru": "Отзыв: мастер-класс по керамике",
+    "type": "reading",
+    "title": "A morning at Clay Studio",
+    "text_type": "review",
+    "passage": "Last Saturday, my sister and I went to a beginners' pottery workshop at Clay Studio, a small studio in the old part of town. The workshop lasted three hours and cost £45 each, which included all materials and a cup of tea.\nThe teacher, Rosa, was patient and funny. She showed us how to use the wheel and then let us try on our own. It was much harder than it looks! My first bowl fell apart twice, and by the end I was covered in clay. My sister did much better than me, and she didn't stop talking about it all the way home.\nThe only disappointing thing was that we couldn't take our bowls home on the day. They need to dry and go in a special oven first, so we have to go back and collect them in two weeks. Still, it was a relaxing and creative morning, and I'd definitely book another class.",
+    "words": 157,
+    "questions": [
+      {
+        "id": "R-B1-04-q1",
+        "q": "What is the review mainly about?",
+        "options": [
+          "How to make a bowl at home",
+          "The history of the old town",
+          "The writer's experience at a pottery class",
+          "Why the writer's sister loves pottery"
+        ],
+        "answer": 2,
+        "checks": "main idea",
+        "topic_id": "r-main-idea",
+        "explain_ru": "Отзыв о том, как автор с сестрой сходили на мастер-класс по керамике."
+      },
+      {
+        "id": "R-B1-04-q2",
+        "q": "How did the writer's sister probably feel about her bowl?",
+        "options": [
+          "Proud of it",
+          "Disappointed with it",
+          "Bored by the class",
+          "Embarrassed about it"
+        ],
+        "answer": 0,
+        "checks": "inference",
+        "topic_id": "r-inference",
+        "explain_ru": "Сестра всю дорогу говорила о своём успехе — значит, гордилась."
+      },
+      {
+        "id": "R-B1-04-q3",
+        "q": "Why couldn't they take their bowls home?",
+        "options": [
+          "The bowls broke",
+          "The bowls cost extra",
+          "The studio was closing",
+          "The bowls had to dry and go in an oven first"
+        ],
+        "answer": 3,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "Миски нужно высушить и обжечь в печи, забрать можно через две недели."
+      }
+    ]
+  }
+]
