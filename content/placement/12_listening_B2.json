@@ -1,0 +1,354 @@
+[
+  {
+    "id": "L-B2-01",
+    "skill": "listening",
+    "level": "B2",
+    "band": 1,
+    "topic_en": "Radio interview: a repair café",
+    "topic_ru": "Радиоинтервью: кафе починки",
+    "type": "listening",
+    "title": "The repair café",
+    "situation_ru": "Ведущий радио берёт интервью у женщины, которая организовала бесплатное кафе починки вещей.",
+    "speakers": [
+      {
+        "name": "Presenter",
+        "gender": "male",
+        "age": "45-60",
+        "accent": "British"
+      },
+      {
+        "name": "Helen",
+        "gender": "female",
+        "age": "45-60",
+        "accent": "British"
+      }
+    ],
+    "script": "Presenter: My guest today is Helen Price, who started a repair café in her local community centre three years ago. Helen, what exactly is a repair café?\nHelen: Basically, it's a free event where people bring things that are broken, like a lamp, a jacket with a broken zip or a bike that won't change gear, and volunteers help them fix it. The idea is that you learn how to do it yourself, rather than just leaving it with us.\nPresenter: And why did you start it?\nHelen: Honestly, it began out of frustration. My toaster stopped working, and the shop told me it would be cheaper to buy a new one than to repair it. That seemed absurd to me. I knew there must be people around who had the skills to fix things, and plenty of people who'd love to learn.\nPresenter: Who are your volunteers?\nHelen: All sorts. We've got a retired electrician, a couple of students who are brilliant with phones, and a woman in her eighties who can repair almost any piece of clothing. That mix is one of my favourite things about it. People who'd never normally meet end up chatting for hours.\nPresenter: Does everything get fixed?\nHelen: No, and I think it's important to be honest about that. Roughly two thirds of the items leave working. Some things are simply designed so they can't be opened. That's actually what frustrates me most: not the broken things, but the products that are made to be thrown away.\nPresenter: What would you say to someone thinking of starting one?\nHelen: Start small. We began with four volunteers and a borrowed table. You don't need money. You need a room, some tools and a bit of patience.",
+    "words": 282,
+    "duration_sec": 116,
+    "pace": "natural",
+    "plays": 2,
+    "questions": [
+      {
+        "id": "L-B2-01-q1",
+        "q": "What made Helen start the repair café?",
+        "options": [
+          "Her local council asked her to organise it",
+          "A shop said a new toaster was cheaper than a repair",
+          "She wanted to sell second-hand things locally",
+          "She lost her job as an electrician and had free time"
+        ],
+        "answer": 1,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "Магазин сказал, что купить новый тостер дешевле, чем починить старый."
+      },
+      {
+        "id": "L-B2-01-q2",
+        "q": "What does Helen enjoy most about the volunteers?",
+        "options": [
+          "They are all trained professionals with years of experience",
+          "They work very quickly",
+          "They bring together people who wouldn't usually meet",
+          "They fix every single item"
+        ],
+        "answer": 2,
+        "checks": "speaker's attitude",
+        "topic_id": "l-speakers-attitude",
+        "explain_ru": "Ей нравится, что встречаются люди, которые иначе никогда бы не познакомились."
+      },
+      {
+        "id": "L-B2-01-q3",
+        "q": "What frustrates Helen most?",
+        "options": [
+          "People who don't want to learn",
+          "Volunteers who don't turn up on time",
+          "Things people forget to collect afterwards",
+          "Products that are made to be thrown away"
+        ],
+        "answer": 3,
+        "checks": "speaker's attitude",
+        "topic_id": "l-speakers-attitude",
+        "explain_ru": "Больше всего её раздражают вещи, которые сделаны, чтобы их выбрасывали."
+      },
+      {
+        "id": "L-B2-01-q4",
+        "q": "What is Helen's advice to someone starting a repair café?",
+        "options": [
+          "Start small, because you don't need much money",
+          "Find a big sponsor before you begin anything",
+          "Only accept electrical items at the start",
+          "Train your volunteers for several months before you open"
+        ],
+        "answer": 0,
+        "checks": "main idea",
+        "topic_id": "l-main-idea",
+        "explain_ru": "Начинать с малого: нужны комната, инструменты и терпение, а не деньги."
+      }
+    ]
+  },
+  {
+    "id": "L-B2-02",
+    "skill": "listening",
+    "level": "B2",
+    "band": 2,
+    "topic_en": "Podcast discussion: back to the office?",
+    "topic_ru": "Подкаст: возвращаться ли в офис?",
+    "type": "listening",
+    "title": "Work in Progress",
+    "situation_ru": "Два ведущих подкаста о работе обсуждают удалённую и офисную работу.",
+    "speakers": [
+      {
+        "name": "Jen",
+        "gender": "female",
+        "age": "30-45",
+        "accent": "American"
+      },
+      {
+        "name": "Rob",
+        "gender": "male",
+        "age": "30-45",
+        "accent": "British"
+      }
+    ],
+    "script": "Jen: Welcome back to Work in Progress. Rob, this week's topic is one we've been arguing about for months: should companies bring everyone back to the office?\nRob: Well, I'll admit I've changed my mind on this. Two years ago I'd have said remote work was perfect. No commute, more time with the kids, fewer pointless meetings.\nJen: And now?\nRob: Now I think something got lost. When I started my career, I learned most of what I know by sitting next to people who were better than me, overhearing their phone calls and asking quick questions. I'm not sure young employees get that on a video call.\nJen: That's fair, but I'd push back a bit. For a lot of people, like parents, people with long commutes or people with health issues, remote work has made it possible to keep a career at all. Forcing everyone back five days a week feels like solving one problem by creating another.\nRob: Oh, I'm not suggesting five days. I just think the office should be for the things that really need people together: training, brainstorming, building relationships. The rest can happen anywhere.\nJen: So, basically, hybrid.\nRob: Hybrid, but planned properly. What doesn't work is when everyone comes in on different days and then spends the whole time on video calls anyway.\nJen: Ha, I've definitely done that. OK, so where do we agree? I think we both believe the real question isn't whether to work in the office or at home, but what each place is actually good for.\nRob: Exactly. And I'd add that companies should ask their staff, rather than just announcing a policy from the top.\nJen: Agreed. Let us know what your company is doing, and we'll read some of your messages next week.",
+    "words": 287,
+    "duration_sec": 119,
+    "pace": "natural",
+    "plays": 2,
+    "questions": [
+      {
+        "id": "L-B2-02-q1",
+        "q": "How has Rob's opinion changed?",
+        "options": [
+          "He now thinks everyone should be back in the office every day",
+          "He's less enthusiastic about fully remote work than before",
+          "He has become much more positive about video calls",
+          "He hasn't really changed his mind at all"
+        ],
+        "answer": 1,
+        "checks": "speaker's attitude",
+        "topic_id": "l-speakers-attitude",
+        "explain_ru": "Раньше Роб считал удалёнку идеальной, теперь видит в ней минусы."
+      },
+      {
+        "id": "L-B2-02-q2",
+        "q": "Why does Rob think young employees may lose out?",
+        "options": [
+          "They miss chances to learn from colleagues",
+          "They usually earn less than older staff",
+          "They have the longest commutes",
+          "They attend too many pointless meetings"
+        ],
+        "answer": 0,
+        "checks": "inference",
+        "topic_id": "l-inference",
+        "explain_ru": "Он сам учился, сидя рядом с опытными коллегами, а по видеосвязи так не выйдет."
+      },
+      {
+        "id": "L-B2-02-q3",
+        "q": "What worries Jen about bringing everyone back five days a week?",
+        "options": [
+          "Offices have become far too expensive for most companies to run",
+          "Young employees prefer to work from cafés",
+          "Video calls would stop working properly",
+          "Some people might not be able to keep their jobs"
+        ],
+        "answer": 3,
+        "checks": "speaker's attitude",
+        "topic_id": "l-speakers-attitude",
+        "explain_ru": "Для многих удалёнка — единственная возможность сохранить карьеру."
+      },
+      {
+        "id": "L-B2-02-q4",
+        "q": "What do Jen and Rob agree on?",
+        "options": [
+          "Offices should close down completely and permanently",
+          "Everyone should work from home on Fridays and Mondays",
+          "Each place should be used for what it does best",
+          "Video calls are better than face-to-face meetings"
+        ],
+        "answer": 2,
+        "checks": "main idea",
+        "topic_id": "l-main-idea",
+        "explain_ru": "Вопрос не «офис или дом», а для чего лучше подходит каждое место."
+      }
+    ]
+  },
+  {
+    "id": "L-B2-03",
+    "skill": "listening",
+    "level": "B2",
+    "band": 3,
+    "topic_en": "A couple discussing a move to the countryside",
+    "topic_ru": "Пара обсуждает переезд за город",
+    "type": "listening",
+    "title": "A house in the country",
+    "situation_ru": "Пара обсуждает, не переехать ли из города в деревню.",
+    "speakers": [
+      {
+        "name": "Mark",
+        "gender": "male",
+        "age": "30-45",
+        "accent": "American"
+      },
+      {
+        "name": "Anna",
+        "gender": "female",
+        "age": "30-45",
+        "accent": "British"
+      }
+    ],
+    "script": "Mark: I saw another house online today. Three bedrooms, a big garden, twenty minutes from the sea. And it costs less than this flat.\nAnna: Let me guess. It's in the middle of nowhere.\nMark: It's in a village. There's a shop, a pub, a primary school.\nAnna: And the nearest train station?\nMark: Forty minutes by car. But I'd only have to go into the office once a week.\nAnna: You would. I'd have to go in three days a week, remember? That's a lot of driving.\nMark: True, but the roads out there are quiet. It's not like sitting in city traffic for an hour.\nAnna: Maybe. Still, that's almost an hour and a half a day.\nMark: I know, I know. But think about it. We'd have space. We could finally get a dog. And we wouldn't be breathing traffic fumes every time we open the window.\nAnna: I'm not saying it's a bad idea. I grew up in a village, so I know how lovely it can be. I also know how quiet it gets in winter. When it's dark at four o'clock and all your friends are two hours away, the garden doesn't seem quite so important.\nMark: So you'd miss the city.\nAnna: I'd miss being able to see people without planning it a week in advance. That's what worries me most, not the driving.\nMark: OK, what if we rented somewhere out there for a few months first? See how we feel after a winter.\nAnna: That's more like it. If I still like it in February, I'll start looking at houses with you.\nMark: Deal. I'll start looking at rentals tonight.",
+    "words": 264,
+    "duration_sec": 111,
+    "pace": "natural",
+    "plays": 2,
+    "questions": [
+      {
+        "id": "L-B2-03-q1",
+        "q": "Why is Mark keen on the house?",
+        "options": [
+          "It's right next to a train station",
+          "It's bigger and cheaper than their flat",
+          "It's close to Anna's office in the town centre",
+          "It's near Anna's family and friends"
+        ],
+        "answer": 1,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "Три спальни, большой сад, и стоит дешевле их квартиры."
+      },
+      {
+        "id": "L-B2-03-q2",
+        "q": "What worries Anna most about moving?",
+        "options": [
+          "Driving to work three days a week",
+          "Paying for such a big house",
+          "Feeling cut off from her friends",
+          "Having to look after a dog"
+        ],
+        "answer": 2,
+        "checks": "speaker's attitude",
+        "topic_id": "l-speakers-attitude",
+        "explain_ru": "Больше всего её пугает, что с друзьями нельзя будет видеться без планирования."
+      },
+      {
+        "id": "L-B2-03-q3",
+        "q": "What does Anna suggest when she mentions it getting dark at four o'clock?",
+        "options": [
+          "Village life can feel lonely in winter",
+          "She doesn't enjoy working in the garden",
+          "She usually finishes work at four",
+          "Shops in villages close very early"
+        ],
+        "answer": 0,
+        "checks": "inference",
+        "topic_id": "l-inference",
+        "explain_ru": "Зимой рано темнеет, друзья далеко — в деревне может быть одиноко."
+      },
+      {
+        "id": "L-B2-03-q4",
+        "q": "What do they decide to do?",
+        "options": [
+          "Buy the house before someone else does",
+          "Stay in the city and forget the whole idea",
+          "Move closer to Anna's parents in the countryside",
+          "Rent a place in the countryside first"
+        ],
+        "answer": 3,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "Сначала снять жильё за городом на несколько месяцев."
+      }
+    ]
+  },
+  {
+    "id": "L-B2-04",
+    "skill": "listening",
+    "level": "B2",
+    "band": 2,
+    "topic_en": "Interview with a chef about food waste",
+    "topic_ru": "Интервью с шеф-поваром о пищевых отходах",
+    "type": "listening",
+    "title": "Wasting less food",
+    "situation_ru": "Ведущая берёт интервью у шеф-повара о том, как меньше выбрасывать еды дома.",
+    "speakers": [
+      {
+        "name": "Kim",
+        "gender": "female",
+        "age": "20-30",
+        "accent": "American"
+      },
+      {
+        "name": "Marcus",
+        "gender": "male",
+        "age": "45-60",
+        "accent": "American"
+      }
+    ],
+    "script": "Kim: Today I'm talking to Marcus Bell, a chef who's become something of an expert on food waste. Marcus, how much food do we actually throw away?\nMarcus: In the average home, it's around a third of what we buy. Which is crazy when you think about it. It's like walking out of the supermarket with three bags and leaving one in the parking lot.\nKim: Why do we waste so much?\nMarcus: Mostly because we shop without a plan. We buy for the person we'd like to be, someone who cooks fresh vegetables every night, rather than the person we actually are, who gets home tired and orders pizza.\nKim: That sounds very familiar. So what's your advice?\nMarcus: Three things. First, before you shop, look in your fridge and plan four or five meals, not seven. Life always gets in the way. Second, learn to love your freezer. Bread, cooked rice, even milk can be frozen. And third, don't trust best-before dates too much.\nKim: Really? Isn't that risky?\nMarcus: There's a difference between best-before and use-by dates. Use-by dates are about safety, and you should take them seriously, especially with meat and fish. Best-before dates are about quality. A yogurt two days past its best-before date is usually perfectly fine. Use your eyes and your nose.\nKim: And what about leftovers?\nMarcus: That's my favorite part! In restaurants, we never think of them as leftovers. They're ingredients for tomorrow. Yesterday's roast vegetables become today's soup. Honestly, some of my best dishes started that way.\nKim: Marcus, thank you.",
+    "words": 250,
+    "duration_sec": 104,
+    "pace": "natural",
+    "plays": 2,
+    "questions": [
+      {
+        "id": "L-B2-04-q1",
+        "q": "According to Marcus, why do people buy too much food?",
+        "options": [
+          "Supermarkets offer too many special discounts",
+          "They shop for the life they wish they had",
+          "Their fridges are usually too small",
+          "Food goes bad faster than it used to"
+        ],
+        "answer": 1,
+        "checks": "inference",
+        "topic_id": "l-inference",
+        "explain_ru": "Мы покупаем для человека, которым хотим быть, а не которым являемся."
+      },
+      {
+        "id": "L-B2-04-q2",
+        "q": "What does Marcus recommend about planning meals?",
+        "options": [
+          "Plan meals for exactly seven days",
+          "Go shopping every single day",
+          "Plan four or five meals, not seven",
+          "Avoid buying any frozen food"
+        ],
+        "answer": 2,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "Планировать четыре-пять блюд, а не семь: жизнь вносит коррективы."
+      },
+      {
+        "id": "L-B2-04-q3",
+        "q": "What does Marcus say about best-before dates?",
+        "options": [
+          "They are mainly about keeping food safe",
+          "Food should be thrown away right after them",
+          "They only really matter for meat and fish",
+          "Food is often still fine after them"
+        ],
+        "answer": 3,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "Best-before — о качестве, продукт часто ещё вполне хорош."
+      },
+      {
+        "id": "L-B2-04-q4",
+        "q": "How does Marcus feel about leftovers?",
+        "options": [
+          "Excited, because they're ingredients for new dishes",
+          "Unsure, because they can be unsafe",
+          "Bored, because they always taste the same",
+          "Annoyed, because customers in restaurants rarely eat them"
+        ],
+        "answer": 0,
+        "checks": "speaker's attitude",
+        "topic_id": "l-speakers-attitude",
+        "explain_ru": "Это его любимая часть: остатки — ингредиенты для завтрашних блюд."
+      }
+    ]
+  }
+]
