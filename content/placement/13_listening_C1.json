@@ -1,0 +1,348 @@
+[
+  {
+    "id": "L-C1-01",
+    "skill": "listening",
+    "level": "C1",
+    "band": 1,
+    "topic_en": "Lecture: trees and hot cities",
+    "topic_ru": "Лекция: деревья и жара в городах",
+    "type": "listening",
+    "title": "Cooling the city",
+    "situation_ru": "Фрагмент университетской лекции о том, как деревья охлаждают города; лектор отвлекается на личную историю.",
+    "speakers": [
+      {
+        "name": "Lecturer",
+        "gender": "female",
+        "age": "45-60",
+        "accent": "British"
+      }
+    ],
+    "script": "Lecturer: Right, let's make a start. Last week we looked at how cities trap heat, the so-called urban heat island effect, and today I want to turn to what is, on the face of it, the simplest solution: trees. [pause 1s] Now, the basic science isn't controversial. A mature tree cools the air around it in two ways. It provides shade, obviously, but it also releases water vapour through its leaves, which works rather like sweat on your skin. Studies in several European cities have found that streets with a full canopy can be up to five or six degrees cooler on a hot afternoon than streets without one. [pause 1s] I should say, incidentally, that I became interested in this entirely by accident. I was living in a flat that faced a car park, and every summer it was unbearable. The year the council planted a row of limes outside, the difference was extraordinary, though it took about eight years before they were tall enough to matter. Which brings me, rather neatly, to my main point. [pause 1s] Trees are not a quick fix. A young tree planted today will do very little for at least a decade, and in many cities around a third of newly planted trees die within the first few years, usually because nobody waters them. So when a politician announces they're planting a million trees, the honest response is: that's a good start, but who's going to look after them? [pause 1s] There's also a question of fairness that tends to get overlooked. In most of the cities that have been studied, wealthier neighbourhoods have far more tree cover than poorer ones, which means the people least able to afford air conditioning are often the ones living on the hottest streets. [pause 1s] So, for next week, I'd like you to look at your own neighbourhood and make a rough estimate of its tree cover. We'll compare notes and see whether the pattern holds.",
+    "words": 319,
+    "duration_sec": 121,
+    "pace": "natural-fast",
+    "plays": 2,
+    "questions": [
+      {
+        "id": "L-C1-01-q1",
+        "q": "Why does the lecturer mention her old flat?",
+        "options": [
+          "To complain about some of the decisions of her local council",
+          "To give a personal example of how slowly trees take effect",
+          "To argue that car parks should be removed from cities",
+          "To explain why she eventually decided to move house"
+        ],
+        "answer": 1,
+        "checks": "inference",
+        "topic_id": "l-inference",
+        "explain_ru": "Её история показывает: деревья помогли, но только через восемь лет."
+      },
+      {
+        "id": "L-C1-01-q2",
+        "q": "What is her attitude to politicians who promise to plant a million trees?",
+        "options": [
+          "She welcomes it but doubts the trees will be cared for",
+          "She thinks it's a complete waste of public money and time",
+          "She is wholeheartedly enthusiastic about it",
+          "She has no particular opinion"
+        ],
+        "answer": 0,
+        "checks": "speaker's attitude",
+        "topic_id": "l-speakers-attitude",
+        "explain_ru": "Хорошее начало, но кто будет за ними ухаживать?"
+      },
+      {
+        "id": "L-C1-01-q3",
+        "q": "What does she imply about poorer neighbourhoods?",
+        "options": [
+          "They have planted far more trees than richer areas recently",
+          "Their streets are cooler than wealthy ones",
+          "Residents suffer most from the heat and can least avoid it",
+          "People there don't want trees on their streets"
+        ],
+        "answer": 2,
+        "checks": "inference",
+        "topic_id": "l-inference",
+        "explain_ru": "Там меньше деревьев, а у жителей меньше денег на кондиционеры."
+      },
+      {
+        "id": "L-C1-01-q4",
+        "q": "What is the main problem with relying on trees, according to the lecturer?",
+        "options": [
+          "Scientists still disagree about whether they work",
+          "They release too much water vapour into the air",
+          "They are too expensive for most councils",
+          "They take years to help, and many die young"
+        ],
+        "answer": 3,
+        "checks": "main idea",
+        "topic_id": "l-main-idea",
+        "explain_ru": "Деревья не быстрое решение: эффект через десятилетие, треть погибает."
+      }
+    ]
+  },
+  {
+    "id": "L-C1-02",
+    "skill": "listening",
+    "level": "C1",
+    "band": 2,
+    "topic_en": "Radio discussion: hobbies and pressure",
+    "topic_ru": "Радиодискуссия: хобби под давлением",
+    "type": "listening",
+    "title": "When hobbies become work",
+    "situation_ru": "Ведущий радио обсуждает с писательницей и гостем, не превратились ли хобби во вторую работу.",
+    "speakers": [
+      {
+        "name": "Host",
+        "gender": "male",
+        "age": "45-60",
+        "accent": "American"
+      },
+      {
+        "name": "Priya",
+        "gender": "female",
+        "age": "30-45",
+        "accent": "British"
+      },
+      {
+        "name": "Daniel",
+        "gender": "male",
+        "age": "30-45",
+        "accent": "American"
+      }
+    ],
+    "script": "Host: Priya, you've written that we've started treating our hobbies like second jobs. What do you mean by that?\nPriya: Well, I noticed it in myself first. I took up running a few years ago, purely because it made me feel good. Within six months I was tracking my pace, I had a training plan, and I'd signed up for a marathon. And at some point I realised I was dreading my runs. The thing that was supposed to be my escape had become another set of targets.\nHost: Daniel, you're not entirely convinced.\nDaniel: I'm convinced the pressure exists. I just think Priya slightly underestimates how much people enjoy getting better at things. Improvement is a pleasure in itself. My dad played the same three songs on the guitar for forty years and was perfectly happy, which is lovely, but I don't think wanting to progress is some sort of modern disease.\nPriya: I'm not against progress. What worries me is the next step, when every hobby has to earn money. You bake a nice cake, and within a week someone's asking why you don't sell them.\nHost: Is that something new, or have people always done this?\nDaniel: I suspect it's always been there to some degree. My grandmother entered her jam in every village competition going. But she wasn't comparing herself with thousands of strangers every evening. The scale is new.\nPriya: And the speed. You used to be allowed to be a beginner for years. Now you're expected to look like an expert within a month.\nDaniel: Ha, that has happened to me, actually. Sourdough. I lasted about three weekends at the market before I remembered I'd started baking to relax.\nHost: So you agree with her.\nDaniel: Partly. I'd put it this way: measuring things is fine, as long as you're the one choosing to. The problem starts when the measuring is for an audience.\nPriya: That's fair. And I'd add that it's worth having at least one thing you're happy to be mediocre at.\nHost: Mediocre on purpose?\nPriya: Exactly. I paint now, very badly, and I don't show anyone. It's wonderful.",
+    "words": 344,
+    "duration_sec": 130,
+    "pace": "natural-fast",
+    "plays": 2,
+    "questions": [
+      {
+        "id": "L-C1-02-q1",
+        "q": "What made Priya realise something had gone wrong?",
+        "options": [
+          "She got injured while training",
+          "She began dreading something she used to enjoy",
+          "She failed to finish the marathon",
+          "Her friends got bored of hearing about it"
+        ],
+        "answer": 1,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "Она поняла, что с ужасом ждёт пробежек, которые раньше были отдушиной."
+      },
+      {
+        "id": "L-C1-02-q2",
+        "q": "What is Daniel's view of Priya's argument?",
+        "options": [
+          "He thinks her argument is exaggerated and frankly rather silly",
+          "He agrees with every point she makes",
+          "He accepts the pressure but thinks improving is enjoyable too",
+          "He says he has never thought about it"
+        ],
+        "answer": 2,
+        "checks": "speaker's attitude",
+        "topic_id": "l-speakers-attitude",
+        "explain_ru": "Давление есть, но становиться лучше — само по себе удовольствие."
+      },
+      {
+        "id": "L-C1-02-q3",
+        "q": "Why does Daniel mention his sourdough?",
+        "options": [
+          "To show that home baking can be surprisingly profitable",
+          "To change the subject to something lighter",
+          "To complain about how tiring markets are",
+          "To show that he has experienced the problem himself"
+        ],
+        "answer": 3,
+        "checks": "inference",
+        "topic_id": "l-inference",
+        "explain_ru": "Он сам попробовал продавать хлеб и забыл, что пёк ради отдыха."
+      },
+      {
+        "id": "L-C1-02-q4",
+        "q": "What does Priya mean by being happy to be mediocre at something?",
+        "options": [
+          "Doing it just for pleasure, without judging the results",
+          "Practising until you are good enough to show other people",
+          "Choosing hobbies that are easy to learn",
+          "Giving up hobbies that you are bad at"
+        ],
+        "answer": 0,
+        "checks": "inference",
+        "topic_id": "l-inference",
+        "explain_ru": "Заниматься чем-то для удовольствия, не оценивая результат и не показывая никому."
+      }
+    ]
+  },
+  {
+    "id": "L-C1-03",
+    "skill": "listening",
+    "level": "C1",
+    "band": 3,
+    "topic_en": "Siblings discussing their mother's plans",
+    "topic_ru": "Брат и сестра обсуждают планы мамы",
+    "type": "listening",
+    "title": "Mum's big move",
+    "situation_ru": "Брат и сестра обсуждают, что их мама собирается переехать на пенсии в Португалию; в разговоре есть скрытая обида.",
+    "speakers": [
+      {
+        "name": "Laura",
+        "gender": "female",
+        "age": "30-45",
+        "accent": "British"
+      },
+      {
+        "name": "Sam",
+        "gender": "male",
+        "age": "30-45",
+        "accent": "British"
+      }
+    ],
+    "script": "Laura: So, has Mum told you the latest?\nSam: About Portugal? She mentioned it on Sunday. I assumed it was one of her ideas, you know, like the time she was going to open a café.\nLaura: It's not, Sam. She's had the house valued. She's been out there twice already this year.\nSam: Twice? She told me she was visiting Aunt Jo.\nLaura: Well, she was. Aunt Jo's place is about an hour from the town she's looking at. That's half the point.\nSam: Right. [pause 1s] I mean, good for her, obviously. She's been bored since she retired, and the winters here really get to her.\nLaura: That's what I keep telling myself.\nSam: But?\nLaura: But she's seventy-one. What happens if she has a fall, or gets ill, and we're a three-hour flight away? I'm not sure she's thought it through.\nSam: Or maybe she has, and she just doesn't want to have that conversation with us. You know what she's like. If she thinks we'll talk her out of it, she'll present it as a done deal.\nLaura: Which is exactly what she's doing.\nSam: Has she said anything about money?\nLaura: Only that the house would sell for more than enough. She's got it all worked out, apparently. Spreadsheets, the lot.\nSam: That does sound like Mum.\nLaura: It does. Which is partly why it worries me. When she's this organised, it usually means her mind is already made up.\nSam: Look, it's her life. I'd rather she was happy in the sun for ten years than lonely in that big house, waiting for us to visit.\nLaura: Waiting for you to visit. I'm there every week.\nSam: [pause 1s] That's fair. I know I haven't been great.\nLaura: I'm not trying to make you feel bad. I just think we should go and see the place with her. Both of us. Before she signs anything.\nSam: OK. I'll look at flights tonight.",
+    "words": 305,
+    "duration_sec": 121,
+    "pace": "natural-fast",
+    "plays": 2,
+    "questions": [
+      {
+        "id": "L-C1-03-q1",
+        "q": "What does Sam's first reaction suggest?",
+        "options": [
+          "He had been helping her plan the move all year",
+          "He didn't take the plan seriously at first",
+          "He had been against the idea right from the start",
+          "He had already visited the town with her once"
+        ],
+        "answer": 1,
+        "checks": "inference",
+        "topic_id": "l-inference",
+        "explain_ru": "Он думал, что это очередная фантазия, как идея с кафе."
+      },
+      {
+        "id": "L-C1-03-q2",
+        "q": "Why is the town attractive to their mother?",
+        "options": [
+          "It's close to a relative of hers",
+          "It's near the sea and has a lovely café",
+          "Houses there are very cheap",
+          "Laura has friends living there"
+        ],
+        "answer": 0,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "Тётя Джо живёт в часе езды от этого города."
+      },
+      {
+        "id": "L-C1-03-q3",
+        "q": "What lies behind Laura's remark about who is waiting to visit?",
+        "options": [
+          "She thinks Sam visits their mother too often",
+          "She is angry that their mother is leaving without asking",
+          "She feels she does much more for their mother than Sam",
+          "She would like to move to Portugal herself"
+        ],
+        "answer": 2,
+        "checks": "speaker's attitude",
+        "topic_id": "l-speakers-attitude",
+        "explain_ru": "Лора ездит к маме каждую неделю, а Сэм — нет; это скрытая обида."
+      },
+      {
+        "id": "L-C1-03-q4",
+        "q": "What do they agree to do?",
+        "options": [
+          "Persuade their mother to stay in her house in England",
+          "Ask Aunt Jo to look after their mother",
+          "Help their mother sell the house quickly",
+          "Visit the place with their mother before she decides"
+        ],
+        "answer": 3,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "Поехать посмотреть место вместе с мамой, пока она ничего не подписала."
+      }
+    ]
+  },
+  {
+    "id": "L-C1-04",
+    "skill": "listening",
+    "level": "C1",
+    "band": 2,
+    "topic_en": "Museum talk: restoring paintings",
+    "topic_ru": "Рассказ в музее: реставрация картин",
+    "type": "listening",
+    "title": "Why not make it look new?",
+    "situation_ru": "Хранительница музея рассказывает группе посетителей о принципах реставрации и отвлекается на историю.",
+    "speakers": [
+      {
+        "name": "Curator",
+        "gender": "female",
+        "age": "45-60",
+        "accent": "American"
+      }
+    ],
+    "script": "Curator: When people find out what I do, the question I get asked most often is: why don't you just make it look new? [pause 1s] It's a reasonable question. If you've got a two-hundred-year-old painting that's faded and cracked, surely the respectful thing is to restore it to how the artist intended. The trouble is that we very rarely know exactly what the artist intended. And every time someone has been confident that they did, the results have been, let's say, mixed. [pause 1s] There's a well-known case, and I won't name the museum because they've suffered enough, where a nineteenth-century restorer decided a portrait looked too gloomy and brightened the background. It was admired for about fifty years. Then someone looked at it under X-ray and realized the restorer had painted over a window and a second figure. That gloomy background was the whole point of the picture. [pause 1s] So these days the guiding principle is that anything we do should be reversible. If we fill a crack, we use materials that a future conservator can remove without damaging the original. We assume, in other words, that we might be wrong, and that someone cleverer will come along. [pause 1s] Some of the most interesting objects in this museum have been repaired several times over the centuries, and you can read those repairs almost like layers of rock. One vase in the next gallery has been glued back together at least three times, each time with a different material. Rather than hiding that, we've put a small diagram next to it. [pause 1s] I'll be honest, the idea that we might be wrong isn't always what visitors want to hear. People like certainty. They like the idea that what they're looking at is exactly what the artist saw. But I find it rather moving that the object carries its history with it: the cracks, the old repairs, even the mistakes. A painting that's been through two hundred years shouldn't look as though it's been through none. [pause 1s] Anyway, I've wandered off my notes, as usual. Let's go through to the next room, where you'll see exactly what I mean.",
+    "words": 350,
+    "duration_sec": 133,
+    "pace": "natural-fast",
+    "plays": 2,
+    "questions": [
+      {
+        "id": "L-C1-04-q1",
+        "q": "Why doesn't the curator name the museum?",
+        "options": [
+          "She has completely forgotten which museum it was",
+          "The museum has since closed down",
+          "She doesn't want to embarrass it any further",
+          "She works there and isn't allowed to"
+        ],
+        "answer": 2,
+        "checks": "inference",
+        "topic_id": "l-inference",
+        "explain_ru": "They've suffered enough — она не хочет ещё больше позорить музей."
+      },
+      {
+        "id": "L-C1-04-q2",
+        "q": "What does the story of the portrait show?",
+        "options": [
+          "X-rays often give misleading results about old paintings",
+          "Nineteenth-century restorers were careless",
+          "Dark backgrounds are usually more effective",
+          "Confident restorers can destroy a work's meaning"
+        ],
+        "answer": 3,
+        "checks": "main idea",
+        "topic_id": "l-main-idea",
+        "explain_ru": "Уверенный реставратор закрасил окно и фигуру и исказил смысл картины."
+      },
+      {
+        "id": "L-C1-04-q3",
+        "q": "Why should restoration work be reversible?",
+        "options": [
+          "So future experts can correct today's mistakes",
+          "So paintings can be cleaned more cheaply",
+          "So visitors can see the original colours",
+          "So museums can sell the paintings later"
+        ],
+        "answer": 0,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "Реставраторы допускают, что ошибаются, и оставляют возможность всё исправить."
+      },
+      {
+        "id": "L-C1-04-q4",
+        "q": "How does the curator feel about the signs of age on a painting?",
+        "options": [
+          "She thinks they spoil the visitors' experience of art",
+          "She finds them meaningful and worth keeping",
+          "She would remove them if enough visitors asked",
+          "She regards them as a purely technical problem"
+        ],
+        "answer": 1,
+        "checks": "speaker's attitude",
+        "topic_id": "l-speakers-attitude",
+        "explain_ru": "Её трогает, что картина несёт свою историю: трещины, старые реставрации."
+      }
+    ]
+  }
+]

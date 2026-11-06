@@ -31,8 +31,8 @@ k = Kokoro(model, voices)
 VOICES = {
     ("female", "British"): ["bf_emma", "bf_isabella"],
     ("male", "British"): ["bm_fable", "bm_lewis"],  # выбран на слух (bm_george не подошёл)
-    ("female", "American"): ["af_heart", "af_sarah"],
-    ("male", "American"): ["am_michael", "am_adam"],
+    ("female", "American"): ["af_heart", "af_bella"],  # второй голос — если в диалоге две американки
+    ("male", "American"): ["am_michael", "am_fenrir"],  # второй голос одобрен на слух (L-B1-02)
 }
 SPEED = {"A1": 0.8, "A2": 0.86, "B1": 0.93, "B2": 0.98, "C1": 1.02}
 SENT_GAP = {"A1": 0.45, "A2": 0.32, "B1": 0.22, "B2": 0.15, "C1": 0.1}  # пауза между предложениями
