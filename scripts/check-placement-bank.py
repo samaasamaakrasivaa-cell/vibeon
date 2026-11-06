@@ -18,7 +18,7 @@ modal verb verbs noun nouns adjective adverb adverbs phrasal phrase infinitive g
 article articles reported speech question questions negative positive plural singular uncountable countable
 there is are was were do does did have has had will would can could may might must should shall
 not someone something somebody one
-ful less ness ment tion sion able ible ly un dis im in ir il mis re pre""".split())
+ful less ness ment tion sion able ible ly un dis im in ir il mis re pre that which who whose done""".split())
 APOS = str.maketrans({"’": "'", "‘": "'", "“": '"', "”": '"'})
 
 topics = {t["topic_id"]: t for t in json.load(open(os.path.join(ROOT, "00_topics.json")))}
@@ -62,7 +62,7 @@ def check_explain(i, it, text_pool):
     ex = it.get("explain_ru", "")
     if not ex:
         return err(i, "нет explain_ru")
-    stem = lambda w: re.sub(r"e$", "", re.sub(r"(ing|ed|es|s)$", "", w))
+    stem = lambda w: re.sub(r"(.)\1$", r"\1", re.sub(r"e$", "", re.sub(r"(ing|ed|es|s)$", "", w)))  # dropped → drop
     raw = latin_words(text_pool)
     pool = raw | {stem(w) for w in raw}
     stray = {w for w in latin_words(ex) - GRAMMAR_WORDS if w not in pool and stem(w) not in pool}
@@ -116,7 +116,7 @@ def check_item(it, seen):
                     n = len(norm(a).split())
                     if not 2 <= n <= 5:
                         err(i, f"ответ «{a}» — {n} слов, нужно 2–5")
-                    if it.get("key") and it["key"].lower() not in norm(a).split():
+                    if it.get("key") and not any(w == it["key"].lower() or w.startswith(it["key"].lower() + "'") for w in norm(a).split()):
                         err(i, f"ответ «{a}» без ключевого слова {it['key']}")
             check_explain(i, it, q + " " + " ".join(acc) + " " + it.get("base", "") + " " + it.get("frame", ""))
 

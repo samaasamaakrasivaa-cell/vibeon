@@ -1,0 +1,717 @@
+[
+  {
+    "id": "G-B2-01",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "g-b2-third-conditional",
+    "topic_en": "Third conditional",
+    "topic_ru": "Условные предложения третьего типа",
+    "type": "transform",
+    "q": "I didn't know about the sale, so I didn't buy anything.",
+    "key": "HAD",
+    "frame": "If I ___ about the sale, I would have bought something.",
+    "accept": [
+      "had known",
+      "had heard"
+    ],
+    "explain_ru": "Нереальное условие в прошлом (третий тип): if + had + третья форма."
+  },
+  {
+    "id": "G-B2-02",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 3,
+    "topic_id": "g-b2-wish",
+    "topic_en": "wish / if only (present and past)",
+    "topic_ru": "wish / if only (настоящее и прошлое)",
+    "type": "transform",
+    "q": "I regret not learning to swim as a child.",
+    "key": "WISH",
+    "frame": "I ___ to swim as a child.",
+    "accept": [
+      "wish i had learned",
+      "wish i had learnt",
+      "wish i'd learned",
+      "wish i'd learnt"
+    ],
+    "explain_ru": "Сожаление о прошлом: wish + Past Perfect."
+  },
+  {
+    "id": "G-B2-03",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "g-b2-causative",
+    "topic_en": "have / get something done",
+    "topic_ru": "Каузатив have / get something done",
+    "type": "transform",
+    "q": "A hairdresser is going to cut my hair tomorrow.",
+    "key": "HAVING",
+    "frame": "I ___ tomorrow.",
+    "accept": [
+      "am having my hair cut"
+    ],
+    "explain_ru": "Услугу, которую делает для нас кто-то другой, выражаем через have something done."
+  },
+  {
+    "id": "G-B2-04",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 3,
+    "topic_id": "g-b2-used-to-be-get",
+    "topic_en": "be used to / get used to",
+    "topic_ru": "be used to / get used to",
+    "type": "transform",
+    "q": "Living in a big city is still strange for me.",
+    "key": "USED",
+    "frame": "I'm still not ___ in a big city.",
+    "accept": [
+      "used to living"
+    ],
+    "explain_ru": "Be used to + -ing — «привыкнуть к чему-то»."
+  },
+  {
+    "id": "G-B2-05",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "g-b2-deduction-past",
+    "topic_en": "Past modals of deduction: must have / can't have",
+    "topic_ru": "Модальные глаголы предположения о прошлом",
+    "type": "transform",
+    "q": "I'm sure Kate forgot about our meeting.",
+    "key": "MUST",
+    "frame": "Kate ___ about our meeting.",
+    "accept": [
+      "must have forgotten",
+      "must've forgotten"
+    ],
+    "explain_ru": "Уверенное предположение о прошлом: must have + третья форма."
+  },
+  {
+    "id": "G-B2-06",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 3,
+    "topic_id": "g-b2-mixed-conditionals",
+    "topic_en": "Mixed conditionals",
+    "topic_ru": "Смешанные условные предложения",
+    "type": "mcq",
+    "q": "If I had taken that job in London, I ___ in a tiny flat now.",
+    "options": [
+      "will live",
+      "would be living",
+      "had lived",
+      "would have lived"
+    ],
+    "answer": 1,
+    "explain_ru": "Смешанный тип: условие в прошлом, результат сейчас (now) — would + be + -ing / would + глагол."
+  },
+  {
+    "id": "G-B2-07",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "g-b2-past-modals-regret",
+    "topic_en": "should have / needn't have / could have",
+    "topic_ru": "should have / needn't have / could have",
+    "type": "mcq",
+    "q": "We ___ so much food. Half of it is still in the fridge.",
+    "options": [
+      "shouldn't have cooked",
+      "mustn't have cooked",
+      "couldn't cook",
+      "hadn't to cook"
+    ],
+    "answer": 0,
+    "explain_ru": "Критика или сожаление о прошлом действии — shouldn't have + третья форма."
+  },
+  {
+    "id": "G-B2-08",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-passive-advanced",
+    "topic_en": "Passive with modals and perfect forms",
+    "topic_ru": "Пассив с модальными глаголами и перфектом",
+    "type": "mcq",
+    "q": "Don't worry, your order ___ by Friday.",
+    "options": [
+      "will deliver",
+      "will have delivered",
+      "will be delivered",
+      "is delivering"
+    ],
+    "answer": 2,
+    "explain_ru": "Заказ доставят — пассив в будущем: will be + третья форма."
+  },
+  {
+    "id": "G-B2-09",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-reporting-verbs",
+    "topic_en": "Reporting verbs (suggest, deny, advise...)",
+    "topic_ru": "Глаголы косвенной речи (suggest, deny, advise...)",
+    "type": "mcq",
+    "q": "My doctor advised me ___ less coffee.",
+    "options": [
+      "drink",
+      "drinking",
+      "to drink",
+      "that drink"
+    ],
+    "answer": 2,
+    "explain_ru": "После advise someone используется to + глагол."
+  },
+  {
+    "id": "G-B2-10",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-non-defining-relatives",
+    "topic_en": "Non-defining relative clauses",
+    "topic_ru": "Неопределительные придаточные",
+    "type": "mcq",
+    "q": "My grandmother, ___ is 85, still goes swimming every morning.",
+    "options": [
+      "that",
+      "who",
+      "which",
+      "whose"
+    ],
+    "answer": 1,
+    "explain_ru": "В неопределительном придаточном о человеке — who; that здесь невозможно."
+  },
+  {
+    "id": "G-B2-11",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "g-b2-future-perfect-continuous",
+    "topic_en": "Future continuous and future perfect",
+    "topic_ru": "Future Continuous и Future Perfect",
+    "type": "mcq",
+    "q": "By the end of this year, I ___ all the money for my trip.",
+    "options": [
+      "have saved",
+      "am saving",
+      "will have saved",
+      "will be saved"
+    ],
+    "answer": 2,
+    "explain_ru": "Действие завершится к моменту в будущем (by the end of) — Future Perfect."
+  },
+  {
+    "id": "G-B2-12",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "g-b2-verb-patterns-meaning",
+    "topic_en": "Verbs that change meaning: -ing vs to-infinitive",
+    "topic_ru": "Глаголы с разным значением: -ing и инфинитив",
+    "type": "mcq",
+    "q": "I'll never forget ___ the Northern Lights for the first time.",
+    "options": [
+      "to see",
+      "see",
+      "to seeing",
+      "seeing"
+    ],
+    "answer": 3,
+    "explain_ru": "Forget + -ing — не забыть то, что уже случилось; forget to — забыть сделать."
+  },
+  {
+    "id": "G-B2-13",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-linkers-contrast",
+    "topic_en": "despite / in spite of / whereas",
+    "topic_ru": "despite / in spite of / whereas",
+    "type": "mcq",
+    "q": "___ the bad weather, the festival was a huge success.",
+    "options": [
+      "Although",
+      "Despite",
+      "However",
+      "Even though"
+    ],
+    "answer": 1,
+    "explain_ru": "Перед существительным (the bad weather) используется despite."
+  },
+  {
+    "id": "G-B2-14",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "g-b2-linkers-purpose-result",
+    "topic_en": "so that / in order to / as a result",
+    "topic_ru": "Связки цели и результата",
+    "type": "mcq",
+    "q": "I've started setting two alarms ___ I don't oversleep again.",
+    "options": [
+      "in order to",
+      "because",
+      "as a result",
+      "so that"
+    ],
+    "answer": 3,
+    "explain_ru": "Цель с придаточным (подлежащее + глагол) — so that."
+  },
+  {
+    "id": "G-B2-15",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 3,
+    "topic_id": "g-b2-participle-clauses",
+    "topic_en": "Participle clauses",
+    "topic_ru": "Причастные обороты",
+    "type": "mcq",
+    "q": "___ the email, I realised I had attached the wrong file.",
+    "options": [
+      "Having sent",
+      "Being sent",
+      "Sent",
+      "Have sent"
+    ],
+    "answer": 0,
+    "explain_ru": "Действие завершилось раньше другого — причастие Having + третья форма."
+  },
+  {
+    "id": "G-B2-16",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-would-rather",
+    "topic_en": "would rather / it's time",
+    "topic_ru": "would rather / it's time",
+    "type": "mcq",
+    "q": "I'd rather ___ at home tonight than go to a noisy bar.",
+    "options": [
+      "staying",
+      "to stay",
+      "stayed",
+      "stay"
+    ],
+    "answer": 3,
+    "explain_ru": "После would rather используется глагол без to."
+  },
+  {
+    "id": "G-B2-17",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 3,
+    "topic_id": "g-b2-impersonal-passive",
+    "topic_en": "Impersonal passive: it is said that...",
+    "topic_ru": "Безличный пассив: it is said that...",
+    "type": "mcq",
+    "q": "The new café ___ the best coffee in town.",
+    "options": [
+      "is said to serve",
+      "says to serve",
+      "is said serving",
+      "is saying to serve"
+    ],
+    "answer": 0,
+    "explain_ru": "Безличный пассив: is said to + глагол — «говорят, что...»."
+  },
+  {
+    "id": "G-B2-18",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 3,
+    "topic_id": "g-b2-narrative-tenses",
+    "topic_en": "Narrative tenses",
+    "topic_ru": "Времена для рассказа о прошлом",
+    "type": "mcq",
+    "q": "By the time we arrived at the party, most people ___ home.",
+    "options": [
+      "went",
+      "had gone",
+      "have gone",
+      "go"
+    ],
+    "answer": 1,
+    "explain_ru": "Действие завершилось до другого действия в прошлом — Past Perfect."
+  },
+  {
+    "id": "G-B2-19",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-wish",
+    "topic_en": "wish / if only (present and past)",
+    "topic_ru": "wish / if only (настоящее и прошлое)",
+    "type": "gap",
+    "q": "I wish I ___ more time to read. I'm always so busy.",
+    "accept": [
+      "had"
+    ],
+    "explain_ru": "Желание изменить настоящее: wish + Past Simple."
+  },
+  {
+    "id": "G-B2-20",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 3,
+    "topic_id": "g-b2-third-conditional",
+    "topic_en": "Third conditional",
+    "topic_ru": "Условные предложения третьего типа",
+    "type": "gap",
+    "q": "If you had told me earlier, I ___ have helped you.",
+    "accept": [
+      "would",
+      "could",
+      "might"
+    ],
+    "explain_ru": "В главной части третьего типа — would/could/might + have + третья форма."
+  },
+  {
+    "id": "G-B2-21",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-passive-advanced",
+    "topic_en": "Passive with modals and perfect forms",
+    "topic_ru": "Пассив с модальными глаголами и перфектом",
+    "type": "gap",
+    "q": "The meeting has ___ postponed until next week.",
+    "accept": [
+      "been"
+    ],
+    "explain_ru": "Пассив в Present Perfect: has been + третья форма."
+  },
+  {
+    "id": "G-B2-22",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 3,
+    "topic_id": "g-b2-non-defining-relatives",
+    "topic_en": "Non-defining relative clauses",
+    "topic_ru": "Неопределительные придаточные",
+    "type": "gap",
+    "q": "We stayed at a small hotel by the lake, ___ was surprisingly cheap.",
+    "accept": [
+      "which"
+    ],
+    "explain_ru": "В неопределительном придаточном о предмете — which; that невозможно после запятой."
+  },
+  {
+    "id": "V-B2-01",
+    "skill": "vocabulary",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "v-b2-word-formation",
+    "topic_en": "Word formation: nouns, adjectives, adverbs",
+    "topic_ru": "Словообразование: существительные, прилагательные, наречия",
+    "type": "wordform",
+    "q": "The museum offers free ___ on the first Sunday of every month.",
+    "base": "ENTER",
+    "accept": [
+      "entry",
+      "entrance"
+    ],
+    "explain_ru": "Существительное от enter — entry или entrance (вход)."
+  },
+  {
+    "id": "V-B2-02",
+    "skill": "vocabulary",
+    "level": "B2",
+    "band": 3,
+    "topic_id": "v-b2-word-formation",
+    "topic_en": "Word formation: nouns, adjectives, adverbs",
+    "topic_ru": "Словообразование: существительные, прилагательные, наречия",
+    "type": "wordform",
+    "q": "She spoke ___ about her year abroad and said it was the best time of her life.",
+    "base": "ENTHUSIASM",
+    "accept": [
+      "enthusiastically"
+    ],
+    "explain_ru": "Нужно наречие к глаголу spoke: enthusiasm → enthusiastically."
+  },
+  {
+    "id": "V-B2-03",
+    "skill": "vocabulary",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "v-b2-word-formation",
+    "topic_en": "Word formation: nouns, adjectives, adverbs",
+    "topic_ru": "Словообразование: существительные, прилагательные, наречия",
+    "type": "wordform",
+    "q": "Working from home gives me more ___ to plan my day.",
+    "base": "FLEXIBLE",
+    "accept": [
+      "flexibility"
+    ],
+    "explain_ru": "После more нужно существительное: flexible → flexibility."
+  },
+  {
+    "id": "V-B2-04",
+    "skill": "vocabulary",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "v-b2-lifestyle",
+    "topic_en": "Health and lifestyle",
+    "topic_ru": "Здоровье и образ жизни",
+    "type": "wordform",
+    "q": "A good night's sleep is ___ for your mental health.",
+    "base": "ESSENCE",
+    "accept": [
+      "essential"
+    ],
+    "explain_ru": "Нужно прилагательное: essence → essential (крайне важный)."
+  },
+  {
+    "id": "V-B2-05",
+    "skill": "vocabulary",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "v-b2-business-money",
+    "topic_en": "Business and finance",
+    "topic_ru": "Бизнес и финансы",
+    "type": "wordform",
+    "q": "We've decided to cancel our gym ___ because we never go.",
+    "base": "MEMBER",
+    "accept": [
+      "membership"
+    ],
+    "explain_ru": "Членство, абонемент — membership."
+  },
+  {
+    "id": "V-B2-06",
+    "skill": "vocabulary",
+    "level": "B2",
+    "band": 3,
+    "topic_id": "v-b2-science-tech",
+    "topic_en": "Science and technology",
+    "topic_ru": "Наука и технологии",
+    "type": "wordform",
+    "q": "There have been huge ___ in renewable energy over the last ten years.",
+    "base": "DEVELOP",
+    "accept": [
+      "developments"
+    ],
+    "explain_ru": "Нужно существительное во множественном числе: develop → developments."
+  },
+  {
+    "id": "V-B2-07",
+    "skill": "vocabulary",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "v-b2-phrasal-multi",
+    "topic_en": "Phrasal verbs with several meanings",
+    "topic_ru": "Многозначные фразовые глаголы",
+    "type": "mcq",
+    "q": "The meeting was so boring that I nearly ___ off.",
+    "options": [
+      "dropped",
+      "took",
+      "put",
+      "gave"
+    ],
+    "answer": 0,
+    "explain_ru": "Drop off в разговорной речи — задремать."
+  },
+  {
+    "id": "V-B2-08",
+    "skill": "vocabulary",
+    "level": "B2",
+    "band": 3,
+    "topic_id": "v-b2-phrasal-multi",
+    "topic_en": "Phrasal verbs with several meanings",
+    "topic_ru": "Многозначные фразовые глаголы",
+    "type": "mcq",
+    "q": "Sorry, we need to ___ off the trip until next month. I've got too much work.",
+    "options": [
+      "call",
+      "put",
+      "take",
+      "set"
+    ],
+    "answer": 1,
+    "explain_ru": "Put off — отложить на более поздний срок."
+  },
+  {
+    "id": "V-B2-09",
+    "skill": "vocabulary",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "v-b2-collocations",
+    "topic_en": "Adjective + noun and verb + noun collocations",
+    "topic_ru": "Коллокации прилагательное + существительное и глагол + существительное",
+    "type": "mcq",
+    "q": "Sorry I'm late. There was really ___ traffic on the way.",
+    "options": [
+      "big",
+      "strong",
+      "hard",
+      "heavy"
+    ],
+    "answer": 3,
+    "explain_ru": "Плотное движение, пробки — heavy traffic."
+  },
+  {
+    "id": "V-B2-10",
+    "skill": "vocabulary",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "v-b2-collocations",
+    "topic_en": "Adjective + noun and verb + noun collocations",
+    "topic_ru": "Коллокации прилагательное + существительное и глагол + существительное",
+    "type": "mcq",
+    "q": "Can you ___ an eye on my bag while I get a coffee?",
+    "options": [
+      "hold",
+      "put",
+      "keep",
+      "have"
+    ],
+    "answer": 2,
+    "explain_ru": "Присмотреть за чем-то — keep an eye on."
+  },
+  {
+    "id": "V-B2-11",
+    "skill": "vocabulary",
+    "level": "B2",
+    "band": 3,
+    "topic_id": "v-b2-idioms-common",
+    "topic_en": "Common idioms",
+    "topic_ru": "Частые идиомы",
+    "type": "mcq",
+    "q": "I've got a lot on my ___ at the moment, so I can't take on any new projects.",
+    "options": [
+      "plate",
+      "table",
+      "shoulder",
+      "feet"
+    ],
+    "answer": 0,
+    "explain_ru": "Have a lot on your plate — быть очень загруженным."
+  },
+  {
+    "id": "V-B2-12",
+    "skill": "vocabulary",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "v-b2-dependent-prepositions-b2",
+    "topic_en": "Dependent prepositions",
+    "topic_ru": "Управление предлогами",
+    "type": "mcq",
+    "q": "I'm not very keen ___ horror films.",
+    "options": [
+      "of",
+      "on",
+      "in",
+      "about"
+    ],
+    "answer": 1,
+    "explain_ru": "Be keen on — увлекаться, любить."
+  },
+  {
+    "id": "V-B2-13",
+    "skill": "vocabulary",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "v-b2-business-money",
+    "topic_en": "Business and finance",
+    "topic_ru": "Бизнес и финансы",
+    "type": "mcq",
+    "q": "We're trying to ___ money for a deposit on a flat.",
+    "options": [
+      "spare",
+      "keep up",
+      "save",
+      "pay off"
+    ],
+    "answer": 2,
+    "explain_ru": "Копить деньги — save money."
+  },
+  {
+    "id": "V-B2-14",
+    "skill": "vocabulary",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "v-b2-confusing-words-b2",
+    "topic_en": "Easily confused words",
+    "topic_ru": "Слова, которые легко перепутать",
+    "type": "mcq",
+    "q": "The new rules will ___ everyone who works from home.",
+    "options": [
+      "effect",
+      "affect on",
+      "influence on",
+      "affect"
+    ],
+    "answer": 3,
+    "explain_ru": "Глагол «повлиять» — affect, без предлога; effect обычно существительное."
+  },
+  {
+    "id": "V-B2-15",
+    "skill": "vocabulary",
+    "level": "B2",
+    "band": 3,
+    "topic_id": "v-b2-register-basic",
+    "topic_en": "Formal and informal language",
+    "topic_ru": "Формальный и неформальный стиль",
+    "type": "mcq",
+    "q": "Dear Ms Wilson, I am writing to ___ about the position advertised on your website.",
+    "options": [
+      "enquire",
+      "ask around",
+      "check out",
+      "figure out"
+    ],
+    "answer": 0,
+    "explain_ru": "В официальном письме уместно нейтрально-формальное enquire."
+  },
+  {
+    "id": "V-B2-16",
+    "skill": "vocabulary",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "v-b2-linking-words",
+    "topic_en": "Linking words and discourse markers",
+    "topic_ru": "Слова-связки",
+    "type": "gap",
+    "q": "The flat is in a great location. ___ addition, the rent is quite low.",
+    "accept": [
+      "in"
+    ],
+    "explain_ru": "Связка In addition — «кроме того»."
+  },
+  {
+    "id": "V-B2-17",
+    "skill": "vocabulary",
+    "level": "B2",
+    "band": 3,
+    "topic_id": "v-b2-lifestyle",
+    "topic_en": "Health and lifestyle",
+    "topic_ru": "Здоровье и образ жизни",
+    "type": "gap",
+    "q": "I've been trying to ___ the habit of checking my phone first thing in the morning.",
+    "accept": [
+      "break",
+      "kick",
+      "lose",
+      "drop"
+    ],
+    "explain_ru": "Избавиться от привычки — break (kick) the habit."
+  },
+  {
+    "id": "V-B2-18",
+    "skill": "vocabulary",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "v-b2-science-tech",
+    "topic_en": "Science and technology",
+    "topic_ru": "Наука и технологии",
+    "type": "gap",
+    "q": "My laptop keeps crashing, so I always ___ up my files.",
+    "accept": [
+      "back"
+    ],
+    "explain_ru": "Делать резервную копию — back up."
+  }
+]
