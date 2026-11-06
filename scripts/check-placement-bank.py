@@ -16,7 +16,8 @@ GRAMMAR_WORDS = set("""s the a an be to ing ed present past future simple contin
 he she it they we you i me him her us them his its their our my your conditional first second third zero mixed
 modal verb verbs noun nouns adjective adverb adverbs phrasal phrase infinitive gerund participle clause clauses
 article articles reported speech question questions negative positive plural singular uncountable countable
-there is are was were do does did have has had will would can could may might must should shall""".split())
+there is are was were do does did have has had will would can could may might must should shall
+not someone something somebody one""".split())
 APOS = str.maketrans({"’": "'", "‘": "'", "“": '"', "”": '"'})
 
 topics = {t["topic_id"]: t for t in json.load(open(os.path.join(ROOT, "00_topics.json")))}

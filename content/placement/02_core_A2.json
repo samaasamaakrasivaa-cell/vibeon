@@ -1,0 +1,725 @@
+[
+  {
+    "id": "G-A2-01",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-past-simple",
+    "topic_en": "Past simple: irregular verbs, negatives and questions",
+    "topic_ru": "Past Simple: неправильные глаголы, отрицания и вопросы",
+    "type": "mcq",
+    "q": "I ___ my keys at the gym yesterday, so I had to go back.",
+    "options": [
+      "lose",
+      "losed",
+      "lost",
+      "was lose"
+    ],
+    "answer": 2,
+    "explain_ru": "Действие в прошлом; lose — неправильный глагол: lost."
+  },
+  {
+    "id": "G-A2-02",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "g-a2-past-simple",
+    "topic_en": "Past simple: irregular verbs, negatives and questions",
+    "topic_ru": "Past Simple: неправильные глаголы, отрицания и вопросы",
+    "type": "gap",
+    "q": "___ you enjoy the concert last night?",
+    "accept": [
+      "did"
+    ],
+    "explain_ru": "Вопрос в Past Simple строится с вспомогательным глаголом did."
+  },
+  {
+    "id": "G-A2-03",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "g-a2-past-continuous",
+    "topic_en": "Past continuous",
+    "topic_ru": "Past Continuous",
+    "type": "mcq",
+    "q": "I ___ a shower when my phone rang.",
+    "options": [
+      "have",
+      "was having",
+      "have had",
+      "am having"
+    ],
+    "answer": 1,
+    "explain_ru": "Длительное действие, которое прервал телефонный звонок, — Past Continuous."
+  },
+  {
+    "id": "G-A2-04",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-pp-experience",
+    "topic_en": "Present perfect for experience: ever / never",
+    "topic_ru": "Present Perfect для опыта: ever / never",
+    "type": "mcq",
+    "q": "___ you ever tried Korean food?",
+    "options": [
+      "Has",
+      "Have",
+      "Do",
+      "Are"
+    ],
+    "answer": 1,
+    "explain_ru": "Вопрос об опыте в жизни — Present Perfect; с you нужно have."
+  },
+  {
+    "id": "G-A2-05",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 3,
+    "topic_id": "g-a2-pp-experience",
+    "topic_en": "Present perfect for experience: ever / never",
+    "topic_ru": "Present Perfect для опыта: ever / never",
+    "type": "gap",
+    "q": "I've ___ been to a music festival, but I'd love to go one day.",
+    "accept": [
+      "never",
+      "not"
+    ],
+    "explain_ru": "Never (или not) с Present Perfect значит «ни разу не был»."
+  },
+  {
+    "id": "G-A2-06",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 3,
+    "topic_id": "g-a2-pp-just-already-yet",
+    "topic_en": "Present perfect with just / already / yet",
+    "topic_ru": "Present Perfect с just / already / yet",
+    "type": "mcq",
+    "q": "I haven't booked my summer holiday ___. I can't decide where to go.",
+    "options": [
+      "already",
+      "just",
+      "yet",
+      "ever"
+    ],
+    "answer": 2,
+    "explain_ru": "В отрицаниях с Present Perfect yet означает «ещё не» и стоит в конце."
+  },
+  {
+    "id": "G-A2-07",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-going-to",
+    "topic_en": "be going to for plans and predictions",
+    "topic_ru": "be going to: планы и прогнозы",
+    "type": "mcq",
+    "q": "Look at those dark clouds! It ___ rain.",
+    "options": [
+      "is going to",
+      "will to",
+      "goes to",
+      "going"
+    ],
+    "answer": 0,
+    "explain_ru": "Прогноз на основе того, что мы видим сейчас, — be going to."
+  },
+  {
+    "id": "G-A2-08",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "g-a2-will",
+    "topic_en": "will for predictions, offers and decisions",
+    "topic_ru": "will: прогнозы, предложения, спонтанные решения",
+    "type": "mcq",
+    "q": "This bag looks heavy. I ___ help you with it.",
+    "options": [
+      "am",
+      "going to",
+      "be",
+      "will"
+    ],
+    "answer": 3,
+    "explain_ru": "Спонтанное предложение помощи — will."
+  },
+  {
+    "id": "G-A2-09",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 3,
+    "topic_id": "g-a2-pc-future",
+    "topic_en": "Present continuous for future arrangements",
+    "topic_ru": "Present Continuous для договорённостей о будущем",
+    "type": "mcq",
+    "q": "I can't come on Saturday. I ___ my best friend at the airport.",
+    "options": [
+      "meet",
+      "am meeting",
+      "will meeting",
+      "met"
+    ],
+    "answer": 1,
+    "explain_ru": "Договорённость на конкретное время в будущем — Present Continuous."
+  },
+  {
+    "id": "G-A2-10",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-comparatives",
+    "topic_en": "Comparative and superlative adjectives",
+    "topic_ru": "Сравнительная и превосходная степень",
+    "type": "mcq",
+    "q": "This flat is nice, but the other one was ___.",
+    "options": [
+      "more big",
+      "biggest",
+      "bigger",
+      "more bigger"
+    ],
+    "answer": 2,
+    "explain_ru": "Сравнительная степень короткого прилагательного big — bigger."
+  },
+  {
+    "id": "G-A2-11",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 3,
+    "topic_id": "g-a2-comparatives",
+    "topic_en": "Comparative and superlative adjectives",
+    "topic_ru": "Сравнительная и превосходная степень",
+    "type": "gap",
+    "q": "I slept a lot and read three books. This is the ___ relaxing holiday I've ever had.",
+    "accept": [
+      "most"
+    ],
+    "explain_ru": "Превосходная степень длинного прилагательного: the most relaxing."
+  },
+  {
+    "id": "G-A2-12",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "g-a2-as-as",
+    "topic_en": "(not) as ... as",
+    "topic_ru": "Сравнение (not) as ... as",
+    "type": "mcq",
+    "q": "My new job isn't ___ my old one, and the people are nicer.",
+    "options": [
+      "as stressful as",
+      "so stressful than",
+      "stressful as",
+      "as stressful than"
+    ],
+    "answer": 0,
+    "explain_ru": "Сравнение «не такой ... как» строится по схеме not as ... as."
+  },
+  {
+    "id": "G-A2-13",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 3,
+    "topic_id": "g-a2-too-enough",
+    "topic_en": "too / enough",
+    "topic_ru": "too / enough",
+    "type": "mcq",
+    "q": "I'm ___ tired to go out tonight. Let's stay in.",
+    "options": [
+      "enough",
+      "very",
+      "too",
+      "so"
+    ],
+    "answer": 2,
+    "explain_ru": "Too + прилагательное + to: «слишком ..., чтобы»."
+  },
+  {
+    "id": "G-A2-14",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "g-a2-quantifiers",
+    "topic_en": "much / many / a lot of / a few / a little",
+    "topic_ru": "much / many / a lot of / a few / a little",
+    "type": "gap",
+    "q": "I'm going to the shop. We only have a ___ eggs left.",
+    "accept": [
+      "few"
+    ],
+    "explain_ru": "С исчисляемыми существительными «немного» — a few."
+  },
+  {
+    "id": "G-A2-15",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "g-a2-adverbs-manner",
+    "topic_en": "Adverbs of manner",
+    "topic_ru": "Наречия образа действия",
+    "type": "mcq",
+    "q": "Please drive ___. The roads are icy.",
+    "options": [
+      "careful",
+      "care",
+      "more careful",
+      "carefully"
+    ],
+    "answer": 3,
+    "explain_ru": "Глагол drive описывается наречием: carefully (а не прилагательным careful)."
+  },
+  {
+    "id": "G-A2-16",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 3,
+    "topic_id": "g-a2-obligation",
+    "topic_en": "must / have to / don't have to",
+    "topic_ru": "must / have to / don't have to",
+    "type": "mcq",
+    "q": "It's a free museum, so you ___ buy a ticket.",
+    "options": [
+      "mustn't",
+      "don't have to",
+      "have to",
+      "has to"
+    ],
+    "answer": 1,
+    "explain_ru": "Отсутствие необходимости выражается через don't have to."
+  },
+  {
+    "id": "G-A2-17",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-should",
+    "topic_en": "should / shouldn't for advice",
+    "topic_ru": "should / shouldn't: совет",
+    "type": "mcq",
+    "q": "You look really tired. You ___ go to bed early tonight.",
+    "options": [
+      "should",
+      "shoulds",
+      "should to",
+      "must to"
+    ],
+    "answer": 0,
+    "explain_ru": "Совет даётся с помощью should, после него глагол без to."
+  },
+  {
+    "id": "G-A2-18",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 3,
+    "topic_id": "g-a2-might-may",
+    "topic_en": "might / may for possibility",
+    "topic_ru": "might / may: возможность",
+    "type": "mcq",
+    "q": "Take your jacket. It ___ get cold later.",
+    "options": [
+      "is",
+      "should to",
+      "won't",
+      "might"
+    ],
+    "answer": 3,
+    "explain_ru": "Возможность, но не уверенность, — might."
+  },
+  {
+    "id": "G-A2-19",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 3,
+    "topic_id": "g-a2-first-conditional",
+    "topic_en": "First conditional",
+    "topic_ru": "Условные предложения первого типа",
+    "type": "mcq",
+    "q": "If you ___ early tomorrow, we can have breakfast together.",
+    "options": [
+      "will wake up",
+      "woke up",
+      "waking up",
+      "wake up"
+    ],
+    "answer": 3,
+    "explain_ru": "В первом типе условных после if используется Present Simple, а не will."
+  },
+  {
+    "id": "G-A2-20",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "g-a2-verb-patterns-basic",
+    "topic_en": "Verb + to-infinitive / -ing (want to, enjoy -ing)",
+    "topic_ru": "Глагол + инфинитив / -ing (want to, enjoy -ing)",
+    "type": "mcq",
+    "q": "I'm learning to cook because I want ___ healthier.",
+    "options": [
+      "eat",
+      "eating",
+      "to eat",
+      "eats"
+    ],
+    "answer": 2,
+    "explain_ru": "После want используется to + глагол."
+  },
+  {
+    "id": "G-A2-21",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-infinitive-purpose",
+    "topic_en": "Infinitive of purpose",
+    "topic_ru": "Инфинитив цели (to + глагол)",
+    "type": "gap",
+    "q": "I went to the market ___ buy fresh fruit.",
+    "accept": [
+      "to"
+    ],
+    "explain_ru": "Цель действия выражается инфинитивом с to."
+  },
+  {
+    "id": "G-A2-22",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-possessive-pronouns",
+    "topic_en": "Possessive pronouns: mine / yours",
+    "topic_ru": "Притяжательные местоимения mine / yours",
+    "type": "mcq",
+    "q": "Is this umbrella yours? — No, it isn't ___. My umbrella is black.",
+    "options": [
+      "my",
+      "mine",
+      "me",
+      "I"
+    ],
+    "answer": 1,
+    "explain_ru": "Без существительного после него нужно местоимение mine."
+  },
+  {
+    "id": "G-A2-23",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "g-a2-indefinite-pronouns",
+    "topic_en": "something / anyone / nowhere",
+    "topic_ru": "Неопределённые местоимения something / anyone / nowhere",
+    "type": "gap",
+    "q": "I'm hungry, but there's ___ to eat. The fridge is empty.",
+    "accept": [
+      "nothing"
+    ],
+    "explain_ru": "В утвердительной форме there's ... «ничего нет» — nothing."
+  },
+  {
+    "id": "G-A2-24",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 3,
+    "topic_id": "g-a2-prepositions-movement",
+    "topic_en": "Prepositions of movement",
+    "topic_ru": "Предлоги движения",
+    "type": "mcq",
+    "q": "Walk ___ the bridge and the restaurant is on your left.",
+    "options": [
+      "across",
+      "between",
+      "inside",
+      "at"
+    ],
+    "answer": 0,
+    "explain_ru": "Перейти с одной стороны на другую — across."
+  },
+  {
+    "id": "V-A2-01",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "v-a2-shopping-money",
+    "topic_en": "Shopping and money",
+    "topic_ru": "Покупки и деньги",
+    "type": "mcq",
+    "q": "Can I ___ by card?",
+    "options": [
+      "pay",
+      "buy",
+      "spend",
+      "cost"
+    ],
+    "answer": 0,
+    "explain_ru": "Оплачивать картой — pay by card."
+  },
+  {
+    "id": "V-A2-02",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 3,
+    "topic_id": "v-a2-shopping-money",
+    "topic_en": "Shopping and money",
+    "topic_ru": "Покупки и деньги",
+    "type": "gap",
+    "q": "I bought this dress in the sale, and it only ___ £15!",
+    "accept": [
+      "cost",
+      "costs"
+    ],
+    "explain_ru": "Глагол cost — стоить; в прошедшем времени форма та же: cost."
+  },
+  {
+    "id": "V-A2-03",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "v-a2-health-body",
+    "topic_en": "Health and the body",
+    "topic_ru": "Здоровье и тело",
+    "type": "mcq",
+    "q": "I spent all day at my laptop, and now I've got a terrible ___.",
+    "options": [
+      "cold",
+      "headache",
+      "temperature",
+      "flu"
+    ],
+    "answer": 1,
+    "explain_ru": "От долгой работы за компьютером болит голова — headache."
+  },
+  {
+    "id": "V-A2-04",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 3,
+    "topic_id": "v-a2-health-body",
+    "topic_en": "Health and the body",
+    "topic_ru": "Здоровье и тело",
+    "type": "mcq",
+    "q": "Try to drink more water and get enough ___. It really helps with stress.",
+    "options": [
+      "dream",
+      "asleep",
+      "sleep",
+      "sleeping"
+    ],
+    "answer": 2,
+    "explain_ru": "Высыпаться — get enough sleep; здесь нужно существительное sleep."
+  },
+  {
+    "id": "V-A2-05",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "v-a2-travel",
+    "topic_en": "Travel and holidays",
+    "topic_ru": "Путешествия и отдых",
+    "type": "mcq",
+    "q": "Our flight was cancelled, so we stayed one more night at the ___.",
+    "options": [
+      "hotel",
+      "ticket",
+      "passport",
+      "luggage"
+    ],
+    "answer": 0,
+    "explain_ru": "Переночевать можно в отеле — hotel."
+  },
+  {
+    "id": "V-A2-06",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "v-a2-travel",
+    "topic_en": "Travel and holidays",
+    "topic_ru": "Путешествия и отдых",
+    "type": "gap",
+    "q": "Don't forget to ___ a table at the restaurant for Saturday.",
+    "accept": [
+      "book",
+      "reserve"
+    ],
+    "explain_ru": "Забронировать столик — book (или reserve) a table."
+  },
+  {
+    "id": "V-A2-07",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "v-a2-work",
+    "topic_en": "Work and the workplace",
+    "topic_ru": "Работа",
+    "type": "mcq",
+    "q": "I work from home three days a week, and on the other days I go to the ___.",
+    "options": [
+      "meeting",
+      "office",
+      "boss",
+      "job"
+    ],
+    "answer": 1,
+    "explain_ru": "Место работы вне дома — office."
+  },
+  {
+    "id": "V-A2-08",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "v-a2-feelings-personality",
+    "topic_en": "Feelings and personality",
+    "topic_ru": "Чувства и характер",
+    "type": "mcq",
+    "q": "Lily always helps people and never gets angry. She's very ___.",
+    "options": [
+      "kind",
+      "lazy",
+      "rude",
+      "shy"
+    ],
+    "answer": 0,
+    "explain_ru": "Добрый, отзывчивый человек — kind."
+  },
+  {
+    "id": "V-A2-09",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 3,
+    "topic_id": "v-a2-feelings-personality",
+    "topic_en": "Feelings and personality",
+    "topic_ru": "Чувства и характер",
+    "type": "mcq",
+    "q": "I'm really ___ about my holiday. Only two more days!",
+    "options": [
+      "bored",
+      "boring",
+      "excited",
+      "exciting"
+    ],
+    "answer": 2,
+    "explain_ru": "О своих чувствах говорим с -ed: excited — «в предвкушении»."
+  },
+  {
+    "id": "V-A2-10",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "v-a2-technology",
+    "topic_en": "Technology and communication",
+    "topic_ru": "Технологии и общение",
+    "type": "mcq",
+    "q": "My phone is almost dead. Can I ___ it here?",
+    "options": [
+      "change",
+      "charge",
+      "fill",
+      "switch"
+    ],
+    "answer": 1,
+    "explain_ru": "Зарядить телефон — charge."
+  },
+  {
+    "id": "V-A2-11",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "v-a2-sport",
+    "topic_en": "Sport and fitness",
+    "topic_ru": "Спорт",
+    "type": "mcq",
+    "q": "I ___ running three times a week. It's how I relax.",
+    "options": [
+      "do",
+      "play",
+      "make",
+      "go"
+    ],
+    "answer": 3,
+    "explain_ru": "С занятиями на -ing используется go: go running."
+  },
+  {
+    "id": "V-A2-12",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "v-a2-make-do",
+    "topic_en": "make / do",
+    "topic_ru": "make / do",
+    "type": "gap",
+    "q": "Can you ___ me a favour and water my plants while I'm away?",
+    "accept": [
+      "do"
+    ],
+    "explain_ru": "Сделать одолжение — do someone a favour."
+  },
+  {
+    "id": "V-A2-13",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 3,
+    "topic_id": "v-a2-phrasal-basic",
+    "topic_en": "Basic phrasal verbs",
+    "topic_ru": "Базовые фразовые глаголы",
+    "type": "mcq",
+    "q": "I'm going to bed. Can you ___ off the lights in the living room?",
+    "options": [
+      "turn",
+      "take",
+      "put",
+      "go"
+    ],
+    "answer": 0,
+    "explain_ru": "Выключить свет — turn off."
+  },
+  {
+    "id": "V-A2-14",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "v-a2-prepositional-phrases",
+    "topic_en": "Prepositional phrases: on time, by car",
+    "topic_ru": "Устойчивые фразы с предлогами: on time, by car",
+    "type": "gap",
+    "q": "I'm going ___ holiday next week. I can't wait!",
+    "accept": [
+      "on"
+    ],
+    "explain_ru": "Поехать в отпуск — go on holiday."
+  },
+  {
+    "id": "V-A2-15",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "v-a2-home-chores",
+    "topic_en": "Housework and home life",
+    "topic_ru": "Домашние дела",
+    "type": "mcq",
+    "q": "It's my turn to ___ the washing-up tonight.",
+    "options": [
+      "make",
+      "clean",
+      "wash",
+      "do"
+    ],
+    "answer": 3,
+    "explain_ru": "Мыть посуду — do the washing-up."
+  },
+  {
+    "id": "V-A2-16",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 3,
+    "topic_id": "v-a2-home-chores",
+    "topic_en": "Housework and home life",
+    "topic_ru": "Домашние дела",
+    "type": "mcq",
+    "q": "My flatmate and I take turns to take ___ the rubbish.",
+    "options": [
+      "off",
+      "up",
+      "in",
+      "out"
+    ],
+    "answer": 3,
+    "explain_ru": "Выносить мусор — take out the rubbish."
+  }
+]
