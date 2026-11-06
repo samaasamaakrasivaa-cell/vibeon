@@ -179,6 +179,13 @@ def check_file(path):
         for qq in it.get("questions", []) or []:
             if "answer" in qq:
                 ans[qq["answer"]] += 1
+    # подсказка для угадывания: правильный вариант заметно длиннее остальных (норма — около 25%)
+    qs = [(it["id"], it["options"], it["answer"]) for it in items if it.get("type") == "mcq" and isinstance(it.get("options"), list)]
+    qs += [(q.get("id"), q["options"], q["answer"]) for it in items for q in (it.get("questions") or []) if isinstance(q.get("options"), list) and isinstance(q.get("answer"), int)]
+    longest = [i for i, o, a in qs if len(o) == 4 and 0 <= a < 4 and len(o[a]) > max(len(x) for k, x in enumerate(o) if k != a)]
+    if qs and len(longest) / len(qs) > 0.4:
+        err(os.path.basename(path), f"правильный ответ — самый длинный вариант в {len(longest)} из {len(qs)} вопросов "
+            f"({round(100 * len(longest) / len(qs))}%, норма ≈25%): можно угадывать, не читая. Вопросы: {', '.join(longest)}")
     topic_use = collections.Counter(it.get("topic_id") for it in items if it.get("topic_id"))
     for t, n in topic_use.items():
         if n > 3:

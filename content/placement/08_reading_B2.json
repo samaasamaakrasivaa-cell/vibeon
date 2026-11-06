@@ -1,0 +1,286 @@
+[
+  {
+    "id": "R-B2-01",
+    "skill": "reading",
+    "level": "B2",
+    "band": 1,
+    "topic_en": "Article: the four-day week",
+    "topic_ru": "Статья: четырёхдневная рабочая неделя",
+    "type": "reading",
+    "title": "Is the four-day week the future?",
+    "text_type": "article",
+    "passage": "Imagine working four days a week for the same salary. For a growing number of companies, this is no longer just a dream. Over the past few years, trials have taken place in several countries, and the results have been surprisingly positive. Most employees reported feeling less stressed and more motivated, and many companies found that productivity stayed the same or even improved.\nSupporters argue that a shorter week gives people time to rest, look after their families and pursue hobbies, so they come back to work with more energy. Some companies also say it has helped them attract talented staff.\nHowever, the idea has its critics. Not every job can be done in four days: hospitals, shops and schools need people every day of the week. Some workers in the trials also said they felt under pressure to fit five days of work into four, which made their working days longer and more intense.\nIn my view, the four-day week is worth trying, but it shouldn't be seen as a magic solution. It works best when companies also look at how work is organised, cutting unnecessary meetings and giving people more control over their time. Simply squeezing the same workload into fewer days is unlikely to make anyone happier.",
+    "words": 210,
+    "questions": [
+      {
+        "id": "R-B2-01-q1",
+        "q": "What did most of the trials show?",
+        "options": [
+          "Companies lost a lot of money",
+          "Productivity fell sharply",
+          "Employees were less stressed and productivity didn't fall",
+          "Most workers wanted to return to a five-day week"
+        ],
+        "answer": 2,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "Сотрудники меньше нервничали, а продуктивность сохранилась или выросла."
+      },
+      {
+        "id": "R-B2-01-q2",
+        "q": "Why did some workers in the trials find the four-day week difficult?",
+        "options": [
+          "Their working days became longer and more intense",
+          "They earned less money",
+          "They missed their colleagues",
+          "They had too much free time"
+        ],
+        "answer": 0,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "Им приходилось втискивать пять дней работы в четыре."
+      },
+      {
+        "id": "R-B2-01-q3",
+        "q": "In the last paragraph, squeezing means:",
+        "options": [
+          "sharing something equally",
+          "reducing something slowly",
+          "planning something carefully",
+          "forcing something into too little space or time"
+        ],
+        "answer": 3,
+        "checks": "vocabulary in context",
+        "topic_id": "r-vocabulary-in-context",
+        "explain_ru": "Squeeze — впихнуть, втиснуть что-то в слишком маленькое пространство или время."
+      },
+      {
+        "id": "R-B2-01-q4",
+        "q": "What is the writer's opinion of the four-day week?",
+        "options": [
+          "It's a magic solution for every company",
+          "It's a good idea, but only if work is organised differently",
+          "It's a bad idea that will never work",
+          "It's only suitable for hospitals and schools"
+        ],
+        "answer": 1,
+        "checks": "writer's attitude",
+        "topic_id": "r-writers-attitude",
+        "explain_ru": "Автор за эксперимент, но считает, что нужно менять и организацию работы."
+      }
+    ]
+  },
+  {
+    "id": "R-B2-02",
+    "skill": "reading",
+    "level": "B2",
+    "band": 2,
+    "topic_en": "Blog: the joy of missing out",
+    "topic_ru": "Блог: радость пропустить что-то",
+    "type": "reading",
+    "title": "Why I stopped saying yes to everything",
+    "text_type": "blog",
+    "passage": "For years, I said yes to everything. Birthday drinks, work events, weekend trips, a friend's cousin's housewarming party: if I was invited, I went. I was terrified of missing out on something fun, and on quiet evenings I'd scroll through social media and feel a little sting of jealousy at everyone else's photos.\nThen, last winter, I got flu and had to stay at home for two weeks. At first I was restless, but by the end of the second week something had changed. I was reading again, cooking proper meals and going to bed before midnight. I felt calmer than I had in years.\nSince then, I've been practising what some people call the joy of missing out. I still see friends, but I choose the plans I really want, and I'm no longer embarrassed to say no. A quiet Friday at home with a film and a takeaway isn't a failure; it's a choice.\nThe funny thing is that my friendships have actually got stronger. Instead of rushing between five events, I spend proper time with the people who matter most. I'm not suggesting that everyone should stay at home all the time, but it's worth asking yourself: am I going because I want to, or because I'm afraid of what I'll miss?",
+    "words": 215,
+    "questions": [
+      {
+        "id": "R-B2-02-q1",
+        "q": "Why did the writer use to accept every invitation?",
+        "options": [
+          "Their job required it",
+          "They were afraid of missing something fun",
+          "Their friends got angry otherwise",
+          "They wanted to meet new people for work"
+        ],
+        "answer": 1,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "Автор боялся пропустить что-то интересное."
+      },
+      {
+        "id": "R-B2-02-q2",
+        "q": "What did the writer realise while they were ill?",
+        "options": [
+          "A quieter life made them feel better",
+          "They had lost most of their friends",
+          "They needed a new job",
+          "Social media was more important than they thought"
+        ],
+        "answer": 0,
+        "checks": "inference",
+        "topic_id": "r-inference",
+        "explain_ru": "Дома автор стал читать, готовить, высыпаться и почувствовал себя спокойнее."
+      },
+      {
+        "id": "R-B2-02-q3",
+        "q": "In the second paragraph, restless means:",
+        "options": [
+          "very sleepy",
+          "full of happy energy",
+          "seriously ill",
+          "unable to relax or keep still"
+        ],
+        "answer": 3,
+        "checks": "vocabulary in context",
+        "topic_id": "r-vocabulary-in-context",
+        "explain_ru": "Restless — беспокойный, неспособный расслабиться."
+      },
+      {
+        "id": "R-B2-02-q4",
+        "q": "How does the writer feel about saying no to invitations now?",
+        "options": [
+          "It's rude and should be avoided",
+          "It's only acceptable when you're ill",
+          "It's a healthy choice, not a failure",
+          "It always damages friendships"
+        ],
+        "answer": 2,
+        "checks": "writer's attitude",
+        "topic_id": "r-writers-attitude",
+        "explain_ru": "Автор считает отказ осознанным выбором, а не неудачей."
+      }
+    ]
+  },
+  {
+    "id": "R-B2-03",
+    "skill": "reading",
+    "level": "B2",
+    "band": 2,
+    "topic_en": "Book review: small habits",
+    "topic_ru": "Рецензия на книгу о маленьких привычках",
+    "type": "reading",
+    "title": "Small Steps: a review",
+    "text_type": "review",
+    "passage": "Self-help books often promise to change your life in thirty days, so I started Small Steps, the new book by Clara Hughes, with fairly low expectations. I'm pleased to say I was wrong.\nHughes's main argument is simple: big changes rarely come from big decisions. Instead, they come from tiny habits repeated every day, such as drinking a glass of water when you wake up or writing down one thing you're grateful for before bed. She explains the science behind habits in a clear, friendly way, without drowning the reader in statistics.\nWhat I liked most was the practical side. Each chapter ends with a small challenge, and I found myself actually doing them rather than just reading about them. After a month, I'm walking more and, slightly to my surprise, checking my phone less in the evenings.\nThe book isn't perfect. The second half becomes rather repetitive, and some of the personal stories feel a little too neat to be completely true. Readers who already know a lot about building habits may not find much that is new.\nOverall, though, this is an encouraging and genuinely useful book. If you've tried to change everything at once and failed, Small Steps might be exactly what you need.",
+    "words": 207,
+    "questions": [
+      {
+        "id": "R-B2-03-q1",
+        "q": "What is the main idea of the book?",
+        "options": [
+          "You can change your life completely in thirty days",
+          "Big decisions are the key to success",
+          "Lasting change comes from small daily habits",
+          "Statistics show that habits don't really work"
+        ],
+        "answer": 2,
+        "checks": "main idea",
+        "topic_id": "r-main-idea",
+        "explain_ru": "Главная мысль книги — большие перемены складываются из маленьких ежедневных привычек."
+      },
+      {
+        "id": "R-B2-03-q2",
+        "q": "In the text, without drowning the reader in statistics means:",
+        "options": [
+          "without telling sad stories",
+          "without giving the reader far too many numbers",
+          "without making the reader fall asleep",
+          "without asking difficult questions"
+        ],
+        "answer": 1,
+        "checks": "vocabulary in context",
+        "topic_id": "r-vocabulary-in-context",
+        "explain_ru": "Drown someone in something — завалить чем-то, дать слишком много."
+      },
+      {
+        "id": "R-B2-03-q3",
+        "q": "What does the reviewer criticise?",
+        "options": [
+          "The second half repeats itself",
+          "The book is too short",
+          "The challenges are too difficult",
+          "The science is explained badly"
+        ],
+        "answer": 0,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "Вторая половина книги кажется однообразной."
+      },
+      {
+        "id": "R-B2-03-q4",
+        "q": "What is the reviewer's overall opinion of the book?",
+        "options": [
+          "Very negative",
+          "Completely neutral",
+          "Disappointed overall",
+          "Mostly positive, with a few reservations"
+        ],
+        "answer": 3,
+        "checks": "writer's attitude",
+        "topic_id": "r-writers-attitude",
+        "explain_ru": "Рецензент хвалит книгу и называет пару недостатков."
+      }
+    ]
+  },
+  {
+    "id": "R-B2-04",
+    "skill": "reading",
+    "level": "B2",
+    "band": 3,
+    "topic_en": "Article: neighbours who share",
+    "topic_ru": "Статья: соседи, которые делятся",
+    "type": "reading",
+    "title": "The street that learned to share",
+    "text_type": "article",
+    "passage": "When Tom and Priya moved into their terraced house on Elm Street, they barely knew their neighbours' names. Like most people on the street, they left for work early, came back late and rarely stopped to chat. Then one winter, a storm brought down a tree and blocked the road for two days.\nStuck at home, people began to talk. Someone set up a group chat so that neighbours could check on each other, and within a week it had become far more than an emergency tool. People started offering things they no longer needed, such as a baby chair, a ladder or a pile of books, and asking to borrow tools rather than buying new ones.\nThree years later, the street has a monthly swap shop in the community hall, a shared vegetable garden and a group of volunteers who help older residents with their shopping. Priya admits that not everyone takes part, and the group chat can occasionally get a bit too busy. There's the odd argument about parking, she laughs, but on the whole it has changed the way they live, and she can't imagine moving now.\nStories like this are becoming more common. Experts suggest that sharing schemes not only save money and reduce waste but also tackle loneliness, which affects people of all ages, not just the elderly.",
+    "words": 223,
+    "questions": [
+      {
+        "id": "R-B2-04-q1",
+        "q": "What started the change on Elm Street?",
+        "options": [
+          "A council project",
+          "A new neighbour's party",
+          "A storm that blocked the road",
+          "A problem with parking"
+        ],
+        "answer": 2,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "Всё началось после бури, когда дерево перекрыло дорогу."
+      },
+      {
+        "id": "R-B2-04-q2",
+        "q": "What can we infer about the street before the storm?",
+        "options": [
+          "Neighbours had little contact with each other",
+          "People argued a lot",
+          "Most residents were elderly",
+          "It already had a shared garden"
+        ],
+        "answer": 0,
+        "checks": "inference",
+        "topic_id": "r-inference",
+        "explain_ru": "Жильцы почти не знали имён соседей и редко общались."
+      },
+      {
+        "id": "R-B2-04-q3",
+        "q": "In the last paragraph, tackle loneliness means:",
+        "options": [
+          "study loneliness",
+          "increase loneliness",
+          "ignore loneliness",
+          "deal with the problem of loneliness"
+        ],
+        "answer": 3,
+        "checks": "vocabulary in context",
+        "topic_id": "r-vocabulary-in-context",
+        "explain_ru": "Tackle a problem — заниматься решением проблемы."
+      },
+      {
+        "id": "R-B2-04-q4",
+        "q": "What is the writer's view of sharing schemes?",
+        "options": [
+          "They mainly cause arguments",
+          "They bring several benefits to communities",
+          "They only help older people",
+          "They are just a passing fashion"
+        ],
+        "answer": 1,
+        "checks": "writer's attitude",
+        "topic_id": "r-writers-attitude",
+        "explain_ru": "Автор перечисляет пользу: экономия, меньше отходов, меньше одиночества."
+      }
+    ]
+  }
+]
