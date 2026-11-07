@@ -158,7 +158,7 @@ function nextSlot(todayIso: string, nowMin: number) {
 }
 
 /** Выбор ученика: выпадающий список; если учеников больше 5 — поиск по имени сверху. */
-function StudentPicker({ students, value, onChange }: { students: GridStudent[]; value: string | null; onChange: (id: string | null) => void }) {
+export function StudentPicker({ students, value, onChange }: { students: GridStudent[]; value: string | null; onChange: (id: string | null) => void }) {
   const { t } = useT();
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");

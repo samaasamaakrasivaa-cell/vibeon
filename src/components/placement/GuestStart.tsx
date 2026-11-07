@@ -2,6 +2,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useT } from "@/lib/i18n/client";
+import type { DictKey } from "@/lib/i18n/dict";
 import { startGuest } from "@/lib/placement/actions";
 
 export function GuestStart({ code }: { code: string }) {
@@ -16,7 +17,7 @@ export function GuestStart({ code }: { code: string }) {
     start(async () => {
       setErr(null);
       const r = await startGuest(code, f.name, f.contact, consent);
-      if (!r.ok) return setErr(t(`pl.gerr.${r.error}`));
+      if (!r.ok) return setErr(t(`pl.gerr.${r.error}` as DictKey));
       router.push(`/placement/${r.id}`);
     });
   };

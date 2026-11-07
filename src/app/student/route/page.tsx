@@ -20,7 +20,9 @@ export default async function MyRoute({ searchParams }: { searchParams: Promise<
   const sp = await searchParams;
   const wk = Math.max(0, Math.min(8, Number(sp.wk) || 0));
   const v = await roadmapView(s.id, me.timezone, wk);
-  const openTest = v.checkpoints.find((c) => c.status === "assigned");
+  // результат вводного теста ученик видит, только когда учитель включил «Показать результат ученику»
+  const cps = v.checkpoints.filter((c) => !(c.source === "placement" && c.status === "done" && !(c.results as { shown?: boolean } | null)?.shown));
+  const openTest = cps.find((c) => c.status === "assigned");
 
   if (!v.r || !v.r.approvedAt) {
     return (
@@ -38,8 +40,8 @@ export default async function MyRoute({ searchParams }: { searchParams: Promise<
   const ini = `${s.name[0] ?? ""}${s.lastName?.[0] ?? ""}`.toUpperCase();
   const dated = !!r.deadline && r.showDate;
   const eta = (h: number) => (dated ? etaRange(h, v.paceS, L, v.lessonMin) : t("rt.hoursOf", { h: fmtHM(h, L) }));
-  const entry = v.checkpoints.find((c) => c.kind === "entry" && c.status === "done");
-  const doneTests = v.checkpoints.filter((c) => c.status === "done");
+  const entry = cps.find((c) => c.kind === "entry" && c.status === "done");
+  const doneTests = cps.filter((c) => c.status === "done");
   const lastTest = doneTests[doneTests.length - 1];
   const tabLink = (k: string, label: string) => <Link key={k} href={`?tab=${k}`} aria-current={tab === k ? "page" : undefined}>{label}</Link>;
   const res = (c?: (typeof v.checkpoints)[number]) => (c?.results ?? {}) as { skills?: Partial<Record<Skill, number>>; weak?: [string, string][]; strong?: [string, string][] };

@@ -5,11 +5,12 @@ import { useT } from "@/lib/i18n/client";
 import { answerCore, answerText, finishPlacement, notePlay, saveWriting, startPlacement } from "@/lib/placement/actions";
 import type { PView } from "@/lib/placement/run";
 import { Icon } from "../Icon";
+import type { DictKey } from "@/lib/i18n/dict";
 
 const PARTS = ["core", "reading", "listening", "writing", "speaking"] as const;
 type V = PView;
 type Core = Extract<V, { section: "core" }>;
-type TextV = Extract<V, { section: "reading" | "listening" }> & { item: { id: string; title: string; questions: { id: string; q: string; options: string[] }[]; passage?: string; situation?: string; audio?: string; plays?: number; used?: number } | null };
+type TextV = Extract<V, { section: "reading" | "listening" }> & { instr?: string; item: { id: string; title: string; questions: { id: string; q: string; options: string[] }[]; passage?: string; situation?: string; audio?: string; plays?: number; used?: number } | null };
 type WriteV = Extract<V, { section: "writing" }>;
 type SpeakV = Extract<V, { section: "speaking" }>;
 
@@ -38,7 +39,7 @@ export function PlacementRunner({ id, initial, sample, done }: { id: string; ini
     <div className="flex flex-col gap-4">
       {v.section !== "intro" && (
         <div className="plprog" aria-label={t("pl.progress")}>
-          {PARTS.map((p, i) => <span key={p} className={i === pi ? "on" : i < pi ? "done" : ""}>{i < pi && <Icon name="check" size="sm" />}{t(`pl.part.${p}`)}</span>)}
+          {PARTS.map((p, i) => <span key={p} className={i === pi ? "on" : i < pi ? "done" : ""}>{i < pi && <Icon name="check" size="sm" />}{t(`pl.part.${p}` as DictKey)}</span>)}
         </div>
       )}
       {v.section === "intro" && <Intro sample={sample} pending={pending} onStart={(b) => step(() => startPlacement(id, b))} />}
@@ -78,7 +79,7 @@ function Intro({ sample, pending, onStart }: { sample: string; pending: boolean;
         <h2 className="mt-0 mb-2">{t("pl.introTitle")}</h2>
         <p className="muted m-0">{t("pl.introLead")}</p>
       </div>
-      <ol className="plparts">{PARTS.map((p) => <li key={p}><b>{t(`pl.part.${p}`)}</b><span className="small muted">{t(`pl.partHint.${p}`)}</span></li>)}</ol>
+      <ol className="plparts">{PARTS.map((p) => <li key={p}><b>{t(`pl.part.${p}` as DictKey)}</b><span className="small muted">{t(`pl.partHint.${p}` as DictKey)}</span></li>)}</ol>
       <div className="plchecks">
         <div className="plcheck">
           <span className={`plck ${snd === "ok" ? "ok" : ""}`}><Icon name={snd === "ok" ? "check" : "sound"} size="sm" /></span>

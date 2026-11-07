@@ -28,6 +28,8 @@ export default async function StudentHome() {
     db.notification.findMany({ where: { userId: me.id }, orderBy: { createdAt: "desc" }, take: 15 }),
     s ? db.word.count({ where: { studentId: s.id } }) : 0,
   ]);
+  // вводный тест: назначен / начат — карточка «Пройти», готов и показан учителем — «Посмотреть результат»
+  const pa = s ? await db.placementAttempt.findFirst({ where: { studentId: s.id, OR: [{ status: { in: ["new", "active"] } }, { status: "reviewed", showResult: true, reviewedAt: { gt: new Date(now.getTime() - 14 * 864e5) } }] }, orderBy: { createdAt: "desc" } }) : null;
   const loc = lang === "ru" ? "ru-RU" : "en-GB";
   const hw = hws.find((h) => h.done < h.total);
   const goal = s?.wordGoal ?? 15;
@@ -60,6 +62,17 @@ export default async function StudentHome() {
               <div className="small mt-1 opacity-90">{next.template?.title ?? ""}{inMin !== null && inMin > 0 && inMin < 24 * 60 ? ` · ${t("st.startsIn", { n: inMin < 60 ? `${inMin} ${t("dash.min")}` : `${Math.round(inMin / 60)} ${t("crs.h")}` })}` : inMin !== null && inMin <= 0 ? ` · ${t("today.live")}` : ""}</div>
             </div>
           ) : <div className="tile"><span className="muted">{t("st.noNext")}</span></div>}
+
+          {pa && (
+            <div className="tk flex flex-wrap items-center gap-4" style={{ borderColor: "var(--accent)" }}>
+              <div className="grow min-w-[220px] flex-1">
+                <div className="small font-semibold text-accent">{t("pl.title")}</div>
+                <h3 className="mt-1">{pa.status === "reviewed" ? t("pl.cardDone", { lvl: pa.level ?? "" }) : pa.status === "active" ? t("pl.cardContinue") : t("pl.cardNew")}</h3>
+                <p className="small muted mt-1 mb-0">{pa.status === "reviewed" ? t("pl.cardDoneSub") : t("pl.cardSub")}</p>
+              </div>
+              <Link href={pa.status === "reviewed" ? `/student/test/${pa.checkpointId}` : `/placement/${pa.id}`} className="btn primary lg">{pa.status === "reviewed" ? t("pl.cardSee") : pa.status === "active" ? t("pl.continue") : t("pl.start")}</Link>
+            </div>
+          )}
 
           {hw && (
             <div className="tk flex flex-wrap items-center gap-4" style={{ borderColor: "var(--accent)" }}>

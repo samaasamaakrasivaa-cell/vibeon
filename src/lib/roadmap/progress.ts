@@ -66,12 +66,14 @@ export async function editorData(studentId: string, teacherId: string, tz: strin
   const courses = await db.course.findMany({ where: { teacherId }, orderBy: { order: "asc" }, include: { _count: { select: { units: true } } } });
   const T = (x: unknown) => (typeof x === "string" ? x : Array.isArray(x) ? String(lang === "en" ? x[0] : x[1]) : "");
   const r = v.r;
+  const pas = await db.placementAttempt.findMany({ where: { studentId, checkpointId: { not: null } }, select: { id: true, checkpointId: true, status: true } });
+  const paOf = new Map(pas.map((p) => [p.checkpointId!, p]));
   return {
     studentId, first: s.name, ini: `${s.name[0] ?? ""}${s.lastName?.[0] ?? ""}`.toUpperCase(), level: s.level,
     courses: courses.map((c) => ({ id: c.id, title: c.title, units: c._count.units })),
     checkpoints: v.checkpoints.map((c) => {
       const res = (c.results ?? {}) as { skills?: Record<string, number>; weak?: [string, string][] };
-      return { id: c.id, kind: c.kind, status: c.status, source: c.source, level: c.level, skills: res.skills ?? {}, weak: res.weak ?? [], takenAt: c.takenAt?.toISOString() ?? null, assignedAt: c.assignedAt.toISOString(), stage: c.stage };
+      return { id: c.id, kind: c.kind, status: c.status, source: c.source, level: c.level, skills: res.skills ?? {}, weak: res.weak ?? [], takenAt: c.takenAt?.toISOString() ?? null, assignedAt: c.assignedAt.toISOString(), stage: c.stage, placement: paOf.get(c.id)?.id ?? null, pstatus: paOf.get(c.id)?.status ?? null };
     }),
     roadmap: r && "stages" in v ? {
       id: r.id, type: r.type, goal: r.goal, fromLevel: r.fromLevel, deadline: r.deadline ? r.deadline.toISOString().slice(0, 7) : null, showDate: r.showDate,

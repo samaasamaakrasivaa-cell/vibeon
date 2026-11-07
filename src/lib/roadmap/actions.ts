@@ -53,6 +53,7 @@ export async function deleteCheckpoint(id: string): Promise<R> {
   const c = await db.checkpoint.findUnique({ where: { id } });
   if (!c) return { ok: false, error: "not found" };
   await own(c.studentId);
+  await db.placementAttempt.deleteMany({ where: { checkpointId: id } });
   await db.checkpoint.delete({ where: { id } });
   refresh(c.studentId);
   return { ok: true };

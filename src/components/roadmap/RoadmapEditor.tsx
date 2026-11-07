@@ -1,6 +1,7 @@
 "use client";
 import { useRef, useState } from "react";
 import { useT } from "@/lib/i18n/client";
+import { assignPlacement } from "@/lib/placement/actions";
 import { approveRoadmap, assignTest, buildRoadmap, deleteCheckpoint, editStage, manualResults, type RoadmapForm } from "@/lib/roadmap/actions";
 import { LEVELS, ROUTE_TYPES, SKILL_COLOR, SKILL_NAME, SKILLS, txt, type Skill } from "@/lib/roadmap/cefr";
 import { etaRange, fmtHM, PACES, paceKey, paceLabel, parsePace } from "@/lib/roadmap/math";
@@ -10,7 +11,7 @@ import { Icon } from "../Icon";
 import { makeRecorder, transcribe } from "../ai/audio";
 import { Mountain } from "./Mountain";
 
-export type CP = { id: string; kind: string; status: string; source: string; level: string | null; skills: Partial<Record<Skill, number>>; weak: [string, string][]; takenAt: string | null; assignedAt: string; stage: number | null };
+export type CP = { id: string; kind: string; status: string; source: string; level: string | null; skills: Partial<Record<Skill, number>>; weak: [string, string][]; takenAt: string | null; assignedAt: string; stage: number | null; placement?: string | null; pstatus?: string | null };
 export type EditorData = {
   studentId: string; first: string; ini: string; level: string | null;
   courses: { id: string; title: string; units: number }[];
@@ -48,7 +49,7 @@ function Checkpoints({ d }: { d: EditorData }) {
   const [i, setI] = useState(doneList.length - 1);
   const [manual, setManual] = useState(false);
   const [m, setM] = useState<{ level: string; skills: Record<string, string> }>({ level: d.level ?? "B1", skills: {} });
-  const open = d.checkpoints.find((c) => c.status === "assigned");
+  const open = d.checkpoints.find((c) => c.status === "assigned" || c.status === "review");
   const c = doneList[Math.max(0, Math.min(i, doneList.length - 1))];
   const prev = doneList[doneList.indexOf(c) - 1];
   const loc = lang === "ru" ? "ru-RU" : "en-GB";
@@ -69,9 +70,15 @@ function Checkpoints({ d }: { d: EditorData }) {
           {c.weak.length > 0 && <div className="mt-3 small"><b>{t("rm.weak")}:</b> {c.weak.map((w) => txt(w, lang)).join(", ")}</div>}
         </>
       ) : <p className="hint mt-0">{t("rm.noTest")}</p>}
-      {open && <div className="alert mt-3"><Icon name="hourglass" size="sm" /> {open.kind === "entry" ? t("rm.entryAssigned") : t("rm.sliceAssigned")}</div>}
+      {open && (
+        <div className="alert mt-3 flex flex-wrap items-center gap-2"><Icon name="hourglass" size="sm" />
+          <span className="grow">{open.status === "review" ? t("pl.toReview") : open.pstatus === "active" ? t("pl.studentTaking") : open.kind === "entry" ? t("rm.entryAssigned") : t("rm.sliceAssigned")}</span>
+          {open.placement && open.status === "review" && <a className="btn primary sm" href={`/teacher/placement/${open.placement}`}>{t("pl.review")}</a>}
+        </div>
+      )}
+      {c?.placement && <a className="small alink mt-2 inline-block" href={`/teacher/placement/${c.placement}`}>{t("pl.openResult")}</a>}
       <div className="mt-4 flex flex-wrap gap-2">
-        {!doneList.length ? <button className="btn primary sm" disabled={pending} onClick={() => run(() => assignTest(d.studentId, "entry"))}>{t("rm.assignEntry")}</button>
+        {!doneList.length ? <button className="btn primary sm" disabled={pending} onClick={() => run(() => assignPlacement(d.studentId))}>{t("rm.assignEntry")}</button>
           : <button className="btn secondary sm" disabled={pending} onClick={() => run(() => assignTest(d.studentId, "slice", d.roadmap?.ci ?? 0))}>{t("rm.assignSlice")}</button>}
         <button className="btn plain sm" onClick={() => setManual(true)}>{t("rm.enterManual")}</button>
         {c && <button className="btn plain sm" onClick={() => { if (confirm(t("rm.delTest"))) run(() => deleteCheckpoint(c.id)); }}>{t("common.delete")}</button>}
