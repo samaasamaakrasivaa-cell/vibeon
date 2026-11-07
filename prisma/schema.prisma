@@ -176,6 +176,7 @@ model Student {
 
   @@index([teacherId, status])
   checkpoints     Checkpoint[]
+  placements      PlacementAttempt[]
 }
 
 model Group {
@@ -438,6 +439,59 @@ model Checkpoint {
   roadmap    Roadmap?  @relation(fields: [roadmapId], references: [id], onDelete: SetNull)
 
   @@index([studentId, status])
+}
+
+// ───────────── Вводный тест (placement A1–C1) ─────────────
+
+/// Одно прохождение вводного теста: учеником (назначил учитель), самим учителем или новым человеком по ссылке.
+/// В state хранится снимок выданных заданий — правки банка не меняют уже пройденные тесты.
+model PlacementAttempt {
+  id           String            @id @default(cuid())
+  teacherId    String // кому приходит результат
+  studentId    String?
+  checkpointId String?           @unique // запись «Входной тест» в маршруте ученика
+  linkId       String?
+  mode         String // student | self | link
+  guestName    String?
+  guestContact String?
+  token        String            @unique // доступ к прохождению без входа (для ссылки) — хранится в куке
+  status       String            @default("new") // new | active | submitted | reviewed
+  state        Json              @default("{}")
+  review       Json              @default("{}") // оценки учителя: письмо, говорение, итог, комментарий
+  level        String? // итоговый подуровень — выбирает учитель
+  showResult   Boolean           @default(false)
+  reveal       String[]          @default([]) // скрипты, которые учитель открыл ученику на разборе
+  startedAt    DateTime?
+  submittedAt  DateTime?
+  reviewedAt   DateTime?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  student      Student?          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  link         PlacementLink?    @relation(fields: [linkId], references: [id], onDelete: SetNull)
+
+  @@index([teacherId, createdAt])
+}
+
+/// Ссылка «для нового человека»: открывается без регистрации.
+model PlacementLink {
+  id         String             @id @default(cuid())
+  code       String             @unique
+  teacherId  String
+  showResult Boolean            @default(false) // показывать ли результат в конце
+  active     Boolean            @default(true)
+  createdAt  DateTime           @default(now())
+  attempts   PlacementAttempt[]
+
+  @@index([teacherId])
+}
+
+/// Правки банка владельцем платформы (поверх файлов content/placement).
+model PlacementEdit {
+  itemId    String   @id
+  data      Json
+  audio     String? // своя дорожка вместо сгенерированной (ключ в хранилище)
+  updatedBy String
+  updatedAt DateTime @updatedAt
 }
 
 // ───────────── Оплаты ─────────────

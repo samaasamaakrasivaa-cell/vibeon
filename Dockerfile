@@ -21,6 +21,7 @@ COPY --from=build /app/public ./public
 COPY --from=build --chown=app:app /app/.next/standalone ./
 COPY --from=build --chown=app:app /app/.next/static ./.next/static
 COPY --from=build /app/prisma ./prisma
+COPY --from=build /app/content/placement/audio ./content/placement/audio
 COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh && mkdir -p /app/uploads && chown app:app /app/uploads
 USER app

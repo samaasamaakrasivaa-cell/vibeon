@@ -1,0 +1,298 @@
+"use server";
+import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
+import { db } from "../db";
+import { requireUser } from "../auth/session";
+import { randomToken, shortCode } from "../auth/crypto";
+import { secureCookies } from "../env";
+import { notify } from "../notify";
+import { rateLimit } from "../rate-limit";
+import { getLang } from "../i18n/server";
+import { attemptFor, ptCookie } from "./access";
+import { getBank } from "./bank";
+import { checkCore, emptyState, pickTask, stepIdx, STEPS, summarize, words, type CoreItem, type ListenItem, type ReadItem, type SpeakItem } from "./engine";
+import { advance, json, publicView, stateOf, type PView } from "./run";
+import { revealedScripts } from "./review";
+
+type R = { ok: true; id?: string; view?: PView } | { ok: false; error: string };
+const str = (v: unknown, max = 200) => (typeof v === "string" ? v.trim().slice(0, max) : "");
+
+async function load(id: string) {
+  const acc = await attemptFor(id);
+  if (!acc || acc.who !== "taker") throw new Error("not found");
+  if (acc.a.status === "submitted" || acc.a.status === "reviewed") throw new Error("done");
+  return { ...acc, st: stateOf(acc.a.state) };
+}
+async function save(id: string, st: ReturnType<typeof stateOf>, extra: Record<string, unknown> = {}) {
+  await db.placementAttempt.update({ where: { id }, data: { state: json(st), ...extra } });
+  return { ok: true as const, view: publicView(st, await getLang()) };
+}
+const wrap = async (fn: () => Promise<R>): Promise<R> => {
+  try { return await fn(); } catch (e) { return { ok: false, error: e instanceof Error && e.message === "done" ? "done" : "not found" }; }
+};
+
+// ───────── Прохождение ─────────
+
+/** Вводный экран пройден (микрофон и звук проверены) — начинаем ядро. */
+export async function startPlacement(id: string, beginner: boolean): Promise<R> {
+  return wrap(async () => {
+    const { a } = await load(id);
+    const { bank } = await getBank();
+    const st = a.status === "new" ? emptyState(!!beginner) : stateOf(a.state);
+    if (st.section === "intro") st.section = "core";
+    advance(st, bank);
+    if (a.checkpointId) await db.checkpoint.update({ where: { id: a.checkpointId }, data: { status: "assigned" } }).catch(() => null);
+    return save(id, st, { status: "active", startedAt: a.startedAt ?? new Date() });
+  });
+}
+
+export async function answerCore(id: string, itemId: string, v: string | number | null, ms: number): Promise<R> {
+  return wrap(async () => {
+    const { st } = await load(id);
+    const last = st.core[st.core.length - 1];
+    if (st.section !== "core" || !last || last.id !== itemId || st.answers[itemId]) return { ok: true, view: publicView(st, await getLang()) };
+    const it = st.items[itemId] as CoreItem;
+    const val = typeof v === "number" ? v : str(v, 120);
+    st.answers[itemId] = { v: val, ok: checkCore(it, val), ms: Math.max(0, Math.min(3600e3, Math.round(ms) || 0)) };
+    advance(st, (await getBank()).bank);
+    return save(id, st);
+  });
+}
+
+/** Ответы на вопросы к тексту или записи (все сразу). */
+export async function answerText(id: string, itemId: string, answers: Record<string, number>, ms: number): Promise<R> {
+  return wrap(async () => {
+    const { st } = await load(id);
+    if (st.section !== "reading" && st.section !== "listening") return { ok: true, view: publicView(st, await getLang()) };
+    const ids = st.section === "reading" ? st.reading : st.listening;
+    const done = st.section === "reading" ? st.rdone : st.ldone;
+    if (!ids.includes(itemId) || done.includes(itemId)) return { ok: true, view: publicView(st, await getLang()) };
+    const it = st.items[itemId] as ReadItem | ListenItem;
+    for (const q of it.questions) {
+      const v = answers?.[q.id];
+      const n = typeof v === "number" && v >= 0 && v < q.options.length ? v : null;
+      st.answers[q.id] = { v: n, ok: n === q.answer, ms: Math.round(ms / it.questions.length) };
+    }
+    done.push(itemId);
+    advance(st, (await getBank()).bank);
+    return save(id, st);
+  });
+}
+
+/** Запись можно прослушать не больше двух раз — счётчик хранится на сервере. */
+export async function notePlay(id: string, itemId: string): Promise<R> {
+  return wrap(async () => {
+    const { st } = await load(id);
+    const it = st.items[itemId] as ListenItem | undefined;
+    if (!it || it.type !== "listening") return { ok: false, error: "item" };
+    const used = st.plays[itemId] ?? 0;
+    if (used >= (it.plays ?? 2)) return { ok: false, error: "plays" };
+    st.plays[itemId] = used + 1;
+    return save(id, st);
+  });
+}
+
+/** Черновик письма сохраняется по ходу; final — переход к говорению. */
+export async function saveWriting(id: string, text: string, final: boolean): Promise<R> {
+  return wrap(async () => {
+    const { st } = await load(id);
+    if (st.section !== "writing") return { ok: true, view: publicView(st, await getLang()) };
+    st.writing = { id: st.writing?.id ?? "", text: str(text, 8000) };
+    if (final) {
+      if (words(st.writing.text) < 3) return { ok: false, error: "empty" };
+      const { bank } = await getBank();
+      const plus = (st.step ?? 0) % 2 === 1 || st.step === 8;
+      const sp = pickTask(bank.speaking, st.level ?? "A1", plus);
+      if (sp) { st.items[sp.id] = sp; st.speaking = { id: sp.id, rec: {} }; }
+      st.section = "speaking";
+    }
+    return save(id, st);
+  });
+}
+
+/** Говорение закончено (или микрофон не работает) — тест уходит учителю на проверку. */
+export async function finishPlacement(id: string, noMic = false): Promise<R> {
+  return wrap(async () => {
+    const { a, st } = await load(id);
+    if (st.section !== "speaking") return { ok: false, error: "section" };
+    const sp = st.speaking ? (st.items[st.speaking.id] as SpeakItem) : null;
+    const recorded = Object.keys(st.speaking?.rec ?? {}).length;
+    if (sp && recorded < sp.questions.length && !noMic) return { ok: false, error: "rec" };
+    if (noMic && st.speaking) (st.speaking as { noMic?: boolean }).noMic = true;
+    st.section = "done";
+    const r = await save(id, st, { status: "submitted", submittedAt: new Date() });
+    if (a.checkpointId) await db.checkpoint.update({ where: { id: a.checkpointId }, data: { status: "review", takenAt: new Date() } }).catch(() => null);
+    if (a.mode !== "self") {
+      const who = a.mode === "student" ? `${a.student?.name ?? ""} ${a.student?.lastName ?? ""}`.trim() : a.guestName ?? "";
+      await notify({ userId: a.teacherId, kind: "test", title: `${who}: вводный тест пройден — проверьте письмо и говорение`, action: "review", link: `/teacher/placement/${id}` });
+    }
+    revalidatePath("/teacher/courses");
+    if (a.studentId) revalidatePath(`/teacher/students/${a.studentId}`);
+    return r;
+  });
+}
+
+// ───────── Ссылка для нового человека ─────────
+
+/** Новый человек вводит имя и контакт — создаётся прохождение, доступ к нему — по куке в этом браузере. */
+export async function startGuest(code: string, name: string, contact: string, consent: boolean): Promise<R> {
+  if (!(await rateLimit("pl-guest", 10, 600))) return { ok: false, error: "rate" };
+  const link = await db.placementLink.findUnique({ where: { code } });
+  if (!link || !link.active) return { ok: false, error: "link" };
+  const n = str(name, 80), c = str(contact, 120);
+  if (!n) return { ok: false, error: "name" };
+  if (!c) return { ok: false, error: "contact" };
+  if (!consent) return { ok: false, error: "consent" };
+  const token = randomToken(24);
+  const a = await db.placementAttempt.create({ data: { teacherId: link.teacherId, linkId: link.id, mode: "link", guestName: n, guestContact: c, token, state: json(emptyState()) } });
+  (await cookies()).set(ptCookie(a.id), token, { httpOnly: true, secure: secureCookies, sameSite: "lax", path: "/", maxAge: 60 * 24 * 3600 });
+  return { ok: true, id: a.id };
+}
+
+// ───────── Учитель ─────────
+
+async function teacherAttempt(id: string) {
+  const me = await requireUser("TEACHER");
+  const a = await db.placementAttempt.findUnique({ where: { id }, include: { student: true } });
+  if (!a || a.teacherId !== me.id) throw new Error("not found");
+  return { me, a };
+}
+const refreshT = (studentId?: string | null) => {
+  revalidatePath("/teacher/courses");
+  if (studentId) { revalidatePath(`/teacher/students/${studentId}`); revalidatePath("/student/route"); revalidatePath("/student"); }
+};
+
+/** «Пройти самой»: учитель проходит тест как ученик, результат видит сразу. */
+export async function selfPlacement(): Promise<R> {
+  const me = await requireUser("TEACHER");
+  const a = await db.placementAttempt.create({ data: { teacherId: me.id, mode: "self", token: randomToken(24), state: json(emptyState()) } });
+  return { ok: true, id: a.id };
+}
+
+/** Назначить вводный тест ученику (из «Курсы → Тесты» или из анкеты). Старый незавершённый тест заменяется. */
+export async function assignPlacement(studentId: string): Promise<R> {
+  const me = await requireUser("TEACHER");
+  const s = await db.student.findUnique({ where: { id: studentId } });
+  if (!s || s.teacherId !== me.id) return { ok: false, error: "not found" };
+  const old = await db.checkpoint.findMany({ where: { studentId, kind: "entry", status: "assigned" }, select: { id: true } });
+  if (old.length) {
+    await db.placementAttempt.deleteMany({ where: { checkpointId: { in: old.map((x) => x.id) }, status: { in: ["new", "active"] } } });
+    await db.checkpoint.deleteMany({ where: { id: { in: old.map((x) => x.id) } } });
+  }
+  const r = await db.roadmap.findFirst({ where: { studentId }, orderBy: { createdAt: "desc" } });
+  const c = await db.checkpoint.create({ data: { studentId, roadmapId: r?.id ?? null, kind: "entry", source: "placement" } });
+  await db.placementAttempt.create({ data: { teacherId: me.id, studentId, checkpointId: c.id, mode: "student", token: randomToken(24), state: json(emptyState()) } });
+  if (s.userId) await notify({ userId: s.userId, kind: "test", title: "Преподаватель назначил вводный тест", action: "decide", link: `/student/test/${c.id}` });
+  refreshT(studentId);
+  return { ok: true, id: c.id };
+}
+
+export async function createPlacementLink(showResult: boolean): Promise<R> {
+  const me = await requireUser("TEACHER");
+  const code = shortCode(10).toLowerCase();
+  await db.placementLink.updateMany({ where: { teacherId: me.id, active: true }, data: { active: false } });
+  const l = await db.placementLink.create({ data: { teacherId: me.id, code, showResult: !!showResult } });
+  refreshT();
+  return { ok: true, id: l.code };
+}
+export async function setLinkShowResult(code: string, on: boolean): Promise<R> {
+  const me = await requireUser("TEACHER");
+  await db.placementLink.updateMany({ where: { code, teacherId: me.id }, data: { showResult: !!on } });
+  refreshT();
+  return { ok: true };
+}
+export async function closePlacementLink(code: string): Promise<R> {
+  const me = await requireUser("TEACHER");
+  await db.placementLink.updateMany({ where: { code, teacherId: me.id }, data: { active: false } });
+  refreshT();
+  return { ok: true };
+}
+
+export type ReviewInput = { writing: Record<string, string>; speaking: Record<string, string>; comment: string };
+const cleanMarks = (m: Record<string, string> | undefined) => Object.fromEntries(Object.entries(m ?? {}).filter(([k, v]) => /^[a-z]{2,20}$/.test(k) && (STEPS as readonly string[]).includes(v)));
+
+/** Оценки письма и говорения по критериям (сохраняются по ходу проверки). */
+export async function saveReview(id: string, r: ReviewInput): Promise<R> {
+  return wrap(async () => {
+    const { a } = await teacherAttempt(id);
+    const prev = (a.review ?? {}) as Record<string, unknown>;
+    await db.placementAttempt.update({ where: { id }, data: { review: json({ ...prev, writing: cleanMarks(r.writing), speaking: cleanMarks(r.speaking), comment: str(r.comment, 3000) }) } });
+    revalidatePath(`/teacher/placement/${id}`);
+    return { ok: true };
+  });
+}
+
+/** Итог выбирает учитель. Для ученика он становится точкой A маршрута. */
+export async function finalizePlacement(id: string, level: string): Promise<R> {
+  return wrap(async () => {
+    const { a } = await teacherAttempt(id);
+    if (stepIdx(level) < 0) return { ok: false, error: "level" };
+    if (a.status !== "submitted" && a.status !== "reviewed") return { ok: false, error: "status" };
+    await db.placementAttempt.update({ where: { id }, data: { level, status: "reviewed", reviewedAt: new Date() } });
+    if (a.checkpointId && a.studentId) {
+      const st = stateOf(a.state);
+      const { bank } = await getBank();
+      const sm = summarize(st, bank);
+      const pct = (rows: [number, number][]) => { const t = rows.reduce((x, r) => [x[0] + r[0], x[1] + r[1]], [0, 0]); return t[1] ? Math.round((t[0] / t[1]) * 100) : undefined; };
+      const skills = {
+        grammar: pct(Object.values(sm.core).map((r) => r.grammar)), vocabulary: pct(Object.values(sm.core).map((r) => r.vocabulary)),
+        reading: sm.level && sm.reading[sm.level] ? pct([sm.reading[sm.level]]) : undefined, listening: sm.level && sm.listening[sm.level] ? pct([sm.listening[sm.level]]) : undefined,
+      };
+      const wrong = st.core.map((x) => st.items[x.id] as CoreItem).filter((it) => it && !st.answers[it.id]?.ok);
+      const right = st.core.map((x) => st.items[x.id] as CoreItem).filter((it) => it && st.answers[it.id]?.ok && it.level !== "A1");
+      const uniq = (xs: CoreItem[]) => [...new Map(xs.map((x) => [x.topic_id, [x.topic_en, x.topic_ru]])).values()];
+      await db.checkpoint.update({
+        where: { id: a.checkpointId },
+        data: { status: "done", level, takenAt: a.submittedAt ?? new Date(), results: json({ skills: Object.fromEntries(Object.entries(skills).filter(([, v]) => v !== undefined)), weak: uniq(wrong).slice(0, 8), strong: uniq(right).slice(0, 4), placement: id, shown: a.showResult }) },
+      });
+      await db.student.update({ where: { id: a.studentId }, data: { level } });
+    }
+    refreshT(a.studentId);
+    revalidatePath(`/teacher/placement/${id}`);
+    return { ok: true };
+  });
+}
+
+/** «Показать результат ученику». */
+export async function setShowResult(id: string, on: boolean): Promise<R> {
+  return wrap(async () => {
+    const { a } = await teacherAttempt(id);
+    await db.placementAttempt.update({ where: { id }, data: { showResult: !!on } });
+    if (a.checkpointId) {
+      const c = await db.checkpoint.findUnique({ where: { id: a.checkpointId } });
+      if (c) await db.checkpoint.update({ where: { id: c.id }, data: { results: json({ ...((c.results ?? {}) as object), shown: !!on }) } });
+    }
+    if (on && a.student?.userId) await notify({ userId: a.student.userId, kind: "test", title: "Готов результат вводного теста", action: "review", link: `/student/test/${a.checkpointId}`, dedupe: `pl-shown:${id}` });
+    refreshT(a.studentId);
+    revalidatePath(`/teacher/placement/${id}`);
+    return { ok: true };
+  });
+}
+
+/** «Глазик» на разборе: учитель открывает ученику скрипт записи. */
+export async function toggleReveal(id: string, itemId: string): Promise<R> {
+  return wrap(async () => {
+    const { a } = await teacherAttempt(id);
+    if (!stateOf(a.state).items[itemId]) return { ok: false, error: "item" };
+    const reveal = a.reveal.includes(itemId) ? a.reveal.filter((x) => x !== itemId) : [...a.reveal, itemId];
+    await db.placementAttempt.update({ where: { id }, data: { reveal } });
+    return { ok: true };
+  });
+}
+
+export async function deletePlacement(id: string): Promise<R> {
+  return wrap(async () => {
+    const { a } = await teacherAttempt(id);
+    await db.placementAttempt.delete({ where: { id } });
+    if (a.checkpointId && a.status !== "reviewed") await db.checkpoint.deleteMany({ where: { id: a.checkpointId } });
+    refreshT(a.studentId);
+    return { ok: true };
+  });
+}
+
+/** Ученик на разборе: скрипты, которые открыл учитель (опрос раз в несколько секунд). */
+export async function revealState(id: string): Promise<Record<string, string>> {
+  const acc = await attemptFor(id);
+  if (!acc || !(acc.a.showResult || acc.who === "teacher")) return {};
+  return revealedScripts(stateOf(acc.a.state), acc.a.reveal);
+}
