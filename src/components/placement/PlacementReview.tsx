@@ -7,6 +7,8 @@ import type { ReviewData } from "@/lib/placement/review";
 import type { Rubric } from "@/lib/placement/bank";
 import { useRun } from "../courses/useRun";
 import { Icon } from "../Icon";
+import { fmtSec } from "./PlacementAnswers";
+import type { DictKey } from "@/lib/i18n/dict";
 
 type Marks = Record<string, string>;
 export type ReviewProps = {
@@ -39,6 +41,26 @@ export function PlacementReview(p: ReviewProps) {
   const [lvl, setLvl] = useState(p.level ?? (hint !== null ? STEPS[hint] : ""));
   const L = ["A1", "A2", "B1", "B2", "C1"].filter((l) => p.sm.core[l] || p.sm.reading[l] || p.sm.listening[l]);
   const waiting = p.status === "new" || p.status === "active";
+
+  // вывод системы обычными словами
+  const passed = p.sm.path.filter((x) => x.pass).map((x) => x.step);
+  const failed = p.sm.path.filter((x) => x.pass === false && x.step > p.sm.coreStep).map((x) => x.step).sort((a, b) => a - b);
+  const next = failed[0] !== undefined ? p.sm.path.find((x) => x.step === failed[0]) : null;
+  const sk = (r: Record<string, [number, number]>, s2: number | null, name: string) => {
+    const lv = Object.keys(r).sort().reverse().find((l) => r[l][1]);
+    return lv && s2 !== null ? t("pl.exSkill", { s: name, l: lv, p: pct(r[lv]) ?? 0, r: STEPS[s2] }) : null;
+  };
+  const lines = [
+    passed.length ? t("pl.exCore", { r: STEPS[p.sm.coreStep] }) + (next ? " " + t("pl.exNext", { s: STEPS[next.step], c: next.c, n: next.n }) : p.sm.coreStep === 8 ? " " + t("pl.exTop") : "") : t("pl.exLow"),
+    sk(p.sm.reading, p.sm.readStep, t("pl.part.reading")), sk(p.sm.listening, p.sm.listenStep, t("pl.part.listening")),
+    hint !== null ? t(wHint === null || sHint === null ? "pl.exNeedWS" : "pl.exFinal", { h: STEPS[hint] }) : null,
+  ].filter(Boolean) as string[];
+  const tm = p.d.times;
+  const total = Object.values(tm).reduce((a, b) => a + b, 0);
+  const coreMs = p.d.core.map((x) => x.ms).filter((x): x is number => x !== null);
+  const fast = coreMs.filter((x) => x < 3000).length;
+  const slow = [...p.d.core].filter((x) => x.ms !== null).sort((a, b) => b.ms! - a.ms!).slice(0, 3).filter((x) => x.ms! > 20000);
+  const dks = p.d.core.filter((x) => x.dk).length + [...p.d.reading, ...p.d.listening].reduce((a, x) => a + x.questions.filter((q) => q.dk).length, 0);
 
   const rubric = (title: string, list: Rubric[], m: Marks, set: (x: Marks) => void, h: number | null, level: string) => (
     <div className="plrub">
@@ -87,7 +109,29 @@ export function PlacementReview(p: ReviewProps) {
           <div><span>{t("pl.part.writing")}</span><b>{wHint !== null ? STEPS[wHint] : "—"}</b></div>
           <div><span>{t("pl.part.speaking")}</span><b>{sHint !== null ? STEPS[sHint] : "—"}</b></div>
         </div>
+        <div className="plexplain">
+          <div className="flex items-center gap-2"><Icon name="spark" size="sm" /><b>{t("pl.exTitle")}</b></div>
+          {lines.map((x) => <p key={x} className="m-0">{x}</p>)}
+          <details><summary className="small">{t("pl.howRead")}</summary><p className="small mt-2 mb-0">{t("pl.howReadText")}</p></details>
+        </div>
       </section>
+
+      {total > 0 && (
+        <section className="card flex flex-col gap-3">
+          <div className="flex items-center gap-2"><h3 className="m-0 grow">{t("pl.timeTitle")}</h3><b>{fmtSec(total)}</b></div>
+          <div className="plsteps">
+            {["core", "reading", "listening", "writing", "speaking"].map((k) => <div key={k}><span>{t(`pl.part.${k}` as DictKey)}</span><b className="text-[16px]">{tm[k] ? fmtSec(tm[k]) : "—"}</b></div>)}
+          </div>
+          <div className="small flex flex-col gap-1">
+            {coreMs.length > 0 && <span>{t("pl.timeAvg", { s: fmtSec(coreMs.reduce((a, b) => a + b, 0) / coreMs.length) })}</span>}
+            {fast > 0 && <span className="text-bad">{t("pl.timeFast", { n: fast })}</span>}
+            {dks > 0 && <span>{t("pl.dkCount", { n: dks })}</span>}
+            {slow.length > 0 && <span className="muted">{t("pl.timeSlow")}: {slow.map((x) => `«${x.q.slice(0, 40)}…» — ${fmtSec(x.ms!)}`).join("; ")}</span>}
+            {[...p.d.listening].map((x) => <span key={x.id} className="muted">{t("pl.playsOf", { title: x.title, n: x.plays ?? 0 })}</span>)}
+          </div>
+          <p className="hint m-0">{t("pl.timeNote")}</p>
+        </section>
+      )}
 
       {p.d.writing && (
         <section className="card flex flex-col gap-3">
@@ -106,7 +150,7 @@ export function PlacementReview(p: ReviewProps) {
           {p.d.speaking.noMic && <div className="alert">{t("pl.noMicNote")}</div>}
           {p.d.speaking.questions.map((q, i) => (
             <div key={i} className="flex flex-col gap-1">
-              <span className="small"><b>{i + 1}.</b> {q.q}</span>
+              <span className="small"><b>{i + 1}.</b> {q.q}{q.rerec > 0 && <span className="muted"> · {t("pl.rerecN", { n: q.rerec })}</span>}</span>
               {q.url ? <audio controls preload="none" src={q.url} className="w-full" /> : <span className="small muted">{t("pl.noRec")}</span>}
             </div>
           ))}

@@ -143,6 +143,7 @@ function ItemDialog({ item, edited, onClose }: { item: AnyItem; edited: boolean;
           <>
             {field("prompt_en", t("pl.promptEn"), true)}{field("prompt_ru", t("pl.promptRu"))}
             <div className="grid grid-cols-2 gap-3">{field("min_words", t("pl.minWords"))}{field("max_words", t("pl.maxWords"))}</div>
+            {lines("points", t("pl.includePoints"))}
             {lines("expects", t("pl.expects"))}
           </>
         )}

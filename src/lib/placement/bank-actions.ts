@@ -62,7 +62,7 @@ export async function saveBankItem(itemId: string, data: Record<string, unknown>
   } else if (o.type === "writing") {
     const min = Number(data.min_words), max = Number(data.max_words);
     if (!s(data.prompt_en) || !(min > 0 && max >= min && max <= 600)) return { ok: false, error: "writing" };
-    patch = { prompt_en: s(data.prompt_en, 1500), prompt_ru: s(data.prompt_ru, 1000), min_words: Math.round(min), max_words: Math.round(max), expects: (Array.isArray(data.expects) ? data.expects : []).map((x) => s(x, 300)).filter(Boolean) };
+    patch = { prompt_en: s(data.prompt_en, 1500), prompt_ru: s(data.prompt_ru, 1000), min_words: Math.round(min), max_words: Math.round(max), points: (Array.isArray(data.points) ? data.points : []).map((x) => s(x, 300)).filter(Boolean), expects: (Array.isArray(data.expects) ? data.expects : []).map((x) => s(x, 300)).filter(Boolean) };
   } else {
     const sp = o as SpeakItem;
     const qs = Array.isArray(data.questions) ? data.questions : [];

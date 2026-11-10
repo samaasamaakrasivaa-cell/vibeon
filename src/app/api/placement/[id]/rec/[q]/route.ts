@@ -28,6 +28,7 @@ export async function POST(req: NextRequest, { params }: P) {
   const fresh = await db.placementAttempt.findUnique({ where: { id } });
   const s2 = stateOf(fresh!.state);
   if (!s2.speaking) return NextResponse.json({ error: "q" }, { status: 400 });
+  if (s2.speaking.rec[qi]) s2.rerec = { ...(s2.rerec ?? {}), [qi]: (s2.rerec?.[qi] ?? 0) + 1 }; // учитель видит, что ответ перезаписан
   s2.speaking.rec = { ...s2.speaking.rec, [qi]: `${key}|${mime}` };
   await db.placementAttempt.update({ where: { id }, data: { state: json(s2) } });
   return NextResponse.json({ ok: true });
@@ -42,5 +43,5 @@ export async function GET(_req: NextRequest, { params }: P) {
   const [key, mime] = rec.split("|");
   const f = await readStored(key);
   if (!f) return new NextResponse("Not found", { status: 404 });
-  return new NextResponse(new Uint8Array(f.buf), { headers: { "Content-Type": mime || "audio/webm", "Content-Length": String(f.size), "Cache-Control": "private, max-age=3600" } });
+  return new NextResponse(new Uint8Array(f.buf), { headers: { "Content-Type": mime || "audio/webm", "Content-Length": String(f.size), "Cache-Control": "private, no-store" } });
 }

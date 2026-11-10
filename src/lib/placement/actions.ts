@@ -10,8 +10,8 @@ import { rateLimit } from "../rate-limit";
 import { getLang } from "../i18n/server";
 import { attemptFor, ptCookie } from "./access";
 import { getBank } from "./bank";
-import { checkCore, emptyState, pickTask, stepIdx, STEPS, summarize, words, type CoreItem, type ListenItem, type ReadItem, type SpeakItem } from "./engine";
-import { advance, json, publicView, stateOf, type PView } from "./run";
+import { checkCore, emptyState, EXPECT, pickTask, stepIdx, STEPS, summarize, words, type CoreItem, type Expect, type ListenItem, type ReadItem, type SpeakItem } from "./engine";
+import { advance, enter, json, leave, publicView, stateOf, type PView } from "./run";
 import { revealedScripts } from "./review";
 
 type R = { ok: true; id?: string; view?: PView } | { ok: false; error: string };
@@ -24,8 +24,9 @@ async function load(id: string) {
   return { ...acc, st: stateOf(acc.a.state) };
 }
 async function save(id: string, st: ReturnType<typeof stateOf>, extra: Record<string, unknown> = {}) {
+  const view = publicView(st, await getLang(), (await getBank()).bank); // считает и полоску прогресса — до записи
   await db.placementAttempt.update({ where: { id }, data: { state: json(st), ...extra } });
-  return { ok: true as const, view: publicView(st, await getLang()) };
+  return { ok: true as const, view };
 }
 const wrap = async (fn: () => Promise<R>): Promise<R> => {
   try { return await fn(); } catch (e) { return { ok: false, error: e instanceof Error && e.message === "done" ? "done" : "not found" }; }
@@ -34,46 +35,64 @@ const wrap = async (fn: () => Promise<R>): Promise<R> => {
 // ───────── Прохождение ─────────
 
 /** Вводный экран пройден (микрофон и звук проверены) — начинаем ядро. */
-export async function startPlacement(id: string, beginner: boolean): Promise<R> {
+export async function startPlacement(id: string): Promise<R> {
   return wrap(async () => {
-    const { a } = await load(id);
+    const { a, st } = await load(id);
     const { bank } = await getBank();
-    const st = a.status === "new" ? emptyState(!!beginner) : stateOf(a.state);
-    if (st.section === "intro") st.section = "core";
+    if (!st.core) Object.assign(st, emptyState());
+    if (st.section === "intro") { st.section = "core"; enter(st, "core"); }
     advance(st, bank);
     if (a.checkpointId) await db.checkpoint.update({ where: { id: a.checkpointId }, data: { status: "assigned" } }).catch(() => null);
     return save(id, st, { status: "active", startedAt: a.startedAt ?? new Date() });
   });
 }
 
-export async function answerCore(id: string, itemId: string, v: string | number | null, ms: number): Promise<R> {
+/** dk — «Не знаю»: засчитывается как неверный ответ, но в разборе отмечен отдельно. */
+export async function answerCore(id: string, itemId: string, v: string | number | null, ms: number, dk = false): Promise<R> {
   return wrap(async () => {
     const { st } = await load(id);
     const last = st.core[st.core.length - 1];
     if (st.section !== "core" || !last || last.id !== itemId || st.answers[itemId]) return { ok: true, view: publicView(st, await getLang()) };
     const it = st.items[itemId] as CoreItem;
-    const val = typeof v === "number" ? v : str(v, 120);
-    st.answers[itemId] = { v: val, ok: checkCore(it, val), ms: Math.max(0, Math.min(3600e3, Math.round(ms) || 0)) };
+    const val = dk ? null : typeof v === "number" ? v : str(v, 120);
+    st.answers[itemId] = { v: val, ok: dk ? false : checkCore(it, val), ms: Math.max(0, Math.min(3600e3, Math.round(ms) || 0)), ...(dk ? { dk: true } : {}) };
     advance(st, (await getBank()).bank);
     return save(id, st);
   });
 }
 
-/** Ответы на вопросы к тексту или записи (все сразу). */
-export async function answerText(id: string, itemId: string, answers: Record<string, number>, ms: number): Promise<R> {
+/** Черновик ответа на вопрос к тексту или записи (-1 — «Не знаю»). Можно менять до «Завершить раздел». */
+export async function draftText(id: string, qid: string, v: number): Promise<R> {
+  return wrap(async () => {
+    const { st } = await load(id);
+    if (st.section !== "reading" && st.section !== "listening") return { ok: false, error: "section" };
+    const ids = st.section === "reading" ? st.reading : st.listening;
+    const done = st.section === "reading" ? st.rdone : st.ldone;
+    const it = ids.filter((x) => !done.includes(x)).map((x) => st.items[x] as ReadItem | ListenItem).find((x) => x.questions.some((q) => q.id === qid));
+    const q = it?.questions.find((x) => x.id === qid);
+    if (!q || !Number.isInteger(v) || v < -1 || v >= q.options.length) return { ok: false, error: "q" };
+    st.open = { ...(st.open ?? {}), [qid]: v };
+    await db.placementAttempt.update({ where: { id }, data: { state: json(st) } });
+    return { ok: true };
+  });
+}
+
+/** «Завершить раздел» чтения или аудирования: ответы засчитываются, вернуться к ним нельзя. */
+export async function finishTexts(id: string): Promise<R> {
   return wrap(async () => {
     const { st } = await load(id);
     if (st.section !== "reading" && st.section !== "listening") return { ok: true, view: publicView(st, await getLang()) };
     const ids = st.section === "reading" ? st.reading : st.listening;
     const done = st.section === "reading" ? st.rdone : st.ldone;
-    if (!ids.includes(itemId) || done.includes(itemId)) return { ok: true, view: publicView(st, await getLang()) };
-    const it = st.items[itemId] as ReadItem | ListenItem;
-    for (const q of it.questions) {
-      const v = answers?.[q.id];
-      const n = typeof v === "number" && v >= 0 && v < q.options.length ? v : null;
-      st.answers[q.id] = { v: n, ok: n === q.answer, ms: Math.round(ms / it.questions.length) };
+    for (const tid of ids.filter((x) => !done.includes(x))) {
+      const it = st.items[tid] as ReadItem | ListenItem;
+      for (const q of it.questions) {
+        const v = st.open?.[q.id];
+        const n = typeof v === "number" && v >= 0 && v < q.options.length ? v : null;
+        st.answers[q.id] = { v: n, ok: n === q.answer, ...(v === -1 ? { dk: true } : {}) };
+      }
+      done.push(tid);
     }
-    done.push(itemId);
     advance(st, (await getBank()).bank);
     return save(id, st);
   });
@@ -104,7 +123,7 @@ export async function saveWriting(id: string, text: string, final: boolean): Pro
       const plus = (st.step ?? 0) % 2 === 1 || st.step === 8;
       const sp = pickTask(bank.speaking, st.level ?? "A1", plus);
       if (sp) { st.items[sp.id] = sp; st.speaking = { id: sp.id, rec: {} }; }
-      st.section = "speaking";
+      leave(st, "writing"); st.section = "speaking"; enter(st, "speaking");
     }
     return save(id, st);
   });
@@ -119,6 +138,7 @@ export async function finishPlacement(id: string, noMic = false): Promise<R> {
     const recorded = Object.keys(st.speaking?.rec ?? {}).length;
     if (sp && recorded < sp.questions.length && !noMic) return { ok: false, error: "rec" };
     if (noMic && st.speaking) (st.speaking as { noMic?: boolean }).noMic = true;
+    leave(st, "speaking");
     st.section = "done";
     const r = await save(id, st, { status: "submitted", submittedAt: new Date() });
     if (a.checkpointId) await db.checkpoint.update({ where: { id: a.checkpointId }, data: { status: "review", takenAt: new Date() } }).catch(() => null);
@@ -170,7 +190,9 @@ export async function selfPlacement(): Promise<R> {
 }
 
 /** Назначить вводный тест ученику (из «Курсы → Тесты» или из анкеты). Старый незавершённый тест заменяется. */
-export async function assignPlacement(studentId: string): Promise<R> {
+const expectOf = (e?: string | null) => (e && e in EXPECT ? (e as Expect) : null);
+
+export async function assignPlacement(studentId: string, expected?: string | null): Promise<R> {
   const me = await requireUser("TEACHER");
   const s = await db.student.findUnique({ where: { id: studentId } });
   if (!s || s.teacherId !== me.id) return { ok: false, error: "not found" };
@@ -181,7 +203,7 @@ export async function assignPlacement(studentId: string): Promise<R> {
   }
   const r = await db.roadmap.findFirst({ where: { studentId }, orderBy: { createdAt: "desc" } });
   const c = await db.checkpoint.create({ data: { studentId, roadmapId: r?.id ?? null, kind: "entry", source: "placement" } });
-  await db.placementAttempt.create({ data: { teacherId: me.id, studentId, checkpointId: c.id, mode: "student", token: randomToken(24), state: json(emptyState()) } });
+  await db.placementAttempt.create({ data: { teacherId: me.id, studentId, checkpointId: c.id, mode: "student", token: randomToken(24), state: json(emptyState(expectOf(expected))) } });
   if (s.userId) await notify({ userId: s.userId, kind: "test", title: "Преподаватель назначил вводный тест", action: "decide", link: `/student/test/${c.id}` });
   refreshT(studentId);
   return { ok: true, id: c.id };

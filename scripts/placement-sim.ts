@@ -9,10 +9,12 @@ const bank: Bank = { core, reading: [], listening: [], writing: [], speaking: []
 let seed = 7; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
 
 const rows: string[] = [];
+const MODE = process.argv[2] ?? "warm"; // warm | expect
+const expectOf = (T: number) => (T <= 2 ? "A1" : T <= 5 ? "B1" : "B2") as "A1" | "B1" | "B2";
 for (let T = 0; T <= 8; T++) {
   const res: number[] = [], lens: number[] = [];
   for (let run = 0; run < 400; run++) {
-    const st = emptyState(T === 0 && run % 2 === 0);
+    const st = emptyState(MODE === "expect" ? expectOf(T) : null);
     for (;;) {
       const s = nextStep(st, bank); if (s === null) break;
       const it = pickCore(st, bank, s, rnd)!; if (!it) break;

@@ -1,34 +1,34 @@
 {
   "mcq": {
-    "ru": "Выберите правильный вариант.",
-    "en": "Choose the correct answer."
+    "ru": "Выберите вариант, который подходит в пропуск.",
+    "en": "Choose the option that fits the gap."
   },
   "gap": {
-    "ru": "Впишите одно слово в пропуск.",
+    "ru": "Впишите в пропуск одно слово.",
     "en": "Write one word in the gap."
   },
   "wordform": {
-    "ru": "Образуйте от слова в скобках подходящее по смыслу слово и впишите его в пропуск.",
-    "en": "Use the word in capitals to form a word that fits the gap."
+    "ru": "Образуйте от выделенного слова однокоренное, подходящее по смыслу, и впишите его в пропуск.",
+    "en": "Form a word from the highlighted word that fits the gap."
   },
   "transform": {
-    "ru": "Закончите второе предложение так, чтобы оно значило то же, что и первое. Используйте слово в скобках без изменений, всего от 2 до 5 слов.",
-    "en": "Complete the second sentence so that it means the same as the first. Use the word given without changing it and write 2–5 words."
+    "ru": "Закончите второе предложение так, чтобы оно значило то же, что и первое. Используйте выделенное слово, не меняя его. Всего 2–5 слов, вместе с этим словом.",
+    "en": "Complete the second sentence so that it means the same as the first. Use the highlighted word without changing it: 2–5 words in total."
   },
   "reading": {
-    "ru": "Прочитайте текст и ответьте на вопросы.",
-    "en": "Read the text and answer the questions."
+    "ru": "Прочитайте текст и ответьте на вопросы. Между текстами можно переключаться и менять ответы, пока не нажмёте «Завершить раздел».",
+    "en": "Read the texts and answer the questions. You can switch between texts and change answers until you press “Finish section”."
   },
   "listening": {
-    "ru": "Прослушайте запись и ответьте на вопросы. Запись можно прослушать дважды.",
-    "en": "Listen and answer the questions. You can listen twice."
+    "ru": "Прочитайте вопросы, затем включите запись. Каждую запись можно прослушать два раза. Ответы можно менять, пока не нажмёте «Завершить раздел».",
+    "en": "Read the questions, then play the recording. Each recording can be played twice. You can change answers until you press “Finish section”."
   },
   "writing": {
-    "ru": "Выполните письменное задание. Следите за количеством слов.",
-    "en": "Complete the writing task. Keep to the word limit."
+    "ru": "Напишите текст по заданию и раскройте все пункты.",
+    "en": "Write a text for the task and cover every point."
   },
   "speaking": {
-    "ru": "Ответьте на вопросы вслух. Сначала есть время подготовиться, затем начнётся запись.",
-    "en": "Answer the questions out loud. You will have time to prepare before recording starts."
+    "ru": "Ответьте вслух. Сначала прозвучит вопрос и будет время подумать, затем начнётся запись. Ответ можно прослушать и перезаписать.",
+    "en": "Answer out loud. You'll hear the question and have time to think, then recording starts. You can listen to your answer and record it again."
   }
 }

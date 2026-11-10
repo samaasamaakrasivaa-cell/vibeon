@@ -1118,7 +1118,7 @@ select.iedit, select.iedit:hover, select.iedit:focus { background-position: righ
 .plparts li b { display: block; }
 .plchecks { display: flex; flex-direction: column; gap: 8px; }
 .plcheck { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 14px; background: var(--surface2); flex-wrap: wrap; }
-.plcheck .grow { min-width: 180px; }
+.plcheck .grow { min-width: 0; flex: 1 1 160px; }
 .plck { width: 34px; height: 34px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; background: var(--fill); color: var(--text2); flex-shrink: 0; }
 .plck.ok { background: var(--ok-bg); color: var(--ok-text); }
 .plck.bad { background: var(--bad-bg); color: var(--bad-text); }
@@ -1166,3 +1166,79 @@ select.iedit, select.iedit:hover, select.iedit:focus { background-position: righ
 .lvlsm { padding: 2px 10px; border-radius: 8px; background: var(--accent-bg); color: var(--accent-text); font-weight: 700; font-size: 14px; }
 .tabsbar button { flex: 1; text-align: center; padding: 8px 14px; border-radius: 9px; font-size: 14px; white-space: nowrap; color: var(--text); }
 .tabsbar button[aria-current="page"] { background: var(--seg-on); font-weight: 600; box-shadow: 0 1px 3px rgba(0, 0, 0, .12); }
+
+/* ───────── Вводный тест v2 ───────── */
+.plcorebar { height: 6px; border-radius: 3px; background: var(--fill); overflow: hidden; }
+.plcorebar div { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--accent), #5E5CE6); transition: width .5s ease; }
+.plpause { display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; }
+.plinstr { margin: 0; font-size: 14px; color: var(--text2); line-height: 1.45; }
+.plactions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
+.plico.sm { width: 40px; height: 40px; border-radius: 12px; }
+.plbetween { display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center; padding-top: 32px; padding-bottom: 32px; }
+.plbetween p { max-width: 460px; }
+.plnext { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 16px; background: var(--surface2); width: min(420px, 100%); }
+.plintro { display: flex; flex-direction: column; gap: 20px; }
+.plhero { display: flex; flex-direction: column; gap: 8px; padding: 22px; border-radius: 18px; background: linear-gradient(135deg, var(--accent-bg), rgba(94, 92, 230, .12)); }
+.plhero h2 { font-size: 26px; letter-spacing: -.02em; }
+.plfacts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+.plfacts span { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 99px; background: var(--surface); font-size: 13px; font-weight: 600; box-shadow: 0 1px 2px rgba(0, 0, 0, .06); }
+.plpartgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.plpart { display: flex; gap: 12px; padding: 14px; border-radius: 16px; background: var(--surface2); align-items: flex-start; }
+.plpart .plico { flex-shrink: 0; }
+.plpart-t { color: var(--accent-text); font-weight: 600; margin-top: 2px; }
+.plrules { display: flex; flex-direction: column; gap: 8px; padding: 14px 16px; border-radius: 16px; border: 1px solid var(--sep); }
+.plrules div { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; }
+.plrules .i { color: var(--accent); margin-top: 2px; flex-shrink: 0; }
+.plword { display: flex; align-items: center; gap: 10px; }
+.topt.dk { color: var(--text2); background: transparent; border: 2px dashed var(--sep); }
+.topt.dk.on { border-style: solid; border-color: var(--text3); background: var(--surface2); color: var(--text); }
+.plplay { width: 56px; height: 56px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; background: var(--accent); color: #fff; box-shadow: 0 4px 14px rgba(0, 122, 255, .35); transition: transform .15s; }
+.plplay:hover:not(:disabled) { transform: scale(1.05); }
+.plplay:disabled { background: var(--fill); color: var(--text3); box-shadow: none; }
+.plplays { display: flex; gap: 6px; }
+.plplays span { padding: 4px 10px; border-radius: 99px; font-size: 12px; font-weight: 600; background: var(--ok-bg); color: var(--ok-text); }
+.plplays span.used { background: var(--fill); color: var(--text3); text-decoration: line-through; }
+.plletter { display: flex; flex-direction: column; gap: 12px; padding: 18px 20px; border-radius: 18px; background: var(--surface2); border-left: 4px solid var(--accent); }
+.plletter-h { display: flex; align-items: center; gap: 8px; color: var(--accent-text); }
+.plpoints { display: flex; flex-direction: column; gap: 6px; }
+.plpoint { display: flex; gap: 10px; align-items: baseline; }
+.pldotc { width: 8px; height: 8px; border-radius: 50%; border: 2px solid var(--accent); flex-shrink: 0; transform: translateY(-1px); }
+.plpaper { border-radius: 18px; border: 1px solid var(--sep); background: var(--surface); overflow: hidden; box-shadow: 0 1px 3px rgba(0, 0, 0, .05); }
+.plpaper textarea { width: 100%; min-height: 280px; padding: 18px 20px; border: 0; outline: 0; resize: vertical; background: transparent; color: var(--text); font: inherit; font-size: 17px; line-height: 1.65; }
+.plpaper-f { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-top: 1px solid var(--sep); background: var(--surface2); }
+.plwbar { position: relative; flex: 1; height: 6px; border-radius: 3px; background: var(--fill); }
+.plwbar div { height: 100%; border-radius: 3px; background: var(--warn); transition: width .3s; }
+.plwbar div.ok { background: var(--ok); } .plwbar div.over { background: var(--bad); }
+.plwbar i { position: absolute; top: -3px; width: 2px; height: 12px; background: var(--text3); border-radius: 1px; }
+.plring { position: relative; width: 64px; height: 64px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.plring svg { position: absolute; inset: 0; transform: rotate(-90deg); }
+.plring circle { fill: none; stroke-width: 6; }
+.plring .bg { stroke: var(--fill); } .plring .fg { stroke: var(--accent); stroke-linecap: round; transition: stroke-dashoffset 1s linear; }
+.plring.rec .fg { stroke: var(--bad); }
+.plring b { font-size: 20px; font-variant-numeric: tabular-nums; }
+.plguide { display: flex; gap: 10px; padding: 12px 14px; border-radius: 14px; background: var(--accent-bg); color: var(--accent-text); font-size: 14px; }
+.plguide .i { flex-shrink: 0; margin-top: 2px; }
+.plsq { display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; border-radius: 16px; background: var(--surface2); border: 2px solid transparent; }
+.plsq.on { border-color: var(--accent); background: var(--surface); box-shadow: 0 4px 18px rgba(0, 0, 0, .06); }
+.plsq-n { width: 26px; height: 26px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; background: var(--fill); font-size: 13px; font-weight: 700; flex-shrink: 0; }
+.plsq-n.ok { background: var(--ok-bg); color: var(--ok-text); }
+.plms { font-size: 12px; color: var(--text3); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.plms.fast { color: var(--bad-text); font-weight: 600; } .plms.slow { color: var(--warn-text); font-weight: 600; }
+.plexplain { display: flex; flex-direction: column; gap: 6px; padding: 14px 16px; border-radius: 16px; background: linear-gradient(135deg, var(--accent-bg), rgba(94, 92, 230, .1)); }
+.plexplain .i { color: var(--accent); }
+.plabout { display: flex; flex-direction: column; gap: 14px; }
+.plabgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px; }
+.plabcard { display: flex; flex-direction: column; gap: 6px; padding: 16px; border-radius: 16px; background: var(--surface2); }
+.plladder { padding: 14px 16px; border-radius: 16px; border: 1px solid var(--sep); }
+.plladder svg { width: 100%; height: auto; display: block; }
+.plladder .grid { stroke: var(--sep); stroke-width: 1; }
+.plladder .lab { fill: var(--text2); font-size: 11px; font-weight: 600; }
+.plladder .warm { fill: var(--warn-bg); }
+.plladder .path { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-linejoin: round; }
+.plladder circle.ok { fill: var(--ok); stroke: var(--surface); stroke-width: 2; }
+.plladder circle.bad { fill: var(--bad); stroke: var(--surface); stroke-width: 2; }
+.plladder .note { fill: var(--text2); font-size: 11px; } .plladder .note.b { fill: var(--accent-text); font-weight: 700; font-size: 12px; }
+.pllegend { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 6px; }
+.pllegend i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; }
+.pllegend i.ok { background: var(--ok); } .pllegend i.bad { background: var(--bad); }
+.plabtips { display: flex; flex-direction: column; gap: 6px; }

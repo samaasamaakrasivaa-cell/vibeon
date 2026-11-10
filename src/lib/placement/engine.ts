@@ -18,7 +18,7 @@ export type ListenItem = Base & {
   skill: "listening"; type: "listening"; title: string; situation_ru?: string; script: string; duration_sec?: number; plays?: number;
   speakers?: { name: string; gender: string; accent: string }[]; questions: Q[]; audio?: string;
 };
-export type WriteItem = Base & { skill: "writing"; type: "writing"; prompt_en: string; prompt_ru: string; min_words: number; max_words: number; time_min: number; expects: string[] };
+export type WriteItem = Base & { skill: "writing"; type: "writing"; prompt_en: string; prompt_ru: string; min_words: number; max_words: number; time_min: number; expects: string[]; points?: string[] };
 export type SpeakItem = Base & { skill: "speaking"; type: "speaking"; intro_ru: string; questions: { q: string; prep_sec: number; speak_sec: number; audio?: string | null }[]; expects: string[] };
 export type AnyItem = CoreItem | ReadItem | ListenItem | WriteItem | SpeakItem;
 export type Bank = { core: CoreItem[]; reading: ReadItem[]; listening: ListenItem[]; writing: WriteItem[]; speaking: SpeakItem[] };
@@ -26,11 +26,17 @@ export type Bank = { core: CoreItem[]; reading: ReadItem[]; listening: ListenIte
 export const SECTIONS = ["core", "reading", "listening", "writing", "speaking"] as const;
 export type Section = (typeof SECTIONS)[number];
 
-export type Ans = { v: string | number | null; ok: boolean | null; ms?: number };
+export type Ans = { v: string | number | null; ok: boolean | null; ms?: number; dk?: boolean }; // dk — «Не знаю»
 export type PState = {
   v: 1;
   section: "intro" | Section | "done";
-  beginner?: boolean;
+  beginner?: boolean; // старые прохождения
+  start?: number; // ступень старта по ожидаемому уровню (учитель отметил при назначении)
+  warm?: number; // сколько заданий разминки (A1–A2) в начале, если уровень не отмечен
+  pmax?: number; // полоска прогресса ядра не идёт назад
+  open?: Record<string, number>; // черновики ответов к текстам и записям — до «Завершить раздел»
+  times?: Record<string, number>; // время по разделам, мс
+  rerec?: Record<string, number>; // сколько раз перезаписан ответ на вопрос говорения
   items: Record<string, AnyItem>; // снимок выданных заданий (с ответами)
   core: { id: string; step: number }[]; // путь по ядру в порядке выдачи
   answers: Record<string, Ans>; // по id задания ядра и id вопроса чтения/аудирования
@@ -42,7 +48,15 @@ export type PState = {
   level?: PLevel; step?: number; // результат ядра — от него зависят остальные разделы
 };
 
-export const emptyState = (beginner = false): PState => ({ v: 1, section: "intro", beginner, items: {}, core: [], answers: {}, reading: [], listening: [], rdone: [], ldone: [], plays: {} });
+/** expected: ожидаемый уровень от учителя (A1 / B1 / B2) — тогда без разминки, старт с него. */
+export const EXPECT = { A1: 0, B1: 4, B2: 6 } as const;
+export type Expect = keyof typeof EXPECT;
+export const emptyState = (expected?: Expect | null): PState => ({
+  v: 1, section: "intro", items: {}, core: [], answers: {}, reading: [], listening: [], rdone: [], ldone: [], plays: {},
+  ...(expected && expected in EXPECT ? { start: EXPECT[expected] } : { warm: WARM.length }),
+});
+/** Разминка: A1, A2, A2 — первые задания лёгкие, дальше лесенка с B1. */
+const WARM = [0, 2, 2];
 
 const BASE: Record<PLevel, number> = { A1: 0, A2: 2, B1: 4, B2: 6, C1: 8 };
 /** band 1 уровня X → X, band 2 и 3 → X+ (у C1 — всегда C1). */
@@ -90,16 +104,18 @@ function boundary(st: PState, bank: Bank) {
 /** Какую ступень спрашивать дальше; null — ядро закончено. */
 export function nextStep(st: PState, bank: Bank): number | null {
   if (st.core.length >= CORE_MAX) return null;
+  const warm = st.warm ?? 0;
+  if (st.core.length < warm) return WARM[st.core.length];
   const { stats, left, v, P, F } = boundary(st, bank);
-  // начатый блок (меньше 3) или добор на границе (4 из 5) — продолжаем ту же ступень
-  for (const x of [...st.core].reverse()) {
-    const s = stats.get(x.step)!;
+  const s0 = st.start ?? (st.beginner ? 0 : 4);
+  // начатый блок (меньше 3) или добор на границе (4 из 5) — продолжаем ту же ступень (разминку не продолжаем)
+  if (st.core.length > warm) {
+    const x = st.core[st.core.length - 1], s = stats.get(x.step)!;
     if ((s.n < 3 || s.n === 4) && left(x.step) > 0 && v(x.step) === undefined) return x.step;
-    break;
   }
-  if (!st.core.length) return st.beginner ? 0 : 4;
+  if (st.core.length === warm) return s0;
   // сначала шаги через целый уровень, потом по одной ступени
-  if (P === -1 && F === 9) return st.beginner ? 0 : 4;
+  if (P === -1 && F === 9) return s0;
   if (F === 9 && P < 8) { const t = Math.min(8, P + 2); return v(t) === undefined && left(t) ? t : v(P + 1) === undefined && left(P + 1) ? P + 1 : confirm(); }
   if (P === -1 && F > 0) { const t = Math.max(0, F - 2); return v(t) === undefined && left(t) ? t : v(F - 1) === undefined && left(F - 1) ? F - 1 : confirm(); }
   if (F - P > 1) { for (let s = P + 1; s < F; s++) if (v(s) === undefined && left(s)) return s; }
@@ -130,6 +146,22 @@ export function pickCore(st: PState, bank: Bank, step: number, rnd: () => number
   const other = pool.filter((x) => x.skill !== last);
   if (other.length) pool = other;
   return pool[Math.floor(rnd() * pool.length)];
+}
+
+/** Примерная доля пройденного ядра (без цифр — точное число заданий заранее неизвестно). */
+export function coreProgress(st: PState, bank: Bank) {
+  const done = st.core.filter((x) => st.answers[x.id]).length;
+  const { stats, P, F } = boundary(st, bank);
+  let rem = Math.max(0, (st.warm ?? 0) - st.core.length);
+  const last = st.core[st.core.length - 1];
+  const ln = last ? stats.get(last.step)?.n ?? 0 : 0;
+  if (ln > 0 && ln < 3) rem += 3 - ln;
+  const found = P >= 0 && F === P + 1 || P === 8 || (P === -1 && F === 0);
+  if (!found) rem += 3 + 10;
+  else { for (const x of [P, F]) if (x >= 0 && x <= 8) rem += Math.max(0, 5 - (stats.get(x)?.n ?? 0)); if (P > 0 && !stats.get(P - 1)) rem += 3; }
+  const p = done / Math.max(1, done + rem);
+  st.pmax = Math.max(st.pmax ?? 0, Math.min(0.95, p));
+  return st.pmax;
 }
 
 export function coreResult(st: PState, bank: Bank) {

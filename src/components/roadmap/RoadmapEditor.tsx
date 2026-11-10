@@ -2,6 +2,7 @@
 import { useRef, useState } from "react";
 import { useT } from "@/lib/i18n/client";
 import { assignPlacement } from "@/lib/placement/actions";
+import { ExpectField } from "../placement/PlacementPanel";
 import { approveRoadmap, assignTest, buildRoadmap, deleteCheckpoint, editStage, manualResults, type RoadmapForm } from "@/lib/roadmap/actions";
 import { LEVELS, ROUTE_TYPES, SKILL_COLOR, SKILL_NAME, SKILLS, txt, type Skill } from "@/lib/roadmap/cefr";
 import { etaRange, fmtHM, PACES, paceKey, paceLabel, parsePace } from "@/lib/roadmap/math";
@@ -48,6 +49,8 @@ function Checkpoints({ d }: { d: EditorData }) {
   const doneList = d.checkpoints.filter((c) => c.status === "done");
   const [i, setI] = useState(doneList.length - 1);
   const [manual, setManual] = useState(false);
+  const [asg, setAsg] = useState(false);
+  const [exp, setExp] = useState("");
   const [m, setM] = useState<{ level: string; skills: Record<string, string> }>({ level: d.level ?? "B1", skills: {} });
   const open = d.checkpoints.find((c) => c.status === "assigned" || c.status === "review");
   const c = doneList[Math.max(0, Math.min(i, doneList.length - 1))];
@@ -78,12 +81,18 @@ function Checkpoints({ d }: { d: EditorData }) {
       )}
       {c?.placement && <a className="small alink mt-2 inline-block" href={`/teacher/placement/${c.placement}`}>{t("pl.openResult")}</a>}
       <div className="mt-4 flex flex-wrap gap-2">
-        {!doneList.length ? <button className="btn primary sm" disabled={pending} onClick={() => run(() => assignPlacement(d.studentId))}>{t("rm.assignEntry")}</button>
+        {!doneList.length ? <button className="btn primary sm" disabled={pending} onClick={() => setAsg(true)}>{t("rm.assignEntry")}</button>
           : <button className="btn secondary sm" disabled={pending} onClick={() => run(() => assignTest(d.studentId, "slice", d.roadmap?.ci ?? 0))}>{t("rm.assignSlice")}</button>}
         <button className="btn plain sm" onClick={() => setManual(true)}>{t("rm.enterManual")}</button>
         {c && <button className="btn plain sm" onClick={() => { if (confirm(t("rm.delTest"))) run(() => deleteCheckpoint(c.id)); }}>{t("common.delete")}</button>}
       </div>
       <p className="hint mb-0 mt-3">{t("rm.testHint")}</p>
+      <Dialog open={asg} onClose={() => setAsg(false)} title={t("rm.assignEntry")}>
+        <ExpectField value={exp} onChange={setExp} />
+        <p className="small muted">{t("pl.assignHint")}</p>
+        <div className="actions"><button className="btn secondary" onClick={() => setAsg(false)}>{t("common.cancel")}</button>
+          <button className="btn primary" disabled={pending} onClick={() => run(() => assignPlacement(d.studentId, exp || null), () => setAsg(false))}>{t("pl.assignDo")}</button></div>
+      </Dialog>
       <Dialog open={manual} onClose={() => setManual(false)} title={t("rm.enterManual")}>
         <div className="field"><label htmlFor="mr-l">{t("prof.level")}</label><select id="mr-l" className="select" value={m.level} onChange={(e) => setM({ ...m, level: e.target.value })}>{LEVELS.map((l) => <option key={l}>{l}</option>)}</select></div>
         <div className="mt-3 grid grid-cols-2 gap-3">

@@ -8,6 +8,7 @@ import { useRun } from "../courses/useRun";
 import { Dialog } from "../Dialog";
 import { Icon } from "../Icon";
 import { StudentPicker, type GridStudent } from "../teacher/WeekGrid";
+import { PlacementAbout } from "./PlacementAbout";
 
 export type PlRow = { id: string; who: string; mode: string; status: string; level: string | null; when: string };
 
@@ -18,6 +19,7 @@ export function PlacementPanel({ students, rows, link, origin, owner }: { studen
   const { run, pending, error } = useRun();
   const [assign, setAssign] = useState(false);
   const [sid, setSid] = useState<string | null>(null);
+  const [exp, setExp] = useState("");
   const [linkOpen, setLinkOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const url = link ? `${origin}/t/${link.code}` : "";
@@ -42,6 +44,8 @@ export function PlacementPanel({ students, rows, link, origin, owner }: { studen
         {error && <div className="alert mt-3">{error}</div>}
       </section>
 
+      <PlacementAbout />
+
       <section className="card">
         <h3 className="mt-0">{t("pl.results")}</h3>
         {rows.length === 0 ? <p className="hint m-0">{t("pl.noResults")}</p> : (
@@ -60,9 +64,10 @@ export function PlacementPanel({ students, rows, link, origin, owner }: { studen
 
       <Dialog open={assign} onClose={() => setAssign(false)} title={t("pl.assign")}>
         {students.length === 0 ? <p className="hint m-0">{t("sch.noStudents")}</p> : <StudentPicker students={students} value={sid} onChange={setSid} />}
+        <ExpectField value={exp} onChange={setExp} />
         <p className="small muted">{t("pl.assignHint")}</p>
         <div className="actions"><button className="btn secondary" onClick={() => setAssign(false)}>{t("common.cancel")}</button>
-          <button className="btn primary" disabled={pending || !sid} onClick={() => run(() => assignPlacement(sid!), () => { setAssign(false); setSid(null); })}>{t("pl.assignDo")}</button></div>
+          <button className="btn primary" disabled={pending || !sid} onClick={() => run(() => assignPlacement(sid!, exp || null), () => { setAssign(false); setSid(null); setExp(""); })}>{t("pl.assignDo")}</button></div>
       </Dialog>
 
       <Dialog open={linkOpen} onClose={() => setLinkOpen(false)} title={t("pl.linkNew")}>
@@ -79,6 +84,20 @@ export function PlacementPanel({ students, rows, link, origin, owner }: { studen
           <div className="actions"><button className="btn primary" disabled={pending} onClick={() => run(() => createPlacementLink(false))}>{t("pl.linkCreate")}</button></div>
         )}
       </Dialog>
+    </div>
+  );
+}
+
+/** Ожидаемый уровень ученика: тест начнёт с него и пропустит разминку. */
+export function ExpectField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const { t } = useT();
+  return (
+    <div className="field mt-3">
+      <label htmlFor="pl-exp">{t("pl.expect")}</label>
+      <select id="pl-exp" className="select" value={value} onChange={(e) => onChange(e.target.value)}>
+        <option value="">{t("pl.expNone")}</option><option value="A1">{t("pl.expA1")}</option><option value="B1">{t("pl.expB1")}</option><option value="B2">{t("pl.expB2")}</option>
+      </select>
+      <span className="small muted">{t("pl.expectHint")}</span>
     </div>
   );
 }
