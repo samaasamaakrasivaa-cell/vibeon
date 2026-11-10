@@ -18,9 +18,8 @@ export function PlacementAbout() {
     ["pencil", "pl.ab.who", "pl.ab.whoText"], ["route", "pl.ab.get", "pl.ab.getText"],
   ];
   return (
-    <section className="card plabout">
-      <h3 className="mt-0 mb-1">{t("pl.ab.title")}</h3>
-      <p className="muted mt-0">{t("pl.ab.lead")}</p>
+    <div className="plabout">
+      <p className="muted m-0">{t("pl.ab.lead")}</p>
       <div className="plabgrid">
         {cards.map(([ic, h, x]) => <div key={h} className="plabcard"><span className="plico sm"><Icon name={ic} /></span><b>{t(h)}</b><span className="small muted">{t(x)}</span></div>)}
       </div>
@@ -36,10 +35,16 @@ export function PlacementAbout() {
         </svg>
         <div className="pllegend small muted"><span><i className="ok" />{t("pl.ab.right")}</span><span><i className="bad" />{t("pl.ab.wrong")}</span><span>{t("pl.ab.ladderHint")}</span></div>
       </div>
+      <div className="plblocks">
+        <b>{t("pl.ab.blocks")}</b>
+        {(["core", "reading", "listening", "writing", "speaking"] as const).map((k) => (
+          <div key={k} className="plblock"><b>{t(`pl.part.${k}` as DictKey)}</b><span className="small muted">{t(`pl.ab.b.${k}` as DictKey)}</span></div>
+        ))}
+      </div>
       <div className="plabtips">
         <b>{t("pl.ab.tips")}</b>
         {(["pl.ab.tip1", "pl.ab.tip2", "pl.ab.tip3", "pl.ab.tip4"] as DictKey[]).map((k) => <div key={k} className="plpoint"><span className="pldotc" />{t(k)}</div>)}
       </div>
-    </section>
+    </div>
   );
 }

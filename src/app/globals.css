@@ -1259,3 +1259,24 @@ select.iedit, select.iedit:hover, select.iedit:focus { background-position: righ
 .plscore { display: inline-flex; padding: 3px; border-radius: 10px; background: var(--fill); gap: 2px; }
 .plscore button { width: 38px; height: 32px; border-radius: 8px; font-weight: 700; color: var(--text2); }
 .plscore button.on { background: var(--seg-on); color: var(--accent-text); box-shadow: 0 1px 3px rgba(0, 0, 0, .12); }
+.plprog button { display: inline-flex; align-items: center; gap: 4px; padding: 7px 12px; border-radius: 99px; background: var(--surface); color: var(--accent-text); font-weight: 600; font-size: 13px; border: 1.5px dashed var(--accent); }
+.plprog button:hover { background: var(--accent-bg); }
+.pltips { display: flex; flex-direction: column; gap: 4px; }
+.plhint { display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; padding: 4px 10px; border-radius: 8px; background: var(--warn-bg); color: var(--warn-text); font-size: 13px; font-weight: 600; }
+.plpast { display: flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: 10px; background: var(--accent-bg); color: var(--accent-text); font-size: 13px; font-weight: 600; }
+.plpause { flex-direction: column; gap: 2px; }
+.plhero2 { display: flex; flex-direction: column; gap: 16px; }
+.plhero2-top { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
+.pllogo { width: 64px; height: 64px; border-radius: 18px; display: inline-flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #0A84FF, #5E5CE6); box-shadow: 0 6px 18px rgba(10, 132, 255, .3); flex-shrink: 0; }
+.pllogo svg { width: 34px; height: 34px; fill: #fff; }
+.plhero2 h2 { font-size: 24px; letter-spacing: -.02em; }
+.plhero2 .plfacts span { background: var(--surface2); box-shadow: none; }
+.plthesis { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+.plthesis li { padding: 12px 14px; border-radius: 14px; background: var(--surface2); font-size: 14px; line-height: 1.45; color: var(--text2); }
+.plthesis li b { display: block; color: var(--text); margin-bottom: 2px; }
+.plmore { border-top: 1px solid var(--sep); padding-top: 12px; }
+.plmore > summary { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; color: var(--accent-text); font-weight: 600; font-size: 14px; list-style: none; }
+.plmore > summary::-webkit-details-marker { display: none; }
+.plmore[open] > summary { margin-bottom: 14px; }
+.plblocks { display: flex; flex-direction: column; gap: 6px; }
+.plblock { display: flex; flex-direction: column; gap: 2px; padding: 10px 14px; border-radius: 12px; background: var(--surface2); }

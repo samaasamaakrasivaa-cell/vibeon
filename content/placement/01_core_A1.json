@@ -31,7 +31,8 @@
     "accept": [
       "are"
     ],
-    "explain_ru": "С местоимением you глагол to be имеет форму are."
+    "explain_ru": "С местоимением you глагол to be имеет форму are.",
+    "hint_ru": "форма глагола to be"
   },
   {
     "id": "G-A1-03",
@@ -180,7 +181,8 @@
       "but",
       "yet"
     ],
-    "explain_ru": "Союз but соединяет противоположные по смыслу части."
+    "explain_ru": "Союз but соединяет противоположные по смыслу части.",
+    "hint_ru": "союз"
   },
   {
     "id": "G-A1-11",
@@ -196,7 +198,8 @@
       "have",
       "haven't"
     ],
-    "explain_ru": "Вопрос с have got строится с Have в начале."
+    "explain_ru": "Вопрос с have got строится с Have в начале.",
+    "hint_ru": "вспомогательный глагол"
   },
   {
     "id": "G-A1-12",
@@ -401,7 +404,8 @@
     "accept": [
       "how"
     ],
-    "explain_ru": "Цену спрашивают с помощью How much."
+    "explain_ru": "Цену спрашивают с помощью How much.",
+    "hint_ru": "вопросительное слово"
   },
   {
     "id": "G-A1-23",
@@ -473,7 +477,8 @@
     "accept": [
       "uncle"
     ],
-    "explain_ru": "Брат папы — это дядя, uncle."
+    "explain_ru": "Брат папы — это дядя, uncle.",
+    "hint_ru": "член семьи"
   },
   {
     "id": "V-A1-03",
@@ -507,7 +512,8 @@
     "accept": [
       "up"
     ],
-    "explain_ru": "Get up — вставать с кровати."
+    "explain_ru": "Get up — вставать с кровати.",
+    "hint_ru": "частица: get ___ — вставать"
   },
   {
     "id": "V-A1-05",
@@ -579,7 +585,8 @@
     "accept": [
       "past"
     ],
-    "explain_ru": "Половина седьмого по-английски — half past six."
+    "explain_ru": "Половина седьмого по-английски — half past six.",
+    "hint_ru": "слово для времени: half ___ six"
   },
   {
     "id": "V-A1-09",
@@ -613,7 +620,8 @@
     "accept": [
       "by"
     ],
-    "explain_ru": "Вид транспорта обозначается предлогом by: by bike."
+    "explain_ru": "Вид транспорта обозначается предлогом by: by bike.",
+    "hint_ru": "предлог"
   },
   {
     "id": "V-A1-11",
@@ -666,7 +674,8 @@
     "accept": [
       "go"
     ],
-    "explain_ru": "Устойчивое сочетание go for a walk — пойти погулять."
+    "explain_ru": "Устойчивое сочетание go for a walk — пойти погулять.",
+    "hint_ru": "глагол: ___ for a walk"
   },
   {
     "id": "V-A1-14",
@@ -700,7 +709,8 @@
     "accept": [
       "saturday"
     ],
-    "explain_ru": "После пятницы идёт суббота — Saturday."
+    "explain_ru": "После пятницы идёт суббота — Saturday.",
+    "hint_ru": "день недели"
   },
   {
     "id": "V-A1-16",
@@ -791,7 +801,8 @@
     "accept": [
       "does"
     ],
-    "explain_ru": "Вопрос в Present Simple с she: Where does … work?"
+    "explain_ru": "Вопрос в Present Simple с she: Where does … work?",
+    "hint_ru": "вспомогательный глагол"
   },
   {
     "id": "G-A1-29",
@@ -844,7 +855,8 @@
     "accept": [
       "is"
     ],
-    "explain_ru": "Сейчас идёт снег — Present Continuous: it is snowing."
+    "explain_ru": "Сейчас идёт снег — Present Continuous: it is snowing.",
+    "hint_ru": "форма глагола to be"
   },
   {
     "id": "G-A1-32",
@@ -897,7 +909,8 @@
     "accept": [
       "did"
     ],
-    "explain_ru": "Вопрос в Past Simple: Did you go…?"
+    "explain_ru": "Вопрос в Past Simple: Did you go…?",
+    "hint_ru": "вспомогательный глагол"
   },
   {
     "id": "G-A1-35",

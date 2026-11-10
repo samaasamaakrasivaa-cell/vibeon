@@ -28,7 +28,7 @@
     "en": "Answer out loud. You'll hear the question and have time to think, then recording starts. You can listen to your answer and record it again."
   },
   "brackets": {
-    "ru": "Поставьте слово в скобках в нужную форму. Если нужно, добавьте вспомогательные слова — всего не больше 4 слов.",
-    "en": "Put the word in brackets into the correct form. Add helper words if needed — no more than 4 words in total."
+    "ru": "Поставьте слово в скобках в нужную форму.",
+    "en": "Put the word in brackets into the correct form."
   }
 }

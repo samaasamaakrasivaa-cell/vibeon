@@ -16,45 +16,67 @@ export function leave(st: PState, sec: string) {
   if (at) st.times = { ...st.times, [sec]: (st.times?.[sec] ?? 0) + Math.min(Date.now() - at, 3 * 3600e3), [`${sec}At`]: 0 };
 }
 
-/** Выдать следующее задание или перейти к следующему разделу. */
+/** Разделы после ядра: между незавершёнными можно свободно переключаться. */
+export const LATER = ["reading", "listening", "writing", "speaking"] as const;
+export type Later = (typeof LATER)[number];
+export function closedOf(st: PState): string[] {
+  if (st.closed) return st.closed;
+  const i = LATER.indexOf(st.section as Later); // старые прохождения: всё до текущего раздела закрыто
+  return i > 0 ? [...LATER.slice(0, i)] : st.section === "done" ? [...LATER] : [];
+}
+export const openOf = (st: PState) => LATER.filter((x) => !closedOf(st).includes(x));
+export function goTo(st: PState, to: PState["section"]) {
+  if (st.section !== "intro" && st.section !== to) leave(st, st.section);
+  if (st.section !== to) { st.section = to; enter(st, to); }
+}
+/** Закрыть раздел; true — открытых не осталось (тест можно отправлять). */
+export function closeSection(st: PState, sec: Later, bank: Bank) {
+  st.closed = [...new Set([...closedOf(st), sec])];
+  const next = openOf(st)[0];
+  if (!next) { leave(st, st.section); return true; }
+  ensureTasks(st, bank);
+  goTo(st, next);
+  return false;
+}
+/** Задания всех разделов после ядра выбираются сразу — чтобы ученик мог переключаться между ними. */
+function ensureTasks(st: PState, bank: Bank) {
+  const snap = (x: AnyItem) => { st.items[x.id] = x; return x.id; };
+  const plus = (st.step ?? 0) % 2 === 1 || st.step === 8;
+  const L = st.level ?? "A1";
+  if (!st.reading.length) st.reading = pickTexts(bank.reading, L, plus).map(snap);
+  if (!st.listening.length) st.listening = pickTexts(bank.listening, L, plus).map(snap);
+  if (!st.writing) { const w = pickTask(bank.writing, L, plus); if (w) st.writing = { id: snap(w), text: "" }; }
+  if (!st.speaking) { const sp = pickTask(bank.speaking, L, plus); if (sp) st.speaking = { id: snap(sp), rec: {} }; }
+}
+
+/** Выдать следующее задание ядра или, когда ядро закончено, открыть остальные разделы. */
 export function advance(st: PState, bank: Bank) {
   const snap = (x: AnyItem) => { st.items[x.id] = x; return x.id; };
-  const go = (to: PState["section"]) => { if (st.section !== "intro") leave(st, st.section); st.section = to; enter(st, to); };
-  for (let guard = 0; guard < 8; guard++) {
-    if (st.section === "core") {
-      const last = st.core[st.core.length - 1];
-      if (last && !st.answers[last.id]) return;
-      const nx = nextCore(st, bank);
-      if (nx) { snap(nx.item); st.core.push({ id: nx.item.id, step: stepOf(nx.item.level, nx.item.band), ph: nx.ph }); return; }
-      st.step = coreResult(st, bank);
-      st.level = levelOfStep(st.step);
-      const plus = st.step % 2 === 1 || st.step === 8;
-      st.reading = pickTexts(bank.reading, st.level, plus).map(snap);
-      go("reading");
-      continue;
-    }
-    if (st.section === "reading" || st.section === "listening") {
-      const k = st.section;
-      const ids = k === "reading" ? st.reading : st.listening;
-      const done = k === "reading" ? st.rdone : st.ldone;
-      if (ids.some((id) => !done.includes(id))) return;
-      const fb = fallbackText<ReadItem | ListenItem>(k === "reading" ? bank.reading : bank.listening, st, k);
-      if (fb) { ids.push(snap(fb)); return; }
-      const plus = (st.step ?? 0) % 2 === 1 || st.step === 8;
-      if (k === "reading") { st.listening = pickTexts(bank.listening, st.level!, plus).map(snap); go("listening"); continue; }
-      const w = pickTask(bank.writing, st.level!, plus);
-      if (w) { snap(w); st.writing = { id: w.id, text: "" }; }
-      go("writing");
-      return;
-    }
-    return;
-  }
+  if (st.section !== "core") { ensureTasks(st, bank); return; }
+  const last = st.core[st.core.length - 1];
+  if (last && !st.answers[last.id]) return;
+  const nx = nextCore(st, bank);
+  if (nx) { snap(nx.item); st.core.push({ id: nx.item.id, step: stepOf(nx.item.level, nx.item.band), ph: nx.ph }); return; }
+  st.step = coreResult(st, bank);
+  st.level = levelOfStep(st.step);
+  st.closed = [];
+  ensureTasks(st, bank);
+  goTo(st, "reading");
+}
+
+/** Чтение или аудирование: запасной текст на уровень ниже, если по двум текстам меньше половины верных. */
+export function addFallback(st: PState, bank: Bank, k: "reading" | "listening") {
+  const fb = fallbackText<ReadItem | ListenItem>(k === "reading" ? bank.reading : bank.listening, st, k);
+  if (!fb) return false;
+  st.items[fb.id] = fb;
+  (k === "reading" ? st.reading : st.listening).push(fb.id);
+  return true;
 }
 
 /** Задание без ответов — то, что уходит в браузер. */
 export function publicView(st: PState, lang: "ru" | "en", bank?: Bank) {
   const ins = (k: string) => INSTRUCTIONS[k]?.[lang] ?? "";
-  const base = { section: st.section, level: st.level ?? null };
+  const base = { section: st.section, level: st.level ?? null, open: st.section === "core" || st.section === "intro" ? [] : (openOf(st) as string[]) };
   if (st.section === "core") {
     const last = st.core[st.core.length - 1];
     const it = last ? (st.items[last.id] as CoreItem) : null;
@@ -62,7 +84,7 @@ export function publicView(st: PState, lang: "ru" | "en", bank?: Bank) {
     if (!it) return { ...base, section: "core" as const, n: 0, progress, item: null };
     return {
       ...base, section: "core" as const, n: st.core.length, progress,
-      item: { id: it.id, type: it.type, skill: it.skill, q: it.q, options: it.options ?? null, base: it.base ?? null, key: it.key ?? null, frame: it.frame ?? null, instr: ins(it.type) },
+      item: { id: it.id, type: it.type, skill: it.skill, q: it.q, options: it.options ?? null, base: it.base ?? null, key: it.key ?? null, frame: it.frame ?? null, hint: (it as CoreItem & { hint_ru?: string }).hint_ru ?? null, instr: ins(it.type) },
     };
   }
   if (st.section === "reading" || st.section === "listening") {

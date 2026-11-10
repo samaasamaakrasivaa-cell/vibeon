@@ -10,8 +10,8 @@ import { rateLimit } from "../rate-limit";
 import { getLang } from "../i18n/server";
 import { attemptFor, ptCookie } from "./access";
 import { getBank } from "./bank";
-import { checkCore, emptyState, EXPECT, pickTask, stepIdx, summarize, words, type CoreItem, type Expect, type ListenItem, type ReadItem, type SpeakItem } from "./engine";
-import { advance, enter, json, leave, publicView, stateOf, type PView } from "./run";
+import { checkCore, emptyState, EXPECT, stepIdx, summarize, words, type CoreItem, type Expect, type ListenItem, type ReadItem, type SpeakItem } from "./engine";
+import { addFallback, advance, closeSection, enter, goTo, json, LATER, openOf, publicView, stateOf, type Later, type PView } from "./run";
 import { revealedScripts } from "./review";
 
 type R = { ok: true; id?: string; view?: PView } | { ok: false; error: string };
@@ -80,7 +80,7 @@ export async function draftText(id: string, qid: string, v: number): Promise<R> 
 /** «Завершить раздел» чтения или аудирования: ответы засчитываются, вернуться к ним нельзя. */
 export async function finishTexts(id: string): Promise<R> {
   return wrap(async () => {
-    const { st } = await load(id);
+    const l = await load(id); const { st } = l; const acc = () => l;
     if (st.section !== "reading" && st.section !== "listening") return { ok: true, view: publicView(st, await getLang()) };
     const ids = st.section === "reading" ? st.reading : st.listening;
     const done = st.section === "reading" ? st.rdone : st.ldone;
@@ -93,8 +93,9 @@ export async function finishTexts(id: string): Promise<R> {
       }
       done.push(tid);
     }
-    advance(st, (await getBank()).bank);
-    return save(id, st);
+    const { bank } = await getBank();
+    if (addFallback(st, bank, st.section)) return save(id, st); // ещё один текст попроще — раздел остаётся открытым
+    return closeAndGo(acc(), st, st.section);
   });
 }
 
@@ -114,41 +115,80 @@ export async function notePlay(id: string, itemId: string): Promise<R> {
 /** Черновик письма сохраняется по ходу; final — переход к говорению. */
 export async function saveWriting(id: string, text: string, final: boolean): Promise<R> {
   return wrap(async () => {
-    const { st } = await load(id);
+    const l = await load(id); const { st } = l;
     if (st.section !== "writing") return { ok: true, view: publicView(st, await getLang()) };
     st.writing = { id: st.writing?.id ?? "", text: str(text, 8000) };
     if (final) {
       if (words(st.writing.text) < 3) return { ok: false, error: "empty" };
-      const { bank } = await getBank();
-      const plus = (st.step ?? 0) % 2 === 1 || st.step === 8;
-      const sp = pickTask(bank.speaking, st.level ?? "A1", plus);
-      if (sp) { st.items[sp.id] = sp; st.speaking = { id: sp.id, rec: {} }; }
-      leave(st, "writing"); st.section = "speaking"; enter(st, "speaking");
+      return closeAndGo(l, st, "writing");
     }
     return save(id, st);
   });
 }
 
-/** Говорение закончено (или микрофон не работает) — тест уходит учителю на проверку. */
+/** Говорение записано (или микрофон не работает) — раздел закрывается; если это последний раздел, тест уходит учителю. */
 export async function finishPlacement(id: string, noMic = false): Promise<R> {
   return wrap(async () => {
-    const { a, st } = await load(id);
+    const l = await load(id); const { st } = l;
     if (st.section !== "speaking") return { ok: false, error: "section" };
     const sp = st.speaking ? (st.items[st.speaking.id] as SpeakItem) : null;
     const recorded = Object.keys(st.speaking?.rec ?? {}).length;
     if (sp && recorded < sp.questions.length && !noMic) return { ok: false, error: "rec" };
     if (noMic && st.speaking) (st.speaking as { noMic?: boolean }).noMic = true;
-    leave(st, "speaking");
-    st.section = "done";
-    const r = await save(id, st, { status: "submitted", submittedAt: new Date() });
-    if (a.checkpointId) await db.checkpoint.update({ where: { id: a.checkpointId }, data: { status: "review", takenAt: new Date() } }).catch(() => null);
-    if (a.mode !== "self") {
-      const who = a.mode === "student" ? `${a.student?.name ?? ""} ${a.student?.lastName ?? ""}`.trim() : a.guestName ?? "";
-      await notify({ userId: a.teacherId, kind: "test", title: `${who}: вводный тест пройден — проверьте письмо и говорение`, action: "review", link: `/teacher/placement/${id}` });
-    }
-    revalidatePath("/teacher/courses");
-    if (a.studentId) revalidatePath(`/teacher/students/${a.studentId}`);
-    return r;
+    return closeAndGo(l, st, "speaking");
+  });
+}
+
+/** Перейти к другому незавершённому разделу (после ядра). */
+export async function goSection(id: string, sec: string): Promise<R> {
+  return wrap(async () => {
+    const { st } = await load(id);
+    if (!(LATER as readonly string[]).includes(sec) || !openOf(st).includes(sec as Later) || st.section === "core" || st.section === "intro") return { ok: false, error: "section" };
+    goTo(st, sec as Later);
+    return save(id, st);
+  });
+}
+
+type Loaded = Awaited<ReturnType<typeof load>>;
+async function closeAndGo(l: Loaded, st: Loaded["st"], sec: Later): Promise<R> {
+  const { bank } = await getBank();
+  if (!closeSection(st, sec, bank)) return save(l.a.id, st);
+  const { a } = l;
+  st.section = "done";
+  const r = await save(a.id, st, { status: "submitted", submittedAt: new Date() });
+  if (a.checkpointId) await db.checkpoint.update({ where: { id: a.checkpointId }, data: { status: "review", takenAt: new Date() } }).catch(() => null);
+  if (a.mode !== "self") {
+    const who = a.mode === "student" ? `${a.student?.name ?? ""} ${a.student?.lastName ?? ""}`.trim() : a.guestName ?? "";
+    await notify({ userId: a.teacherId, kind: "test", title: `${who}: вводный тест пройден — проверьте письмо и говорение`, action: "review", link: `/teacher/placement/${a.id}` });
+  }
+  revalidatePath("/teacher/courses");
+  if (a.studentId) revalidatePath(`/teacher/students/${a.studentId}`);
+  return r;
+}
+
+// ───────── Назад в грамматике и лексике (опечатка, передумал) ─────────
+
+/** Посмотреть уже отвеченное задание ядра (idx с нуля) — с ответом ученика, без правильного. */
+export async function peekCore(id: string, idx: number): Promise<R & { item?: unknown; given?: string | number | null; dk?: boolean }> {
+  try {
+    const { st } = await load(id);
+    const x = st.core[idx];
+    if (st.section !== "core" || !x || !st.answers[x.id]) return { ok: false, error: "idx" };
+    const it = st.items[x.id] as CoreItem;
+    const ins = (await import("./bank")).INSTRUCTIONS[it.type]?.[await getLang()] ?? "";
+    return { ok: true, item: { id: it.id, type: it.type, skill: it.skill, q: it.q, options: it.options ?? null, base: it.base ?? null, key: it.key ?? null, frame: it.frame ?? null, hint: (it as CoreItem & { hint_ru?: string }).hint_ru ?? null, instr: ins }, given: st.answers[x.id].v, dk: !!st.answers[x.id].dk };
+  } catch { return { ok: false, error: "not found" }; }
+}
+/** Исправить ответ на уже пройденное задание ядра (пока раздел не закончен). */
+export async function reviseCore(id: string, itemId: string, v: string | number | null, dk = false): Promise<R> {
+  return wrap(async () => {
+    const { st } = await load(id);
+    const x = st.core.find((y) => y.id === itemId);
+    if (st.section !== "core" || !x || !st.answers[itemId]) return { ok: false, error: "idx" };
+    const it = st.items[itemId] as CoreItem;
+    const val = dk ? null : typeof v === "number" ? v : str(v, 120);
+    st.answers[itemId] = { ...st.answers[itemId], v: val, ok: dk ? false : checkCore(it, val), dk: dk || undefined };
+    return save(id, st);
   });
 }
 

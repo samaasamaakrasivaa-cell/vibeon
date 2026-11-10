@@ -204,13 +204,13 @@
     "type": "mcq",
     "q": "We ___ leave when it started pouring with rain.",
     "options": [
-      "were going",
-      "had been about",
+      "were about to",
       "are about to",
-      "were about to"
+      "will be about to",
+      "have been about to"
     ],
-    "answer": 3,
-    "explain_ru": "Were about to — «собирались вот-вот» (будущее в прошлом)."
+    "answer": 0,
+    "explain_ru": "Собирались вот-вот (в прошлом) — were about to."
   },
   {
     "id": "G-C1-13",
@@ -304,7 +304,8 @@
       "can",
       "may"
     ],
-    "explain_ru": "После Under no circumstances в начале — инверсия с модальным глаголом."
+    "explain_ru": "После Under no circumstances в начале — инверсия с модальным глаголом.",
+    "hint_ru": "модальный глагол"
   },
   {
     "id": "G-C1-18",
@@ -320,7 +321,8 @@
       "was",
       "is"
     ],
-    "explain_ru": "Эмфатическая конструкция It was (it's) ... who выделяет человека."
+    "explain_ru": "Эмфатическая конструкция It was (it's) ... who выделяет человека.",
+    "hint_ru": "форма глагола to be"
   },
   {
     "id": "G-C1-19",
@@ -336,7 +338,8 @@
       "might",
       "may"
     ],
-    "explain_ru": "Might/may as well — «почему бы не...», раз нет лучшего варианта."
+    "explain_ru": "Might/may as well — «почему бы не...», раз нет лучшего варианта.",
+    "hint_ru": "модальный глагол"
   },
   {
     "id": "G-C1-20",
@@ -351,7 +354,8 @@
     "accept": [
       "was"
     ],
-    "explain_ru": "Be about to в прошлом — was about to."
+    "explain_ru": "Be about to в прошлом — was about to.",
+    "hint_ru": "форма глагола to be"
   },
   {
     "id": "V-C1-01",
@@ -670,7 +674,8 @@
     "accept": [
       "to"
     ],
-    "explain_ru": "Due to — благодаря, из-за."
+    "explain_ru": "Due to — благодаря, из-за.",
+    "hint_ru": "предлог"
   },
   {
     "id": "V-C1-19",
@@ -685,7 +690,8 @@
     "accept": [
       "in"
     ],
-    "explain_ru": "Be in favour of — поддерживать, быть за."
+    "explain_ru": "Be in favour of — поддерживать, быть за.",
+    "hint_ru": "предлог"
   },
   {
     "id": "V-C1-20",
@@ -700,7 +706,8 @@
     "accept": [
       "downs"
     ],
-    "explain_ru": "Ups and downs — взлёты и падения."
+    "explain_ru": "Ups and downs — взлёты и падения.",
+    "hint_ru": "слово-пара к ups"
   },
   {
     "id": "G-C1-21",
@@ -852,15 +859,15 @@
     "topic_en": "Advanced passive: is thought to have...",
     "topic_ru": "Сложный пассив: is thought to have...",
     "type": "mcq",
-    "q": "The CEO is reported ___ resign next month.",
+    "q": "The CEO is reported ___ the company next month.",
     "options": [
-      "having",
-      "to have",
-      "to be going to",
-      "that he will"
+      "to be leaving",
+      "to have left",
+      "leaving",
+      "that he leaves"
     ],
-    "answer": 2,
-    "explain_ru": "Сложный пассив о будущем: is reported to be going to resign."
+    "answer": 0,
+    "explain_ru": "Сложный пассив о будущем: is reported to be leaving (next month)."
   },
   {
     "id": "G-C1-30",
@@ -926,12 +933,12 @@
     "type": "mcq",
     "q": "He said he would finish the report by Friday, and he ___.",
     "options": [
-      "did so it",
       "did",
       "made",
-      "has done it so"
+      "did it so",
+      "has"
     ],
-    "answer": 1,
+    "answer": 0,
     "explain_ru": "Замещение глаголом-помощником: and he did."
   },
   {
@@ -948,7 +955,7 @@
       "unless",
       "provided",
       "in case",
-      "as long"
+      "as long as"
     ],
     "answer": 2,
     "explain_ru": "На случай, если — in case."

@@ -12,7 +12,8 @@
     "accept": [
       "since"
     ],
-    "explain_ru": "С моментом начала (год) в Present Perfect используется since."
+    "explain_ru": "С моментом начала (год) в Present Perfect используется since.",
+    "hint_ru": "предлог времени"
   },
   {
     "id": "G-B1-02",
@@ -117,8 +118,8 @@
     "topic_id": "g-b1-zero-conditional",
     "topic_en": "Zero conditional",
     "topic_ru": "Условные предложения нулевого типа",
-    "type": "gap",
-    "q": "If you ___ plants too much water, they die.",
+    "type": "brackets",
+    "q": "If you ___ (give) plants too much water, they die.",
     "accept": [
       "give"
     ],
@@ -157,7 +158,8 @@
       "were",
       "was"
     ],
-    "explain_ru": "Совет во втором типе условных: If I were (в разговорной речи was) you."
+    "explain_ru": "Совет во втором типе условных: If I were (в разговорной речи was) you.",
+    "hint_ru": "форма глагола to be"
   },
   {
     "id": "G-B1-10",
@@ -172,7 +174,8 @@
     "accept": [
       "was"
     ],
-    "explain_ru": "Пассив в прошедшем времени: was + третья форма глагола."
+    "explain_ru": "Пассив в прошедшем времени: was + третья форма глагола.",
+    "hint_ru": "вспомогательный глагол"
   },
   {
     "id": "G-B1-11",
@@ -300,12 +303,12 @@
     "q": "The trains weren't running, but we ___ get home before midnight.",
     "options": [
       "could",
-      "have managed",
       "managed to",
-      "were able"
+      "succeeded to",
+      "can"
     ],
-    "answer": 2,
-    "explain_ru": "О единичном успехе в прошлом говорят managed to (или were able to), could здесь не подходит."
+    "answer": 1,
+    "explain_ru": "О единичном успехе в прошлом говорят managed to; could здесь не подходит, succeed — только succeeded in doing."
   },
   {
     "id": "G-B1-18",
@@ -339,7 +342,8 @@
     "accept": [
       "aren't"
     ],
-    "explain_ru": "После утверждения с you're разделительный вопрос — aren't you."
+    "explain_ru": "После утверждения с you're разделительный вопрос — aren't you.",
+    "hint_ru": "вспомогательный глагол с отрицанием"
   },
   {
     "id": "G-B1-20",
@@ -373,7 +377,7 @@
     "options": [
       "anybody",
       "neither",
-      "none",
+      "both",
       "either"
     ],
     "answer": 1,
@@ -678,7 +682,8 @@
     "accept": [
       "at"
     ],
-    "explain_ru": "Быть хорошим в чём-то — good at."
+    "explain_ru": "Быть хорошим в чём-то — good at.",
+    "hint_ru": "предлог"
   },
   {
     "id": "V-B1-15",
@@ -693,7 +698,8 @@
     "accept": [
       "to"
     ],
-    "explain_ru": "Глагол listen требует предлога to."
+    "explain_ru": "Глагол listen требует предлога to.",
+    "hint_ru": "предлог"
   },
   {
     "id": "V-B1-16",
@@ -708,7 +714,8 @@
     "accept": [
       "after"
     ],
-    "explain_ru": "Присматривать, заботиться — look after."
+    "explain_ru": "Присматривать, заботиться — look after.",
+    "hint_ru": "частица фразового глагола"
   },
   {
     "id": "G-B1-25",
@@ -905,10 +912,10 @@
       "can",
       "to can",
       "to be able to",
-      "being able"
+      "be able to"
     ],
     "answer": 2,
-    "explain_ru": "После would love нужен инфинитив; у can нет инфинитива — to be able to."
+    "explain_ru": "После would love нужен инфинитив с to; у can нет инфинитива — to be able to."
   },
   {
     "id": "G-B1-36",

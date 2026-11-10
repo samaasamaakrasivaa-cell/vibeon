@@ -3,7 +3,7 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useT } from "@/lib/i18n/client";
 import type { DictKey } from "@/lib/i18n/dict";
-import { answerCore, draftText, finishPlacement, finishTexts, notePlay, saveWriting, startPlacement } from "@/lib/placement/actions";
+import { answerCore, draftText, finishPlacement, finishTexts, goSection, notePlay, peekCore, reviseCore, saveWriting, startPlacement } from "@/lib/placement/actions";
 import type { PView } from "@/lib/placement/run";
 import { Icon } from "../Icon";
 import type { IconName } from "../icon-paths";
@@ -13,6 +13,7 @@ type Part = (typeof PARTS)[number];
 const PART_ICON: Record<Part, IconName> = { core: "book", reading: "note", listening: "sound", writing: "pencil", speaking: "mic" };
 type V = PView;
 type Core = Extract<V, { section: "core" }>;
+type CoreItemV = NonNullable<Extract<V, { section: "core" }>["item"]>;
 type TQ = { id: string; q: string; options: string[]; v: number | null };
 type TItem = { id: string; title: string; questions: TQ[]; passage?: string; situation?: string; audio?: string; plays?: number; used?: number };
 type TextV = { section: "reading" | "listening"; instr?: string; extra?: boolean; items: TItem[] };
@@ -28,6 +29,8 @@ export function PlacementRunner({ id, initial, sample, done, home }: { id: strin
   const [v, setV] = useState<V>(initial);
   const [between, setBetween] = useState<{ from: Part; to: Part } | null>(null);
   const [paused, setPaused] = useState(false);
+  const [back, setBack] = useState(0); // сколько заданий ядра назад смотрим (0 — текущее)
+  const [past, setPast] = useState<{ item: CoreItemV; given: string | number | null; dk: boolean } | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [pending, start] = useTransition();
   const shownAt = useRef(Date.now());
@@ -41,21 +44,41 @@ export function PlacementRunner({ id, initial, sample, done, home }: { id: strin
       setV(r.view); shownAt.current = Date.now();
       if (from !== to) {
         window.scrollTo({ top: 0 });
+        // экран «раздел завершён» — только когда раздел закрылся, а не при переключении вкладок
+        const closed = from === "core" || ((PARTS as readonly string[]).includes(from) && !(r.view.open ?? []).includes(from));
         if (to === "done") router.refresh();
-        else if (from !== "intro" && (PARTS as readonly string[]).includes(from) && (PARTS as readonly string[]).includes(to)) setBetween({ from: from as Part, to: to as Part });
+        else if (closed && (PARTS as readonly string[]).includes(from) && (PARTS as readonly string[]).includes(to)) setBetween({ from: from as Part, to: to as Part });
       }
     });
   const ms = () => Date.now() - shownAt.current;
+  const curIdx = v.section === "core" ? ((v as Core).n ?? 1) - 1 : 0;
+  const openPast = (b: number) => start(async () => {
+    const r = await peekCore(id, curIdx - b).catch(() => null);
+    if (r?.ok) { setPast({ item: r.item as CoreItemV, given: r.given ?? null, dk: !!r.dk }); setBack(b); window.scrollTo({ top: 0 }); }
+  });
+  const revise = (val: string | number | null, dk: boolean) => start(async () => {
+    const r = await reviseCore(id, past!.item.id, val, dk).catch(() => null);
+    if (!r?.ok) { setErr(t("pl.err.net")); return; }
+    if (back > 1) { const q = await peekCore(id, curIdx - back + 1).catch(() => null); if (q?.ok) { setPast({ item: q.item as CoreItemV, given: q.given ?? null, dk: !!q.dk }); setBack(back - 1); return; } }
+    setPast(null); setBack(0); shownAt.current = Date.now();
+  });
+  const open = v.open ?? [];
 
   if (v.section === "done") return <>{done}</>;
   if (paused) return <Paused home={home} onBack={() => setPaused(false)} />;
-  const pi = PARTS.indexOf(v.section as Part);
   return (
     <div className="flex flex-col gap-4">
       {v.section !== "intro" && (
         <div className="flex flex-col gap-2">
           <div className="plprog" aria-label={t("pl.progress")}>
-            {PARTS.map((p, i) => <span key={p} className={i === pi ? "on" : i < pi ? "done" : ""}>{i < pi && <Icon name="check" size="sm" />}{t(`pl.part.${p}` as DictKey)}</span>)}
+            {PARTS.map((p) => {
+              const isDone = p === "core" ? v.section !== "core" : v.section !== "core" && !open.includes(p);
+              const can = !between && !pending && open.includes(p) && p !== v.section;
+              const cls = p === v.section && !between ? "on" : isDone ? "done" : can ? "can" : "";
+              return can
+                ? <button key={p} type="button" className={cls} onClick={() => step(() => goSection(id, p))} title={t("pl.switchTo")}>{t(`pl.part.${p}` as DictKey)}</button>
+                : <span key={p} className={cls}>{isDone && <Icon name="check" size="sm" />}{t(`pl.part.${p}` as DictKey)}</span>;
+            })}
           </div>
           {v.section === "core" && !between && (
             <div className="plcorebar" role="progressbar" aria-label={t("pl.coreProgress")} aria-valuenow={Math.round(((v as Core).progress ?? 0) * 100)} aria-valuemin={0} aria-valuemax={100}>
@@ -66,18 +89,20 @@ export function PlacementRunner({ id, initial, sample, done, home }: { id: strin
       )}
       {between ? <Between from={between.from} to={between.to} onGo={() => { setBetween(null); shownAt.current = Date.now(); }} /> : <>
         {v.section === "intro" && <Intro sample={sample} pending={pending} onStart={() => step(() => startPlacement(id))} />}
-        {v.section === "core" && <CoreStep key={(v as Core).item?.id} v={v as Core} pending={pending} onAnswer={(val, dk) => step(() => answerCore(id, (v as Core).item!.id, val, ms(), dk))} />}
+        {v.section === "core" && (past && back > 0
+          ? <CoreStep key={`past-${past.item.id}`} item={past.item} n={curIdx - back + 1} initial={past.dk ? "" : past.given ?? ""} past pending={pending} onBack={curIdx - back > 0 ? () => openPast(back + 1) : undefined} onAnswer={revise} />
+          : (v as Core).item && <CoreStep key={(v as Core).item!.id} item={(v as Core).item!} n={curIdx + 1} pending={pending} onBack={curIdx > 0 ? () => openPast(1) : undefined} onAnswer={(val, dk) => step(() => answerCore(id, (v as Core).item!.id, val, ms(), dk))} />)}
         {(v.section === "reading" || v.section === "listening") && (
           <TextStep key={(v as unknown as TextV).items.map((x) => x.id).join()} v={v as unknown as TextV} pending={pending} attempt={id} onFinish={() => step(() => finishTexts(id))} />
         )}
         {v.section === "writing" && <WriteStep v={v as WriteV} pending={pending} onSave={(text, final) => final ? step(() => saveWriting(id, text, true)) : saveWriting(id, text, false)} />}
-        {v.section === "speaking" && <SpeakStep v={v as SpeakV} attempt={id} pending={pending} onFinish={(noMic) => step(() => finishPlacement(id, noMic))} />}
+        {v.section === "speaking" && <SpeakStep v={v as SpeakV} attempt={id} pending={pending} last={open.length <= 1} onFinish={(noMic) => step(() => finishPlacement(id, noMic))} />}
       </>}
       {err && <div className="alert">{err}</div>}
       {v.section !== "intro" && !between && (
         <div className="plpause">
-          <span className="small muted">{t("pl.saved")}</span>
           <button type="button" className="btn plain sm" onClick={() => setPaused(true)}><Icon name="clock" size="sm" />{t("pl.saveLater")}</button>
+          <span className="small muted">{t("pl.saved")}</span>
         </div>
       )}
     </div>
@@ -177,29 +202,28 @@ function Intro({ sample, pending, onStart }: { sample: string; pending: boolean;
 
 // ───────── Грамматика и лексика ─────────
 
-function CoreStep({ v, pending, onAnswer }: { v: Core; pending: boolean; onAnswer: (val: string | number | null, dk: boolean) => void }) {
+function CoreStep({ item: it, n, pending, onAnswer, onBack, initial, past }: { item: CoreItemV; n: number; pending: boolean; onAnswer: (val: string | number | null, dk: boolean) => void; onBack?: () => void; initial?: string | number; past?: boolean }) {
   const { t } = useT();
-  const it = v.item;
-  const [val, setVal] = useState<string | number>("");
-  if (!it) return null;
+  const [val, setVal] = useState<string | number>(initial ?? "");
   const input = (
     <input className="input plgap" autoFocus autoComplete="off" autoCapitalize="off" spellCheck={false} value={String(val)} onChange={(e) => setVal(e.target.value)}
       onKeyDown={(e) => { if (e.key === "Enter" && String(val).trim()) onAnswer(String(val), false); }} aria-label={t("pl.answer")} />
   );
-  const parts = (s: string) => { const [a, b] = s.split("___"); return <p className="plq">{a}{input}{b}</p>; };
+  const parts = (s2: string) => { const [a, b] = s2.split("___"); return <p className="plq">{a}{input}{b}</p>; };
   const empty = val === "" || (typeof val === "string" && !val.trim());
+  const typed = it.type !== "mcq";
   return (
     <section className="card flex flex-col gap-4" data-item={it.id}>
+      {past && <div className="plpast"><Icon name="chevl" size="sm" />{t("pl.pastNote", { n })}</div>}
       <p className="plinstr">{it.instr}</p>
       {it.type === "mcq" && (
         <>
-          <p className="plq">{it.q.split("___").map((x, i, a) => <span key={i}>{x}{i < a.length - 1 && <span className="plblank">{typeof val === "number" ? it.options![val] : " "}</span>}</span>)}</p>
+          <p className="plq">{it.q.split("___").map((x, i, a) => <span key={i}>{x}{i < a.length - 1 && <span className="plblank">{typeof val === "number" ? it.options![val] : "\u00a0"}</span>}</span>)}</p>
           <div className="ploptions">{it.options!.map((o, k) => <button key={k} type="button" className={`topt ${val === k ? "on" : ""}`} aria-pressed={val === k} onClick={() => setVal(k)}>{o}</button>)}</div>
         </>
       )}
       {it.type === "wordform" && <><div className="plword"><span className="plbase">{it.base}</span><Icon name="right" size="sm" /><span className="muted small">?</span></div>{parts(it.q)}</>}
-      {it.type === "gap" && parts(it.q)}
-      {it.type === "brackets" && <>{parts(it.q)}<span className="small muted">{t("pl.bracketsHint")}</span></>}
+      {(it.type === "gap" || it.type === "brackets") && parts(it.q)}
       {it.type === "transform" && (
         <>
           <p className="plq m-0">{it.q}</p>
@@ -207,9 +231,16 @@ function CoreStep({ v, pending, onAnswer }: { v: Core; pending: boolean; onAnswe
           {parts(it.frame ?? "___")}
         </>
       )}
+      {typed && (
+        <div className="pltips">
+          {it.hint && <span className="plhint"><Icon name="info" size="sm" />{t("pl.hintWord", { h: it.hint })}</span>}
+          <span className="small muted">{it.type === "brackets" ? t("pl.bracketsHint") : t("pl.gapNote")}</span>
+        </div>
+      )}
       <div className="plactions">
+        {onBack && <button type="button" className="btn plain mr-auto" disabled={pending} onClick={onBack}><Icon name="chevl" size="sm" />{t("pl.prevQ")}</button>}
         <button type="button" className="btn plain" disabled={pending} onClick={() => onAnswer(null, true)}>{t("pl.dontKnow")}</button>
-        <button className="btn primary" disabled={pending || empty} onClick={() => onAnswer(val, false)}>{t("pl.next")}</button>
+        <button className="btn primary" disabled={pending || empty} onClick={() => onAnswer(typeof val === "string" ? val : val, false)}>{past ? t("pl.saveFix") : t("pl.next")}</button>
       </div>
     </section>
   );
@@ -227,11 +258,19 @@ function TextStep({ v, pending, onFinish, attempt }: { v: TextV; pending: boolea
   const total = v.items.reduce((a, x) => a + x.questions.length, 0);
   const left = total - Object.keys(ans).filter((k) => v.items.some((x) => x.questions.some((q) => q.id === k))).length;
   const it = v.items[Math.min(tab, v.items.length - 1)];
-  const finish = () => { if (!confirm(left ? t("pl.finishLeft", { n: left }) : t("pl.finishSure"))) return; onFinish(); };
+  const [warn, setWarn] = useState<number | null>(null);
+  const finish = () => {
+    // сначала напоминаем про текст (запись), где остались вопросы без ответа
+    const gap = v.items.findIndex((x) => x.questions.some((q) => ans[q.id] === undefined));
+    if (gap >= 0 && warn === null) { setTab(gap); setWarn(gap); window.scrollTo({ top: 0 }); return; }
+    if (!confirm(left ? t("pl.finishLeft", { n: left }) : t("pl.finishSure"))) return;
+    onFinish();
+  };
   if (!it) return null;
   return (
     <section className="card flex flex-col gap-4">
       {v.extra && <div className="alert ok" style={{ background: "var(--accent-bg)", color: "var(--accent-text)" }}>{t("pl.extraText")}</div>}
+      {warn !== null && <div className="alert">{t(listen ? "pl.warnRec" : "pl.warnText", { n: warn + 1 })}</div>}
       <p className="plinstr">{v.instr}</p>
       {v.items.length > 1 && (
         <nav className="tabsbar">{v.items.map((x, i) => {
@@ -346,7 +385,7 @@ function Ring({ left, total, rec }: { left: number; total: number; rec?: boolean
   );
 }
 
-function SpeakStep({ v, attempt, pending, onFinish }: { v: SpeakV; attempt: string; pending: boolean; onFinish: (noMic: boolean) => void }) {
+function SpeakStep({ v, attempt, pending, onFinish, last }: { v: SpeakV; attempt: string; pending: boolean; onFinish: (noMic: boolean) => void; last: boolean }) {
   const { t } = useT();
   const it = v.item;
   const [done, setDone] = useState<string[]>(v.rec);
@@ -444,7 +483,7 @@ function SpeakStep({ v, attempt, pending, onFinish }: { v: SpeakV; attempt: stri
         </div>
       )}
       {all && !busy && (
-        <div className="plactions"><span className="small muted grow">{t("pl.speakDone")}</span><button className="btn primary" disabled={pending} onClick={() => { if (confirm(t("pl.finishTest"))) onFinish(false); }}>{t("pl.finish")}</button></div>
+        <div className="plactions"><span className="small muted grow">{last ? t("pl.speakDone") : t("pl.speakDonePart")}</span><button className="btn primary" disabled={pending} onClick={() => { if (confirm(last ? t("pl.finishTest") : t("pl.finishSure"))) onFinish(false); }}>{last ? t("pl.finish") : t("pl.finishPart")}</button></div>
       )}
     </section>
   );

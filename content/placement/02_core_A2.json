@@ -31,7 +31,8 @@
     "accept": [
       "did"
     ],
-    "explain_ru": "Вопрос в Past Simple строится с вспомогательным глаголом did."
+    "explain_ru": "Вопрос в Past Simple строится с вспомогательным глаголом did.",
+    "hint_ru": "вспомогательный глагол"
   },
   {
     "id": "G-A2-03",
@@ -85,7 +86,8 @@
       "never",
       "not"
     ],
-    "explain_ru": "Never (или not) с Present Perfect значит «ни разу не был»."
+    "explain_ru": "Never (или not) с Present Perfect значит «ни разу не был».",
+    "hint_ru": "наречие"
   },
   {
     "id": "G-A2-06",
@@ -195,7 +197,8 @@
     "accept": [
       "most"
     ],
-    "explain_ru": "Превосходная степень длинного прилагательного: the most relaxing."
+    "explain_ru": "Превосходная степень длинного прилагательного: the most relaxing.",
+    "hint_ru": "слово для превосходной степени"
   },
   {
     "id": "G-A2-12",
@@ -248,7 +251,8 @@
     "accept": [
       "few"
     ],
-    "explain_ru": "С исчисляемыми существительными «немного» — a few."
+    "explain_ru": "С исчисляемыми существительными «немного» — a few.",
+    "hint_ru": "слово количества"
   },
   {
     "id": "G-A2-15",
@@ -377,7 +381,8 @@
     "accept": [
       "to"
     ],
-    "explain_ru": "Цель действия выражается инфинитивом с to."
+    "explain_ru": "Цель действия выражается инфинитивом с to.",
+    "hint_ru": "служебное слово (цель)"
   },
   {
     "id": "G-A2-22",
@@ -411,7 +416,8 @@
     "accept": [
       "nothing"
     ],
-    "explain_ru": "В утвердительной форме there's ... «ничего нет» — nothing."
+    "explain_ru": "В утвердительной форме there's ... «ничего нет» — nothing.",
+    "hint_ru": "местоимение"
   },
   {
     "id": "G-A2-24",
@@ -465,7 +471,8 @@
       "cost",
       "costs"
     ],
-    "explain_ru": "Глагол cost — стоить; в прошедшем времени форма та же: cost."
+    "explain_ru": "Глагол cost — стоить; в прошедшем времени форма та же: cost.",
+    "hint_ru": "глагол: стоить"
   },
   {
     "id": "V-A2-03",
@@ -538,7 +545,8 @@
       "book",
       "reserve"
     ],
-    "explain_ru": "Забронировать столик — book (или reserve) a table."
+    "explain_ru": "Забронировать столик — book (или reserve) a table.",
+    "hint_ru": "глагол: забронировать"
   },
   {
     "id": "V-A2-07",
@@ -648,7 +656,8 @@
     "accept": [
       "do"
     ],
-    "explain_ru": "Сделать одолжение — do someone a favour."
+    "explain_ru": "Сделать одолжение — do someone a favour.",
+    "hint_ru": "глагол: ___ me a favour"
   },
   {
     "id": "V-A2-13",
@@ -682,7 +691,8 @@
     "accept": [
       "on"
     ],
-    "explain_ru": "Поехать в отпуск — go on holiday."
+    "explain_ru": "Поехать в отпуск — go on holiday.",
+    "hint_ru": "предлог"
   },
   {
     "id": "V-A2-15",
@@ -773,7 +783,8 @@
     "accept": [
       "did"
     ],
-    "explain_ru": "Вопрос в Past Simple: How much did … cost?"
+    "explain_ru": "Вопрос в Past Simple: How much did … cost?",
+    "hint_ru": "вспомогательный глагол"
   },
   {
     "id": "G-A2-28",
@@ -784,15 +795,15 @@
     "topic_en": "Past continuous",
     "topic_ru": "Past Continuous",
     "type": "mcq",
-    "q": "At 8 o'clock last night I ___ dinner with my family.",
+    "q": "When you called at 8 last night, I ___ dinner with my family.",
     "options": [
       "have",
-      "had having",
       "was having",
-      "am having"
+      "am having",
+      "were having"
     ],
-    "answer": 2,
-    "explain_ru": "Действие в процессе в конкретный момент прошлого — Past Continuous: was having."
+    "answer": 1,
+    "explain_ru": "Действие в процессе в момент прошлого — Past Continuous; с I — was having."
   },
   {
     "id": "G-A2-29",
@@ -845,7 +856,8 @@
     "accept": [
       "were"
     ],
-    "explain_ru": "Вопрос в Past Continuous с you: What were you doing…?"
+    "explain_ru": "Вопрос в Past Continuous с you: What were you doing…?",
+    "hint_ru": "вспомогательный глагол"
   },
   {
     "id": "G-A2-32",
@@ -879,7 +891,8 @@
     "accept": [
       "ever"
     ],
-    "explain_ru": "Вопрос об опыте в жизни: Have you ever been…?"
+    "explain_ru": "Вопрос об опыте в жизни: Have you ever been…?",
+    "hint_ru": "наречие"
   },
   {
     "id": "G-A2-34",

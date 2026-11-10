@@ -93,12 +93,12 @@
     "q": "If I had taken that job in London, I ___ in a tiny flat now.",
     "options": [
       "will live",
-      "would be living",
+      "would live",
       "had lived",
       "would have lived"
     ],
     "answer": 1,
-    "explain_ru": "Смешанный тип: условие в прошлом, результат сейчас (now) — would + be + -ing / would + глагол."
+    "explain_ru": "Смешанный тип: условие в прошлом (had taken), результат сейчас (now) → would + глагол: would live (можно и would be living)."
   },
   {
     "id": "G-B2-07",
@@ -128,7 +128,7 @@
     "topic_en": "Passive with modals and perfect forms",
     "topic_ru": "Пассив с модальными глаголами и перфектом",
     "type": "mcq",
-    "q": "Don't worry, your order ___ by Friday.",
+    "q": "Don't worry, your order ___ tomorrow morning.",
     "options": [
       "will deliver",
       "will have delivered",
@@ -136,7 +136,7 @@
       "is delivering"
     ],
     "answer": 2,
-    "explain_ru": "Заказ доставят — пассив в будущем: will be + третья форма."
+    "explain_ru": "Заказ доставят (с ним что-то сделают) в будущем — Future Simple Passive: will be delivered."
   },
   {
     "id": "G-B2-09",
@@ -336,8 +336,8 @@
     "topic_id": "g-b2-wish",
     "topic_en": "wish / if only (present and past)",
     "topic_ru": "wish / if only (настоящее и прошлое)",
-    "type": "gap",
-    "q": "I wish I ___ more time to read. I'm always so busy.",
+    "type": "brackets",
+    "q": "I wish I ___ (have) more time to read. I'm always so busy.",
     "accept": [
       "had"
     ],
@@ -358,7 +358,8 @@
       "could",
       "might"
     ],
-    "explain_ru": "В главной части третьего типа — would/could/might + have + третья форма."
+    "explain_ru": "В главной части третьего типа — would/could/might + have + третья форма.",
+    "hint_ru": "модальный глагол"
   },
   {
     "id": "G-B2-21",
@@ -373,7 +374,8 @@
     "accept": [
       "been"
     ],
-    "explain_ru": "Пассив в Present Perfect: has been + третья форма."
+    "explain_ru": "Пассив в Present Perfect: has been + третья форма.",
+    "hint_ru": "вспомогательный глагол"
   },
   {
     "id": "G-B2-22",
@@ -388,7 +390,8 @@
     "accept": [
       "which"
     ],
-    "explain_ru": "В неопределительном придаточном о предмете — which; that невозможно после запятой."
+    "explain_ru": "В неопределительном придаточном о предмете — which; that невозможно после запятой.",
+    "hint_ru": "относительное местоимение"
   },
   {
     "id": "V-B2-01",
@@ -671,7 +674,8 @@
     "accept": [
       "in"
     ],
-    "explain_ru": "Связка In addition — «кроме того»."
+    "explain_ru": "Связка In addition — «кроме того».",
+    "hint_ru": "предлог"
   },
   {
     "id": "V-B2-17",
@@ -689,7 +693,8 @@
       "lose",
       "drop"
     ],
-    "explain_ru": "Избавиться от привычки — break (kick) the habit."
+    "explain_ru": "Избавиться от привычки — break (kick) the habit.",
+    "hint_ru": "глагол: избавиться от привычки"
   },
   {
     "id": "V-B2-18",
@@ -704,7 +709,8 @@
     "accept": [
       "back"
     ],
-    "explain_ru": "Делать резервную копию — back up."
+    "explain_ru": "Делать резервную копию — back up.",
+    "hint_ru": "частица фразового глагола"
   },
   {
     "id": "G-B2-23",
@@ -731,15 +737,15 @@
     "topic_en": "Tenses: continuous for annoyance, perfect continuous and result",
     "topic_ru": "Времена: Continuous для раздражения, Perfect Continuous и результат",
     "type": "mcq",
-    "q": "My flatmate ___ leaving his dirty socks on the sofa! It's so annoying.",
+    "q": "My flatmate ___ his dirty socks on the sofa! It's so annoying.",
     "options": [
-      "always leaves",
-      "has always",
-      "always left",
-      "is always"
+      "is always leaving",
+      "always is leaving",
+      "is leaving always",
+      "has always been leaving"
     ],
-    "answer": 3,
-    "explain_ru": "Раздражающая привычка — always + Present Continuous: is always leaving."
+    "answer": 0,
+    "explain_ru": "Раздражающая привычка — is always + -ing (наречие always стоит между is и глаголом)."
   },
   {
     "id": "G-B2-25",
@@ -838,15 +844,15 @@
     "topic_en": "Past modals of deduction: must have / can't have",
     "topic_ru": "Модальные глаголы предположения о прошлом",
     "type": "mcq",
-    "q": "The ground is wet. It ___ rained last night.",
+    "q": "The ground is wet. It ___ last night.",
     "options": [
-      "can't have",
-      "should",
-      "must",
-      "must have"
+      "must have rained",
+      "can't have rained",
+      "should rain",
+      "must rain"
     ],
-    "answer": 3,
-    "explain_ru": "Уверенный вывод о прошлом — must have + третья форма."
+    "answer": 0,
+    "explain_ru": "Уверенный вывод о прошлом — must have + третья форма: must have rained."
   },
   {
     "id": "G-B2-31",
@@ -862,7 +868,7 @@
       "shouldn't have",
       "mustn't have",
       "couldn't have",
-      "needn't"
+      "needn't have"
     ],
     "answer": 0,
     "explain_ru": "Сожаление о прошлом — shouldn't have + третья форма."

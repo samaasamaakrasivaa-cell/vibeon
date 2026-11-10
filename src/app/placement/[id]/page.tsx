@@ -54,7 +54,7 @@ export default async function PlacementPage({ params }: { params: Promise<{ id: 
       <main className="main">
         <div className="page" style={{ maxWidth: 820 }}>
           <h1 className="mb-4">{t("pl.title")}</h1>
-          <PlacementRunner id={id} initial={done ? { section: "done", level: null } : publicView(st, lang, (await getBank()).bank)} sample={audioUrl("S-A1-01-q1")} done={done} home={home} />
+          <PlacementRunner id={id} initial={done ? { section: "done", level: null, open: [] } : publicView(st, lang, (await getBank()).bank)} sample={audioUrl("S-A1-01-q1")} done={done} home={home} />
         </div>
       </main>
     </>
