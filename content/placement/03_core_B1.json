@@ -454,7 +454,8 @@
     "accept": [
       "helpful"
     ],
-    "explain_ru": "От help с суффиксом -ful образуется прилагательное helpful."
+    "explain_ru": "От help с суффиксом -ful образуется прилагательное helpful.",
+    "group": "b1-v3"
   },
   {
     "id": "V-B1-02",
@@ -470,7 +471,8 @@
     "accept": [
       "decision"
     ],
-    "explain_ru": "После a big нужно существительное: decide → decision."
+    "explain_ru": "После a big нужно существительное: decide → decision.",
+    "group": "b1-v3"
   },
   {
     "id": "V-B1-03",
@@ -486,7 +488,8 @@
     "accept": [
       "knowledge"
     ],
-    "explain_ru": "Существительное от know — knowledge."
+    "explain_ru": "Существительное от know — knowledge.",
+    "group": "b1-v3"
   },
   {
     "id": "V-B1-04",
@@ -502,7 +505,8 @@
     "accept": [
       "unclear"
     ],
-    "explain_ru": "По смыслу нужно противоположное значение: clear → unclear."
+    "explain_ru": "По смыслу нужно противоположное значение: clear → unclear.",
+    "group": "b1-v3"
   },
   {
     "id": "V-B1-05",
@@ -518,7 +522,8 @@
     "accept": [
       "impossible"
     ],
-    "explain_ru": "Отрицательная форма possible образуется с приставкой im-: impossible."
+    "explain_ru": "Отрицательная форма possible образуется с приставкой im-: impossible.",
+    "group": "b1-v3"
   },
   {
     "id": "V-B1-06",
@@ -534,7 +539,8 @@
     "accept": [
       "disappointing"
     ],
-    "explain_ru": "Качество самого предмета описывается прилагательным на -ing."
+    "explain_ru": "Качество самого предмета описывается прилагательным на -ing.",
+    "group": "b1-v3"
   },
   {
     "id": "V-B1-07",
@@ -553,7 +559,8 @@
       "look after"
     ],
     "answer": 1,
-    "explain_ru": "Cut down on — сократить потребление чего-либо."
+    "explain_ru": "Cut down on — сократить потребление чего-либо.",
+    "group": "b1-v2"
   },
   {
     "id": "V-B1-08",
@@ -572,7 +579,8 @@
       "take"
     ],
     "answer": 3,
-    "explain_ru": "Сделать перерыв — take a break."
+    "explain_ru": "Сделать перерыв — take a break.",
+    "group": "b1-v2"
   },
   {
     "id": "V-B1-09",
@@ -591,7 +599,8 @@
       "colleague"
     ],
     "answer": 2,
-    "explain_ru": "Повышение в должности — promotion."
+    "explain_ru": "Повышение в должности — promotion.",
+    "group": "b1-v1"
   },
   {
     "id": "V-B1-10",
@@ -610,7 +619,8 @@
       "pollute"
     ],
     "answer": 0,
-    "explain_ru": "Сдавать на переработку — recycle."
+    "explain_ru": "Сдавать на переработку — recycle.",
+    "group": "b1-v1"
   },
   {
     "id": "V-B1-11",
@@ -629,7 +639,8 @@
       "get over"
     ],
     "answer": 1,
-    "explain_ru": "Ладить с кем-то — get on (well)."
+    "explain_ru": "Ладить с кем-то — get on (well).",
+    "group": "b1-v1"
   },
   {
     "id": "V-B1-12",
@@ -648,7 +659,8 @@
       "lend"
     ],
     "answer": 3,
-    "explain_ru": "Дать на время — lend; borrow значит «взять на время»."
+    "explain_ru": "Дать на время — lend; borrow значит «взять на время».",
+    "group": "b1-v3"
   },
   {
     "id": "V-B1-13",
@@ -667,7 +679,8 @@
       "won"
     ],
     "answer": 0,
-    "explain_ru": "Сдать экзамен успешно — pass."
+    "explain_ru": "Сдать экзамен успешно — pass.",
+    "group": "b1-v1"
   },
   {
     "id": "V-B1-14",
@@ -683,7 +696,8 @@
       "at"
     ],
     "explain_ru": "Быть хорошим в чём-то — good at.",
-    "hint_ru": "предлог"
+    "hint_ru": "предлог",
+    "group": "b1-v2"
   },
   {
     "id": "V-B1-15",
@@ -699,7 +713,8 @@
       "to"
     ],
     "explain_ru": "Глагол listen требует предлога to.",
-    "hint_ru": "предлог"
+    "hint_ru": "предлог",
+    "group": "b1-v1"
   },
   {
     "id": "V-B1-16",
@@ -715,7 +730,8 @@
       "after"
     ],
     "explain_ru": "Присматривать, заботиться — look after.",
-    "hint_ru": "частица фразового глагола"
+    "hint_ru": "вторая часть фразового глагола",
+    "group": "b1-v2"
   },
   {
     "id": "G-B1-25",
@@ -1113,5 +1129,151 @@
     ],
     "answer": 2,
     "explain_ru": "each + существительное в единственном числе: on each side."
+  },
+  {
+    "id": "V-B1-17",
+    "skill": "vocabulary",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "v-b1-education",
+    "topic_en": "Education and learning",
+    "topic_ru": "Учёба",
+    "type": "gap",
+    "q": "I need to ___ for my exam next week, so I can't go out tonight.",
+    "accept": [
+      "study",
+      "revise",
+      "prepare"
+    ],
+    "explain_ru": "Готовиться к экзамену — study / revise for an exam.",
+    "hint_ru": "глагол: учиться, готовиться",
+    "group": "b1-v1"
+  },
+  {
+    "id": "V-B1-18",
+    "skill": "vocabulary",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "v-b1-collocations-basic",
+    "topic_en": "Collocations with make / do / take / have",
+    "topic_ru": "Сочетания с make / do / take / have",
+    "type": "mcq",
+    "q": "Could you ___ me a favour and post this letter?",
+    "options": [
+      "make",
+      "do",
+      "give",
+      "take"
+    ],
+    "answer": 1,
+    "explain_ru": "Сочетание: do somebody a favour.",
+    "group": "b1-v2"
+  },
+  {
+    "id": "V-B1-19",
+    "skill": "vocabulary",
+    "level": "B1",
+    "band": 3,
+    "topic_id": "v-b1-dependent-prepositions",
+    "topic_en": "Dependent prepositions: good at, interested in",
+    "topic_ru": "Предлоги после слов: good at, interested in",
+    "type": "mcq",
+    "q": "She's very interested ___ modern art.",
+    "options": [
+      "on",
+      "about",
+      "in",
+      "for"
+    ],
+    "answer": 2,
+    "explain_ru": "interested in something.",
+    "group": "b1-v2"
+  },
+  {
+    "id": "G-B1-47",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-b1-comparatives",
+    "topic_en": "Comparatives: modifiers, as … as, irregular forms, hard / hardly",
+    "topic_ru": "Сравнения: much / far + сравнительная, as … as, неправильные формы, hard / hardly",
+    "type": "mcq",
+    "q": "This phone is ___ cheaper than the one I saw yesterday.",
+    "options": [
+      "very",
+      "more",
+      "most",
+      "much"
+    ],
+    "answer": 3,
+    "explain_ru": "Усиление сравнительной степени — much / far: much cheaper."
+  },
+  {
+    "id": "G-B1-48",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "g-b1-comparatives",
+    "topic_en": "Comparatives: modifiers, as … as, irregular forms, hard / hardly",
+    "topic_ru": "Сравнения: much / far + сравнительная, as … as, неправильные формы, hard / hardly",
+    "type": "mcq",
+    "q": "The exam wasn't ___ I expected. I finished it in 20 minutes.",
+    "options": [
+      "so difficult than",
+      "as difficult as",
+      "difficult as",
+      "as difficult than"
+    ],
+    "answer": 1,
+    "explain_ru": "Сравнение not as … as."
+  },
+  {
+    "id": "G-B1-49",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "g-b1-comparatives",
+    "topic_en": "Comparatives: modifiers, as … as, irregular forms, hard / hardly",
+    "topic_ru": "Сравнения: much / far + сравнительная, as … as, неправильные формы, hard / hardly",
+    "type": "mcq",
+    "q": "I've been working really ___ this week, so I'm exhausted.",
+    "options": [
+      "hardly",
+      "harder",
+      "hard",
+      "hardest"
+    ],
+    "answer": 2,
+    "explain_ru": "hard — «усердно» (наречие); hardly — «едва»."
+  },
+  {
+    "id": "G-B1-50",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "g-b1-comparatives",
+    "topic_en": "Comparatives: modifiers, as … as, irregular forms, hard / hardly",
+    "topic_ru": "Сравнения: much / far + сравнительная, as … as, неправильные формы, hard / hardly",
+    "type": "brackets",
+    "q": "She speaks English much ___ (good) than her brother.",
+    "accept": [
+      "better"
+    ],
+    "explain_ru": "Неправильная сравнительная степень: good / well → better."
+  },
+  {
+    "id": "G-B1-51",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 3,
+    "topic_id": "g-b1-comparatives",
+    "topic_en": "Comparatives: modifiers, as … as, irregular forms, hard / hardly",
+    "topic_ru": "Сравнения: much / far + сравнительная, as … as, неправильные формы, hard / hardly",
+    "type": "brackets",
+    "q": "This is the ___ (bad) weather we've had all year.",
+    "accept": [
+      "worst"
+    ],
+    "explain_ru": "Неправильная превосходная степень: bad → worst."
   }
 ]

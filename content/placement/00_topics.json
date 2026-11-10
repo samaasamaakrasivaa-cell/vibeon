@@ -455,6 +455,13 @@
     "topic_ru": "Артикли: общее и конкретное значение"
   },
   {
+    "topic_id": "g-b1-comparatives",
+    "skill": "grammar",
+    "level": "B1",
+    "topic_en": "Comparatives: modifiers, as … as, irregular forms, hard / hardly",
+    "topic_ru": "Сравнения: much / far + сравнительная, as … as, неправильные формы, hard / hardly"
+  },
+  {
     "topic_id": "g-b2-third-conditional",
     "skill": "grammar",
     "level": "B2",
@@ -595,6 +602,13 @@
     "topic_ru": "Артикли: абстрактные понятия, институты, география"
   },
   {
+    "topic_id": "g-b2-comparatives",
+    "skill": "grammar",
+    "level": "B2",
+    "topic_en": "Comparatives: the more … the more, nowhere near as, late / lately, adjective order",
+    "topic_ru": "Сравнения: the more … the more, nowhere near as, late / lately, порядок прилагательных"
+  },
+  {
     "topic_id": "g-c1-inversion",
     "skill": "grammar",
     "level": "C1",
@@ -705,6 +719,20 @@
     "level": "C1",
     "topic_en": "Articles: generalisation, abstract nouns, fixed cases",
     "topic_ru": "Артикли: обобщение, абстрактные существительные, устойчивые случаи"
+  },
+  {
+    "topic_id": "g-c1-comparatives",
+    "skill": "grammar",
+    "level": "C1",
+    "topic_en": "Advanced comparison: by far, nothing like as, the sooner the better",
+    "topic_ru": "Сложные сравнения: by far, nothing like as, the sooner the better"
+  },
+  {
+    "topic_id": "g-c1-reported",
+    "skill": "grammar",
+    "level": "C1",
+    "topic_en": "Reported speech: reporting verbs, sequence of tenses, was to",
+    "topic_ru": "Косвенная речь: глаголы (urge, insist on, accuse of), согласование времён, was to"
   },
   {
     "topic_id": "v-a1-numbers-time",

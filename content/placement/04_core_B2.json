@@ -408,7 +408,8 @@
       "entry",
       "entrance"
     ],
-    "explain_ru": "Существительное от enter — entry или entrance (вход)."
+    "explain_ru": "Существительное от enter — entry или entrance (вход).",
+    "group": "b2-v3"
   },
   {
     "id": "V-B2-02",
@@ -424,7 +425,8 @@
     "accept": [
       "enthusiastically"
     ],
-    "explain_ru": "Нужно наречие к глаголу spoke: enthusiasm → enthusiastically."
+    "explain_ru": "Нужно наречие к глаголу spoke: enthusiasm → enthusiastically.",
+    "group": "b2-v3"
   },
   {
     "id": "V-B2-03",
@@ -440,7 +442,8 @@
     "accept": [
       "flexibility"
     ],
-    "explain_ru": "После more нужно существительное: flexible → flexibility."
+    "explain_ru": "После more нужно существительное: flexible → flexibility.",
+    "group": "b2-v3"
   },
   {
     "id": "V-B2-04",
@@ -456,7 +459,8 @@
     "accept": [
       "essential"
     ],
-    "explain_ru": "Нужно прилагательное: essence → essential (крайне важный)."
+    "explain_ru": "Нужно прилагательное: essence → essential (крайне важный).",
+    "group": "b2-v3"
   },
   {
     "id": "V-B2-05",
@@ -472,7 +476,8 @@
     "accept": [
       "membership"
     ],
-    "explain_ru": "Членство, абонемент — membership."
+    "explain_ru": "Членство, абонемент — membership.",
+    "group": "b2-v3"
   },
   {
     "id": "V-B2-06",
@@ -488,7 +493,8 @@
     "accept": [
       "developments"
     ],
-    "explain_ru": "Нужно существительное во множественном числе: develop → developments."
+    "explain_ru": "Нужно существительное во множественном числе: develop → developments.",
+    "group": "b2-v3"
   },
   {
     "id": "V-B2-07",
@@ -507,7 +513,8 @@
       "gave"
     ],
     "answer": 0,
-    "explain_ru": "Drop off в разговорной речи — задремать."
+    "explain_ru": "Drop off в разговорной речи — задремать.",
+    "group": "b2-v2"
   },
   {
     "id": "V-B2-08",
@@ -526,7 +533,8 @@
       "set"
     ],
     "answer": 1,
-    "explain_ru": "Put off — отложить на более поздний срок."
+    "explain_ru": "Put off — отложить на более поздний срок.",
+    "group": "b2-v2"
   },
   {
     "id": "V-B2-09",
@@ -545,7 +553,8 @@
       "heavy"
     ],
     "answer": 3,
-    "explain_ru": "Плотное движение, пробки — heavy traffic."
+    "explain_ru": "Плотное движение, пробки — heavy traffic.",
+    "group": "b2-v2"
   },
   {
     "id": "V-B2-10",
@@ -564,7 +573,8 @@
       "have"
     ],
     "answer": 2,
-    "explain_ru": "Присмотреть за чем-то — keep an eye on."
+    "explain_ru": "Присмотреть за чем-то — keep an eye on.",
+    "group": "b2-v2"
   },
   {
     "id": "V-B2-11",
@@ -583,7 +593,8 @@
       "feet"
     ],
     "answer": 0,
-    "explain_ru": "Have a lot on your plate — быть очень загруженным."
+    "explain_ru": "Have a lot on your plate — быть очень загруженным.",
+    "group": "b2-v2"
   },
   {
     "id": "V-B2-12",
@@ -602,7 +613,8 @@
       "about"
     ],
     "answer": 1,
-    "explain_ru": "Be keen on — увлекаться, любить."
+    "explain_ru": "Be keen on — увлекаться, любить.",
+    "group": "b2-v2"
   },
   {
     "id": "V-B2-13",
@@ -621,7 +633,8 @@
       "pay off"
     ],
     "answer": 2,
-    "explain_ru": "Копить деньги — save money."
+    "explain_ru": "Копить деньги — save money.",
+    "group": "b2-v1"
   },
   {
     "id": "V-B2-14",
@@ -640,7 +653,8 @@
       "affect"
     ],
     "answer": 3,
-    "explain_ru": "Глагол «повлиять» — affect, без предлога; effect обычно существительное."
+    "explain_ru": "Глагол «повлиять» — affect, без предлога; effect обычно существительное.",
+    "group": "b2-v3"
   },
   {
     "id": "V-B2-15",
@@ -659,7 +673,8 @@
       "figure out"
     ],
     "answer": 0,
-    "explain_ru": "В официальном письме уместно нейтрально-формальное enquire."
+    "explain_ru": "В официальном письме уместно нейтрально-формальное enquire.",
+    "group": "b2-v1"
   },
   {
     "id": "V-B2-16",
@@ -675,7 +690,8 @@
       "in"
     ],
     "explain_ru": "Связка In addition — «кроме того».",
-    "hint_ru": "предлог"
+    "hint_ru": "предлог",
+    "group": "b2-v1"
   },
   {
     "id": "V-B2-17",
@@ -694,7 +710,8 @@
       "drop"
     ],
     "explain_ru": "Избавиться от привычки — break (kick) the habit.",
-    "hint_ru": "глагол: избавиться от привычки"
+    "hint_ru": "глагол: избавиться от привычки",
+    "group": "b2-v1"
   },
   {
     "id": "V-B2-18",
@@ -710,7 +727,8 @@
       "back"
     ],
     "explain_ru": "Делать резервную копию — back up.",
-    "hint_ru": "частица фразового глагола"
+    "hint_ru": "вторая часть фразового глагола",
+    "group": "b2-v1"
   },
   {
     "id": "G-B2-23",
@@ -1133,5 +1151,152 @@
     ],
     "answer": 0,
     "explain_ru": "the + прилагательное — группа людей: the rich."
+  },
+  {
+    "id": "V-B2-19",
+    "skill": "vocabulary",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "v-b2-science-tech",
+    "topic_en": "Science and technology",
+    "topic_ru": "Наука и технологии",
+    "type": "mcq",
+    "q": "The company spends millions on ___ and development every year.",
+    "options": [
+      "search",
+      "study",
+      "survey",
+      "research"
+    ],
+    "answer": 3,
+    "explain_ru": "Устойчивое сочетание: research and development.",
+    "group": "b2-v1"
+  },
+  {
+    "id": "V-B2-20",
+    "skill": "vocabulary",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "v-b2-collocations",
+    "topic_en": "Adjective + noun and verb + noun collocations",
+    "topic_ru": "Коллокации прилагательное + существительное и глагол + существительное",
+    "type": "gap",
+    "q": "After thinking about it for weeks, she finally ___ a decision.",
+    "accept": [
+      "made",
+      "reached",
+      "took"
+    ],
+    "explain_ru": "Сочетание: make / reach a decision.",
+    "hint_ru": "глагол: принять (решение)",
+    "group": "b2-v2"
+  },
+  {
+    "id": "V-B2-21",
+    "skill": "vocabulary",
+    "level": "B2",
+    "band": 3,
+    "topic_id": "v-b2-collocations",
+    "topic_en": "Adjective + noun and verb + noun collocations",
+    "topic_ru": "Коллокации прилагательное + существительное и глагол + существительное",
+    "type": "gap",
+    "q": "We need to ___ action now, before the problem gets worse.",
+    "accept": [
+      "take"
+    ],
+    "explain_ru": "Сочетание: take action.",
+    "hint_ru": "глагол: предпринять (действия)",
+    "group": "b2-v2"
+  },
+  {
+    "id": "G-B2-46",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-comparatives",
+    "topic_en": "Comparatives: the more … the more, nowhere near as, late / lately, adjective order",
+    "topic_ru": "Сравнения: the more … the more, nowhere near as, late / lately, порядок прилагательных",
+    "type": "mcq",
+    "q": "The more you practise, ___ you'll become.",
+    "options": [
+      "more confident",
+      "the more confident",
+      "the most confident",
+      "the confident"
+    ],
+    "answer": 1,
+    "explain_ru": "Конструкция the + сравнительная, the + сравнительная: the more…, the more confident."
+  },
+  {
+    "id": "G-B2-47",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "g-b2-comparatives",
+    "topic_en": "Comparatives: the more … the more, nowhere near as, late / lately, adjective order",
+    "topic_ru": "Сравнения: the more … the more, nowhere near as, late / lately, порядок прилагательных",
+    "type": "mcq",
+    "q": "The new office is nowhere near ___ the old one.",
+    "options": [
+      "so big than",
+      "bigger than",
+      "as big as",
+      "as bigger as"
+    ],
+    "answer": 2,
+    "explain_ru": "nowhere near as … as — «далеко не такой… как»."
+  },
+  {
+    "id": "G-B2-48",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "g-b2-comparatives",
+    "topic_en": "Comparatives: the more … the more, nowhere near as, late / lately, adjective order",
+    "topic_ru": "Сравнения: the more … the more, nowhere near as, late / lately, порядок прилагательных",
+    "type": "mcq",
+    "q": "I haven't seen her ___. I wonder if she's OK.",
+    "options": [
+      "late",
+      "latest",
+      "later",
+      "lately"
+    ],
+    "answer": 3,
+    "explain_ru": "lately — «в последнее время»; late — «поздно»."
+  },
+  {
+    "id": "G-B2-49",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 3,
+    "topic_id": "g-b2-comparatives",
+    "topic_en": "Comparatives: the more … the more, nowhere near as, late / lately, adjective order",
+    "topic_ru": "Сравнения: the more … the more, nowhere near as, late / lately, порядок прилагательных",
+    "type": "mcq",
+    "q": "She bought ___ table for the kitchen.",
+    "options": [
+      "a wooden lovely round",
+      "a lovely round wooden",
+      "a round lovely wooden",
+      "a lovely wooden round"
+    ],
+    "answer": 1,
+    "explain_ru": "Порядок прилагательных: мнение → форма → материал: a lovely round wooden table."
+  },
+  {
+    "id": "G-B2-50",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 3,
+    "topic_id": "g-b2-comparatives",
+    "topic_en": "Comparatives: the more … the more, nowhere near as, late / lately, adjective order",
+    "topic_ru": "Сравнения: the more … the more, nowhere near as, late / lately, порядок прилагательных",
+    "type": "brackets",
+    "q": "Prices are rising ___ (fast) than ever before.",
+    "accept": [
+      "faster"
+    ],
+    "explain_ru": "fast — и прилагательное, и наречие; сравнительная — faster."
   }
 ]

@@ -85,7 +85,8 @@
         "topic_id": "l-main-idea",
         "explain_ru": "Начинать с малого: нужны комната, инструменты и терпение, а не деньги."
       }
-    ]
+    ],
+    "situation_en": "A radio presenter interviews a woman who started a free repair café."
   },
   {
     "id": "L-B2-02",
@@ -173,7 +174,8 @@
         "topic_id": "l-main-idea",
         "explain_ru": "Вопрос не «офис или дом», а для чего лучше подходит каждое место."
       }
-    ]
+    ],
+    "situation_en": "Two podcast hosts discuss working from home and working in an office."
   },
   {
     "id": "L-B2-03",
@@ -261,7 +263,8 @@
         "topic_id": "l-detail",
         "explain_ru": "Сначала снять жильё за городом на несколько месяцев."
       }
-    ]
+    ],
+    "situation_en": "A couple are discussing whether to move from the city to the countryside."
   },
   {
     "id": "L-B2-04",
@@ -349,6 +352,7 @@
         "topic_id": "l-speakers-attitude",
         "explain_ru": "Это его любимая часть: остатки — ингредиенты для завтрашних блюд."
       }
-    ]
+    ],
+    "situation_en": "A presenter interviews a chef about wasting less food at home."
   }
 ]

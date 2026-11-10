@@ -455,7 +455,8 @@
       "cost"
     ],
     "answer": 0,
-    "explain_ru": "Оплачивать картой — pay by card."
+    "explain_ru": "Оплачивать картой — pay by card.",
+    "group": "a2-v1"
   },
   {
     "id": "V-A2-02",
@@ -472,7 +473,8 @@
       "costs"
     ],
     "explain_ru": "Глагол cost — стоить; в прошедшем времени форма та же: cost.",
-    "hint_ru": "глагол: стоить"
+    "hint_ru": "глагол: стоить",
+    "group": "a2-v1"
   },
   {
     "id": "V-A2-03",
@@ -491,7 +493,8 @@
       "flu"
     ],
     "answer": 1,
-    "explain_ru": "От долгой работы за компьютером болит голова — headache."
+    "explain_ru": "От долгой работы за компьютером болит голова — headache.",
+    "group": "a2-v1"
   },
   {
     "id": "V-A2-04",
@@ -510,7 +513,8 @@
       "sleeping"
     ],
     "answer": 2,
-    "explain_ru": "Высыпаться — get enough sleep; здесь нужно существительное sleep."
+    "explain_ru": "Высыпаться — get enough sleep; здесь нужно существительное sleep.",
+    "group": "a2-v1"
   },
   {
     "id": "V-A2-05",
@@ -529,7 +533,8 @@
       "luggage"
     ],
     "answer": 0,
-    "explain_ru": "Переночевать можно в отеле — hotel."
+    "explain_ru": "Переночевать можно в отеле — hotel.",
+    "group": "a2-v1"
   },
   {
     "id": "V-A2-06",
@@ -546,7 +551,8 @@
       "reserve"
     ],
     "explain_ru": "Забронировать столик — book (или reserve) a table.",
-    "hint_ru": "глагол: забронировать"
+    "hint_ru": "глагол: забронировать",
+    "group": "a2-v1"
   },
   {
     "id": "V-A2-07",
@@ -565,7 +571,8 @@
       "job"
     ],
     "answer": 1,
-    "explain_ru": "Место работы вне дома — office."
+    "explain_ru": "Место работы вне дома — office.",
+    "group": "a2-v1"
   },
   {
     "id": "V-A2-08",
@@ -584,7 +591,8 @@
       "shy"
     ],
     "answer": 0,
-    "explain_ru": "Добрый, отзывчивый человек — kind."
+    "explain_ru": "Добрый, отзывчивый человек — kind.",
+    "group": "a2-v3"
   },
   {
     "id": "V-A2-09",
@@ -603,7 +611,8 @@
       "exciting"
     ],
     "answer": 2,
-    "explain_ru": "О своих чувствах говорим с -ed: excited — «в предвкушении»."
+    "explain_ru": "О своих чувствах говорим с -ed: excited — «в предвкушении».",
+    "group": "a2-v3"
   },
   {
     "id": "V-A2-10",
@@ -622,7 +631,8 @@
       "switch"
     ],
     "answer": 1,
-    "explain_ru": "Зарядить телефон — charge."
+    "explain_ru": "Зарядить телефон — charge.",
+    "group": "a2-v1"
   },
   {
     "id": "V-A2-11",
@@ -641,7 +651,8 @@
       "go"
     ],
     "answer": 3,
-    "explain_ru": "С занятиями на -ing используется go: go running."
+    "explain_ru": "С занятиями на -ing используется go: go running.",
+    "group": "a2-v1"
   },
   {
     "id": "V-A2-12",
@@ -657,7 +668,8 @@
       "do"
     ],
     "explain_ru": "Сделать одолжение — do someone a favour.",
-    "hint_ru": "глагол: ___ me a favour"
+    "hint_ru": "глагол: ___ me a favour",
+    "group": "a2-v2"
   },
   {
     "id": "V-A2-13",
@@ -676,7 +688,8 @@
       "go"
     ],
     "answer": 0,
-    "explain_ru": "Выключить свет — turn off."
+    "explain_ru": "Выключить свет — turn off.",
+    "group": "a2-v2"
   },
   {
     "id": "V-A2-14",
@@ -692,7 +705,8 @@
       "on"
     ],
     "explain_ru": "Поехать в отпуск — go on holiday.",
-    "hint_ru": "предлог"
+    "hint_ru": "предлог",
+    "group": "a2-v2"
   },
   {
     "id": "V-A2-15",
@@ -711,7 +725,8 @@
       "do"
     ],
     "answer": 3,
-    "explain_ru": "Мыть посуду — do the washing-up."
+    "explain_ru": "Мыть посуду — do the washing-up.",
+    "group": "a2-v1"
   },
   {
     "id": "V-A2-16",
@@ -730,7 +745,8 @@
       "out"
     ],
     "answer": 3,
-    "explain_ru": "Выносить мусор — take out the rubbish."
+    "explain_ru": "Выносить мусор — take out the rubbish.",
+    "group": "a2-v1"
   },
   {
     "id": "G-A2-25",
@@ -1063,6 +1079,123 @@
       "get"
     ],
     "answer": 2,
-    "explain_ru": "Сделать тише — turn down."
+    "explain_ru": "Сделать тише — turn down.",
+    "group": "a2-v2"
+  },
+  {
+    "id": "V-A2-18",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "v-a2-make-do",
+    "topic_en": "make / do",
+    "topic_ru": "make / do",
+    "type": "mcq",
+    "q": "Sorry, I ___ a mistake in your name.",
+    "options": [
+      "did",
+      "had",
+      "took",
+      "made"
+    ],
+    "answer": 3,
+    "explain_ru": "Сочетание: make a mistake.",
+    "group": "a2-v2"
+  },
+  {
+    "id": "V-A2-19",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 3,
+    "topic_id": "v-a2-phrasal-basic",
+    "topic_en": "Basic phrasal verbs",
+    "topic_ru": "Базовые фразовые глаголы",
+    "type": "gap",
+    "q": "Please ___ on your coat. It's cold outside.",
+    "accept": [
+      "put"
+    ],
+    "explain_ru": "Фразовый глагол put on — надеть.",
+    "hint_ru": "глагол: ___ on — надеть",
+    "group": "a2-v2"
+  },
+  {
+    "id": "V-A2-20",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "v-a2-feelings-personality",
+    "topic_en": "Feelings and personality",
+    "topic_ru": "Чувства и характер",
+    "type": "mcq",
+    "q": "The film was really ___. I almost fell asleep.",
+    "options": [
+      "bored",
+      "tired",
+      "boring",
+      "excited"
+    ],
+    "answer": 2,
+    "explain_ru": "О том, что вызывает скуку, — boring (bored — о человеке).",
+    "group": "a2-v3"
+  },
+  {
+    "id": "V-A2-21",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "v-a2-feelings-personality",
+    "topic_en": "Feelings and personality",
+    "topic_ru": "Чувства и характер",
+    "type": "mcq",
+    "q": "Can you ___ me the time, please?",
+    "options": [
+      "say",
+      "speak",
+      "talk",
+      "tell"
+    ],
+    "answer": 3,
+    "explain_ru": "tell somebody something: tell me the time.",
+    "group": "a2-v3"
+  },
+  {
+    "id": "V-A2-22",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "v-a2-feelings-personality",
+    "topic_en": "Feelings and personality",
+    "topic_ru": "Чувства и характер",
+    "type": "gap",
+    "q": "Tom never shares his things. He's very ___.",
+    "accept": [
+      "selfish",
+      "mean"
+    ],
+    "explain_ru": "Тот, кто не делится, — selfish.",
+    "hint_ru": "черта характера",
+    "group": "a2-v3"
+  },
+  {
+    "id": "V-A2-23",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 3,
+    "topic_id": "v-a2-feelings-personality",
+    "topic_en": "Feelings and personality",
+    "topic_ru": "Чувства и характер",
+    "type": "gap",
+    "q": "I was so ___ when I got my exam results — I got an A!",
+    "accept": [
+      "happy",
+      "pleased",
+      "glad",
+      "excited",
+      "delighted"
+    ],
+    "explain_ru": "Радость от хорошего результата — happy / pleased.",
+    "hint_ru": "чувство",
+    "group": "a2-v3"
   }
 ]

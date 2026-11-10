@@ -63,7 +63,8 @@
         "topic_id": "l-detail",
         "explain_ru": "Том помог ей с квартирой на прошлой неделе."
       }
-    ]
+    ],
+    "situation_en": "Your friend Lucy leaves you a voice message. She invites you to a pizza place."
   },
   {
     "id": "L-A1-02",
@@ -134,7 +135,8 @@
         "topic_id": "l-detail",
         "explain_ru": "Она остаётся в кафе и садится у окна."
       }
-    ]
+    ],
+    "situation_en": "A customer orders food and coffee in a café."
   },
   {
     "id": "L-A1-03",
@@ -200,7 +202,8 @@
         "topic_id": "l-detail",
         "explain_ru": "There is a café on platform two."
       }
-    ]
+    ],
+    "situation_en": "You are at a train station. Listen to an announcement about a train to Brighton."
   },
   {
     "id": "L-A1-04",
@@ -271,7 +274,8 @@
         "topic_id": "l-detail",
         "explain_ru": "I'll bring some sandwiches — мяч берёт Джош."
       }
-    ]
+    ],
+    "situation_en": "Two friends make plans for a trip to the beach."
   },
   {
     "id": "L-A2-01",
@@ -342,7 +346,8 @@
         "topic_id": "l-detail",
         "explain_ru": "Велосипедная комната рядом с парковкой."
       }
-    ]
+    ],
+    "situation_en": "A guest is checking in at a hotel."
   },
   {
     "id": "L-A2-02",
@@ -408,7 +413,8 @@
         "topic_id": "l-number-time-place",
         "explain_ru": "Перерыв на кофе в пекарне у реки."
       }
-    ]
+    ],
+    "situation_en": "A tour guide tells a group of tourists about the plan for the tour."
   },
   {
     "id": "L-A2-03",
@@ -479,7 +485,8 @@
         "topic_id": "l-speakers-attitude",
         "explain_ru": "Он уже записался ещё на пять занятий и считает, что они того стоят."
       }
-    ]
+    ],
+    "situation_en": "Two friends talk about their first climbing class."
   },
   {
     "id": "L-A2-04",
@@ -550,6 +557,7 @@
         "topic_id": "l-inference",
         "explain_ru": "Next time I'm flying — значит, на самолёте."
       }
-    ]
+    ],
+    "situation_en": "A colleague talks about a weekend trip to Edinburgh."
   }
 ]

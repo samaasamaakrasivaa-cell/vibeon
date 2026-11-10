@@ -462,7 +462,8 @@
       "month"
     ],
     "answer": 0,
-    "explain_ru": "Суббота и воскресенье — это выходные, weekend."
+    "explain_ru": "Суббота и воскресенье — это выходные, weekend.",
+    "group": "a1-v1"
   },
   {
     "id": "V-A1-02",
@@ -478,7 +479,8 @@
       "uncle"
     ],
     "explain_ru": "Брат папы — это дядя, uncle.",
-    "hint_ru": "член семьи"
+    "hint_ru": "член семьи",
+    "group": "a1-v1"
   },
   {
     "id": "V-A1-03",
@@ -497,7 +499,8 @@
       "doctor"
     ],
     "answer": 1,
-    "explain_ru": "Человек, который пишет код, — programmer."
+    "explain_ru": "Человек, который пишет код, — programmer.",
+    "group": "a1-v1"
   },
   {
     "id": "V-A1-04",
@@ -513,7 +516,8 @@
       "up"
     ],
     "explain_ru": "Get up — вставать с кровати.",
-    "hint_ru": "частица: get ___ — вставать"
+    "hint_ru": "вторая часть фразового глагола: get ___ — вставать",
+    "group": "a1-v1"
   },
   {
     "id": "V-A1-05",
@@ -532,7 +536,8 @@
       "plate"
     ],
     "answer": 0,
-    "explain_ru": "Сок подают в стакане — a glass of orange juice."
+    "explain_ru": "Сок подают в стакане — a glass of orange juice.",
+    "group": "a1-v1"
   },
   {
     "id": "V-A1-06",
@@ -551,7 +556,8 @@
       "hall"
     ],
     "answer": 2,
-    "explain_ru": "Готовят на кухне — kitchen."
+    "explain_ru": "Готовят на кухне — kitchen.",
+    "group": "a1-v1"
   },
   {
     "id": "V-A1-07",
@@ -570,7 +576,8 @@
       "T-shirt"
     ],
     "answer": 1,
-    "explain_ru": "В холод берут куртку — jacket."
+    "explain_ru": "В холод берут куртку — jacket.",
+    "group": "a1-v1"
   },
   {
     "id": "V-A1-08",
@@ -586,7 +593,8 @@
       "past"
     ],
     "explain_ru": "Половина седьмого по-английски — half past six.",
-    "hint_ru": "слово для времени: half ___ six"
+    "hint_ru": "слово для времени: half ___ six",
+    "group": "a1-v1"
   },
   {
     "id": "V-A1-09",
@@ -605,7 +613,8 @@
       "library"
     ],
     "answer": 0,
-    "explain_ru": "Свежие фрукты и овощи покупают на рынке — market."
+    "explain_ru": "Свежие фрукты и овощи покупают на рынке — market.",
+    "group": "a1-v1"
   },
   {
     "id": "V-A1-10",
@@ -621,7 +630,8 @@
       "by"
     ],
     "explain_ru": "Вид транспорта обозначается предлогом by: by bike.",
-    "hint_ru": "предлог"
+    "hint_ru": "предлог",
+    "group": "a1-v1"
   },
   {
     "id": "V-A1-11",
@@ -640,7 +650,8 @@
       "slow"
     ],
     "answer": 0,
-    "explain_ru": "Противоположность heavy (тяжёлый) — light (лёгкий)."
+    "explain_ru": "Противоположность heavy (тяжёлый) — light (лёгкий).",
+    "group": "a1-v3"
   },
   {
     "id": "V-A1-12",
@@ -659,7 +670,8 @@
       "hot"
     ],
     "answer": 1,
-    "explain_ru": "Зонт нужен, когда идёт дождь — it's raining."
+    "explain_ru": "Зонт нужен, когда идёт дождь — it's raining.",
+    "group": "a1-v1"
   },
   {
     "id": "V-A1-13",
@@ -675,7 +687,8 @@
       "go"
     ],
     "explain_ru": "Устойчивое сочетание go for a walk — пойти погулять.",
-    "hint_ru": "глагол: ___ for a walk"
+    "hint_ru": "глагол: ___ for a walk",
+    "group": "a1-v1"
   },
   {
     "id": "V-A1-14",
@@ -694,7 +707,8 @@
       "do"
     ],
     "answer": 3,
-    "explain_ru": "Йогой занимаются с глаголом do: do yoga."
+    "explain_ru": "Йогой занимаются с глаголом do: do yoga.",
+    "group": "a1-v2"
   },
   {
     "id": "V-A1-15",
@@ -710,7 +724,8 @@
       "saturday"
     ],
     "explain_ru": "После пятницы идёт суббота — Saturday.",
-    "hint_ru": "день недели"
+    "hint_ru": "день недели",
+    "group": "a1-v1"
   },
   {
     "id": "V-A1-16",
@@ -729,7 +744,8 @@
       "plays"
     ],
     "answer": 3,
-    "explain_ru": "В спортивные игры играют с глаголом play: play tennis."
+    "explain_ru": "В спортивные игры играют с глаголом play: play tennis.",
+    "group": "a1-v1"
   },
   {
     "id": "G-A1-25",
@@ -1043,6 +1059,197 @@
       "grandmother"
     ],
     "answer": 3,
-    "explain_ru": "Мама мамы — бабушка: grandmother."
+    "explain_ru": "Мама мамы — бабушка: grandmother.",
+    "group": "a1-v1"
+  },
+  {
+    "id": "V-A1-18",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "v-a1-basic-collocations",
+    "topic_en": "Collocations with have / go / do",
+    "topic_ru": "Сочетания с have / go / do",
+    "type": "mcq",
+    "q": "I usually ___ a shower in the morning.",
+    "options": [
+      "make",
+      "do",
+      "go",
+      "have"
+    ],
+    "answer": 3,
+    "explain_ru": "Сочетание: have a shower.",
+    "group": "a1-v2"
+  },
+  {
+    "id": "V-A1-19",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "v-a1-basic-collocations",
+    "topic_en": "Collocations with have / go / do",
+    "topic_ru": "Сочетания с have / go / do",
+    "type": "mcq",
+    "q": "Let's ___ shopping on Saturday.",
+    "options": [
+      "do",
+      "make",
+      "go",
+      "play"
+    ],
+    "answer": 2,
+    "explain_ru": "Сочетание: go shopping.",
+    "group": "a1-v2"
+  },
+  {
+    "id": "V-A1-20",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "v-a1-basic-collocations",
+    "topic_en": "Collocations with have / go / do",
+    "topic_ru": "Сочетания с have / go / do",
+    "type": "mcq",
+    "q": "My son ___ football after school every day.",
+    "options": [
+      "does",
+      "makes",
+      "goes",
+      "plays"
+    ],
+    "answer": 3,
+    "explain_ru": "С видами спорта с мячом — play: play football.",
+    "group": "a1-v2"
+  },
+  {
+    "id": "V-A1-21",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "v-a1-basic-collocations",
+    "topic_en": "Collocations with have / go / do",
+    "topic_ru": "Сочетания с have / go / do",
+    "type": "gap",
+    "q": "Can you ___ a photo of us, please?",
+    "accept": [
+      "take"
+    ],
+    "explain_ru": "Сочетание: take a photo.",
+    "hint_ru": "глагол: сделать (фото)",
+    "group": "a1-v2"
+  },
+  {
+    "id": "V-A1-22",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 3,
+    "topic_id": "v-a1-basic-collocations",
+    "topic_en": "Collocations with have / go / do",
+    "topic_ru": "Сочетания с have / go / do",
+    "type": "gap",
+    "q": "I always ___ my homework after dinner.",
+    "accept": [
+      "do"
+    ],
+    "explain_ru": "Сочетание: do homework.",
+    "hint_ru": "глагол: делать (домашнее задание)",
+    "group": "a1-v2"
+  },
+  {
+    "id": "V-A1-23",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "v-a1-adjectives-basic",
+    "topic_en": "Common adjectives and opposites",
+    "topic_ru": "Частые прилагательные и антонимы",
+    "type": "mcq",
+    "q": "This soup isn't hot. It's ___.",
+    "options": [
+      "old",
+      "small",
+      "cold",
+      "wet"
+    ],
+    "answer": 2,
+    "explain_ru": "Противоположность hot — cold.",
+    "group": "a1-v3"
+  },
+  {
+    "id": "V-A1-24",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "v-a1-adjectives-basic",
+    "topic_en": "Common adjectives and opposites",
+    "topic_ru": "Частые прилагательные и антонимы",
+    "type": "mcq",
+    "q": "My grandfather is 90. He's very ___.",
+    "options": [
+      "new",
+      "young",
+      "tall",
+      "old"
+    ],
+    "answer": 3,
+    "explain_ru": "О возрасте человека — old (а new — о вещах).",
+    "group": "a1-v3"
+  },
+  {
+    "id": "V-A1-25",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "v-a1-adjectives-basic",
+    "topic_en": "Common adjectives and opposites",
+    "topic_ru": "Частые прилагательные и антонимы",
+    "type": "mcq",
+    "q": "This book has 900 pages. It's very ___.",
+    "options": [
+      "high",
+      "tall",
+      "long",
+      "wide"
+    ],
+    "answer": 2,
+    "explain_ru": "О книге с большим количеством страниц — long.",
+    "group": "a1-v3"
+  },
+  {
+    "id": "V-A1-26",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "v-a1-adjectives-basic",
+    "topic_en": "Common adjectives and opposites",
+    "topic_ru": "Частые прилагательные и антонимы",
+    "type": "gap",
+    "q": "The shop isn't open. It's ___.",
+    "accept": [
+      "closed",
+      "shut"
+    ],
+    "explain_ru": "Противоположность open — closed.",
+    "hint_ru": "противоположность слову open",
+    "group": "a1-v3"
+  },
+  {
+    "id": "V-A1-27",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 3,
+    "topic_id": "v-a1-adjectives-basic",
+    "topic_en": "Common adjectives and opposites",
+    "topic_ru": "Частые прилагательные и антонимы",
+    "type": "gap",
+    "q": "My bag isn't cheap. It's very ___!",
+    "accept": [
+      "expensive",
+      "dear"
+    ],
+    "explain_ru": "Противоположность cheap — expensive.",
+    "hint_ru": "противоположность слову cheap",
+    "group": "a1-v3"
   }
 ]

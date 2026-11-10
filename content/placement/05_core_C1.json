@@ -372,7 +372,8 @@
       "disorganised",
       "disorganized"
     ],
-    "explain_ru": "По смыслу нужна противоположность organised с приставкой dis-: disorganised — плохо организованный."
+    "explain_ru": "По смыслу нужна противоположность organised с приставкой dis-: disorganised — плохо организованный.",
+    "group": "c1-v3"
   },
   {
     "id": "V-C1-02",
@@ -388,7 +389,8 @@
     "accept": [
       "underestimated"
     ],
-    "explain_ru": "Приставка under- значит «недо-»: underestimate — недооценить."
+    "explain_ru": "Приставка under- значит «недо-»: underestimate — недооценить.",
+    "group": "c1-v3"
   },
   {
     "id": "V-C1-03",
@@ -404,7 +406,8 @@
     "accept": [
       "uncharacteristically"
     ],
-    "explain_ru": "Нужно наречие с отрицательной приставкой: uncharacteristically — нетипично для него."
+    "explain_ru": "Нужно наречие с отрицательной приставкой: uncharacteristically — нетипично для него.",
+    "group": "c1-v3"
   },
   {
     "id": "V-C1-04",
@@ -420,7 +423,8 @@
     "accept": [
       "evidence"
     ],
-    "explain_ru": "Существительное от evident — evidence (доказательства)."
+    "explain_ru": "Существительное от evident — evidence (доказательства).",
+    "group": "c1-v3"
   },
   {
     "id": "V-C1-05",
@@ -437,7 +441,8 @@
       "relationship",
       "relation"
     ],
-    "explain_ru": "Существительное от relate — relationship (связь)."
+    "explain_ru": "Существительное от relate — relationship (связь).",
+    "group": "c1-v3"
   },
   {
     "id": "V-C1-06",
@@ -453,7 +458,8 @@
     "accept": [
       "reliability"
     ],
-    "explain_ru": "Существительное от rely — reliability (надёжность)."
+    "explain_ru": "Существительное от rely — reliability (надёжность).",
+    "group": "c1-v3"
   },
   {
     "id": "V-C1-07",
@@ -469,7 +475,8 @@
     "accept": [
       "generally"
     ],
-    "explain_ru": "Generally speaking — «в целом»."
+    "explain_ru": "Generally speaking — «в целом».",
+    "group": "c1-v3"
   },
   {
     "id": "V-C1-08",
@@ -488,7 +495,8 @@
       "highly"
     ],
     "answer": 1,
-    "explain_ru": "Устойчивое сочетание bitterly disappointed — «горько разочарован»."
+    "explain_ru": "Устойчивое сочетание bitterly disappointed — «горько разочарован».",
+    "group": "c1-v2"
   },
   {
     "id": "V-C1-09",
@@ -507,7 +515,8 @@
       "tight"
     ],
     "answer": 2,
-    "explain_ru": "Устойчивое сочетание a firm believer — «убеждённый сторонник»."
+    "explain_ru": "Устойчивое сочетание a firm believer — «убеждённый сторонник».",
+    "group": "c1-v2"
   },
   {
     "id": "V-C1-10",
@@ -526,7 +535,8 @@
       "caterpillars"
     ],
     "answer": 0,
-    "explain_ru": "Have butterflies in your stomach — сильно волноваться."
+    "explain_ru": "Have butterflies in your stomach — сильно волноваться.",
+    "group": "c1-v2"
   },
   {
     "id": "V-C1-11",
@@ -545,7 +555,8 @@
       "beat"
     ],
     "answer": 3,
-    "explain_ru": "Beat around the bush — ходить вокруг да около."
+    "explain_ru": "Beat around the bush — ходить вокруг да около.",
+    "group": "c1-v2"
   },
   {
     "id": "V-C1-12",
@@ -564,7 +575,8 @@
       "story"
     ],
     "answer": 1,
-    "explain_ru": "It's not the end of the world — это не конец света."
+    "explain_ru": "It's not the end of the world — это не конец света.",
+    "group": "c1-v2"
   },
   {
     "id": "V-C1-13",
@@ -583,7 +595,8 @@
       "make up"
     ],
     "answer": 2,
-    "explain_ru": "Pluck up the courage — набраться смелости."
+    "explain_ru": "Pluck up the courage — набраться смелости.",
+    "group": "c1-v2"
   },
   {
     "id": "V-C1-14",
@@ -602,7 +615,8 @@
       "pan out"
     ],
     "answer": 3,
-    "explain_ru": "Pan out — сложиться, получиться (о плане)."
+    "explain_ru": "Pan out — сложиться, получиться (о плане).",
+    "group": "c1-v2"
   },
   {
     "id": "V-C1-15",
@@ -621,7 +635,8 @@
       "mess about with"
     ],
     "answer": 0,
-    "explain_ru": "В официальном письме уместен глагол address — заняться вопросом."
+    "explain_ru": "В официальном письме уместен глагол address — заняться вопросом.",
+    "group": "c1-v1"
   },
   {
     "id": "V-C1-16",
@@ -640,7 +655,8 @@
       "dusted"
     ],
     "answer": 3,
-    "explain_ru": "Done and dusted — полностью завершено."
+    "explain_ru": "Done and dusted — полностью завершено.",
+    "group": "c1-v2"
   },
   {
     "id": "V-C1-17",
@@ -659,7 +675,8 @@
       "very beautiful"
     ],
     "answer": 1,
-    "explain_ru": "С absolutely сочетаются «крайние» прилагательные: breathtaking."
+    "explain_ru": "С absolutely сочетаются «крайние» прилагательные: breathtaking.",
+    "group": "c1-v3"
   },
   {
     "id": "V-C1-18",
@@ -675,7 +692,8 @@
       "to"
     ],
     "explain_ru": "Due to — благодаря, из-за.",
-    "hint_ru": "предлог"
+    "hint_ru": "предлог",
+    "group": "c1-v2"
   },
   {
     "id": "V-C1-19",
@@ -691,7 +709,8 @@
       "in"
     ],
     "explain_ru": "Be in favour of — поддерживать, быть за.",
-    "hint_ru": "предлог"
+    "hint_ru": "предлог",
+    "group": "c1-v2"
   },
   {
     "id": "V-C1-20",
@@ -707,7 +726,8 @@
       "downs"
     ],
     "explain_ru": "Ups and downs — взлёты и падения.",
-    "hint_ru": "слово-пара к ups"
+    "hint_ru": "слово-пара к ups",
+    "group": "c1-v2"
   },
   {
     "id": "G-C1-21",
@@ -1091,7 +1111,8 @@
       "hard"
     ],
     "answer": 1,
-    "explain_ru": "Устойчивое сочетание: strong evidence."
+    "explain_ru": "Устойчивое сочетание: strong evidence.",
+    "group": "c1-v2"
   },
   {
     "id": "V-C1-22",
@@ -1110,6 +1131,329 @@
       "heavily"
     ],
     "answer": 2,
-    "explain_ru": "Устойчивое сочетание: spotlessly clean."
+    "explain_ru": "Устойчивое сочетание: spotlessly clean.",
+    "group": "c1-v3"
+  },
+  {
+    "id": "V-C1-23",
+    "skill": "vocabulary",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "v-c1-academic",
+    "topic_en": "Academic vocabulary",
+    "topic_ru": "Академическая лексика",
+    "type": "mcq",
+    "q": "The study ___ that people sleep better after exercise.",
+    "options": [
+      "tells",
+      "speaks",
+      "suggests",
+      "says to"
+    ],
+    "answer": 2,
+    "explain_ru": "В академическом стиле: the study suggests / indicates that…",
+    "group": "c1-v1"
+  },
+  {
+    "id": "V-C1-24",
+    "skill": "vocabulary",
+    "level": "C1",
+    "band": 2,
+    "topic_id": "v-c1-academic",
+    "topic_en": "Academic vocabulary",
+    "topic_ru": "Академическая лексика",
+    "type": "mcq",
+    "q": "There is a growing ___ among scientists that the climate is changing faster than expected.",
+    "options": [
+      "agreement on",
+      "opinion",
+      "accord",
+      "consensus"
+    ],
+    "answer": 3,
+    "explain_ru": "Научный консенсус — consensus among scientists.",
+    "group": "c1-v1"
+  },
+  {
+    "id": "V-C1-25",
+    "skill": "vocabulary",
+    "level": "C1",
+    "band": 2,
+    "topic_id": "v-c1-register",
+    "topic_en": "Register: formal, neutral, informal",
+    "topic_ru": "Регистр: формальный, нейтральный, разговорный",
+    "type": "mcq",
+    "q": "(Formal email) We regret to ___ you that your application has been unsuccessful.",
+    "options": [
+      "inform",
+      "tell",
+      "say",
+      "let know"
+    ],
+    "answer": 0,
+    "explain_ru": "Формальный стиль: regret to inform you that…",
+    "group": "c1-v1"
+  },
+  {
+    "id": "V-C1-26",
+    "skill": "vocabulary",
+    "level": "C1",
+    "band": 2,
+    "topic_id": "v-c1-discourse-markers",
+    "topic_en": "Discourse markers and hedging",
+    "topic_ru": "Дискурсивные маркеры и смягчение",
+    "type": "gap",
+    "q": "The plan is expensive. ___ the other hand, it would save time in the long run.",
+    "accept": [
+      "on"
+    ],
+    "explain_ru": "Связка: on the other hand.",
+    "hint_ru": "первое слово связки",
+    "group": "c1-v1"
+  },
+  {
+    "id": "V-C1-27",
+    "skill": "vocabulary",
+    "level": "C1",
+    "band": 3,
+    "topic_id": "v-c1-academic",
+    "topic_en": "Academic vocabulary",
+    "topic_ru": "Академическая лексика",
+    "type": "gap",
+    "q": "The results ___ the theory that stress affects memory.",
+    "accept": [
+      "support",
+      "confirm",
+      "strengthen",
+      "back"
+    ],
+    "explain_ru": "Результаты подтверждают теорию — support / confirm the theory.",
+    "hint_ru": "глагол: подтверждают",
+    "group": "c1-v1"
+  },
+  {
+    "id": "G-C1-41",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-comparatives",
+    "topic_en": "Advanced comparison: by far, nothing like as, the sooner the better",
+    "topic_ru": "Сложные сравнения: by far, nothing like as, the sooner the better",
+    "type": "mcq",
+    "q": "This is ___ the best restaurant I've ever been to.",
+    "options": [
+      "very",
+      "by far",
+      "so much",
+      "by much"
+    ],
+    "answer": 1,
+    "explain_ru": "Усиление превосходной степени — by far the best."
+  },
+  {
+    "id": "G-C1-42",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 2,
+    "topic_id": "g-c1-comparatives",
+    "topic_en": "Advanced comparison: by far, nothing like as, the sooner the better",
+    "topic_ru": "Сложные сравнения: by far, nothing like as, the sooner the better",
+    "type": "mcq",
+    "q": "The sequel is nothing ___ as good as the original film.",
+    "options": [
+      "near",
+      "close",
+      "like",
+      "similar"
+    ],
+    "answer": 2,
+    "explain_ru": "nothing like as … as — «совсем не такой… как»."
+  },
+  {
+    "id": "G-C1-43",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 2,
+    "topic_id": "g-c1-comparatives",
+    "topic_en": "Advanced comparison: by far, nothing like as, the sooner the better",
+    "topic_ru": "Сложные сравнения: by far, nothing like as, the sooner the better",
+    "type": "mcq",
+    "q": "We should leave as soon as possible — the sooner, ___.",
+    "options": [
+      "better",
+      "the best",
+      "best",
+      "the better"
+    ],
+    "answer": 3,
+    "explain_ru": "Устойчивая конструкция: the sooner, the better."
+  },
+  {
+    "id": "G-C1-44",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 3,
+    "topic_id": "g-c1-comparatives",
+    "topic_en": "Advanced comparison: by far, nothing like as, the sooner the better",
+    "topic_ru": "Сложные сравнения: by far, nothing like as, the sooner the better",
+    "type": "mcq",
+    "q": "The second version of the report is ___ more detailed than the first.",
+    "options": [
+      "considerably",
+      "highly",
+      "deeply",
+      "widely"
+    ],
+    "answer": 0,
+    "explain_ru": "Усиление сравнительной степени в формальном стиле — considerably / significantly more."
+  },
+  {
+    "id": "G-C1-45",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 3,
+    "topic_id": "g-c1-comparatives",
+    "topic_en": "Advanced comparison: by far, nothing like as, the sooner the better",
+    "topic_ru": "Сложные сравнения: by far, nothing like as, the sooner the better",
+    "type": "mcq",
+    "q": "___ than not, the simplest explanation is the right one.",
+    "options": [
+      "Most often",
+      "More often",
+      "Much often",
+      "More oftenly"
+    ],
+    "answer": 1,
+    "explain_ru": "Устойчивое выражение: more often than not — «чаще всего»."
+  },
+  {
+    "id": "G-C1-46",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-reported",
+    "topic_en": "Reported speech: reporting verbs, sequence of tenses, was to",
+    "topic_ru": "Косвенная речь: глаголы (urge, insist on, accuse of), согласование времён, was to",
+    "type": "mcq",
+    "q": "My manager urged me ___ for the promotion.",
+    "options": [
+      "apply",
+      "applying",
+      "to apply",
+      "that I apply to"
+    ],
+    "answer": 2,
+    "explain_ru": "urge somebody to do something."
+  },
+  {
+    "id": "G-C1-47",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 2,
+    "topic_id": "g-c1-reported",
+    "topic_en": "Reported speech: reporting verbs, sequence of tenses, was to",
+    "topic_ru": "Косвенная речь: глаголы (urge, insist on, accuse of), согласование времён, was to",
+    "type": "mcq",
+    "q": "He insisted ___ the bill for everyone.",
+    "options": [
+      "to pay",
+      "paying",
+      "that paying",
+      "on paying"
+    ],
+    "answer": 3,
+    "explain_ru": "insist on doing something."
+  },
+  {
+    "id": "G-C1-48",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 2,
+    "topic_id": "g-c1-reported",
+    "topic_en": "Reported speech: reporting verbs, sequence of tenses, was to",
+    "topic_ru": "Косвенная речь: глаголы (urge, insist on, accuse of), согласование времён, was to",
+    "type": "mcq",
+    "q": "She accused her colleague ___ her ideas.",
+    "options": [
+      "of stealing",
+      "for stealing",
+      "to steal",
+      "about stealing"
+    ],
+    "answer": 0,
+    "explain_ru": "accuse somebody of doing something."
+  },
+  {
+    "id": "G-C1-49",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 3,
+    "topic_id": "g-c1-reported",
+    "topic_en": "Reported speech: reporting verbs, sequence of tenses, was to",
+    "topic_ru": "Косвенная речь: глаголы (urge, insist on, accuse of), согласование времён, was to",
+    "type": "brackets",
+    "q": "He told us that he ___ (not / see) the email until the following morning.",
+    "accept": [
+      "hadn't seen",
+      "had not seen"
+    ],
+    "explain_ru": "Согласование времён в косвенной речи: Past Simple → Past Perfect: hadn't seen."
+  },
+  {
+    "id": "G-C1-50",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 3,
+    "topic_id": "g-c1-reported",
+    "topic_en": "Reported speech: reporting verbs, sequence of tenses, was to",
+    "topic_ru": "Косвенная речь: глаголы (urge, insist on, accuse of), согласование времён, was to",
+    "type": "mcq",
+    "q": "The minister announced that the new law ___ come into force the following year.",
+    "options": [
+      "will",
+      "was to",
+      "is to",
+      "shall"
+    ],
+    "answer": 1,
+    "explain_ru": "В косвенной речи о запланированном в прошлом — was to (would)."
+  },
+  {
+    "id": "G-C1-51",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 2,
+    "topic_id": "g-c1-articles",
+    "topic_en": "Articles: generalisation, abstract nouns, fixed cases",
+    "topic_ru": "Артикли: обобщение, абстрактные существительные, устойчивые случаи",
+    "type": "mcq",
+    "q": "She was elected ___ president of the club last year.",
+    "options": [
+      "a",
+      "the",
+      "—",
+      "an"
+    ],
+    "answer": 2,
+    "explain_ru": "После elect / appoint с названием единственной должности артикль обычно не ставится."
+  },
+  {
+    "id": "G-C1-52",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 3,
+    "topic_id": "g-c1-articles",
+    "topic_en": "Articles: generalisation, abstract nouns, fixed cases",
+    "topic_ru": "Артикли: обобщение, абстрактные существительные, устойчивые случаи",
+    "type": "mcq",
+    "q": "___ Smiths have invited us to dinner on Saturday.",
+    "options": [
+      "—",
+      "A",
+      "Some",
+      "The"
+    ],
+    "answer": 3,
+    "explain_ru": "Семья целиком — the + фамилия во множественном числе: the Smiths."
   }
 ]

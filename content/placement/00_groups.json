@@ -102,46 +102,46 @@
     ]
   },
   {
-    "id": "a1-09",
+    "id": "a1-v1",
     "level": "A1",
     "kind": "vocabulary",
     "anchor": false,
-    "name_ru": "Лексика: люди и быт",
-    "what_ru": "семья, профессии, распорядок дня, дом",
+    "name_ru": "Лексика: слова по темам",
+    "what_ru": "знает ли нужные слова уровня",
     "topics": [
-      "v-a1-family",
-      "v-a1-jobs",
-      "v-a1-daily-routine",
-      "v-a1-home"
-    ]
-  },
-  {
-    "id": "a1-10",
-    "level": "A1",
-    "kind": "vocabulary",
-    "anchor": false,
-    "name_ru": "Лексика: город и повседневность",
-    "what_ru": "еда, одежда, город, транспорт, погода, хобби",
-    "topics": [
-      "v-a1-food-drink",
+      "v-a1-calendar",
       "v-a1-clothes-colours",
+      "v-a1-daily-routine",
+      "v-a1-family",
+      "v-a1-food-drink",
+      "v-a1-free-time",
+      "v-a1-home",
+      "v-a1-jobs",
+      "v-a1-numbers-time",
       "v-a1-town",
       "v-a1-transport",
-      "v-a1-weather",
-      "v-a1-free-time"
+      "v-a1-weather"
     ]
   },
   {
-    "id": "a1-11",
+    "id": "a1-v2",
     "level": "A1",
     "kind": "vocabulary",
     "anchor": false,
-    "name_ru": "Лексика: время, числа, частые сочетания",
-    "what_ru": "числа, даты, дни недели; have / go / do; частые прилагательные",
+    "name_ru": "Лексика: сочетаемость",
+    "what_ru": "коллокации, фразовые глаголы, предлоги после слов",
     "topics": [
-      "v-a1-numbers-time",
-      "v-a1-calendar",
-      "v-a1-basic-collocations",
+      "v-a1-basic-collocations"
+    ]
+  },
+  {
+    "id": "a1-v3",
+    "level": "A1",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: противоположности и похожие слова",
+    "what_ru": "cold / hot, long / short, open / closed",
+    "topics": [
       "v-a1-adjectives-basic"
     ]
   },
@@ -238,54 +238,54 @@
     "level": "A2",
     "kind": "grammar",
     "anchor": false,
-    "name_ru": "Условия и глагольные модели",
-    "what_ru": "if + Present, will; want to / enjoy -ing; to + глагол для цели",
+    "name_ru": "Условия, глагольные модели, предлоги движения",
+    "what_ru": "if + Present, will; want to / enjoy -ing; to + глагол для цели; across / through / along",
     "topics": [
       "g-a2-first-conditional",
       "g-a2-verb-patterns-basic",
-      "g-a2-infinitive-purpose"
+      "g-a2-infinitive-purpose",
+      "g-a2-prepositions-movement"
     ]
   },
   {
-    "id": "a2-09",
+    "id": "a2-v1",
     "level": "A2",
     "kind": "vocabulary",
     "anchor": false,
-    "name_ru": "Лексика: покупки, здоровье, путешествия, работа",
-    "what_ru": "",
+    "name_ru": "Лексика: слова по темам",
+    "what_ru": "знает ли нужные слова уровня",
     "topics": [
-      "v-a2-shopping-money",
       "v-a2-health-body",
+      "v-a2-home-chores",
+      "v-a2-shopping-money",
+      "v-a2-sport",
+      "v-a2-technology",
       "v-a2-travel",
       "v-a2-work"
     ]
   },
   {
-    "id": "a2-10",
+    "id": "a2-v2",
     "level": "A2",
     "kind": "vocabulary",
     "anchor": false,
-    "name_ru": "Лексика: чувства, характер, технологии, спорт, дом",
-    "what_ru": "",
-    "topics": [
-      "v-a2-feelings-personality",
-      "v-a2-technology",
-      "v-a2-sport",
-      "v-a2-home-chores"
-    ]
-  },
-  {
-    "id": "a2-11",
-    "level": "A2",
-    "kind": "vocabulary",
-    "anchor": false,
-    "name_ru": "Лексика: сочетания и фразовые глаголы",
-    "what_ru": "make / do; базовые фразовые глаголы; on time, by car; предлоги движения",
+    "name_ru": "Лексика: сочетаемость",
+    "what_ru": "коллокации, фразовые глаголы, предлоги после слов",
     "topics": [
       "v-a2-make-do",
       "v-a2-phrasal-basic",
-      "v-a2-prepositional-phrases",
-      "g-a2-prepositions-movement"
+      "v-a2-prepositional-phrases"
+    ]
+  },
+  {
+    "id": "a2-v3",
+    "level": "A2",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: характер, чувства и похожие слова",
+    "what_ru": "boring / bored, say / tell, kind / selfish",
+    "topics": [
+      "v-a2-feelings-personality"
     ]
   },
   {
@@ -402,43 +402,54 @@
   {
     "id": "b1-10",
     "level": "B1",
-    "kind": "vocabulary",
+    "kind": "grammar",
     "anchor": false,
-    "name_ru": "Лексика: фразовые глаголы и сочетания",
-    "what_ru": "get on, look after; make / do / take / have; good at, interested in",
+    "name_ru": "Сравнения и наречия",
+    "what_ru": "much / far cheaper; not as … as; better / worst; hard / hardly",
     "topics": [
-      "v-b1-phrasal-everyday",
-      "v-b1-collocations-basic",
-      "v-b1-dependent-prepositions",
-      "v-b1-confusing-words"
+      "g-b1-comparatives"
     ]
   },
   {
-    "id": "b1-11",
+    "id": "b1-v1",
     "level": "B1",
     "kind": "vocabulary",
     "anchor": false,
-    "name_ru": "Лексика: словообразование",
-    "what_ru": "-ful / -ion / -ment; un- / dis- / im-; bored / boring",
-    "topics": [
-      "v-b1-suffixes",
-      "v-b1-prefixes-negative",
-      "v-b1-ed-ing"
-    ]
-  },
-  {
-    "id": "b1-12",
-    "level": "B1",
-    "kind": "vocabulary",
-    "anchor": false,
-    "name_ru": "Лексика: темы B1",
-    "what_ru": "работа, учёба, экология, СМИ, отношения",
+    "name_ru": "Лексика: слова по темам",
+    "what_ru": "знает ли нужные слова уровня",
     "topics": [
       "v-b1-career",
       "v-b1-education",
       "v-b1-environment",
       "v-b1-media",
       "v-b1-relationships"
+    ]
+  },
+  {
+    "id": "b1-v2",
+    "level": "B1",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: сочетаемость",
+    "what_ru": "коллокации, фразовые глаголы, предлоги после слов",
+    "topics": [
+      "v-b1-collocations-basic",
+      "v-b1-dependent-prepositions",
+      "v-b1-phrasal-everyday"
+    ]
+  },
+  {
+    "id": "b1-v3",
+    "level": "B1",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: словообразование и похожие слова",
+    "what_ru": "однокоренные слова, слова, которые легко перепутать, противоположности",
+    "topics": [
+      "v-b1-confusing-words",
+      "v-b1-ed-ing",
+      "v-b1-prefixes-negative",
+      "v-b1-suffixes"
     ]
   },
   {
@@ -554,42 +565,56 @@
   {
     "id": "b2-10",
     "level": "B2",
-    "kind": "vocabulary",
+    "kind": "grammar",
     "anchor": false,
-    "name_ru": "Лексика: коллокации, фразовые, идиомы",
-    "what_ru": "heavy traffic; put off / take on; keep an eye on",
+    "name_ru": "Сравнения и наречия на уровне B2",
+    "what_ru": "the more …, the better; nowhere near as; late / lately; порядок прилагательных",
     "topics": [
-      "v-b2-collocations",
-      "v-b2-phrasal-multi",
-      "v-b2-idioms-common"
+      "g-b2-comparatives"
     ]
   },
   {
-    "id": "b2-11",
+    "id": "b2-v1",
     "level": "B2",
     "kind": "vocabulary",
     "anchor": false,
-    "name_ru": "Лексика: словообразование и управление",
-    "what_ru": "entry, flexibility; keen on, depend on; affect / effect",
-    "topics": [
-      "v-b2-word-formation",
-      "v-b2-dependent-prepositions-b2",
-      "v-b2-confusing-words-b2"
-    ]
-  },
-  {
-    "id": "b2-12",
-    "level": "B2",
-    "kind": "vocabulary",
-    "anchor": false,
-    "name_ru": "Лексика: темы B2 и стиль",
-    "what_ru": "бизнес, здоровье, наука; формальный стиль; связки",
+    "name_ru": "Лексика: слова по темам",
+    "what_ru": "знает ли нужные слова уровня",
     "topics": [
       "v-b2-business-money",
       "v-b2-lifestyle",
-      "v-b2-science-tech",
+      "v-b2-linking-words",
       "v-b2-register-basic",
-      "v-b2-linking-words"
+      "v-b2-science-tech"
+    ]
+  },
+  {
+    "id": "b2-v2",
+    "level": "B2",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: сочетаемость",
+    "what_ru": "коллокации, фразовые глаголы, предлоги после слов",
+    "topics": [
+      "v-b2-collocations",
+      "v-b2-dependent-prepositions-b2",
+      "v-b2-idioms-common",
+      "v-b2-phrasal-multi"
+    ]
+  },
+  {
+    "id": "b2-v3",
+    "level": "B2",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: словообразование и похожие слова",
+    "what_ru": "однокоренные слова, слова, которые легко перепутать, противоположности",
+    "topics": [
+      "v-b2-business-money",
+      "v-b2-confusing-words-b2",
+      "v-b2-lifestyle",
+      "v-b2-science-tech",
+      "v-b2-word-formation"
     ]
   },
   {
@@ -657,11 +682,12 @@
     "level": "C1",
     "kind": "grammar",
     "anchor": false,
-    "name_ru": "Сжатие предложения",
-    "what_ru": "сложные причастные обороты; эллипсис и замещение (I hope so / did so)",
+    "name_ru": "Сжатие предложения и номинализация",
+    "what_ru": "сложные причастные обороты; эллипсис и замещение (I hope so / did so); the introduction of…",
     "topics": [
       "g-c1-participle-advanced",
-      "g-c1-ellipsis-substitution"
+      "g-c1-ellipsis-substitution",
+      "g-c1-nominalisation"
     ]
   },
   {
@@ -681,51 +707,72 @@
     "level": "C1",
     "kind": "grammar",
     "anchor": false,
-    "name_ru": "Номинализация и артикли",
-    "what_ru": "the introduction of…; артикли в обобщениях и с абстрактными существительными",
+    "name_ru": "Артикли на уровне C1",
+    "what_ru": "обобщение (the tiger), абстрактные понятия, elected president, the Smiths",
     "topics": [
-      "g-c1-nominalisation",
       "g-c1-articles"
     ]
   },
   {
     "id": "c1-09",
     "level": "C1",
-    "kind": "vocabulary",
+    "kind": "grammar",
     "anchor": false,
-    "name_ru": "Лексика: коллокации и оттенки значения",
-    "what_ru": "bitterly disappointed; breathtaking / attractive",
+    "name_ru": "Сравнения: сложные структуры",
+    "what_ru": "by far, nothing like as, the sooner the better, considerably more, more often than not",
     "topics": [
-      "v-c1-strong-collocations",
-      "v-c1-near-synonyms"
+      "g-c1-comparatives"
     ]
   },
   {
     "id": "c1-10",
     "level": "C1",
-    "kind": "vocabulary",
+    "kind": "grammar",
     "anchor": false,
-    "name_ru": "Лексика: идиомы, фразовые, парные выражения",
-    "what_ru": "butterflies in my stomach; pan out; pros and cons",
+    "name_ru": "Косвенная речь на уровне C1",
+    "what_ru": "urge / insist on / accuse of; согласование времён; was to",
     "topics": [
-      "v-c1-idioms",
-      "v-c1-phrasal-advanced",
-      "v-c1-binomials"
+      "g-c1-reported"
     ]
   },
   {
-    "id": "c1-11",
+    "id": "c1-v1",
     "level": "C1",
     "kind": "vocabulary",
     "anchor": false,
-    "name_ru": "Лексика: словообразование, академическая лексика, регистр",
-    "what_ru": "underestimate; evidence, reliability; формальный стиль; предлоги; дискурсивные маркеры",
+    "name_ru": "Лексика: слова по темам",
+    "what_ru": "знает ли нужные слова уровня",
     "topics": [
-      "v-c1-word-formation-advanced",
-      "v-c1-academic",
-      "v-c1-register",
+      "v-c1-register"
+    ]
+  },
+  {
+    "id": "c1-v2",
+    "level": "C1",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: сочетаемость",
+    "what_ru": "коллокации, фразовые глаголы, предлоги после слов",
+    "topics": [
+      "v-c1-binomials",
       "v-c1-dependent-prepositions-c1",
-      "v-c1-discourse-markers"
+      "v-c1-idioms",
+      "v-c1-phrasal-advanced",
+      "v-c1-strong-collocations"
+    ]
+  },
+  {
+    "id": "c1-v3",
+    "level": "C1",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: словообразование и похожие слова",
+    "what_ru": "однокоренные слова, слова, которые легко перепутать, противоположности",
+    "topics": [
+      "v-c1-academic",
+      "v-c1-discourse-markers",
+      "v-c1-near-synonyms",
+      "v-c1-word-formation-advanced"
     ]
   }
 ]

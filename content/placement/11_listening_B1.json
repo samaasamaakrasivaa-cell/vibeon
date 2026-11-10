@@ -79,7 +79,8 @@
         "topic_id": "l-main-idea",
         "explain_ru": "Эмма рассказывает о неделе и зовёт подругу в пятницу отметить."
       }
-    ]
+    ],
+    "situation_en": "Your friend Emma leaves you a voice message about her first week at a new job."
   },
   {
     "id": "L-B1-02",
@@ -167,7 +168,8 @@
         "topic_id": "l-detail",
         "explain_ru": "Сначала попробуют неделю присмотреть за собакой кузины."
       }
-    ]
+    ],
+    "situation_en": "Two flatmates are talking about getting a dog."
   },
   {
     "id": "L-B1-03",
@@ -255,7 +257,8 @@
         "topic_id": "l-detail",
         "explain_ru": "Она решает завтра утром поговорить с Марком."
       }
-    ]
+    ],
+    "situation_en": "Two colleagues are talking at the end of the working day."
   },
   {
     "id": "L-B1-04",
@@ -337,6 +340,7 @@
         "topic_id": "l-main-idea",
         "explain_ru": "Если работа рядом, он советует попробовать хотя бы раз в неделю."
       }
-    ]
+    ],
+    "situation_en": "A podcast host talks about how he started cycling to work."
   }
 ]

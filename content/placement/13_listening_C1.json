@@ -79,7 +79,8 @@
         "topic_id": "l-main-idea",
         "explain_ru": "Деревья не быстрое решение: эффект через десятилетие, треть погибает."
       }
-    ]
+    ],
+    "situation_en": "Part of a university lecture about trees and heat in cities."
   },
   {
     "id": "L-C1-02",
@@ -173,7 +174,8 @@
         "topic_id": "l-inference",
         "explain_ru": "Заниматься чем-то для удовольствия, не оценивая результат и не показывая никому."
       }
-    ]
+    ],
+    "situation_en": "A radio host talks to a writer and a guest about hobbies that turn into work."
   },
   {
     "id": "L-C1-03",
@@ -261,7 +263,8 @@
         "topic_id": "l-detail",
         "explain_ru": "Поехать посмотреть место вместе с мамой, пока она ничего не подписала."
       }
-    ]
+    ],
+    "situation_en": "A brother and sister talk about their mother's plans after she retires."
   },
   {
     "id": "L-C1-04",
@@ -343,6 +346,7 @@
         "topic_id": "l-speakers-attitude",
         "explain_ru": "Её трогает, что картина несёт свою историю: трещины, старые реставрации."
       }
-    ]
+    ],
+    "situation_en": "A museum curator talks to a group of visitors about restoring old objects."
   }
 ]
