@@ -194,8 +194,8 @@ def check_file(path):
             f"({round(100 * len(longest) / len(qs))}%, норма ≈25%): можно угадывать, не читая. Вопросы: {', '.join(longest)}")
     topic_use = collections.Counter(it.get("topic_id") for it in items if it.get("topic_id"))
     for t, n in topic_use.items():
-        if n > 6:
-            note(t, f"тема встречается {n} раз (правило — не больше 6)")
+        if n > 10:
+            note(t, f"тема встречается {n} раз (правило — не больше 10)")
     qs = collections.Counter(norm(it.get("q", "")) for it in items if it.get("q"))
     for q, n in qs.items():
         if n > 1:

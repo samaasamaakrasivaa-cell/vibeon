@@ -932,15 +932,15 @@
     "topic_en": "Reporting verbs (suggest, deny, advise...)",
     "topic_ru": "Глаголы косвенной речи (suggest, deny, advise...)",
     "type": "mcq",
-    "q": "My doctor advised me ___ more water.",
+    "q": "Our guide recommended ___ the museum early to avoid the queues.",
     "options": [
-      "drink",
-      "to drink",
-      "drinking",
-      "that drink"
+      "to visit",
+      "visiting",
+      "us visit",
+      "that visiting"
     ],
     "answer": 1,
-    "explain_ru": "advise somebody to do something."
+    "explain_ru": "recommend + -ing (или recommend that we visit); recommend to visit — ошибка."
   },
   {
     "id": "G-B2-35",
@@ -1307,7 +1307,7 @@
     "topic_en": "Easily confused words",
     "topic_ru": "Слова, которые легко перепутать",
     "type": "mcq",
-    "q": "The government has ___ new measures to reduce traffic.",
+    "q": "Our landlord has ___ the rent again. It's the second time this year!",
     "options": [
       "raised",
       "risen",
@@ -1315,7 +1315,7 @@
       "arisen"
     ],
     "answer": 0,
-    "explain_ru": "raise — поднимать, вводить (переходный); rise — подниматься (без дополнения).",
+    "explain_ru": "Поднять что-то (переходный глагол) — raise: has raised the rent. Rise — подниматься самому (prices rise).",
     "group": "b2-v4"
   },
   {
@@ -1347,15 +1347,15 @@
     "topic_en": "Easily confused words",
     "topic_ru": "Слова, которые легко перепутать",
     "type": "mcq",
-    "q": "I'm not used to driving on the left, so I feel a bit ___.",
+    "q": "He's very ___ about his weight, so please don't mention it.",
     "options": [
       "sensible",
       "sensitive",
-      "nervous of",
-      "nervy about"
+      "sensational",
+      "senseless"
     ],
     "answer": 1,
-    "explain_ru": "Чувствительный, ранимый — sensitive (sensible — благоразумный). Здесь — «не по себе».",
+    "explain_ru": "Sensitive — чувствительный, болезненно реагирующий; sensible — благоразумный.",
     "group": "b2-v4"
   },
   {
@@ -1451,6 +1451,844 @@
     ],
     "explain_ru": "Идиома: break the ice — разрядить обстановку.",
     "hint_ru": "глагол: «сломать» лёд",
+    "group": "b2-v5"
+  },
+  {
+    "id": "G-B2-51",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-future-perfect-continuous",
+    "topic_en": "Future continuous and future perfect",
+    "topic_ru": "Future Continuous и Future Perfect",
+    "type": "mcq",
+    "q": "Don't call me at 8 tomorrow. ___ my yoga class then.",
+    "options": [
+      "I'll have done",
+      "I do",
+      "I'll be doing",
+      "I've done"
+    ],
+    "answer": 2,
+    "explain_ru": "Действие будет в процессе в конкретный момент будущего — Future Continuous: I'll be doing."
+  },
+  {
+    "id": "G-B2-52",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-future-perfect-continuous",
+    "topic_en": "Future continuous and future perfect",
+    "topic_ru": "Future Continuous и Future Perfect",
+    "type": "mcq",
+    "q": "By next June, we ___ married for ten years.",
+    "options": [
+      "will be",
+      "have been",
+      "will have",
+      "will have been"
+    ],
+    "answer": 3,
+    "explain_ru": "К моменту в будущем (by next June) — Future Perfect: will have been."
+  },
+  {
+    "id": "G-B2-53",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-tense-nuance",
+    "topic_en": "Tenses: continuous for annoyance, perfect continuous and result",
+    "topic_ru": "Времена: Continuous для раздражения, Perfect Continuous и результат",
+    "type": "mcq",
+    "q": "How long ___ English? — For about six years now.",
+    "options": [
+      "are you learning",
+      "do you learn",
+      "have you been learning",
+      "did you learn"
+    ],
+    "answer": 2,
+    "explain_ru": "Длительность действия до сейчас (how long, for six years now) — Present Perfect Continuous."
+  },
+  {
+    "id": "G-B2-54",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-narrative-tenses",
+    "topic_en": "Narrative tenses",
+    "topic_ru": "Времена для рассказа о прошлом",
+    "type": "mcq",
+    "q": "I ___ along the beach early one morning when suddenly I saw a dolphin.",
+    "options": [
+      "had walked",
+      "have walked",
+      "walk",
+      "was walking"
+    ],
+    "answer": 3,
+    "explain_ru": "Фон рассказа, процесс, который прервало событие, — Past Continuous: was walking."
+  },
+  {
+    "id": "G-B2-55",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-narrative-tenses",
+    "topic_en": "Narrative tenses",
+    "topic_ru": "Времена для рассказа о прошлом",
+    "type": "mcq",
+    "q": "When I got to the airport, I realised I ___ my passport at home.",
+    "options": [
+      "have left",
+      "was leaving",
+      "had left",
+      "am leaving"
+    ],
+    "answer": 2,
+    "explain_ru": "Оставил раньше, чем понял, — Past Perfect: had left."
+  },
+  {
+    "id": "G-B2-56",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-used-to-be-get",
+    "topic_en": "be used to / get used to",
+    "topic_ru": "be used to / get used to",
+    "type": "mcq",
+    "q": "It took me months to ___ used to the cold winters in Canada.",
+    "options": [
+      "be",
+      "use",
+      "make",
+      "get"
+    ],
+    "answer": 3,
+    "explain_ru": "Привыкнуть (процесс) — get used to."
+  },
+  {
+    "id": "G-B2-57",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-used-to-be-get",
+    "topic_en": "be used to / get used to",
+    "topic_ru": "be used to / get used to",
+    "type": "mcq",
+    "q": "Don't worry about me. I'm ___ working late.",
+    "options": [
+      "use to",
+      "using to",
+      "used to",
+      "usual"
+    ],
+    "answer": 2,
+    "explain_ru": "Привык (состояние) — be used to + -ing: I'm used to working."
+  },
+  {
+    "id": "G-B2-58",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-third-conditional",
+    "topic_en": "Third conditional",
+    "topic_ru": "Условные предложения третьего типа",
+    "type": "mcq",
+    "q": "If we had left earlier, we ___ the train.",
+    "options": [
+      "didn't miss",
+      "wouldn't miss",
+      "hadn't missed",
+      "wouldn't have missed"
+    ],
+    "answer": 3,
+    "explain_ru": "3 тип (нереальное прошлое): if + had done, would have done."
+  },
+  {
+    "id": "G-B2-59",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-wish",
+    "topic_en": "wish / if only (present and past)",
+    "topic_ru": "wish / if only (настоящее и прошлое)",
+    "type": "mcq",
+    "q": "I wish I ___ speak Italian. Our trip would be so much easier.",
+    "options": [
+      "can",
+      "will",
+      "could",
+      "would"
+    ],
+    "answer": 2,
+    "explain_ru": "Сожаление об умении сейчас — wish + could."
+  },
+  {
+    "id": "G-B2-60",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-third-conditional",
+    "topic_en": "Third conditional",
+    "topic_ru": "Условные предложения третьего типа",
+    "type": "brackets",
+    "q": "We ___ (not / get) lost if we had taken a map.",
+    "accept": [
+      "wouldn't have got",
+      "would not have got",
+      "wouldn't have gotten",
+      "would not have gotten"
+    ],
+    "explain_ru": "3 тип: would not have + третья форма — wouldn't have got."
+  },
+  {
+    "id": "G-B2-61",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-deduction-past",
+    "topic_en": "Past modals of deduction: must have / can't have",
+    "topic_ru": "Модальные глаголы предположения о прошлом",
+    "type": "mcq",
+    "q": "Tom ___ been at the party. He was in Paris that weekend.",
+    "options": [
+      "mustn't have",
+      "shouldn't have",
+      "needn't have",
+      "can't have"
+    ],
+    "answer": 3,
+    "explain_ru": "Уверены, что этого не было, — can't have been."
+  },
+  {
+    "id": "G-B2-62",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-past-modals-regret",
+    "topic_en": "should have / needn't have / could have",
+    "topic_ru": "should have / needn't have / could have",
+    "type": "mcq",
+    "q": "You ___ told me it was your birthday! I would have bought you a present.",
+    "options": [
+      "should have",
+      "must have",
+      "would have",
+      "can have"
+    ],
+    "answer": 0,
+    "explain_ru": "Упрёк о прошлом — should have + третья форма."
+  },
+  {
+    "id": "G-B2-63",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-deduction-past",
+    "topic_en": "Past modals of deduction: must have / can't have",
+    "topic_ru": "Модальные глаголы предположения о прошлом",
+    "type": "mcq",
+    "q": "All the lights are off. They ___ gone to bed.",
+    "options": [
+      "can't have",
+      "should have",
+      "must have",
+      "needn't have"
+    ],
+    "answer": 2,
+    "explain_ru": "Уверенный вывод о прошлом — must have gone."
+  },
+  {
+    "id": "G-B2-64",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-past-modals-regret",
+    "topic_en": "should have / needn't have / could have",
+    "topic_ru": "should have / needn't have / could have",
+    "type": "brackets",
+    "q": "I failed the test. I ___ (should / study) harder.",
+    "accept": [
+      "should have studied",
+      "should've studied"
+    ],
+    "explain_ru": "Сожаление о прошлом — should have + третья форма: should have studied."
+  },
+  {
+    "id": "G-B2-65",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-passive-advanced",
+    "topic_en": "Passive with modals and perfect forms",
+    "topic_ru": "Пассив с модальными глаголами и перфектом",
+    "type": "mcq",
+    "q": "The new bridge ___ by the end of next year.",
+    "options": [
+      "will have finished",
+      "will be finishing",
+      "has been finished",
+      "will have been finished"
+    ],
+    "answer": 3,
+    "explain_ru": "Мост достроят (пассив) к моменту в будущем — Future Perfect Passive: will have been finished."
+  },
+  {
+    "id": "G-B2-66",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-causative",
+    "topic_en": "have / get something done",
+    "topic_ru": "Каузатив have / get something done",
+    "type": "mcq",
+    "q": "I need to ___ my eyes tested. I can't read the small print anymore.",
+    "options": [
+      "get",
+      "make",
+      "do",
+      "let"
+    ],
+    "answer": 0,
+    "explain_ru": "Попросить кого-то сделать для тебя — get / have something done."
+  },
+  {
+    "id": "G-B2-67",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "g-b2-impersonal-passive",
+    "topic_en": "Impersonal passive: it is said that...",
+    "topic_ru": "Безличный пассив: it is said that...",
+    "type": "mcq",
+    "q": "It ___ that the company will close two of its offices.",
+    "options": [
+      "reports",
+      "is reported",
+      "has reported",
+      "is reporting"
+    ],
+    "answer": 1,
+    "explain_ru": "Безличный пассив: It is reported that… — «сообщается, что…»."
+  },
+  {
+    "id": "G-B2-68",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-reporting-verbs",
+    "topic_en": "Reporting verbs (suggest, deny, advise...)",
+    "topic_ru": "Глаголы косвенной речи (suggest, deny, advise...)",
+    "type": "mcq",
+    "q": "She promised ___ me back as soon as she got home.",
+    "options": [
+      "calling",
+      "that call",
+      "to call",
+      "call"
+    ],
+    "answer": 2,
+    "explain_ru": "promise + to + глагол."
+  },
+  {
+    "id": "G-B2-69",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-reporting-verbs",
+    "topic_en": "Reporting verbs (suggest, deny, advise...)",
+    "topic_ru": "Глаголы косвенной речи (suggest, deny, advise...)",
+    "type": "mcq",
+    "q": "My colleague admitted ___ the meeting.",
+    "options": [
+      "to forget about",
+      "forget about",
+      "that forgetting",
+      "forgetting about"
+    ],
+    "answer": 3,
+    "explain_ru": "admit + -ing (или admit to + -ing)."
+  },
+  {
+    "id": "G-B2-70",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "g-b2-reporting-verbs",
+    "topic_en": "Reporting verbs (suggest, deny, advise...)",
+    "topic_ru": "Глаголы косвенной речи (suggest, deny, advise...)",
+    "type": "mcq",
+    "q": "The police warned drivers ___ use the mountain road in the snow.",
+    "options": [
+      "not to",
+      "don't",
+      "not",
+      "to don't"
+    ],
+    "answer": 0,
+    "explain_ru": "warn somebody not to do something."
+  },
+  {
+    "id": "G-B2-71",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-non-defining-relatives",
+    "topic_en": "Non-defining relative clauses",
+    "topic_ru": "Неопределительные придаточные",
+    "type": "mcq",
+    "q": "My new phone, ___ I bought last week, has already stopped working.",
+    "options": [
+      "that",
+      "which",
+      "what",
+      "who"
+    ],
+    "answer": 1,
+    "explain_ru": "В придаточном с запятыми that нельзя — which."
+  },
+  {
+    "id": "G-B2-72",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-linkers-contrast",
+    "topic_en": "despite / in spite of / whereas",
+    "topic_ru": "despite / in spite of / whereas",
+    "type": "mcq",
+    "q": "I enjoy my job. ___, I'd like to earn a bit more.",
+    "options": [
+      "Although",
+      "Despite",
+      "However",
+      "Whereas"
+    ],
+    "answer": 2,
+    "explain_ru": "Противопоставление в начале нового предложения, с запятой — However."
+  },
+  {
+    "id": "G-B2-73",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "g-b2-participle-clauses",
+    "topic_en": "Participle clauses",
+    "topic_ru": "Причастные обороты",
+    "type": "mcq",
+    "q": "___ by thousands of fans, the band walked on stage.",
+    "options": [
+      "Cheering",
+      "Having cheered",
+      "Was cheered",
+      "Cheered"
+    ],
+    "answer": 3,
+    "explain_ru": "Группу приветствовали (пассивное значение) — причастие прошедшего времени: Cheered by…"
+  },
+  {
+    "id": "G-B2-74",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-verb-patterns-meaning",
+    "topic_en": "Verbs that change meaning: -ing vs to-infinitive",
+    "topic_ru": "Глаголы с разным значением: -ing и инфинитив",
+    "type": "mcq",
+    "q": "I stopped ___ two years ago, and I feel much healthier now.",
+    "options": [
+      "smoking",
+      "to smoke",
+      "smoke",
+      "to smoking"
+    ],
+    "answer": 0,
+    "explain_ru": "Бросить делать — stop + -ing; stop to do — остановиться, чтобы сделать."
+  },
+  {
+    "id": "G-B2-75",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-would-rather",
+    "topic_en": "would rather / it's time",
+    "topic_ru": "would rather / it's time",
+    "type": "mcq",
+    "q": "Would you rather ___ by train or by plane?",
+    "options": [
+      "to travel",
+      "travel",
+      "travelling",
+      "travelled"
+    ],
+    "answer": 1,
+    "explain_ru": "would rather + глагол без to."
+  },
+  {
+    "id": "G-B2-76",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-verb-patterns-meaning",
+    "topic_en": "Verbs that change meaning: -ing vs to-infinitive",
+    "topic_ru": "Глаголы с разным значением: -ing и инфинитив",
+    "type": "mcq",
+    "q": "I regret ___ you that. I'm really sorry.",
+    "options": [
+      "to tell",
+      "tell",
+      "telling",
+      "to telling"
+    ],
+    "answer": 2,
+    "explain_ru": "Сожалеть о сделанном — regret + -ing; regret to tell — официально «с сожалением сообщаем»."
+  },
+  {
+    "id": "G-B2-77",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-articles",
+    "topic_en": "Articles: abstract nouns, institutions, geography",
+    "topic_ru": "Артикли: абстрактные понятия, институты, география",
+    "type": "mcq",
+    "q": "My son starts ___ school in September. He's so excited!",
+    "options": [
+      "the",
+      "a",
+      "an",
+      "—"
+    ],
+    "answer": 3,
+    "explain_ru": "School как учреждение по назначению (учиться) — без артикля."
+  },
+  {
+    "id": "G-B2-78",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-articles",
+    "topic_en": "Articles: abstract nouns, institutions, geography",
+    "topic_ru": "Артикли: абстрактные понятия, институты, география",
+    "type": "mcq",
+    "q": "___ Amazon flows through Brazil, Peru and Colombia.",
+    "options": [
+      "The",
+      "—",
+      "A",
+      "An"
+    ],
+    "answer": 0,
+    "explain_ru": "Реки — с the: the Amazon."
+  },
+  {
+    "id": "G-B2-79",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-articles",
+    "topic_en": "Articles: abstract nouns, institutions, geography",
+    "topic_ru": "Артикли: абстрактные понятия, институты, география",
+    "type": "mcq",
+    "q": "I've always wanted to see ___ Eiffel Tower.",
+    "options": [
+      "—",
+      "the",
+      "a",
+      "an"
+    ],
+    "answer": 1,
+    "explain_ru": "Уникальные известные сооружения — с the: the Eiffel Tower."
+  },
+  {
+    "id": "G-B2-80",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-comparatives",
+    "topic_en": "Comparatives: the more … the more, nowhere near as, late / lately, adjective order",
+    "topic_ru": "Сравнения: the more … the more, nowhere near as, late / lately, порядок прилагательных",
+    "type": "mcq",
+    "q": "The ___ you leave, the more traffic there will be.",
+    "options": [
+      "late",
+      "latest",
+      "later",
+      "more late"
+    ],
+    "answer": 2,
+    "explain_ru": "Конструкция the + сравнительная…, the + сравнительная: the later…, the more…"
+  },
+  {
+    "id": "G-B2-81",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-comparatives",
+    "topic_en": "Comparatives: the more … the more, nowhere near as, late / lately, adjective order",
+    "topic_ru": "Сравнения: the more … the more, nowhere near as, late / lately, порядок прилагательных",
+    "type": "mcq",
+    "q": "This exam was ___ harder than the last one. I don't think I passed.",
+    "options": [
+      "very",
+      "more",
+      "too",
+      "far"
+    ],
+    "answer": 3,
+    "explain_ru": "Усиление сравнительной степени — far / much harder; very со сравнительной не используется."
+  },
+  {
+    "id": "G-B2-82",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-comparatives",
+    "topic_en": "Comparatives: the more … the more, nowhere near as, late / lately, adjective order",
+    "topic_ru": "Сравнения: the more … the more, nowhere near as, late / lately, порядок прилагательных",
+    "type": "mcq",
+    "q": "I ___ ever see my old school friends these days.",
+    "options": [
+      "hardly",
+      "hard",
+      "nearly",
+      "almost not"
+    ],
+    "answer": 0,
+    "explain_ru": "Почти никогда — hardly ever; hard — усердно."
+  },
+  {
+    "id": "V-B2-30",
+    "skill": "vocabulary",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "v-b2-business-money",
+    "topic_en": "Business and finance",
+    "topic_ru": "Бизнес и финансы",
+    "type": "mcq",
+    "q": "I can't afford a new car, so I'm going to take out a ___.",
+    "options": [
+      "debt",
+      "loan",
+      "credit",
+      "budget"
+    ],
+    "answer": 1,
+    "explain_ru": "Взять кредит — take out a loan.",
+    "group": "b2-v1"
+  },
+  {
+    "id": "V-B2-31",
+    "skill": "vocabulary",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "v-b2-lifestyle",
+    "topic_en": "Health and lifestyle",
+    "topic_ru": "Здоровье и образ жизни",
+    "type": "mcq",
+    "q": "I'm trying to lead a healthier ___: more sleep, less sugar.",
+    "options": [
+      "living",
+      "routine",
+      "lifestyle",
+      "life way"
+    ],
+    "answer": 2,
+    "explain_ru": "Вести здоровый образ жизни — lead a healthy lifestyle.",
+    "group": "b2-v1"
+  },
+  {
+    "id": "V-B2-32",
+    "skill": "vocabulary",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "v-b2-phrasal-multi",
+    "topic_en": "Phrasal verbs with several meanings",
+    "topic_ru": "Многозначные фразовые глаголы",
+    "type": "mcq",
+    "q": "We've run ___ of milk. Can you get some on your way home?",
+    "options": [
+      "off",
+      "down",
+      "away",
+      "out"
+    ],
+    "answer": 3,
+    "explain_ru": "Закончиться (о запасах) — run out of.",
+    "group": "b2-v2"
+  },
+  {
+    "id": "V-B2-33",
+    "skill": "vocabulary",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "v-b2-dependent-prepositions-b2",
+    "topic_en": "Dependent prepositions",
+    "topic_ru": "Управление предлогами",
+    "type": "mcq",
+    "q": "She's very proud ___ her daughter's success.",
+    "options": [
+      "of",
+      "for",
+      "about",
+      "with"
+    ],
+    "answer": 0,
+    "explain_ru": "Гордиться — proud of.",
+    "group": "b2-v2"
+  },
+  {
+    "id": "V-B2-34",
+    "skill": "vocabulary",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "v-b2-word-formation",
+    "topic_en": "Word formation: nouns, adjectives, adverbs",
+    "topic_ru": "Словообразование: существительные, прилагательные, наречия",
+    "type": "wordform",
+    "q": "Thank you for your ___. You helped me so much last week.",
+    "accept": [
+      "kindness"
+    ],
+    "explain_ru": "От kind — существительное kindness (доброта).",
+    "base": "KIND",
+    "group": "b2-v3"
+  },
+  {
+    "id": "V-B2-35",
+    "skill": "vocabulary",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "v-b2-business-money",
+    "topic_en": "Business and finance",
+    "topic_ru": "Бизнес и финансы",
+    "type": "wordform",
+    "q": "There's a lot of ___ between the two coffee shops on our street.",
+    "accept": [
+      "competition"
+    ],
+    "explain_ru": "От compete — существительное competition (конкуренция).",
+    "base": "COMPETE",
+    "group": "b2-v3"
+  },
+  {
+    "id": "V-B2-36",
+    "skill": "vocabulary",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "v-b2-confusing-words-b2",
+    "topic_en": "Easily confused words",
+    "topic_ru": "Слова, которые легко перепутать",
+    "type": "mcq",
+    "q": "Can you ___ me to buy some milk later?",
+    "options": [
+      "remember",
+      "remind",
+      "memorise",
+      "recall"
+    ],
+    "answer": 1,
+    "explain_ru": "Напомнить кому-то — remind somebody; remember — помнить самому.",
+    "group": "b2-v4"
+  },
+  {
+    "id": "V-B2-37",
+    "skill": "vocabulary",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "v-b2-confusing-words-b2",
+    "topic_en": "Easily confused words",
+    "topic_ru": "Слова, которые легко перепутать",
+    "type": "mcq",
+    "q": "Too much screen time can have a negative ___ on children's sleep.",
+    "options": [
+      "affect",
+      "influence to",
+      "effect",
+      "result"
+    ],
+    "answer": 2,
+    "explain_ru": "Влияние (существительное) — effect: have an effect on; affect — глагол.",
+    "group": "b2-v4"
+  },
+  {
+    "id": "V-B2-38",
+    "skill": "vocabulary",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "v-b2-confusing-words-b2",
+    "topic_en": "Easily confused words",
+    "topic_ru": "Слова, которые легко перепутать",
+    "type": "mcq",
+    "q": "I'd like to ___ my English before I start my new job.",
+    "options": [
+      "raise",
+      "grow",
+      "rise",
+      "improve"
+    ],
+    "answer": 3,
+    "explain_ru": "Улучшить навык — improve.",
+    "group": "b2-v4"
+  },
+  {
+    "id": "V-B2-39",
+    "skill": "vocabulary",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "v-b2-idioms-common",
+    "topic_en": "Common idioms",
+    "topic_ru": "Частые идиомы",
+    "type": "mcq",
+    "q": "I've been working nonstop for weeks. I need a break to ___ my batteries.",
+    "options": [
+      "recharge",
+      "refill",
+      "renew",
+      "restart"
+    ],
+    "answer": 0,
+    "explain_ru": "Recharge your batteries — восстановить силы.",
+    "group": "b2-v5"
+  },
+  {
+    "id": "V-B2-40",
+    "skill": "vocabulary",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "v-b2-idioms-common",
+    "topic_en": "Common idioms",
+    "topic_ru": "Частые идиомы",
+    "type": "mcq",
+    "q": "Can you give me a ___? I can't carry all these boxes on my own.",
+    "options": [
+      "finger",
+      "hand",
+      "head",
+      "foot"
+    ],
+    "answer": 1,
+    "explain_ru": "Give somebody a hand — помочь.",
+    "group": "b2-v5"
+  },
+  {
+    "id": "V-B2-41",
+    "skill": "vocabulary",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "v-b2-idioms-common",
+    "topic_en": "Common idioms",
+    "topic_ru": "Частые идиомы",
+    "type": "mcq",
+    "q": "Let's call it a ___. We've done enough for today.",
+    "options": [
+      "week",
+      "time",
+      "day",
+      "job"
+    ],
+    "answer": 2,
+    "explain_ru": "Call it a day — закончить работу на сегодня.",
     "group": "b2-v5"
   }
 ]

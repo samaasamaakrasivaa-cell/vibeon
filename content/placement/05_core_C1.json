@@ -1515,5 +1515,821 @@
     "explain_ru": "Серьёзно пострадали — severely / seriously affected.",
     "hint_ru": "наречие: сильно, серьёзно",
     "group": "c1-v4"
+  },
+  {
+    "id": "G-C1-53",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-future-in-past",
+    "topic_en": "Future in the past: was about to / was to",
+    "topic_ru": "Будущее в прошлом: was about to / was to",
+    "type": "mcq",
+    "q": "She promised she ___ call me the moment she landed.",
+    "options": [
+      "will",
+      "was",
+      "had",
+      "would"
+    ],
+    "answer": 3,
+    "explain_ru": "Будущее в прошедшем после promised — would."
+  },
+  {
+    "id": "G-C1-54",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-tense-nuance",
+    "topic_en": "Tenses: sequence of tenses, future in the past, distancing past",
+    "topic_ru": "Времена: согласование, будущее в прошедшем, дистанцирующее прошедшее",
+    "type": "mcq",
+    "q": "By the time she retired, she ___ at the company for forty years.",
+    "options": [
+      "has worked",
+      "worked",
+      "had worked",
+      "was working"
+    ],
+    "answer": 2,
+    "explain_ru": "Период до момента в прошлом (by the time she retired) — Past Perfect: had worked."
+  },
+  {
+    "id": "G-C1-55",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-future-in-past",
+    "topic_en": "Future in the past: was about to / was to",
+    "topic_ru": "Будущее в прошлом: was about to / was to",
+    "type": "mcq",
+    "q": "I was sure that she ___ the job, so I wasn't surprised when she called.",
+    "options": [
+      "will get",
+      "gets",
+      "has got",
+      "would get"
+    ],
+    "answer": 3,
+    "explain_ru": "Будущее с точки зрения прошлого — would get."
+  },
+  {
+    "id": "G-C1-56",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-inversion",
+    "topic_en": "Inversion after negative adverbials",
+    "topic_ru": "Инверсия после отрицательных наречий",
+    "type": "mcq",
+    "q": "Never ___ such a beautiful sunset.",
+    "options": [
+      "I have seen",
+      "I saw",
+      "have I seen",
+      "did I saw"
+    ],
+    "answer": 2,
+    "explain_ru": "После Never в начале — обратный порядок слов: Never have I seen…"
+  },
+  {
+    "id": "G-C1-57",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-inverted-conditionals",
+    "topic_en": "Inverted conditionals: Had I known / Should you",
+    "topic_ru": "Условные с инверсией: Had I known / Should you",
+    "type": "mcq",
+    "q": "___ I known about the traffic, I would have taken the train.",
+    "options": [
+      "If",
+      "Have",
+      "Would",
+      "Had"
+    ],
+    "answer": 3,
+    "explain_ru": "Условие 3 типа с инверсией: Had I known = If I had known."
+  },
+  {
+    "id": "G-C1-58",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-inversion",
+    "topic_en": "Inversion after negative adverbials",
+    "topic_ru": "Инверсия после отрицательных наречий",
+    "type": "mcq",
+    "q": "Hardly ___ sat down when the phone rang.",
+    "options": [
+      "we had",
+      "had we",
+      "did we",
+      "have we"
+    ],
+    "answer": 1,
+    "explain_ru": "Hardly … when — инверсия с Past Perfect: Hardly had we sat down…"
+  },
+  {
+    "id": "G-C1-59",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-cleft",
+    "topic_en": "Cleft sentences: It is... / What...",
+    "topic_ru": "Эмфатические конструкции It is... / What...",
+    "type": "mcq",
+    "q": "All I want ___ a quiet weekend at home.",
+    "options": [
+      "are",
+      "be",
+      "is",
+      "does"
+    ],
+    "answer": 2,
+    "explain_ru": "All I want is… — всё, что мне нужно, — это…"
+  },
+  {
+    "id": "G-C1-60",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-emphasis",
+    "topic_en": "Emphasis: do / at all / whatsoever",
+    "topic_ru": "Усиление: do / at all / whatsoever",
+    "type": "mcq",
+    "q": "You ___ look tired. Why don't you go home early?",
+    "options": [
+      "are",
+      "have",
+      "did",
+      "do"
+    ],
+    "answer": 3,
+    "explain_ru": "Усиление в утверждении — do + глагол: You do look tired."
+  },
+  {
+    "id": "G-C1-61",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 2,
+    "topic_id": "g-c1-cleft",
+    "topic_en": "Cleft sentences: It is... / What...",
+    "topic_ru": "Эмфатические конструкции It is... / What...",
+    "type": "brackets",
+    "q": "___ (what / surprise) me most was how friendly everyone was.",
+    "accept": [
+      "what surprised"
+    ],
+    "explain_ru": "Выделение с what: What surprised me most was…"
+  },
+  {
+    "id": "G-C1-62",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-modal-nuance",
+    "topic_en": "Modal nuances: may well / might as well / bound to",
+    "topic_ru": "Оттенки модальности: may well / might as well / bound to",
+    "type": "mcq",
+    "q": "The trains are on strike, so we're ___ to be late.",
+    "options": [
+      "bound",
+      "certainly",
+      "sure of",
+      "likely of"
+    ],
+    "answer": 0,
+    "explain_ru": "Наверняка, неизбежно — be bound to do."
+  },
+  {
+    "id": "G-C1-63",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-unreal-past",
+    "topic_en": "Unreal past: as if / would rather / suppose",
+    "topic_ru": "Нереальное прошлое: as if / would rather / suppose",
+    "type": "mcq",
+    "q": "He talks as if he ___ the boss, but he only started last month.",
+    "options": [
+      "is being",
+      "were",
+      "had",
+      "be"
+    ],
+    "answer": 1,
+    "explain_ru": "Нереальное сравнение — as if + Past Simple (were)."
+  },
+  {
+    "id": "G-C1-64",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-subjunctive",
+    "topic_en": "Subjunctive: It's essential that he be...",
+    "topic_ru": "Сослагательное наклонение: It's essential that he be...",
+    "type": "mcq",
+    "q": "The doctor recommended that he ___ more rest.",
+    "options": [
+      "gets to",
+      "getting",
+      "get",
+      "to get"
+    ],
+    "answer": 2,
+    "explain_ru": "После recommend that — сослагательное наклонение: глагол без окончания (get)."
+  },
+  {
+    "id": "G-C1-65",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-passive-reporting",
+    "topic_en": "Advanced passive: is thought to have...",
+    "topic_ru": "Сложный пассив: is thought to have...",
+    "type": "mcq",
+    "q": "The new model is expected ___ in shops next spring.",
+    "options": [
+      "appearing",
+      "to have appeared",
+      "appear",
+      "to appear"
+    ],
+    "answer": 3,
+    "explain_ru": "Ожидается в будущем — is expected to + глагол."
+  },
+  {
+    "id": "G-C1-66",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-passive-reporting",
+    "topic_en": "Advanced passive: is thought to have...",
+    "topic_ru": "Сложный пассив: is thought to have...",
+    "type": "mcq",
+    "q": "The singer is said ___ a new album at the moment.",
+    "options": [
+      "to be recording",
+      "to record",
+      "recording",
+      "to have recorded"
+    ],
+    "answer": 0,
+    "explain_ru": "Процесс сейчас (at the moment) — is said to be + -ing."
+  },
+  {
+    "id": "G-C1-67",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-passive-reporting",
+    "topic_en": "Advanced passive: is thought to have...",
+    "topic_ru": "Сложный пассив: is thought to have...",
+    "type": "brackets",
+    "q": "The thieves ___ (think / be) local teenagers.",
+    "accept": [
+      "are thought to be"
+    ],
+    "explain_ru": "Безличный пассив о людях: are thought to be — «предположительно, это…»."
+  },
+  {
+    "id": "G-C1-68",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-participle-advanced",
+    "topic_en": "Advanced participle and reduced relative clauses",
+    "topic_ru": "Сложные причастные обороты",
+    "type": "mcq",
+    "q": "___ finished her degree, she moved to Berlin to start her career.",
+    "options": [
+      "Being",
+      "Having",
+      "Had",
+      "Have"
+    ],
+    "answer": 1,
+    "explain_ru": "Действие, завершённое раньше, — перфектное причастие: Having finished…"
+  },
+  {
+    "id": "G-C1-69",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-ellipsis-substitution",
+    "topic_en": "Ellipsis and substitution",
+    "topic_ru": "Эллипсис и замещение",
+    "type": "mcq",
+    "q": "I don't eat meat, and ___ does my husband.",
+    "options": [
+      "either",
+      "so",
+      "neither",
+      "nor do"
+    ],
+    "answer": 2,
+    "explain_ru": "Согласие с отрицанием — neither does…"
+  },
+  {
+    "id": "G-C1-70",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-nominalisation",
+    "topic_en": "Nominalisation and complex noun phrases",
+    "topic_ru": "Номинализация и сложные именные группы",
+    "type": "mcq",
+    "q": "The ___ of the new manager was announced on Monday.",
+    "options": [
+      "appoint",
+      "appointing",
+      "appointed",
+      "appointment"
+    ],
+    "answer": 3,
+    "explain_ru": "После the … of — существительное: appointment (назначение)."
+  },
+  {
+    "id": "G-C1-71",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-conditionals-alternatives",
+    "topic_en": "provided that / as long as / unless / otherwise",
+    "topic_ru": "provided that / as long as / unless / otherwise",
+    "type": "mcq",
+    "q": "Hurry up, ___ we'll miss the beginning of the film.",
+    "options": [
+      "otherwise",
+      "unless",
+      "provided",
+      "in case"
+    ],
+    "answer": 0,
+    "explain_ru": "Иначе — otherwise."
+  },
+  {
+    "id": "G-C1-72",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-conditionals-alternatives",
+    "topic_en": "provided that / as long as / unless / otherwise",
+    "topic_ru": "provided that / as long as / unless / otherwise",
+    "type": "mcq",
+    "q": "I won't go to the party ___ you come with me.",
+    "options": [
+      "otherwise",
+      "unless",
+      "whereas",
+      "as long"
+    ],
+    "answer": 1,
+    "explain_ru": "Если не — unless."
+  },
+  {
+    "id": "G-C1-73",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-relatives-prepositions",
+    "topic_en": "Relative clauses with prepositions: in which / whereby",
+    "topic_ru": "Придаточные с предлогами: in which / whereby",
+    "type": "mcq",
+    "q": "The person ___ I spoke on the phone was very helpful.",
+    "options": [
+      "to who",
+      "whom to",
+      "to whom",
+      "which to"
+    ],
+    "answer": 2,
+    "explain_ru": "Формально предлог ставится перед whom: to whom I spoke."
+  },
+  {
+    "id": "G-C1-74",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-articles",
+    "topic_en": "Articles: generalisation, abstract nouns, fixed cases",
+    "topic_ru": "Артикли: обобщение, абстрактные существительные, устойчивые случаи",
+    "type": "mcq",
+    "q": "___ computer has completely changed the way we live and work.",
+    "options": [
+      "A",
+      "—",
+      "An",
+      "The"
+    ],
+    "answer": 3,
+    "explain_ru": "Изобретение как явление в целом — the computer."
+  },
+  {
+    "id": "G-C1-75",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-articles",
+    "topic_en": "Articles: generalisation, abstract nouns, fixed cases",
+    "topic_ru": "Артикли: обобщение, абстрактные существительные, устойчивые случаи",
+    "type": "mcq",
+    "q": "What ___ lovely weather we're having!",
+    "options": [
+      "—",
+      "a",
+      "the",
+      "an"
+    ],
+    "answer": 0,
+    "explain_ru": "Weather — неисчисляемое, поэтому What lovely weather! без a."
+  },
+  {
+    "id": "G-C1-76",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-articles",
+    "topic_en": "Articles: generalisation, abstract nouns, fixed cases",
+    "topic_ru": "Артикли: обобщение, абстрактные существительные, устойчивые случаи",
+    "type": "mcq",
+    "q": "Most people in ___ UK live in towns and cities.",
+    "options": [
+      "—",
+      "the",
+      "a",
+      "an"
+    ],
+    "answer": 1,
+    "explain_ru": "Названия стран со словами Kingdom, States, Republic — с the: the UK."
+  },
+  {
+    "id": "G-C1-77",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-comparatives",
+    "topic_en": "Advanced comparison: by far, nothing like as, the sooner the better",
+    "topic_ru": "Сложные сравнения: by far, nothing like as, the sooner the better",
+    "type": "mcq",
+    "q": "The more I learn about the topic, ___ I realise how little I know.",
+    "options": [
+      "more",
+      "the most",
+      "the more",
+      "most"
+    ],
+    "answer": 2,
+    "explain_ru": "The more…, the more… — чем больше…, тем больше…"
+  },
+  {
+    "id": "G-C1-78",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-comparatives",
+    "topic_en": "Advanced comparison: by far, nothing like as, the sooner the better",
+    "topic_ru": "Сложные сравнения: by far, nothing like as, the sooner the better",
+    "type": "mcq",
+    "q": "This flat is twice ___ big as our old one.",
+    "options": [
+      "so",
+      "more",
+      "than",
+      "as"
+    ],
+    "answer": 3,
+    "explain_ru": "Во сколько раз — twice as big as."
+  },
+  {
+    "id": "G-C1-79",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-comparatives",
+    "topic_en": "Advanced comparison: by far, nothing like as, the sooner the better",
+    "topic_ru": "Сложные сравнения: by far, nothing like as, the sooner the better",
+    "type": "mcq",
+    "q": "It's getting ___ difficult to find an affordable flat in the city.",
+    "options": [
+      "increasingly",
+      "more and most",
+      "the more",
+      "increasing"
+    ],
+    "answer": 0,
+    "explain_ru": "Всё более — increasingly (= more and more) difficult."
+  },
+  {
+    "id": "G-C1-80",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-reported",
+    "topic_en": "Reported speech: reporting verbs, sequence of tenses, was to",
+    "topic_ru": "Косвенная речь: глаголы (urge, insist on, accuse of), согласование времён, was to",
+    "type": "mcq",
+    "q": "She reminded me ___ my passport.",
+    "options": [
+      "bringing",
+      "to bring",
+      "that bring",
+      "for bringing"
+    ],
+    "answer": 1,
+    "explain_ru": "remind somebody to do something."
+  },
+  {
+    "id": "G-C1-81",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-reported",
+    "topic_en": "Reported speech: reporting verbs, sequence of tenses, was to",
+    "topic_ru": "Косвенная речь: глаголы (urge, insist on, accuse of), согласование времён, was to",
+    "type": "mcq",
+    "q": "He apologised ___ so late.",
+    "options": [
+      "to arrive",
+      "of arriving",
+      "for arriving",
+      "arriving"
+    ],
+    "answer": 2,
+    "explain_ru": "apologise for + -ing."
+  },
+  {
+    "id": "G-C1-82",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-reported",
+    "topic_en": "Reported speech: reporting verbs, sequence of tenses, was to",
+    "topic_ru": "Косвенная речь: глаголы (urge, insist on, accuse of), согласование времён, was to",
+    "type": "mcq",
+    "q": "Her lawyer advised her ___ anything without reading it first.",
+    "options": [
+      "to not signing",
+      "don't sign",
+      "not signing",
+      "not to sign"
+    ],
+    "answer": 3,
+    "explain_ru": "advise somebody not to do something."
+  },
+  {
+    "id": "V-C1-31",
+    "skill": "vocabulary",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "v-c1-register",
+    "topic_en": "Register: formal, neutral, informal",
+    "topic_ru": "Регистр: формальный, нейтральный, разговорный",
+    "type": "mcq",
+    "q": "(Formal email) Please find ___ a copy of my CV.",
+    "options": [
+      "attached",
+      "attaching",
+      "attach",
+      "attachment"
+    ],
+    "answer": 0,
+    "explain_ru": "Официальная формула: Please find attached…",
+    "group": "c1-v1"
+  },
+  {
+    "id": "V-C1-32",
+    "skill": "vocabulary",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "v-c1-discourse-markers",
+    "topic_en": "Discourse markers and hedging",
+    "topic_ru": "Дискурсивные маркеры и смягчение",
+    "type": "mcq",
+    "q": "The hotel was expensive. ___, the service was excellent.",
+    "options": [
+      "Whereas",
+      "Nevertheless",
+      "Despite",
+      "Although"
+    ],
+    "answer": 1,
+    "explain_ru": "Тем не менее (в начале предложения, с запятой) — Nevertheless.",
+    "group": "c1-v1"
+  },
+  {
+    "id": "V-C1-33",
+    "skill": "vocabulary",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "v-c1-strong-collocations",
+    "topic_en": "Strong collocations: bitterly disappointed",
+    "topic_ru": "Устойчивые коллокации: bitterly disappointed",
+    "type": "mcq",
+    "q": "It's ___ important that you arrive on time.",
+    "options": [
+      "heavily",
+      "strongly",
+      "vitally",
+      "deeply"
+    ],
+    "answer": 2,
+    "explain_ru": "Крайне важно — vitally important.",
+    "group": "c1-v2"
+  },
+  {
+    "id": "V-C1-34",
+    "skill": "vocabulary",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "v-c1-phrasal-advanced",
+    "topic_en": "Advanced phrasal verbs",
+    "topic_ru": "Продвинутые фразовые глаголы",
+    "type": "mcq",
+    "q": "We need to ___ up with a better plan before Monday.",
+    "options": [
+      "make",
+      "bring",
+      "set",
+      "come"
+    ],
+    "answer": 3,
+    "explain_ru": "Придумать — come up with.",
+    "group": "c1-v2"
+  },
+  {
+    "id": "V-C1-35",
+    "skill": "vocabulary",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "v-c1-dependent-prepositions-c1",
+    "topic_en": "Advanced dependent prepositions",
+    "topic_ru": "Сложное управление предлогами",
+    "type": "mcq",
+    "q": "She has a real talent ___ languages.",
+    "options": [
+      "for",
+      "in",
+      "at",
+      "of"
+    ],
+    "answer": 0,
+    "explain_ru": "Талант к чему-то — talent for.",
+    "group": "c1-v2"
+  },
+  {
+    "id": "V-C1-36",
+    "skill": "vocabulary",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "v-c1-word-formation-advanced",
+    "topic_en": "Advanced word formation: over- / mis- / counter-",
+    "topic_ru": "Сложное словообразование: over- / mis- / counter-",
+    "type": "wordform",
+    "q": "The instructions were completely ___. I couldn't understand a word.",
+    "accept": [
+      "incomprehensible"
+    ],
+    "explain_ru": "От comprehend: comprehensible → incomprehensible (непонятный).",
+    "base": "COMPREHEND",
+    "group": "c1-v3"
+  },
+  {
+    "id": "V-C1-37",
+    "skill": "vocabulary",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "v-c1-academic",
+    "topic_en": "Academic vocabulary",
+    "topic_ru": "Академическая лексика",
+    "type": "wordform",
+    "q": "There has been significant ___ in the number of people working from home.",
+    "accept": [
+      "growth"
+    ],
+    "explain_ru": "От grow — существительное growth (рост).",
+    "base": "GROW",
+    "group": "c1-v3"
+  },
+  {
+    "id": "V-C1-38",
+    "skill": "vocabulary",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "v-c1-near-synonyms",
+    "topic_en": "Near-synonyms and nuance",
+    "topic_ru": "Синонимы и оттенки значения",
+    "type": "mcq",
+    "q": "The film was ___ funny. I couldn't stop laughing.",
+    "options": [
+      "highly",
+      "hilariously",
+      "deeply",
+      "greatly"
+    ],
+    "answer": 1,
+    "explain_ru": "Ужасно смешной — hilariously funny; highly / deeply с funny не сочетаются.",
+    "group": "c1-v4"
+  },
+  {
+    "id": "V-C1-39",
+    "skill": "vocabulary",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "v-c1-near-synonyms",
+    "topic_en": "Near-synonyms and nuance",
+    "topic_ru": "Синонимы и оттенки значения",
+    "type": "mcq",
+    "q": "I was ___ surprised by how good the food was.",
+    "options": [
+      "nicely",
+      "happily",
+      "pleasantly",
+      "kindly"
+    ],
+    "answer": 2,
+    "explain_ru": "Приятно удивлён — pleasantly surprised.",
+    "group": "c1-v4"
+  },
+  {
+    "id": "V-C1-40",
+    "skill": "vocabulary",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "v-c1-near-synonyms",
+    "topic_en": "Near-synonyms and nuance",
+    "topic_ru": "Синонимы и оттенки значения",
+    "type": "mcq",
+    "q": "Make sure you read the contract ___ before you sign it.",
+    "options": [
+      "deeply",
+      "totally",
+      "highly",
+      "thoroughly"
+    ],
+    "answer": 3,
+    "explain_ru": "Внимательно, тщательно — thoroughly.",
+    "group": "c1-v4"
+  },
+  {
+    "id": "V-C1-41",
+    "skill": "vocabulary",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "v-c1-idioms",
+    "topic_en": "Idioms and fixed expressions",
+    "topic_ru": "Идиомы и устойчивые выражения",
+    "type": "mcq",
+    "q": "I don't know the answer off the top of my ___, but I can check.",
+    "options": [
+      "head",
+      "mind",
+      "brain",
+      "hair"
+    ],
+    "answer": 0,
+    "explain_ru": "Off the top of my head — навскидку, не задумываясь.",
+    "group": "c1-v5"
+  },
+  {
+    "id": "V-C1-42",
+    "skill": "vocabulary",
+    "level": "C1",
+    "band": 2,
+    "topic_id": "v-c1-binomials",
+    "topic_en": "Binomials and fixed pairs: pros and cons",
+    "topic_ru": "Парные выражения: pros and cons",
+    "type": "mcq",
+    "q": "I'm sick and ___ of hearing the same excuses.",
+    "options": [
+      "bored",
+      "tired",
+      "fed",
+      "worn"
+    ],
+    "answer": 1,
+    "explain_ru": "Sick and tired of — до смерти надоело.",
+    "group": "c1-v5"
+  },
+  {
+    "id": "V-C1-43",
+    "skill": "vocabulary",
+    "level": "C1",
+    "band": 2,
+    "topic_id": "v-c1-idioms",
+    "topic_en": "Idioms and fixed expressions",
+    "topic_ru": "Идиомы и устойчивые выражения",
+    "type": "mcq",
+    "q": "The new manager doesn't want to ___ the boat in her first month.",
+    "options": [
+      "shake",
+      "sink",
+      "rock",
+      "turn"
+    ],
+    "answer": 2,
+    "explain_ru": "Rock the boat — раскачивать лодку, создавать проблемы.",
+    "group": "c1-v5"
   }
 ]

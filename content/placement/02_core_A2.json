@@ -1275,5 +1275,632 @@
     "answer": 1,
     "explain_ru": "Весело, удовольствие — fun (funny — смешной).",
     "group": "a2-v4"
+  },
+  {
+    "id": "G-A2-42",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-past-simple",
+    "topic_en": "Past simple: irregular verbs, negatives and questions",
+    "topic_ru": "Past Simple: неправильные глаголы, отрицания и вопросы",
+    "type": "mcq",
+    "q": "We ___ a lovely time at my sister's wedding last Saturday.",
+    "options": [
+      "have",
+      "haved",
+      "had",
+      "has"
+    ],
+    "answer": 2,
+    "explain_ru": "Last Saturday — Past Simple; have → had."
+  },
+  {
+    "id": "G-A2-43",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-past-simple",
+    "topic_en": "Past simple: irregular verbs, negatives and questions",
+    "topic_ru": "Past Simple: неправильные глаголы, отрицания и вопросы",
+    "type": "mcq",
+    "q": "I ___ to work by bus yesterday because my car was at the garage.",
+    "options": [
+      "went",
+      "goed",
+      "go",
+      "gone"
+    ],
+    "answer": 0,
+    "explain_ru": "Yesterday — Past Simple; go → went."
+  },
+  {
+    "id": "G-A2-44",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "g-a2-past-simple",
+    "topic_en": "Past simple: irregular verbs, negatives and questions",
+    "topic_ru": "Past Simple: неправильные глаголы, отрицания и вопросы",
+    "type": "brackets",
+    "q": "I ___ (not / sleep) well last night because of the noise.",
+    "accept": [
+      "didn't sleep",
+      "did not sleep"
+    ],
+    "explain_ru": "Отрицание в Past Simple: didn't + глагол в начальной форме — didn't sleep."
+  },
+  {
+    "id": "G-A2-45",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-past-continuous",
+    "topic_en": "Past continuous",
+    "topic_ru": "Past Continuous",
+    "type": "mcq",
+    "q": "At 7 o'clock yesterday evening, I ___ TV with my kids.",
+    "options": [
+      "am watching",
+      "were watching",
+      "was watching",
+      "watching"
+    ],
+    "answer": 2,
+    "explain_ru": "Действие в процессе в конкретный момент прошлого — Past Continuous: I was watching."
+  },
+  {
+    "id": "G-A2-46",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-past-continuous",
+    "topic_en": "Past continuous",
+    "topic_ru": "Past Continuous",
+    "type": "mcq",
+    "q": "The children ___ when their dad came home.",
+    "options": [
+      "was sleeping",
+      "are sleeping",
+      "sleeping",
+      "were sleeping"
+    ],
+    "answer": 3,
+    "explain_ru": "Длительное действие в прошлом, которое прервал приход папы: were sleeping (children — множественное)."
+  },
+  {
+    "id": "G-A2-47",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-past-continuous",
+    "topic_en": "Past continuous",
+    "topic_ru": "Past Continuous",
+    "type": "gap",
+    "q": "I ___ cooking dinner when the lights went out.",
+    "accept": [
+      "was"
+    ],
+    "explain_ru": "Past Continuous: was + -ing. Готовила (процесс), когда погас свет.",
+    "hint_ru": "форма глагола to be в прошлом"
+  },
+  {
+    "id": "G-A2-48",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-pp-experience",
+    "topic_en": "Present perfect for experience: ever / never",
+    "topic_ru": "Present Perfect для опыта: ever / never",
+    "type": "mcq",
+    "q": "My grandmother ___ never used a smartphone.",
+    "options": [
+      "has",
+      "have",
+      "is",
+      "did"
+    ],
+    "answer": 0,
+    "explain_ru": "Present Perfect с she (my grandmother) — has + третья форма."
+  },
+  {
+    "id": "G-A2-49",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-pp-just-already-yet",
+    "topic_en": "Present perfect with just / already / yet",
+    "topic_ru": "Present Perfect с just / already / yet",
+    "type": "mcq",
+    "q": "Is Anna here? — No, she's ___ left. You missed her by a minute.",
+    "options": [
+      "yet",
+      "ever",
+      "just",
+      "still"
+    ],
+    "answer": 2,
+    "explain_ru": "Только что — just: she's just left."
+  },
+  {
+    "id": "G-A2-50",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-pp-experience",
+    "topic_en": "Present perfect for experience: ever / never",
+    "topic_ru": "Present Perfect для опыта: ever / never",
+    "type": "mcq",
+    "q": "My parents ___ to Japan twice.",
+    "options": [
+      "has been",
+      "have go",
+      "were go",
+      "have been"
+    ],
+    "answer": 3,
+    "explain_ru": "Опыт (сколько раз) — Present Perfect: have been."
+  },
+  {
+    "id": "G-A2-51",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-going-to",
+    "topic_en": "be going to for plans and predictions",
+    "topic_ru": "be going to: планы и прогнозы",
+    "type": "mcq",
+    "q": "We ___ visit my grandparents next weekend. We've already bought the tickets.",
+    "options": [
+      "are going to",
+      "going to",
+      "will to",
+      "are go to"
+    ],
+    "answer": 0,
+    "explain_ru": "План, решение уже принято — be going to: we are going to visit."
+  },
+  {
+    "id": "G-A2-52",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-will",
+    "topic_en": "will for predictions, offers and decisions",
+    "topic_ru": "will: прогнозы, предложения, спонтанные решения",
+    "type": "mcq",
+    "q": "I think it ___ be sunny tomorrow.",
+    "options": [
+      "is",
+      "does",
+      "will",
+      "won"
+    ],
+    "answer": 2,
+    "explain_ru": "Мнение о будущем после I think — will."
+  },
+  {
+    "id": "G-A2-53",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-pc-future",
+    "topic_en": "Present continuous for future arrangements",
+    "topic_ru": "Present Continuous для договорённостей о будущем",
+    "type": "mcq",
+    "q": "What ___ you doing on Friday evening? Do you want to come to the cinema?",
+    "options": [
+      "do",
+      "will",
+      "did",
+      "are"
+    ],
+    "answer": 3,
+    "explain_ru": "Планы на конкретное время — Present Continuous: What are you doing on Friday?"
+  },
+  {
+    "id": "G-A2-54",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-comparatives",
+    "topic_en": "Comparative and superlative adjectives",
+    "topic_ru": "Сравнительная и превосходная степень",
+    "type": "mcq",
+    "q": "My brother is two years ___ than me.",
+    "options": [
+      "older",
+      "old",
+      "oldest",
+      "more old"
+    ],
+    "answer": 0,
+    "explain_ru": "Сравнение двух людей + than — сравнительная степень: older."
+  },
+  {
+    "id": "G-A2-55",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-as-as",
+    "topic_en": "(not) as ... as",
+    "topic_ru": "Сравнение (not) as ... as",
+    "type": "mcq",
+    "q": "The new phone is ___ the old one. It's exactly the same size.",
+    "options": [
+      "as bigger as",
+      "so big than",
+      "as big as",
+      "bigger as"
+    ],
+    "answer": 2,
+    "explain_ru": "Одинаковые — as + прилагательное + as: as big as."
+  },
+  {
+    "id": "G-A2-56",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-too-enough",
+    "topic_en": "too / enough",
+    "topic_ru": "too / enough",
+    "type": "mcq",
+    "q": "I can't buy this jacket. I haven't got ___ money.",
+    "options": [
+      "too",
+      "many",
+      "very",
+      "enough"
+    ],
+    "answer": 3,
+    "explain_ru": "Недостаточно денег — not enough money (enough перед существительным)."
+  },
+  {
+    "id": "G-A2-57",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-obligation",
+    "topic_en": "must / have to / don't have to",
+    "topic_ru": "must / have to / don't have to",
+    "type": "mcq",
+    "q": "I ___ get up at 6 tomorrow. My train leaves at 7.",
+    "options": [
+      "have to",
+      "has to",
+      "must to",
+      "have"
+    ],
+    "answer": 0,
+    "explain_ru": "Необходимость из-за обстоятельств — have to (с I — have to, без -s)."
+  },
+  {
+    "id": "G-A2-58",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-might-may",
+    "topic_en": "might / may for possibility",
+    "topic_ru": "might / may: возможность",
+    "type": "mcq",
+    "q": "I'm not sure, but I ___ go to the party. It depends on my work.",
+    "options": [
+      "must",
+      "might",
+      "should",
+      "have to"
+    ],
+    "answer": 1,
+    "explain_ru": "Не уверен, возможно — might."
+  },
+  {
+    "id": "G-A2-59",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-should",
+    "topic_en": "should / shouldn't for advice",
+    "topic_ru": "should / shouldn't: совет",
+    "type": "mcq",
+    "q": "It's late. You ___ call your mum — she's worried about you.",
+    "options": [
+      "shouldn't",
+      "should to",
+      "should",
+      "don't should"
+    ],
+    "answer": 2,
+    "explain_ru": "Совет — should + глагол без to."
+  },
+  {
+    "id": "G-A2-60",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-quantifiers",
+    "topic_en": "much / many / a lot of / a few / a little",
+    "topic_ru": "much / many / a lot of / a few / a little",
+    "type": "mcq",
+    "q": "How ___ money do you need for the trip?",
+    "options": [
+      "many",
+      "few",
+      "lot",
+      "much"
+    ],
+    "answer": 3,
+    "explain_ru": "Money — неисчисляемое: how much."
+  },
+  {
+    "id": "G-A2-61",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-indefinite-pronouns",
+    "topic_en": "something / anyone / nowhere",
+    "topic_ru": "Неопределённые местоимения something / anyone / nowhere",
+    "type": "mcq",
+    "q": "I can't find my keys ___. Have you seen them?",
+    "options": [
+      "anywhere",
+      "somewhere",
+      "nowhere",
+      "everywhere"
+    ],
+    "answer": 0,
+    "explain_ru": "В отрицании (can't find) — anywhere."
+  },
+  {
+    "id": "G-A2-62",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "g-a2-articles",
+    "topic_en": "Articles: first and second mention, the with unique things",
+    "topic_ru": "Артикли: первое и повторное упоминание, the с уникальными предметами",
+    "type": "mcq",
+    "q": "I'd love to live by ___ sea one day.",
+    "options": [
+      "a",
+      "the",
+      "—",
+      "an"
+    ],
+    "answer": 1,
+    "explain_ru": "The sea, the beach, the mountains — с артиклем the."
+  },
+  {
+    "id": "G-A2-63",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-first-conditional",
+    "topic_en": "First conditional",
+    "topic_ru": "Условные предложения первого типа",
+    "type": "mcq",
+    "q": "If you're hungry, I ___ make you a sandwich.",
+    "options": [
+      "would",
+      "am",
+      "will",
+      "did"
+    ],
+    "answer": 2,
+    "explain_ru": "Реальное условие: if + Present Simple, will + глагол."
+  },
+  {
+    "id": "G-A2-64",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-infinitive-purpose",
+    "topic_en": "Infinitive of purpose",
+    "topic_ru": "Инфинитив цели (to + глагол)",
+    "type": "mcq",
+    "q": "I'm saving money ___ buy a new laptop.",
+    "options": [
+      "for",
+      "for to",
+      "because",
+      "to"
+    ],
+    "answer": 3,
+    "explain_ru": "Цель действия — to + глагол: to buy."
+  },
+  {
+    "id": "G-A2-65",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-prepositions-movement",
+    "topic_en": "Prepositions of movement",
+    "topic_ru": "Предлоги движения",
+    "type": "mcq",
+    "q": "The cat jumped ___ the window and ran into the garden.",
+    "options": [
+      "out of",
+      "into",
+      "on",
+      "at"
+    ],
+    "answer": 0,
+    "explain_ru": "Выпрыгнул из окна (наружу) — out of the window."
+  },
+  {
+    "id": "V-A2-28",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "v-a2-technology",
+    "topic_en": "Technology and communication",
+    "topic_ru": "Технологии и общение",
+    "type": "mcq",
+    "q": "I forgot my ___, so I couldn't log in to my email.",
+    "options": [
+      "keyboard",
+      "password",
+      "screen",
+      "battery"
+    ],
+    "answer": 1,
+    "explain_ru": "Войти в почту не получилось без пароля — password.",
+    "group": "a2-v1"
+  },
+  {
+    "id": "V-A2-29",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "v-a2-phrasal-basic",
+    "topic_en": "Basic phrasal verbs",
+    "topic_ru": "Базовые фразовые глаголы",
+    "type": "mcq",
+    "q": "Can you ___ up your toys, please? The floor is a mess.",
+    "options": [
+      "look",
+      "give",
+      "pick",
+      "turn"
+    ],
+    "answer": 2,
+    "explain_ru": "Поднять, собрать с пола — pick up.",
+    "group": "a2-v2"
+  },
+  {
+    "id": "V-A2-30",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "v-a2-prepositional-phrases",
+    "topic_en": "Prepositional phrases: on time, by car",
+    "topic_ru": "Устойчивые фразы с предлогами: on time, by car",
+    "type": "gap",
+    "q": "I usually go to work ___ foot. It only takes ten minutes.",
+    "accept": [
+      "on"
+    ],
+    "explain_ru": "Пешком — on foot (но by bus, by car).",
+    "hint_ru": "предлог",
+    "group": "a2-v2"
+  },
+  {
+    "id": "V-A2-31",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "v-a2-feelings-personality",
+    "topic_en": "Feelings and personality",
+    "topic_ru": "Чувства и характер",
+    "type": "mcq",
+    "q": "I'm ___ because I lost my favourite ring.",
+    "options": [
+      "happy",
+      "funny",
+      "lucky",
+      "sad"
+    ],
+    "answer": 3,
+    "explain_ru": "Потерять любимое кольцо — грустно: sad.",
+    "group": "a2-v3"
+  },
+  {
+    "id": "V-A2-32",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "v-a2-feelings-personality",
+    "topic_en": "Feelings and personality",
+    "topic_ru": "Чувства и характер",
+    "type": "mcq",
+    "q": "My boss is very ___. She always smiles and says hello.",
+    "options": [
+      "friendly",
+      "lazy",
+      "shy",
+      "rude"
+    ],
+    "answer": 0,
+    "explain_ru": "Улыбается и здоровается — friendly.",
+    "group": "a2-v3"
+  },
+  {
+    "id": "V-A2-33",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "v-a2-feelings-personality",
+    "topic_en": "Feelings and personality",
+    "topic_ru": "Чувства и характер",
+    "type": "mcq",
+    "q": "Max doesn't like talking to new people. He's quite ___.",
+    "options": [
+      "brave",
+      "shy",
+      "noisy",
+      "polite"
+    ],
+    "answer": 1,
+    "explain_ru": "Не любит говорить с незнакомыми — shy (застенчивый).",
+    "group": "a2-v3"
+  },
+  {
+    "id": "V-A2-34",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "v-a2-travel",
+    "topic_en": "Travel and holidays",
+    "topic_ru": "Путешествия и отдых",
+    "type": "mcq",
+    "q": "My brother ___ me his car for the weekend, so we drove to the lake.",
+    "options": [
+      "borrowed",
+      "rented",
+      "lent",
+      "gave back"
+    ],
+    "answer": 2,
+    "explain_ru": "Дать на время — lend (lent); взять на время — borrow.",
+    "group": "a2-v4"
+  },
+  {
+    "id": "V-A2-35",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "v-a2-travel",
+    "topic_en": "Travel and holidays",
+    "topic_ru": "Путешествия и отдых",
+    "type": "mcq",
+    "q": "We missed the bus, so we ___ for the next one for half an hour.",
+    "options": [
+      "expected",
+      "stayed",
+      "hoped",
+      "waited"
+    ],
+    "answer": 3,
+    "explain_ru": "Ждать (автобус) — wait for; expect — ожидать, предполагать.",
+    "group": "a2-v4"
+  },
+  {
+    "id": "V-A2-36",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "v-a2-feelings-personality",
+    "topic_en": "Feelings and personality",
+    "topic_ru": "Чувства и характер",
+    "type": "mcq",
+    "q": "I'm not ___ in football. I never watch it.",
+    "options": [
+      "interested",
+      "interesting",
+      "exciting",
+      "bored"
+    ],
+    "answer": 0,
+    "explain_ru": "О человеке и его интересе — interested in; interesting — о предмете.",
+    "group": "a2-v4"
   }
 ]

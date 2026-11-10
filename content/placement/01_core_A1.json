@@ -1348,5 +1348,648 @@
     "explain_ru": "Посмотреть на что-то — look at.",
     "hint_ru": "глагол: посмотреть (на)",
     "group": "a1-v4"
+  },
+  {
+    "id": "G-A1-41",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "g-a1-there-is-are",
+    "topic_en": "there is / there are",
+    "topic_ru": "Оборот there is / there are",
+    "type": "mcq",
+    "q": "How many people ___ in your English class?",
+    "options": [
+      "are there",
+      "there are",
+      "is there",
+      "there is"
+    ],
+    "answer": 0,
+    "explain_ru": "Вопрос с how many и множественным числом: How many people are there…?"
+  },
+  {
+    "id": "G-A1-42",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "g-a1-to-be",
+    "topic_en": "Verb to be: am / is / are",
+    "topic_ru": "Глагол to be: am / is / are",
+    "type": "gap",
+    "q": "Where are my keys? They ___ in my bag.",
+    "accept": [
+      "aren't",
+      "are not"
+    ],
+    "explain_ru": "Ключей нет в сумке — отрицание с they: aren't (are not).",
+    "hint_ru": "форма глагола to be с отрицанием"
+  },
+  {
+    "id": "G-A1-43",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "g-a1-to-be",
+    "topic_en": "Verb to be: am / is / are",
+    "topic_ru": "Глагол to be: am / is / are",
+    "type": "mcq",
+    "q": "___ your brother a student, or does he work?",
+    "options": [
+      "Is",
+      "Does",
+      "Are",
+      "Has"
+    ],
+    "answer": 0,
+    "explain_ru": "Вопрос с to be: Is your brother a student? Brother = he → is."
+  },
+  {
+    "id": "G-A1-44",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-present-simple",
+    "topic_en": "Present simple",
+    "topic_ru": "Present Simple",
+    "type": "mcq",
+    "q": "I ___ in a small flat near the park.",
+    "options": [
+      "lives",
+      "live",
+      "living",
+      "am live"
+    ],
+    "answer": 1,
+    "explain_ru": "С I в Present Simple глагол без окончания: I live."
+  },
+  {
+    "id": "G-A1-45",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-present-simple",
+    "topic_en": "Present simple",
+    "topic_ru": "Present Simple",
+    "type": "mcq",
+    "q": "My sister ___ in a hospital. She's a nurse.",
+    "options": [
+      "works",
+      "work",
+      "working",
+      "is work"
+    ],
+    "answer": 0,
+    "explain_ru": "She (my sister) в Present Simple — окончание -s: works."
+  },
+  {
+    "id": "G-A1-46",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-frequency-adverbs",
+    "topic_en": "Adverbs of frequency",
+    "topic_ru": "Наречия частотности",
+    "type": "mcq",
+    "q": "I ___ eat meat. I'm a vegetarian.",
+    "options": [
+      "always",
+      "never",
+      "usually",
+      "often"
+    ],
+    "answer": 1,
+    "explain_ru": "Вегетарианец мясо не ест никогда — never."
+  },
+  {
+    "id": "G-A1-47",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-present-simple",
+    "topic_en": "Present simple",
+    "topic_ru": "Present Simple",
+    "type": "gap",
+    "q": "___ you like coffee? I can make some.",
+    "accept": [
+      "do"
+    ],
+    "explain_ru": "Вопрос в Present Simple с you — вспомогательный глагол do.",
+    "hint_ru": "вспомогательный глагол"
+  },
+  {
+    "id": "G-A1-48",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-present-continuous-now",
+    "topic_en": "Present continuous for now",
+    "topic_ru": "Present Continuous (действие сейчас)",
+    "type": "mcq",
+    "q": "Where's Tom? — He ___ a shower right now.",
+    "options": [
+      "is having",
+      "has",
+      "have",
+      "having"
+    ],
+    "answer": 0,
+    "explain_ru": "Действие происходит сейчас (right now) — Present Continuous: is having."
+  },
+  {
+    "id": "G-A1-49",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-present-continuous-now",
+    "topic_en": "Present continuous for now",
+    "topic_ru": "Present Continuous (действие сейчас)",
+    "type": "mcq",
+    "q": "Look! Those people ___ in the rain.",
+    "options": [
+      "dance",
+      "are dancing",
+      "is dancing",
+      "dancing"
+    ],
+    "answer": 1,
+    "explain_ru": "Look! — действие прямо сейчас; people — множественное: are dancing."
+  },
+  {
+    "id": "G-A1-50",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-like-ing",
+    "topic_en": "like / love / hate + -ing",
+    "topic_ru": "like / love / hate + -ing",
+    "type": "mcq",
+    "q": "My kids love ___ cartoons on Saturday mornings.",
+    "options": [
+      "watching",
+      "watch",
+      "watches",
+      "to watching"
+    ],
+    "answer": 0,
+    "explain_ru": "После love — глагол с -ing: love watching."
+  },
+  {
+    "id": "G-A1-51",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-was-were",
+    "topic_en": "Past simple of be: was / were",
+    "topic_ru": "Прошедшее время to be: was / were",
+    "type": "mcq",
+    "q": "I ___ very tired after work yesterday.",
+    "options": [
+      "were",
+      "was",
+      "am",
+      "be"
+    ],
+    "answer": 1,
+    "explain_ru": "Прошлое (yesterday), с I — was."
+  },
+  {
+    "id": "G-A1-52",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-past-simple-basic",
+    "topic_en": "Past simple: regular and common irregular verbs",
+    "topic_ru": "Past Simple: правильные и частые неправильные глаголы",
+    "type": "mcq",
+    "q": "We ___ pizza for dinner last night.",
+    "options": [
+      "had",
+      "have",
+      "has",
+      "haved"
+    ],
+    "answer": 0,
+    "explain_ru": "Last night — Past Simple; have → had (неправильный глагол)."
+  },
+  {
+    "id": "G-A1-53",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-was-were",
+    "topic_en": "Past simple of be: was / were",
+    "topic_ru": "Прошедшее время to be: was / were",
+    "type": "gap",
+    "q": "Where ___ you yesterday? I called you three times!",
+    "accept": [
+      "were"
+    ],
+    "explain_ru": "Прошлое (yesterday), с you — were.",
+    "hint_ru": "форма глагола to be в прошлом"
+  },
+  {
+    "id": "G-A1-54",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-possessives",
+    "topic_en": "Possessive adjectives and 's",
+    "topic_ru": "Притяжательные местоимения и 's",
+    "type": "mcq",
+    "q": "This is my brother, and this is ___ wife, Anna.",
+    "options": [
+      "he",
+      "his",
+      "him",
+      "he's"
+    ],
+    "answer": 1,
+    "explain_ru": "Жена брата — его жена: his wife."
+  },
+  {
+    "id": "G-A1-55",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "g-a1-pronouns",
+    "topic_en": "Subject and object pronouns",
+    "topic_ru": "Личные и объектные местоимения",
+    "type": "mcq",
+    "q": "This isn't my phone. Is it ___?",
+    "options": [
+      "yours",
+      "your",
+      "you",
+      "you're"
+    ],
+    "answer": 0,
+    "explain_ru": "В конце фразы без существительного — yours (твой)."
+  },
+  {
+    "id": "G-A1-56",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "g-a1-possessives",
+    "topic_en": "Possessive adjectives and 's",
+    "topic_ru": "Притяжательные местоимения и 's",
+    "type": "mcq",
+    "q": "My ___ names are Max and Leo. They're twins.",
+    "options": [
+      "son's",
+      "sons'",
+      "sons",
+      "son"
+    ],
+    "answer": 1,
+    "explain_ru": "Двое сыновей (sons) и их имена — апостроф после s: sons' names."
+  },
+  {
+    "id": "G-A1-57",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-articles-basic",
+    "topic_en": "Articles a / an / the (basic use)",
+    "topic_ru": "Артикли a / an / the (базовое употребление)",
+    "type": "mcq",
+    "q": "I eat ___ apple every morning.",
+    "options": [
+      "an",
+      "a",
+      "the",
+      "some"
+    ],
+    "answer": 0,
+    "explain_ru": "Apple начинается с гласного звука — an apple."
+  },
+  {
+    "id": "G-A1-58",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-plural-nouns",
+    "topic_en": "Plural nouns (regular and irregular)",
+    "topic_ru": "Множественное число существительных",
+    "type": "mcq",
+    "q": "I have two ___: a boy and a girl.",
+    "options": [
+      "childs",
+      "children",
+      "child",
+      "childrens"
+    ],
+    "answer": 1,
+    "explain_ru": "Child — неправильное множественное число: children."
+  },
+  {
+    "id": "G-A1-59",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-some-any",
+    "topic_en": "Countable and uncountable nouns with some / any",
+    "topic_ru": "Исчисляемые и неисчисляемые с some / any",
+    "type": "mcq",
+    "q": "There aren't ___ chairs in the room. Let's sit on the floor.",
+    "options": [
+      "any",
+      "some",
+      "a",
+      "much"
+    ],
+    "answer": 0,
+    "explain_ru": "В отрицании с исчисляемыми во множественном — any."
+  },
+  {
+    "id": "G-A1-60",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-can",
+    "topic_en": "can / can't for ability and permission",
+    "topic_ru": "can / can't: умение и разрешение",
+    "type": "mcq",
+    "q": "I ___ speak French, but I can speak a little Spanish.",
+    "options": [
+      "don't",
+      "can't",
+      "not",
+      "am not"
+    ],
+    "answer": 1,
+    "explain_ru": "Не умею — can't (cannot) + глагол без to."
+  },
+  {
+    "id": "G-A1-61",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-would-like",
+    "topic_en": "would like",
+    "topic_ru": "Конструкция would like",
+    "type": "mcq",
+    "q": "What would you like? — I'd ___ a cheese sandwich, please.",
+    "options": [
+      "likes",
+      "liking",
+      "to like",
+      "like"
+    ],
+    "answer": 3,
+    "explain_ru": "I'd like = I would like — вежливо «я бы хотел»."
+  },
+  {
+    "id": "G-A1-62",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-have-got",
+    "topic_en": "have got",
+    "topic_ru": "Конструкция have got",
+    "type": "mcq",
+    "q": "My brother ___ got a new car. It's red.",
+    "options": [
+      "has",
+      "have",
+      "is",
+      "does"
+    ],
+    "answer": 0,
+    "explain_ru": "He (my brother) — has got."
+  },
+  {
+    "id": "G-A1-63",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-prepositions-place",
+    "topic_en": "Prepositions of place",
+    "topic_ru": "Предлоги места",
+    "type": "mcq",
+    "q": "The supermarket is ___ the bank and the café.",
+    "options": [
+      "next",
+      "between",
+      "in",
+      "on"
+    ],
+    "answer": 1,
+    "explain_ru": "Между двумя местами — between … and …."
+  },
+  {
+    "id": "G-A1-64",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-question-words",
+    "topic_en": "Question words",
+    "topic_ru": "Вопросительные слова",
+    "type": "mcq",
+    "q": "___ is your birthday? — In May.",
+    "options": [
+      "Where",
+      "Who",
+      "When",
+      "What"
+    ],
+    "answer": 2,
+    "explain_ru": "Ответ — время (In May), значит вопрос When."
+  },
+  {
+    "id": "G-A1-65",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "g-a1-conjunctions-basic",
+    "topic_en": "Conjunctions: and / but / or / because",
+    "topic_ru": "Союзы and / but / or / because",
+    "type": "mcq",
+    "q": "I'm really hungry ___ I didn't have breakfast.",
+    "options": [
+      "but",
+      "so",
+      "or",
+      "because"
+    ],
+    "answer": 3,
+    "explain_ru": "Вторая часть — причина: because."
+  },
+  {
+    "id": "V-A1-33",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "v-a1-basic-collocations",
+    "topic_en": "Collocations with have / go / do",
+    "topic_ru": "Сочетания с have / go / do",
+    "type": "mcq",
+    "q": "I always ___ the washing-up after dinner.",
+    "options": [
+      "do",
+      "make",
+      "have",
+      "go"
+    ],
+    "answer": 0,
+    "explain_ru": "Мыть посуду — do the washing-up.",
+    "group": "a1-v2"
+  },
+  {
+    "id": "V-A1-34",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "v-a1-basic-collocations",
+    "topic_en": "Collocations with have / go / do",
+    "topic_ru": "Сочетания с have / go / do",
+    "type": "mcq",
+    "q": "We usually ___ to bed at eleven.",
+    "options": [
+      "do",
+      "go",
+      "have",
+      "make"
+    ],
+    "answer": 1,
+    "explain_ru": "Ложиться спать — go to bed.",
+    "group": "a1-v2"
+  },
+  {
+    "id": "V-A1-35",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "v-a1-basic-collocations",
+    "topic_en": "Collocations with have / go / do",
+    "topic_ru": "Сочетания с have / go / do",
+    "type": "gap",
+    "q": "It's raining. Let's ___ a taxi.",
+    "accept": [
+      "take",
+      "get",
+      "call"
+    ],
+    "explain_ru": "Взять такси — take / get a taxi.",
+    "hint_ru": "глагол: поехать на (такси)",
+    "group": "a1-v2"
+  },
+  {
+    "id": "V-A1-36",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "v-a1-adjectives-basic",
+    "topic_en": "Common adjectives and opposites",
+    "topic_ru": "Частые прилагательные и антонимы",
+    "type": "mcq",
+    "q": "My bedroom is very small, but the living room is ___.",
+    "options": [
+      "short",
+      "old",
+      "big",
+      "slow"
+    ],
+    "answer": 2,
+    "explain_ru": "Противоположность small — big.",
+    "group": "a1-v3"
+  },
+  {
+    "id": "V-A1-37",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "v-a1-adjectives-basic",
+    "topic_en": "Common adjectives and opposites",
+    "topic_ru": "Частые прилагательные и антонимы",
+    "type": "mcq",
+    "q": "The film was very ___. I laughed a lot.",
+    "options": [
+      "sad",
+      "boring",
+      "angry",
+      "funny"
+    ],
+    "answer": 3,
+    "explain_ru": "Смеялся — значит фильм смешной: funny.",
+    "group": "a1-v3"
+  },
+  {
+    "id": "V-A1-38",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "v-a1-adjectives-basic",
+    "topic_en": "Common adjectives and opposites",
+    "topic_ru": "Частые прилагательные и антонимы",
+    "type": "gap",
+    "q": "This isn't a new phone. It's ___.",
+    "accept": [
+      "old"
+    ],
+    "explain_ru": "Противоположность new — old.",
+    "hint_ru": "противоположность слову new",
+    "group": "a1-v3"
+  },
+  {
+    "id": "V-A1-39",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "v-a1-free-time",
+    "topic_en": "Hobbies and free time",
+    "topic_ru": "Хобби и свободное время",
+    "type": "mcq",
+    "q": "Sorry, what did you ___? I didn't hear you.",
+    "options": [
+      "say",
+      "tell",
+      "speak",
+      "talk"
+    ],
+    "answer": 0,
+    "explain_ru": "Сказать (без «кому») — say: What did you say?",
+    "group": "a1-v4"
+  },
+  {
+    "id": "V-A1-40",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "v-a1-clothes-colours",
+    "topic_en": "Clothes and colours",
+    "topic_ru": "Одежда и цвета",
+    "type": "mcq",
+    "q": "My grandmother always ___ a red hat.",
+    "options": [
+      "carries",
+      "wears",
+      "puts",
+      "dresses"
+    ],
+    "answer": 1,
+    "explain_ru": "Носить одежду — wear.",
+    "group": "a1-v4"
+  },
+  {
+    "id": "V-A1-41",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "v-a1-daily-routine",
+    "topic_en": "Daily routine",
+    "topic_ru": "Распорядок дня",
+    "type": "mcq",
+    "q": "I'm ___ for my glasses. Have you seen them?",
+    "options": [
+      "seeing",
+      "watching",
+      "looking",
+      "finding"
+    ],
+    "answer": 2,
+    "explain_ru": "Искать — look for: I'm looking for my glasses.",
+    "group": "a1-v4"
   }
 ]
