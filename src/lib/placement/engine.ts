@@ -25,10 +25,11 @@ export type SpeakItem = Base & { skill: "speaking"; type: "speaking"; intro_ru: 
 export type AnyItem = CoreItem | ReadItem | ListenItem | WriteItem | SpeakItem;
 export type Bank = { groups: Group[]; core: CoreItem[]; reading: ReadItem[]; listening: ListenItem[]; writing: WriteItem[]; speaking: SpeakItem[] };
 
-export const SECTIONS = ["core", "reading", "listening", "writing", "speaking"] as const;
+export const SECTIONS = ["core", "vocab", "reading", "listening", "writing", "speaking"] as const;
 export type Section = (typeof SECTIONS)[number];
 
-export type Ans = { v: string | number | null; ok: boolean | null; ms?: number; dk?: boolean }; // dk — «Не знаю»
+export type Ph = "w" | "l" | "d" | "s" | "vw" | "vl" | "vc";
+export type Ans = { v: string | number | null; ok: boolean | null; ms?: number; dk?: boolean; h?: boolean }; // dk — «Не знаю», h — открыл подсказку
 export type PState = {
   v: 1;
   section: "intro" | Section | "done";
@@ -40,7 +41,7 @@ export type PState = {
   times?: Record<string, number>; // время по разделам, мс
   rerec?: Record<string, number>; // сколько раз перезаписан ответ на вопрос говорения
   items: Record<string, AnyItem>; // снимок выданных заданий (с ответами)
-  core: { id: string; step: number; ph?: "w" | "l" | "d" | "s" }[]; // путь по ядру: разминка, поиск уровня, проверка уровня, срез выше
+  core: { id: string; step: number; ph?: Ph }[]; // путь: грамматика (разминка, поиск, проверка, срез выше), затем лексика (vw, vl, vc)
   diag?: number; // уровень подробной проверки (0 = A1 … 4 = C1)
   fb?: boolean; // уже переходили на уровень ниже (погорячились)
   up?: boolean; // уже переходили на уровень выше (срез выше сдан уверенно)
@@ -51,7 +52,8 @@ export type PState = {
   plays: Record<string, number>;
   writing?: { id: string; text: string };
   speaking?: { id: string; rec: Record<string, string> }; // номер вопроса → ключ записи
-  level?: PLevel; step?: number; // результат ядра — от него зависят остальные разделы
+  level?: PLevel; step?: number; // level — уровень текстов (меньший из грамматики и лексики), step — итог грамматики
+  vstep?: number; // итог лексики
 };
 
 /** expected: ожидаемый уровень от учителя (A1 / B1 / B2) — тогда без разминки, поиск начинается с него. */
@@ -85,14 +87,9 @@ const stat = (st: PState, f: (it: CoreItem, x: PState["core"][number]) => boolea
   return { n, c };
 };
 const anchorOf = (bank: Bank, li: number) => bank.groups.find((g) => g.level === PL_LEVELS[li] && g.anchor)!;
-const groupsOf = (bank: Bank, li: number) => {
-  // порядок: грамматика и лексика вперемешку, опорная группа — первой
-  const gs = bank.groups.filter((g) => g.level === PL_LEVELS[li]);
-  const gr = gs.filter((g) => g.kind === "grammar").sort((a, b) => Number(b.anchor) - Number(a.anchor)), vo = gs.filter((g) => g.kind === "vocabulary");
-  const out: Group[] = [];
-  while (gr.length || vo.length) { out.push(...gr.splice(0, 2)); if (vo.length) out.push(vo.shift()!); }
-  return out;
-};
+/** Грамматические группы уровня, опорная — первой (лексика проверяется отдельным блоком). */
+const groupsOf = (bank: Bank, li: number) =>
+  bank.groups.filter((g) => g.level === PL_LEVELS[li] && g.kind === "grammar").sort((a, b) => Number(b.anchor) - Number(a.anchor));
 const inGroup = (st: PState, gid: string) => st.core.filter((x) => (st.items[x.id] as CoreItem)?.group === gid).length;
 
 /** Опорная группа уровня: true — пройдена (2 из 3), false — нет, undefined — ещё не ясно. */
@@ -127,7 +124,7 @@ function pickFrom(st: PState, bank: Bank, gid: string, rnd: () => number, pref?:
   return pool[Math.floor(rnd() * pool.length)];
 }
 
-const levelAcc = (st: PState, li: number) => stat(st, (it) => it.level === PL_LEVELS[li]);
+const levelAcc = (st: PState, li: number) => stat(st, (it, x) => it.level === PL_LEVELS[li] && it.skill === "grammar" && !x.ph?.startsWith("v"));
 
 /** Следующее задание ядра; null — ядро закончено. Отмечает в st этап проверки (diag, fb). */
 export function nextCore(st: PState, bank: Bank, rnd: () => number = Math.random): { item: CoreItem; ph: "w" | "l" | "d" | "s" } | null {
@@ -166,7 +163,7 @@ export function nextCore(st: PState, bank: Bank, rnd: () => number = Math.random
     if (sl.n >= SLICE_GROUPS * SLICE_PER && sl.c / sl.n >= UP_FROM) { st.up = true; st.diag = D + 1; return nextCore(st, bank, rnd); }
     const acc = levelAcc(st, D);
     if (acc.n && acc.c / acc.n >= SLICE_FROM) {
-      const up = groupsOf(bank, D + 1).filter((g) => g.kind === "grammar").slice(0, SLICE_GROUPS - 1).concat(groupsOf(bank, D + 1).filter((g) => g.kind === "vocabulary").slice(0, 1));
+      const up = groupsOf(bank, D + 1).slice(0, SLICE_GROUPS);
       for (let round = 1; round <= SLICE_PER; round++)
         for (const g of up) {
           if (inGroup(st, g.id) >= round) continue;
@@ -178,13 +175,86 @@ export function nextCore(st: PState, bank: Bank, rnd: () => number = Math.random
   return null;
 }
 
+// ───────── Лексика: лесенка от уровня грамматики ─────────
+
+const VKINDS = ["v1", "v2", "v3"] as const;
+const vGroup = (bank: Bank, li: number, k: string) => bank.groups.find((g) => g.id === `${PL_LEVELS[li].toLowerCase()}-${k}`);
+const vStat = (st: PState, li: number, phs: Ph[]) => stat(st, (it, x) => it.level === PL_LEVELS[li] && !!x.ph && phs.includes(x.ph) && it.skill === "vocabulary");
+/** Проба уровня: 3 задания (по одному каждого вида; разминка засчитывается). true — 2 из 3;
+ * выше уровня грамматики — 3 из 3, чтобы удачная догадка не поднимала лексику. */
+function vProbe(st: PState, li: number) {
+  const s = vStat(st, li, ["vw", "vl"]);
+  return s.n >= 3 ? s.c >= (li > gLevel(st) ? 3 : 2) : undefined;
+}
+const gLevel = (st: PState) => Math.floor(Math.max(0, Math.min(8, st.step ?? 0)) / 2);
+function vLocate(st: PState): { found: number | null; next: number | null } {
+  let L = gLevel(st);
+  for (let guard = 0; guard < 10; guard++) {
+    const p = vProbe(st, L);
+    if (p === undefined) return { found: null, next: L };
+    if (p) { if (L === 4) return { found: 4, next: null }; if (vProbe(st, L + 1) === false) return { found: L, next: null }; L++; }
+    else { if (L === 0) return { found: 0, next: null }; if (vProbe(st, L - 1) === true) return { found: L - 1, next: null }; L--; }
+  }
+  return { found: L, next: null };
+}
+const usedKinds = (st: PState, li: number, phs: Ph[]) =>
+  st.core.filter((x) => x.ph && phs.includes(x.ph) && (st.items[x.id] as CoreItem)?.level === PL_LEVELS[li]).map((x) => ((st.items[x.id] as CoreItem).group ?? "").split("-")[1]);
+
+/** Следующее задание лексики: 2 разминочных уровнем ниже грамматики, лесенка по 3, на найденном уровне — 6 (по 2 каждого вида). */
+export function nextVocab(st: PState, bank: Bank, rnd: () => number = Math.random): { item: CoreItem; ph: Ph } | null {
+  const G = gLevel(st), W = Math.max(0, G - 1);
+  const vw = st.core.filter((x) => x.ph === "vw").length;
+  if (vw < 2 && G > 0) {
+    const g = vGroup(bank, W, VKINDS[vw]); const it = g && pickFrom(st, bank, g.id, rnd, "easy");
+    if (it) return { item: it, ph: "vw" };
+  }
+  const { found, next } = vLocate(st);
+  if (next !== null) {
+    const have = usedKinds(st, next, ["vw", "vl"]);
+    for (const k of VKINDS) {
+      if (have.includes(k)) continue;
+      const g = vGroup(bank, next, k); const it = g && pickFrom(st, bank, g.id, rnd, "easy");
+      if (it) return { item: it, ph: "vl" };
+    }
+    return null;
+  }
+  if (found === null) return null;
+  // подтверждение: к простым заданиям пробы добавляем по два сложных каждого вида (итого 9 на найденном уровне)
+  const have = usedKinds(st, found, ["vw", "vl", "vc"]);
+  for (const k of VKINDS) {
+    if (have.filter((x) => x === k).length >= 3) continue;
+    const g = vGroup(bank, found, k); const it = g && pickFrom(st, bank, g.id, rnd, "hard");
+    if (it) return { item: it, ph: "vc" };
+  }
+  return null;
+}
+
+/** Итог лексики на найденном уровне X: простые задания (проба) < 60% — ступень ниже; сложные (подтверждение) ≥ 67% — X+; иначе X. */
+export function vocabResult(st: PState) {
+  const { found } = vLocate(st);
+  const F = found ?? gLevel(st), L = PL_LEVELS[F], b = BASE[L];
+  if (F === 0 && vProbe(st, 0) === false) return 0;
+  const easy = stat(st, (it, x) => it.level === L && it.skill === "vocabulary" && (x.ph === "vw" || x.ph === "vl"));
+  const hard = stat(st, (it, x) => it.level === L && it.skill === "vocabulary" && x.ph === "vc");
+  const pe = easy.n ? easy.c / easy.n : 0, ph = hard.n ? hard.c / hard.n : 0;
+  if (pe < 0.6) return Math.max(0, b - 1);
+  if (F === 4) return 8;
+  return ph >= 0.67 ? b + 1 : b;
+}
+export function vocabProgress(st: PState) {
+  const done = st.core.filter((x) => x.ph?.startsWith("v") && st.answers[x.id]).length;
+  const { found } = vLocate(st);
+  const rem = found === null ? 9 : Math.max(0, 9 - vStat(st, found, ["vw", "vl", "vc"]).n);
+  return Math.min(0.97, done / Math.max(1, done + rem));
+}
+
 /** Итог ядра по шкале из 9 ступеней. На уровне подробной проверки X: простые задания (band 1) — это сам X,
  * сложные (band 2–3) — X+. Простые не взяты (< 60%) — ступень ниже; сложные взяты (≥ 67%) — X+. */
 export function coreResult(st: PState, bank: Bank) {
   void bank;
   if (st.diag === undefined) return 0;
   const D = st.diag, L = PL_LEVELS[D], b = BASE[L];
-  const easy = stat(st, (it) => it.level === L && it.band === 1), hard = stat(st, (it) => it.level === L && it.band > 1);
+  const easy = stat(st, (it) => it.level === L && it.band === 1 && it.skill === "grammar"), hard = stat(st, (it) => it.level === L && it.band > 1 && it.skill === "grammar");
   const all = levelAcc(st, D);
   const pe = easy.n >= 3 ? easy.c / easy.n : all.n ? all.c / all.n : 0;
   const ph = hard.n ? hard.c / hard.n : 0;
@@ -224,17 +294,19 @@ const pickBands = <T extends { band: number; id: string }>(list: T[], plus: bool
 export function pickTexts<T extends ReadItem | ListenItem>(list: T[], level: PLevel, plus: boolean, rnd: () => number = Math.random) {
   return pickBands(list.filter((x) => x.level === level), plus, 2, rnd);
 }
+/** Ещё один текст (запись): меньше 50% по двум текстам уровня — уровнем ниже; 85% и больше — уровнем выше. Один раз. */
 export function fallbackText<T extends ReadItem | ListenItem>(list: T[], st: PState, kind: "reading" | "listening", rnd: () => number = Math.random): T | null {
   const ids = kind === "reading" ? st.reading : st.listening;
   const level = st.level!;
   const li = PL_LEVELS.indexOf(level);
-  if (li === 0) return null;
-  const lower = PL_LEVELS[li - 1];
-  if (ids.some((id) => st.items[id]?.level === lower)) return null; // уже дали
+  if (ids.some((id) => st.items[id]?.level !== level)) return null; // запасной уже давали
   const qs = ids.flatMap((id) => (st.items[id] as T).questions);
   const ok = qs.filter((q) => st.answers[q.id]?.ok).length;
-  if (!qs.length || ok / qs.length >= 0.5) return null;
-  return pickBands(list.filter((x) => x.level === lower), false, 1, rnd)[0] ?? null;
+  if (!qs.length) return null;
+  const p = ok / qs.length;
+  if (p < 0.5 && li > 0) return pickBands(list.filter((x) => x.level === PL_LEVELS[li - 1]), false, 1, rnd)[0] ?? null;
+  if (p >= 0.85 && li < 4) return pickBands(list.filter((x) => x.level === PL_LEVELS[li + 1]), false, 1, rnd)[0] ?? null;
+  return null;
 }
 export function pickTask<T extends WriteItem | SpeakItem>(list: T[], level: PLevel, plus: boolean, rnd: () => number = Math.random): T | null {
   const c = list.filter((x) => x.level === level && (plus ? x.band > 1 : x.band === 1));
@@ -277,7 +349,9 @@ export type Summary = {
   coreStep: number; level: PLevel; diag: PLevel | null; fb: boolean; up: boolean;
   easy: [number, number]; hard: [number, number]; above: [number, number]; // уровень проверки: простые, сложные задания; срез уровня выше
   anchors: { level: PLevel; c: number; n: number; pass: boolean | undefined }[]; // поиск уровня
-  groups: GroupRes[]; // карта тем: все группы, где были задания
+  groups: GroupRes[]; // карта тем грамматики: все группы, где были задания
+  vstep: number | null; vlevel: PLevel | null; vgroups: GroupRes[]; // лексика: итог, найденный уровень, три вида на нём
+  vprobes: { level: PLevel; c: number; n: number; pass: boolean | undefined }[];
   core: Record<string, { grammar: [number, number]; vocabulary: [number, number] }>; // уровень → [верно, всего]
   reading: Record<string, [number, number]>; listening: Record<string, [number, number]>;
   readStep: number | null; listenStep: number | null;
@@ -292,17 +366,25 @@ export function summarize(st: PState, bank: Bank): Summary {
     if (!it || !a) continue;
     const row = (core[it.level] ??= { grammar: [0, 0], vocabulary: [0, 0] });
     row[it.skill][1] += 1; if (a.ok) row[it.skill][0] += 1;
-    const g = gOf.get(it.topic_id);
-    if (!g) continue;
+    const g = (it.group && bank.groups.find((x) => x.id === it.group)) || gOf.get(it.topic_id);
+    if (!g || g.kind !== "grammar") continue;
     const r = groups.get(g.id) ?? { id: g.id, name: g.name_ru, what: g.what_ru, kind: g.kind, level: g.level, c: 0, n: 0, dk: 0 };
     r.n++; if (a.ok) r.c++; if (a.dk) r.dk++;
     groups.set(g.id, r);
   }
   const anchors = PL_LEVELS.map((l, li) => {
     const g = anchorOf(bank, li);
-    const s = stat(st, (it) => gOf.get(it.topic_id)?.id === g.id);
+    const s = stat(st, (it, x) => (it.group ?? gOf.get(it.topic_id)?.id) === g.id && (x.ph === "w" || x.ph === "l"));
     return { level: l, ...s, pass: s.n >= PER_GROUP ? s.c >= 2 : undefined };
-  }).filter((x) => x.n > 0 && st.core.some((y) => (y.ph === "w" || y.ph === "l") && (st.items[y.id] as CoreItem)?.level === x.level));
+  }).filter((x) => x.n > 0);
+  const vf = st.vstep !== undefined ? vLocate(st).found : null;
+  const vgroups: GroupRes[] = vf === null ? [] : VKINDS.map((k) => {
+    const g = vGroup(bank, vf, k)!;
+    const r = { id: g.id, name: g.name_ru, what: g.what_ru, kind: "vocabulary" as const, level: g.level, c: 0, n: 0, dk: 0 };
+    for (const x of st.core) { const it = st.items[x.id] as CoreItem; const a = st.answers[x.id]; if (!it || !a || it.group !== g.id || !x.ph?.startsWith("v")) continue; r.n++; if (a.ok) r.c++; if (a.dk) r.dk++; }
+    return r;
+  });
+  const vprobes = PL_LEVELS.map((l, li) => { const s2 = vStat(st, li, ["vw", "vl"]); return { level: l, ...s2, pass: s2.n >= 3 ? s2.c >= 2 : undefined }; }).filter((x) => x.n > 0);
   const byLevel = (ids: string[]) => {
     const r: Record<string, [number, number]> = {};
     for (const id of ids) {
@@ -323,15 +405,18 @@ export function summarize(st: PState, bank: Bank): Summary {
       return { easy: [e.c, e.n] as [number, number], hard: [h.c, h.n] as [number, number], above: [a.c, a.n] as [number, number] };
     })(),
     groups: [...groups.values()].sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0)),
+    vstep: st.vstep ?? null, vlevel: vf === null ? null : PL_LEVELS[vf], vgroups, vprobes,
     core, reading, listening, readStep: skillStep(reading, st.level), listenStep: skillStep(listening, st.level),
   };
 }
 
-/** Ступень по чтению/аудированию: ≥ 80% на уровне ядра → X+, ≥ 50% → X, иначе — по запасному тексту ниже. */
+/** Ступень по чтению/аудированию: ≥ 80% на уровне → X+ (а если дали текст выше и там ≥ 50% — следующий уровень), ≥ 50% → X, иначе — по запасному тексту ниже. */
 function skillStep(r: Record<string, [number, number]>, level?: PLevel) {
   if (!level || !r[level]?.[1]) return null;
   const pct = r[level][0] / r[level][1];
   const b = BASE[level];
+  const upL = PL_LEVELS[PL_LEVELS.indexOf(level) + 1], ur = upL ? r[upL] : undefined;
+  if (pct >= 0.8 && ur?.[1]) return ur[0] / ur[1] >= 0.5 ? BASE[upL] : Math.min(8, b + 1);
   if (pct >= 0.8) return Math.min(8, b + 1);
   if (pct >= 0.5) return b;
   const li = PL_LEVELS.indexOf(level);

@@ -11,7 +11,7 @@ export function reviewData(id: string, st: PState, forTeacher: boolean) {
     const given = a?.v === null || a?.v === undefined ? "" : it.type === "mcq" ? it.options?.[Number(a.v)] ?? "" : String(a.v);
     return {
       id: it.id, level: it.level, step: x.step, skill: it.skill, topic: it.topic_ru, type: it.type, q: it.q, frame: it.frame ?? null, base: it.base ?? it.key ?? null,
-      right: it.type === "mcq" ? it.options?.[it.answer ?? 0] ?? "" : (it.accept ?? []).join(" / "), given, ok: !!a?.ok, explain: it.explain_ru, ms: a?.ms ?? null, dk: !!a?.dk,
+      right: it.type === "mcq" ? it.options?.[it.answer ?? 0] ?? "" : (it.accept ?? []).join(" / "), given, ok: !!a?.ok, explain: it.explain_ru, ms: a?.ms ?? null, dk: !!a?.dk, hinted: !!a?.h, vocab: !!x.ph?.startsWith("v"),
     };
   });
   const text = (ids: string[], kind: "reading" | "listening") => ids.map((tid) => {
@@ -19,7 +19,7 @@ export function reviewData(id: string, st: PState, forTeacher: boolean) {
     return {
       id: it.id, kind, level: it.level, title: it.title,
       passage: it.type === "reading" ? it.passage : null,
-      situation: it.type === "listening" ? it.situation_ru ?? "" : null,
+      situation: it.type === "listening" ? (it as ListenItem & { situation_en?: string }).situation_en ?? it.situation_ru ?? "" : null,
       audio: it.type === "listening" ? it.audio ?? null : null,
       plays: it.type === "listening" ? st.plays[it.id] ?? 0 : null,
       script: forTeacher && it.type === "listening" ? it.script.replace(/\[pause [\d.]+s\]\s*/g, "") : null,

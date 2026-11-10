@@ -39,7 +39,7 @@ export function PlacementReview(p: ReviewProps) {
 
   const wHint = p.d.writing ? scoreStep(p.rubrics.writing.map((c) => w[c.id]), p.d.writing.level as PLevel, w.task) : null;
   const sHint = p.d.speaking ? scoreStep(p.rubrics.speaking.map((c) => s[c.id]), p.d.speaking.level as PLevel) : null;
-  const hint = finalHint([p.sm.coreStep, p.sm.readStep, p.sm.listenStep, wHint, sHint]);
+  const hint = finalHint([p.sm.coreStep, p.sm.vstep, p.sm.readStep, p.sm.listenStep, wHint, sHint]);
   const [lvl, setLvl] = useState(p.level ?? (hint !== null ? STEPS[hint] : ""));
   const L = ["A1", "A2", "B1", "B2", "C1"].filter((l) => p.sm.core[l] || p.sm.reading[l] || p.sm.listening[l]);
   const waiting = p.status === "new" || p.status === "active";
@@ -56,6 +56,7 @@ export function PlacementReview(p: ReviewProps) {
     sm.fb && sm.diag ? t("pl.exFb", { l: PL_LEVELS[PL_LEVELS.indexOf(sm.diag) + 1] ?? "", d: sm.diag }) : null,
     sm.up && sm.diag ? t("pl.exUp", { l: prevLevel(sm.diag), d: sm.diag }) : null,
     !sm.up && sm.above[1] ? t("pl.exAbove", { l: PL_LEVELS[PL_LEVELS.indexOf(sm.diag ?? "A1") + 1] ?? "", c: sm.above[0], n: sm.above[1] }) : null,
+    sm.vstep !== null ? t("pl.exVocab", { r: STEPS[sm.vstep], p: sm.vprobes.map((x) => `${x.level} ${x.c}/${x.n}`).join(" → ") }) : null,
     sk(sm.reading, sm.readStep, t("pl.part.reading")), sk(sm.listening, sm.listenStep, t("pl.part.listening")),
     hint !== null ? t(wHint === null || sHint === null ? "pl.exNeedWS" : "pl.exFinal", { h: STEPS[hint] }) : null,
   ].filter(Boolean) as string[];
@@ -130,7 +131,8 @@ export function PlacementReview(p: ReviewProps) {
           {sm.diag && <><Icon name="right" size="sm" /><span className="small muted">{t("pl.diagAt")}</span><span className="pill">{sm.diag}</span></>}
         </div>
         <div className="plsteps">
-          <div><span>{t("pl.coreRes")}</span><b>{STEPS[p.sm.coreStep]}</b></div>
+          <div><span>{t("pl.part.core")}</span><b>{STEPS[p.sm.coreStep]}</b></div>
+          <div><span>{t("pl.part.vocab")}</span><b>{p.sm.vstep !== null ? STEPS[p.sm.vstep] : "—"}</b></div>
           <div><span>{t("pl.part.reading")}</span><b>{p.sm.readStep !== null ? STEPS[p.sm.readStep] : "—"}</b></div>
           <div><span>{t("pl.part.listening")}</span><b>{p.sm.listenStep !== null ? STEPS[p.sm.listenStep] : "—"}</b></div>
           <div><span>{t("pl.part.writing")}</span><b>{wHint !== null ? STEPS[wHint] : "—"}</b></div>
@@ -149,6 +151,7 @@ export function PlacementReview(p: ReviewProps) {
           {growth.length > 0 ? <div className="plgrowth"><b>{t("pl.growth")}:</b> {growth.map((g) => g.name).join(", ")}</div> : diagGroups.length > 0 && <div className="plgrowth ok">{t("pl.noGrowth")}</div>}
           <div className="plgroups">{diagGroups.map(gRow)}</div>
           {otherGroups.length > 0 && <details><summary className="small">{t("pl.mapOther")}</summary><div className="plgroups mt-2">{otherGroups.map(gRow)}</div></details>}
+          {sm.vgroups.length > 0 && <><h3 className="mb-0 mt-2">{t("pl.vmapTitle", { l: sm.vlevel ?? "" })}</h3><div className="plgroups">{sm.vgroups.map(gRow)}</div></>}
         </section>
       )}
 
@@ -156,7 +159,7 @@ export function PlacementReview(p: ReviewProps) {
         <section className="card flex flex-col gap-3">
           <div className="flex items-center gap-2"><h3 className="m-0 grow">{t("pl.timeTitle")}</h3><b>{fmtSec(total)}</b></div>
           <div className="plsteps">
-            {["core", "reading", "listening", "writing", "speaking"].map((k) => <div key={k}><span>{t(`pl.part.${k}` as DictKey)}</span><b className="text-[16px]">{tm[k] ? fmtSec(tm[k]) : "—"}</b></div>)}
+            {["core", "vocab", "reading", "listening", "writing", "speaking"].map((k) => <div key={k}><span>{t(`pl.part.${k}` as DictKey)}</span><b className="text-[16px]">{tm[k] ? fmtSec(tm[k]) : "—"}</b></div>)}
           </div>
           <div className="small flex flex-col gap-1">
             {coreMs.length > 0 && <span>{t("pl.timeAvg", { s: fmtSec(coreMs.reduce((a, b) => a + b, 0) / coreMs.length) })}</span>}

@@ -8,12 +8,12 @@ import type { PView } from "@/lib/placement/run";
 import { Icon } from "../Icon";
 import type { IconName } from "../icon-paths";
 
-const PARTS = ["core", "reading", "listening", "writing", "speaking"] as const;
+const PARTS = ["core", "vocab", "reading", "listening", "writing", "speaking"] as const;
 type Part = (typeof PARTS)[number];
-const PART_ICON: Record<Part, IconName> = { core: "book", reading: "note", listening: "sound", writing: "pencil", speaking: "mic" };
+const PART_ICON: Record<Part, IconName> = { core: "book", vocab: "cards", reading: "note", listening: "sound", writing: "pencil", speaking: "mic" };
 type V = PView;
-type Core = Extract<V, { section: "core" }>;
-type CoreItemV = NonNullable<Extract<V, { section: "core" }>["item"]>;
+type Core = Extract<V, { section: "core" | "vocab" }>;
+type CoreItemV = NonNullable<Core["item"]>;
 type TQ = { id: string; q: string; options: string[]; v: number | null };
 type TItem = { id: string; title: string; questions: TQ[]; passage?: string; situation?: string; audio?: string; plays?: number; used?: number };
 type TextV = { section: "reading" | "listening"; instr?: string; extra?: boolean; items: TItem[] };
@@ -45,18 +45,21 @@ export function PlacementRunner({ id, initial, sample, done, home }: { id: strin
       if (from !== to) {
         window.scrollTo({ top: 0 });
         // экран «раздел завершён» — только когда раздел закрылся, а не при переключении вкладок
-        const closed = from === "core" || ((PARTS as readonly string[]).includes(from) && !(r.view.open ?? []).includes(from));
+        const closed = from === "core" || from === "vocab" || ((PARTS as readonly string[]).includes(from) && !(r.view.open ?? []).includes(from));
+        setPast(null); setBack(0);
         if (to === "done") router.refresh();
         else if (closed && (PARTS as readonly string[]).includes(from) && (PARTS as readonly string[]).includes(to)) setBetween({ from: from as Part, to: to as Part });
       }
     });
   const ms = () => Date.now() - shownAt.current;
-  const curIdx = v.section === "core" ? ((v as Core).n ?? 1) - 1 : 0;
+  const block = v.section === "core" || v.section === "vocab";
+  const curIdx = block ? ((v as Core).n ?? 1) - 1 : 0;
+  const from = block ? (v as Core).from ?? 0 : 0;
   const openPast = (b: number) => start(async () => {
     const r = await peekCore(id, curIdx - b).catch(() => null);
     if (r?.ok) { setPast({ item: r.item as CoreItemV, given: r.given ?? null, dk: !!r.dk }); setBack(b); window.scrollTo({ top: 0 }); }
   });
-  const revise = (val: string | number | null, dk: boolean) => start(async () => {
+  const revise = (val: string | number | null, dk: boolean) => start(async () => { // подсказку на исправлении не учитываем
     const r = await reviseCore(id, past!.item.id, val, dk).catch(() => null);
     if (!r?.ok) { setErr(t("pl.err.net")); return; }
     if (back > 1) { const q = await peekCore(id, curIdx - back + 1).catch(() => null); if (q?.ok) { setPast({ item: q.item as CoreItemV, given: q.given ?? null, dk: !!q.dk }); setBack(back - 1); return; } }
@@ -72,7 +75,7 @@ export function PlacementRunner({ id, initial, sample, done, home }: { id: strin
         <div className="flex flex-col gap-2">
           <div className="plprog" aria-label={t("pl.progress")}>
             {PARTS.map((p) => {
-              const isDone = p === "core" ? v.section !== "core" : v.section !== "core" && !open.includes(p);
+              const isDone = p === "core" ? v.section !== "core" : p === "vocab" ? !block : !block && !open.includes(p);
               const can = !between && !pending && open.includes(p) && p !== v.section;
               const cls = p === v.section && !between ? "on" : isDone ? "done" : can ? "can" : "";
               return can
@@ -80,7 +83,7 @@ export function PlacementRunner({ id, initial, sample, done, home }: { id: strin
                 : <span key={p} className={cls}>{isDone && <Icon name="check" size="sm" />}{t(`pl.part.${p}` as DictKey)}</span>;
             })}
           </div>
-          {v.section === "core" && !between && (
+          {block && !between && (
             <div className="plcorebar" role="progressbar" aria-label={t("pl.coreProgress")} aria-valuenow={Math.round(((v as Core).progress ?? 0) * 100)} aria-valuemin={0} aria-valuemax={100}>
               <div style={{ width: `${Math.max(4, ((v as Core).progress ?? 0) * 100)}%` }} />
             </div>
@@ -89,9 +92,9 @@ export function PlacementRunner({ id, initial, sample, done, home }: { id: strin
       )}
       {between ? <Between from={between.from} to={between.to} onGo={() => { setBetween(null); shownAt.current = Date.now(); }} /> : <>
         {v.section === "intro" && <Intro sample={sample} pending={pending} onStart={() => step(() => startPlacement(id))} />}
-        {v.section === "core" && (past && back > 0
-          ? <CoreStep key={`past-${past.item.id}`} item={past.item} n={curIdx - back + 1} initial={past.dk ? "" : past.given ?? ""} past pending={pending} onBack={curIdx - back > 0 ? () => openPast(back + 1) : undefined} onAnswer={revise} />
-          : (v as Core).item && <CoreStep key={(v as Core).item!.id} item={(v as Core).item!} n={curIdx + 1} pending={pending} onBack={curIdx > 0 ? () => openPast(1) : undefined} onAnswer={(val, dk) => step(() => answerCore(id, (v as Core).item!.id, val, ms(), dk))} />)}
+        {block && (past && back > 0
+          ? <CoreStep key={`past-${past.item.id}`} item={past.item} n={curIdx - back - from + 1} initial={past.dk ? "" : past.given ?? ""} past pending={pending} onBack={curIdx - back > from ? () => openPast(back + 1) : undefined} onAnswer={revise} />
+          : (v as Core).item && <CoreStep key={(v as Core).item!.id} item={(v as Core).item!} n={curIdx - from + 1} pending={pending} onBack={curIdx > from ? () => openPast(1) : undefined} onAnswer={(val, dk, h) => step(() => answerCore(id, (v as Core).item!.id, val, ms(), dk, h))} />)}
         {(v.section === "reading" || v.section === "listening") && (
           <TextStep key={(v as unknown as TextV).items.map((x) => x.id).join()} v={v as unknown as TextV} pending={pending} attempt={id} onFinish={() => step(() => finishTexts(id))} />
         )}
@@ -202,12 +205,13 @@ function Intro({ sample, pending, onStart }: { sample: string; pending: boolean;
 
 // ───────── Грамматика и лексика ─────────
 
-function CoreStep({ item: it, n, pending, onAnswer, onBack, initial, past }: { item: CoreItemV; n: number; pending: boolean; onAnswer: (val: string | number | null, dk: boolean) => void; onBack?: () => void; initial?: string | number; past?: boolean }) {
+function CoreStep({ item: it, n, pending, onAnswer, onBack, initial, past }: { item: CoreItemV; n: number; pending: boolean; onAnswer: (val: string | number | null, dk: boolean, hinted: boolean) => void; onBack?: () => void; initial?: string | number; past?: boolean }) {
   const { t } = useT();
   const [val, setVal] = useState<string | number>(initial ?? "");
+  const [showHint, setShowHint] = useState(false);
   const input = (
     <input className="input plgap" autoFocus autoComplete="off" autoCapitalize="off" spellCheck={false} value={String(val)} onChange={(e) => setVal(e.target.value)}
-      onKeyDown={(e) => { if (e.key === "Enter" && String(val).trim()) onAnswer(String(val), false); }} aria-label={t("pl.answer")} />
+      onKeyDown={(e) => { if (e.key === "Enter" && String(val).trim()) onAnswer(String(val), false, showHint); }} aria-label={t("pl.answer")} />
   );
   const parts = (s2: string) => { const [a, b] = s2.split("___"); return <p className="plq">{a}{input}{b}</p>; };
   const empty = val === "" || (typeof val === "string" && !val.trim());
@@ -233,14 +237,17 @@ function CoreStep({ item: it, n, pending, onAnswer, onBack, initial, past }: { i
       )}
       {typed && (
         <div className="pltips">
-          {it.hint && <span className="plhint"><Icon name="info" size="sm" />{t("pl.hintWord", { h: it.hint })}</span>}
-          <span className="small muted">{it.type === "brackets" ? t("pl.bracketsHint") : t("pl.gapNote")}</span>
+          {it.hint && (showHint
+            ? <span className="plhint"><Icon name="info" size="sm" />{t("pl.hintWord", { h: it.hint })}</span>
+            : <button type="button" className="plhintbtn" onClick={() => setShowHint(true)}><Icon name="qmark" size="sm" />{t("pl.hintShow")}</button>)}
+          {it.type === "brackets" ? <span className="small muted">{t("pl.bracketsHint")}</span>
+            : it.type === "gap" && /вспомогательн|модальн|to be/.test(it.hint ?? "") ? <span className="small muted">{t("pl.gapNote")}</span> : null}
         </div>
       )}
       <div className="plactions">
         {onBack && <button type="button" className="btn plain mr-auto" disabled={pending} onClick={onBack}><Icon name="chevl" size="sm" />{t("pl.prevQ")}</button>}
-        <button type="button" className="btn plain" disabled={pending} onClick={() => onAnswer(null, true)}>{t("pl.dontKnow")}</button>
-        <button className="btn primary" disabled={pending || empty} onClick={() => onAnswer(typeof val === "string" ? val : val, false)}>{past ? t("pl.saveFix") : t("pl.next")}</button>
+        <button type="button" className="btn plain" disabled={pending} onClick={() => onAnswer(null, true, showHint)}>{t("pl.dontKnow")}</button>
+        <button className="btn primary" disabled={pending || empty} onClick={() => onAnswer(val, false, showHint)}>{past ? t("pl.saveFix") : t("pl.next")}</button>
       </div>
     </section>
   );
@@ -285,7 +292,7 @@ function TextStep({ v, pending, onFinish, attempt }: { v: TextV; pending: boolea
           <legend><span className="tk-num">{n + 1}</span>{q.q}</legend>
           <div className="flex flex-col gap-2">
             {q.options.map((o, k) => <label key={k} className={`topt ${ans[q.id] === k ? "on" : ""}`}><input type="radio" name={q.id} checked={ans[q.id] === k} onChange={() => pick(q.id, k)} />{o}</label>)}
-            <label className={`topt dk ${ans[q.id] === -1 ? "on" : ""}`}><input type="radio" name={q.id} checked={ans[q.id] === -1} onChange={() => pick(q.id, -1)} />{t("pl.dontKnow")}</label>
+            <label className={`topt dk ${ans[q.id] === -1 ? "on" : ""}`}><input type="radio" name={q.id} checked={ans[q.id] === -1} onChange={() => pick(q.id, -1)} />I don&apos;t know</label>
           </div>
         </fieldset>
       ))}

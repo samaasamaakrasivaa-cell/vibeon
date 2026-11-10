@@ -32,7 +32,7 @@ const FILE_ITEMS: AnyItem[] = [
 ];
 export const GROUPS = groupsJson as unknown as Group[];
 const GROUP_OF = new Map(GROUPS.flatMap((g) => g.topics.map((t) => [t, g.id] as const)));
-for (const x of FILE_ITEMS) if (x.skill === "grammar" || x.skill === "vocabulary") (x as CoreItem).group = GROUP_OF.get((x as CoreItem).topic_id);
+for (const x of FILE_ITEMS) if (x.skill === "grammar" || x.skill === "vocabulary") (x as CoreItem).group = (x as CoreItem).group ?? GROUP_OF.get((x as CoreItem).topic_id);
 export const ORIGINAL = new Map(FILE_ITEMS.map((x) => [x.id, x]));
 
 export type Rubric = { id: string; name_ru: string; levels: Record<string, string> };

@@ -58,7 +58,7 @@ export async function saveBankItem(itemId: string, data: Record<string, unknown>
     if (typeof qs === "string") return { ok: false, error: qs };
     patch = { title: s(data.title, 200) || o.title, questions: qs };
     if (o.type === "reading") { patch.passage = s(data.passage, 8000); if (!patch.passage) return { ok: false, error: "passage" }; }
-    else { patch.script = s(data.script, 8000); patch.situation_ru = s(data.situation_ru, 400); if (!patch.script) return { ok: false, error: "script" }; }
+    else { patch.script = s(data.script, 8000); patch.situation_en = s(data.situation_en, 400); if (!patch.script) return { ok: false, error: "script" }; }
   } else if (o.type === "writing") {
     const min = Number(data.min_words), max = Number(data.max_words);
     if (!s(data.prompt_en) || !(min > 0 && max >= min && max <= 600)) return { ok: false, error: "writing" };

@@ -26,34 +26,30 @@ export function PlacementPanel({ students, rows, link, origin, owner }: { studen
   const copy = async () => { await navigator.clipboard.writeText(url).catch(() => null); setCopied(true); setTimeout(() => setCopied(false), 1800); };
   return (
     <div className="flex flex-col gap-6">
-      <section className="card plhero2">
-        <div className="plhero2-top">
-          <span className="pllogo" aria-hidden="true"><svg viewBox="0 0 48 48"><rect x="6" y="30" width="8" height="12" rx="2" /><rect x="20" y="20" width="8" height="22" rx="2" /><rect x="34" y="8" width="8" height="34" rx="2" /></svg></span>
-          <div className="grow min-w-[220px] flex-1">
-            <h2 className="m-0">{t("pl.cardTitle")}</h2>
-            <div className="plfacts mt-2">
+      <section className="plhero3">
+        <div className="plhero3-top">
+          <span className="pllogo2" aria-hidden="true"><svg viewBox="0 0 48 48"><rect x="6" y="30" width="8" height="12" rx="2.5" /><rect x="20" y="19" width="8" height="23" rx="2.5" /><rect x="34" y="7" width="8" height="35" rx="2.5" /></svg></span>
+          <div className="grow min-w-0">
+            <h2>{t("pl.cardTitle")}</h2>
+            <div className="plglass">
+              <span><Icon name="target" size="sm" />A1–C1</span>
               <span><Icon name="clock" size="sm" />{t("pl.factTime")}</span>
-              <span><Icon name="target" size="sm" />{t("pl.factLevels")}</span>
               <span><Icon name="spark" size="sm" />{t("pl.factAdaptive")}</span>
             </div>
           </div>
         </div>
-        <ul className="plthesis">
-          <li><b>{t("pl.th1")}</b> {t("pl.th1b")}</li>
-          <li><b>{t("pl.th2")}</b> {t("pl.th2b")}</li>
-          <li><b>{t("pl.th3")}</b> {t("pl.th3b")}</li>
-        </ul>
-        <div className="flex flex-wrap gap-2">
-          <button className="btn primary" disabled={pending} onClick={() => run(selfPlacement, (r) => router.push(`/placement/${r.id}`), true)}><Icon name="pencil" size="sm" />{t("pl.takeSelf")}</button>
-          <button className="btn secondary" onClick={() => setAssign(true)}><Icon name="user" size="sm" />{t("pl.assign")}</button>
-          <button className="btn secondary" onClick={() => setLinkOpen(true)}><Icon name="link" size="sm" />{t("pl.linkNew")}</button>
-          {owner && <Link className="btn plain" href="/teacher/placement/bank"><Icon name="book" size="sm" />{t("pl.editBank")}</Link>}
+        <p className="plhero3-lead">{t("pl.cardLead")}</p>
+        <details className="plmore2">
+          <summary><Icon name="info" size="sm" />{t("pl.more")}<Icon name="chevd" size="sm" /></summary>
+          <div className="plmore2-body"><PlacementAbout /></div>
+        </details>
+        <div className="plhero3-actions">
+          <button className="btn plwhite" disabled={pending} onClick={() => run(selfPlacement, (r) => router.push(`/placement/${r.id}`), true)}><Icon name="pencil" size="sm" />{t("pl.takeSelf")}</button>
+          <button className="btn plglassbtn" onClick={() => setAssign(true)}><Icon name="user" size="sm" />{t("pl.assign")}</button>
+          <button className="btn plglassbtn" onClick={() => setLinkOpen(true)}><Icon name="link" size="sm" />{t("pl.linkNew")}</button>
+          {owner && <Link className="plownlink" href="/teacher/placement/bank"><Icon name="book" size="sm" />{t("pl.editBank")}</Link>}
         </div>
         {error && <div className="alert">{error}</div>}
-        <details className="plmore">
-          <summary><Icon name="info" size="sm" />{t("pl.more")}</summary>
-          <PlacementAbout />
-        </details>
       </section>
 
 

@@ -2,7 +2,7 @@ import "server-only";
 import type { Prisma } from "@prisma/client";
 import { INSTRUCTIONS } from "./bank";
 import {
-  checkCore, coreProgress, coreResult, fallbackText, levelOfStep, nextCore, pickTask, pickTexts, stepOf,
+  checkCore, coreProgress, coreResult, fallbackText, levelOfStep, nextCore, nextVocab, pickTask, pickTexts, stepOf, vocabProgress, vocabResult,
   type AnyItem, type Bank, type CoreItem, type ListenItem, type PState, type ReadItem, type SpeakItem, type WriteItem,
 } from "./engine";
 
@@ -41,7 +41,8 @@ export function closeSection(st: PState, sec: Later, bank: Bank) {
 /** Задания всех разделов после ядра выбираются сразу — чтобы ученик мог переключаться между ними. */
 function ensureTasks(st: PState, bank: Bank) {
   const snap = (x: AnyItem) => { st.items[x.id] = x; return x.id; };
-  const plus = (st.step ?? 0) % 2 === 1 || st.step === 8;
+  const ts = Math.min(st.step ?? 0, st.vstep ?? 8); // тексты — по меньшему из грамматики и лексики
+  const plus = ts % 2 === 1 || ts === 8;
   const L = st.level ?? "A1";
   if (!st.reading.length) st.reading = pickTexts(bank.reading, L, plus).map(snap);
   if (!st.listening.length) st.listening = pickTexts(bank.listening, L, plus).map(snap);
@@ -49,16 +50,22 @@ function ensureTasks(st: PState, bank: Bank) {
   if (!st.speaking) { const sp = pickTask(bank.speaking, L, plus); if (sp) st.speaking = { id: snap(sp), rec: {} }; }
 }
 
-/** Выдать следующее задание ядра или, когда ядро закончено, открыть остальные разделы. */
+/** Выдать следующее задание грамматики или лексики; когда лексика закончена — открыть остальные разделы. */
 export function advance(st: PState, bank: Bank) {
   const snap = (x: AnyItem) => { st.items[x.id] = x; return x.id; };
-  if (st.section !== "core") { ensureTasks(st, bank); return; }
+  if (st.section !== "core" && st.section !== "vocab") { ensureTasks(st, bank); return; }
   const last = st.core[st.core.length - 1];
   if (last && !st.answers[last.id]) return;
-  const nx = nextCore(st, bank);
-  if (nx) { snap(nx.item); st.core.push({ id: nx.item.id, step: stepOf(nx.item.level, nx.item.band), ph: nx.ph }); return; }
-  st.step = coreResult(st, bank);
-  st.level = levelOfStep(st.step);
+  if (st.section === "core") {
+    const nx = nextCore(st, bank);
+    if (nx) { snap(nx.item); st.core.push({ id: nx.item.id, step: stepOf(nx.item.level, nx.item.band), ph: nx.ph }); return; }
+    st.step = coreResult(st, bank);
+    goTo(st, "vocab");
+  }
+  const nv = nextVocab(st, bank);
+  if (nv) { snap(nv.item); st.core.push({ id: nv.item.id, step: stepOf(nv.item.level, nv.item.band), ph: nv.ph }); return; }
+  st.vstep = vocabResult(st);
+  st.level = levelOfStep(Math.min(st.step ?? 0, st.vstep));
   st.closed = [];
   ensureTasks(st, bank);
   goTo(st, "reading");
@@ -76,14 +83,16 @@ export function addFallback(st: PState, bank: Bank, k: "reading" | "listening") 
 /** Задание без ответов — то, что уходит в браузер. */
 export function publicView(st: PState, lang: "ru" | "en", bank?: Bank) {
   const ins = (k: string) => INSTRUCTIONS[k]?.[lang] ?? "";
-  const base = { section: st.section, level: st.level ?? null, open: st.section === "core" || st.section === "intro" ? [] : (openOf(st) as string[]) };
-  if (st.section === "core") {
+  const base = { section: st.section, level: st.level ?? null, open: st.section === "core" || st.section === "vocab" || st.section === "intro" ? [] : (openOf(st) as string[]) };
+  if (st.section === "core" || st.section === "vocab") {
+    const sec = st.section;
     const last = st.core[st.core.length - 1];
     const it = last ? (st.items[last.id] as CoreItem) : null;
-    const progress = bank ? coreProgress(st, bank) : st.pmax ?? 0;
-    if (!it) return { ...base, section: "core" as const, n: 0, progress, item: null };
+    const progress = sec === "vocab" ? vocabProgress(st) : bank ? coreProgress(st, bank) : st.pmax ?? 0;
+    const from = sec === "vocab" ? st.core.findIndex((x) => x.ph?.startsWith("v")) : 0; // «Предыдущее» — только внутри блока
+    if (!it) return { ...base, section: sec, n: 0, from: 0, progress, item: null };
     return {
-      ...base, section: "core" as const, n: st.core.length, progress,
+      ...base, section: sec, n: st.core.length, from: Math.max(0, from), progress,
       item: { id: it.id, type: it.type, skill: it.skill, q: it.q, options: it.options ?? null, base: it.base ?? null, key: it.key ?? null, frame: it.frame ?? null, hint: (it as CoreItem & { hint_ru?: string }).hint_ru ?? null, instr: ins(it.type) },
     };
   }
@@ -96,7 +105,7 @@ export function publicView(st: PState, lang: "ru" | "en", bank?: Bank) {
       const qs = it.questions.map((q) => ({ id: q.id, q: q.q, options: q.options, v: st.open?.[q.id] ?? null }));
       return it.type === "reading"
         ? { id: it.id, title: it.title, passage: it.passage, questions: qs }
-        : { id: it.id, title: it.title, situation: (it as ListenItem).situation_ru ?? "", audio: (it as ListenItem).audio ?? "", plays: (it as ListenItem).plays ?? 2, used: st.plays[it.id] ?? 0, questions: qs };
+        : { id: it.id, title: it.title, situation: (it as ListenItem & { situation_en?: string }).situation_en ?? (it as ListenItem).situation_ru ?? "", audio: (it as ListenItem).audio ?? "", plays: (it as ListenItem).plays ?? 2, used: st.plays[it.id] ?? 0, questions: qs };
     });
     return { ...base, section: st.section, extra: done.length > 0, instr: ins(st.section), items };
   }

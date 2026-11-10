@@ -9,20 +9,21 @@ const STEPS = ["A1", "A1+", "A2", "A2+", "B1", "B1+", "B2", "B2+", "C1"];
 const PATH = [0, 2, 2, 4, 4, 4, 6, 6, 6, 4, 5, 5, 4, 5, 5, 4, 5, 5];
 const OK = [1, 1, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1];
 
-/** «Как работает тест» — коротко для учителя, с инфографикой. */
+/** «Как устроен тест» — подробно для учителя: этапы, как оценивается, что вы получите. */
 export function PlacementAbout() {
   const { t } = useT();
   const W = 560, H = 190, x0 = 40, dx = (W - x0 - 10) / (PATH.length - 1), y = (s: number) => H - 22 - s * ((H - 40) / 8);
-  const cards: [IconName, DictKey, DictKey][] = [
-    ["target", "pl.ab.what", "pl.ab.whatText"], ["spark", "pl.ab.how", "pl.ab.howText"],
-    ["pencil", "pl.ab.who", "pl.ab.whoText"], ["route", "pl.ab.get", "pl.ab.getText"],
+  const stages: [IconName, DictKey, DictKey][] = [
+    ["sound", "pl.st1", "pl.st1t"], ["book", "pl.st2", "pl.st2t"], ["cards", "pl.st3", "pl.st3t"],
+    ["note", "pl.st4", "pl.st4t"], ["pencil", "pl.st5", "pl.st5t"], ["route", "pl.st6", "pl.st6t"],
   ];
   return (
     <div className="plabout">
-      <p className="muted m-0">{t("pl.ab.lead")}</p>
-      <div className="plabgrid">
-        {cards.map(([ic, h, x]) => <div key={h} className="plabcard"><span className="plico sm"><Icon name={ic} /></span><b>{t(h)}</b><span className="small muted">{t(x)}</span></div>)}
-      </div>
+      <ol className="pltimeline">
+        {stages.map(([ic, h, x], i) => (
+          <li key={h}><span className="pltl-ico"><Icon name={ic} size="sm" /></span><div><b>{i + 1}. {t(h)}</b><p>{t(x)}</p></div></li>
+        ))}
+      </ol>
       <div className="plladder">
         <div className="small font-semibold mb-1">{t("pl.ab.ladder")}</div>
         <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={t("pl.ab.ladder")}>
@@ -34,12 +35,6 @@ export function PlacementAbout() {
           <text x={x0 + (PATH.length - 1) * dx - 6} y={y(6) - 6} textAnchor="end" className="note b">{t("pl.ab.result")}</text>
         </svg>
         <div className="pllegend small muted"><span><i className="ok" />{t("pl.ab.right")}</span><span><i className="bad" />{t("pl.ab.wrong")}</span><span>{t("pl.ab.ladderHint")}</span></div>
-      </div>
-      <div className="plblocks">
-        <b>{t("pl.ab.blocks")}</b>
-        {(["core", "reading", "listening", "writing", "speaking"] as const).map((k) => (
-          <div key={k} className="plblock"><b>{t(`pl.part.${k}` as DictKey)}</b><span className="small muted">{t(`pl.ab.b.${k}` as DictKey)}</span></div>
-        ))}
       </div>
       <div className="plabtips">
         <b>{t("pl.ab.tips")}</b>

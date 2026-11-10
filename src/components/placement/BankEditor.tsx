@@ -120,7 +120,7 @@ function ItemDialog({ item, edited, onClose }: { item: AnyItem; edited: boolean;
         {item.type === "listening" && (
           <>
             {field("title", t("pl.titleF"))}
-            {field("situation_ru", t("pl.situation"))}
+            {field("situation_en", t("pl.situation"))}
             <div className="dblk flex flex-col gap-2">
               <b className="small">{t("pl.audio")}</b>
               <audio controls preload="none" src={(item as ListenItem).audio} className="w-full" />

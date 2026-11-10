@@ -48,14 +48,14 @@ export async function startPlacement(id: string): Promise<R> {
 }
 
 /** dk — «Не знаю»: засчитывается как неверный ответ, но в разборе отмечен отдельно. */
-export async function answerCore(id: string, itemId: string, v: string | number | null, ms: number, dk = false): Promise<R> {
+export async function answerCore(id: string, itemId: string, v: string | number | null, ms: number, dk = false, hinted = false): Promise<R> {
   return wrap(async () => {
     const { st } = await load(id);
     const last = st.core[st.core.length - 1];
-    if (st.section !== "core" || !last || last.id !== itemId || st.answers[itemId]) return { ok: true, view: publicView(st, await getLang()) };
+    if ((st.section !== "core" && st.section !== "vocab") || !last || last.id !== itemId || st.answers[itemId]) return { ok: true, view: publicView(st, await getLang()) };
     const it = st.items[itemId] as CoreItem;
     const val = dk ? null : typeof v === "number" ? v : str(v, 120);
-    st.answers[itemId] = { v: val, ok: dk ? false : checkCore(it, val), ms: Math.max(0, Math.min(3600e3, Math.round(ms) || 0)), ...(dk ? { dk: true } : {}) };
+    st.answers[itemId] = { v: val, ok: dk ? false : checkCore(it, val), ms: Math.max(0, Math.min(3600e3, Math.round(ms) || 0)), ...(dk ? { dk: true } : {}), ...(hinted ? { h: true } : {}) };
     advance(st, (await getBank()).bank);
     return save(id, st);
   });
@@ -143,7 +143,7 @@ export async function finishPlacement(id: string, noMic = false): Promise<R> {
 export async function goSection(id: string, sec: string): Promise<R> {
   return wrap(async () => {
     const { st } = await load(id);
-    if (!(LATER as readonly string[]).includes(sec) || !openOf(st).includes(sec as Later) || st.section === "core" || st.section === "intro") return { ok: false, error: "section" };
+    if (!(LATER as readonly string[]).includes(sec) || !openOf(st).includes(sec as Later) || st.section === "core" || st.section === "vocab" || st.section === "intro") return { ok: false, error: "section" };
     goTo(st, sec as Later);
     return save(id, st);
   });
@@ -173,7 +173,8 @@ export async function peekCore(id: string, idx: number): Promise<R & { item?: un
   try {
     const { st } = await load(id);
     const x = st.core[idx];
-    if (st.section !== "core" || !x || !st.answers[x.id]) return { ok: false, error: "idx" };
+    const inBlock = (y?: { ph?: string }) => !!y && (st.section === "vocab" ? !!y.ph?.startsWith("v") : st.section === "core" && !y.ph?.startsWith("v"));
+    if (!inBlock(x) || !st.answers[x.id]) return { ok: false, error: "idx" };
     const it = st.items[x.id] as CoreItem;
     const ins = (await import("./bank")).INSTRUCTIONS[it.type]?.[await getLang()] ?? "";
     return { ok: true, item: { id: it.id, type: it.type, skill: it.skill, q: it.q, options: it.options ?? null, base: it.base ?? null, key: it.key ?? null, frame: it.frame ?? null, hint: (it as CoreItem & { hint_ru?: string }).hint_ru ?? null, instr: ins }, given: st.answers[x.id].v, dk: !!st.answers[x.id].dk };
@@ -184,7 +185,8 @@ export async function reviseCore(id: string, itemId: string, v: string | number 
   return wrap(async () => {
     const { st } = await load(id);
     const x = st.core.find((y) => y.id === itemId);
-    if (st.section !== "core" || !x || !st.answers[itemId]) return { ok: false, error: "idx" };
+    const inBlock = !!x && (st.section === "vocab" ? !!x.ph?.startsWith("v") : st.section === "core" && !x.ph?.startsWith("v"));
+    if (!inBlock || !st.answers[itemId]) return { ok: false, error: "idx" };
     const it = st.items[itemId] as CoreItem;
     const val = dk ? null : typeof v === "number" ? v : str(v, 120);
     st.answers[itemId] = { ...st.answers[itemId], v: val, ok: dk ? false : checkCore(it, val), dk: dk || undefined };

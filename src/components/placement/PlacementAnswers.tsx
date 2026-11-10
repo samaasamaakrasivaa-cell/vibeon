@@ -31,18 +31,19 @@ export function PlacementAnswers({ id, d, teacher, reveal: initial }: { id: stri
   const L = ["A1", "A2", "B1", "B2", "C1"];
   return (
     <div className="flex flex-col gap-4">
-      <section className="card">
-        <h3 className="mt-0">{t("pl.part.core")}</h3>
-        {L.filter((l) => d.core.some((x) => x.level === l)).map((l) => (
+      {(["core", "vocab"] as const).map((part) => { const list = d.core.filter((x) => (part === "vocab") === !!x.vocab); return list.length > 0 && (
+      <section key={part} className="card">
+        <h3 className="mt-0">{t(part === "vocab" ? "pl.part.vocab" : "pl.part.core")}</h3>
+        {L.filter((l) => list.some((x) => x.level === l)).map((l) => (
           <div key={l} className="mb-3">
             <div className="plab">{l}</div>
             <div className="flex flex-col gap-2">
-              {d.core.filter((x) => x.level === l).map((x) => (
+              {list.filter((x) => x.level === l).map((x) => (
                 <div key={x.id} className={`plans ${x.ok ? "ok" : "bad"}`}>
                   <div className="flex items-start gap-2"><Icon name={x.ok ? "check" : "close"} size="sm" /><div className="grow">
                     {x.base && <span className="plbase sm">{x.base}</span>} {x.type === "transform" ? <><span>{x.q}</span><br /><span>{x.frame}</span></> : <span>{x.q}</span>}
                     <div className="small mt-1">{x.ok ? <b>{x.given}</b> : <>{x.dk ? <span className="pill grey">{t("pl.dontKnow")}</span> : <s className="muted">{x.given || t("pl.noAnswer")}</s>} → <b>{x.right}</b></>}</div>
-                    <div className="small muted">{x.topic}{x.explain ? ` · ${x.explain}` : ""}</div>
+                    <div className="small muted">{x.hinted && <span className="pill orange mr-1">{t("pl.withHint")}</span>}{x.topic}{x.explain ? ` · ${x.explain}` : ""}</div>
                   </div>{teacher && x.ms !== null && <span className={`plms ${x.ms < 3000 ? "fast" : x.ms > 60000 ? "slow" : ""}`} title={x.ms < 3000 ? t("pl.fastHint") : undefined}>{fmtSec(x.ms)}</span>}
                   </div>
                 </div>
@@ -51,6 +52,7 @@ export function PlacementAnswers({ id, d, teacher, reveal: initial }: { id: stri
           </div>
         ))}
       </section>
+      ); })}
       {[...d.reading, ...d.listening].map((x) => (
         <section key={x.id} className="card flex flex-col gap-3">
           <div className="flex flex-wrap items-center gap-2">
