@@ -31,6 +31,20 @@
     "questions": [
       {
         "id": "L-B2-01-q1",
+        "q": "What is the main aim of the repair café, according to Helen?",
+        "options": [
+          "Teaching people to fix things themselves",
+          "Fixing items quickly so people can collect them later",
+          "Selling repaired items to raise money for the centre",
+          "Collecting broken things so they can be recycled"
+        ],
+        "answer": 0,
+        "checks": "main idea",
+        "topic_id": "l-main-idea",
+        "explain_ru": "«The idea is that you learn how to do it yourself, rather than just leaving it with us»."
+      },
+      {
+        "id": "L-B2-01-q2",
         "q": "What made Helen start the repair café?",
         "options": [
           "Her local council asked her to organise it",
@@ -44,7 +58,7 @@
         "explain_ru": "Магазин сказал, что купить новый тостер дешевле, чем починить старый."
       },
       {
-        "id": "L-B2-01-q2",
+        "id": "L-B2-01-q3",
         "q": "What does Helen enjoy most about the volunteers?",
         "options": [
           "They are all trained professionals with years of experience",
@@ -58,7 +72,21 @@
         "explain_ru": "Ей нравится, что встречаются люди, которые иначе никогда бы не познакомились."
       },
       {
-        "id": "L-B2-01-q3",
+        "id": "L-B2-01-q4",
+        "q": "Roughly what share of the items leave the café working?",
+        "options": [
+          "About half",
+          "About two thirds",
+          "Nearly all of them",
+          "About a third"
+        ],
+        "answer": 1,
+        "checks": "number-time-place",
+        "topic_id": "l-number-time-place",
+        "explain_ru": "«Roughly two thirds of the items leave working»."
+      },
+      {
+        "id": "L-B2-01-q5",
         "q": "What frustrates Helen most?",
         "options": [
           "People who don't want to learn",
@@ -72,7 +100,7 @@
         "explain_ru": "Больше всего её раздражают вещи, которые сделаны, чтобы их выбрасывали."
       },
       {
-        "id": "L-B2-01-q4",
+        "id": "L-B2-01-q6",
         "q": "What is Helen's advice to someone starting a repair café?",
         "options": [
           "Start small, because you don't need much money",
@@ -162,6 +190,20 @@
       },
       {
         "id": "L-B2-02-q4",
+        "q": "According to Rob, what doesn't work in hybrid arrangements?",
+        "options": [
+          "Having fixed office days for the whole team",
+          "Using the office mainly for training sessions",
+          "Going in only to spend the day on calls",
+          "Having meetings in person instead of online"
+        ],
+        "answer": 2,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "«Everyone comes in on different days and then spends the whole time on video calls anyway»."
+      },
+      {
+        "id": "L-B2-02-q5",
         "q": "What do Jen and Rob agree on?",
         "options": [
           "Offices should close down completely and permanently",
@@ -173,6 +215,20 @@
         "checks": "main idea",
         "topic_id": "l-main-idea",
         "explain_ru": "Вопрос не «офис или дом», а для чего лучше подходит каждое место."
+      },
+      {
+        "id": "L-B2-02-q6",
+        "q": "What does Rob think companies should do?",
+        "options": [
+          "Copy what other companies are doing",
+          "Wait to see how hybrid work develops",
+          "Test any new policy in one team first",
+          "Ask their staff what they think"
+        ],
+        "answer": 3,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "«Companies should ask their staff, rather than just announcing a policy from the top»."
       }
     ],
     "situation_en": "Two podcast hosts discuss working from home and working in an office."
@@ -223,6 +279,34 @@
       },
       {
         "id": "L-B2-03-q2",
+        "q": "How often would Mark need to go into the office?",
+        "options": [
+          "Once a week",
+          "Three days a week",
+          "Every day",
+          "Twice a month"
+        ],
+        "answer": 0,
+        "checks": "number-time-place",
+        "topic_id": "l-number-time-place",
+        "explain_ru": "Mark: «I'd only have to go into the office once a week». Три дня в неделю — это Anna."
+      },
+      {
+        "id": "L-B2-03-q3",
+        "q": "Why does Anna know how lovely village life can be?",
+        "options": [
+          "She has friends who live in that village",
+          "She grew up in a village herself",
+          "She spent last summer in the countryside",
+          "She used to work in a village school"
+        ],
+        "answer": 1,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "«I grew up in a village, so I know how lovely it can be»."
+      },
+      {
+        "id": "L-B2-03-q4",
         "q": "What worries Anna most about moving?",
         "options": [
           "Driving to work three days a week",
@@ -236,7 +320,7 @@
         "explain_ru": "Больше всего её пугает, что с друзьями нельзя будет видеться без планирования."
       },
       {
-        "id": "L-B2-03-q3",
+        "id": "L-B2-03-q5",
         "q": "What does Anna suggest when she mentions it getting dark at four o'clock?",
         "options": [
           "Village life can feel lonely in winter",
@@ -250,7 +334,7 @@
         "explain_ru": "Зимой рано темнеет, друзья далеко — в деревне может быть одиноко."
       },
       {
-        "id": "L-B2-03-q4",
+        "id": "L-B2-03-q6",
         "q": "What do they decide to do?",
         "options": [
           "Buy the house before someone else does",
@@ -298,6 +382,20 @@
     "questions": [
       {
         "id": "L-B2-04-q1",
+        "q": "How much food does the average home throw away, according to Marcus?",
+        "options": [
+          "Around half of what it buys",
+          "About one bag every week",
+          "Around a third of what it buys",
+          "Around a quarter of what it buys"
+        ],
+        "answer": 2,
+        "checks": "number-time-place",
+        "topic_id": "l-number-time-place",
+        "explain_ru": "«In the average home, it's around a third of what we buy»."
+      },
+      {
+        "id": "L-B2-04-q2",
         "q": "According to Marcus, why do people buy too much food?",
         "options": [
           "Supermarkets offer too many special discounts",
@@ -311,7 +409,7 @@
         "explain_ru": "Мы покупаем для человека, которым хотим быть, а не которым являемся."
       },
       {
-        "id": "L-B2-04-q2",
+        "id": "L-B2-04-q3",
         "q": "What does Marcus recommend about planning meals?",
         "options": [
           "Plan meals for exactly seven days",
@@ -325,7 +423,7 @@
         "explain_ru": "Планировать четыре-пять блюд, а не семь: жизнь вносит коррективы."
       },
       {
-        "id": "L-B2-04-q3",
+        "id": "L-B2-04-q4",
         "q": "What does Marcus say about best-before dates?",
         "options": [
           "They are mainly about keeping food safe",
@@ -339,7 +437,21 @@
         "explain_ru": "Best-before — о качестве, продукт часто ещё вполне хорош."
       },
       {
-        "id": "L-B2-04-q4",
+        "id": "L-B2-04-q5",
+        "q": "What does Marcus say about use-by dates?",
+        "options": [
+          "They matter much less than best-before dates do",
+          "They're mainly about how good the food tastes",
+          "You can usually ignore them by two or three days",
+          "They're about safety, so take them seriously"
+        ],
+        "answer": 3,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "«Use-by dates are about safety, and you should take them seriously»."
+      },
+      {
+        "id": "L-B2-04-q6",
         "q": "How does Marcus feel about leftovers?",
         "options": [
           "Excited, because they're ingredients for new dishes",

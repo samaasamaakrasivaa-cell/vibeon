@@ -660,7 +660,7 @@
     ],
     "answer": 3,
     "explain_ru": "Дать на время — lend; borrow значит «взять на время».",
-    "group": "b1-v3"
+    "group": "b1-v4"
   },
   {
     "id": "V-B1-13",
@@ -1275,5 +1275,181 @@
       "worst"
     ],
     "explain_ru": "Неправильная превосходная степень: bad → worst."
+  },
+  {
+    "id": "V-B1-20",
+    "skill": "vocabulary",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "v-b1-confusing-words",
+    "topic_en": "Easily confused words: borrow / lend",
+    "topic_ru": "Слова, которые легко перепутать: borrow / lend",
+    "type": "mcq",
+    "q": "Can I ___ your pen for a second?",
+    "options": [
+      "lend",
+      "borrow",
+      "take off",
+      "rent out"
+    ],
+    "answer": 1,
+    "explain_ru": "Взять на время — borrow; дать на время — lend.",
+    "group": "b1-v4"
+  },
+  {
+    "id": "V-B1-21",
+    "skill": "vocabulary",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "v-b1-confusing-words",
+    "topic_en": "Easily confused words: borrow / lend",
+    "topic_ru": "Слова, которые легко перепутать: borrow / lend",
+    "type": "mcq",
+    "q": "Please don't ___ me — I'm trying to work.",
+    "options": [
+      "disturb",
+      "disrupt",
+      "bother of",
+      "interrupt with"
+    ],
+    "answer": 0,
+    "explain_ru": "Мешать, беспокоить — disturb.",
+    "group": "b1-v4"
+  },
+  {
+    "id": "V-B1-22",
+    "skill": "vocabulary",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "v-b1-confusing-words",
+    "topic_en": "Easily confused words: borrow / lend",
+    "topic_ru": "Слова, которые легко перепутать: borrow / lend",
+    "type": "mcq",
+    "q": "I ___ my phone at home this morning, so I couldn't call you.",
+    "options": [
+      "forgot",
+      "left",
+      "lost",
+      "missed"
+    ],
+    "answer": 1,
+    "explain_ru": "Оставить что-то где-то — leave (forget — без указания места).",
+    "group": "b1-v4"
+  },
+  {
+    "id": "V-B1-23",
+    "skill": "vocabulary",
+    "level": "B1",
+    "band": 3,
+    "topic_id": "v-b1-confusing-words",
+    "topic_en": "Easily confused words: borrow / lend",
+    "topic_ru": "Слова, которые легко перепутать: borrow / lend",
+    "type": "gap",
+    "q": "Did you ___ the bus this morning, or did you get a lift?",
+    "accept": [
+      "catch",
+      "take",
+      "get"
+    ],
+    "explain_ru": "Успеть на автобус / сесть на автобус — catch / take the bus.",
+    "hint_ru": "глагол: успеть на (автобус)",
+    "group": "b1-v4"
+  },
+  {
+    "id": "V-B1-24",
+    "skill": "vocabulary",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "v-b1-idioms",
+    "topic_en": "Common idioms",
+    "topic_ru": "Частые идиомы",
+    "type": "mcq",
+    "q": "The exam was a piece of ___. I finished it in twenty minutes.",
+    "options": [
+      "cake",
+      "bread",
+      "pie",
+      "chocolate"
+    ],
+    "answer": 0,
+    "explain_ru": "Идиома: a piece of cake — проще простого.",
+    "group": "b1-v5"
+  },
+  {
+    "id": "V-B1-25",
+    "skill": "vocabulary",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "v-b1-idioms",
+    "topic_en": "Common idioms",
+    "topic_ru": "Частые идиомы",
+    "type": "mcq",
+    "q": "I'm feeling a bit under the ___ today. I think I've got a cold.",
+    "options": [
+      "sky",
+      "weather",
+      "rain",
+      "sun"
+    ],
+    "answer": 1,
+    "explain_ru": "Идиома: under the weather — нездоровится.",
+    "group": "b1-v5"
+  },
+  {
+    "id": "V-B1-26",
+    "skill": "vocabulary",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "v-b1-idioms",
+    "topic_en": "Common idioms",
+    "topic_ru": "Частые идиомы",
+    "type": "mcq",
+    "q": "Don't worry, I'll keep my ___ crossed for your interview.",
+    "options": [
+      "hands",
+      "fingers",
+      "arms",
+      "legs"
+    ],
+    "answer": 1,
+    "explain_ru": "Идиома: keep your fingers crossed — держать кулачки.",
+    "group": "b1-v5"
+  },
+  {
+    "id": "V-B1-27",
+    "skill": "vocabulary",
+    "level": "B1",
+    "band": 3,
+    "topic_id": "v-b1-idioms",
+    "topic_en": "Common idioms",
+    "topic_ru": "Частые идиомы",
+    "type": "mcq",
+    "q": "Tickets for the concert cost an arm and a ___!",
+    "options": [
+      "foot",
+      "hand",
+      "leg",
+      "head"
+    ],
+    "answer": 2,
+    "explain_ru": "Идиома: cost an arm and a leg — стоить целое состояние.",
+    "group": "b1-v5"
+  },
+  {
+    "id": "V-B1-28",
+    "skill": "vocabulary",
+    "level": "B1",
+    "band": 3,
+    "topic_id": "v-b1-idioms",
+    "topic_en": "Common idioms",
+    "topic_ru": "Частые идиомы",
+    "type": "gap",
+    "q": "I can't make a decision right now. Let me ___ on it and tell you tomorrow.",
+    "accept": [
+      "sleep"
+    ],
+    "explain_ru": "Идиома: sleep on it — отложить решение до утра.",
+    "hint_ru": "глагол: «переспать» с решением",
+    "group": "b1-v5"
   }
 ]

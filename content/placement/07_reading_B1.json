@@ -53,6 +53,34 @@
         "checks": "inference",
         "topic_id": "r-inference",
         "explain_ru": "Гостье придётся спать на диване — значит, отдельной комнаты нет."
+      },
+      {
+        "id": "R-B1-01-q4",
+        "q": "When did Anna move to Lisbon?",
+        "options": [
+          "In September",
+          "In spring",
+          "Last weekend",
+          "A year ago"
+        ],
+        "answer": 0,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "I moved to Lisbon for my new job in September."
+      },
+      {
+        "id": "R-B1-01-q5",
+        "q": "What language does Anna mostly use at work?",
+        "options": [
+          "Portuguese",
+          "English",
+          "Spanish",
+          "French"
+        ],
+        "answer": 1,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "…so I mostly speak English at work."
       }
     ]
   },
@@ -110,6 +138,34 @@
         "checks": "inference",
         "topic_id": "r-inference",
         "explain_ru": "Даже в короткой поездке можно посетить меньше мест и не спешить."
+      },
+      {
+        "id": "R-B1-02-q4",
+        "q": "How do slow travellers usually travel?",
+        "options": [
+          "By plane",
+          "By car",
+          "By train or bus",
+          "On foot"
+        ],
+        "answer": 2,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "They often travel by train or bus rather than by plane."
+      },
+      {
+        "id": "R-B1-02-q5",
+        "q": "According to supporters, slow travel is…",
+        "options": [
+          "cheaper than other holidays",
+          "only for young people",
+          "more exciting",
+          "less stressful and greener"
+        ],
+        "answer": 3,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "Supporters… say it is less stressful and better for the environment."
       }
     ]
   },
@@ -167,6 +223,34 @@
         "checks": "inference",
         "topic_id": "r-inference",
         "explain_ru": "Во время игры автор забывает о письмах и дедлайнах — это способ отдохнуть."
+      },
+      {
+        "id": "R-B1-03-q4",
+        "q": "How did the writer feel before the first lesson?",
+        "options": [
+          "Nervous",
+          "Excited",
+          "Bored",
+          "Confident"
+        ],
+        "answer": 0,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "I was really nervous before the first one."
+      },
+      {
+        "id": "R-B1-03-q5",
+        "q": "When does the writer usually practise now?",
+        "options": [
+          "Late at night",
+          "Before dinner",
+          "During lunch",
+          "Before work"
+        ],
+        "answer": 1,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "…usually before dinner."
       }
     ]
   },
@@ -224,6 +308,34 @@
         "checks": "detail",
         "topic_id": "r-detail",
         "explain_ru": "Миски нужно высушить и обжечь в печи, забрать можно через две недели."
+      },
+      {
+        "id": "R-B1-04-q4",
+        "q": "What was included in the price?",
+        "options": [
+          "A bowl to take home",
+          "Lunch",
+          "Materials and a cup of tea",
+          "Three lessons"
+        ],
+        "answer": 2,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "…£45 each, which included all materials and a cup of tea."
+      },
+      {
+        "id": "R-B1-04-q5",
+        "q": "When can they collect their bowls?",
+        "options": [
+          "The same evening",
+          "Next Saturday",
+          "In a month",
+          "In two weeks"
+        ],
+        "answer": 3,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "…we have to go back and collect them in two weeks."
       }
     ]
   }

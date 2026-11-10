@@ -1,8 +1,8 @@
 import "server-only";
 import type { Prisma } from "@prisma/client";
-import { INSTRUCTIONS } from "./bank";
+import { instruction } from "./bank";
 import {
-  checkCore, coreProgress, coreResult, fallbackText, levelOfStep, nextCore, nextVocab, pickTask, pickTexts, stepOf, vocabProgress, vocabResult,
+  checkCore, coreProgress, coreResult, firstText, levelOfStep, nextCore, nextText, nextVocab, pickTask, PL_LEVELS, stepOf, textLevel, vocabProgress, vocabResult,
   type AnyItem, type Bank, type CoreItem, type ListenItem, type PState, type ReadItem, type SpeakItem, type WriteItem,
 } from "./engine";
 
@@ -39,13 +39,12 @@ export function closeSection(st: PState, sec: Later, bank: Bank) {
   return false;
 }
 /** Задания всех разделов после ядра выбираются сразу — чтобы ученик мог переключаться между ними. */
-function ensureTasks(st: PState, bank: Bank) {
+export function ensureTasks(st: PState, bank: Bank) {
   const snap = (x: AnyItem) => { st.items[x.id] = x; return x.id; };
-  const ts = Math.min(st.step ?? 0, st.vstep ?? 8); // тексты — по меньшему из грамматики и лексики
-  const plus = ts % 2 === 1 || ts === 8;
+  const plus = (st.step ?? 0) % 2 === 1 || st.step === 8;
   const L = st.level ?? "A1";
-  if (!st.reading.length) st.reading = pickTexts(bank.reading, L, plus).map(snap);
-  if (!st.listening.length) st.listening = pickTexts(bank.listening, L, plus).map(snap);
+  if (!st.reading.length) { const x = firstText(bank.reading, L, plus); if (x) st.reading = [snap(x)]; }
+  if (!st.listening.length) { const x = firstText(bank.listening, L, plus); if (x) st.listening = [snap(x)]; }
   if (!st.writing) { const w = pickTask(bank.writing, L, plus); if (w) st.writing = { id: snap(w), text: "" }; }
   if (!st.speaking) { const sp = pickTask(bank.speaking, L, plus); if (sp) st.speaking = { id: snap(sp), rec: {} }; }
 }
@@ -65,35 +64,36 @@ export function advance(st: PState, bank: Bank) {
   const nv = nextVocab(st, bank);
   if (nv) { snap(nv.item); st.core.push({ id: nv.item.id, step: stepOf(nv.item.level, nv.item.band), ph: nv.ph }); return; }
   st.vstep = vocabResult(st);
-  st.level = levelOfStep(Math.min(st.step ?? 0, st.vstep));
+  st.level = PL_LEVELS[textLevel(st.step ?? 0, st.vstep)];
   st.closed = [];
   ensureTasks(st, bank);
   goTo(st, "reading");
 }
 
-/** Чтение или аудирование: запасной текст на уровень ниже, если по двум текстам меньше половины верных. */
-export function addFallback(st: PState, bank: Bank, k: "reading" | "listening") {
-  const fb = fallbackText<ReadItem | ListenItem>(k === "reading" ? bank.reading : bank.listening, st, k);
-  if (!fb) return false;
-  st.items[fb.id] = fb;
-  (k === "reading" ? st.reading : st.listening).push(fb.id);
+/** Чтение или аудирование: следующий текст по результату предыдущего. false — раздел закончен. */
+export function addNextText(st: PState, bank: Bank, k: "reading" | "listening") {
+  const nx = nextText<ReadItem | ListenItem>(k === "reading" ? bank.reading : bank.listening, st, k);
+  if (!nx) return false;
+  st.items[nx.id] = nx;
+  (k === "reading" ? st.reading : st.listening).push(nx.id);
   return true;
 }
 
 /** Задание без ответов — то, что уходит в браузер. */
 export function publicView(st: PState, lang: "ru" | "en", bank?: Bank) {
-  const ins = (k: string) => INSTRUCTIONS[k]?.[lang] ?? "";
+  void lang;
+  const ins = (k: string, lv?: string) => instruction(k, lv);
   const base = { section: st.section, level: st.level ?? null, open: st.section === "core" || st.section === "vocab" || st.section === "intro" ? [] : (openOf(st) as string[]) };
   if (st.section === "core" || st.section === "vocab") {
     const sec = st.section;
     const last = st.core[st.core.length - 1];
     const it = last ? (st.items[last.id] as CoreItem) : null;
-    const progress = sec === "vocab" ? vocabProgress(st) : bank ? coreProgress(st, bank) : st.pmax ?? 0;
+    const progress = sec === "vocab" ? vocabProgress(st, bank) : bank ? coreProgress(st, bank) : st.pmax ?? 0;
     const from = sec === "vocab" ? st.core.findIndex((x) => x.ph?.startsWith("v")) : 0; // «Предыдущее» — только внутри блока
     if (!it) return { ...base, section: sec, n: 0, from: 0, progress, item: null };
     return {
       ...base, section: sec, n: st.core.length, from: Math.max(0, from), progress,
-      item: { id: it.id, type: it.type, skill: it.skill, q: it.q, options: it.options ?? null, base: it.base ?? null, key: it.key ?? null, frame: it.frame ?? null, hint: (it as CoreItem & { hint_ru?: string }).hint_ru ?? null, instr: ins(it.type) },
+      item: { id: it.id, type: it.type, skill: it.skill, q: it.q, options: it.options ?? null, base: it.base ?? null, key: it.key ?? null, frame: it.frame ?? null, hint: (it as CoreItem & { hint_ru?: string }).hint_ru ?? null, instr: ins(it.type, it.level) },
     };
   }
   if (st.section === "reading" || st.section === "listening") {
@@ -107,15 +107,15 @@ export function publicView(st: PState, lang: "ru" | "en", bank?: Bank) {
         ? { id: it.id, title: it.title, passage: it.passage, questions: qs }
         : { id: it.id, title: it.title, situation: (it as ListenItem & { situation_en?: string }).situation_en ?? (it as ListenItem).situation_ru ?? "", audio: (it as ListenItem).audio ?? "", plays: (it as ListenItem).plays ?? 2, used: st.plays[it.id] ?? 0, questions: qs };
     });
-    return { ...base, section: st.section, extra: done.length > 0, instr: ins(st.section), items };
+    return { ...base, section: st.section, n: done.length + 1, extra: ids.length >= 3, instr: ins(st.section, st.level), items };
   }
   if (st.section === "writing") {
     const it = st.writing ? (st.items[st.writing.id] as WriteItem) : null;
-    return { ...base, section: "writing" as const, instr: ins("writing"), text: st.writing?.text ?? "", item: it && { id: it.id, kind: ((k) => k.charAt(0).toUpperCase() + k.slice(1))(it.topic_ru.replace(/^Письмо:\s*/, "")), prompt_en: it.prompt_en, prompt_ru: it.prompt_ru, points: it.points ?? [], min: it.min_words, max: it.max_words, time: it.time_min } };
+    return { ...base, section: "writing" as const, instr: ins("writing", it?.level), text: st.writing?.text ?? "", item: it && { id: it.id, kind: ((k) => k.charAt(0).toUpperCase() + k.slice(1))(it.topic_en.replace(/^Writing:\s*/, "")), prompt_en: it.prompt_en, prompt_ru: it.level === "A1" || it.level === "A2" ? it.prompt_ru : "", points_title: (it as WriteItem & { points_title?: string }).points_title ?? "", points: it.points ?? [], min: it.min_words, max: it.max_words, time: it.time_min } };
   }
   if (st.section === "speaking") {
     const it = st.speaking ? (st.items[st.speaking.id] as SpeakItem) : null;
-    return { ...base, section: "speaking" as const, instr: ins("speaking"), rec: Object.keys(st.speaking?.rec ?? {}), item: it && { id: it.id, level: it.level, intro: it.intro_ru, questions: it.questions.map((q) => ({ q: q.q, prep: q.prep_sec, speak: q.speak_sec, audio: q.audio ?? null })) } };
+    return { ...base, section: "speaking" as const, instr: ins("speaking", it?.level), rec: Object.keys(st.speaking?.rec ?? {}), item: it && { id: it.id, level: it.level, intro: (it as SpeakItem & { intro_en?: string }).intro_en ?? it.intro_ru, questions: it.questions.map((q) => ({ q: q.q, prep: q.prep_sec, speak: q.speak_sec, audio: q.audio ?? null })) } };
   }
   return { ...base, section: st.section };
 }

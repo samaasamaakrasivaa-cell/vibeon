@@ -612,7 +612,7 @@
     ],
     "answer": 2,
     "explain_ru": "О своих чувствах говорим с -ed: excited — «в предвкушении».",
-    "group": "a2-v3"
+    "group": "a2-v4"
   },
   {
     "id": "V-A2-10",
@@ -1137,7 +1137,7 @@
     ],
     "answer": 2,
     "explain_ru": "О том, что вызывает скуку, — boring (bored — о человеке).",
-    "group": "a2-v3"
+    "group": "a2-v4"
   },
   {
     "id": "V-A2-21",
@@ -1157,7 +1157,7 @@
     ],
     "answer": 3,
     "explain_ru": "tell somebody something: tell me the time.",
-    "group": "a2-v3"
+    "group": "a2-v4"
   },
   {
     "id": "V-A2-22",
@@ -1197,5 +1197,83 @@
     "explain_ru": "Радость от хорошего результата — happy / pleased.",
     "hint_ru": "чувство",
     "group": "a2-v3"
+  },
+  {
+    "id": "V-A2-24",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "v-a2-feelings-personality",
+    "topic_en": "Feelings and personality",
+    "topic_ru": "Чувства и характер",
+    "type": "mcq",
+    "q": "My brother never says thank you. He's very ___.",
+    "options": [
+      "polite",
+      "rude",
+      "kind",
+      "friendly"
+    ],
+    "answer": 1,
+    "explain_ru": "Невежливый — rude.",
+    "group": "a2-v3"
+  },
+  {
+    "id": "V-A2-25",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "v-a2-feelings-personality",
+    "topic_en": "Feelings and personality",
+    "topic_ru": "Чувства и характер",
+    "type": "gap",
+    "q": "She isn't lazy. She's very ___ and does everything on time.",
+    "accept": [
+      "hard-working",
+      "hardworking"
+    ],
+    "explain_ru": "Противоположность lazy — hard-working.",
+    "hint_ru": "противоположность слову lazy",
+    "group": "a2-v3"
+  },
+  {
+    "id": "V-A2-26",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "v-a2-travel",
+    "topic_en": "Travel and holidays",
+    "topic_ru": "Путешествия и отдых",
+    "type": "mcq",
+    "q": "How was your ___ to Paris?",
+    "options": [
+      "travel",
+      "trip",
+      "journey to",
+      "voyage"
+    ],
+    "answer": 1,
+    "explain_ru": "Поездка — trip (travel — путешествовать вообще, глагол или неисчисляемое).",
+    "group": "a2-v4"
+  },
+  {
+    "id": "V-A2-27",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "v-a2-feelings-personality",
+    "topic_en": "Feelings and personality",
+    "topic_ru": "Чувства и характер",
+    "type": "mcq",
+    "q": "The party was a lot of ___. We danced all night.",
+    "options": [
+      "funny",
+      "fun",
+      "happy",
+      "laugh"
+    ],
+    "answer": 1,
+    "explain_ru": "Весело, удовольствие — fun (funny — смешной).",
+    "group": "a2-v4"
   }
 ]

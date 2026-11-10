@@ -1251,5 +1251,102 @@
     "explain_ru": "Противоположность cheap — expensive.",
     "hint_ru": "противоположность слову cheap",
     "group": "a1-v3"
+  },
+  {
+    "id": "V-A1-28",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "v-a1-free-time",
+    "topic_en": "Hobbies and free time",
+    "topic_ru": "Хобби и свободное время",
+    "type": "mcq",
+    "q": "I ___ TV every evening after dinner.",
+    "options": [
+      "look",
+      "see",
+      "watch",
+      "listen"
+    ],
+    "answer": 2,
+    "explain_ru": "Смотреть телевизор — watch TV.",
+    "group": "a1-v4"
+  },
+  {
+    "id": "V-A1-29",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "v-a1-free-time",
+    "topic_en": "Hobbies and free time",
+    "topic_ru": "Хобби и свободное время",
+    "type": "mcq",
+    "q": "I love ___ to music in the car.",
+    "options": [
+      "hearing",
+      "listening",
+      "playing",
+      "watching"
+    ],
+    "answer": 1,
+    "explain_ru": "Слушать музыку — listen to music.",
+    "group": "a1-v4"
+  },
+  {
+    "id": "V-A1-30",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "v-a1-adjectives-basic",
+    "topic_en": "Common adjectives and opposites",
+    "topic_ru": "Частые прилагательные и антонимы",
+    "type": "mcq",
+    "q": "Can you ___ the bus? It's coming now.",
+    "options": [
+      "watch",
+      "look",
+      "see",
+      "listen"
+    ],
+    "answer": 2,
+    "explain_ru": "Увидеть то, что появилось перед глазами, — see.",
+    "group": "a1-v4"
+  },
+  {
+    "id": "V-A1-31",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "v-a1-free-time",
+    "topic_en": "Hobbies and free time",
+    "topic_ru": "Хобби и свободное время",
+    "type": "mcq",
+    "q": "My sister ___ Spanish and English.",
+    "options": [
+      "says",
+      "tells",
+      "talks",
+      "speaks"
+    ],
+    "answer": 3,
+    "explain_ru": "Говорить на языке — speak a language.",
+    "group": "a1-v4"
+  },
+  {
+    "id": "V-A1-32",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 3,
+    "topic_id": "v-a1-daily-routine",
+    "topic_en": "Daily routine",
+    "topic_ru": "Распорядок дня",
+    "type": "gap",
+    "q": "___ at the board, please, and read the sentence.",
+    "accept": [
+      "look"
+    ],
+    "explain_ru": "Посмотреть на что-то — look at.",
+    "hint_ru": "глагол: посмотреть (на)",
+    "group": "a1-v4"
   }
 ]

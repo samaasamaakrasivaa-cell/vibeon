@@ -53,6 +53,34 @@
         "checks": "detail",
         "topic_id": "r-detail",
         "explain_ru": "По выходным с 10 до 12 бассейн только для семей."
+      },
+      {
+        "id": "R-A1-01-q4",
+        "q": "When is the pool closed?",
+        "options": [
+          "On 1 January",
+          "On Sundays",
+          "On Saturdays",
+          "Every evening"
+        ],
+        "answer": 0,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "В тексте: The pool is closed on 1 January."
+      },
+      {
+        "id": "R-A1-01-q5",
+        "q": "Where can you buy a snack?",
+        "options": [
+          "At the pool",
+          "At the café",
+          "At the reception",
+          "In the shop"
+        ],
+        "answer": 1,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "Перекус можно купить в кафе рядом с бассейном."
       }
     ]
   },
@@ -110,6 +138,34 @@
         "checks": "detail",
         "topic_id": "r-detail",
         "explain_ru": "My sister is coming for dinner tonight."
+      },
+      {
+        "id": "R-A1-02-q4",
+        "q": "When does Mia finish work today?",
+        "options": [
+          "At 6",
+          "At 8",
+          "At 7",
+          "At 5"
+        ],
+        "answer": 2,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "I'm at work until 7 today."
+      },
+      {
+        "id": "R-A1-02-q5",
+        "q": "What is Mia making for dinner?",
+        "options": [
+          "Soup",
+          "Pizza",
+          "Fish",
+          "Pasta"
+        ],
+        "answer": 3,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "I'm making pasta."
       }
     ]
   },
@@ -167,6 +223,34 @@
         "checks": "detail",
         "topic_id": "r-detail",
         "explain_ru": "It's great for short trips in the city."
+      },
+      {
+        "id": "R-A1-03-q4",
+        "q": "How much is the bike?",
+        "options": [
+          "£80",
+          "£18",
+          "£8",
+          "£800"
+        ],
+        "answer": 0,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "The price is £80."
+      },
+      {
+        "id": "R-A1-03-q5",
+        "q": "Where can you see the bike?",
+        "options": [
+          "In a shop",
+          "At Ben's flat",
+          "At Ben's office",
+          "In the park"
+        ],
+        "answer": 1,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "You can see it at my flat on Park Road."
       }
     ]
   },
@@ -224,6 +308,34 @@
         "checks": "inference",
         "topic_id": "r-inference",
         "explain_ru": "В понедельник работа начинается в восемь, поэтому автор ложится рано."
+      },
+      {
+        "id": "R-A1-04-q4",
+        "q": "Who does the writer walk with?",
+        "options": [
+          "Their parents",
+          "A friend",
+          "Their dog",
+          "Their sister"
+        ],
+        "answer": 2,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "I go for a long walk with my dog."
+      },
+      {
+        "id": "R-A1-04-q5",
+        "q": "What does the writer do in the evening?",
+        "options": [
+          "Watches TV",
+          "Cooks",
+          "Calls friends",
+          "Reads"
+        ],
+        "answer": 3,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "In the evening, I read and go to bed early."
       }
     ]
   },
@@ -281,6 +393,34 @@
         "checks": "writer's attitude",
         "topic_id": "r-writers-attitude",
         "explain_ru": "Автор рекомендует кафе: I recommend it!"
+      },
+      {
+        "id": "R-A2-01-q4",
+        "q": "What did the writer eat?",
+        "options": [
+          "Soup and cake",
+          "Pasta and salad",
+          "A sandwich and coffee",
+          "Soup and bread"
+        ],
+        "answer": 0,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "Он заказал овощной суп и кусок морковного торта."
+      },
+      {
+        "id": "R-A2-01-q5",
+        "q": "What will the writer do next time?",
+        "options": [
+          "Go with a friend",
+          "Go earlier",
+          "Order something else",
+          "Sit outside"
+        ],
+        "answer": 1,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "Next time I'll go earlier."
       }
     ]
   },
@@ -338,6 +478,34 @@
         "checks": "detail",
         "topic_id": "r-detail",
         "explain_ru": "She got off the train just to give it back to me."
+      },
+      {
+        "id": "R-A2-02-q4",
+        "q": "Where was the writer going?",
+        "options": [
+          "To work",
+          "To the station",
+          "Home",
+          "To a friend's house"
+        ],
+        "answer": 2,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "I was on the train home."
+      },
+      {
+        "id": "R-A2-02-q5",
+        "q": "How did the writer probably feel at the end?",
+        "options": [
+          "Angry",
+          "Bored",
+          "Worried",
+          "Very grateful"
+        ],
+        "answer": 3,
+        "checks": "inference",
+        "topic_id": "r-inference",
+        "explain_ru": "Девушка вышла из поезда, чтобы вернуть телефон, — автор, скорее всего, очень благодарен."
       }
     ]
   },
@@ -395,6 +563,34 @@
         "checks": "vocabulary in context",
         "topic_id": "r-vocabulary-in-context",
         "explain_ru": "Make a big difference — сильно изменить ситуацию к лучшему."
+      },
+      {
+        "id": "R-A2-03-q4",
+        "q": "What do you need for a walk, according to the article?",
+        "options": [
+          "Nothing special",
+          "Special shoes",
+          "A gym membership",
+          "A sports watch"
+        ],
+        "answer": 0,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "You don't need special clothes or a gym."
+      },
+      {
+        "id": "R-A2-03-q5",
+        "q": "People who walk outside every day often…",
+        "options": [
+          "eat less",
+          "sleep better",
+          "work longer",
+          "feel hungry"
+        ],
+        "answer": 1,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "…often feel calmer and sleep better."
       }
     ]
   },
@@ -452,6 +648,34 @@
         "checks": "detail",
         "topic_id": "r-detail",
         "explain_ru": "Семья хочет устраивать один день без телефонов каждый месяц."
+      },
+      {
+        "id": "R-A2-04-q4",
+        "q": "Where did the family go on Saturday afternoon?",
+        "options": [
+          "To the beach",
+          "To the cinema",
+          "To the forest",
+          "To a café"
+        ],
+        "answer": 2,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "In the afternoon, we went to the forest."
+      },
+      {
+        "id": "R-A2-04-q5",
+        "q": "How did the son feel about the weekend?",
+        "options": [
+          "He was bored all weekend",
+          "He wanted his phone back on Sunday",
+          "He was angry",
+          "He loved it"
+        ],
+        "answer": 3,
+        "checks": "inference",
+        "topic_id": "r-inference",
+        "explain_ru": "Сын сказал, что это были лучшие выходные за долгое время."
       }
     ]
   }

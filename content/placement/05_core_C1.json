@@ -42,7 +42,7 @@
     "topic_en": "Inverted conditionals: Had I known / Should you",
     "topic_ru": "Условные с инверсией: Had I known / Should you",
     "type": "brackets",
-    "q": "___ (you / need) any help, just give me a call.",
+    "q": "___ (should / you / need) any help, just give me a call.",
     "explain_ru": "Условие с инверсией: Should you need = If you need.",
     "accept": [
       "should you need"
@@ -536,7 +536,7 @@
     ],
     "answer": 0,
     "explain_ru": "Have butterflies in your stomach — сильно волноваться.",
-    "group": "c1-v2"
+    "group": "c1-v5"
   },
   {
     "id": "V-C1-11",
@@ -556,7 +556,7 @@
     ],
     "answer": 3,
     "explain_ru": "Beat around the bush — ходить вокруг да около.",
-    "group": "c1-v2"
+    "group": "c1-v5"
   },
   {
     "id": "V-C1-12",
@@ -576,7 +576,7 @@
     ],
     "answer": 1,
     "explain_ru": "It's not the end of the world — это не конец света.",
-    "group": "c1-v2"
+    "group": "c1-v5"
   },
   {
     "id": "V-C1-13",
@@ -656,7 +656,7 @@
     ],
     "answer": 3,
     "explain_ru": "Done and dusted — полностью завершено.",
-    "group": "c1-v2"
+    "group": "c1-v5"
   },
   {
     "id": "V-C1-17",
@@ -676,7 +676,7 @@
     ],
     "answer": 1,
     "explain_ru": "С absolutely сочетаются «крайние» прилагательные: breathtaking.",
-    "group": "c1-v3"
+    "group": "c1-v4"
   },
   {
     "id": "V-C1-18",
@@ -727,7 +727,7 @@
     ],
     "explain_ru": "Ups and downs — взлёты и падения.",
     "hint_ru": "слово-пара к ups",
-    "group": "c1-v2"
+    "group": "c1-v5"
   },
   {
     "id": "G-C1-21",
@@ -1132,7 +1132,7 @@
     ],
     "answer": 2,
     "explain_ru": "Устойчивое сочетание: spotlessly clean.",
-    "group": "c1-v3"
+    "group": "c1-v4"
   },
   {
     "id": "V-C1-23",
@@ -1455,5 +1455,65 @@
     ],
     "answer": 3,
     "explain_ru": "Семья целиком — the + фамилия во множественном числе: the Smiths."
+  },
+  {
+    "id": "V-C1-28",
+    "skill": "vocabulary",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "v-c1-near-synonyms",
+    "topic_en": "Near-synonyms and nuance",
+    "topic_ru": "Синонимы и оттенки значения",
+    "type": "mcq",
+    "q": "The scientist made an important ___ about how the virus spreads.",
+    "options": [
+      "invention",
+      "discovery",
+      "creation",
+      "finding out"
+    ],
+    "answer": 1,
+    "explain_ru": "Открытие (того, что уже существует) — discovery; invention — изобретение.",
+    "group": "c1-v4"
+  },
+  {
+    "id": "V-C1-29",
+    "skill": "vocabulary",
+    "level": "C1",
+    "band": 2,
+    "topic_id": "v-c1-near-synonyms",
+    "topic_en": "Near-synonyms and nuance",
+    "topic_ru": "Синонимы и оттенки значения",
+    "type": "mcq",
+    "q": "The ___ of the new policy will be felt for years.",
+    "options": [
+      "affects",
+      "effects",
+      "efforts",
+      "defects"
+    ],
+    "answer": 1,
+    "explain_ru": "Последствия — effects (существительное).",
+    "group": "c1-v4"
+  },
+  {
+    "id": "V-C1-30",
+    "skill": "vocabulary",
+    "level": "C1",
+    "band": 3,
+    "topic_id": "v-c1-near-synonyms",
+    "topic_en": "Near-synonyms and nuance",
+    "topic_ru": "Синонимы и оттенки значения",
+    "type": "gap",
+    "q": "The company's profits have been ___ affected by the crisis — they've fallen by half.",
+    "accept": [
+      "severely",
+      "seriously",
+      "badly",
+      "heavily"
+    ],
+    "explain_ru": "Серьёзно пострадали — severely / seriously affected.",
+    "hint_ru": "наречие: сильно, серьёзно",
+    "group": "c1-v4"
   }
 ]

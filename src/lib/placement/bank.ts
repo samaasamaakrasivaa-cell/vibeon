@@ -38,7 +38,9 @@ export const ORIGINAL = new Map(FILE_ITEMS.map((x) => [x.id, x]));
 
 export type Rubric = { id: string; name_ru: string; levels: Record<string, string> };
 export const RUBRICS = rubricsJson as unknown as { speaking: { criteria: Rubric[] }; writing: { criteria: Rubric[] }; sublevels_ru: string; how_to_decide_ru: string; total_ru: string; scores_ru: Record<string, string> };
-export const INSTRUCTIONS = instructionsJson as Record<string, { ru: string; en: string }>;
+const INS = instructionsJson as Record<string, { easy: string; std: string }>;
+/** Формулировка задания — по-английски; на A1–A2 — проще. */
+export const instruction = (type: string, level?: string) => (level === "A1" || level === "A2" ? INS[type]?.easy : INS[type]?.std) ?? "";
 
 let cache: { at: number; bank: Bank; edited: Set<string> } | null = null;
 export const dropBankCache = () => { cache = null; };

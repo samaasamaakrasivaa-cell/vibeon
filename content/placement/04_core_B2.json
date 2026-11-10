@@ -594,7 +594,7 @@
     ],
     "answer": 0,
     "explain_ru": "Have a lot on your plate — быть очень загруженным.",
-    "group": "b2-v2"
+    "group": "b2-v5"
   },
   {
     "id": "V-B2-12",
@@ -654,7 +654,7 @@
     ],
     "answer": 3,
     "explain_ru": "Глагол «повлиять» — affect, без предлога; effect обычно существительное.",
-    "group": "b2-v3"
+    "group": "b2-v4"
   },
   {
     "id": "V-B2-15",
@@ -900,11 +900,10 @@
     "topic_en": "should have / needn't have / could have",
     "topic_ru": "should have / needn't have / could have",
     "type": "brackets",
-    "q": "You ___ (not / bring) an umbrella — it didn't rain in the end.",
+    "q": "You ___ (need / not / bring) an umbrella — it didn't rain in the end.",
     "accept": [
       "needn't have brought",
-      "need not have brought",
-      "didn't need to bring"
+      "need not have brought"
     ],
     "explain_ru": "Было не нужно, но сделали — needn't have brought."
   },
@@ -917,7 +916,7 @@
     "topic_en": "have / get something done",
     "topic_ru": "Каузатив have / get something done",
     "type": "brackets",
-    "q": "I ___ (my car / service) last week, so it's running perfectly.",
+    "q": "I ___ (have / my car / service) last week, so it's running perfectly.",
     "accept": [
       "had my car serviced",
       "got my car serviced"
@@ -1298,5 +1297,160 @@
       "faster"
     ],
     "explain_ru": "fast — и прилагательное, и наречие; сравнительная — faster."
+  },
+  {
+    "id": "V-B2-22",
+    "skill": "vocabulary",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "v-b2-confusing-words-b2",
+    "topic_en": "Easily confused words",
+    "topic_ru": "Слова, которые легко перепутать",
+    "type": "mcq",
+    "q": "The government has ___ new measures to reduce traffic.",
+    "options": [
+      "raised",
+      "risen",
+      "rose",
+      "arisen"
+    ],
+    "answer": 0,
+    "explain_ru": "raise — поднимать, вводить (переходный); rise — подниматься (без дополнения).",
+    "group": "b2-v4"
+  },
+  {
+    "id": "V-B2-23",
+    "skill": "vocabulary",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "v-b2-confusing-words-b2",
+    "topic_en": "Easily confused words",
+    "topic_ru": "Слова, которые легко перепутать",
+    "type": "mcq",
+    "q": "Prices have ___ by 10% this year.",
+    "options": [
+      "raised",
+      "risen",
+      "arisen",
+      "aroused"
+    ],
+    "answer": 1,
+    "explain_ru": "Цены выросли — rise (без дополнения): have risen.",
+    "group": "b2-v4"
+  },
+  {
+    "id": "V-B2-24",
+    "skill": "vocabulary",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "v-b2-confusing-words-b2",
+    "topic_en": "Easily confused words",
+    "topic_ru": "Слова, которые легко перепутать",
+    "type": "mcq",
+    "q": "I'm not used to driving on the left, so I feel a bit ___.",
+    "options": [
+      "sensible",
+      "sensitive",
+      "nervous of",
+      "nervy about"
+    ],
+    "answer": 1,
+    "explain_ru": "Чувствительный, ранимый — sensitive (sensible — благоразумный). Здесь — «не по себе».",
+    "group": "b2-v4"
+  },
+  {
+    "id": "V-B2-25",
+    "skill": "vocabulary",
+    "level": "B2",
+    "band": 3,
+    "topic_id": "v-b2-confusing-words-b2",
+    "topic_en": "Easily confused words",
+    "topic_ru": "Слова, которые легко перепутать",
+    "type": "gap",
+    "q": "The doctor gave me some good ___ about how to sleep better.",
+    "accept": [
+      "advice",
+      "tips"
+    ],
+    "explain_ru": "Совет (неисчисляемое) — advice; advise — глагол.",
+    "hint_ru": "существительное: совет",
+    "group": "b2-v4"
+  },
+  {
+    "id": "V-B2-26",
+    "skill": "vocabulary",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "v-b2-idioms-common",
+    "topic_en": "Common idioms",
+    "topic_ru": "Частые идиомы",
+    "type": "mcq",
+    "q": "We're in the same ___, so let's help each other.",
+    "options": [
+      "ship",
+      "boat",
+      "car",
+      "train"
+    ],
+    "answer": 1,
+    "explain_ru": "Идиома: in the same boat — в одной лодке.",
+    "group": "b2-v5"
+  },
+  {
+    "id": "V-B2-27",
+    "skill": "vocabulary",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "v-b2-idioms-common",
+    "topic_en": "Common idioms",
+    "topic_ru": "Частые идиомы",
+    "type": "mcq",
+    "q": "She was so angry that she flew off the ___.",
+    "options": [
+      "handle",
+      "door",
+      "table",
+      "wheel"
+    ],
+    "answer": 0,
+    "explain_ru": "Идиома: fly off the handle — выйти из себя.",
+    "group": "b2-v5"
+  },
+  {
+    "id": "V-B2-28",
+    "skill": "vocabulary",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "v-b2-idioms-common",
+    "topic_en": "Common idioms",
+    "topic_ru": "Частые идиомы",
+    "type": "mcq",
+    "q": "I didn't plan it — I just decided on the ___ of the moment.",
+    "options": [
+      "edge",
+      "spur",
+      "point",
+      "peak"
+    ],
+    "answer": 1,
+    "explain_ru": "Идиома: on the spur of the moment — под влиянием момента.",
+    "group": "b2-v5"
+  },
+  {
+    "id": "V-B2-29",
+    "skill": "vocabulary",
+    "level": "B2",
+    "band": 3,
+    "topic_id": "v-b2-idioms-common",
+    "topic_en": "Common idioms",
+    "topic_ru": "Частые идиомы",
+    "type": "gap",
+    "q": "Let's ___ the ice with a short game before the meeting starts.",
+    "accept": [
+      "break"
+    ],
+    "explain_ru": "Идиома: break the ice — разрядить обстановку.",
+    "hint_ru": "глагол: «сломать» лёд",
+    "group": "b2-v5"
   }
 ]

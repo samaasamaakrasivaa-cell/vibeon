@@ -102,50 +102,6 @@
     ]
   },
   {
-    "id": "a1-v1",
-    "level": "A1",
-    "kind": "vocabulary",
-    "anchor": false,
-    "name_ru": "Лексика: слова по темам",
-    "what_ru": "знает ли нужные слова уровня",
-    "topics": [
-      "v-a1-calendar",
-      "v-a1-clothes-colours",
-      "v-a1-daily-routine",
-      "v-a1-family",
-      "v-a1-food-drink",
-      "v-a1-free-time",
-      "v-a1-home",
-      "v-a1-jobs",
-      "v-a1-numbers-time",
-      "v-a1-town",
-      "v-a1-transport",
-      "v-a1-weather"
-    ]
-  },
-  {
-    "id": "a1-v2",
-    "level": "A1",
-    "kind": "vocabulary",
-    "anchor": false,
-    "name_ru": "Лексика: сочетаемость",
-    "what_ru": "коллокации, фразовые глаголы, предлоги после слов",
-    "topics": [
-      "v-a1-basic-collocations"
-    ]
-  },
-  {
-    "id": "a1-v3",
-    "level": "A1",
-    "kind": "vocabulary",
-    "anchor": false,
-    "name_ru": "Лексика: противоположности и похожие слова",
-    "what_ru": "cold / hot, long / short, open / closed",
-    "topics": [
-      "v-a1-adjectives-basic"
-    ]
-  },
-  {
     "id": "a2-01",
     "level": "A2",
     "kind": "grammar",
@@ -245,47 +201,6 @@
       "g-a2-verb-patterns-basic",
       "g-a2-infinitive-purpose",
       "g-a2-prepositions-movement"
-    ]
-  },
-  {
-    "id": "a2-v1",
-    "level": "A2",
-    "kind": "vocabulary",
-    "anchor": false,
-    "name_ru": "Лексика: слова по темам",
-    "what_ru": "знает ли нужные слова уровня",
-    "topics": [
-      "v-a2-health-body",
-      "v-a2-home-chores",
-      "v-a2-shopping-money",
-      "v-a2-sport",
-      "v-a2-technology",
-      "v-a2-travel",
-      "v-a2-work"
-    ]
-  },
-  {
-    "id": "a2-v2",
-    "level": "A2",
-    "kind": "vocabulary",
-    "anchor": false,
-    "name_ru": "Лексика: сочетаемость",
-    "what_ru": "коллокации, фразовые глаголы, предлоги после слов",
-    "topics": [
-      "v-a2-make-do",
-      "v-a2-phrasal-basic",
-      "v-a2-prepositional-phrases"
-    ]
-  },
-  {
-    "id": "a2-v3",
-    "level": "A2",
-    "kind": "vocabulary",
-    "anchor": false,
-    "name_ru": "Лексика: характер, чувства и похожие слова",
-    "what_ru": "boring / bored, say / tell, kind / selfish",
-    "topics": [
-      "v-a2-feelings-personality"
     ]
   },
   {
@@ -411,48 +326,6 @@
     ]
   },
   {
-    "id": "b1-v1",
-    "level": "B1",
-    "kind": "vocabulary",
-    "anchor": false,
-    "name_ru": "Лексика: слова по темам",
-    "what_ru": "знает ли нужные слова уровня",
-    "topics": [
-      "v-b1-career",
-      "v-b1-education",
-      "v-b1-environment",
-      "v-b1-media",
-      "v-b1-relationships"
-    ]
-  },
-  {
-    "id": "b1-v2",
-    "level": "B1",
-    "kind": "vocabulary",
-    "anchor": false,
-    "name_ru": "Лексика: сочетаемость",
-    "what_ru": "коллокации, фразовые глаголы, предлоги после слов",
-    "topics": [
-      "v-b1-collocations-basic",
-      "v-b1-dependent-prepositions",
-      "v-b1-phrasal-everyday"
-    ]
-  },
-  {
-    "id": "b1-v3",
-    "level": "B1",
-    "kind": "vocabulary",
-    "anchor": false,
-    "name_ru": "Лексика: словообразование и похожие слова",
-    "what_ru": "однокоренные слова, слова, которые легко перепутать, противоположности",
-    "topics": [
-      "v-b1-confusing-words",
-      "v-b1-ed-ing",
-      "v-b1-prefixes-negative",
-      "v-b1-suffixes"
-    ]
-  },
-  {
     "id": "b2-01",
     "level": "B2",
     "kind": "grammar",
@@ -574,50 +447,6 @@
     ]
   },
   {
-    "id": "b2-v1",
-    "level": "B2",
-    "kind": "vocabulary",
-    "anchor": false,
-    "name_ru": "Лексика: слова по темам",
-    "what_ru": "знает ли нужные слова уровня",
-    "topics": [
-      "v-b2-business-money",
-      "v-b2-lifestyle",
-      "v-b2-linking-words",
-      "v-b2-register-basic",
-      "v-b2-science-tech"
-    ]
-  },
-  {
-    "id": "b2-v2",
-    "level": "B2",
-    "kind": "vocabulary",
-    "anchor": false,
-    "name_ru": "Лексика: сочетаемость",
-    "what_ru": "коллокации, фразовые глаголы, предлоги после слов",
-    "topics": [
-      "v-b2-collocations",
-      "v-b2-dependent-prepositions-b2",
-      "v-b2-idioms-common",
-      "v-b2-phrasal-multi"
-    ]
-  },
-  {
-    "id": "b2-v3",
-    "level": "B2",
-    "kind": "vocabulary",
-    "anchor": false,
-    "name_ru": "Лексика: словообразование и похожие слова",
-    "what_ru": "однокоренные слова, слова, которые легко перепутать, противоположности",
-    "topics": [
-      "v-b2-business-money",
-      "v-b2-confusing-words-b2",
-      "v-b2-lifestyle",
-      "v-b2-science-tech",
-      "v-b2-word-formation"
-    ]
-  },
-  {
     "id": "c1-01",
     "level": "C1",
     "kind": "grammar",
@@ -736,6 +565,243 @@
     ]
   },
   {
+    "id": "a1-v1",
+    "level": "A1",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: слова по темам",
+    "what_ru": "знает ли нужные слова уровня",
+    "topics": [
+      "v-a1-calendar",
+      "v-a1-clothes-colours",
+      "v-a1-daily-routine",
+      "v-a1-family",
+      "v-a1-food-drink",
+      "v-a1-free-time",
+      "v-a1-home",
+      "v-a1-jobs",
+      "v-a1-numbers-time",
+      "v-a1-town",
+      "v-a1-transport",
+      "v-a1-weather"
+    ]
+  },
+  {
+    "id": "a1-v2",
+    "level": "A1",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: сочетаемость и фразовые глаголы",
+    "what_ru": "коллокации, фразовые глаголы, предлоги после слов",
+    "topics": [
+      "v-a1-basic-collocations"
+    ]
+  },
+  {
+    "id": "a1-v3",
+    "level": "A1",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: противоположности и описание",
+    "what_ru": "cold / hot, kind / rude, lazy / hard-working",
+    "topics": [
+      "v-a1-adjectives-basic"
+    ]
+  },
+  {
+    "id": "a1-v4",
+    "level": "A1",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: похожие слова",
+    "what_ru": "lend / borrow, trip / travel, rise / raise, effect / affect",
+    "topics": [
+      "v-a1-adjectives-basic",
+      "v-a1-daily-routine",
+      "v-a1-free-time"
+    ]
+  },
+  {
+    "id": "a2-v1",
+    "level": "A2",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: слова по темам",
+    "what_ru": "знает ли нужные слова уровня",
+    "topics": [
+      "v-a2-health-body",
+      "v-a2-home-chores",
+      "v-a2-shopping-money",
+      "v-a2-sport",
+      "v-a2-technology",
+      "v-a2-travel",
+      "v-a2-work"
+    ]
+  },
+  {
+    "id": "a2-v2",
+    "level": "A2",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: сочетаемость и фразовые глаголы",
+    "what_ru": "коллокации, фразовые глаголы, предлоги после слов",
+    "topics": [
+      "v-a2-make-do",
+      "v-a2-phrasal-basic",
+      "v-a2-prepositional-phrases"
+    ]
+  },
+  {
+    "id": "a2-v3",
+    "level": "A2",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: противоположности и описание",
+    "what_ru": "cold / hot, kind / rude, lazy / hard-working",
+    "topics": [
+      "v-a2-feelings-personality"
+    ]
+  },
+  {
+    "id": "a2-v4",
+    "level": "A2",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: похожие слова",
+    "what_ru": "lend / borrow, trip / travel, rise / raise, effect / affect",
+    "topics": [
+      "v-a2-feelings-personality",
+      "v-a2-travel"
+    ]
+  },
+  {
+    "id": "b1-v1",
+    "level": "B1",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: слова по темам",
+    "what_ru": "знает ли нужные слова уровня",
+    "topics": [
+      "v-b1-career",
+      "v-b1-education",
+      "v-b1-environment",
+      "v-b1-media",
+      "v-b1-relationships"
+    ]
+  },
+  {
+    "id": "b1-v2",
+    "level": "B1",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: сочетаемость и фразовые глаголы",
+    "what_ru": "коллокации, фразовые глаголы, предлоги после слов",
+    "topics": [
+      "v-b1-collocations-basic",
+      "v-b1-dependent-prepositions",
+      "v-b1-phrasal-everyday"
+    ]
+  },
+  {
+    "id": "b1-v3",
+    "level": "B1",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: словообразование",
+    "what_ru": "однокоренные слова: decide → decision, clear → unclear",
+    "topics": [
+      "v-b1-ed-ing",
+      "v-b1-prefixes-negative",
+      "v-b1-suffixes"
+    ]
+  },
+  {
+    "id": "b1-v4",
+    "level": "B1",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: похожие слова",
+    "what_ru": "lend / borrow, trip / travel, rise / raise, effect / affect",
+    "topics": [
+      "v-b1-confusing-words"
+    ]
+  },
+  {
+    "id": "b1-v5",
+    "level": "B1",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: идиомы",
+    "what_ru": "a piece of cake, in the same boat, beat around the bush",
+    "topics": [
+      "v-b1-idioms"
+    ]
+  },
+  {
+    "id": "b2-v1",
+    "level": "B2",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: слова по темам",
+    "what_ru": "знает ли нужные слова уровня",
+    "topics": [
+      "v-b2-business-money",
+      "v-b2-lifestyle",
+      "v-b2-linking-words",
+      "v-b2-register-basic",
+      "v-b2-science-tech"
+    ]
+  },
+  {
+    "id": "b2-v2",
+    "level": "B2",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: сочетаемость и фразовые глаголы",
+    "what_ru": "коллокации, фразовые глаголы, предлоги после слов",
+    "topics": [
+      "v-b2-collocations",
+      "v-b2-dependent-prepositions-b2",
+      "v-b2-phrasal-multi"
+    ]
+  },
+  {
+    "id": "b2-v3",
+    "level": "B2",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: словообразование",
+    "what_ru": "однокоренные слова: decide → decision, clear → unclear",
+    "topics": [
+      "v-b2-business-money",
+      "v-b2-lifestyle",
+      "v-b2-science-tech",
+      "v-b2-word-formation"
+    ]
+  },
+  {
+    "id": "b2-v4",
+    "level": "B2",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: похожие слова",
+    "what_ru": "lend / borrow, trip / travel, rise / raise, effect / affect",
+    "topics": [
+      "v-b2-confusing-words-b2"
+    ]
+  },
+  {
+    "id": "b2-v5",
+    "level": "B2",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: идиомы",
+    "what_ru": "a piece of cake, in the same boat, beat around the bush",
+    "topics": [
+      "v-b2-idioms-common"
+    ]
+  },
+  {
     "id": "c1-v1",
     "level": "C1",
     "kind": "vocabulary",
@@ -743,6 +809,8 @@
     "name_ru": "Лексика: слова по темам",
     "what_ru": "знает ли нужные слова уровня",
     "topics": [
+      "v-c1-academic",
+      "v-c1-discourse-markers",
       "v-c1-register"
     ]
   },
@@ -751,12 +819,10 @@
     "level": "C1",
     "kind": "vocabulary",
     "anchor": false,
-    "name_ru": "Лексика: сочетаемость",
+    "name_ru": "Лексика: сочетаемость и фразовые глаголы",
     "what_ru": "коллокации, фразовые глаголы, предлоги после слов",
     "topics": [
-      "v-c1-binomials",
       "v-c1-dependent-prepositions-c1",
-      "v-c1-idioms",
       "v-c1-phrasal-advanced",
       "v-c1-strong-collocations"
     ]
@@ -766,13 +832,35 @@
     "level": "C1",
     "kind": "vocabulary",
     "anchor": false,
-    "name_ru": "Лексика: словообразование и похожие слова",
-    "what_ru": "однокоренные слова, слова, которые легко перепутать, противоположности",
+    "name_ru": "Лексика: словообразование",
+    "what_ru": "однокоренные слова: decide → decision, clear → unclear",
     "topics": [
       "v-c1-academic",
       "v-c1-discourse-markers",
-      "v-c1-near-synonyms",
       "v-c1-word-formation-advanced"
+    ]
+  },
+  {
+    "id": "c1-v4",
+    "level": "C1",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: похожие слова",
+    "what_ru": "lend / borrow, trip / travel, rise / raise, effect / affect",
+    "topics": [
+      "v-c1-near-synonyms"
+    ]
+  },
+  {
+    "id": "c1-v5",
+    "level": "C1",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: идиомы",
+    "what_ru": "a piece of cake, in the same boat, beat around the bush",
+    "topics": [
+      "v-c1-binomials",
+      "v-c1-idioms"
     ]
   }
 ]

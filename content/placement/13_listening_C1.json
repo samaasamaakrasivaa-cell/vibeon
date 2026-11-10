@@ -25,6 +25,20 @@
     "questions": [
       {
         "id": "L-C1-01-q1",
+        "q": "Apart from giving shade, how do trees cool the air?",
+        "options": [
+          "By releasing water vapour through their leaves",
+          "By absorbing heat from the ground through their roots",
+          "By blocking warm winds from reaching the street",
+          "By reflecting sunlight back into the sky"
+        ],
+        "answer": 0,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "«It also releases water vapour through its leaves, which works rather like sweat on your skin»."
+      },
+      {
+        "id": "L-C1-01-q2",
         "q": "Why does the lecturer mention her old flat?",
         "options": [
           "To complain about some of the decisions of her local council",
@@ -38,7 +52,21 @@
         "explain_ru": "Её история показывает: деревья помогли, но только через восемь лет."
       },
       {
-        "id": "L-C1-01-q2",
+        "id": "L-C1-01-q3",
+        "q": "Why do so many newly planted trees die?",
+        "options": [
+          "They are planted in the wrong season",
+          "Nobody looks after or waters them",
+          "Air pollution in cities damages them",
+          "Councils choose the wrong species"
+        ],
+        "answer": 1,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "«Around a third of newly planted trees die… usually because nobody waters them»."
+      },
+      {
+        "id": "L-C1-01-q4",
         "q": "What is her attitude to politicians who promise to plant a million trees?",
         "options": [
           "She welcomes it but doubts the trees will be cared for",
@@ -52,7 +80,7 @@
         "explain_ru": "Хорошее начало, но кто будет за ними ухаживать?"
       },
       {
-        "id": "L-C1-01-q3",
+        "id": "L-C1-01-q5",
         "q": "What does she imply about poorer neighbourhoods?",
         "options": [
           "They have planted far more trees than richer areas recently",
@@ -66,7 +94,7 @@
         "explain_ru": "Там меньше деревьев, а у жителей меньше денег на кондиционеры."
       },
       {
-        "id": "L-C1-01-q4",
+        "id": "L-C1-01-q6",
         "q": "What is the main problem with relying on trees, according to the lecturer?",
         "options": [
           "Scientists still disagree about whether they work",
@@ -148,6 +176,20 @@
       },
       {
         "id": "L-C1-02-q3",
+        "q": "What point does Daniel make with the example of his grandmother?",
+        "options": [
+          "Older generations had more time for hobbies",
+          "Village competitions were harder to win than today's",
+          "Competing isn't new, but its scale today is",
+          "His family has always been very competitive"
+        ],
+        "answer": 2,
+        "checks": "inference",
+        "topic_id": "l-inference",
+        "explain_ru": "Бабушка тоже соревновалась, «but she wasn't comparing herself with thousands of strangers… The scale is new»."
+      },
+      {
+        "id": "L-C1-02-q4",
         "q": "Why does Daniel mention his sourdough?",
         "options": [
           "To show that home baking can be surprisingly profitable",
@@ -161,7 +203,21 @@
         "explain_ru": "Он сам попробовал продавать хлеб и забыл, что пёк ради отдыха."
       },
       {
-        "id": "L-C1-02-q4",
+        "id": "L-C1-02-q5",
+        "q": "According to Daniel, when does measuring a hobby become a problem?",
+        "options": [
+          "When it takes up too much free time",
+          "When it leads to injury or burnout",
+          "When it starts to cost real money",
+          "When it is done for an audience"
+        ],
+        "answer": 3,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "«The problem starts when the measuring is for an audience»."
+      },
+      {
+        "id": "L-C1-02-q6",
         "q": "What does Priya mean by being happy to be mediocre at something?",
         "options": [
           "Doing it just for pleasure, without judging the results",
@@ -223,6 +279,20 @@
       },
       {
         "id": "L-C1-03-q2",
+        "q": "What had their mother told Sam about her trips abroad?",
+        "options": [
+          "That she was visiting Aunt Jo",
+          "That she was viewing houses to buy",
+          "That she was on holiday with friends",
+          "That she was looking at cafés to open"
+        ],
+        "answer": 0,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "Sam: «She told me she was visiting Aunt Jo»."
+      },
+      {
+        "id": "L-C1-03-q3",
         "q": "Why is the town attractive to their mother?",
         "options": [
           "It's close to a relative of hers",
@@ -236,7 +306,21 @@
         "explain_ru": "Тётя Джо живёт в часе езды от этого города."
       },
       {
-        "id": "L-C1-03-q3",
+        "id": "L-C1-03-q4",
+        "q": "Why does Laura find her mother's careful planning worrying?",
+        "options": [
+          "It shows she is secretly worried about money",
+          "It suggests she's already made up her mind",
+          "It means she plans to sell the house too cheaply",
+          "It proves she has been bored since retiring"
+        ],
+        "answer": 1,
+        "checks": "inference",
+        "topic_id": "l-inference",
+        "explain_ru": "«When she's this organised, it usually means her mind is already made up»."
+      },
+      {
+        "id": "L-C1-03-q5",
         "q": "What lies behind Laura's remark about who is waiting to visit?",
         "options": [
           "She thinks Sam visits their mother too often",
@@ -250,7 +334,7 @@
         "explain_ru": "Лора ездит к маме каждую неделю, а Сэм — нет; это скрытая обида."
       },
       {
-        "id": "L-C1-03-q4",
+        "id": "L-C1-03-q6",
         "q": "What do they agree to do?",
         "options": [
           "Persuade their mother to stay in her house in England",
@@ -306,6 +390,20 @@
       },
       {
         "id": "L-C1-04-q2",
+        "q": "What did the X-ray of the portrait reveal?",
+        "options": [
+          "A hidden signature of the original artist",
+          "An earlier, much brighter version of the background",
+          "A window and a second figure under the paint",
+          "Serious cracks under the surface of the paint"
+        ],
+        "answer": 2,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "Реставратор «had painted over a window and a second figure»."
+      },
+      {
+        "id": "L-C1-04-q3",
         "q": "What does the story of the portrait show?",
         "options": [
           "X-rays often give misleading results about old paintings",
@@ -319,7 +417,7 @@
         "explain_ru": "Уверенный реставратор закрасил окно и фигуру и исказил смысл картины."
       },
       {
-        "id": "L-C1-04-q3",
+        "id": "L-C1-04-q4",
         "q": "Why should restoration work be reversible?",
         "options": [
           "So future experts can correct today's mistakes",
@@ -333,7 +431,21 @@
         "explain_ru": "Реставраторы допускают, что ошибаются, и оставляют возможность всё исправить."
       },
       {
-        "id": "L-C1-04-q4",
+        "id": "L-C1-04-q5",
+        "q": "Why is there a small diagram next to the vase?",
+        "options": [
+          "To explain how it was originally made",
+          "To show where it was first discovered",
+          "To warn visitors not to touch it",
+          "To show the history of its repairs"
+        ],
+        "answer": 3,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "Вазу склеивали минимум три раза, и вместо того чтобы это скрывать, рядом поставили схему."
+      },
+      {
+        "id": "L-C1-04-q6",
         "q": "How does the curator feel about the signs of age on a painting?",
         "options": [
           "She thinks they spoil the visitors' experience of art",

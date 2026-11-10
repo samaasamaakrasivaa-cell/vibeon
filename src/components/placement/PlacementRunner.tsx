@@ -16,7 +16,7 @@ type Core = Extract<V, { section: "core" | "vocab" }>;
 type CoreItemV = NonNullable<Core["item"]>;
 type TQ = { id: string; q: string; options: string[]; v: number | null };
 type TItem = { id: string; title: string; questions: TQ[]; passage?: string; situation?: string; audio?: string; plays?: number; used?: number };
-type TextV = { section: "reading" | "listening"; instr?: string; extra?: boolean; items: TItem[] };
+type TextV = { section: "reading" | "listening"; instr?: string; extra?: boolean; n?: number; items: TItem[] };
 type WriteV = Extract<V, { section: "writing" }>;
 type SpeakV = Extract<V, { section: "speaking" }>;
 
@@ -257,34 +257,23 @@ function CoreStep({ item: it, n, pending, onAnswer, onBack, initial, past }: { i
 
 function TextStep({ v, pending, onFinish, attempt }: { v: TextV; pending: boolean; onFinish: () => void; attempt: string }) {
   const { t } = useT();
-  const [tab, setTab] = useState(0);
+  // открыт всегда один текст: после «Next» к нему не вернуться, следующий выбирается по результату
+  const it = v.items[0];
   const [ans, setAns] = useState<Record<string, number>>(() => Object.fromEntries(v.items.flatMap((x) => x.questions.filter((q) => q.v !== null).map((q) => [q.id, q.v!]))));
   const [playing, setPlaying] = useState(false);
   const listen = v.section === "listening";
   const pick = (qid: string, k: number) => { setAns((a) => ({ ...a, [qid]: k })); void draftText(attempt, qid, k); };
-  const total = v.items.reduce((a, x) => a + x.questions.length, 0);
-  const left = total - Object.keys(ans).filter((k) => v.items.some((x) => x.questions.some((q) => q.id === k))).length;
-  const it = v.items[Math.min(tab, v.items.length - 1)];
-  const [warn, setWarn] = useState<number | null>(null);
+  const left = it ? it.questions.filter((q) => ans[q.id] === undefined).length : 0;
   const finish = () => {
-    // сначала напоминаем про текст (запись), где остались вопросы без ответа
-    const gap = v.items.findIndex((x) => x.questions.some((q) => ans[q.id] === undefined));
-    if (gap >= 0 && warn === null) { setTab(gap); setWarn(gap); window.scrollTo({ top: 0 }); return; }
-    if (!confirm(left ? t("pl.finishLeft", { n: left }) : t("pl.finishSure"))) return;
+    if (left && !confirm(t("pl.nextLeft", { n: left }))) return;
     onFinish();
   };
   if (!it) return null;
   return (
-    <section className="card flex flex-col gap-4">
+    <section className="card flex flex-col gap-4" data-text={it.id}>
+      <div className="flex flex-wrap items-center gap-2"><span className="pill">{t(listen ? "pl.recTab" : "pl.textTab", { n: v.n ?? 1 })}</span>{(v.n ?? 1) > 1 && !v.extra && <span className="small muted">{t("pl.byPrev")}</span>}</div>
       {v.extra && <div className="alert ok" style={{ background: "var(--accent-bg)", color: "var(--accent-text)" }}>{t("pl.extraText")}</div>}
-      {warn !== null && <div className="alert">{t(listen ? "pl.warnRec" : "pl.warnText", { n: warn + 1 })}</div>}
       <p className="plinstr">{v.instr}</p>
-      {v.items.length > 1 && (
-        <nav className="tabsbar">{v.items.map((x, i) => {
-          const n = x.questions.filter((q) => ans[q.id] !== undefined).length;
-          return <button key={x.id} type="button" aria-current={i === tab ? "page" : undefined} disabled={playing} onClick={() => setTab(i)}>{t(listen ? "pl.recTab" : "pl.textTab", { n: i + 1 })} <span className="small muted">{n}/{x.questions.length}</span></button>;
-        })}</nav>
-      )}
       <h3 className="m-0">{it.title}</h3>
       {listen ? <Player key={it.id} it={it} attempt={attempt} onPlaying={setPlaying} /> : <div className="tpassage plpassage">{it.passage}</div>}
       {it.questions.map((q, n) => (
@@ -297,8 +286,7 @@ function TextStep({ v, pending, onFinish, attempt }: { v: TextV; pending: boolea
         </fieldset>
       ))}
       <div className="plactions">
-        {tab < v.items.length - 1 && <button type="button" className="btn secondary" disabled={playing} onClick={() => { setTab(tab + 1); window.scrollTo({ top: 0 }); }}>{t(listen ? "pl.nextRec" : "pl.nextText")}</button>}
-        <button className="btn primary" disabled={pending || playing} onClick={finish}>{t("pl.finishPart")}</button>
+        <button className="btn primary" disabled={pending || playing} onClick={finish}>Next<Icon name="right" size="sm" /></button>
       </div>
       <p className="small muted m-0 text-right">{left ? t("pl.leftQ", { n: left }) : t("pl.allAnswered")}</p>
     </section>
@@ -361,12 +349,12 @@ function WriteStep({ v, pending, onSave }: { v: WriteV; pending: boolean; onSave
         <div className="plletter-h"><Icon name="msg" size="sm" /><b>{it.kind}</b><span className="grow" /><span className="small muted">{t("pl.wordsGoal", { a: it.min, b: it.max })}</span></div>
         <p className="plq m-0">{it.prompt_en}</p>
         {it.points.length > 0 && (
-          <div className="plpoints"><div className="small muted mb-1">{t("pl.includePoints")}</div>
+          <div className="plpoints"><div className="small muted mb-1">{it.points_title || t("pl.includePoints")}</div>
             {it.points.map((p) => <div key={p} className="plpoint"><span className="pldotc" />{p}</div>)}
           </div>
         )}
-        <button type="button" className="btn plain sm self-start" onClick={() => setRu(!ru)}>{ru ? t("pl.hideRu") : t("pl.showRu")}</button>
-        {ru && <p className="small muted m-0">{it.prompt_ru}</p>}
+        {it.prompt_ru && <button type="button" className="btn plain sm self-start" onClick={() => setRu(!ru)}>{ru ? t("pl.hideRu") : t("pl.showRu")}</button>}
+        {ru && it.prompt_ru && <p className="small muted m-0">{it.prompt_ru}</p>}
       </div>
       <div className="plpaper">
         <textarea value={text} onChange={(e) => setText(e.target.value)} spellCheck={false} autoCorrect="off" placeholder={t("pl.writeHere")} aria-label={t("pl.part.writing")} />

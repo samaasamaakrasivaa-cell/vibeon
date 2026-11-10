@@ -994,6 +994,13 @@
     "topic_ru": "Предлоги после слов: good at, interested in"
   },
   {
+    "topic_id": "v-b1-idioms",
+    "skill": "vocabulary",
+    "level": "B1",
+    "topic_en": "Common idioms",
+    "topic_ru": "Частые идиомы"
+  },
+  {
     "topic_id": "v-b2-phrasal-multi",
     "skill": "vocabulary",
     "level": "B2",

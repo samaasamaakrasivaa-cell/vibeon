@@ -20,10 +20,11 @@
     ],
     "explain_ru": "Проверяет умение написать короткое бытовое сообщение.",
     "points": [
-      "Say sorry",
-      "Say why you can't meet",
-      "Say when you are free"
-    ]
+      "say sorry",
+      "say why you can't meet",
+      "say when you are free"
+    ],
+    "points_title": "In your message:"
   },
   {
     "id": "W-A1-02",
@@ -46,10 +47,11 @@
     ],
     "explain_ru": "Проверяет умение сообщить информацию и вежливо попросить.",
     "points": [
-      "Where you are going",
-      "When you are coming back",
-      "Two things your flatmate can do for you"
-    ]
+      "say where you are going",
+      "say when you are coming back",
+      "ask your flatmate to do two things for you"
+    ],
+    "points_title": "In your note:"
   },
   {
     "id": "W-A1-03",
@@ -72,10 +74,11 @@
     ],
     "explain_ru": "Проверяет умение рассказать о себе простыми фразами.",
     "points": [
-      "Where you are from",
-      "What you do",
-      "What you like doing at the weekend"
-    ]
+      "say where you are from",
+      "say what you do",
+      "say what you like doing at the weekend"
+    ],
+    "points_title": "In your message:"
   },
   {
     "id": "W-A2-01",
@@ -98,10 +101,11 @@
     ],
     "explain_ru": "Проверяет умение рассказать о прошлом в дружеском письме.",
     "points": [
-      "Where you went",
-      "Who you were with",
-      "What you enjoyed most"
-    ]
+      "say where you went",
+      "say who you were with",
+      "say what you enjoyed most"
+    ],
+    "points_title": "In your email:"
   },
   {
     "id": "W-A2-02",
@@ -124,10 +128,11 @@
     ],
     "explain_ru": "Проверяет умение давать советы и практическую информацию.",
     "points": [
-      "Two places to visit",
-      "One local dish to try",
-      "How to get to the city centre"
-    ]
+      "suggest two places to visit",
+      "suggest one local dish to try",
+      "explain how to get to the city centre"
+    ],
+    "points_title": "In your email:"
   },
   {
     "id": "W-A2-03",
@@ -150,9 +155,10 @@
     ],
     "explain_ru": "Проверяет умение отвечать на письмо и давать советы.",
     "points": [
-      "What you do to stay active",
-      "Two ideas for your friend"
-    ]
+      "say what you do to stay active",
+      "give your friend two ideas"
+    ],
+    "points_title": "In your reply:"
   },
   {
     "id": "W-B1-01",
@@ -176,10 +182,11 @@
     ],
     "explain_ru": "Проверяет умение рассказывать о своём опыте с деталями и чувствами.",
     "points": [
-      "How you got interested in it",
-      "What you enjoy about it",
-      "What has been difficult"
-    ]
+      "how you got interested in it",
+      "what you enjoy about it",
+      "what has been difficult"
+    ],
+    "points_title": "In your email, explain:"
   },
   {
     "id": "W-B1-02",
@@ -203,10 +210,11 @@
     ],
     "explain_ru": "Проверяет умение строить повествование в прошедших временах.",
     "points": [
-      "Start with: “When I opened the door, I couldn't believe what I saw.”",
-      "What happened next",
-      "How the story ends"
-    ]
+      "start with: “When I opened the door, I couldn't believe what I saw.”",
+      "say what happened next",
+      "give the story an ending"
+    ],
+    "points_title": "In your story:"
   },
   {
     "id": "W-B1-03",
@@ -230,10 +238,11 @@
     ],
     "explain_ru": "Проверяет умение написать нейтральное письмо с вопросами.",
     "points": [
-      "Ask about the dates and the price",
-      "Ask what you need to bring",
-      "Explain why you are interested"
-    ]
+      "ask about the dates and the price",
+      "ask what you need to bring",
+      "explain why you are interested in the course"
+    ],
+    "points_title": "In your email:"
   },
   {
     "id": "W-B2-01",
@@ -257,10 +266,11 @@
     ],
     "explain_ru": "Проверяет умение описывать и оценивать с аргументами.",
     "points": [
-      "Describe the place",
-      "What was good and not so good",
-      "Who you would recommend it to"
-    ]
+      "describe the place",
+      "say what was good and not so good",
+      "say who you would recommend it to"
+    ],
+    "points_title": "In your review:"
   },
   {
     "id": "W-B2-02",
@@ -284,10 +294,11 @@
     ],
     "explain_ru": "Проверяет умение аргументировать мнение в эссе.",
     "points": [
-      "Your opinion",
-      "Reasons and examples",
-      "A conclusion"
-    ]
+      "give your opinion",
+      "support it with reasons and examples",
+      "finish with a conclusion"
+    ],
+    "points_title": "In your essay:"
   },
   {
     "id": "W-B2-03",
@@ -311,10 +322,11 @@
     ],
     "explain_ru": "Проверяет умение сравнивать позиции и делать вывод.",
     "points": [
-      "Arguments for a year off",
-      "Arguments against",
-      "Your own opinion"
-    ]
+      "discuss the arguments for a year off",
+      "discuss the arguments against",
+      "give your own opinion"
+    ],
+    "points_title": "In your essay:"
   },
   {
     "id": "W-C1-01",
@@ -338,10 +350,11 @@
     ],
     "explain_ru": "Проверяет умение писать структурированный отчёт с рекомендациями.",
     "points": [
-      "Summarise the main problems from the survey",
-      "Recommend practical changes",
-      "Clear sections with headings"
-    ]
+      "summarise the main problems from the survey",
+      "recommend practical changes",
+      "use clear sections with headings"
+    ],
+    "points_title": "In your report:"
   },
   {
     "id": "W-C1-02",
@@ -365,10 +378,11 @@
     ],
     "explain_ru": "Проверяет умение убеждать в формальном жанре предложения.",
     "points": [
-      "Describe the space as it is now",
-      "What you would change and why",
-      "How it would benefit different groups"
-    ]
+      "describe the space as it is now",
+      "explain what you would change and why",
+      "show how the changes would benefit different groups"
+    ],
+    "points_title": "In your proposal:"
   },
   {
     "id": "W-C1-03",
@@ -392,10 +406,11 @@
     ],
     "explain_ru": "Проверяет умение рассуждать на абстрактную тему и взвешивать позиции.",
     "points": [
-      "Discuss the view",
-      "Consider the other side",
-      "A balanced conclusion"
-    ]
+      "discuss the view",
+      "consider the other side",
+      "reach a balanced conclusion"
+    ],
+    "points_title": "In your essay:"
   },
   {
     "id": "S-A1-01",
@@ -429,7 +444,8 @@
       "Простые предложения с to be, have, like, Present Simple",
       "Речь понятна, даже с паузами и акцентом"
     ],
-    "explain_ru": "Проверяет умение рассказать о себе простыми фразами."
+    "explain_ru": "Проверяет умение рассказать о себе простыми фразами.",
+    "intro_en": "Answer three simple questions about yourself."
   },
   {
     "id": "S-A1-02",
@@ -463,7 +479,8 @@
       "Простые предложения с to be, have, like, Present Simple",
       "Речь понятна, даже с паузами и акцентом"
     ],
-    "explain_ru": "Проверяет умение описать дом и распорядок."
+    "explain_ru": "Проверяет умение описать дом и распорядок.",
+    "intro_en": "Answer three questions about your home and your evenings."
   },
   {
     "id": "S-A1-03",
@@ -497,7 +514,8 @@
       "Простые предложения с to be, have, like, Present Simple",
       "Речь понятна, даже с паузами и акцентом"
     ],
-    "explain_ru": "Проверяет умение говорить о привычках и предпочтениях."
+    "explain_ru": "Проверяет умение говорить о привычках и предпочтениях.",
+    "intro_en": "Answer three questions about your habits."
   },
   {
     "id": "S-A2-01",
@@ -531,7 +549,8 @@
       "Достаточно слов, чтобы описать события и впечатления",
       "Паузы есть, но мысль понятна слушателю"
     ],
-    "explain_ru": "Проверяет умение говорить о прошлом и ближайших планах."
+    "explain_ru": "Проверяет умение говорить о прошлом и ближайших планах.",
+    "intro_en": "Answer three questions about the past and your plans."
   },
   {
     "id": "S-A2-02",
@@ -565,7 +584,8 @@
       "Достаточно слов, чтобы описать события и впечатления",
       "Паузы есть, но мысль понятна слушателю"
     ],
-    "explain_ru": "Проверяет Present Perfect и Past Simple в рассказе об опыте."
+    "explain_ru": "Проверяет Present Perfect и Past Simple в рассказе об опыте.",
+    "intro_en": "Answer three questions about new experiences."
   },
   {
     "id": "S-A2-03",
@@ -599,7 +619,8 @@
       "Достаточно слов, чтобы описать события и впечатления",
       "Паузы есть, но мысль понятна слушателю"
     ],
-    "explain_ru": "Проверяет умение описывать людей, привычки и планы."
+    "explain_ru": "Проверяет умение описывать людей, привычки и планы.",
+    "intro_en": "Answer three questions about a friend and your plans."
   },
   {
     "id": "S-B1-01",
@@ -629,7 +650,8 @@
       "Разные времена с ошибками, которые не мешают пониманию",
       "Произношение понятное, ученик сам исправляет часть ошибок"
     ],
-    "explain_ru": "Проверяет описание с деталями и рассказ о прошлом."
+    "explain_ru": "Проверяет описание с деталями и рассказ о прошлом.",
+    "intro_en": "Describe a place and tell a story from your life."
   },
   {
     "id": "S-B1-02",
@@ -659,7 +681,8 @@
       "Разные времена с ошибками, которые не мешают пониманию",
       "Произношение понятное, ученик сам исправляет часть ошибок"
     ],
-    "explain_ru": "Проверяет описание человека и связный рассказ."
+    "explain_ru": "Проверяет описание человека и связный рассказ.",
+    "intro_en": "Talk about a person and a day you remember."
   },
   {
     "id": "S-B1-03",
@@ -694,7 +717,8 @@
       "Разные времена с ошибками, которые не мешают пониманию",
       "Произношение понятное, ученик сам исправляет часть ошибок"
     ],
-    "explain_ru": "Проверяет описание, рассказ и гипотетические ситуации."
+    "explain_ru": "Проверяет описание, рассказ и гипотетические ситуации.",
+    "intro_en": "Answer three questions about your day, a decision and your plans."
   },
   {
     "id": "S-B2-01",
@@ -724,7 +748,8 @@
       "Сложные конструкции в основном верны, ошибки не мешают пониманию",
       "Говорит достаточно бегло, паузы — на поиск идей, а не слов"
     ],
-    "explain_ru": "Проверяет аргументацию и сравнение вариантов."
+    "explain_ru": "Проверяет аргументацию и сравнение вариантов.",
+    "intro_en": "Give your opinion and support it with reasons."
   },
   {
     "id": "S-B2-02",
@@ -754,7 +779,8 @@
       "Сложные конструкции в основном верны, ошибки не мешают пониманию",
       "Говорит достаточно бегло, паузы — на поиск идей, а не слов"
     ],
-    "explain_ru": "Проверяет мнение с аргументами за и против."
+    "explain_ru": "Проверяет мнение с аргументами за и против.",
+    "intro_en": "Give your opinion and support it with reasons."
   },
   {
     "id": "S-B2-03",
@@ -789,7 +815,8 @@
       "Сложные конструкции в основном верны, ошибки не мешают пониманию",
       "Говорит достаточно бегло, паузы — на поиск идей, а не слов"
     ],
-    "explain_ru": "Проверяет развёрнутое мнение и предложения решений."
+    "explain_ru": "Проверяет развёрнутое мнение и предложения решений.",
+    "intro_en": "Answer three questions and support your answers with reasons."
   },
   {
     "id": "S-C1-01",
@@ -819,7 +846,8 @@
       "Широкий диапазон грамматики с редкими оговорками",
       "Речь беглая и естественная, интонация помогает выделять главное"
     ],
-    "explain_ru": "Проверяет рассуждение и сравнение позиций на абстрактную тему."
+    "explain_ru": "Проверяет рассуждение и сравнение позиций на абстрактную тему.",
+    "intro_en": "Discuss two abstract topics and compare different points of view."
   },
   {
     "id": "S-C1-02",
@@ -849,7 +877,8 @@
       "Широкий диапазон грамматики с редкими оговорками",
       "Речь беглая и естественная, интонация помогает выделять главное"
     ],
-    "explain_ru": "Проверяет рассуждение и сравнение позиций на абстрактную тему."
+    "explain_ru": "Проверяет рассуждение и сравнение позиций на абстрактную тему.",
+    "intro_en": "Discuss two abstract topics and compare different points of view."
   },
   {
     "id": "S-C1-03",
@@ -879,6 +908,7 @@
       "Широкий диапазон грамматики с редкими оговорками",
       "Речь беглая и естественная, интонация помогает выделять главное"
     ],
-    "explain_ru": "Проверяет рассуждение и сравнение позиций на абстрактную тему."
+    "explain_ru": "Проверяет рассуждение и сравнение позиций на абстрактную тему.",
+    "intro_en": "Discuss two abstract topics and compare different points of view."
   }
 ]

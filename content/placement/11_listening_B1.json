@@ -39,6 +39,20 @@
       },
       {
         "id": "L-B1-01-q2",
+        "q": "Who took Emma out for lunch on her first day?",
+        "options": [
+          "Her manager, Paul",
+          "The woman who sits next to her",
+          "Her friend Sarah",
+          "Everyone in her new team"
+        ],
+        "answer": 0,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "«My manager, Paul, took me out for lunch on my first day»; соседка показала, где кофе."
+      },
+      {
+        "id": "L-B1-01-q3",
         "q": "How does Emma feel about the work itself?",
         "options": [
           "It's the same as in her old job",
@@ -52,7 +66,7 @@
         "explain_ru": "Работа интереснее, чем она ожидала: каждый проект разный."
       },
       {
-        "id": "L-B1-01-q3",
+        "id": "L-B1-01-q4",
         "q": "What is Emma unhappy about?",
         "options": [
           "Her new manager",
@@ -66,7 +80,7 @@
         "explain_ru": "Дорога занимает почти час, а поезда переполнены."
       },
       {
-        "id": "L-B1-01-q4",
+        "id": "L-B1-01-q5",
         "q": "Why is Emma calling Sarah?",
         "options": [
           "To ask her for help with a difficult project",
@@ -156,6 +170,20 @@
       },
       {
         "id": "L-B1-02-q4",
+        "q": "Who could look after the dog when they go away?",
+        "options": [
+          "Jake's cousin",
+          "Jake's parents",
+          "Nina's sister",
+          "A neighbour across the street"
+        ],
+        "answer": 1,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "«My parents could look after him». Кузине, наоборот, самой нужно присмотреть за собакой."
+      },
+      {
+        "id": "L-B1-02-q5",
         "q": "What do they decide to do?",
         "options": [
           "Buy a puppy together in May",
@@ -256,6 +284,20 @@
         "checks": "detail",
         "topic_id": "l-detail",
         "explain_ru": "Она решает завтра утром поговорить с Марком."
+      },
+      {
+        "id": "L-B1-03-q5",
+        "q": "When does Tom have time to help Rachel?",
+        "options": [
+          "On Friday",
+          "Tomorrow morning",
+          "On Thursday",
+          "After six every day"
+        ],
+        "answer": 2,
+        "checks": "number-time-place",
+        "topic_id": "l-number-time-place",
+        "explain_ru": "«I've got some free time on Thursday»."
       }
     ],
     "situation_en": "Two colleagues are talking at the end of the working day."
@@ -328,6 +370,20 @@
       },
       {
         "id": "L-B1-04-q4",
+        "q": "What does he do when it's raining hard?",
+        "options": [
+          "He drives to work",
+          "He works from home",
+          "He still cycles, but slowly",
+          "He takes the bus"
+        ],
+        "answer": 3,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "«When it's raining hard, I still take the bus»."
+      },
+      {
+        "id": "L-B1-04-q5",
         "q": "What does he suggest listeners do?",
         "options": [
           "Buy a better and more expensive bike",

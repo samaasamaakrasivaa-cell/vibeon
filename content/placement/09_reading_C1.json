@@ -67,6 +67,34 @@
         "checks": "inference",
         "topic_id": "r-inference",
         "explain_ru": "Это примеры ситуаций, когда ум свободен и рождает идеи."
+      },
+      {
+        "id": "R-C1-01-q5",
+        "q": "How do psychologists describe boredom, according to the text?",
+        "options": [
+          "As a signal that our needs aren't being met",
+          "As a sign that we need more sleep and rest",
+          "As the complete absence of any thought",
+          "As a problem caused mainly by phones"
+        ],
+        "answer": 0,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "…not as an absence of thought but as a signal… that what we are doing isn't meeting our needs."
+      },
+      {
+        "id": "R-C1-01-q6",
+        "q": "What kind of boredom does the writer consider genuinely harmful?",
+        "options": [
+          "Waiting for a kettle to boil in the morning",
+          "Long-lasting boredom from pointless work",
+          "Boredom while a train is delayed",
+          "Having five spare minutes without a phone"
+        ],
+        "answer": 1,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "Chronic boredom… from work that feels pointless… is genuinely harmful."
       }
     ]
   },
@@ -138,6 +166,34 @@
         "checks": "vocabulary in context",
         "topic_id": "r-vocabulary-in-context",
         "explain_ru": "Меню не жёсткий список, его обсуждают с персоналом."
+      },
+      {
+        "id": "R-C1-02-q5",
+        "q": "What is Hedgerow's main rule?",
+        "options": [
+          "All of the dishes must be completely vegetarian",
+          "The menu has to stay the same every day",
+          "Ingredients must come from within thirty miles",
+          "Prices must always be written on the board"
+        ],
+        "answer": 2,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "…nothing on the plate may travel more than thirty miles."
+      },
+      {
+        "id": "R-C1-02-q6",
+        "q": "Why can the bill come as a surprise?",
+        "options": [
+          "The service charge is unusually high",
+          "Drinks cost much more than the food",
+          "The menu is written in another language",
+          "Prices aren't shown on the menu board"
+        ],
+        "answer": 3,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "…the policy of not writing prices on the board means the bill can come as a surprise."
       }
     ]
   },
@@ -209,6 +265,34 @@
         "checks": "vocabulary in context",
         "topic_id": "r-vocabulary-in-context",
         "explain_ru": "Несколько строк меняют твоё представление о близком человеке."
+      },
+      {
+        "id": "R-C1-03-q5",
+        "q": "Where was the notebook found?",
+        "options": [
+          "In a box of the mother's things",
+          "In the grandmother's old kitchen cupboard",
+          "In a second-hand bookshop in town",
+          "In a restaurant in Marseille"
+        ],
+        "answer": 0,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "The notebook turned up in a box of things my mother had been meaning to sort through."
+      },
+      {
+        "id": "R-C1-03-q6",
+        "q": "What has the narrator decided about the mystery?",
+        "options": [
+          "To ask the mother about it again",
+          "To stop trying to find the answer",
+          "To travel to Marseille to find out",
+          "To publish the recipes in a book"
+        ],
+        "answer": 1,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "I still don't know who it was meant for, and I've stopped trying to find out."
       }
     ]
   },
@@ -280,6 +364,34 @@
         "checks": "vocabulary in context",
         "topic_id": "r-vocabulary-in-context",
         "explain_ru": "Soar — резко взлететь, о ценах."
+      },
+      {
+        "id": "R-C1-04-q5",
+        "q": "What made Valdoro famous?",
+        "options": [
+          "A popular television series filmed there",
+          "A new luxury hotel by the harbour",
+          "A photograph shared online",
+          "A famous annual fishing festival"
+        ],
+        "answer": 2,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "…a photograph of its pastel houses… began circulating online, and everything changed."
+      },
+      {
+        "id": "R-C1-04-q6",
+        "q": "What has the local council done?",
+        "options": [
+          "Banned tourists from the village at weekends",
+          "Built a large new car park near the harbour",
+          "Closed the souvenir shops in the main street",
+          "Limited new holiday rentals and charged day visitors"
+        ],
+        "answer": 3,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "…introducing a limit on new holiday rentals and a small fee for day visitors."
       }
     ]
   }

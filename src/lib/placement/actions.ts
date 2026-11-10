@@ -11,7 +11,7 @@ import { getLang } from "../i18n/server";
 import { attemptFor, ptCookie } from "./access";
 import { getBank } from "./bank";
 import { checkCore, emptyState, EXPECT, stepIdx, summarize, words, type CoreItem, type Expect, type ListenItem, type ReadItem, type SpeakItem } from "./engine";
-import { addFallback, advance, closeSection, enter, goTo, json, LATER, openOf, publicView, stateOf, type Later, type PView } from "./run";
+import { addNextText, advance, closeSection, ensureTasks, enter, goTo, json, LATER, openOf, publicView, stateOf, type Later, type PView } from "./run";
 import { revealedScripts } from "./review";
 
 type R = { ok: true; id?: string; view?: PView } | { ok: false; error: string };
@@ -94,7 +94,7 @@ export async function finishTexts(id: string): Promise<R> {
       done.push(tid);
     }
     const { bank } = await getBank();
-    if (addFallback(st, bank, st.section)) return save(id, st); // ещё один текст попроще — раздел остаётся открытым
+    if (addNextText(st, bank, st.section)) return save(id, st); // следующий текст — по результату предыдущего
     return closeAndGo(acc(), st, st.section);
   });
 }
@@ -144,6 +144,7 @@ export async function goSection(id: string, sec: string): Promise<R> {
   return wrap(async () => {
     const { st } = await load(id);
     if (!(LATER as readonly string[]).includes(sec) || !openOf(st).includes(sec as Later) || st.section === "core" || st.section === "vocab" || st.section === "intro") return { ok: false, error: "section" };
+    ensureTasks(st, (await getBank()).bank); // старые прохождения: задание раздела могло ещё не быть выбрано
     goTo(st, sec as Later);
     return save(id, st);
   });
@@ -176,7 +177,7 @@ export async function peekCore(id: string, idx: number): Promise<R & { item?: un
     const inBlock = (y?: { ph?: string }) => !!y && (st.section === "vocab" ? !!y.ph?.startsWith("v") : st.section === "core" && !y.ph?.startsWith("v"));
     if (!inBlock(x) || !st.answers[x.id]) return { ok: false, error: "idx" };
     const it = st.items[x.id] as CoreItem;
-    const ins = (await import("./bank")).INSTRUCTIONS[it.type]?.[await getLang()] ?? "";
+    const ins = (await import("./bank")).instruction(it.type, it.level);
     return { ok: true, item: { id: it.id, type: it.type, skill: it.skill, q: it.q, options: it.options ?? null, base: it.base ?? null, key: it.key ?? null, frame: it.frame ?? null, hint: (it as CoreItem & { hint_ru?: string }).hint_ru ?? null, instr: ins }, given: st.answers[x.id].v, dk: !!st.answers[x.id].dk };
   } catch { return { ok: false, error: "not found" }; }
 }
@@ -227,11 +228,18 @@ const refreshT = (studentId?: string | null) => {
 /** «Пройти самой»: учитель проходит тест как ученик, результат видит сразу. */
 export async function selfPlacement(): Promise<R> {
   const me = await requireUser("TEACHER");
-  const a = await db.placementAttempt.create({ data: { teacherId: me.id, mode: "self", token: randomToken(24), state: json(emptyState()) } });
+  const a = await db.placementAttempt.create({ data: { teacherId: me.id, mode: "self", token: randomToken(24), state: json(withSeen(emptyState(), await seenBy({ teacherId: me.id, mode: "self" }))) } });
   return { ok: true, id: a.id };
 }
 
 /** Назначить вводный тест ученику (из «Курсы → Тесты» или из анкеты). Старый незавершённый тест заменяется. */
+/** Задания из прошлых прохождений — при новом тесте их берём в последнюю очередь. */
+async function seenBy(where: { studentId?: string; teacherId?: string; mode?: string }) {
+  const prev = await db.placementAttempt.findMany({ where, select: { state: true }, orderBy: { createdAt: "desc" }, take: 5 });
+  return [...new Set(prev.flatMap((p) => ((p.state as { core?: { id: string }[] })?.core ?? []).map((x) => x.id)))];
+}
+const withSeen = (st: ReturnType<typeof emptyState>, seen: string[]) => (seen.length ? { ...st, seen } : st);
+
 const expectOf = (e?: string | null) => (e && e in EXPECT ? (e as Expect) : null);
 
 export async function assignPlacement(studentId: string, expected?: string | null): Promise<R> {
@@ -245,7 +253,8 @@ export async function assignPlacement(studentId: string, expected?: string | nul
   }
   const r = await db.roadmap.findFirst({ where: { studentId }, orderBy: { createdAt: "desc" } });
   const c = await db.checkpoint.create({ data: { studentId, roadmapId: r?.id ?? null, kind: "entry", source: "placement" } });
-  await db.placementAttempt.create({ data: { teacherId: me.id, studentId, checkpointId: c.id, mode: "student", token: randomToken(24), state: json(emptyState(expectOf(expected))) } });
+  const seen = await seenBy({ studentId });
+  await db.placementAttempt.create({ data: { teacherId: me.id, studentId, checkpointId: c.id, mode: "student", token: randomToken(24), state: json(withSeen(emptyState(expectOf(expected)), seen)) } });
   if (s.userId) await notify({ userId: s.userId, kind: "test", title: "Преподаватель назначил вводный тест", action: "decide", link: `/student/test/${c.id}` });
   refreshT(studentId);
   return { ok: true, id: c.id };

@@ -23,6 +23,20 @@
     "questions": [
       {
         "id": "L-A1-01-q1",
+        "q": "What day does Lucy want to meet?",
+        "options": [
+          "On Saturday",
+          "On Sunday",
+          "On Friday",
+          "On Monday"
+        ],
+        "answer": 0,
+        "checks": "number-time-place",
+        "topic_id": "l-number-time-place",
+        "explain_ru": "Lucy: «Are you free on Saturday?»"
+      },
+      {
+        "id": "L-A1-01-q2",
         "q": "Where is the pizza place?",
         "options": [
           "Next to the station",
@@ -36,7 +50,7 @@
         "explain_ru": "Пиццерия на Green Street, рядом с кинотеатром."
       },
       {
-        "id": "L-A1-01-q2",
+        "id": "L-A1-01-q3",
         "q": "What time are they meeting?",
         "options": [
           "At seven o'clock",
@@ -50,7 +64,21 @@
         "explain_ru": "Let's meet there at half past seven — в 19:30."
       },
       {
-        "id": "L-A1-01-q3",
+        "id": "L-A1-01-q4",
+        "q": "Who is coming with Lucy?",
+        "options": [
+          "Her brother",
+          "Her sister",
+          "Her mum",
+          "Her boss"
+        ],
+        "answer": 1,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "«My sister is coming too»."
+      },
+      {
+        "id": "L-A1-01-q5",
         "q": "Why is Lucy paying?",
         "options": [
           "Tom helped her last week",
@@ -95,6 +123,20 @@
     "questions": [
       {
         "id": "L-A1-02-q1",
+        "q": "What does the customer want to drink?",
+        "options": [
+          "A small black coffee, please",
+          "A cup of tea with milk",
+          "A large coffee with milk",
+          "A big hot chocolate"
+        ],
+        "answer": 2,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "Покупательница заказывает «a large coffee with milk»."
+      },
+      {
+        "id": "L-A1-02-q2",
         "q": "What sandwich does the customer order?",
         "options": [
           "Cheese",
@@ -108,7 +150,7 @@
         "explain_ru": "Посетительница выбирает сэндвич с курицей."
       },
       {
-        "id": "L-A1-02-q2",
+        "id": "L-A1-02-q3",
         "q": "How much does she pay?",
         "options": [
           "Nine dollars fifteen",
@@ -122,7 +164,21 @@
         "explain_ru": "That's nine dollars fifty — 9,50 доллара."
       },
       {
-        "id": "L-A1-02-q3",
+        "id": "L-A1-02-q4",
+        "q": "How does the customer pay?",
+        "options": [
+          "In cash",
+          "By phone app",
+          "Her friend pays",
+          "By card"
+        ],
+        "answer": 3,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "«Can I pay by card?» — «Of course»."
+      },
+      {
+        "id": "L-A1-02-q5",
         "q": "Where is she going to have her food?",
         "options": [
           "By the window",
@@ -176,6 +232,20 @@
       },
       {
         "id": "L-A1-03-q2",
+        "q": "What time does the Brighton train leave now?",
+        "options": [
+          "At ten twenty-five",
+          "At ten fifteen",
+          "At ten fifty",
+          "At twelve twenty-five"
+        ],
+        "answer": 0,
+        "checks": "number-time-place",
+        "topic_id": "l-number-time-place",
+        "explain_ru": "Поезд опаздывает и теперь отправляется в 10:25."
+      },
+      {
+        "id": "L-A1-03-q3",
         "q": "Which platform does the Brighton train leave from?",
         "options": [
           "Platform one",
@@ -189,7 +259,21 @@
         "explain_ru": "Поезд отправляется с четвёртой платформы."
       },
       {
-        "id": "L-A1-03-q3",
+        "id": "L-A1-03-q4",
+        "q": "What does the announcer say about the London train?",
+        "options": [
+          "It is ten minutes late",
+          "It is on time",
+          "It is cancelled today",
+          "It leaves from platform four"
+        ],
+        "answer": 1,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "«Passengers for London, your train is on time»."
+      },
+      {
+        "id": "L-A1-03-q5",
         "q": "Where is the café?",
         "options": [
           "On platform four",
@@ -234,6 +318,20 @@
     "questions": [
       {
         "id": "L-A1-04-q1",
+        "q": "What is the weather going to be like on Sunday?",
+        "options": [
+          "Rainy",
+          "Very cold",
+          "Nice",
+          "Windy"
+        ],
+        "answer": 2,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "«The weather is going to be nice on Sunday»."
+      },
+      {
+        "id": "L-A1-04-q2",
         "q": "Why can't Josh go on Sunday?",
         "options": [
           "He has to work all day on Sunday",
@@ -247,7 +345,7 @@
         "explain_ru": "В воскресенье к Джошу приезжают родители."
       },
       {
-        "id": "L-A1-04-q2",
+        "id": "L-A1-04-q3",
         "q": "When are they going to the beach?",
         "options": [
           "On Saturday morning",
@@ -261,7 +359,21 @@
         "explain_ru": "Утром у Кейт занятие, поэтому едут в субботу днём."
       },
       {
-        "id": "L-A1-04-q3",
+        "id": "L-A1-04-q4",
+        "q": "How are they going to get to the beach?",
+        "options": [
+          "They're taking a bus",
+          "Kate is driving",
+          "They're cycling there",
+          "Josh is driving"
+        ],
+        "answer": 3,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "Josh: «I can drive»."
+      },
+      {
+        "id": "L-A1-04-q5",
         "q": "What is Kate going to bring?",
         "options": [
           "A football",
@@ -320,6 +432,20 @@
       },
       {
         "id": "L-A2-01-q2",
+        "q": "When is Daniel leaving the hotel?",
+        "options": [
+          "On Friday morning",
+          "On Thursday evening",
+          "On Saturday morning",
+          "On Friday afternoon"
+        ],
+        "answer": 0,
+        "checks": "number-time-place",
+        "topic_id": "l-number-time-place",
+        "explain_ru": "«I'm leaving on Friday morning»."
+      },
+      {
+        "id": "L-A2-01-q3",
         "q": "Which floor is Daniel's room on?",
         "options": [
           "The first floor",
@@ -333,7 +459,21 @@
         "explain_ru": "Номер 312 на третьем этаже."
       },
       {
-        "id": "L-A2-01-q3",
+        "id": "L-A2-01-q4",
+        "q": "Where can Daniel find the Wi-Fi password?",
+        "options": [
+          "On a sign in the restaurant",
+          "On the card with his key",
+          "In an email from the hotel",
+          "On the back of his room door"
+        ],
+        "answer": 1,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "«The password is on the card with your key»."
+      },
+      {
+        "id": "L-A2-01-q5",
         "q": "Where can Daniel leave his bike?",
         "options": [
           "In his room on the third floor",
@@ -387,6 +527,20 @@
       },
       {
         "id": "L-A2-02-q2",
+        "q": "Where will the group go first?",
+        "options": [
+          "The castle next to the river",
+          "The bakery near the river",
+          "The old market square",
+          "The tourist office behind her"
+        ],
+        "answer": 2,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "«First, we're going to walk to the old market square»."
+      },
+      {
+        "id": "L-A2-02-q3",
         "q": "Why can't the group go inside the castle?",
         "options": [
           "It's too expensive for groups",
@@ -400,7 +554,7 @@
         "explain_ru": "Замок закрыт на ремонт."
       },
       {
-        "id": "L-A2-02-q3",
+        "id": "L-A2-02-q4",
         "q": "Where will the group have a coffee break?",
         "options": [
           "At a bakery near the river",
@@ -412,6 +566,20 @@
         "checks": "number-time-place",
         "topic_id": "l-number-time-place",
         "explain_ru": "Перерыв на кофе в пекарне у реки."
+      },
+      {
+        "id": "L-A2-02-q5",
+        "q": "What time will the tour finish?",
+        "options": [
+          "At about twelve o'clock",
+          "At about two o'clock",
+          "At half past one",
+          "At about one o'clock"
+        ],
+        "answer": 3,
+        "checks": "number-time-place",
+        "topic_id": "l-number-time-place",
+        "explain_ru": "«We'll finish at about one o'clock at the old bridge»."
       }
     ],
     "situation_en": "A tour guide tells a group of tourists about the plan for the tour."
@@ -473,6 +641,20 @@
       },
       {
         "id": "L-A2-03-q3",
+        "q": "How much does one class cost?",
+        "options": [
+          "Twenty-five dollars",
+          "Fifteen dollars",
+          "Twenty dollars",
+          "Thirty-five dollars"
+        ],
+        "answer": 0,
+        "checks": "number-time-place",
+        "topic_id": "l-number-time-place",
+        "explain_ru": "«Twenty-five dollars a class»."
+      },
+      {
+        "id": "L-A2-03-q4",
         "q": "What does Leo think about climbing now?",
         "options": [
           "He enjoys it and wants to continue",
@@ -484,6 +666,20 @@
         "checks": "speaker's attitude",
         "topic_id": "l-speakers-attitude",
         "explain_ru": "Он уже записался ещё на пять занятий и считает, что они того стоят."
+      },
+      {
+        "id": "L-A2-03-q5",
+        "q": "Which class does Leo suggest for Maya?",
+        "options": [
+          "The Thursday class",
+          "The Tuesday class",
+          "The Saturday class",
+          "The evening class"
+        ],
+        "answer": 1,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "«The Tuesday class is for beginners»."
       }
     ],
     "situation_en": "Two friends talk about their first climbing class."
@@ -531,6 +727,34 @@
       },
       {
         "id": "L-A2-04-q2",
+        "q": "How long did the bus journey take?",
+        "options": [
+          "About four hours",
+          "Nearly eleven hours",
+          "Nearly seven hours",
+          "About two hours"
+        ],
+        "answer": 2,
+        "checks": "number-time-place",
+        "topic_id": "l-number-time-place",
+        "explain_ru": "«It took nearly seven hours!»"
+      },
+      {
+        "id": "L-A2-04-q3",
+        "q": "Where did Hannah stay?",
+        "options": [
+          "In a big hotel in the city centre",
+          "At a friend's house on a hill",
+          "In a hostel next to the museum",
+          "In a tiny flat by the station"
+        ],
+        "answer": 3,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "«In a tiny flat near the station»."
+      },
+      {
+        "id": "L-A2-04-q4",
         "q": "What did Hannah do when it rained?",
         "options": [
           "Spent hours in a bookshop",
@@ -544,7 +768,7 @@
         "explain_ru": "Когда пошёл дождь, они провели несколько часов в книжном."
       },
       {
-        "id": "L-A2-04-q3",
+        "id": "L-A2-04-q5",
         "q": "How will Hannah probably travel to Edinburgh next time?",
         "options": [
           "By bus",

@@ -1,34 +1,38 @@
 {
   "mcq": {
-    "ru": "Выберите вариант, который подходит в пропуск.",
-    "en": "Choose the option that fits the gap."
+    "easy": "Choose the right answer.",
+    "std": "Choose the option that best completes the sentence."
   },
   "gap": {
-    "ru": "Впишите в пропуск одно слово.",
-    "en": "Write one word in the gap."
+    "easy": "Write one word in the gap.",
+    "std": "Write one word in the gap."
   },
   "wordform": {
-    "ru": "Образуйте от выделенного слова однокоренное, подходящее по смыслу, и впишите его в пропуск.",
-    "en": "Form a word from the highlighted word that fits the gap."
-  },
-  "reading": {
-    "ru": "Прочитайте текст и ответьте на вопросы. Между текстами можно переключаться и менять ответы, пока не нажмёте «Завершить раздел».",
-    "en": "Read the texts and answer the questions. You can switch between texts and change answers until you press “Finish section”."
-  },
-  "listening": {
-    "ru": "Прочитайте вопросы, затем включите запись. Каждую запись можно прослушать два раза. Ответы можно менять, пока не нажмёте «Завершить раздел».",
-    "en": "Read the questions, then play the recording. Each recording can be played twice. You can change answers until you press “Finish section”."
-  },
-  "writing": {
-    "ru": "Напишите текст по заданию и раскройте все пункты.",
-    "en": "Write a text for the task and cover every point."
-  },
-  "speaking": {
-    "ru": "Ответьте вслух. Сначала прозвучит вопрос и будет время подумать, затем начнётся запись. Ответ можно прослушать и перезаписать.",
-    "en": "Answer out loud. You'll hear the question and have time to think, then recording starts. You can listen to your answer and record it again."
+    "easy": "Make a new word from the word in capitals.",
+    "std": "Use the word in capitals to form a word that fits the gap."
   },
   "brackets": {
-    "ru": "Поставьте слово в скобках в нужную форму.",
-    "en": "Put the word in brackets into the correct form."
+    "easy": "Put the word in brackets in the right form.",
+    "std": "Put the word in brackets in the correct form."
+  },
+  "transform": {
+    "easy": "Complete the second sentence. Use the word given.",
+    "std": "Complete the second sentence so that it means the same as the first. Use the word given."
+  },
+  "reading": {
+    "easy": "Read the text and answer the questions.",
+    "std": "Read the text and answer the questions."
+  },
+  "listening": {
+    "easy": "Read the questions. Then listen. You can listen two times.",
+    "std": "Read the questions, then play the recording. You can listen twice."
+  },
+  "writing": {
+    "easy": "Write your answer. Write about all the points.",
+    "std": "Write your answer and cover all the points."
+  },
+  "speaking": {
+    "easy": "Listen to the question. Think, then answer. You can listen to your answer and record it again.",
+    "std": "Listen to the question, prepare, then answer. You can play back your answer and record it again."
   }
 }

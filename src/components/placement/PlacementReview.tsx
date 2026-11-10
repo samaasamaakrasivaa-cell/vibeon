@@ -56,6 +56,8 @@ export function PlacementReview(p: ReviewProps) {
     sm.fb && sm.diag ? t("pl.exFb", { l: PL_LEVELS[PL_LEVELS.indexOf(sm.diag) + 1] ?? "", d: sm.diag }) : null,
     sm.up && sm.diag ? t("pl.exUp", { l: prevLevel(sm.diag), d: sm.diag }) : null,
     !sm.up && sm.above[1] ? t("pl.exAbove", { l: PL_LEVELS[PL_LEVELS.indexOf(sm.diag ?? "A1") + 1] ?? "", c: sm.above[0], n: sm.above[1] }) : null,
+    sm.forms.typed[1] && sm.forms.choice[1] ? t("pl.exForms", { a: `${sm.forms.choice[0]}/${sm.forms.choice[1]}`, b: `${sm.forms.typed[0]}/${sm.forms.typed[1]}` }) : null,
+    sm.repeats.length ? t("pl.exRepeats", { n: sm.repeats.length, k: sm.repeats.filter((x) => !x.again).length, list: sm.repeats.map((x) => `${x.topic} ${x.again ? "✓" : "✗"}`).join("; ") }) : null,
     sm.vstep !== null ? t("pl.exVocab", { r: STEPS[sm.vstep], p: sm.vprobes.map((x) => `${x.level} ${x.c}/${x.n}`).join(" → ") }) : null,
     sk(sm.reading, sm.readStep, t("pl.part.reading")), sk(sm.listening, sm.listenStep, t("pl.part.listening")),
     hint !== null ? t(wHint === null || sHint === null ? "pl.exNeedWS" : "pl.exFinal", { h: STEPS[hint] }) : null,

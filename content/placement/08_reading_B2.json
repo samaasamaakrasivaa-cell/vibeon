@@ -67,6 +67,34 @@
         "checks": "writer's attitude",
         "topic_id": "r-writers-attitude",
         "explain_ru": "Автор за эксперимент, но считает, что нужно менять и организацию работы."
+      },
+      {
+        "id": "R-B2-01-q5",
+        "q": "Why do some companies like the four-day week, according to the text?",
+        "options": [
+          "It helps them attract talented staff",
+          "It reduces their taxes",
+          "It lets them close the office",
+          "It means fewer customers"
+        ],
+        "answer": 0,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "Some companies also say it has helped them attract talented staff."
+      },
+      {
+        "id": "R-B2-01-q6",
+        "q": "Why can't some jobs move to a four-day week?",
+        "options": [
+          "Workers don't want it",
+          "Some services are needed every day",
+          "Salaries would fall",
+          "Managers don't trust staff"
+        ],
+        "answer": 1,
+        "checks": "inference",
+        "topic_id": "r-inference",
+        "explain_ru": "Больницы, магазины и школы нужны каждый день недели."
       }
     ]
   },
@@ -138,6 +166,34 @@
         "checks": "writer's attitude",
         "topic_id": "r-writers-attitude",
         "explain_ru": "Автор считает отказ осознанным выбором, а не неудачей."
+      },
+      {
+        "id": "R-B2-02-q5",
+        "q": "What made the writer stay at home for two weeks?",
+        "options": [
+          "A new job",
+          "Bad weather",
+          "An illness",
+          "A broken phone"
+        ],
+        "answer": 2,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "…I got flu and had to stay at home for two weeks."
+      },
+      {
+        "id": "R-B2-02-q6",
+        "q": "What has happened to the writer's friendships?",
+        "options": [
+          "They have become weaker",
+          "They haven't changed",
+          "The writer has lost friends",
+          "They have become stronger"
+        ],
+        "answer": 3,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "The funny thing is that my friendships have actually got stronger."
       }
     ]
   },
@@ -209,6 +265,34 @@
         "checks": "writer's attitude",
         "topic_id": "r-writers-attitude",
         "explain_ru": "Рецензент хвалит книгу и называет пару недостатков."
+      },
+      {
+        "id": "R-B2-03-q5",
+        "q": "How did the reviewer feel before reading the book?",
+        "options": [
+          "Not very hopeful",
+          "Very excited",
+          "Angry",
+          "Confused"
+        ],
+        "answer": 0,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "…with fairly low expectations."
+      },
+      {
+        "id": "R-B2-03-q6",
+        "q": "Who might not find much new in the book?",
+        "options": [
+          "People who have failed to change",
+          "Readers who already know a lot about habits",
+          "Young readers",
+          "People who hate statistics"
+        ],
+        "answer": 1,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "Readers who already know a lot about building habits may not find much that is new."
       }
     ]
   },
@@ -280,6 +364,34 @@
         "checks": "writer's attitude",
         "topic_id": "r-writers-attitude",
         "explain_ru": "Автор перечисляет пользу: экономия, меньше отходов, меньше одиночества."
+      },
+      {
+        "id": "R-B2-04-q5",
+        "q": "What do volunteers on the street do?",
+        "options": [
+          "Repair cars",
+          "Clean the streets",
+          "Help older residents with shopping",
+          "Teach children"
+        ],
+        "answer": 2,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "…volunteers who help older residents with their shopping."
+      },
+      {
+        "id": "R-B2-04-q6",
+        "q": "How does Priya feel about living on Elm Street now?",
+        "options": [
+          "She wants to move soon",
+          "She is unhappy with the neighbours",
+          "She is tired of the group chat",
+          "She can't imagine leaving"
+        ],
+        "answer": 3,
+        "checks": "inference",
+        "topic_id": "r-inference",
+        "explain_ru": "…she can't imagine moving now."
       }
     ]
   }

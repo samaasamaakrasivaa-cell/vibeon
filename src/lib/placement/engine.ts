@@ -29,7 +29,7 @@ export type Bank = { groups: Group[]; families?: Family[]; core: CoreItem[]; rea
 export const SECTIONS = ["core", "vocab", "reading", "listening", "writing", "speaking"] as const;
 export type Section = (typeof SECTIONS)[number];
 
-export type Ph = "w" | "l" | "d" | "s" | "vw" | "vl" | "vc";
+export type Ph = "w" | "l" | "d" | "s" | "x" | "r" | "vw" | "vm" | "vu" | "vd" | "vl" | "vc";
 export type Ans = { v: string | number | null; ok: boolean | null; ms?: number; dk?: boolean; h?: boolean }; // dk — «Не знаю», h — открыл подсказку
 export type PState = {
   v: 1;
@@ -47,6 +47,7 @@ export type PState = {
   fb?: boolean; // уже переходили на уровень ниже (погорячились)
   up?: boolean; // уже переходили на уровень выше (срез выше сдан уверенно)
   closed?: string[]; // завершённые разделы после ядра (между открытыми можно переключаться)
+  seen?: string[]; // задания, которые ученик видел в прошлых прохождениях — при перепрохождении берём другие
   answers: Record<string, Ans>; // по id задания ядра и id вопроса чтения/аудирования
   reading: string[]; listening: string[];
   rdone: string[]; ldone: string[]; // тексты и записи, на которые ученик уже ответил
@@ -77,7 +78,8 @@ export const stepIdx = (sub: string) => STEPS.indexOf(sub as Sub);
 const CORE_MAX = 60;
 const PER_GROUP = 3; // заданий из каждой группы на подробной проверке
 const FALLBACK_AFTER = 9, FALLBACK_BELOW = 0.4; // после 9 заданий меньше 40% — уровень ниже
-const SLICE_FROM = 0.8, SLICE_GROUPS = 4, SLICE_PER = 2, UP_FROM = 0.75; // уровень сделан на 80%+ — срез уровня выше; срез на 75%+ — уровень выше целиком
+const SLICE_FROM = 0.8, SLICE_GROUPS = 4, SLICE_PER = 2, UP_FROM = 0.7, EDGE_FROM = 0.55, EXTRA = 4, REPEATS = 6;
+// уровень сделан на 80%+ — срез уровня выше (8 заданий); срез 70%+ — уровень выше целиком; 55–70% — ещё 4 задания уровня выше и решение по сумме
 
 // ───────── Ядро: поиск уровня → подробная проверка по группам ─────────
 
@@ -118,6 +120,8 @@ function pickFrom(st: PState, bank: Bank, gid: string, rnd: () => number, pref?:
   const topics = new Set(st.core.map((x) => (st.items[x.id] as CoreItem | undefined)?.topic_id));
   let pool = bank.core.filter((x) => x.group === gid && !used.has(x.id));
   if (!pool.length) return null;
+  const unseen = st.seen?.length ? pool.filter((x) => !st.seen!.includes(x.id)) : [];
+  if (unseen.length) pool = unseen;
   const want = pref === "easy" ? pool.filter((x) => x.band === 1) : pref === "hard" ? pool.filter((x) => x.band > 1) : [];
   if (want.length) pool = want;
   const fresh = pool.filter((x) => !topics.has(x.topic_id)); // по возможности — другая тема внутри группы
@@ -128,7 +132,7 @@ function pickFrom(st: PState, bank: Bank, gid: string, rnd: () => number, pref?:
 const levelAcc = (st: PState, li: number) => stat(st, (it, x) => it.level === PL_LEVELS[li] && it.skill === "grammar" && !x.ph?.startsWith("v"));
 
 /** Следующее задание ядра; null — ядро закончено. Отмечает в st этап проверки (diag, fb). */
-export function nextCore(st: PState, bank: Bank, rnd: () => number = Math.random): { item: CoreItem; ph: "w" | "l" | "d" | "s" } | null {
+export function nextCore(st: PState, bank: Bank, rnd: () => number = Math.random): { item: CoreItem; ph: Ph } | null {
   if (st.core.length >= CORE_MAX) return null;
   const warm = st.warm ?? 0;
   if (st.core.length < warm) {
@@ -158,94 +162,123 @@ export function nextCore(st: PState, bank: Bank, rnd: () => number = Math.random
       if (it) return { item: it, ph: "d" };
     }
   }
-  // уровень сделан уверенно — короткий срез уровня выше; срез сдан уверенно — проверяем уровень выше полностью
+  // уровень сделан уверенно — короткий срез уровня выше; 70%+ — проверяем уровень выше целиком; 55–70% — уточняем ещё 4 заданиями
   if (D < 4 && !st.fb && !st.up) {
-    const sl = stat(st, (it, x) => x.ph === "s" && it.level === PL_LEVELS[D + 1]);
-    if (sl.n >= SLICE_GROUPS * SLICE_PER && sl.c / sl.n >= UP_FROM) { st.up = true; st.diag = D + 1; return nextCore(st, bank, rnd); }
-    const acc = levelAcc(st, D);
-    if (acc.n && acc.c / acc.n >= SLICE_FROM) {
-      const up = groupsOf(bank, D + 1).slice(0, SLICE_GROUPS);
-      for (let round = 1; round <= SLICE_PER; round++)
-        for (const g of up) {
-          if (inGroup(st, g.id) >= round) continue;
-          const it = pickFrom(st, bank, g.id, rnd, "easy");
-          if (it) return { item: it, ph: "s" };
+    const sl = stat(st, (it, x) => (x.ph === "s" || x.ph === "x") && it.level === PL_LEVELS[D + 1]);
+    const xs = st.core.filter((x) => x.ph === "x").length;
+    if (sl.n >= SLICE_GROUPS * SLICE_PER) {
+      const p = sl.c / sl.n;
+      if (p >= UP_FROM && (xs === 0 || xs >= EXTRA)) { st.up = true; st.diag = D + 1; return nextCore(st, bank, rnd); }
+      if (xs < EXTRA && (xs > 0 || p >= EDGE_FROM)) {
+        const gs = [...groupsOf(bank, D + 1)].sort((a, b) => inGroup(st, a.id) - inGroup(st, b.id)); // сначала группы, где заданий меньше
+        for (const g of gs) {
+          const it = pickFrom(st, bank, g.id, rnd);
+          if (it) return { item: it, ph: "x" };
         }
+      }
+    } else {
+      const acc = levelAcc(st, D);
+      if (acc.n && acc.c / acc.n >= SLICE_FROM) {
+        const up = groupsOf(bank, D + 1).slice(0, SLICE_GROUPS);
+        for (let round = 1; round <= SLICE_PER; round++)
+          for (const g of up) {
+            if (inGroup(st, g.id) >= round) continue;
+            const it = pickFrom(st, bank, g.id, rnd, "easy");
+            if (it) return { item: it, ph: "s" };
+          }
+      }
+    }
+  }
+  // повтор после ошибки: на тему, где ученик ошибся, — ещё одно задание (проверить, случайность или пробел)
+  const reps = st.core.filter((x) => x.ph === "r").length;
+  if (reps < REPEATS) {
+    const done = new Set(st.core.filter((x) => x.ph === "r").map((x) => (st.items[x.id] as CoreItem).topic_id));
+    for (const x of st.core) {
+      if (x.ph !== "d") continue;
+      const it = st.items[x.id] as CoreItem;
+      if (!it || it.level !== PL_LEVELS[D] || st.answers[x.id]?.ok || done.has(it.topic_id)) continue;
+      const used = new Set(st.core.map((y) => y.id));
+      const pool = bank.core.filter((y) => y.topic_id === it.topic_id && !used.has(y.id) && y.skill === "grammar");
+      const unseen = st.seen?.length ? pool.filter((y) => !st.seen!.includes(y.id)) : [];
+      const pick = (unseen.length ? unseen : pool)[Math.floor(rnd() * (unseen.length || pool.length))];
+      if (pick) return { item: pick, ph: "r" };
+      done.add(it.topic_id);
     }
   }
   return null;
 }
 
-// ───────── Лексика: лесенка от уровня грамматики ─────────
+/** Повторная проверка после ошибки: тема, первый ответ, повторный. */
+export function repeats(st: PState) {
+  return st.core.filter((x) => x.ph === "r" && st.answers[x.id]).map((x) => {
+    const it = st.items[x.id] as CoreItem;
+    const first = st.core.find((y) => y.ph === "d" && (st.items[y.id] as CoreItem)?.topic_id === it.topic_id);
+    return { topic: it.topic_ru, again: !!st.answers[x.id]?.ok, firstId: first?.id ?? null };
+  });
+}
 
-const VKINDS = ["v1", "v2", "v3"] as const;
+// ───────── Лексика: проверка уровня грамматики ─────────
+// Разминка 2 задания уровнем ниже (в зачёт не идёт) → основной уровень = уровень грамматики, по 2 задания каждого вида →
+// 70%+ — по одному заданию каждого вида уровнем выше; меньше 40% — 6 заданий уровнем ниже.
+
+const VKINDS = ["v1", "v2", "v3", "v4", "v5"] as const;
 const vGroup = (bank: Bank, li: number, k: string) => bank.groups.find((g) => g.id === `${PL_LEVELS[li].toLowerCase()}-${k}`);
+const vKinds = (bank: Bank, li: number) => VKINDS.filter((k) => vGroup(bank, li, k));
 const vStat = (st: PState, li: number, phs: Ph[]) => stat(st, (it, x) => it.level === PL_LEVELS[li] && !!x.ph && phs.includes(x.ph) && it.skill === "vocabulary");
-/** Проба уровня: 3 задания (по одному каждого вида; разминка засчитывается). true — 2 из 3;
- * выше уровня грамматики — 3 из 3, чтобы удачная догадка не поднимала лексику. */
-function vProbe(st: PState, li: number) {
-  const s = vStat(st, li, ["vw", "vl"]);
-  return s.n >= 3 ? s.c >= (li > gLevel(st) ? 3 : 2) : undefined;
-}
 const gLevel = (st: PState) => Math.floor(Math.max(0, Math.min(8, st.step ?? 0)) / 2);
-function vLocate(st: PState): { found: number | null; next: number | null } {
-  let L = gLevel(st);
-  for (let guard = 0; guard < 10; guard++) {
-    const p = vProbe(st, L);
-    if (p === undefined) return { found: null, next: L };
-    if (p) { if (L === 4) return { found: 4, next: null }; if (vProbe(st, L + 1) === false) return { found: L, next: null }; L++; }
-    else { if (L === 0) return { found: 0, next: null }; if (vProbe(st, L - 1) === true) return { found: L - 1, next: null }; L--; }
-  }
-  return { found: L, next: null };
-}
-const usedKinds = (st: PState, li: number, phs: Ph[]) =>
-  st.core.filter((x) => x.ph && phs.includes(x.ph) && (st.items[x.id] as CoreItem)?.level === PL_LEVELS[li]).map((x) => ((st.items[x.id] as CoreItem).group ?? "").split("-")[1]);
+const kindCount = (st: PState, li: number, ph: Ph, k: string) =>
+  st.core.filter((x) => x.ph === ph && (st.items[x.id] as CoreItem)?.level === PL_LEVELS[li] && (st.items[x.id] as CoreItem)?.group?.endsWith(`-${k}`)).length;
 
-/** Следующее задание лексики: 2 разминочных уровнем ниже грамматики, лесенка по 3, на найденном уровне — 6 (по 2 каждого вида). */
+function vPick(st: PState, bank: Bank, li: number, ph: Ph, per: number, rnd: () => number, total = Infinity): { item: CoreItem; ph: Ph } | null {
+  const ks = vKinds(bank, li);
+  if (st.core.filter((x) => x.ph === ph).length >= total) return null;
+  for (let round = 1; round <= per; round++)
+    for (const k of ks) {
+      if (kindCount(st, li, ph, k) >= round) continue;
+      const it = pickFrom(st, bank, vGroup(bank, li, k)!.id, rnd, round === 1 ? "easy" : "hard");
+      if (it) return { item: it, ph };
+    }
+  return null;
+}
+
 export function nextVocab(st: PState, bank: Bank, rnd: () => number = Math.random): { item: CoreItem; ph: Ph } | null {
-  const G = gLevel(st), W = Math.max(0, G - 1);
-  const vw = st.core.filter((x) => x.ph === "vw").length;
-  if (vw < 2 && G > 0) {
-    const g = vGroup(bank, W, VKINDS[vw]); const it = g && pickFrom(st, bank, g.id, rnd, "easy");
+  const G = gLevel(st);
+  if (G > 0 && st.core.filter((x) => x.ph === "vw").length < 2) {
+    const g = vGroup(bank, G - 1, VKINDS[st.core.filter((x) => x.ph === "vw").length]);
+    const it = g && pickFrom(st, bank, g.id, rnd, "easy");
     if (it) return { item: it, ph: "vw" };
   }
-  const { found, next } = vLocate(st);
-  if (next !== null) {
-    const have = usedKinds(st, next, ["vw", "vl"]);
-    for (const k of VKINDS) {
-      if (have.includes(k)) continue;
-      const g = vGroup(bank, next, k); const it = g && pickFrom(st, bank, g.id, rnd, "easy");
-      if (it) return { item: it, ph: "vl" };
-    }
-    return null;
-  }
-  if (found === null) return null;
-  // подтверждение: к простым заданиям пробы добавляем по два сложных каждого вида (итого 9 на найденном уровне)
-  const have = usedKinds(st, found, ["vw", "vl", "vc"]);
-  for (const k of VKINDS) {
-    if (have.filter((x) => x === k).length >= 3) continue;
-    const g = vGroup(bank, found, k); const it = g && pickFrom(st, bank, g.id, rnd, "hard");
-    if (it) return { item: it, ph: "vc" };
-  }
+  const main = vPick(st, bank, G, "vm", 2, rnd);
+  if (main) return main;
+  const m = vStat(st, G, ["vm"]), pm = m.n ? m.c / m.n : 0;
+  if (pm >= 0.7 && G < 4) return vPick(st, bank, G + 1, "vu", 1, rnd);
+  if (pm < 0.4 && G > 0) return vPick(st, bank, G - 1, "vd", 2, rnd, 6);
   return null;
 }
 
-/** Итог лексики на найденном уровне X: простые задания (проба) < 60% — ступень ниже; сложные (подтверждение) ≥ 67% — X+; иначе X. */
+/** Итог лексики (относительно уровня грамматики X). */
 export function vocabResult(st: PState) {
-  const { found } = vLocate(st);
-  const F = found ?? gLevel(st), L = PL_LEVELS[F], b = BASE[L];
-  if (F === 0 && vProbe(st, 0) === false) return 0;
-  const easy = stat(st, (it, x) => it.level === L && it.skill === "vocabulary" && (x.ph === "vw" || x.ph === "vl"));
-  const hard = stat(st, (it, x) => it.level === L && it.skill === "vocabulary" && x.ph === "vc");
-  const pe = easy.n ? easy.c / easy.n : 0, ph = hard.n ? hard.c / hard.n : 0;
-  if (pe < 0.6) return Math.max(0, b - 1);
-  if (F === 4) return 8;
-  return ph >= 0.67 ? b + 1 : b;
+  const G = gLevel(st), b = BASE[PL_LEVELS[G]];
+  const m = vStat(st, G, ["vm"]), pm = m.n ? m.c / m.n : 0;
+  const u = G < 4 ? vStat(st, G + 1, ["vu"]) : { n: 0, c: 0 }, pu = u.n ? u.c / u.n : 0;
+  if (G === 4) return pm >= 0.6 ? 8 : pm >= 0.4 ? 7 : vDown();
+  // в основном блоке половина заданий — сложные (уровень X+), поэтому 80%+ на нём — уже X+
+  if (pm >= 0.85) return pu >= 0.75 ? BASE[PL_LEVELS[G + 1]] : b + 1;
+  if (pm >= 0.7) return pu >= 0.5 ? b + 1 : b;
+  if (pm >= 0.6) return b;
+  if (pm >= 0.4) return Math.max(0, b - 1);
+  return vDown();
+  function vDown() {
+    if (G === 0) return 0;
+    const d = vStat(st, G - 1, ["vd"]), pd = d.n ? d.c / d.n : 0, bd = BASE[PL_LEVELS[G - 1]];
+    return pd >= 0.8 ? bd + 1 : pd >= 0.6 ? bd : Math.max(0, bd - 1);
+  }
 }
-export function vocabProgress(st: PState) {
+export function vocabProgress(st: PState, bank?: Bank) {
   const done = st.core.filter((x) => x.ph?.startsWith("v") && st.answers[x.id]).length;
-  const { found } = vLocate(st);
-  const rem = found === null ? 9 : Math.max(0, 9 - vStat(st, found, ["vw", "vl", "vc"]).n);
+  const G = gLevel(st);
+  const mainTotal = bank ? vKinds(bank, G).length * 2 : 10;
+  const rem = Math.max(0, (G > 0 ? 2 : 0) + mainTotal - done) + 4;
   return Math.min(0.97, done / Math.max(1, done + rem));
 }
 
@@ -295,19 +328,35 @@ const pickBands = <T extends { band: number; id: string }>(list: T[], plus: bool
 export function pickTexts<T extends ReadItem | ListenItem>(list: T[], level: PLevel, plus: boolean, rnd: () => number = Math.random) {
   return pickBands(list.filter((x) => x.level === level), plus, 2, rnd);
 }
-/** Ещё один текст (запись): меньше 50% по двум текстам уровня — уровнем ниже; 85% и больше — уровнем выше. Один раз. */
-export function fallbackText<T extends ReadItem | ListenItem>(list: T[], st: PState, kind: "reading" | "listening", rnd: () => number = Math.random): T | null {
+/** Чтение и аудирование — тексты по одному, следующий по результату предыдущего (максимум 3):
+ * 1-й: 85%+ → уровнем выше; меньше 50% → уровнем ниже; 50–85% → ещё один того же уровня.
+ * 2-й (был выше): меньше 50% → хватит; 80%+ → ещё уровнем выше; 50–60% — спорно → ещё один того же уровня.
+ * 2-й (был ниже): меньше 50% → ещё уровнем ниже. 2-й того же уровня — хватит. */
+export function nextText<T extends ReadItem | ListenItem>(list: T[], st: PState, kind: "reading" | "listening", rnd: () => number = Math.random): T | null {
   const ids = kind === "reading" ? st.reading : st.listening;
-  const level = st.level!;
-  const li = PL_LEVELS.indexOf(level);
-  if (ids.some((id) => st.items[id]?.level !== level)) return null; // запасной уже давали
-  const qs = ids.flatMap((id) => (st.items[id] as T).questions);
-  const ok = qs.filter((q) => st.answers[q.id]?.ok).length;
-  if (!qs.length) return null;
-  const p = ok / qs.length;
-  if (p < 0.5 && li > 0) return pickBands(list.filter((x) => x.level === PL_LEVELS[li - 1]), false, 1, rnd)[0] ?? null;
-  if (p >= 0.85 && li < 4) return pickBands(list.filter((x) => x.level === PL_LEVELS[li + 1]), false, 1, rnd)[0] ?? null;
+  if (!ids.length || ids.length >= 3) return null;
+  const pct = (id: string) => { const qs = (st.items[id] as T).questions; return qs.filter((q) => st.answers[q.id]?.ok).length / Math.max(1, qs.length); };
+  const li = (id: string) => PL_LEVELS.indexOf(st.items[id].level);
+  const used = new Set(ids);
+  const at = (l: number) => (l < 0 || l > 4 ? null : pickBands(list.filter((x) => x.level === PL_LEVELS[l] && !used.has(x.id)), (st.step ?? 0) % 2 === 1, 1, rnd)[0] ?? null);
+  const L1 = li(ids[0]), p1 = pct(ids[0]);
+  if (ids.length === 1) return p1 >= 0.85 ? at(L1 + 1) : p1 < 0.5 ? at(L1 - 1) : at(L1);
+  const L2 = li(ids[1]), p2 = pct(ids[1]);
+  if (L2 > L1) return p2 < 0.5 ? null : p2 >= 0.8 ? at(L2 + 1) : p2 <= 0.6 ? at(L2) : null; // 50–60% — пограничный: ещё один того же уровня
+  if (L2 < L1) return p2 < 0.5 ? at(L2 - 1) : null;
   return null;
+}
+/** Первый текст — уровня, с которого начинается чтение. */
+export function firstText<T extends ReadItem | ListenItem>(list: T[], level: PLevel, plus: boolean, rnd: () => number = Math.random) {
+  const pool = list.filter((x) => x.level === level);
+  const most = Math.max(0, ...pool.map((x) => x.questions.length));
+  return pickBands(pool.filter((x) => x.questions.length === most), plus, 1, rnd)[0] ?? pickBands(pool, plus, 1, rnd)[0] ?? null;
+}
+/** С какого уровня начинать тексты: по грамматике; если лексика расходится больше чем на уровень — середина с перевесом к грамматике. */
+export function textLevel(gStep: number, vStep?: number) {
+  const g = Math.floor(gStep / 2), v = vStep === undefined ? g : Math.floor(vStep / 2);
+  if (Math.abs(g - v) <= 1) return g;
+  return g > v ? Math.ceil((g + v) / 2) : Math.floor((g + v) / 2);
 }
 export function pickTask<T extends WriteItem | SpeakItem>(list: T[], level: PLevel, plus: boolean, rnd: () => number = Math.random): T | null {
   const c = list.filter((x) => x.level === level && (plus ? x.band > 1 : x.band === 1));
@@ -354,6 +403,8 @@ export type Summary = {
   vstep: number | null; vlevel: PLevel | null; vgroups: GroupRes[]; // лексика: итог, найденный уровень, три вида на нём
   vprobes: { level: PLevel; c: number; n: number; pass: boolean | undefined }[];
   families: { id: string; name: string; what: string; lvl: [number, number]; all: [number, number] }[]; // грамматика по большим разделам: на уровне проверки и всего
+  repeats: { topic: string; again: boolean; firstId: string | null }[]; // повторная проверка после ошибки
+  forms: { choice: [number, number]; typed: [number, number] }; // грамматика: выбор из вариантов (узнаёт) и вписать самому (употребляет)
   core: Record<string, { grammar: [number, number]; vocabulary: [number, number] }>; // уровень → [верно, всего]
   reading: Record<string, [number, number]>; listening: Record<string, [number, number]>;
   readStep: number | null; listenStep: number | null;
@@ -379,14 +430,14 @@ export function summarize(st: PState, bank: Bank): Summary {
     const s = stat(st, (it, x) => (it.group ?? gOf.get(it.topic_id)?.id) === g.id && (x.ph === "w" || x.ph === "l"));
     return { level: l, ...s, pass: s.n >= PER_GROUP ? s.c >= 2 : undefined };
   }).filter((x) => x.n > 0);
-  const vf = st.vstep !== undefined ? vLocate(st).found : null;
-  const vgroups: GroupRes[] = vf === null ? [] : VKINDS.map((k) => {
+  const vf = st.vstep !== undefined ? gLevel(st) : null;
+  const vgroups: GroupRes[] = vf === null ? [] : vKinds(bank, vf).map((k) => {
     const g = vGroup(bank, vf, k)!;
     const r = { id: g.id, name: g.name_ru, what: g.what_ru, kind: "vocabulary" as const, level: g.level, c: 0, n: 0, dk: 0 };
     for (const x of st.core) { const it = st.items[x.id] as CoreItem; const a = st.answers[x.id]; if (!it || !a || it.group !== g.id || !x.ph?.startsWith("v")) continue; r.n++; if (a.ok) r.c++; if (a.dk) r.dk++; }
     return r;
   });
-  const vprobes = PL_LEVELS.map((l, li) => { const s2 = vStat(st, li, ["vw", "vl"]); return { level: l, ...s2, pass: s2.n >= 3 ? s2.c >= 2 : undefined }; }).filter((x) => x.n > 0);
+  const vprobes = PL_LEVELS.map((l, li) => { const s2 = vStat(st, li, ["vm", "vu", "vd"]); return { level: l, ...s2, pass: s2.n >= 3 ? s2.c / s2.n >= 0.6 : undefined }; }).filter((x) => x.n > 0);
   const byLevel = (ids: string[]) => {
     const r: Record<string, [number, number]> = {};
     for (const id of ids) {
@@ -419,24 +470,24 @@ export function summarize(st: PState, bank: Bank): Summary {
     groups: [...groups.values()].sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0)),
     vstep: st.vstep ?? null, vlevel: vf === null ? null : PL_LEVELS[vf], vgroups, vprobes,
     families: [...fam.values()].filter((f) => f.all[1] > 0),
+    repeats: repeats(st),
+    forms: (() => {
+      const ch = stat(st, (it, x) => it.skill === "grammar" && !x.ph?.startsWith("v") && it.type === "mcq"), ty = stat(st, (it, x) => it.skill === "grammar" && !x.ph?.startsWith("v") && it.type !== "mcq");
+      return { choice: [ch.c, ch.n] as [number, number], typed: [ty.c, ty.n] as [number, number] };
+    })(),
     core, reading, listening, readStep: skillStep(reading, st.level), listenStep: skillStep(listening, st.level),
   };
 }
 
-/** Ступень по чтению/аудированию: ≥ 80% на уровне → X+ (а если дали текст выше и там ≥ 50% — следующий уровень), ≥ 50% → X, иначе — по запасному тексту ниже. */
+/** Ступень по чтению/аудированию: самый высокий уровень, где верно 50%+ (тексты одного уровня — вместе); там 80%+ → X+. */
 function skillStep(r: Record<string, [number, number]>, level?: PLevel) {
-  if (!level || !r[level]?.[1]) return null;
-  const pct = r[level][0] / r[level][1];
-  const b = BASE[level];
-  const upL = PL_LEVELS[PL_LEVELS.indexOf(level) + 1], ur = upL ? r[upL] : undefined;
-  if (pct >= 0.8 && ur?.[1]) return ur[0] / ur[1] >= 0.5 ? BASE[upL] : Math.min(8, b + 1);
-  if (pct >= 0.8) return Math.min(8, b + 1);
-  if (pct >= 0.5) return b;
-  const li = PL_LEVELS.indexOf(level);
-  if (li === 0) return 0;
-  const lower = PL_LEVELS[li - 1], lr = r[lower];
-  if (lr?.[1]) return lr[0] / lr[1] >= 0.5 ? BASE[lower] + 1 : BASE[lower];
-  return Math.max(0, b - 1);
+  void level;
+  const lv = PL_LEVELS.filter((l) => r[l]?.[1]);
+  if (!lv.length) return null;
+  const ok = lv.filter((l) => r[l][0] / r[l][1] >= 0.5);
+  if (!ok.length) return Math.max(0, BASE[lv[0]] - 1);
+  const best = ok[ok.length - 1], p = r[best][0] / r[best][1];
+  return p >= 0.8 ? Math.min(8, BASE[best] + 1) : BASE[best];
 }
 
 /** Подсказка по критериям письма или говорения: среднее вниз, не выше слабого критерия больше чем на две ступени. */
