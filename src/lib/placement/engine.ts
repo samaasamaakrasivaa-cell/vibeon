@@ -23,7 +23,8 @@ export type ListenItem = Base & {
 export type WriteItem = Base & { skill: "writing"; type: "writing"; prompt_en: string; prompt_ru: string; min_words: number; max_words: number; time_min: number; expects: string[]; points?: string[] };
 export type SpeakItem = Base & { skill: "speaking"; type: "speaking"; intro_ru: string; questions: { q: string; prep_sec: number; speak_sec: number; audio?: string | null }[]; expects: string[] };
 export type AnyItem = CoreItem | ReadItem | ListenItem | WriteItem | SpeakItem;
-export type Bank = { groups: Group[]; core: CoreItem[]; reading: ReadItem[]; listening: ListenItem[]; writing: WriteItem[]; speaking: SpeakItem[] };
+export type Family = { id: string; name_ru: string; what_ru: string; topics: string[] };
+export type Bank = { groups: Group[]; families?: Family[]; core: CoreItem[]; reading: ReadItem[]; listening: ListenItem[]; writing: WriteItem[]; speaking: SpeakItem[] };
 
 export const SECTIONS = ["core", "vocab", "reading", "listening", "writing", "speaking"] as const;
 export type Section = (typeof SECTIONS)[number];
@@ -352,6 +353,7 @@ export type Summary = {
   groups: GroupRes[]; // карта тем грамматики: все группы, где были задания
   vstep: number | null; vlevel: PLevel | null; vgroups: GroupRes[]; // лексика: итог, найденный уровень, три вида на нём
   vprobes: { level: PLevel; c: number; n: number; pass: boolean | undefined }[];
+  families: { id: string; name: string; what: string; lvl: [number, number]; all: [number, number] }[]; // грамматика по большим разделам: на уровне проверки и всего
   core: Record<string, { grammar: [number, number]; vocabulary: [number, number] }>; // уровень → [верно, всего]
   reading: Record<string, [number, number]>; listening: Record<string, [number, number]>;
   readStep: number | null; listenStep: number | null;
@@ -396,6 +398,16 @@ export function summarize(st: PState, bank: Bank): Summary {
   };
   const reading = byLevel(st.rdone), listening = byLevel(st.ldone);
   const order = new Map(bank.groups.map((g, i) => [g.id, i]));
+  const famOf = new Map((bank.families ?? []).flatMap((f) => f.topics.map((t) => [t, f.id] as const)));
+  const fam = new Map((bank.families ?? []).map((f) => [f.id, { id: f.id, name: f.name_ru, what: f.what_ru, lvl: [0, 0] as [number, number], all: [0, 0] as [number, number] }]));
+  const DL = st.diag !== undefined ? PL_LEVELS[st.diag] : null;
+  for (const x of st.core) {
+    const it = st.items[x.id] as CoreItem; const a = st.answers[x.id];
+    if (!it || !a || it.skill !== "grammar" || x.ph?.startsWith("v")) continue;
+    const f = fam.get(famOf.get(it.topic_id) ?? ""); if (!f) continue;
+    f.all[1]++; if (a.ok) f.all[0]++;
+    if (it.level === DL) { f.lvl[1]++; if (a.ok) f.lvl[0]++; }
+  }
   return {
     coreStep, level: levelOfStep(coreStep), diag: st.diag !== undefined ? PL_LEVELS[st.diag] : null, fb: !!st.fb, up: !!st.up, anchors,
     ...(() => {
@@ -406,6 +418,7 @@ export function summarize(st: PState, bank: Bank): Summary {
     })(),
     groups: [...groups.values()].sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0)),
     vstep: st.vstep ?? null, vlevel: vf === null ? null : PL_LEVELS[vf], vgroups, vprobes,
+    families: [...fam.values()].filter((f) => f.all[1] > 0),
     core, reading, listening, readStep: skillStep(reading, st.level), listenStep: skillStep(listening, st.level),
   };
 }

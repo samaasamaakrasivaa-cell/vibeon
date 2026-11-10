@@ -25,6 +25,7 @@ export default async function BankPage() {
         items={[...bank.core, ...bank.reading, ...bank.listening, ...bank.writing, ...bank.speaking]}
         edited={edits.filter((e) => Object.keys((e.data ?? {}) as object).length).map((e) => e.itemId)}
         audioEdited={edits.filter((e) => e.audio).map((e) => e.itemId)}
+        groups={bank.groups.map((g) => ({ id: g.id, name: g.name_ru }))}
       />
     </div>
   );

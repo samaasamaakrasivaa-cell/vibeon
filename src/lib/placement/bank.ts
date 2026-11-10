@@ -1,7 +1,7 @@
 import "server-only";
 import { db } from "../db";
 import { fileUrl } from "../storage";
-import type { AnyItem, Bank, CoreItem, Group, ListenItem, ReadItem, SpeakItem, WriteItem } from "./engine";
+import type { AnyItem, Bank, CoreItem, Family, Group, ListenItem, ReadItem, SpeakItem, WriteItem } from "./engine";
 import c1 from "../../../content/placement/01_core_A1.json";
 import c2 from "../../../content/placement/02_core_A2.json";
 import c3 from "../../../content/placement/03_core_B1.json";
@@ -19,6 +19,7 @@ import ws from "../../../content/placement/14_writing_speaking.json";
 import rubricsJson from "../../../content/placement/15_rubrics.json";
 import instructionsJson from "../../../content/placement/00_instructions.json";
 import groupsJson from "../../../content/placement/00_groups.json";
+import familiesJson from "../../../content/placement/00_families.json";
 
 // Банк вводного теста: файлы content/placement + правки владельца платформы (таблица PlacementEdit).
 
@@ -62,6 +63,7 @@ export async function getBank(): Promise<{ bank: Bank; edited: Set<string> }> {
   });
   const bank: Bank = {
     groups: GROUPS,
+    families: familiesJson as unknown as Family[],
     core: items.filter((x): x is CoreItem => x.skill === "grammar" || x.skill === "vocabulary"),
     reading: items.filter((x): x is ReadItem => x.type === "reading"),
     listening: items.filter((x): x is ListenItem => x.type === "listening"),

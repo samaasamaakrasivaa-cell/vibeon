@@ -17,26 +17,49 @@ const short = (x: AnyItem) => {
   return (x as SpeakItem).questions.map((q) => q.q).join(" · ");
 };
 
-/** Режим владельца: правка заданий вводного теста и замена озвучки. */
-export function BankEditor({ items, edited, audioEdited }: { items: AnyItem[]; edited: string[]; audioEdited: string[] }) {
+const themeOf = (x: AnyItem, groupName: Map<string, string>) =>
+  x.skill === "grammar" || x.skill === "vocabulary" ? groupName.get((x as CoreItem).group ?? "") ?? x.topic_ru : x.topic_ru.replace(/^(Письмо|Говорение):\s*/, "").replace(/^./, (c) => c.toUpperCase());
+
+/** Режим владельца: правка заданий вводного теста и замена озвучки. Фильтры: уровень, тема, поиск по теме и тексту. */
+export function BankEditor({ items, edited, audioEdited, groups }: { items: AnyItem[]; edited: string[]; audioEdited: string[]; groups: { id: string; name: string }[] }) {
   const { t } = useT();
   const [g, setG] = useState<(typeof GROUPS)[number][0]>("core");
   const [lvl, setLvl] = useState("A1");
+  const [theme, setTheme] = useState("");
   const [q, setQ] = useState("");
   const [open, setOpen] = useState<AnyItem | null>(null);
-  const list = useMemo(() => items.filter((x) => groupOf(x) === g && (g !== "core" || x.level === lvl) && (!q.trim() || `${x.id} ${short(x)}`.toLowerCase().includes(q.trim().toLowerCase()))), [items, g, lvl, q]);
+  const gName = useMemo(() => new Map(groups.map((x) => [x.id, x.name])), [groups]);
+  const textual = g === "reading" || g === "listening";
+  const inSection = useMemo(() => items.filter((x) => groupOf(x) === g && (lvl === "" || x.level === lvl)), [items, g, lvl]);
+  const themes = useMemo(() => [...new Set(inSection.map((x) => themeOf(x, gName)))], [inSection, gName]);
+  const list = useMemo(() => {
+    const qq = q.trim().toLowerCase();
+    return inSection.filter((x) => (!theme || themeOf(x, gName) === theme)
+      && (!qq || `${x.id} ${short(x)} ${x.topic_ru} ${x.topic_en} ${themeOf(x, gName)}`.toLowerCase().includes(qq)));
+  }, [inSection, theme, q, gName]);
+  const pickSection = (k: (typeof GROUPS)[number][0]) => { setG(k); setTheme(""); setQ(""); };
   return (
     <div className="flex flex-col gap-4">
-      <nav className="tabsbar">{GROUPS.map(([k, label]) => <button key={k} type="button" aria-current={g === k ? "page" : undefined} onClick={() => setG(k)}>{t(label)}</button>)}</nav>
+      <nav className="tabsbar">{GROUPS.map(([k, label]) => <button key={k} type="button" aria-current={g === k ? "page" : undefined} onClick={() => pickSection(k)}>{t(label)}</button>)}</nav>
       <div className="flex flex-wrap items-center gap-2">
-        {g === "core" && ["A1", "A2", "B1", "B2", "C1"].map((l) => <button key={l} type="button" className={`pchip ${lvl === l ? "on" : ""}`} aria-pressed={lvl === l} onClick={() => setLvl(l)}>{l}</button>)}
-        <input className="input grow" style={{ maxWidth: 320 }} placeholder={t("sch.search")} value={q} onChange={(e) => setQ(e.target.value)} />
+        {["A1", "A2", "B1", "B2", "C1"].map((l) => <button key={l} type="button" className={`pchip ${lvl === l ? "on" : ""}`} aria-pressed={lvl === l} onClick={() => { setLvl(l); setTheme(""); }}>{l}</button>)}
+        <button type="button" className={`pchip ${lvl === "" ? "on" : ""}`} aria-pressed={lvl === ""} onClick={() => { setLvl(""); setTheme(""); }}>{t("pl.allLevels")}</button>
       </div>
+      {!textual && (
+        <div className="flex flex-wrap items-center gap-2">
+          <select className="select" style={{ maxWidth: 340 }} value={theme} onChange={(e) => setTheme(e.target.value)} aria-label={t("pl.theme")}>
+            <option value="">{t("pl.allThemes", { n: themes.length })}</option>
+            {themes.map((x) => <option key={x} value={x}>{x}</option>)}
+          </select>
+          <input className="input grow" style={{ maxWidth: 340 }} placeholder={t("pl.bankSearch")} value={q} onChange={(e) => setQ(e.target.value)} />
+          <span className="small muted">{t("pl.found", { n: list.length })}</span>
+        </div>
+      )}
       <section className="card p-0">
         {list.map((x) => (
           <button key={x.id} type="button" className="plrow w-full text-left" onClick={() => setOpen(x)}>
             <span className="small muted shrink-0" style={{ width: 92 }}>{x.id}</span>
-            <span className="grow truncate">{short(x)}</span>
+            <span className="grow min-w-0"><span className="block truncate">{short(x)}</span>{!textual && <span className="small muted block truncate">{x.level} · {themeOf(x, gName)}{(x.skill === "grammar" || x.skill === "vocabulary") ? ` · ${x.topic_ru}` : ""}</span>}</span>
             {edited.includes(x.id) && <span className="pill orange">{t("pl.edited")}</span>}
             {audioEdited.includes(x.id) && <span className="pill">{t("pl.ownAudio")}</span>}
             <Icon name="pencil" size="sm" />

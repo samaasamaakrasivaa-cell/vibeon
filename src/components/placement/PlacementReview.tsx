@@ -145,6 +145,31 @@ export function PlacementReview(p: ReviewProps) {
         </div>
       </section>
 
+      {sm.families.length > 0 && (
+        <section className="card flex flex-col gap-3">
+          <div className="flex flex-wrap items-center gap-2"><h3 className="m-0 grow">{t("pl.famTitle")}</h3><span className="small muted">{t("pl.famLegend")}</span></div>
+          <div className="tblwrap">
+            <table className="pltable plfam">
+              <thead><tr><th>{t("pl.famCol")}</th><th>{sm.diag ? t("pl.famAt", { l: sm.diag }) : "—"}</th><th>{t("pl.famAll")}</th><th /></tr></thead>
+              <tbody>
+                {sm.families.map((f) => {
+                  const r = f.lvl[1] ? f.lvl : f.all, q = r[1] ? r[0] / r[1] : 0;
+                  const k = r[1] < 2 ? "few" : q >= 0.85 ? "ok" : q >= 0.5 ? "mid" : "bad";
+                  return (
+                    <tr key={f.id} className={`plfam-${k}`}>
+                      <th><b>{f.name}</b><div className="small muted">{f.what}</div></th>
+                      <td>{f.lvl[1] ? <><b>{f.lvl[0]}/{f.lvl[1]}</b> <span className="muted">{pct(f.lvl)}%</span></> : <span className="muted">—</span>}</td>
+                      <td><b>{f.all[0]}/{f.all[1]}</b> <span className="muted">{pct(f.all)}%</span></td>
+                      <td className="plfam-st">{t(`pl.g.${k}` as DictKey)}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
+
       {sm.groups.length > 0 && (
         <section className="card flex flex-col gap-3">
           <div className="flex flex-wrap items-center gap-2"><h3 className="m-0 grow">{t("pl.mapTitle", { l: sm.diag ?? "" })}</h3><span className="small muted">{t("pl.mapLegend")}</span></div>

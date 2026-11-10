@@ -1580,6 +1580,16 @@ const ru = {
   "pl.st5t": "Задания уровня ученика. Вы отмечаете раскрытые пункты письма и ставите 0–3 балла по четырём критериям — система переводит баллы в подуровень.",
   "pl.st6": "Результат и точка А",
   "pl.st6t": "Таблица по навыкам, карта тем с зонами роста, время ответов и вывод системы. Итоговый уровень выбираете вы — он становится точкой А маршрута. Результат ученику открывается тумблером, на разборе скрипты записей — «глазиком».",
+  "pl.allLevels": "Все уровни",
+  "pl.theme": "Тема",
+  "pl.allThemes": "Все темы ({n})",
+  "pl.bankSearch": "Поиск по теме или тексту задания",
+  "pl.found": "Найдено: {n}",
+  "pl.famTitle": "Грамматика по разделам",
+  "pl.famLegend": "сколько заданий сделано верно",
+  "pl.famCol": "Раздел",
+  "pl.famAt": "На уровне {l}",
+  "pl.famAll": "Всего",
 } as const;
 
 export type DictKey = keyof typeof ru;
@@ -3162,6 +3172,16 @@ const en: Record<DictKey, string> = {
   "pl.st5t": "Tasks at the student's level. You tick covered points and score 0–3 on four criteria — the system turns scores into a sublevel.",
   "pl.st6": "Result and point A",
   "pl.st6t": "Skills table, topic map with gaps, answer times and a system summary. You choose the final level — it becomes point A. The result opens to the student with a switch; scripts — with the eye.",
+  "pl.allLevels": "All levels",
+  "pl.theme": "Topic",
+  "pl.allThemes": "All topics ({n})",
+  "pl.bankSearch": "Search by topic or text",
+  "pl.found": "Found: {n}",
+  "pl.famTitle": "Grammar by area",
+  "pl.famLegend": "right answers",
+  "pl.famCol": "Area",
+  "pl.famAt": "At {l}",
+  "pl.famAll": "All",
 };
 
 export const dictionaries: Record<LangCode, Record<DictKey, string>> = { ru, en };

@@ -1,0 +1,198 @@
+[
+  {
+    "id": "present",
+    "name_ru": "Настоящие времена",
+    "what_ru": "to be, Present Simple и Continuous, Present Perfect",
+    "topics": [
+      "g-a1-to-be",
+      "g-a1-there-is-are",
+      "g-a1-have-got",
+      "g-a1-present-simple",
+      "g-a1-frequency-adverbs",
+      "g-a1-present-continuous-now",
+      "g-a2-pp-experience",
+      "g-a2-pp-just-already-yet",
+      "g-b1-pp-for-since",
+      "g-b1-pp-vs-past",
+      "g-b1-ppc",
+      "g-b2-tense-nuance"
+    ]
+  },
+  {
+    "id": "past",
+    "name_ru": "Прошедшие времена",
+    "what_ru": "Past Simple и Continuous, Past Perfect, used to, рассказ о прошлом",
+    "topics": [
+      "g-a1-was-were",
+      "g-a1-past-simple-basic",
+      "g-a2-past-simple",
+      "g-a2-past-continuous",
+      "g-b1-past-perfect",
+      "g-b1-used-to",
+      "g-b2-narrative-tenses",
+      "g-c1-tense-nuance"
+    ]
+  },
+  {
+    "id": "future",
+    "name_ru": "Будущее время",
+    "what_ru": "will, going to, Present Continuous для планов, Future Perfect / Continuous, будущее в прошедшем",
+    "topics": [
+      "g-a2-going-to",
+      "g-a2-will",
+      "g-a2-pc-future",
+      "g-b1-future-forms",
+      "g-b2-future-perfect-continuous",
+      "g-c1-future-in-past"
+    ]
+  },
+  {
+    "id": "modals",
+    "name_ru": "Модальные глаголы",
+    "what_ru": "can, must, have to, should, might; предположения; оттенки модальности",
+    "topics": [
+      "g-a1-can",
+      "g-a1-would-like",
+      "g-a1-imperatives",
+      "g-a2-obligation",
+      "g-a2-should",
+      "g-a2-might-may",
+      "g-b1-deduction-present",
+      "g-b1-be-able-to",
+      "g-b2-deduction-past",
+      "g-b2-past-modals-regret",
+      "g-c1-modal-nuance"
+    ]
+  },
+  {
+    "id": "conditionals",
+    "name_ru": "Условные предложения и нереальность",
+    "what_ru": "0–3 тип, смешанные, wish, would rather, сослагательное наклонение",
+    "topics": [
+      "g-a2-first-conditional",
+      "g-b1-zero-conditional",
+      "g-b1-second-conditional",
+      "g-b2-third-conditional",
+      "g-b2-mixed-conditionals",
+      "g-b2-wish",
+      "g-b2-would-rather",
+      "g-c1-inverted-conditionals",
+      "g-c1-unreal-past",
+      "g-c1-subjunctive",
+      "g-c1-conditionals-alternatives"
+    ]
+  },
+  {
+    "id": "passive",
+    "name_ru": "Пассивный залог",
+    "what_ru": "Present / Past Passive, пассив с модальными и перфектом, каузатив, сложный пассив",
+    "topics": [
+      "g-b1-passive-basic",
+      "g-b2-passive-advanced",
+      "g-b2-causative",
+      "g-b2-impersonal-passive",
+      "g-c1-passive-reporting"
+    ]
+  },
+  {
+    "id": "reported",
+    "name_ru": "Косвенная речь",
+    "what_ru": "утверждения, вопросы, косвенные вопросы, глаголы косвенной речи",
+    "topics": [
+      "g-b1-reported-statements",
+      "g-b1-reported-questions",
+      "g-b1-indirect-questions",
+      "g-b2-reporting-verbs",
+      "g-c1-reported"
+    ]
+  },
+  {
+    "id": "comparison",
+    "name_ru": "Сравнения, прилагательные и наречия",
+    "what_ru": "степени сравнения, as … as, too / enough, наречия",
+    "topics": [
+      "g-a2-comparatives",
+      "g-a2-as-as",
+      "g-a2-too-enough",
+      "g-a2-adverbs-manner",
+      "g-b1-comparatives",
+      "g-b1-so-such",
+      "g-b2-comparatives",
+      "g-c1-comparatives"
+    ]
+  },
+  {
+    "id": "articles",
+    "name_ru": "Артикли, существительные и количество",
+    "what_ru": "a / the / без артикля, множественное число, some / any, much / many, both / neither",
+    "topics": [
+      "g-a1-articles-basic",
+      "g-a1-plural-nouns",
+      "g-a1-some-any",
+      "g-a2-articles",
+      "g-a2-quantifiers",
+      "g-b1-articles-general",
+      "g-b1-quantifiers-both",
+      "g-b2-articles",
+      "g-c1-articles",
+      "g-c1-nominalisation"
+    ]
+  },
+  {
+    "id": "pronouns",
+    "name_ru": "Местоимения, предлоги, вопросы",
+    "what_ru": "местоимения, притяжательные, предлоги, вопросительные слова, разделительные вопросы",
+    "topics": [
+      "g-a1-pronouns",
+      "g-a1-possessives",
+      "g-a1-demonstratives",
+      "g-a1-prepositions-time",
+      "g-a1-prepositions-place",
+      "g-a1-question-words",
+      "g-a2-possessive-pronouns",
+      "g-a2-indefinite-pronouns",
+      "g-a2-prepositions-movement",
+      "g-b1-question-tags"
+    ]
+  },
+  {
+    "id": "clauses",
+    "name_ru": "Сложное предложение и связки",
+    "what_ru": "союзы, придаточные, причастные обороты, связки",
+    "topics": [
+      "g-a1-conjunctions-basic",
+      "g-b1-defining-relatives",
+      "g-b1-contrast-basic",
+      "g-b2-non-defining-relatives",
+      "g-b2-linkers-contrast",
+      "g-b2-linkers-purpose-result",
+      "g-b2-participle-clauses",
+      "g-c1-participle-advanced",
+      "g-c1-ellipsis-substitution",
+      "g-c1-relatives-prepositions"
+    ]
+  },
+  {
+    "id": "patterns",
+    "name_ru": "Глагольные модели",
+    "what_ru": "-ing или инфинитив, инфинитив цели, be / get used to",
+    "topics": [
+      "g-a1-like-ing",
+      "g-a2-verb-patterns-basic",
+      "g-a2-infinitive-purpose",
+      "g-b1-verb-patterns",
+      "g-b2-verb-patterns-meaning",
+      "g-b2-used-to-be-get"
+    ]
+  },
+  {
+    "id": "emphasis",
+    "name_ru": "Инверсия и выделение",
+    "what_ru": "Not only…, Never have I…, It was … that, What I need is…, усиление",
+    "topics": [
+      "g-c1-inversion",
+      "g-c1-cleft",
+      "g-c1-emphasis"
+    ]
+  }
+]

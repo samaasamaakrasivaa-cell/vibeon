@@ -1313,3 +1313,9 @@ select.iedit, select.iedit:hover, select.iedit:focus { background-position: righ
 .pltl-ico { width: 36px; height: 36px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; background: var(--accent-bg); color: var(--accent); flex-shrink: 0; }
 .pltimeline p { margin: 2px 0 0; font-size: 14px; line-height: 1.5; color: var(--text2); }
 .plhintbtn { display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; padding: 4px 10px; border-radius: 8px; font-size: 13px; font-weight: 600; color: var(--accent-text); background: var(--accent-bg); }
+.plfam th { white-space: normal; min-width: 220px; }
+.plfam td { vertical-align: top; }
+.plfam-st { font-size: 13px; color: var(--text2); }
+.plfam-ok .plfam-st { color: var(--ok-text); font-weight: 600; } .plfam-mid .plfam-st { color: var(--warn-text); font-weight: 600; } .plfam-bad .plfam-st { color: var(--bad-text); font-weight: 600; }
+.plfam-ok th b::before, .plfam-mid th b::before, .plfam-bad th b::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 8px; vertical-align: 1px; }
+.plfam-ok th b::before { background: var(--ok); } .plfam-mid th b::before { background: var(--warn); } .plfam-bad th b::before { background: var(--bad); }
