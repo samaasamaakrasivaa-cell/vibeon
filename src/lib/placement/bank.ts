@@ -1,7 +1,7 @@
 import "server-only";
 import { db } from "../db";
 import { fileUrl } from "../storage";
-import type { AnyItem, Bank, CoreItem, ListenItem, ReadItem, SpeakItem, WriteItem } from "./engine";
+import type { AnyItem, Bank, CoreItem, Group, ListenItem, ReadItem, SpeakItem, WriteItem } from "./engine";
 import c1 from "../../../content/placement/01_core_A1.json";
 import c2 from "../../../content/placement/02_core_A2.json";
 import c3 from "../../../content/placement/03_core_B1.json";
@@ -18,6 +18,7 @@ import l4 from "../../../content/placement/13_listening_C1.json";
 import ws from "../../../content/placement/14_writing_speaking.json";
 import rubricsJson from "../../../content/placement/15_rubrics.json";
 import instructionsJson from "../../../content/placement/00_instructions.json";
+import groupsJson from "../../../content/placement/00_groups.json";
 
 // Банк вводного теста: файлы content/placement + правки владельца платформы (таблица PlacementEdit).
 
@@ -29,10 +30,13 @@ const FILE_ITEMS: AnyItem[] = [
   ...([l1, l2, l3, l4].flat() as unknown as ListenItem[]),
   ...(ws as unknown as (WriteItem | SpeakItem)[]),
 ];
+export const GROUPS = groupsJson as unknown as Group[];
+const GROUP_OF = new Map(GROUPS.flatMap((g) => g.topics.map((t) => [t, g.id] as const)));
+for (const x of FILE_ITEMS) if (x.skill === "grammar" || x.skill === "vocabulary") (x as CoreItem).group = GROUP_OF.get((x as CoreItem).topic_id);
 export const ORIGINAL = new Map(FILE_ITEMS.map((x) => [x.id, x]));
 
 export type Rubric = { id: string; name_ru: string; levels: Record<string, string> };
-export const RUBRICS = rubricsJson as unknown as { speaking: { criteria: Rubric[] }; writing: { criteria: Rubric[] }; sublevels_ru: string; how_to_decide_ru: string };
+export const RUBRICS = rubricsJson as unknown as { speaking: { criteria: Rubric[] }; writing: { criteria: Rubric[] }; sublevels_ru: string; how_to_decide_ru: string; total_ru: string; scores_ru: Record<string, string> };
 export const INSTRUCTIONS = instructionsJson as Record<string, { ru: string; en: string }>;
 
 let cache: { at: number; bank: Bank; edited: Set<string> } | null = null;
@@ -57,6 +61,7 @@ export async function getBank(): Promise<{ bank: Bank; edited: Set<string> }> {
     return withAudio(e ? ({ ...x, ...(e.data as object), id: x.id, type: x.type, skill: x.skill, level: x.level } as AnyItem) : x, e?.audio);
   });
   const bank: Bank = {
+    groups: GROUPS,
     core: items.filter((x): x is CoreItem => x.skill === "grammar" || x.skill === "vocabulary"),
     reading: items.filter((x): x is ReadItem => x.type === "reading"),
     listening: items.filter((x): x is ListenItem => x.type === "listening"),

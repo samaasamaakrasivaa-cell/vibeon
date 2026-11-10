@@ -10,7 +10,7 @@ import { rateLimit } from "../rate-limit";
 import { getLang } from "../i18n/server";
 import { attemptFor, ptCookie } from "./access";
 import { getBank } from "./bank";
-import { checkCore, emptyState, EXPECT, pickTask, stepIdx, STEPS, summarize, words, type CoreItem, type Expect, type ListenItem, type ReadItem, type SpeakItem } from "./engine";
+import { checkCore, emptyState, EXPECT, pickTask, stepIdx, summarize, words, type CoreItem, type Expect, type ListenItem, type ReadItem, type SpeakItem } from "./engine";
 import { advance, enter, json, leave, publicView, stateOf, type PView } from "./run";
 import { revealedScripts } from "./review";
 
@@ -230,15 +230,16 @@ export async function closePlacementLink(code: string): Promise<R> {
   return { ok: true };
 }
 
-export type ReviewInput = { writing: Record<string, string>; speaking: Record<string, string>; comment: string };
-const cleanMarks = (m: Record<string, string> | undefined) => Object.fromEntries(Object.entries(m ?? {}).filter(([k, v]) => /^[a-z]{2,20}$/.test(k) && (STEPS as readonly string[]).includes(v)));
+export type ReviewInput = { writing: Record<string, number>; speaking: Record<string, number>; points: boolean[]; comment: string };
+const cleanScores = (m: Record<string, number> | undefined) => Object.fromEntries(Object.entries(m ?? {}).filter(([k, v]) => /^[a-z]{2,20}$/.test(k) && Number.isInteger(v) && v >= 0 && v <= 3));
 
-/** Оценки письма и говорения по критериям (сохраняются по ходу проверки). */
+/** Баллы 0–3 по критериям письма и говорения, пункты задания письма, комментарий (сохраняются по ходу проверки). */
 export async function saveReview(id: string, r: ReviewInput): Promise<R> {
   return wrap(async () => {
     const { a } = await teacherAttempt(id);
     const prev = (a.review ?? {}) as Record<string, unknown>;
-    await db.placementAttempt.update({ where: { id }, data: { review: json({ ...prev, writing: cleanMarks(r.writing), speaking: cleanMarks(r.speaking), comment: str(r.comment, 3000) }) } });
+    const points = Array.isArray(r.points) ? r.points.slice(0, 10).map(Boolean) : [];
+    await db.placementAttempt.update({ where: { id }, data: { review: json({ ...prev, writing: cleanScores(r.writing), speaking: cleanScores(r.speaking), points, comment: str(r.comment, 3000) }) } });
     revalidatePath(`/teacher/placement/${id}`);
     return { ok: true };
   });

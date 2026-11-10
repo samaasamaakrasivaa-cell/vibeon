@@ -10,9 +10,11 @@ export type Sub = (typeof STEPS)[number];
 export type Q = { id: string; q: string; options: string[]; answer: number; topic_id: string; checks?: string; explain_ru: string };
 type Base = { id: string; level: PLevel; band: number; topic_en: string; topic_ru: string; explain_ru?: string };
 export type CoreItem = Base & {
-  skill: "grammar" | "vocabulary"; topic_id: string; type: "mcq" | "gap" | "wordform" | "transform";
+  skill: "grammar" | "vocabulary"; topic_id: string; type: "mcq" | "gap" | "wordform" | "transform" | "brackets";
   q: string; options?: string[]; answer?: number; accept?: string[]; base?: string; key?: string; frame?: string; explain_ru: string;
+  group?: string; // группа тем (00_groups.json) — проставляется при загрузке банка
 };
+export type Group = { id: string; level: PLevel; kind: "grammar" | "vocabulary"; anchor: boolean; name_ru: string; what_ru: string; topics: string[] };
 export type ReadItem = Base & { skill: "reading"; type: "reading"; title: string; text_type?: string; passage: string; words?: number; questions: Q[] };
 export type ListenItem = Base & {
   skill: "listening"; type: "listening"; title: string; situation_ru?: string; script: string; duration_sec?: number; plays?: number;
@@ -21,7 +23,7 @@ export type ListenItem = Base & {
 export type WriteItem = Base & { skill: "writing"; type: "writing"; prompt_en: string; prompt_ru: string; min_words: number; max_words: number; time_min: number; expects: string[]; points?: string[] };
 export type SpeakItem = Base & { skill: "speaking"; type: "speaking"; intro_ru: string; questions: { q: string; prep_sec: number; speak_sec: number; audio?: string | null }[]; expects: string[] };
 export type AnyItem = CoreItem | ReadItem | ListenItem | WriteItem | SpeakItem;
-export type Bank = { core: CoreItem[]; reading: ReadItem[]; listening: ListenItem[]; writing: WriteItem[]; speaking: SpeakItem[] };
+export type Bank = { groups: Group[]; core: CoreItem[]; reading: ReadItem[]; listening: ListenItem[]; writing: WriteItem[]; speaking: SpeakItem[] };
 
 export const SECTIONS = ["core", "reading", "listening", "writing", "speaking"] as const;
 export type Section = (typeof SECTIONS)[number];
@@ -38,7 +40,10 @@ export type PState = {
   times?: Record<string, number>; // время по разделам, мс
   rerec?: Record<string, number>; // сколько раз перезаписан ответ на вопрос говорения
   items: Record<string, AnyItem>; // снимок выданных заданий (с ответами)
-  core: { id: string; step: number }[]; // путь по ядру в порядке выдачи
+  core: { id: string; step: number; ph?: "w" | "l" | "d" | "s" }[]; // путь по ядру: разминка, поиск уровня, проверка уровня, срез выше
+  diag?: number; // уровень подробной проверки (0 = A1 … 4 = C1)
+  fb?: boolean; // уже переходили на уровень ниже (погорячились)
+  up?: boolean; // уже переходили на уровень выше (срез выше сдан уверенно)
   answers: Record<string, Ans>; // по id задания ядра и id вопроса чтения/аудирования
   reading: string[]; listening: string[];
   rdone: string[]; ldone: string[]; // тексты и записи, на которые ученик уже ответил
@@ -48,15 +53,15 @@ export type PState = {
   level?: PLevel; step?: number; // результат ядра — от него зависят остальные разделы
 };
 
-/** expected: ожидаемый уровень от учителя (A1 / B1 / B2) — тогда без разминки, старт с него. */
-export const EXPECT = { A1: 0, B1: 4, B2: 6 } as const;
+/** expected: ожидаемый уровень от учителя (A1 / B1 / B2) — тогда без разминки, поиск начинается с него. */
+export const EXPECT = { A1: 0, B1: 2, B2: 3 } as const; // индекс уровня в PL_LEVELS
 export type Expect = keyof typeof EXPECT;
 export const emptyState = (expected?: Expect | null): PState => ({
   v: 1, section: "intro", items: {}, core: [], answers: {}, reading: [], listening: [], rdone: [], ldone: [], plays: {},
   ...(expected && expected in EXPECT ? { start: EXPECT[expected] } : { warm: WARM.length }),
 });
-/** Разминка: A1, A2, A2 — первые задания лёгкие, дальше лесенка с B1. */
-const WARM = [0, 2, 2];
+/** Разминка: одно задание A1 и два A2 из опорных групп — они же идут в зачёт этих групп. */
+const WARM = [0, 1, 1];
 
 const BASE: Record<PLevel, number> = { A1: 0, A2: 2, B1: 4, B2: 6, C1: 8 };
 /** band 1 уровня X → X, band 2 и 3 → X+ (у C1 — всегда C1). */
@@ -65,108 +70,137 @@ export const levelOfStep = (s: number): PLevel => PL_LEVELS[Math.floor(Math.max(
 export const subOf = (s: number): Sub => STEPS[Math.max(0, Math.min(8, Math.round(s)))];
 export const stepIdx = (sub: string) => STEPS.indexOf(sub as Sub);
 
-const CORE_MAX = 36;
+const CORE_MAX = 60;
+const PER_GROUP = 3; // заданий из каждой группы на подробной проверке
+const FALLBACK_AFTER = 9, FALLBACK_BELOW = 0.4; // после 9 заданий меньше 40% — уровень ниже
+const SLICE_FROM = 0.8, SLICE_GROUPS = 4, SLICE_PER = 2, UP_FROM = 0.75; // уровень сделан на 80%+ — срез уровня выше; срез на 75%+ — уровень выше целиком
 
-// ───────── Ядро: лесенка ─────────
+// ───────── Ядро: поиск уровня → подробная проверка по группам ─────────
 
 type Stat = { n: number; c: number };
-export function stepStats(st: PState) {
-  const m = new Map<number, Stat>();
-  for (const x of st.core) {
-    const a = st.answers[x.id];
-    const s = m.get(x.step) ?? { n: 0, c: 0 };
-    s.n += 1; if (a?.ok) s.c += 1;
-    m.set(x.step, s);
+const stat = (st: PState, f: (it: CoreItem, x: PState["core"][number]) => boolean): Stat => {
+  let n = 0, c = 0;
+  for (const x of st.core) { const it = st.items[x.id] as CoreItem; if (!it || !f(it, x) || !st.answers[x.id]) continue; n++; if (st.answers[x.id].ok) c++; }
+  return { n, c };
+};
+const anchorOf = (bank: Bank, li: number) => bank.groups.find((g) => g.level === PL_LEVELS[li] && g.anchor)!;
+const groupsOf = (bank: Bank, li: number) => {
+  // порядок: грамматика и лексика вперемешку, опорная группа — первой
+  const gs = bank.groups.filter((g) => g.level === PL_LEVELS[li]);
+  const gr = gs.filter((g) => g.kind === "grammar").sort((a, b) => Number(b.anchor) - Number(a.anchor)), vo = gs.filter((g) => g.kind === "vocabulary");
+  const out: Group[] = [];
+  while (gr.length || vo.length) { out.push(...gr.splice(0, 2)); if (vo.length) out.push(vo.shift()!); }
+  return out;
+};
+const inGroup = (st: PState, gid: string) => st.core.filter((x) => (st.items[x.id] as CoreItem)?.group === gid).length;
+
+/** Опорная группа уровня: true — пройдена (2 из 3), false — нет, undefined — ещё не ясно. */
+function anchorPass(st: PState, bank: Bank, li: number) {
+  const g = anchorOf(bank, li);
+  const s = stat(st, (it, x) => it.group === g.id && (x.ph === "w" || x.ph === "l"));
+  return s.n >= PER_GROUP ? s.c >= 2 : undefined;
+}
+
+/** Уровень-кандидат по опорным группам (null — поиск ещё идёт); next — какой уровень проверять дальше. */
+function locate(st: PState, bank: Bank): { cand: number | null; next: number | null } {
+  let L = st.start ?? 2;
+  for (let guard = 0; guard < 10; guard++) {
+    const p = anchorPass(st, bank, L);
+    if (p === undefined) return { cand: null, next: L };
+    if (p) { if (L === 4) return { cand: 4, next: null }; if (anchorPass(st, bank, L + 1) === false) return { cand: L, next: null }; L++; }
+    else { if (L === 0) return { cand: 0, next: null }; if (anchorPass(st, bank, L - 1) === true) return { cand: L - 1, next: null }; L--; }
   }
-  return m;
-}
-/** Ступень пройдена: 2 из 3 по ходу, 4 из 5 на границе. undefined — ещё не ясно. */
-function verdict(s: Stat | undefined, exhausted: boolean): boolean | undefined {
-  if (!s || s.n === 0) return undefined;
-  if (s.n >= 5) return s.c >= 4;
-  if (s.n === 3) return s.c >= 2;
-  if (exhausted) return s.c / s.n >= 2 / 3; // в банке кончились задания этой ступени
-  return undefined;
+  return { cand: L, next: null };
 }
 
-function boundary(st: PState, bank: Bank) {
-  const stats = stepStats(st);
-  const used = new Set(st.core.map((x) => x.id));
-  const left = (s: number) => bank.core.filter((x) => stepOf(x.level, x.band) === s && !used.has(x.id)).length;
-  const v = (s: number) => verdict(stats.get(s), left(s) === 0);
-  let P = -1;
-  for (let s = 8; s >= 0; s--) if (v(s) === true && v(s - 1) !== false) { P = s; break; }
-  let F = 9;
-  for (let s = P + 1; s <= 8; s++) if (v(s) === false) { F = s; break; }
-  return { stats, left, v, P, F };
-}
-
-/** Какую ступень спрашивать дальше; null — ядро закончено. */
-export function nextStep(st: PState, bank: Bank): number | null {
-  if (st.core.length >= CORE_MAX) return null;
-  const warm = st.warm ?? 0;
-  if (st.core.length < warm) return WARM[st.core.length];
-  const { stats, left, v, P, F } = boundary(st, bank);
-  const s0 = st.start ?? (st.beginner ? 0 : 4);
-  // начатый блок (меньше 3) или добор на границе (4 из 5) — продолжаем ту же ступень (разминку не продолжаем)
-  if (st.core.length > warm) {
-    const x = st.core[st.core.length - 1], s = stats.get(x.step)!;
-    if ((s.n < 3 || s.n === 4) && left(x.step) > 0 && v(x.step) === undefined) return x.step;
-  }
-  if (st.core.length === warm) return s0;
-  // сначала шаги через целый уровень, потом по одной ступени
-  if (P === -1 && F === 9) return s0;
-  if (F === 9 && P < 8) { const t = Math.min(8, P + 2); return v(t) === undefined && left(t) ? t : v(P + 1) === undefined && left(P + 1) ? P + 1 : confirm(); }
-  if (P === -1 && F > 0) { const t = Math.max(0, F - 2); return v(t) === undefined && left(t) ? t : v(F - 1) === undefined && left(F - 1) ? F - 1 : confirm(); }
-  if (F - P > 1) { for (let s = P + 1; s < F; s++) if (v(s) === undefined && left(s)) return s; }
-  return confirm();
-
-  // граница найдена: по 5 заданий на последнюю пройденную и первую непройденную ступень
-  function confirm(): number | null {
-    for (const s of [P, F]) {
-      if (s < 0 || s > 8) continue;
-      const n = stats.get(s)?.n ?? 0;
-      if (n < 5 && left(s) > 0) return s;
-    }
-    // ступень под результатом тоже проверяем: так одна удачная догадка не поднимает итог
-    if (P > 0 && v(P - 1) === undefined && left(P - 1) > 0) return P - 1;
-    return null;
-  }
-}
-
-/** Случайное задание ступени: без повторов, грамматика и лексика по очереди, по возможности новая тема. */
-export function pickCore(st: PState, bank: Bank, step: number, rnd: () => number = Math.random): CoreItem | null {
+/** pref: easy — простые задания уровня (band 1, сам уровень X), hard — сложные (band 2–3, X+). */
+function pickFrom(st: PState, bank: Bank, gid: string, rnd: () => number, pref?: "easy" | "hard"): CoreItem | null {
   const used = new Set(st.core.map((x) => x.id));
   const topics = new Set(st.core.map((x) => (st.items[x.id] as CoreItem | undefined)?.topic_id));
-  const last = st.core.length ? (st.items[st.core[st.core.length - 1].id] as CoreItem | undefined)?.skill : undefined;
-  let pool = bank.core.filter((x) => stepOf(x.level, x.band) === step && !used.has(x.id));
+  let pool = bank.core.filter((x) => x.group === gid && !used.has(x.id));
   if (!pool.length) return null;
-  const fresh = pool.filter((x) => !topics.has(x.topic_id));
+  const want = pref === "easy" ? pool.filter((x) => x.band === 1) : pref === "hard" ? pool.filter((x) => x.band > 1) : [];
+  if (want.length) pool = want;
+  const fresh = pool.filter((x) => !topics.has(x.topic_id)); // по возможности — другая тема внутри группы
   if (fresh.length) pool = fresh;
-  const other = pool.filter((x) => x.skill !== last);
-  if (other.length) pool = other;
   return pool[Math.floor(rnd() * pool.length)];
 }
 
-/** Примерная доля пройденного ядра (без цифр — точное число заданий заранее неизвестно). */
-export function coreProgress(st: PState, bank: Bank) {
-  const done = st.core.filter((x) => st.answers[x.id]).length;
-  const { stats, P, F } = boundary(st, bank);
-  let rem = Math.max(0, (st.warm ?? 0) - st.core.length);
-  const last = st.core[st.core.length - 1];
-  const ln = last ? stats.get(last.step)?.n ?? 0 : 0;
-  if (ln > 0 && ln < 3) rem += 3 - ln;
-  const found = P >= 0 && F === P + 1 || P === 8 || (P === -1 && F === 0);
-  if (!found) rem += 3 + 10;
-  else { for (const x of [P, F]) if (x >= 0 && x <= 8) rem += Math.max(0, 5 - (stats.get(x)?.n ?? 0)); if (P > 0 && !stats.get(P - 1)) rem += 3; }
-  const p = done / Math.max(1, done + rem);
-  st.pmax = Math.max(st.pmax ?? 0, Math.min(0.95, p));
-  return st.pmax;
+const levelAcc = (st: PState, li: number) => stat(st, (it) => it.level === PL_LEVELS[li]);
+
+/** Следующее задание ядра; null — ядро закончено. Отмечает в st этап проверки (diag, fb). */
+export function nextCore(st: PState, bank: Bank, rnd: () => number = Math.random): { item: CoreItem; ph: "w" | "l" | "d" | "s" } | null {
+  if (st.core.length >= CORE_MAX) return null;
+  const warm = st.warm ?? 0;
+  if (st.core.length < warm) {
+    const it = pickFrom(st, bank, anchorOf(bank, WARM[st.core.length]).id, rnd, "easy");
+    if (it) return { item: it, ph: "w" };
+  }
+  if (st.diag === undefined) {
+    const { cand, next } = locate(st, bank);
+    if (next !== null) {
+      const it = pickFrom(st, bank, anchorOf(bank, next).id, rnd, "easy");
+      if (it) return { item: it, ph: "l" };
+    }
+    st.diag = cand ?? next ?? 2;
+  }
+  // подробная проверка уровня: по 3 задания из каждой группы, по кругу
+  const D = st.diag!;
+  const dItems = st.core.filter((x) => x.ph === "d" && (st.items[x.id] as CoreItem)?.level === PL_LEVELS[D]);
+  const dAcc = stat(st, (it, x) => x.ph === "d" && it.level === PL_LEVELS[D]);
+  if (!st.fb && !st.up && D > 0 && dAcc.n >= FALLBACK_AFTER && dAcc.c / dAcc.n < FALLBACK_BELOW) { st.fb = true; st.diag = D - 1; return nextCore(st, bank, rnd); }
+  void dItems;
+  const gs = groupsOf(bank, D);
+  // по кругу: сначала из каждой группы простое задание, потом два сложных
+  for (let round = 1; round <= PER_GROUP; round++) {
+    for (const g of gs) {
+      if (inGroup(st, g.id) >= round) continue;
+      const it = pickFrom(st, bank, g.id, rnd, round === 1 ? "easy" : "hard");
+      if (it) return { item: it, ph: "d" };
+    }
+  }
+  // уровень сделан уверенно — короткий срез уровня выше; срез сдан уверенно — проверяем уровень выше полностью
+  if (D < 4 && !st.fb && !st.up) {
+    const sl = stat(st, (it, x) => x.ph === "s" && it.level === PL_LEVELS[D + 1]);
+    if (sl.n >= SLICE_GROUPS * SLICE_PER && sl.c / sl.n >= UP_FROM) { st.up = true; st.diag = D + 1; return nextCore(st, bank, rnd); }
+    const acc = levelAcc(st, D);
+    if (acc.n && acc.c / acc.n >= SLICE_FROM) {
+      const up = groupsOf(bank, D + 1).filter((g) => g.kind === "grammar").slice(0, SLICE_GROUPS - 1).concat(groupsOf(bank, D + 1).filter((g) => g.kind === "vocabulary").slice(0, 1));
+      for (let round = 1; round <= SLICE_PER; round++)
+        for (const g of up) {
+          if (inGroup(st, g.id) >= round) continue;
+          const it = pickFrom(st, bank, g.id, rnd, "easy");
+          if (it) return { item: it, ph: "s" };
+        }
+    }
+  }
+  return null;
 }
 
+/** Итог ядра по шкале из 9 ступеней. На уровне подробной проверки X: простые задания (band 1) — это сам X,
+ * сложные (band 2–3) — X+. Простые не взяты (< 60%) — ступень ниже; сложные взяты (≥ 67%) — X+. */
 export function coreResult(st: PState, bank: Bank) {
-  const { P } = boundary(st, bank);
-  return Math.max(0, P);
+  void bank;
+  if (st.diag === undefined) return 0;
+  const D = st.diag, L = PL_LEVELS[D], b = BASE[L];
+  const easy = stat(st, (it) => it.level === L && it.band === 1), hard = stat(st, (it) => it.level === L && it.band > 1);
+  const all = levelAcc(st, D);
+  const pe = easy.n >= 3 ? easy.c / easy.n : all.n ? all.c / all.n : 0;
+  const ph = hard.n ? hard.c / hard.n : 0;
+  if (pe < 0.6) return Math.max(0, b - 1);
+  if (D === 4) return 8;
+  return ph >= 0.67 ? b + 1 : b;
+}
+
+/** Доля пройденного ядра — для полоски без цифр. */
+export function coreProgress(st: PState, bank: Bank) {
+  const done = st.core.filter((x) => st.answers[x.id]).length;
+  let rem: number;
+  if (st.diag === undefined) rem = Math.max(0, (st.warm ?? 0) - st.core.length) + 4 + groupsOf(bank, st.start ?? 2).length * PER_GROUP - 3;
+  else rem = groupsOf(bank, st.diag).reduce((a, g) => a + Math.max(0, PER_GROUP - inGroup(st, g.id)), 0) + (st.diag < 4 && !st.fb ? 3 : 0);
+  const p = done / Math.max(1, done + rem);
+  st.pmax = Math.max(st.pmax ?? 0, Math.min(0.97, p));
+  return st.pmax;
 }
 
 // ───────── Чтение, аудирование, письмо, говорение ─────────
@@ -237,28 +271,37 @@ export function checkCore(item: CoreItem, v: string | number | null) {
 
 // ───────── Сводка для учителя ─────────
 
+export type GroupRes = { id: string; name: string; what: string; kind: "grammar" | "vocabulary"; level: PLevel; c: number; n: number; dk: number };
 export type Summary = {
-  coreStep: number; level: PLevel;
-  path: { step: number; n: number; c: number; pass: boolean | undefined }[];
+  coreStep: number; level: PLevel; diag: PLevel | null; fb: boolean; up: boolean;
+  easy: [number, number]; hard: [number, number]; above: [number, number]; // уровень проверки: простые, сложные задания; срез уровня выше
+  anchors: { level: PLevel; c: number; n: number; pass: boolean | undefined }[]; // поиск уровня
+  groups: GroupRes[]; // карта тем: все группы, где были задания
   core: Record<string, { grammar: [number, number]; vocabulary: [number, number] }>; // уровень → [верно, всего]
   reading: Record<string, [number, number]>; listening: Record<string, [number, number]>;
   readStep: number | null; listenStep: number | null;
 };
 export function summarize(st: PState, bank: Bank): Summary {
   const coreStep = st.step ?? coreResult(st, bank);
-  const stats = stepStats(st);
-  const path: Summary["path"] = [];
-  for (const x of st.core) {
-    if (path.some((p) => p.step === x.step)) continue;
-    const s = stats.get(x.step)!;
-    path.push({ step: x.step, n: s.n, c: s.c, pass: verdict(s, true) });
-  }
+  const gOf = new Map(bank.groups.flatMap((g) => g.topics.map((t) => [t, g] as const)));
+  const groups = new Map<string, GroupRes>();
   const core: Summary["core"] = {};
   for (const x of st.core) {
-    const it = st.items[x.id] as CoreItem; if (!it) continue;
+    const it = st.items[x.id] as CoreItem; const a = st.answers[x.id];
+    if (!it || !a) continue;
     const row = (core[it.level] ??= { grammar: [0, 0], vocabulary: [0, 0] });
-    row[it.skill][1] += 1; if (st.answers[x.id]?.ok) row[it.skill][0] += 1;
+    row[it.skill][1] += 1; if (a.ok) row[it.skill][0] += 1;
+    const g = gOf.get(it.topic_id);
+    if (!g) continue;
+    const r = groups.get(g.id) ?? { id: g.id, name: g.name_ru, what: g.what_ru, kind: g.kind, level: g.level, c: 0, n: 0, dk: 0 };
+    r.n++; if (a.ok) r.c++; if (a.dk) r.dk++;
+    groups.set(g.id, r);
   }
+  const anchors = PL_LEVELS.map((l, li) => {
+    const g = anchorOf(bank, li);
+    const s = stat(st, (it) => gOf.get(it.topic_id)?.id === g.id);
+    return { level: l, ...s, pass: s.n >= PER_GROUP ? s.c >= 2 : undefined };
+  }).filter((x) => x.n > 0 && st.core.some((y) => (y.ph === "w" || y.ph === "l") && (st.items[y.id] as CoreItem)?.level === x.level));
   const byLevel = (ids: string[]) => {
     const r: Record<string, [number, number]> = {};
     for (const id of ids) {
@@ -269,7 +312,18 @@ export function summarize(st: PState, bank: Bank): Summary {
     return r;
   };
   const reading = byLevel(st.rdone), listening = byLevel(st.ldone);
-  return { coreStep, level: levelOfStep(coreStep), path, core, reading, listening, readStep: skillStep(reading, st.level), listenStep: skillStep(listening, st.level) };
+  const order = new Map(bank.groups.map((g, i) => [g.id, i]));
+  return {
+    coreStep, level: levelOfStep(coreStep), diag: st.diag !== undefined ? PL_LEVELS[st.diag] : null, fb: !!st.fb, up: !!st.up, anchors,
+    ...(() => {
+      if (st.diag === undefined) return { easy: [0, 0] as [number, number], hard: [0, 0] as [number, number], above: [0, 0] as [number, number] };
+      const L = PL_LEVELS[st.diag], A = PL_LEVELS[st.diag + 1];
+      const e = stat(st, (it) => it.level === L && it.band === 1), h = stat(st, (it) => it.level === L && it.band > 1), a = A ? stat(st, (it) => it.level === A) : { n: 0, c: 0 };
+      return { easy: [e.c, e.n] as [number, number], hard: [h.c, h.n] as [number, number], above: [a.c, a.n] as [number, number] };
+    })(),
+    groups: [...groups.values()].sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0)),
+    core, reading, listening, readStep: skillStep(reading, st.level), listenStep: skillStep(listening, st.level),
+  };
 }
 
 /** Ступень по чтению/аудированию: ≥ 80% на уровне ядра → X+, ≥ 50% → X, иначе — по запасному тексту ниже. */
@@ -294,6 +348,18 @@ export function rubricHint(steps: (number | null | undefined)[], taskStep?: numb
   h = Math.min(h, Math.min(...xs) + 2);
   if (typeof taskStep === "number" && taskStep >= 0) h = Math.min(h, taskStep);
   return h;
+}
+
+/** Баллы 0–3 по критериям письма или говорения (относительно уровня задания) → ступень.
+ * Сумма из 12: 11–12 → X+, 8–10 → X, 5–7 → ступень ниже, 0–4 → уровень ниже. Задача не выполнена (0–1) — не выше ступени ниже. */
+export function scoreStep(scores: (number | null | undefined)[], level: PLevel, task?: number | null) {
+  const xs = scores.filter((x): x is number => typeof x === "number");
+  if (xs.length < scores.length || !xs.length) return null;
+  const sum = (xs.reduce((a, b) => a + b, 0) / xs.length) * 4; // к шкале из 12 при любом числе критериев
+  const b = BASE[level];
+  let r = sum >= 11 ? Math.min(8, b + 1) : sum >= 8 ? b : sum >= 5 ? b - 1 : b - 2;
+  if (typeof task === "number" && task <= 1) r = Math.min(r, b - 1);
+  return Math.max(0, r);
 }
 
 /** Подсказка итога: медиана ступеней по навыкам (вниз). Итог всё равно выбирает учитель. */

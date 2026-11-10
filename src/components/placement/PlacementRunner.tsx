@@ -199,6 +199,7 @@ function CoreStep({ v, pending, onAnswer }: { v: Core; pending: boolean; onAnswe
       )}
       {it.type === "wordform" && <><div className="plword"><span className="plbase">{it.base}</span><Icon name="right" size="sm" /><span className="muted small">?</span></div>{parts(it.q)}</>}
       {it.type === "gap" && parts(it.q)}
+      {it.type === "brackets" && <>{parts(it.q)}<span className="small muted">{t("pl.bracketsHint")}</span></>}
       {it.type === "transform" && (
         <>
           <p className="plq m-0">{it.q}</p>

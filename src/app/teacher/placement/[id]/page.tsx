@@ -41,7 +41,7 @@ export default async function PlacementReviewPage({ params }: { params: Promise<
         <PlacementReview
           id={id} mode={a.mode} status={a.status} level={a.level} showResult={a.showResult} sm={sm} d={d}
           review={(a.review ?? {}) as never} rubrics={{ writing: RUBRICS.writing.criteria, speaking: RUBRICS.speaking.criteria }}
-          howTo={RUBRICS.how_to_decide_ru} sublevels={RUBRICS.sublevels_ru}
+          howTo={RUBRICS.how_to_decide_ru} sublevels={RUBRICS.sublevels_ru} total={RUBRICS.total_ru}
         />
         {st.core.length > 0 && (
           <div>

@@ -103,9 +103,9 @@ function ItemDialog({ item, edited, onClose }: { item: AnyItem; edited: boolean;
   return (
     <Dialog open onClose={onClose} title={`${item.id} · ${item.level}`} wide>
       <div className="flex flex-col gap-3">
-        {(item.type === "mcq" || item.type === "gap" || item.type === "wordform" || item.type === "transform") && (
+        {(item.type === "mcq" || item.type === "gap" || item.type === "wordform" || item.type === "transform" || item.type === "brackets") && (
           <>
-            <p className="small muted m-0">{(item as CoreItem).topic_ru} · {t(`pl.type.${item.type}` as "pl.type.mcq")}</p>
+            <p className="small muted m-0">{(item as CoreItem).topic_ru} · {t(`pl.type.${item.type}` as "pl.type.mcq")}{(item as CoreItem).group ? ` · ${(item as CoreItem).group}` : ""}</p>
             {item.type === "transform" && field("key", t("pl.keyWord"))}
             {item.type === "wordform" && field("base", t("pl.baseWord"))}
             {field("q", item.type === "transform" ? t("pl.origSentence") : t("pl.sentence"))}

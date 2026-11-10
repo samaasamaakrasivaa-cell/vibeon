@@ -32,7 +32,7 @@ export function reviewData(id: string, st: PState, forTeacher: boolean) {
     core,
     reading: text(st.rdone, "reading"),
     listening: text(st.ldone, "listening"),
-    writing: w && { prompt_en: w.prompt_en, prompt_ru: w.prompt_ru, level: w.level, min: w.min_words, max: w.max_words, expects: w.expects, text: st.writing?.text ?? "" },
+    writing: w && { prompt_en: w.prompt_en, prompt_ru: w.prompt_ru, level: w.level, min: w.min_words, max: w.max_words, expects: w.expects, points: w.points ?? [], text: st.writing?.text ?? "" },
     speaking: sp && {
       level: sp.level, intro: sp.intro_ru, expects: sp.expects, noMic: !!(st.speaking as { noMic?: boolean }).noMic,
       questions: sp.questions.map((q, i) => ({ q: q.q, url: st.speaking?.rec?.[String(i + 1)] ? `/api/placement/${id}/rec/${i + 1}` : null, rerec: st.rerec?.[String(i + 1)] ?? 0 })),

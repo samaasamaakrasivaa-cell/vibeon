@@ -38,7 +38,7 @@ export async function saveBankItem(itemId: string, data: Record<string, unknown>
   const o = ORIGINAL.get(itemId) as AnyItem | undefined;
   if (!o) return { ok: false, error: "item" };
   let patch: Record<string, unknown>;
-  if (o.type === "mcq" || o.type === "gap" || o.type === "wordform" || o.type === "transform") {
+  if (o.type === "mcq" || o.type === "gap" || o.type === "wordform" || o.type === "transform" || o.type === "brackets") {
     patch = { q: s(data.q, 600), explain_ru: s(data.explain_ru, 600) };
     if (!patch.q || (o.type !== "transform" && !String(patch.q).includes("___"))) return { ok: false, error: "q" };
     if (o.type === "mcq") {

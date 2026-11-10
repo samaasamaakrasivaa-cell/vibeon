@@ -5,9 +5,9 @@ import { Icon } from "../Icon";
 import type { IconName } from "../icon-paths";
 
 const STEPS = ["A1", "A1+", "A2", "A2+", "B1", "B1+", "B2", "B2+", "C1"];
-// пример пути ученика по лесенке: разминка → B1 → B2 (не прошёл) → B1+ → подтверждение
-const PATH = [0, 2, 2, 4, 4, 4, 6, 6, 6, 5, 5, 5, 5, 5];
-const OK = [1, 1, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1];
+// пример: разминка A1–A2 → поиск: B1 ✓ → B2 ✗ → подробная проверка B1 (простые и сложные задания по группам)
+const PATH = [0, 2, 2, 4, 4, 4, 6, 6, 6, 4, 5, 5, 4, 5, 5, 4, 5, 5];
+const OK = [1, 1, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1];
 
 /** «Как работает тест» — коротко для учителя, с инфографикой. */
 export function PlacementAbout() {
@@ -32,7 +32,7 @@ export function PlacementAbout() {
           <polyline points={PATH.map((s, i) => `${x0 + i * dx},${y(s)}`).join(" ")} className="path" />
           {PATH.map((s, i) => <circle key={i} cx={x0 + i * dx} cy={y(s)} r="5" className={OK[i] ? "ok" : "bad"} />)}
           <text x={x0 + dx} y={y(0) + 18} textAnchor="middle" className="note">{t("pl.ab.warm")}</text>
-          <text x={x0 + (PATH.length - 1) * dx - 6} y={y(5) - 12} textAnchor="end" className="note b">{t("pl.ab.result")}</text>
+          <text x={x0 + (PATH.length - 1) * dx - 6} y={y(6) - 6} textAnchor="end" className="note b">{t("pl.ab.result")}</text>
         </svg>
         <div className="pllegend small muted"><span><i className="ok" />{t("pl.ab.right")}</span><span><i className="bad" />{t("pl.ab.wrong")}</span><span>{t("pl.ab.ladderHint")}</span></div>
       </div>

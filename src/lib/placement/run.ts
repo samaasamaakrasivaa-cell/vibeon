@@ -2,7 +2,7 @@ import "server-only";
 import type { Prisma } from "@prisma/client";
 import { INSTRUCTIONS } from "./bank";
 import {
-  checkCore, coreProgress, coreResult, fallbackText, levelOfStep, nextStep, pickCore, pickTask, pickTexts,
+  checkCore, coreProgress, coreResult, fallbackText, levelOfStep, nextCore, pickTask, pickTexts, stepOf,
   type AnyItem, type Bank, type CoreItem, type ListenItem, type PState, type ReadItem, type SpeakItem, type WriteItem,
 } from "./engine";
 
@@ -24,9 +24,8 @@ export function advance(st: PState, bank: Bank) {
     if (st.section === "core") {
       const last = st.core[st.core.length - 1];
       if (last && !st.answers[last.id]) return;
-      const s = nextStep(st, bank);
-      const it = s === null ? null : pickCore(st, bank, s);
-      if (it && s !== null) { snap(it); st.core.push({ id: it.id, step: s }); return; }
+      const nx = nextCore(st, bank);
+      if (nx) { snap(nx.item); st.core.push({ id: nx.item.id, step: stepOf(nx.item.level, nx.item.band), ph: nx.ph }); return; }
       st.step = coreResult(st, bank);
       st.level = levelOfStep(st.step);
       const plus = st.step % 2 === 1 || st.step === 8;
