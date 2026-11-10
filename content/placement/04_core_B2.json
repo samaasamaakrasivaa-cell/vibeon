@@ -7,15 +7,12 @@
     "topic_id": "g-b2-third-conditional",
     "topic_en": "Third conditional",
     "topic_ru": "Условные предложения третьего типа",
-    "type": "transform",
-    "q": "I didn't know about the sale, so I didn't buy anything.",
-    "key": "HAD",
-    "frame": "If I ___ about the sale, I would have bought something.",
+    "type": "brackets",
+    "q": "If I ___ (know) about the sale, I would have bought something.",
+    "explain_ru": "Нереальное условие в прошлом (третий тип): if + had + третья форма.",
     "accept": [
-      "had known",
-      "had heard"
-    ],
-    "explain_ru": "Нереальное условие в прошлом (третий тип): if + had + третья форма."
+      "had known"
+    ]
   },
   {
     "id": "G-B2-02",
@@ -25,17 +22,15 @@
     "topic_id": "g-b2-wish",
     "topic_en": "wish / if only (present and past)",
     "topic_ru": "wish / if only (настоящее и прошлое)",
-    "type": "transform",
-    "q": "I regret not learning to swim as a child.",
-    "key": "WISH",
-    "frame": "I ___ to swim as a child.",
+    "type": "brackets",
+    "q": "I can't swim. I wish I ___ (learn) as a child.",
+    "explain_ru": "Сожаление о прошлом: wish + Past Perfect.",
     "accept": [
-      "wish i had learned",
-      "wish i had learnt",
-      "wish i'd learned",
-      "wish i'd learnt"
-    ],
-    "explain_ru": "Сожаление о прошлом: wish + Past Perfect."
+      "had learned",
+      "had learnt",
+      "'d learned",
+      "'d learnt"
+    ]
   },
   {
     "id": "G-B2-03",
@@ -45,14 +40,15 @@
     "topic_id": "g-b2-causative",
     "topic_en": "have / get something done",
     "topic_ru": "Каузатив have / get something done",
-    "type": "transform",
-    "q": "A hairdresser is going to cut my hair tomorrow.",
-    "key": "HAVING",
-    "frame": "I ___ tomorrow.",
+    "type": "brackets",
+    "q": "I ___ (have) my hair cut tomorrow at 10. I've already booked it.",
+    "explain_ru": "Договорённость на будущее — Present Continuous (или going to); каузатив: have my hair cut.",
     "accept": [
-      "am having my hair cut"
-    ],
-    "explain_ru": "Услугу, которую делает для нас кто-то другой, выражаем через have something done."
+      "am having",
+      "'m having",
+      "am going to have",
+      "'m going to have"
+    ]
   },
   {
     "id": "G-B2-04",
@@ -62,14 +58,12 @@
     "topic_id": "g-b2-used-to-be-get",
     "topic_en": "be used to / get used to",
     "topic_ru": "be used to / get used to",
-    "type": "transform",
-    "q": "Living in a big city is still strange for me.",
-    "key": "USED",
-    "frame": "I'm still not ___ in a big city.",
+    "type": "brackets",
+    "q": "I moved here a month ago, and I'm still not used to ___ (live) in a big city.",
+    "explain_ru": "Be used to + -ing — «привыкнуть к чему-то».",
     "accept": [
-      "used to living"
-    ],
-    "explain_ru": "Be used to + -ing — «привыкнуть к чему-то»."
+      "living"
+    ]
   },
   {
     "id": "G-B2-05",
@@ -79,15 +73,13 @@
     "topic_id": "g-b2-deduction-past",
     "topic_en": "Past modals of deduction: must have / can't have",
     "topic_ru": "Модальные глаголы предположения о прошлом",
-    "type": "transform",
-    "q": "I'm sure Kate forgot about our meeting.",
-    "key": "MUST",
-    "frame": "Kate ___ about our meeting.",
+    "type": "brackets",
+    "q": "Kate didn't come. She ___ (must / forget) about our meeting.",
+    "explain_ru": "Уверенное предположение о прошлом: must have + третья форма.",
     "accept": [
       "must have forgotten",
       "must've forgotten"
-    ],
-    "explain_ru": "Уверенное предположение о прошлом: must have + третья форма."
+    ]
   },
   {
     "id": "G-B2-06",
@@ -713,5 +705,427 @@
       "back"
     ],
     "explain_ru": "Делать резервную копию — back up."
+  },
+  {
+    "id": "G-B2-23",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "g-b2-future-perfect-continuous",
+    "topic_en": "Future continuous and future perfect",
+    "topic_ru": "Future Continuous и Future Perfect",
+    "type": "brackets",
+    "q": "By the time you get home, I ___ (finish) dinner.",
+    "accept": [
+      "will have finished",
+      "'ll have finished"
+    ],
+    "explain_ru": "Действие завершится к моменту в будущем — Future Perfect: will have finished."
+  },
+  {
+    "id": "G-B2-24",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-tense-nuance",
+    "topic_en": "Tenses: continuous for annoyance, perfect continuous and result",
+    "topic_ru": "Времена: Continuous для раздражения, Perfect Continuous и результат",
+    "type": "mcq",
+    "q": "My flatmate ___ leaving his dirty socks on the sofa! It's so annoying.",
+    "options": [
+      "always leaves",
+      "has always",
+      "always left",
+      "is always"
+    ],
+    "answer": 3,
+    "explain_ru": "Раздражающая привычка — always + Present Continuous: is always leaving."
+  },
+  {
+    "id": "G-B2-25",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "g-b2-tense-nuance",
+    "topic_en": "Tenses: continuous for annoyance, perfect continuous and result",
+    "topic_ru": "Времена: Continuous для раздражения, Perfect Continuous и результат",
+    "type": "mcq",
+    "q": "I'm exhausted. I ___ all morning.",
+    "options": [
+      "have been cleaning",
+      "am cleaning",
+      "was cleaned",
+      "clean"
+    ],
+    "answer": 0,
+    "explain_ru": "Длительное действие с видимым результатом (устала) — Present Perfect Continuous."
+  },
+  {
+    "id": "G-B2-26",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 3,
+    "topic_id": "g-b2-tense-nuance",
+    "topic_en": "Tenses: continuous for annoyance, perfect continuous and result",
+    "topic_ru": "Времена: Continuous для раздражения, Perfect Continuous и результат",
+    "type": "brackets",
+    "q": "This time tomorrow I ___ (lie) on a beach in Greece.",
+    "accept": [
+      "will be lying",
+      "'ll be lying"
+    ],
+    "explain_ru": "Действие в процессе в момент будущего — Future Continuous: will be lying."
+  },
+  {
+    "id": "G-B2-27",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "g-b2-narrative-tenses",
+    "topic_en": "Narrative tenses",
+    "topic_ru": "Времена для рассказа о прошлом",
+    "type": "mcq",
+    "q": "By the time the police arrived, the thieves ___.",
+    "options": [
+      "escaped",
+      "had escaped",
+      "have escaped",
+      "were escaping"
+    ],
+    "answer": 1,
+    "explain_ru": "Действие завершилось раньше другого прошлого действия — Past Perfect."
+  },
+  {
+    "id": "G-B2-28",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 3,
+    "topic_id": "g-b2-narrative-tenses",
+    "topic_en": "Narrative tenses",
+    "topic_ru": "Времена для рассказа о прошлом",
+    "type": "brackets",
+    "q": "We ___ (walk) for hours when we finally saw the hotel.",
+    "accept": [
+      "had been walking"
+    ],
+    "explain_ru": "Длительное действие до момента в прошлом — Past Perfect Continuous: had been walking."
+  },
+  {
+    "id": "G-B2-29",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "g-b2-used-to-be-get",
+    "topic_en": "be used to / get used to",
+    "topic_ru": "be used to / get used to",
+    "type": "mcq",
+    "q": "I found it hard at first, but now I'm used to ___ up at 6.",
+    "options": [
+      "get",
+      "got",
+      "getting",
+      "be getting"
+    ],
+    "answer": 2,
+    "explain_ru": "be used to + -ing: I'm used to getting up."
+  },
+  {
+    "id": "G-B2-30",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "g-b2-deduction-past",
+    "topic_en": "Past modals of deduction: must have / can't have",
+    "topic_ru": "Модальные глаголы предположения о прошлом",
+    "type": "mcq",
+    "q": "The ground is wet. It ___ rained last night.",
+    "options": [
+      "can't have",
+      "should",
+      "must",
+      "must have"
+    ],
+    "answer": 3,
+    "explain_ru": "Уверенный вывод о прошлом — must have + третья форма."
+  },
+  {
+    "id": "G-B2-31",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "g-b2-past-modals-regret",
+    "topic_en": "should have / needn't have / could have",
+    "topic_ru": "should have / needn't have / could have",
+    "type": "mcq",
+    "q": "I'm so tired. I ___ gone to bed so late.",
+    "options": [
+      "shouldn't have",
+      "mustn't have",
+      "couldn't have",
+      "needn't"
+    ],
+    "answer": 0,
+    "explain_ru": "Сожаление о прошлом — shouldn't have + третья форма."
+  },
+  {
+    "id": "G-B2-32",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 3,
+    "topic_id": "g-b2-past-modals-regret",
+    "topic_en": "should have / needn't have / could have",
+    "topic_ru": "should have / needn't have / could have",
+    "type": "brackets",
+    "q": "You ___ (not / bring) an umbrella — it didn't rain in the end.",
+    "accept": [
+      "needn't have brought",
+      "need not have brought",
+      "didn't need to bring"
+    ],
+    "explain_ru": "Было не нужно, но сделали — needn't have brought."
+  },
+  {
+    "id": "G-B2-33",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "g-b2-causative",
+    "topic_en": "have / get something done",
+    "topic_ru": "Каузатив have / get something done",
+    "type": "brackets",
+    "q": "I ___ (my car / service) last week, so it's running perfectly.",
+    "accept": [
+      "had my car serviced",
+      "got my car serviced"
+    ],
+    "explain_ru": "Кто-то сделал это для меня — каузатив: had my car serviced."
+  },
+  {
+    "id": "G-B2-34",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-reporting-verbs",
+    "topic_en": "Reporting verbs (suggest, deny, advise...)",
+    "topic_ru": "Глаголы косвенной речи (suggest, deny, advise...)",
+    "type": "mcq",
+    "q": "My doctor advised me ___ more water.",
+    "options": [
+      "drink",
+      "to drink",
+      "drinking",
+      "that drink"
+    ],
+    "answer": 1,
+    "explain_ru": "advise somebody to do something."
+  },
+  {
+    "id": "G-B2-35",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "g-b2-reporting-verbs",
+    "topic_en": "Reporting verbs (suggest, deny, advise...)",
+    "topic_ru": "Глаголы косвенной речи (suggest, deny, advise...)",
+    "type": "mcq",
+    "q": "He denied ___ the money from the till.",
+    "options": [
+      "to take",
+      "take",
+      "taking",
+      "that take"
+    ],
+    "answer": 2,
+    "explain_ru": "deny + -ing: denied taking."
+  },
+  {
+    "id": "G-B2-36",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "g-b2-reporting-verbs",
+    "topic_en": "Reporting verbs (suggest, deny, advise...)",
+    "topic_ru": "Глаголы косвенной речи (suggest, deny, advise...)",
+    "type": "mcq",
+    "q": "She suggested ___ a taxi because it was raining.",
+    "options": [
+      "to take",
+      "we taking",
+      "us to take",
+      "taking"
+    ],
+    "answer": 3,
+    "explain_ru": "suggest + -ing (или suggest that we take)."
+  },
+  {
+    "id": "G-B2-37",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 3,
+    "topic_id": "g-b2-reporting-verbs",
+    "topic_en": "Reporting verbs (suggest, deny, advise...)",
+    "topic_ru": "Глаголы косвенной речи (suggest, deny, advise...)",
+    "type": "mcq",
+    "q": "The manager apologised ___ the delay.",
+    "options": [
+      "for",
+      "about",
+      "of",
+      "to"
+    ],
+    "answer": 0,
+    "explain_ru": "apologise for something."
+  },
+  {
+    "id": "G-B2-38",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "g-b2-verb-patterns-meaning",
+    "topic_en": "Verbs that change meaning: -ing vs to-infinitive",
+    "topic_ru": "Глаголы с разным значением: -ing и инфинитив",
+    "type": "mcq",
+    "q": "Do you remember ___ to the zoo when we were kids?",
+    "options": [
+      "to go",
+      "going",
+      "go",
+      "gone"
+    ],
+    "answer": 1,
+    "explain_ru": "remember + -ing — помнить то, что было в прошлом: remember going."
+  },
+  {
+    "id": "G-B2-39",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 3,
+    "topic_id": "g-b2-verb-patterns-meaning",
+    "topic_en": "Verbs that change meaning: -ing vs to-infinitive",
+    "topic_ru": "Глаголы с разным значением: -ing и инфинитив",
+    "type": "mcq",
+    "q": "Please remember ___ the door when you leave.",
+    "options": [
+      "locking",
+      "lock",
+      "to lock",
+      "locked"
+    ],
+    "answer": 2,
+    "explain_ru": "remember + to do — не забыть сделать в будущем."
+  },
+  {
+    "id": "G-B2-40",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "g-b2-would-rather",
+    "topic_en": "would rather / it's time",
+    "topic_ru": "would rather / it's time",
+    "type": "mcq",
+    "q": "It's time we ___ home. It's getting dark.",
+    "options": [
+      "go",
+      "will go",
+      "going",
+      "went"
+    ],
+    "answer": 3,
+    "explain_ru": "It's time + Past Simple: it's time we went."
+  },
+  {
+    "id": "G-B2-41",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-articles",
+    "topic_en": "Articles: abstract nouns, institutions, geography",
+    "topic_ru": "Артикли: абстрактные понятия, институты, география",
+    "type": "mcq",
+    "q": "___ honesty is the most important quality in a friend.",
+    "options": [
+      "—",
+      "The",
+      "An",
+      "A"
+    ],
+    "answer": 0,
+    "explain_ru": "Абстрактное понятие в общем смысле — без артикля."
+  },
+  {
+    "id": "G-B2-42",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "g-b2-articles",
+    "topic_en": "Articles: abstract nouns, institutions, geography",
+    "topic_ru": "Артикли: абстрактные понятия, институты, география",
+    "type": "mcq",
+    "q": "My aunt is a nurse. She works at ___ hospital in the city centre.",
+    "options": [
+      "—",
+      "the",
+      "an",
+      "some"
+    ],
+    "answer": 1,
+    "explain_ru": "Конкретное здание, где работают, — the hospital (а лежат в больнице — in hospital, без артикля)."
+  },
+  {
+    "id": "G-B2-43",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "g-b2-articles",
+    "topic_en": "Articles: abstract nouns, institutions, geography",
+    "topic_ru": "Артикли: абстрактные понятия, институты, география",
+    "type": "mcq",
+    "q": "We spent our holiday in ___ Netherlands.",
+    "options": [
+      "—",
+      "a",
+      "the",
+      "an"
+    ],
+    "answer": 2,
+    "explain_ru": "Названия стран во множественном числе — с the: the Netherlands."
+  },
+  {
+    "id": "G-B2-44",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 3,
+    "topic_id": "g-b2-articles",
+    "topic_en": "Articles: abstract nouns, institutions, geography",
+    "topic_ru": "Артикли: абстрактные понятия, институты, география",
+    "type": "mcq",
+    "q": "He was in ___ prison for two years, and now he helps young offenders.",
+    "options": [
+      "the",
+      "a",
+      "an",
+      "—"
+    ],
+    "answer": 3,
+    "explain_ru": "Учреждение по назначению (сидел в тюрьме) — без артикля: in prison."
+  },
+  {
+    "id": "G-B2-45",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 3,
+    "topic_id": "g-b2-articles",
+    "topic_en": "Articles: abstract nouns, institutions, geography",
+    "topic_ru": "Артикли: абстрактные понятия, институты, география",
+    "type": "mcq",
+    "q": "___ rich should pay more taxes, in my opinion.",
+    "options": [
+      "The",
+      "—",
+      "A",
+      "Some"
+    ],
+    "answer": 0,
+    "explain_ru": "the + прилагательное — группа людей: the rich."
   }
 ]

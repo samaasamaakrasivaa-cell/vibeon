@@ -1,0 +1,731 @@
+[
+  {
+    "id": "a1-01",
+    "level": "A1",
+    "kind": "grammar",
+    "anchor": true,
+    "name_ru": "Глагол to be и there is / there are",
+    "what_ru": "am/is/are в утверждении, вопросе и отрицании; there is / there are",
+    "topics": [
+      "g-a1-to-be",
+      "g-a1-there-is-are"
+    ]
+  },
+  {
+    "id": "a1-02",
+    "level": "A1",
+    "kind": "grammar",
+    "anchor": false,
+    "name_ru": "Present Simple",
+    "what_ru": "he works / does he work / he doesn't work; наречия always, usually, never",
+    "topics": [
+      "g-a1-present-simple",
+      "g-a1-frequency-adverbs"
+    ]
+  },
+  {
+    "id": "a1-03",
+    "level": "A1",
+    "kind": "grammar",
+    "anchor": false,
+    "name_ru": "Present Continuous — действие сейчас",
+    "what_ru": "I'm having dinner now; разница со «всегда / обычно»",
+    "topics": [
+      "g-a1-present-continuous-now",
+      "g-a1-like-ing"
+    ]
+  },
+  {
+    "id": "a1-04",
+    "level": "A1",
+    "kind": "grammar",
+    "anchor": false,
+    "name_ru": "Прошлое: was / were и Past Simple",
+    "what_ru": "was/were; went, had, played — самые частые глаголы",
+    "topics": [
+      "g-a1-was-were",
+      "g-a1-past-simple-basic"
+    ]
+  },
+  {
+    "id": "a1-05",
+    "level": "A1",
+    "kind": "grammar",
+    "anchor": false,
+    "name_ru": "Местоимения и принадлежность",
+    "what_ru": "I / me / my; Kate's; this / that / these / those",
+    "topics": [
+      "g-a1-pronouns",
+      "g-a1-possessives",
+      "g-a1-demonstratives"
+    ]
+  },
+  {
+    "id": "a1-06",
+    "level": "A1",
+    "kind": "grammar",
+    "anchor": false,
+    "name_ru": "Артикли, множественное число, some / any",
+    "what_ru": "a / an / the в простых случаях; women, children; some eggs / any milk",
+    "topics": [
+      "g-a1-articles-basic",
+      "g-a1-plural-nouns",
+      "g-a1-some-any"
+    ]
+  },
+  {
+    "id": "a1-07",
+    "level": "A1",
+    "kind": "grammar",
+    "anchor": false,
+    "name_ru": "Модальные и устойчивые конструкции",
+    "what_ru": "can / can't; have got; would like; повелительное наклонение",
+    "topics": [
+      "g-a1-can",
+      "g-a1-have-got",
+      "g-a1-would-like",
+      "g-a1-imperatives"
+    ]
+  },
+  {
+    "id": "a1-08",
+    "level": "A1",
+    "kind": "grammar",
+    "anchor": false,
+    "name_ru": "Предлоги, вопросы и союзы",
+    "what_ru": "in / on / at; предлоги места; what / where / how much; and / but / because",
+    "topics": [
+      "g-a1-prepositions-time",
+      "g-a1-prepositions-place",
+      "g-a1-question-words",
+      "g-a1-conjunctions-basic"
+    ]
+  },
+  {
+    "id": "a1-09",
+    "level": "A1",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: люди и быт",
+    "what_ru": "семья, профессии, распорядок дня, дом",
+    "topics": [
+      "v-a1-family",
+      "v-a1-jobs",
+      "v-a1-daily-routine",
+      "v-a1-home"
+    ]
+  },
+  {
+    "id": "a1-10",
+    "level": "A1",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: город и повседневность",
+    "what_ru": "еда, одежда, город, транспорт, погода, хобби",
+    "topics": [
+      "v-a1-food-drink",
+      "v-a1-clothes-colours",
+      "v-a1-town",
+      "v-a1-transport",
+      "v-a1-weather",
+      "v-a1-free-time"
+    ]
+  },
+  {
+    "id": "a1-11",
+    "level": "A1",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: время, числа, частые сочетания",
+    "what_ru": "числа, даты, дни недели; have / go / do; частые прилагательные",
+    "topics": [
+      "v-a1-numbers-time",
+      "v-a1-calendar",
+      "v-a1-basic-collocations",
+      "v-a1-adjectives-basic"
+    ]
+  },
+  {
+    "id": "a2-01",
+    "level": "A2",
+    "kind": "grammar",
+    "anchor": true,
+    "name_ru": "Past Simple",
+    "what_ru": "неправильные глаголы, did / didn't, вопросы",
+    "topics": [
+      "g-a2-past-simple"
+    ]
+  },
+  {
+    "id": "a2-02",
+    "level": "A2",
+    "kind": "grammar",
+    "anchor": false,
+    "name_ru": "Past Continuous и Past Simple",
+    "what_ru": "I was having a shower when the phone rang",
+    "topics": [
+      "g-a2-past-continuous"
+    ]
+  },
+  {
+    "id": "a2-03",
+    "level": "A2",
+    "kind": "grammar",
+    "anchor": false,
+    "name_ru": "Present Perfect: опыт и результат",
+    "what_ru": "ever / never; just / already / yet",
+    "topics": [
+      "g-a2-pp-experience",
+      "g-a2-pp-just-already-yet"
+    ]
+  },
+  {
+    "id": "a2-04",
+    "level": "A2",
+    "kind": "grammar",
+    "anchor": false,
+    "name_ru": "Будущее",
+    "what_ru": "going to / will / Present Continuous для договорённостей",
+    "topics": [
+      "g-a2-going-to",
+      "g-a2-will",
+      "g-a2-pc-future"
+    ]
+  },
+  {
+    "id": "a2-05",
+    "level": "A2",
+    "kind": "grammar",
+    "anchor": false,
+    "name_ru": "Сравнения и наречия",
+    "what_ru": "bigger / the biggest; as … as; too / enough; carefully",
+    "topics": [
+      "g-a2-comparatives",
+      "g-a2-as-as",
+      "g-a2-too-enough",
+      "g-a2-adverbs-manner"
+    ]
+  },
+  {
+    "id": "a2-06",
+    "level": "A2",
+    "kind": "grammar",
+    "anchor": false,
+    "name_ru": "Модальные глаголы",
+    "what_ru": "must / have to / don't have to; should; might / may",
+    "topics": [
+      "g-a2-obligation",
+      "g-a2-should",
+      "g-a2-might-may"
+    ]
+  },
+  {
+    "id": "a2-07",
+    "level": "A2",
+    "kind": "grammar",
+    "anchor": false,
+    "name_ru": "Артикли, количество, местоимения",
+    "what_ru": "a / the: первое и повторное упоминание; much / many / a few; something / anyone; mine / yours",
+    "topics": [
+      "g-a2-articles",
+      "g-a2-quantifiers",
+      "g-a2-indefinite-pronouns",
+      "g-a2-possessive-pronouns"
+    ]
+  },
+  {
+    "id": "a2-08",
+    "level": "A2",
+    "kind": "grammar",
+    "anchor": false,
+    "name_ru": "Условия и глагольные модели",
+    "what_ru": "if + Present, will; want to / enjoy -ing; to + глагол для цели",
+    "topics": [
+      "g-a2-first-conditional",
+      "g-a2-verb-patterns-basic",
+      "g-a2-infinitive-purpose"
+    ]
+  },
+  {
+    "id": "a2-09",
+    "level": "A2",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: покупки, здоровье, путешествия, работа",
+    "what_ru": "",
+    "topics": [
+      "v-a2-shopping-money",
+      "v-a2-health-body",
+      "v-a2-travel",
+      "v-a2-work"
+    ]
+  },
+  {
+    "id": "a2-10",
+    "level": "A2",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: чувства, характер, технологии, спорт, дом",
+    "what_ru": "",
+    "topics": [
+      "v-a2-feelings-personality",
+      "v-a2-technology",
+      "v-a2-sport",
+      "v-a2-home-chores"
+    ]
+  },
+  {
+    "id": "a2-11",
+    "level": "A2",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: сочетания и фразовые глаголы",
+    "what_ru": "make / do; базовые фразовые глаголы; on time, by car; предлоги движения",
+    "topics": [
+      "v-a2-make-do",
+      "v-a2-phrasal-basic",
+      "v-a2-prepositional-phrases",
+      "g-a2-prepositions-movement"
+    ]
+  },
+  {
+    "id": "b1-01",
+    "level": "B1",
+    "kind": "grammar",
+    "anchor": true,
+    "name_ru": "Present Perfect или Past Simple",
+    "what_ru": "for / since; I've lived / I lived; Present Perfect Continuous",
+    "topics": [
+      "g-b1-pp-for-since",
+      "g-b1-pp-vs-past",
+      "g-b1-ppc"
+    ]
+  },
+  {
+    "id": "b1-02",
+    "level": "B1",
+    "kind": "grammar",
+    "anchor": false,
+    "name_ru": "Рассказ о прошлом",
+    "what_ru": "Past Perfect, Past Continuous в рассказе, used to",
+    "topics": [
+      "g-b1-past-perfect",
+      "g-b1-used-to"
+    ]
+  },
+  {
+    "id": "b1-03",
+    "level": "B1",
+    "kind": "grammar",
+    "anchor": false,
+    "name_ru": "Будущее",
+    "what_ru": "will / going to / Present Continuous / Present Simple для расписаний",
+    "topics": [
+      "g-b1-future-forms"
+    ]
+  },
+  {
+    "id": "b1-04",
+    "level": "B1",
+    "kind": "grammar",
+    "anchor": false,
+    "name_ru": "Модальные: предположение и возможность",
+    "what_ru": "must / can't / might be; be able to / manage to",
+    "topics": [
+      "g-b1-deduction-present",
+      "g-b1-be-able-to"
+    ]
+  },
+  {
+    "id": "b1-05",
+    "level": "B1",
+    "kind": "grammar",
+    "anchor": false,
+    "name_ru": "Условные предложения 0, 1 и 2 типа",
+    "what_ru": "If you heat ice, it melts; If I had more time, I'd…",
+    "topics": [
+      "g-b1-zero-conditional",
+      "g-b1-second-conditional"
+    ]
+  },
+  {
+    "id": "b1-06",
+    "level": "B1",
+    "kind": "grammar",
+    "anchor": false,
+    "name_ru": "Пассив",
+    "what_ru": "Present и Past Simple Passive: was built, is made",
+    "topics": [
+      "g-b1-passive-basic"
+    ]
+  },
+  {
+    "id": "b1-07",
+    "level": "B1",
+    "kind": "grammar",
+    "anchor": false,
+    "name_ru": "Косвенная речь и косвенные вопросы",
+    "what_ru": "She said she was tired; Could you tell me where … is?",
+    "topics": [
+      "g-b1-reported-statements",
+      "g-b1-reported-questions",
+      "g-b1-indirect-questions"
+    ]
+  },
+  {
+    "id": "b1-08",
+    "level": "B1",
+    "kind": "grammar",
+    "anchor": false,
+    "name_ru": "Артикли и определители",
+    "what_ru": "общее и конкретное значение (dogs / the dogs); both / either / neither / each",
+    "topics": [
+      "g-b1-articles-general",
+      "g-b1-quantifiers-both"
+    ]
+  },
+  {
+    "id": "b1-09",
+    "level": "B1",
+    "kind": "grammar",
+    "anchor": false,
+    "name_ru": "Сложное предложение",
+    "what_ru": "who / which / that; -ing или инфинитив; although / however; so / such; разделительные вопросы",
+    "topics": [
+      "g-b1-defining-relatives",
+      "g-b1-verb-patterns",
+      "g-b1-contrast-basic",
+      "g-b1-so-such",
+      "g-b1-question-tags"
+    ]
+  },
+  {
+    "id": "b1-10",
+    "level": "B1",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: фразовые глаголы и сочетания",
+    "what_ru": "get on, look after; make / do / take / have; good at, interested in",
+    "topics": [
+      "v-b1-phrasal-everyday",
+      "v-b1-collocations-basic",
+      "v-b1-dependent-prepositions",
+      "v-b1-confusing-words"
+    ]
+  },
+  {
+    "id": "b1-11",
+    "level": "B1",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: словообразование",
+    "what_ru": "-ful / -ion / -ment; un- / dis- / im-; bored / boring",
+    "topics": [
+      "v-b1-suffixes",
+      "v-b1-prefixes-negative",
+      "v-b1-ed-ing"
+    ]
+  },
+  {
+    "id": "b1-12",
+    "level": "B1",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: темы B1",
+    "what_ru": "работа, учёба, экология, СМИ, отношения",
+    "topics": [
+      "v-b1-career",
+      "v-b1-education",
+      "v-b1-environment",
+      "v-b1-media",
+      "v-b1-relationships"
+    ]
+  },
+  {
+    "id": "b2-01",
+    "level": "B2",
+    "kind": "grammar",
+    "anchor": false,
+    "name_ru": "Времена на уровне B2",
+    "what_ru": "Perfect Continuous, Future Continuous / Future Perfect; He's always leaving… (раздражение)",
+    "topics": [
+      "g-b2-future-perfect-continuous",
+      "g-b2-tense-nuance"
+    ]
+  },
+  {
+    "id": "b2-02",
+    "level": "B2",
+    "kind": "grammar",
+    "anchor": false,
+    "name_ru": "Рассказ о прошлом и привычки",
+    "what_ru": "narrative tenses; be used to / get used to",
+    "topics": [
+      "g-b2-narrative-tenses",
+      "g-b2-used-to-be-get"
+    ]
+  },
+  {
+    "id": "b2-03",
+    "level": "B2",
+    "kind": "grammar",
+    "anchor": true,
+    "name_ru": "Условные 3 и смешанного типа, wish",
+    "what_ru": "If I had known…; If I had taken…, I'd be…; I wish I had…",
+    "topics": [
+      "g-b2-third-conditional",
+      "g-b2-mixed-conditionals",
+      "g-b2-wish"
+    ]
+  },
+  {
+    "id": "b2-04",
+    "level": "B2",
+    "kind": "grammar",
+    "anchor": false,
+    "name_ru": "Модальные о прошлом",
+    "what_ru": "must have / can't have; should have / needn't have / could have",
+    "topics": [
+      "g-b2-deduction-past",
+      "g-b2-past-modals-regret"
+    ]
+  },
+  {
+    "id": "b2-05",
+    "level": "B2",
+    "kind": "grammar",
+    "anchor": false,
+    "name_ru": "Пассив во всех формах",
+    "what_ru": "will have been built; have something done; It is said that…",
+    "topics": [
+      "g-b2-passive-advanced",
+      "g-b2-causative",
+      "g-b2-impersonal-passive"
+    ]
+  },
+  {
+    "id": "b2-06",
+    "level": "B2",
+    "kind": "grammar",
+    "anchor": false,
+    "name_ru": "Косвенная речь: глаголы",
+    "what_ru": "suggest, deny, advise, admit + нужная конструкция",
+    "topics": [
+      "g-b2-reporting-verbs"
+    ]
+  },
+  {
+    "id": "b2-07",
+    "level": "B2",
+    "kind": "grammar",
+    "anchor": false,
+    "name_ru": "Сложное предложение",
+    "what_ru": "неопределительные придаточные; причастные обороты; despite / whereas; so that / in order to",
+    "topics": [
+      "g-b2-non-defining-relatives",
+      "g-b2-participle-clauses",
+      "g-b2-linkers-contrast",
+      "g-b2-linkers-purpose-result"
+    ]
+  },
+  {
+    "id": "b2-08",
+    "level": "B2",
+    "kind": "grammar",
+    "anchor": false,
+    "name_ru": "Глагольные модели",
+    "what_ru": "remember doing / to do; would rather; it's time",
+    "topics": [
+      "g-b2-verb-patterns-meaning",
+      "g-b2-would-rather"
+    ]
+  },
+  {
+    "id": "b2-09",
+    "level": "B2",
+    "kind": "grammar",
+    "anchor": false,
+    "name_ru": "Артикли на уровне B2",
+    "what_ru": "абстрактные понятия, институты (go to hospital / the hospital), география, уникальные объекты",
+    "topics": [
+      "g-b2-articles"
+    ]
+  },
+  {
+    "id": "b2-10",
+    "level": "B2",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: коллокации, фразовые, идиомы",
+    "what_ru": "heavy traffic; put off / take on; keep an eye on",
+    "topics": [
+      "v-b2-collocations",
+      "v-b2-phrasal-multi",
+      "v-b2-idioms-common"
+    ]
+  },
+  {
+    "id": "b2-11",
+    "level": "B2",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: словообразование и управление",
+    "what_ru": "entry, flexibility; keen on, depend on; affect / effect",
+    "topics": [
+      "v-b2-word-formation",
+      "v-b2-dependent-prepositions-b2",
+      "v-b2-confusing-words-b2"
+    ]
+  },
+  {
+    "id": "b2-12",
+    "level": "B2",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: темы B2 и стиль",
+    "what_ru": "бизнес, здоровье, наука; формальный стиль; связки",
+    "topics": [
+      "v-b2-business-money",
+      "v-b2-lifestyle",
+      "v-b2-science-tech",
+      "v-b2-register-basic",
+      "v-b2-linking-words"
+    ]
+  },
+  {
+    "id": "c1-01",
+    "level": "C1",
+    "kind": "grammar",
+    "anchor": false,
+    "name_ru": "Времена на уровне C1",
+    "what_ru": "согласование времён в сложных предложениях; будущее в прошедшем; «вежливое» прошедшее (I was wondering…)",
+    "topics": [
+      "g-c1-future-in-past",
+      "g-c1-tense-nuance"
+    ]
+  },
+  {
+    "id": "c1-02",
+    "level": "C1",
+    "kind": "grammar",
+    "anchor": true,
+    "name_ru": "Инверсия",
+    "what_ru": "Not only…, Never have I…, Had I known…, Should you need…",
+    "topics": [
+      "g-c1-inversion",
+      "g-c1-inverted-conditionals"
+    ]
+  },
+  {
+    "id": "c1-03",
+    "level": "C1",
+    "kind": "grammar",
+    "anchor": false,
+    "name_ru": "Выделение и усиление",
+    "what_ru": "It was … who…; What I need is…; I do enjoy…; at all / whatsoever",
+    "topics": [
+      "g-c1-cleft",
+      "g-c1-emphasis"
+    ]
+  },
+  {
+    "id": "c1-04",
+    "level": "C1",
+    "kind": "grammar",
+    "anchor": false,
+    "name_ru": "Модальность и нереальное",
+    "what_ru": "may well / might as well / bound to; as if, would rather + past; It's essential that he be…",
+    "topics": [
+      "g-c1-modal-nuance",
+      "g-c1-unreal-past",
+      "g-c1-subjunctive"
+    ]
+  },
+  {
+    "id": "c1-05",
+    "level": "C1",
+    "kind": "grammar",
+    "anchor": false,
+    "name_ru": "Сложный пассив",
+    "what_ru": "is thought to have…; is believed to be…",
+    "topics": [
+      "g-c1-passive-reporting"
+    ]
+  },
+  {
+    "id": "c1-06",
+    "level": "C1",
+    "kind": "grammar",
+    "anchor": false,
+    "name_ru": "Сжатие предложения",
+    "what_ru": "сложные причастные обороты; эллипсис и замещение (I hope so / did so)",
+    "topics": [
+      "g-c1-participle-advanced",
+      "g-c1-ellipsis-substitution"
+    ]
+  },
+  {
+    "id": "c1-07",
+    "level": "C1",
+    "kind": "grammar",
+    "anchor": false,
+    "name_ru": "Условия и придаточные",
+    "what_ru": "provided that / as long as / otherwise; in which / whereby",
+    "topics": [
+      "g-c1-conditionals-alternatives",
+      "g-c1-relatives-prepositions"
+    ]
+  },
+  {
+    "id": "c1-08",
+    "level": "C1",
+    "kind": "grammar",
+    "anchor": false,
+    "name_ru": "Номинализация и артикли",
+    "what_ru": "the introduction of…; артикли в обобщениях и с абстрактными существительными",
+    "topics": [
+      "g-c1-nominalisation",
+      "g-c1-articles"
+    ]
+  },
+  {
+    "id": "c1-09",
+    "level": "C1",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: коллокации и оттенки значения",
+    "what_ru": "bitterly disappointed; breathtaking / attractive",
+    "topics": [
+      "v-c1-strong-collocations",
+      "v-c1-near-synonyms"
+    ]
+  },
+  {
+    "id": "c1-10",
+    "level": "C1",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: идиомы, фразовые, парные выражения",
+    "what_ru": "butterflies in my stomach; pan out; pros and cons",
+    "topics": [
+      "v-c1-idioms",
+      "v-c1-phrasal-advanced",
+      "v-c1-binomials"
+    ]
+  },
+  {
+    "id": "c1-11",
+    "level": "C1",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: словообразование, академическая лексика, регистр",
+    "what_ru": "underestimate; evidence, reliability; формальный стиль; предлоги; дискурсивные маркеры",
+    "topics": [
+      "v-c1-word-formation-advanced",
+      "v-c1-academic",
+      "v-c1-register",
+      "v-c1-dependent-prepositions-c1",
+      "v-c1-discourse-markers"
+    ]
+  }
+]

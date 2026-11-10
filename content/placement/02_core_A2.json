@@ -721,5 +721,335 @@
     ],
     "answer": 3,
     "explain_ru": "Выносить мусор — take out the rubbish."
+  },
+  {
+    "id": "G-A2-25",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-past-simple",
+    "topic_en": "Past simple: irregular verbs, negatives and questions",
+    "topic_ru": "Past Simple: неправильные глаголы, отрицания и вопросы",
+    "type": "mcq",
+    "q": "I ___ my old school friend in the supermarket yesterday.",
+    "options": [
+      "met",
+      "meet",
+      "meeted",
+      "have met"
+    ],
+    "answer": 0,
+    "explain_ru": "Yesterday — Past Simple; meet — неправильный глагол: met."
+  },
+  {
+    "id": "G-A2-26",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "g-a2-past-simple",
+    "topic_en": "Past simple: irregular verbs, negatives and questions",
+    "topic_ru": "Past Simple: неправильные глаголы, отрицания и вопросы",
+    "type": "mcq",
+    "q": "We ___ go out last night. We stayed at home and watched TV.",
+    "options": [
+      "don't",
+      "didn't",
+      "weren't",
+      "haven't"
+    ],
+    "answer": 1,
+    "explain_ru": "Отрицание в Past Simple: didn't + глагол."
+  },
+  {
+    "id": "G-A2-27",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 3,
+    "topic_id": "g-a2-past-simple",
+    "topic_en": "Past simple: irregular verbs, negatives and questions",
+    "topic_ru": "Past Simple: неправильные глаголы, отрицания и вопросы",
+    "type": "gap",
+    "q": "How much ___ your new phone cost?",
+    "accept": [
+      "did"
+    ],
+    "explain_ru": "Вопрос в Past Simple: How much did … cost?"
+  },
+  {
+    "id": "G-A2-28",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-past-continuous",
+    "topic_en": "Past continuous",
+    "topic_ru": "Past Continuous",
+    "type": "mcq",
+    "q": "At 8 o'clock last night I ___ dinner with my family.",
+    "options": [
+      "have",
+      "had having",
+      "was having",
+      "am having"
+    ],
+    "answer": 2,
+    "explain_ru": "Действие в процессе в конкретный момент прошлого — Past Continuous: was having."
+  },
+  {
+    "id": "G-A2-29",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "g-a2-past-continuous",
+    "topic_en": "Past continuous",
+    "topic_ru": "Past Continuous",
+    "type": "mcq",
+    "q": "While we ___ in the park, it started to rain.",
+    "options": [
+      "walked",
+      "are walking",
+      "was walking",
+      "were walking"
+    ],
+    "answer": 3,
+    "explain_ru": "Длительное фоновое действие с while — Past Continuous; с we — were walking."
+  },
+  {
+    "id": "G-A2-30",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "g-a2-past-continuous",
+    "topic_en": "Past continuous",
+    "topic_ru": "Past Continuous",
+    "type": "mcq",
+    "q": "I ___ my keys while I was running for the bus.",
+    "options": [
+      "lost",
+      "was losing",
+      "lose",
+      "were losing"
+    ],
+    "answer": 0,
+    "explain_ru": "Короткое действие на фоне длительного — Past Simple: lost."
+  },
+  {
+    "id": "G-A2-31",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 3,
+    "topic_id": "g-a2-past-continuous",
+    "topic_en": "Past continuous",
+    "topic_ru": "Past Continuous",
+    "type": "gap",
+    "q": "What ___ you doing when I called you?",
+    "accept": [
+      "were"
+    ],
+    "explain_ru": "Вопрос в Past Continuous с you: What were you doing…?"
+  },
+  {
+    "id": "G-A2-32",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "g-a2-pp-just-already-yet",
+    "topic_en": "Present perfect with just / already / yet",
+    "topic_ru": "Present Perfect с just / already / yet",
+    "type": "mcq",
+    "q": "Don't worry about the dishes. I've ___ washed them.",
+    "options": [
+      "yet",
+      "already",
+      "ever",
+      "still"
+    ],
+    "answer": 1,
+    "explain_ru": "Уже сделал (раньше, чем ожидали) — already."
+  },
+  {
+    "id": "G-A2-33",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 3,
+    "topic_id": "g-a2-pp-experience",
+    "topic_en": "Present perfect for experience: ever / never",
+    "topic_ru": "Present Perfect для опыта: ever / never",
+    "type": "gap",
+    "q": "Have you ___ been to London?",
+    "accept": [
+      "ever"
+    ],
+    "explain_ru": "Вопрос об опыте в жизни: Have you ever been…?"
+  },
+  {
+    "id": "G-A2-34",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "g-a2-going-to",
+    "topic_en": "be going to for plans and predictions",
+    "topic_ru": "be going to: планы и прогнозы",
+    "type": "mcq",
+    "q": "I've bought some paint. I ___ paint my bedroom this weekend.",
+    "options": [
+      "going to",
+      "am go to",
+      "am going to",
+      "go to"
+    ],
+    "answer": 2,
+    "explain_ru": "План, о котором уже решили, — be going to: I am going to paint."
+  },
+  {
+    "id": "G-A2-35",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "g-a2-will",
+    "topic_en": "will for predictions, offers and decisions",
+    "topic_ru": "will: прогнозы, предложения, спонтанные решения",
+    "type": "mcq",
+    "q": "It's cold in here. — I ___ close the window.",
+    "options": [
+      "am going to",
+      "close",
+      "am closing",
+      "will"
+    ],
+    "answer": 3,
+    "explain_ru": "Решение в момент речи — will."
+  },
+  {
+    "id": "G-A2-36",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "g-a2-should",
+    "topic_en": "should / shouldn't for advice",
+    "topic_ru": "should / shouldn't: совет",
+    "type": "mcq",
+    "q": "You've got a bad cough. You ___ see a doctor.",
+    "options": [
+      "should",
+      "shouldn't",
+      "mustn't",
+      "don't have to"
+    ],
+    "answer": 0,
+    "explain_ru": "Совет — should."
+  },
+  {
+    "id": "G-A2-37",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 3,
+    "topic_id": "g-a2-obligation",
+    "topic_en": "must / have to / don't have to",
+    "topic_ru": "must / have to / don't have to",
+    "type": "mcq",
+    "q": "You ___ use your phone during the exam. It's not allowed.",
+    "options": [
+      "don't have to",
+      "mustn't",
+      "needn't",
+      "shouldn't to"
+    ],
+    "answer": 1,
+    "explain_ru": "Запрет — mustn't."
+  },
+  {
+    "id": "G-A2-38",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-articles",
+    "topic_en": "Articles: first and second mention, the with unique things",
+    "topic_ru": "Артикли: первое и повторное упоминание, the с уникальными предметами",
+    "type": "mcq",
+    "q": "There's ___ new café near my office. The coffee there is great.",
+    "options": [
+      "the",
+      "an",
+      "a",
+      "—"
+    ],
+    "answer": 2,
+    "explain_ru": "Упоминаем впервые — неопределённый артикль a."
+  },
+  {
+    "id": "G-A2-39",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "g-a2-articles",
+    "topic_en": "Articles: first and second mention, the with unique things",
+    "topic_ru": "Артикли: первое и повторное упоминание, the с уникальными предметами",
+    "type": "mcq",
+    "q": "Let's sit outside. ___ sun is shining.",
+    "options": [
+      "A",
+      "—",
+      "An",
+      "The"
+    ],
+    "answer": 3,
+    "explain_ru": "Солнце — единственное в своём роде: the sun."
+  },
+  {
+    "id": "G-A2-40",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "g-a2-first-conditional",
+    "topic_en": "First conditional",
+    "topic_ru": "Условные предложения первого типа",
+    "type": "mcq",
+    "q": "If it ___ tomorrow, we'll stay at home.",
+    "options": [
+      "rains",
+      "will rain",
+      "rained",
+      "raining"
+    ],
+    "answer": 0,
+    "explain_ru": "Первый тип: if + Present Simple, will + глагол."
+  },
+  {
+    "id": "G-A2-41",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "g-a2-verb-patterns-basic",
+    "topic_en": "Verb + to-infinitive / -ing (want to, enjoy -ing)",
+    "topic_ru": "Глагол + инфинитив / -ing (want to, enjoy -ing)",
+    "type": "mcq",
+    "q": "I really enjoy ___ for my friends.",
+    "options": [
+      "to cook",
+      "cooking",
+      "cook",
+      "cooked"
+    ],
+    "answer": 1,
+    "explain_ru": "После enjoy — глагол с -ing."
+  },
+  {
+    "id": "V-A2-17",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "v-a2-phrasal-basic",
+    "topic_en": "Basic phrasal verbs",
+    "topic_ru": "Базовые фразовые глаголы",
+    "type": "mcq",
+    "q": "Can you ___ the music down? I'm trying to sleep.",
+    "options": [
+      "take",
+      "put",
+      "turn",
+      "get"
+    ],
+    "answer": 2,
+    "explain_ru": "Сделать тише — turn down."
   }
 ]

@@ -11,10 +11,6 @@
     "ru": "Образуйте от выделенного слова однокоренное, подходящее по смыслу, и впишите его в пропуск.",
     "en": "Form a word from the highlighted word that fits the gap."
   },
-  "transform": {
-    "ru": "Закончите второе предложение так, чтобы оно значило то же, что и первое. Используйте выделенное слово, не меняя его. Всего 2–5 слов, вместе с этим словом.",
-    "en": "Complete the second sentence so that it means the same as the first. Use the highlighted word without changing it: 2–5 words in total."
-  },
   "reading": {
     "ru": "Прочитайте текст и ответьте на вопросы. Между текстами можно переключаться и менять ответы, пока не нажмёте «Завершить раздел».",
     "en": "Read the texts and answer the questions. You can switch between texts and change answers until you press “Finish section”."
@@ -30,5 +26,9 @@
   "speaking": {
     "ru": "Ответьте вслух. Сначала прозвучит вопрос и будет время подумать, затем начнётся запись. Ответ можно прослушать и перезаписать.",
     "en": "Answer out loud. You'll hear the question and have time to think, then recording starts. You can listen to your answer and record it again."
+  },
+  "brackets": {
+    "ru": "Поставьте слово в скобках в нужную форму. Если нужно, добавьте вспомогательные слова — всего не больше 4 слов.",
+    "en": "Put the word in brackets into the correct form. Add helper words if needed — no more than 4 words in total."
   }
 }

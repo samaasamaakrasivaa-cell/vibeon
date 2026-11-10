@@ -720,5 +720,316 @@
     ],
     "answer": 3,
     "explain_ru": "В спортивные игры играют с глаголом play: play tennis."
+  },
+  {
+    "id": "G-A1-25",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-to-be",
+    "topic_en": "Verb to be: am / is / are",
+    "topic_ru": "Глагол to be: am / is / are",
+    "type": "mcq",
+    "q": "My parents ___ from Kazan, but they live in Moscow now.",
+    "options": [
+      "is",
+      "am",
+      "are",
+      "be"
+    ],
+    "answer": 2,
+    "explain_ru": "Подлежащее во множественном числе (my parents) — are."
+  },
+  {
+    "id": "G-A1-26",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "g-a1-there-is-are",
+    "topic_en": "there is / there are",
+    "topic_ru": "Оборот there is / there are",
+    "type": "mcq",
+    "q": "___ any shops near your hotel?",
+    "options": [
+      "Is there",
+      "There are",
+      "Have there",
+      "Are there"
+    ],
+    "answer": 3,
+    "explain_ru": "Вопрос с any и множественным числом: Are there…?"
+  },
+  {
+    "id": "G-A1-27",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "g-a1-present-simple",
+    "topic_en": "Present simple",
+    "topic_ru": "Present Simple",
+    "type": "mcq",
+    "q": "My brother ___ coffee. He only drinks tea.",
+    "options": [
+      "don't like",
+      "not likes",
+      "doesn't like",
+      "isn't like"
+    ],
+    "answer": 2,
+    "explain_ru": "Отрицание в Present Simple с he/she: doesn't + глагол без -s."
+  },
+  {
+    "id": "G-A1-28",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "g-a1-present-simple",
+    "topic_en": "Present simple",
+    "topic_ru": "Present Simple",
+    "type": "gap",
+    "q": "Where ___ your sister work?",
+    "accept": [
+      "does"
+    ],
+    "explain_ru": "Вопрос в Present Simple с she: Where does … work?"
+  },
+  {
+    "id": "G-A1-29",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-present-continuous-now",
+    "topic_en": "Present continuous for now",
+    "topic_ru": "Present Continuous (действие сейчас)",
+    "type": "mcq",
+    "q": "Be quiet, please! The baby ___.",
+    "options": [
+      "sleeps",
+      "sleeping",
+      "sleep",
+      "is sleeping"
+    ],
+    "answer": 3,
+    "explain_ru": "Действие происходит прямо сейчас — Present Continuous: is sleeping."
+  },
+  {
+    "id": "G-A1-30",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "g-a1-present-continuous-now",
+    "topic_en": "Present continuous for now",
+    "topic_ru": "Present Continuous (действие сейчас)",
+    "type": "mcq",
+    "q": "Every morning I take the bus, but today I ___ to work.",
+    "options": [
+      "walk",
+      "walks",
+      "am walking",
+      "walking"
+    ],
+    "answer": 2,
+    "explain_ru": "Every morning — привычка (Present Simple), today — сейчас, в отличие от обычного: am walking."
+  },
+  {
+    "id": "G-A1-31",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 3,
+    "topic_id": "g-a1-present-continuous-now",
+    "topic_en": "Present continuous for now",
+    "topic_ru": "Present Continuous (действие сейчас)",
+    "type": "gap",
+    "q": "Look! It ___ snowing. Let's go outside!",
+    "accept": [
+      "is"
+    ],
+    "explain_ru": "Сейчас идёт снег — Present Continuous: it is snowing."
+  },
+  {
+    "id": "G-A1-32",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-was-were",
+    "topic_en": "Past simple of be: was / were",
+    "topic_ru": "Прошедшее время to be: was / were",
+    "type": "mcq",
+    "q": "We ___ at home yesterday evening because it was cold.",
+    "options": [
+      "was",
+      "are",
+      "be",
+      "were"
+    ],
+    "answer": 3,
+    "explain_ru": "Прошедшее время to be с we — were."
+  },
+  {
+    "id": "G-A1-33",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "g-a1-past-simple-basic",
+    "topic_en": "Past simple: regular and common irregular verbs",
+    "topic_ru": "Past Simple: правильные и частые неправильные глаголы",
+    "type": "mcq",
+    "q": "I ___ a great film on Saturday.",
+    "options": [
+      "see",
+      "seed",
+      "saw",
+      "seen"
+    ],
+    "answer": 2,
+    "explain_ru": "Saturday — прошлое. see — неправильный глагол: saw."
+  },
+  {
+    "id": "G-A1-34",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 3,
+    "topic_id": "g-a1-past-simple-basic",
+    "topic_en": "Past simple: regular and common irregular verbs",
+    "topic_ru": "Past Simple: правильные и частые неправильные глаголы",
+    "type": "gap",
+    "q": "___ you go to the party last night?",
+    "accept": [
+      "did"
+    ],
+    "explain_ru": "Вопрос в Past Simple: Did you go…?"
+  },
+  {
+    "id": "G-A1-35",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "g-a1-demonstratives",
+    "topic_en": "this / that / these / those",
+    "topic_ru": "this / that / these / those",
+    "type": "mcq",
+    "q": "Can you see ___ birds on that tree over there?",
+    "options": [
+      "this",
+      "these",
+      "that",
+      "those"
+    ],
+    "answer": 3,
+    "explain_ru": "Множественное число и далеко от нас — those."
+  },
+  {
+    "id": "G-A1-36",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-pronouns",
+    "topic_en": "Subject and object pronouns",
+    "topic_ru": "Личные и объектные местоимения",
+    "type": "mcq",
+    "q": "Tom and I are friends. ___ go to the same school.",
+    "options": [
+      "Us",
+      "Our",
+      "We",
+      "They"
+    ],
+    "answer": 2,
+    "explain_ru": "Подлежащее «мы» — we."
+  },
+  {
+    "id": "G-A1-37",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "g-a1-articles-basic",
+    "topic_en": "Articles a / an / the (basic use)",
+    "topic_ru": "Артикли a / an / the (базовое употребление)",
+    "type": "mcq",
+    "q": "I've got a cat and a dog. ___ cat is black and the dog is white.",
+    "options": [
+      "A",
+      "An",
+      "—",
+      "The"
+    ],
+    "answer": 3,
+    "explain_ru": "Кота уже упомянули — второй раз нужен the."
+  },
+  {
+    "id": "G-A1-38",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "g-a1-some-any",
+    "topic_en": "Countable and uncountable nouns with some / any",
+    "topic_ru": "Исчисляемые и неисчисляемые с some / any",
+    "type": "mcq",
+    "q": "Can I have ___ water, please?",
+    "options": [
+      "some",
+      "a",
+      "any",
+      "many"
+    ],
+    "answer": 0,
+    "explain_ru": "Просьба с неисчисляемым существительным — some water."
+  },
+  {
+    "id": "G-A1-39",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "g-a1-can",
+    "topic_en": "can / can't for ability and permission",
+    "topic_ru": "can / can't: умение и разрешение",
+    "type": "mcq",
+    "q": "My grandmother is 80, but she ___ swim very well.",
+    "options": [
+      "cans",
+      "can",
+      "can to",
+      "is can"
+    ],
+    "answer": 1,
+    "explain_ru": "После can глагол без to, и can не меняется: she can swim."
+  },
+  {
+    "id": "G-A1-40",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 3,
+    "topic_id": "g-a1-prepositions-time",
+    "topic_en": "Prepositions of time: in / on / at",
+    "topic_ru": "Предлоги времени: in / on / at",
+    "type": "mcq",
+    "q": "My birthday is ___ July.",
+    "options": [
+      "on",
+      "at",
+      "in",
+      "by"
+    ],
+    "answer": 2,
+    "explain_ru": "С месяцами — in: in July."
+  },
+  {
+    "id": "V-A1-17",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "v-a1-family",
+    "topic_en": "Family and people",
+    "topic_ru": "Семья и люди",
+    "type": "mcq",
+    "q": "My mother's mother is my ___.",
+    "options": [
+      "aunt",
+      "sister",
+      "cousin",
+      "grandmother"
+    ],
+    "answer": 3,
+    "explain_ru": "Мама мамы — бабушка: grandmother."
   }
 ]

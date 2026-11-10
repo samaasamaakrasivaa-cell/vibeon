@@ -8,7 +8,7 @@ import collections, glob, json, os, re, sys
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "content", "placement")
 LEVELS = ["A1", "A2", "B1", "B2", "C1"]
-TYPES = {"mcq", "gap", "wordform", "transform", "reading", "listening", "writing", "speaking"}
+TYPES = {"mcq", "gap", "wordform", "transform", "brackets", "reading", "listening", "writing", "speaking"}
 SKILL_OF_PREFIX = {"G": "grammar", "V": "vocabulary", "R": "reading", "L": "listening", "W": "writing", "S": "speaking"}
 WORDS = {"reading": {"A1": (40, 60), "A2": (80, 110), "B1": (130, 170), "B2": (190, 240), "C1": (240, 300)}}
 # слова грамматических терминов и местоимения — в разборе уместны, даже если их нет в задании
@@ -88,7 +88,7 @@ def check_item(it, seen):
     if ty not in TYPES:
         return err(i, f"неизвестный type «{ty}»")
 
-    if ty in ("mcq", "gap", "wordform", "transform"):
+    if ty in ("mcq", "gap", "wordform", "transform", "brackets"):
         check_topic(i, it)
         q = it.get("q", "")
         if ty != "transform" and q.count("___") != 1:
@@ -107,6 +107,12 @@ def check_item(it, seen):
                 one = [a for a in acc if len(norm(a).split()) == 1]
                 if not one:
                     err(i, "в gap нет однословного варианта ответа")
+            if ty == "brackets":
+                if not re.search(r"___\s*\([^)]+\)", q):
+                    err(i, "в «раскройте скобки» после ___ нужна подсказка в скобках: ___ (know)")
+                for a in acc:
+                    if not 1 <= len(norm(a).split()) <= 4:
+                        err(i, f"ответ «{a}» — больше 4 слов")
             if ty == "wordform" and not it.get("base"):
                 err(i, "нет base")
             if ty == "transform":
@@ -188,8 +194,8 @@ def check_file(path):
             f"({round(100 * len(longest) / len(qs))}%, норма ≈25%): можно угадывать, не читая. Вопросы: {', '.join(longest)}")
     topic_use = collections.Counter(it.get("topic_id") for it in items if it.get("topic_id"))
     for t, n in topic_use.items():
-        if n > 3:
-            note(t, f"тема встречается {n} раз (правило — не больше 3)")
+        if n > 6:
+            note(t, f"тема встречается {n} раз (правило — не больше 6)")
     qs = collections.Counter(norm(it.get("q", "")) for it in items if it.get("q"))
     for q, n in qs.items():
         if n > 1:

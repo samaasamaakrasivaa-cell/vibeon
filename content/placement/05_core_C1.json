@@ -7,18 +7,12 @@
     "topic_id": "g-c1-inversion",
     "topic_en": "Inversion after negative adverbials",
     "topic_ru": "Инверсия после отрицательных наречий",
-    "type": "transform",
-    "q": "I had no idea how expensive the trip would be.",
-    "key": "LITTLE",
-    "frame": "___ how expensive the trip would be.",
+    "type": "brackets",
+    "q": "Little ___ (I / know) how expensive the trip would be.",
+    "explain_ru": "После little в начале предложения — инверсия: Little did I know.",
     "accept": [
-      "little did i know",
-      "little did i realise",
-      "little did i realize",
-      "little did i suspect",
-      "little did i imagine"
-    ],
-    "explain_ru": "После little в начале предложения — инверсия: Little did I know."
+      "did i know"
+    ]
   },
   {
     "id": "G-C1-02",
@@ -28,16 +22,16 @@
     "topic_id": "g-c1-cleft",
     "topic_en": "Cleft sentences: It is... / What...",
     "topic_ru": "Эмфатические конструкции It is... / What...",
-    "type": "transform",
-    "q": "The noise from the street really annoys me.",
-    "key": "WHAT",
-    "frame": "___ the noise from the street.",
-    "accept": [
-      "what really annoys me is",
-      "what annoys me is",
-      "what i find annoying is"
+    "type": "mcq",
+    "q": "___ really annoys me is the noise from the street.",
+    "explain_ru": "Выделительная конструкция с What: What really annoys me is…",
+    "options": [
+      "It",
+      "What",
+      "That",
+      "Which"
     ],
-    "explain_ru": "Эмфатическая конструкция What ... is выделяет главное."
+    "answer": 1
   },
   {
     "id": "G-C1-03",
@@ -47,15 +41,12 @@
     "topic_id": "g-c1-inverted-conditionals",
     "topic_en": "Inverted conditionals: Had I known / Should you",
     "topic_ru": "Условные с инверсией: Had I known / Should you",
-    "type": "transform",
-    "q": "If you need any help, just give me a call.",
-    "key": "SHOULD",
-    "frame": "___ any help, just give me a call.",
+    "type": "brackets",
+    "q": "___ (you / need) any help, just give me a call.",
+    "explain_ru": "Условие с инверсией: Should you need = If you need.",
     "accept": [
-      "should you need",
-      "should you require"
-    ],
-    "explain_ru": "Условие с инверсией: Should you need = If you need."
+      "should you need"
+    ]
   },
   {
     "id": "G-C1-04",
@@ -65,14 +56,12 @@
     "topic_id": "g-c1-passive-reporting",
     "topic_en": "Advanced passive: is thought to have...",
     "topic_ru": "Сложный пассив: is thought to have...",
-    "type": "transform",
-    "q": "People believe that the castle was built in the 12th century.",
-    "key": "BELIEVED",
-    "frame": "The castle is ___ in the 12th century.",
+    "type": "brackets",
+    "q": "The castle is believed ___ (build) in the 12th century.",
+    "explain_ru": "Сложный пассив о прошлом: is believed to have been + третья форма.",
     "accept": [
-      "believed to have been built"
-    ],
-    "explain_ru": "Сложный пассив о прошлом: is believed to have been + третья форма."
+      "to have been built"
+    ]
   },
   {
     "id": "G-C1-05",
@@ -82,16 +71,13 @@
     "topic_id": "g-c1-unreal-past",
     "topic_en": "Unreal past: as if / would rather / suppose",
     "topic_ru": "Нереальное прошлое: as if / would rather / suppose",
-    "type": "transform",
-    "q": "I'd prefer you not to tell anyone about this yet.",
-    "key": "RATHER",
-    "frame": "I'd ___ anyone about this yet.",
+    "type": "brackets",
+    "q": "I'd rather you ___ (not / tell) anyone about this yet.",
+    "explain_ru": "I'd rather + подлежащее + Past Simple — «я бы предпочёл, чтобы ты...».",
     "accept": [
-      "rather you didn't tell",
-      "rather you did not tell",
-      "rather you not tell"
-    ],
-    "explain_ru": "I'd rather + подлежащее + Past Simple — «я бы предпочёл, чтобы ты...»."
+      "didn't tell",
+      "did not tell"
+    ]
   },
   {
     "id": "G-C1-06",
@@ -101,16 +87,16 @@
     "topic_id": "g-c1-modal-nuance",
     "topic_en": "Modal nuances: may well / might as well / bound to",
     "topic_ru": "Оттенки модальности: may well / might as well / bound to",
-    "type": "transform",
-    "q": "It's very likely that it will rain this afternoon.",
-    "key": "WELL",
-    "frame": "It ___ this afternoon.",
-    "accept": [
-      "may well rain",
-      "might well rain",
-      "could well rain"
+    "type": "mcq",
+    "q": "Take an umbrella. It may ___ rain this afternoon.",
+    "explain_ru": "may well — вполне вероятно.",
+    "options": [
+      "well",
+      "good",
+      "much",
+      "likely"
     ],
-    "explain_ru": "May/might well — «вполне вероятно»."
+    "answer": 0
   },
   {
     "id": "G-C1-07",
@@ -715,5 +701,408 @@
       "downs"
     ],
     "explain_ru": "Ups and downs — взлёты и падения."
+  },
+  {
+    "id": "G-C1-21",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-tense-nuance",
+    "topic_en": "Tenses: sequence of tenses, future in the past, distancing past",
+    "topic_ru": "Времена: согласование, будущее в прошедшем, дистанцирующее прошедшее",
+    "type": "mcq",
+    "q": "I was wondering if you ___ help me with my presentation.",
+    "options": [
+      "can",
+      "could",
+      "will",
+      "are able"
+    ],
+    "answer": 1,
+    "explain_ru": "«Вежливое» прошедшее в просьбе: I was wondering if you could…"
+  },
+  {
+    "id": "G-C1-22",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 2,
+    "topic_id": "g-c1-tense-nuance",
+    "topic_en": "Tenses: sequence of tenses, future in the past, distancing past",
+    "topic_ru": "Времена: согласование, будущее в прошедшем, дистанцирующее прошедшее",
+    "type": "brackets",
+    "q": "She told me she ___ (wait) for over an hour before the bus finally came.",
+    "accept": [
+      "had been waiting",
+      "had waited"
+    ],
+    "explain_ru": "Согласование времён: длительное действие до момента в прошлом — Past Perfect Continuous."
+  },
+  {
+    "id": "G-C1-23",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 3,
+    "topic_id": "g-c1-tense-nuance",
+    "topic_en": "Tenses: sequence of tenses, future in the past, distancing past",
+    "topic_ru": "Времена: согласование, будущее в прошедшем, дистанцирующее прошедшее",
+    "type": "mcq",
+    "q": "Little did they know that the small café they opened in 2010 ___ the most famous restaurant in town.",
+    "options": [
+      "will become",
+      "becomes",
+      "would become",
+      "has become"
+    ],
+    "answer": 2,
+    "explain_ru": "Будущее с точки зрения прошлого — would become."
+  },
+  {
+    "id": "G-C1-24",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 2,
+    "topic_id": "g-c1-inverted-conditionals",
+    "topic_en": "Inverted conditionals: Had I known / Should you",
+    "topic_ru": "Условные с инверсией: Had I known / Should you",
+    "type": "mcq",
+    "q": "___ you require any further information, please do not hesitate to contact us.",
+    "options": [
+      "If",
+      "Would",
+      "Were",
+      "Should"
+    ],
+    "answer": 3,
+    "explain_ru": "Условие с инверсией в формальном стиле: Should you require…"
+  },
+  {
+    "id": "G-C1-25",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 2,
+    "topic_id": "g-c1-emphasis",
+    "topic_en": "Emphasis: do / at all / whatsoever",
+    "topic_ru": "Усиление: do / at all / whatsoever",
+    "type": "mcq",
+    "q": "I have no idea ___ what he was talking about.",
+    "options": [
+      "whatsoever",
+      "in the least",
+      "by all means",
+      "at least"
+    ],
+    "answer": 0,
+    "explain_ru": "Усиление после no + существительное: no idea whatsoever."
+  },
+  {
+    "id": "G-C1-26",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 3,
+    "topic_id": "g-c1-cleft",
+    "topic_en": "Cleft sentences: It is... / What...",
+    "topic_ru": "Эмфатические конструкции It is... / What...",
+    "type": "brackets",
+    "q": "It ___ (be) only when I got home that I realised I'd lost my wallet.",
+    "accept": [
+      "was"
+    ],
+    "explain_ru": "Выделительная конструкция It was … that…: it was only when…"
+  },
+  {
+    "id": "G-C1-27",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-passive-reporting",
+    "topic_en": "Advanced passive: is thought to have...",
+    "topic_ru": "Сложный пассив: is thought to have...",
+    "type": "brackets",
+    "q": "The painting ___ (think / be) worth over a million pounds.",
+    "accept": [
+      "is thought to be"
+    ],
+    "explain_ru": "Сложный пассив о настоящем: is thought to be."
+  },
+  {
+    "id": "G-C1-28",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 2,
+    "topic_id": "g-c1-passive-reporting",
+    "topic_en": "Advanced passive: is thought to have...",
+    "topic_ru": "Сложный пассив: is thought to have...",
+    "type": "mcq",
+    "q": "The fire is believed ___ by a faulty cable.",
+    "options": [
+      "to cause",
+      "to have been caused",
+      "being caused",
+      "to be causing"
+    ],
+    "answer": 1,
+    "explain_ru": "Пассив о прошлом событии: is believed to have been caused."
+  },
+  {
+    "id": "G-C1-29",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 3,
+    "topic_id": "g-c1-passive-reporting",
+    "topic_en": "Advanced passive: is thought to have...",
+    "topic_ru": "Сложный пассив: is thought to have...",
+    "type": "mcq",
+    "q": "The CEO is reported ___ resign next month.",
+    "options": [
+      "having",
+      "to have",
+      "to be going to",
+      "that he will"
+    ],
+    "answer": 2,
+    "explain_ru": "Сложный пассив о будущем: is reported to be going to resign."
+  },
+  {
+    "id": "G-C1-30",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 3,
+    "topic_id": "g-c1-passive-reporting",
+    "topic_en": "Advanced passive: is thought to have...",
+    "topic_ru": "Сложный пассив: is thought to have...",
+    "type": "brackets",
+    "q": "The suspect is said ___ (leave) the country two days ago.",
+    "accept": [
+      "to have left"
+    ],
+    "explain_ru": "Сложный пассив о прошлом: is said to have left."
+  },
+  {
+    "id": "G-C1-31",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 2,
+    "topic_id": "g-c1-participle-advanced",
+    "topic_en": "Advanced participle and reduced relative clauses",
+    "topic_ru": "Сложные причастные обороты",
+    "type": "mcq",
+    "q": "___ by the noise, she couldn't concentrate on her work.",
+    "options": [
+      "Distracting",
+      "Having distracted",
+      "To distract",
+      "Distracted"
+    ],
+    "answer": 3,
+    "explain_ru": "Пассивный причастный оборот (её отвлёк шум) — Distracted."
+  },
+  {
+    "id": "G-C1-32",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 2,
+    "topic_id": "g-c1-ellipsis-substitution",
+    "topic_en": "Ellipsis and substitution",
+    "topic_ru": "Эллипсис и замещение",
+    "type": "mcq",
+    "q": "Will the trains be running tomorrow? — I'm afraid ___.",
+    "options": [
+      "not",
+      "no",
+      "none",
+      "not so"
+    ],
+    "answer": 0,
+    "explain_ru": "Отрицательный ответ с заменой: I'm afraid not."
+  },
+  {
+    "id": "G-C1-33",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 3,
+    "topic_id": "g-c1-ellipsis-substitution",
+    "topic_en": "Ellipsis and substitution",
+    "topic_ru": "Эллипсис и замещение",
+    "type": "mcq",
+    "q": "He said he would finish the report by Friday, and he ___.",
+    "options": [
+      "did so it",
+      "did",
+      "made",
+      "has done it so"
+    ],
+    "answer": 1,
+    "explain_ru": "Замещение глаголом-помощником: and he did."
+  },
+  {
+    "id": "G-C1-34",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 2,
+    "topic_id": "g-c1-conditionals-alternatives",
+    "topic_en": "provided that / as long as / unless / otherwise",
+    "topic_ru": "provided that / as long as / unless / otherwise",
+    "type": "mcq",
+    "q": "Take a map with you ___ your phone battery dies.",
+    "options": [
+      "unless",
+      "provided",
+      "in case",
+      "as long"
+    ],
+    "answer": 2,
+    "explain_ru": "На случай, если — in case."
+  },
+  {
+    "id": "G-C1-35",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 3,
+    "topic_id": "g-c1-conditionals-alternatives",
+    "topic_en": "provided that / as long as / unless / otherwise",
+    "topic_ru": "provided that / as long as / unless / otherwise",
+    "type": "mcq",
+    "q": "I'll lend you the money ___ you pay me back by the end of the month.",
+    "options": [
+      "in case",
+      "otherwise",
+      "unless",
+      "as long as"
+    ],
+    "answer": 3,
+    "explain_ru": "При условии, что — as long as."
+  },
+  {
+    "id": "G-C1-36",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 2,
+    "topic_id": "g-c1-relatives-prepositions",
+    "topic_en": "Relative clauses with prepositions: in which / whereby",
+    "topic_ru": "Придаточные с предлогами: in which / whereby",
+    "type": "mcq",
+    "q": "The company introduced a scheme ___ employees can work from home two days a week.",
+    "options": [
+      "whereby",
+      "whom",
+      "what",
+      "whose"
+    ],
+    "answer": 0,
+    "explain_ru": "whereby — посредством которого (формально)."
+  },
+  {
+    "id": "G-C1-37",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 2,
+    "topic_id": "g-c1-nominalisation",
+    "topic_en": "Nominalisation and complex noun phrases",
+    "topic_ru": "Номинализация и сложные именные группы",
+    "type": "mcq",
+    "q": "The ___ of the new motorway took longer than expected.",
+    "options": [
+      "constructing",
+      "construction",
+      "construct",
+      "constructed"
+    ],
+    "answer": 1,
+    "explain_ru": "После the и перед of нужно существительное: construction."
+  },
+  {
+    "id": "G-C1-38",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-articles",
+    "topic_en": "Articles: generalisation, abstract nouns, fixed cases",
+    "topic_ru": "Артикли: обобщение, абстрактные существительные, устойчивые случаи",
+    "type": "mcq",
+    "q": "___ life is too short to waste on things you don't enjoy.",
+    "options": [
+      "The",
+      "A",
+      "—",
+      "An"
+    ],
+    "answer": 2,
+    "explain_ru": "Жизнь вообще (абстрактное понятие) — без артикля."
+  },
+  {
+    "id": "G-C1-39",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 2,
+    "topic_id": "g-c1-articles",
+    "topic_en": "Articles: generalisation, abstract nouns, fixed cases",
+    "topic_ru": "Артикли: обобщение, абстрактные существительные, устойчивые случаи",
+    "type": "mcq",
+    "q": "___ tiger is in danger of extinction.",
+    "options": [
+      "A",
+      "—",
+      "Some",
+      "The"
+    ],
+    "answer": 3,
+    "explain_ru": "Вид животных в целом, обобщение — the tiger."
+  },
+  {
+    "id": "G-C1-40",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 3,
+    "topic_id": "g-c1-articles",
+    "topic_en": "Articles: generalisation, abstract nouns, fixed cases",
+    "topic_ru": "Артикли: обобщение, абстрактные существительные, устойчивые случаи",
+    "type": "mcq",
+    "q": "Learning a language well requires ___ great deal of patience.",
+    "options": [
+      "a",
+      "the",
+      "—",
+      "some"
+    ],
+    "answer": 0,
+    "explain_ru": "Устойчивое выражение: a great deal of."
+  },
+  {
+    "id": "V-C1-21",
+    "skill": "vocabulary",
+    "level": "C1",
+    "band": 2,
+    "topic_id": "v-c1-strong-collocations",
+    "topic_en": "Strong collocations: bitterly disappointed",
+    "topic_ru": "Устойчивые коллокации: bitterly disappointed",
+    "type": "mcq",
+    "q": "There is ___ evidence that the treatment works.",
+    "options": [
+      "heavy",
+      "strong",
+      "big",
+      "hard"
+    ],
+    "answer": 1,
+    "explain_ru": "Устойчивое сочетание: strong evidence."
+  },
+  {
+    "id": "V-C1-22",
+    "skill": "vocabulary",
+    "level": "C1",
+    "band": 3,
+    "topic_id": "v-c1-near-synonyms",
+    "topic_en": "Near-synonyms and nuance",
+    "topic_ru": "Синонимы и оттенки значения",
+    "type": "mcq",
+    "q": "The hotel was ___ clean — I've never seen anything like it.",
+    "options": [
+      "deeply",
+      "highly",
+      "spotlessly",
+      "heavily"
+    ],
+    "answer": 2,
+    "explain_ru": "Устойчивое сочетание: spotlessly clean."
   }
 ]

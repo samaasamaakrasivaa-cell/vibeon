@@ -301,6 +301,13 @@
     "topic_ru": "Предлоги движения"
   },
   {
+    "topic_id": "g-a2-articles",
+    "skill": "grammar",
+    "level": "A2",
+    "topic_en": "Articles: first and second mention, the with unique things",
+    "topic_ru": "Артикли: первое и повторное упоминание, the с уникальными предметами"
+  },
+  {
     "topic_id": "g-b1-pp-for-since",
     "skill": "grammar",
     "level": "B1",
@@ -574,6 +581,20 @@
     "topic_ru": "Времена для рассказа о прошлом"
   },
   {
+    "topic_id": "g-b2-tense-nuance",
+    "skill": "grammar",
+    "level": "B2",
+    "topic_en": "Tenses: continuous for annoyance, perfect continuous and result",
+    "topic_ru": "Времена: Continuous для раздражения, Perfect Continuous и результат"
+  },
+  {
+    "topic_id": "g-b2-articles",
+    "skill": "grammar",
+    "level": "B2",
+    "topic_en": "Articles: abstract nouns, institutions, geography",
+    "topic_ru": "Артикли: абстрактные понятия, институты, география"
+  },
+  {
     "topic_id": "g-c1-inversion",
     "skill": "grammar",
     "level": "C1",
@@ -670,6 +691,20 @@
     "level": "C1",
     "topic_en": "Advanced passive: is thought to have...",
     "topic_ru": "Сложный пассив: is thought to have..."
+  },
+  {
+    "topic_id": "g-c1-tense-nuance",
+    "skill": "grammar",
+    "level": "C1",
+    "topic_en": "Tenses: sequence of tenses, future in the past, distancing past",
+    "topic_ru": "Времена: согласование, будущее в прошедшем, дистанцирующее прошедшее"
+  },
+  {
+    "topic_id": "g-c1-articles",
+    "skill": "grammar",
+    "level": "C1",
+    "topic_en": "Articles: generalisation, abstract nouns, fixed cases",
+    "topic_ru": "Артикли: обобщение, абстрактные существительные, устойчивые случаи"
   },
   {
     "topic_id": "v-a1-numbers-time",

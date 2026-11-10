@@ -709,5 +709,402 @@
       "after"
     ],
     "explain_ru": "Присматривать, заботиться — look after."
+  },
+  {
+    "id": "G-B1-25",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "g-b1-pp-vs-past",
+    "topic_en": "Present perfect vs past simple",
+    "topic_ru": "Present Perfect или Past Simple",
+    "type": "brackets",
+    "q": "I ___ (never / try) sushi, but I'd love to.",
+    "accept": [
+      "have never tried",
+      "'ve never tried",
+      "ve never tried"
+    ],
+    "explain_ru": "Опыт в жизни без указания времени — Present Perfect: have never tried."
+  },
+  {
+    "id": "G-B1-26",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "g-b1-past-perfect",
+    "topic_en": "Past perfect",
+    "topic_ru": "Past Perfect",
+    "type": "brackets",
+    "q": "When we arrived at the cinema, the film ___ (already / start).",
+    "accept": [
+      "had already started"
+    ],
+    "explain_ru": "Действие, которое случилось раньше другого действия в прошлом, — Past Perfect: had already started."
+  },
+  {
+    "id": "G-B1-27",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 3,
+    "topic_id": "g-b1-past-perfect",
+    "topic_en": "Past perfect",
+    "topic_ru": "Past Perfect",
+    "type": "mcq",
+    "q": "She didn't recognise me because she ___ me for ten years.",
+    "options": [
+      "didn't see",
+      "hasn't seen",
+      "wasn't seeing",
+      "hadn't seen"
+    ],
+    "answer": 3,
+    "explain_ru": "Состояние до момента в прошлом — Past Perfect: hadn't seen."
+  },
+  {
+    "id": "G-B1-28",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "g-b1-used-to",
+    "topic_en": "used to for past habits",
+    "topic_ru": "used to: привычки в прошлом",
+    "type": "mcq",
+    "q": "When I was a child, we ___ go to the seaside every summer.",
+    "options": [
+      "used to",
+      "use to",
+      "were used to",
+      "usually"
+    ],
+    "answer": 0,
+    "explain_ru": "Привычка в прошлом, которой больше нет, — used to + глагол."
+  },
+  {
+    "id": "G-B1-29",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-b1-future-forms",
+    "topic_en": "Future forms: will / going to / present continuous",
+    "topic_ru": "Способы выражения будущего",
+    "type": "mcq",
+    "q": "Hurry up! Our train ___ at 6:15.",
+    "options": [
+      "is leave",
+      "leaves",
+      "will leaving",
+      "leave"
+    ],
+    "answer": 1,
+    "explain_ru": "Расписание — Present Simple: the train leaves."
+  },
+  {
+    "id": "G-B1-30",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "g-b1-future-forms",
+    "topic_en": "Future forms: will / going to / present continuous",
+    "topic_ru": "Способы выражения будущего",
+    "type": "mcq",
+    "q": "I ___ my dentist on Thursday at 3. It's all booked.",
+    "options": [
+      "see",
+      "will see",
+      "am seeing",
+      "saw"
+    ],
+    "answer": 2,
+    "explain_ru": "Договорённость на определённое время — Present Continuous: I'm seeing."
+  },
+  {
+    "id": "G-B1-31",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "g-b1-future-forms",
+    "topic_en": "Future forms: will / going to / present continuous",
+    "topic_ru": "Способы выражения будущего",
+    "type": "mcq",
+    "q": "I'm sure you ___ the exam. You've worked so hard.",
+    "options": [
+      "are passing",
+      "pass",
+      "passed",
+      "will pass"
+    ],
+    "answer": 3,
+    "explain_ru": "Уверенный прогноз (I'm sure) — will."
+  },
+  {
+    "id": "G-B1-32",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 3,
+    "topic_id": "g-b1-future-forms",
+    "topic_en": "Future forms: will / going to / present continuous",
+    "topic_ru": "Способы выражения будущего",
+    "type": "brackets",
+    "q": "Look at that car! It ___ (crash) into the wall!",
+    "accept": [
+      "is going to crash",
+      "'s going to crash"
+    ],
+    "explain_ru": "Прогноз по тому, что видим сейчас, — be going to: is going to crash."
+  },
+  {
+    "id": "G-B1-33",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "g-b1-deduction-present",
+    "topic_en": "Modals of deduction: must / might / can't (present)",
+    "topic_ru": "Модальные глаголы предположения в настоящем",
+    "type": "mcq",
+    "q": "Sam isn't answering his phone. He ___ be asleep — he works nights.",
+    "options": [
+      "might",
+      "mustn't",
+      "can",
+      "should"
+    ],
+    "answer": 0,
+    "explain_ru": "Предположение «возможно» — might."
+  },
+  {
+    "id": "G-B1-34",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 3,
+    "topic_id": "g-b1-deduction-present",
+    "topic_en": "Modals of deduction: must / might / can't (present)",
+    "topic_ru": "Модальные глаголы предположения в настоящем",
+    "type": "mcq",
+    "q": "That ___ be Anna at the door. She's in Spain this week.",
+    "options": [
+      "mustn't",
+      "can't",
+      "shouldn't",
+      "may"
+    ],
+    "answer": 1,
+    "explain_ru": "Уверенное «не может быть» — can't."
+  },
+  {
+    "id": "G-B1-35",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "g-b1-be-able-to",
+    "topic_en": "be able to / manage to",
+    "topic_ru": "be able to / manage to",
+    "type": "mcq",
+    "q": "I'd love ___ speak Japanese one day.",
+    "options": [
+      "can",
+      "to can",
+      "to be able to",
+      "being able"
+    ],
+    "answer": 2,
+    "explain_ru": "После would love нужен инфинитив; у can нет инфинитива — to be able to."
+  },
+  {
+    "id": "G-B1-36",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "g-b1-zero-conditional",
+    "topic_en": "Zero conditional",
+    "topic_ru": "Условные предложения нулевого типа",
+    "type": "brackets",
+    "q": "If you ___ (mix) red and white, you get pink.",
+    "accept": [
+      "mix"
+    ],
+    "explain_ru": "Нулевой тип — общая истина: if + Present Simple, Present Simple."
+  },
+  {
+    "id": "G-B1-37",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 3,
+    "topic_id": "g-b1-second-conditional",
+    "topic_en": "Second conditional",
+    "topic_ru": "Условные предложения второго типа",
+    "type": "mcq",
+    "q": "What would you do if you ___ a lot of money?",
+    "options": [
+      "win",
+      "would win",
+      "have won",
+      "won"
+    ],
+    "answer": 3,
+    "explain_ru": "Второй тип — нереальное настоящее: if + Past Simple (won), would + глагол."
+  },
+  {
+    "id": "G-B1-38",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-b1-passive-basic",
+    "topic_en": "Passive: present and past simple",
+    "topic_ru": "Пассивный залог: Present и Past Simple",
+    "type": "brackets",
+    "q": "English ___ (speak) in many countries around the world.",
+    "accept": [
+      "is spoken"
+    ],
+    "explain_ru": "Пассив в Present Simple: is + третья форма (spoken)."
+  },
+  {
+    "id": "G-B1-39",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "g-b1-passive-basic",
+    "topic_en": "Passive: present and past simple",
+    "topic_ru": "Пассивный залог: Present и Past Simple",
+    "type": "mcq",
+    "q": "My bike ___ last night, so I walked to work today.",
+    "options": [
+      "was stolen",
+      "stole",
+      "is stolen",
+      "has stolen"
+    ],
+    "answer": 0,
+    "explain_ru": "Действие совершили над велосипедом в прошлом — Past Simple Passive: was stolen."
+  },
+  {
+    "id": "G-B1-40",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "g-b1-passive-basic",
+    "topic_en": "Passive: present and past simple",
+    "topic_ru": "Пассивный залог: Present и Past Simple",
+    "type": "brackets",
+    "q": "These photos ___ (take) by my grandfather in the 1960s.",
+    "accept": [
+      "were taken"
+    ],
+    "explain_ru": "Пассив в Past Simple, множественное число: were taken."
+  },
+  {
+    "id": "G-B1-41",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 3,
+    "topic_id": "g-b1-passive-basic",
+    "topic_en": "Passive: present and past simple",
+    "topic_ru": "Пассивный залог: Present и Past Simple",
+    "type": "mcq",
+    "q": "Cheese ___ from milk.",
+    "options": [
+      "makes",
+      "is made",
+      "is making",
+      "made"
+    ],
+    "answer": 1,
+    "explain_ru": "Общий факт о процессе — Present Simple Passive: is made."
+  },
+  {
+    "id": "G-B1-42",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "g-b1-reported-statements",
+    "topic_en": "Reported speech: statements",
+    "topic_ru": "Косвенная речь: утверждения",
+    "type": "mcq",
+    "q": "Tom said he ___ coming to the party.",
+    "options": [
+      "isn't",
+      "won't",
+      "wasn't",
+      "doesn't"
+    ],
+    "answer": 2,
+    "explain_ru": "В косвенной речи после said время сдвигается назад: isn't → wasn't."
+  },
+  {
+    "id": "G-B1-43",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 3,
+    "topic_id": "g-b1-indirect-questions",
+    "topic_en": "Indirect questions",
+    "topic_ru": "Косвенные вопросы (Could you tell me...)",
+    "type": "mcq",
+    "q": "Do you know what time ___?",
+    "options": [
+      "does the shop close",
+      "closes the shop",
+      "is the shop close",
+      "the shop closes"
+    ],
+    "answer": 3,
+    "explain_ru": "В косвенном вопросе прямой порядок слов: what time the shop closes."
+  },
+  {
+    "id": "G-B1-44",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "g-b1-articles-general",
+    "topic_en": "Articles: general vs specific meaning",
+    "topic_ru": "Артикли: общее и конкретное значение",
+    "type": "mcq",
+    "q": "I love ___ music, but I didn't like the music at the party last night.",
+    "options": [
+      "—",
+      "the",
+      "a",
+      "some of"
+    ],
+    "answer": 0,
+    "explain_ru": "Музыка вообще — без артикля; конкретная музыка на вечеринке — the music."
+  },
+  {
+    "id": "G-B1-45",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 3,
+    "topic_id": "g-b1-articles-general",
+    "topic_en": "Articles: general vs specific meaning",
+    "topic_ru": "Артикли: общее и конкретное значение",
+    "type": "mcq",
+    "q": "Could you pass me ___ salt, please?",
+    "options": [
+      "a",
+      "the",
+      "—",
+      "some of"
+    ],
+    "answer": 1,
+    "explain_ru": "Конкретная соль на этом столе — the salt."
+  },
+  {
+    "id": "G-B1-46",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "g-b1-quantifiers-both",
+    "topic_en": "both / either / neither / each / every",
+    "topic_ru": "both / either / neither / each / every",
+    "type": "mcq",
+    "q": "There are shops on ___ side of the street.",
+    "options": [
+      "both",
+      "all",
+      "each",
+      "every of"
+    ],
+    "answer": 2,
+    "explain_ru": "each + существительное в единственном числе: on each side."
   }
 ]
