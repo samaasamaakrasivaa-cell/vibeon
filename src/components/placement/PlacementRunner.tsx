@@ -1,12 +1,22 @@
 "use client";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { useT } from "@/lib/i18n/client";
+import { useT as useTBase } from "@/lib/i18n/client";
+import { translate, type DictKey as DK } from "@/lib/i18n/dict";
 import type { DictKey } from "@/lib/i18n/dict";
 import { answerCore, draftText, finishPlacement, finishTexts, goSection, notePlay, peekCore, reviseCore, saveWriting, startPlacement } from "@/lib/placement/actions";
 import type { PView } from "@/lib/placement/run";
 import { Icon } from "../Icon";
 import type { IconName } from "../icon-paths";
+
+// Внутри теста кнопки и названия разделов — по-английски; пояснения остаются на языке интерфейса.
+const EN_KEYS = new Set(["pl.prevQ", "pl.next", "pl.nextPart", "pl.dontKnow", "pl.saveFix", "pl.hintShow", "pl.finishPart", "pl.goOn", "pl.start", "pl.finish", "pl.check",
+  "pl.showQ", "pl.speakNow", "pl.stop", "pl.rerecord", "pl.recordAgain", "pl.listen", "pl.listenAgain", "pl.listenMine", "pl.again", "pl.saveLater", "pl.exitNow",
+  "pl.backToTest", "pl.showRu", "pl.hideRu", "pl.recTab", "pl.textTab", "pl.playing", "pl.noPlays", "pl.recording"]);
+function useT() {
+  const b = useTBase();
+  return { ...b, t: (k: DK, v?: Record<string, string | number>) => (EN_KEYS.has(k) || k.startsWith("pl.part.") ? translate("en", k, v) : b.t(k, v)) };
+}
 
 const PARTS = ["core", "vocab", "reading", "listening", "writing", "speaking"] as const;
 type Part = (typeof PARTS)[number];
@@ -220,28 +230,26 @@ function CoreStep({ item: it, n, pending, onAnswer, onBack, initial, past }: { i
     <section className="card flex flex-col gap-4" data-item={it.id}>
       {past && <div className="plpast"><Icon name="chevl" size="sm" />{t("pl.pastNote", { n })}</div>}
       <p className="plinstr">{it.instr}</p>
-      {it.type === "mcq" && (
-        <>
-          <p className="plq">{it.q.split("___").map((x, i, a) => <span key={i}>{x}{i < a.length - 1 && <span className="plblank">{typeof val === "number" ? it.options![val] : "\u00a0"}</span>}</span>)}</p>
-          <div className="ploptions">{it.options!.map((o, k) => <button key={k} type="button" className={`topt ${val === k ? "on" : ""}`} aria-pressed={val === k} onClick={() => setVal(k)}>{o}</button>)}</div>
-        </>
-      )}
-      {it.type === "wordform" && <><div className="plword"><span className="plbase">{it.base}</span><Icon name="right" size="sm" /><span className="muted small">?</span></div>{parts(it.q)}</>}
-      {(it.type === "gap" || it.type === "brackets") && parts(it.q)}
-      {it.type === "transform" && (
-        <>
-          <p className="plq m-0">{it.q}</p>
-          <div className="plword"><span className="small muted">{t("pl.useWord")}</span><span className="plbase">{it.key}</span></div>
-          {parts(it.frame ?? "___")}
-        </>
-      )}
+      <div className="plqbox">
+        {it.type === "mcq" && <p className="plq">{it.q.split("___").map((x, i, a) => <span key={i}>{x}{i < a.length - 1 && <span className="plblank">{typeof val === "number" ? it.options![val] : "\u00a0"}</span>}</span>)}</p>}
+        {it.type === "wordform" && <><div className="plword"><span className="plbase">{it.base}</span><Icon name="right" size="sm" /><span className="muted small">?</span></div>{parts(it.q)}</>}
+        {(it.type === "gap" || it.type === "brackets") && parts(it.q)}
+        {it.type === "transform" && (
+          <>
+            <p className="plq m-0">{it.q}</p>
+            <div className="plword"><span className="small muted">{t("pl.useWord")}</span><span className="plbase">{it.key}</span></div>
+            {parts(it.frame ?? "___")}
+          </>
+        )}
+      </div>
+      {it.type === "mcq" && <div className="ploptions">{it.options!.map((o, k) => <button key={k} type="button" className={`topt ${val === k ? "on" : ""}`} aria-pressed={val === k} onClick={() => setVal(k)}>{o}</button>)}</div>}
       {typed && (
         <div className="pltips">
           {it.hint && (showHint
             ? <span className="plhint"><Icon name="info" size="sm" />{t("pl.hintWord", { h: it.hint })}</span>
             : <button type="button" className="plhintbtn" onClick={() => setShowHint(true)}><Icon name="qmark" size="sm" />{t("pl.hintShow")}</button>)}
-          {it.type === "brackets" ? <span className="small muted">{t("pl.bracketsHint")}</span>
-            : it.type === "gap" && /вспомогательн|модальн|to be/.test(it.hint ?? "") ? <span className="small muted">{t("pl.gapNote")}</span> : null}
+          {it.type === "brackets" ? <span className="pltip">{t("pl.bracketsHint")}</span>
+            : it.type === "gap" && /вспомогательн|модальн|to be/.test(it.hint ?? "") ? <span className="pltip">{t("pl.gapNote")}</span> : null}
         </div>
       )}
       <div className="plactions">

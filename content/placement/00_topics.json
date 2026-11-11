@@ -157,8 +157,15 @@
     "topic_id": "g-a2-past-simple",
     "skill": "grammar",
     "level": "A2",
-    "topic_en": "Past simple: irregular verbs, negatives and questions",
-    "topic_ru": "Past Simple: неправильные глаголы, отрицания и вопросы"
+    "topic_en": "Past simple: regular and irregular verbs",
+    "topic_ru": "Past Simple: правильные и неправильные глаголы"
+  },
+  {
+    "topic_id": "g-a2-past-simple-neg-q",
+    "skill": "grammar",
+    "level": "A2",
+    "topic_en": "Past simple: negatives and questions",
+    "topic_ru": "Past Simple: отрицания и вопросы"
   },
   {
     "topic_id": "g-a2-past-continuous",

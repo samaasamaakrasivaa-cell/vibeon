@@ -78,7 +78,7 @@ export const stepIdx = (sub: string) => STEPS.indexOf(sub as Sub);
 const CORE_MAX = 60;
 const PER_GROUP = 3; // заданий из каждой группы на подробной проверке
 const FALLBACK_AFTER = 9, FALLBACK_BELOW = 0.4; // после 9 заданий меньше 40% — уровень ниже
-const SLICE_FROM = 0.8, SLICE_GROUPS = 4, SLICE_PER = 2, UP_FROM = 0.7, EDGE_FROM = 0.55, EXTRA = 4, REPEATS = 6;
+const SLICE_FROM = 0.8, SLICE_GROUPS = 4, SLICE_PER = 2, UP_FROM = 0.7, EDGE_FROM = 0.55, EXTRA = 4, REPEATS = 6, REPEAT_GAP = 3;
 // уровень сделан на 80%+ — срез уровня выше (8 заданий); срез 70%+ — уровень выше целиком; 55–70% — ещё 4 задания уровня выше и решение по сумме
 
 // ───────── Ядро: поиск уровня → подробная проверка по группам ─────────
@@ -114,8 +114,13 @@ function locate(st: PState, bank: Bank): { cand: number | null; next: number | n
   return { cand: L, next: null };
 }
 
+/** Группа и тема последнего задания — чтобы следующее не было на ту же тему. */
+const lastOf = (st: PState) => { const x = st.core[st.core.length - 1]; const it = x ? (st.items[x.id] as CoreItem | undefined) : undefined; return { group: it?.group, topic: it?.topic_id }; };
+/** Порядок групп: группа последнего задания — в конец, чтобы две одинаковые темы не шли подряд. */
+const notLast = <T extends { id: string }>(st: PState, gs: T[]) => { const g = lastOf(st).group; return [...gs.filter((x) => x.id !== g), ...gs.filter((x) => x.id === g)]; };
+
 /** pref: easy — простые задания уровня (band 1, сам уровень X), hard — сложные (band 2–3, X+). */
-function pickFrom(st: PState, bank: Bank, gid: string, rnd: () => number, pref?: "easy" | "hard"): CoreItem | null {
+function pickFrom(st: PState, bank: Bank, gid: string, rnd: () => number, pref?: "easy" | "hard", topicRe?: RegExp): CoreItem | null {
   const used = new Set(st.core.map((x) => x.id));
   const topics = new Set(st.core.map((x) => (st.items[x.id] as CoreItem | undefined)?.topic_id));
   let pool = bank.core.filter((x) => x.group === gid && !used.has(x.id));
@@ -126,6 +131,8 @@ function pickFrom(st: PState, bank: Bank, gid: string, rnd: () => number, pref?:
   if (want.length) pool = want;
   const fresh = pool.filter((x) => !topics.has(x.topic_id)); // по возможности — другая тема внутри группы
   if (fresh.length) pool = fresh;
+  else { const last = lastOf(st).topic; const other = pool.filter((x) => x.topic_id !== last); if (other.length) pool = other; } // не та же тема, что только что
+  if (topicRe) { const t = pool.filter((x) => topicRe.test(x.topic_id)); if (t.length) pool = t; }
   return pool[Math.floor(rnd() * pool.length)];
 }
 
@@ -136,7 +143,11 @@ export function nextCore(st: PState, bank: Bank, rnd: () => number = Math.random
   if (st.core.length >= CORE_MAX) return null;
   const warm = st.warm ?? 0;
   if (st.core.length < warm) {
-    const it = pickFrom(st, bank, anchorOf(bank, WARM[st.core.length]).id, rnd, "easy");
+    // два задания разминки одного уровня подряд — второе из другой группы, чтобы тема не повторялась
+    const i = st.core.length, lv = WARM[i];
+    const others = groupsOf(bank, lv).filter((g) => !g.anchor);
+    const gid = i > 0 && WARM[i - 1] === lv && others.length ? others[Math.floor(rnd() * others.length)].id : anchorOf(bank, lv).id;
+    const it = pickFrom(st, bank, gid, rnd, "easy");
     if (it) return { item: it, ph: "w" };
   }
   if (st.diag === undefined) {
@@ -153,7 +164,7 @@ export function nextCore(st: PState, bank: Bank, rnd: () => number = Math.random
   const dAcc = stat(st, (it, x) => x.ph === "d" && it.level === PL_LEVELS[D]);
   if (!st.fb && !st.up && D > 0 && dAcc.n >= FALLBACK_AFTER && dAcc.c / dAcc.n < FALLBACK_BELOW) { st.fb = true; st.diag = D - 1; return nextCore(st, bank, rnd); }
   void dItems;
-  const gs = groupsOf(bank, D);
+  const gs = notLast(st, groupsOf(bank, D));
   // по кругу: сначала из каждой группы простое задание, потом два сложных
   for (let round = 1; round <= PER_GROUP; round++) {
     for (const g of gs) {
@@ -170,7 +181,7 @@ export function nextCore(st: PState, bank: Bank, rnd: () => number = Math.random
       const p = sl.c / sl.n;
       if (p >= UP_FROM && (xs === 0 || xs >= EXTRA)) { st.up = true; st.diag = D + 1; return nextCore(st, bank, rnd); }
       if (xs < EXTRA && (xs > 0 || p >= EDGE_FROM)) {
-        const gs = [...groupsOf(bank, D + 1)].sort((a, b) => inGroup(st, a.id) - inGroup(st, b.id)); // сначала группы, где заданий меньше
+        const gs = notLast(st, [...groupsOf(bank, D + 1)].sort((a, b) => inGroup(st, a.id) - inGroup(st, b.id))); // сначала группы, где заданий меньше; не та же, что только что
         for (const g of gs) {
           const it = pickFrom(st, bank, g.id, rnd);
           if (it) return { item: it, ph: "x" };
@@ -179,7 +190,7 @@ export function nextCore(st: PState, bank: Bank, rnd: () => number = Math.random
     } else {
       const acc = levelAcc(st, D);
       if (acc.n && acc.c / acc.n >= SLICE_FROM) {
-        const up = groupsOf(bank, D + 1).slice(0, SLICE_GROUPS);
+        const up = notLast(st, groupsOf(bank, D + 1).slice(0, SLICE_GROUPS));
         for (let round = 1; round <= SLICE_PER; round++)
           for (const g of up) {
             if (inGroup(st, g.id) >= round) continue;
@@ -193,8 +204,11 @@ export function nextCore(st: PState, bank: Bank, rnd: () => number = Math.random
   const reps = st.core.filter((x) => x.ph === "r").length;
   if (reps < REPEATS) {
     const done = new Set(st.core.filter((x) => x.ph === "r").map((x) => (st.items[x.id] as CoreItem).topic_id));
-    for (const x of st.core) {
-      if (x.ph !== "d") continue;
+    const lastTopic = lastOf(st).topic;
+    // сначала ошибки на другие темы, ошибка на тему последнего задания — в конец (повтор не должен идти сразу следом)
+    const cands = st.core.map((x, i) => ({ x, i })).filter(({ x, i }) => x.ph === "d" && i < st.core.length - REPEAT_GAP);
+    const order = [...cands.filter(({ x }) => (st.items[x.id] as CoreItem)?.topic_id !== lastTopic), ...cands.filter(({ x }) => (st.items[x.id] as CoreItem)?.topic_id === lastTopic)];
+    for (const { x } of order) {
       const it = st.items[x.id] as CoreItem;
       if (!it || it.level !== PL_LEVELS[D] || st.answers[x.id]?.ok || done.has(it.topic_id)) continue;
       const used = new Set(st.core.map((y) => y.id));
@@ -243,9 +257,12 @@ function vPick(st: PState, bank: Bank, li: number, ph: Ph, per: number, rnd: () 
 
 export function nextVocab(st: PState, bank: Bank, rnd: () => number = Math.random): { item: CoreItem; ph: Ph } | null {
   const G = gLevel(st);
-  if (G > 0 && st.core.filter((x) => x.ph === "vw").length < 2) {
-    const g = vGroup(bank, G - 1, VKINDS[st.core.filter((x) => x.ph === "vw").length]);
-    const it = g && pickFrom(st, bank, g.id, rnd, "easy");
+  // разминка уровнем ниже: предлоги / сочетаемость и словообразование — там чаще всего «дыры» в базе
+  const WARM_KINDS = [["v2", /preposition/], ["v3", undefined]] as const;
+  if (G > 0 && st.core.filter((x) => x.ph === "vw").length < WARM_KINDS.length) {
+    const [k, re] = WARM_KINDS[st.core.filter((x) => x.ph === "vw").length];
+    const g = vGroup(bank, G - 1, k);
+    const it = g && pickFrom(st, bank, g.id, rnd, "easy", re);
     if (it) return { item: it, ph: "vw" };
   }
   const main = vPick(st, bank, G, "vm", 2, rnd);
@@ -270,7 +287,7 @@ export function vocabResult(st: PState) {
   return vDown();
   function vDown() {
     if (G === 0) return 0;
-    const d = vStat(st, G - 1, ["vd"]), pd = d.n ? d.c / d.n : 0, bd = BASE[PL_LEVELS[G - 1]];
+    const d = vStat(st, G - 1, ["vd", "vw"]), pd = d.n ? d.c / d.n : 0, bd = BASE[PL_LEVELS[G - 1]]; // разминка тоже про уровень ниже — учитываем
     return pd >= 0.8 ? bd + 1 : pd >= 0.6 ? bd : Math.max(0, bd - 1);
   }
 }

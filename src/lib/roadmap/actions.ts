@@ -32,7 +32,7 @@ export async function assignTest(studentId: string, kind: "entry" | "slice" | "f
   const r = await db.roadmap.findFirst({ where: { studentId }, orderBy: { createdAt: "desc" } });
   await db.checkpoint.deleteMany({ where: { studentId, status: "assigned", kind } }); // один открытый тест одного вида
   const c = await db.checkpoint.create({ data: { studentId, roadmapId: r?.id ?? null, kind, stage: stage ?? null } });
-  if (s.userId) await notify({ userId: s.userId, kind: "test", title: kind === "entry" ? "Преподаватель назначил входной тест" : "Преподаватель назначил контрольный срез", action: "decide", link: `/student/test/${c.id}` });
+  if (s.userId) await notify({ userId: s.userId, kind: "test", title: kind === "entry" ? "Преподаватель назначил placement test" : "Преподаватель назначил контрольный срез", action: "decide", link: `/student/test/${c.id}` });
   refresh(studentId);
   return { ok: true, id: c.id };
 }
@@ -85,7 +85,7 @@ export async function submitTest(id: string, answers: Record<string, number>, wr
     stages[c.stage] = { ...stages[c.stage], passed: { score: res.score, at: new Date().toISOString() } };
     await db.roadmap.update({ where: { id: c.roadmap.id }, data: { stages: json(stages) } });
   }
-  await notify({ userId: c.student.teacherId, kind: "test", title: `${c.student.name} ${c.kind === "entry" ? "прошёл(ла) входной тест" : "прошёл(ла) срез"}: ${res.level}, ${res.score}%`, action: "review", link: `/teacher/students/${c.studentId}?tab=roadmap` });
+  await notify({ userId: c.student.teacherId, kind: "test", title: `${c.student.name} ${c.kind === "entry" ? "прошёл(ла) placement test" : "прошёл(ла) срез"}: ${res.level}, ${res.score}%`, action: "review", link: `/teacher/students/${c.studentId}?tab=roadmap` });
   refresh(c.studentId);
   return { ok: true, level: res.level };
 }

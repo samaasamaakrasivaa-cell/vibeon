@@ -740,7 +740,7 @@
     "type": "mcq",
     "q": "I was wondering if you ___ help me with my presentation.",
     "options": [
-      "can",
+      "may",
       "could",
       "will",
       "are able"
@@ -845,11 +845,11 @@
     "topic_en": "Advanced passive: is thought to have...",
     "topic_ru": "Сложный пассив: is thought to have...",
     "type": "brackets",
-    "q": "The painting ___ (think / be) worth over a million pounds.",
+    "q": "At the moment, the painting ___ (think / be) worth over a million pounds.",
     "accept": [
       "is thought to be"
     ],
-    "explain_ru": "Сложный пассив о настоящем: is thought to be."
+    "explain_ru": "Сейчас (at the moment) так считают — безличный пассив в настоящем: is thought to be."
   },
   {
     "id": "G-C1-28",
@@ -1510,7 +1510,10 @@
       "severely",
       "seriously",
       "badly",
-      "heavily"
+      "heavily",
+      "significantly",
+      "greatly",
+      "hard"
     ],
     "explain_ru": "Серьёзно пострадали — severely / seriously affected.",
     "hint_ru": "наречие: сильно, серьёзно",
@@ -1787,11 +1790,11 @@
     "topic_en": "Advanced passive: is thought to have...",
     "topic_ru": "Сложный пассив: is thought to have...",
     "type": "brackets",
-    "q": "The thieves ___ (think / be) local teenagers.",
+    "q": "The police are still looking for the thieves. At the moment, they ___ (think / be) local teenagers.",
     "accept": [
       "are thought to be"
     ],
-    "explain_ru": "Безличный пассив о людях: are thought to be — «предположительно, это…»."
+    "explain_ru": "Сейчас так предполагают — безличный пассив в настоящем: are thought to be."
   },
   {
     "id": "G-C1-68",
@@ -2331,5 +2334,43 @@
     "answer": 2,
     "explain_ru": "Rock the boat — раскачивать лодку, создавать проблемы.",
     "group": "c1-v5"
+  },
+  {
+    "id": "G-C1-83",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-inverted-conditionals",
+    "topic_en": "Inverted conditionals: Had I known / Should you",
+    "topic_ru": "Условные с инверсией: Had I known / Should you",
+    "type": "mcq",
+    "q": "___ I in your position, I would accept the offer.",
+    "options": [
+      "Was",
+      "If",
+      "Am",
+      "Were"
+    ],
+    "answer": 3,
+    "explain_ru": "Условие 2 типа с инверсией: Were I… = If I were…"
+  },
+  {
+    "id": "G-C1-84",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-inverted-conditionals",
+    "topic_en": "Inverted conditionals: Had I known / Should you",
+    "topic_ru": "Условные с инверсией: Had I known / Should you",
+    "type": "mcq",
+    "q": "___ you change your mind about the trip, just let me know.",
+    "options": [
+      "Should",
+      "Would",
+      "Had",
+      "Did"
+    ],
+    "answer": 0,
+    "explain_ru": "Условие с инверсией: Should you change… = If you change…"
   }
 ]

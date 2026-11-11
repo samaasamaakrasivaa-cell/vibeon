@@ -10,7 +10,7 @@ import { summarize } from "@/lib/placement/engine";
 import { reviewData } from "@/lib/placement/review";
 import { stateOf } from "@/lib/placement/run";
 
-export const metadata = { title: "Вводный тест — проверка" };
+export const metadata = { title: "Placement test — проверка" };
 
 export default async function PlacementReviewPage({ params }: { params: Promise<{ id: string }> }) {
   const { t, lang } = await getT();

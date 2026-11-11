@@ -29,7 +29,10 @@ async function save(id: string, st: ReturnType<typeof stateOf>, extra: Record<st
   return { ok: true as const, view };
 }
 const wrap = async (fn: () => Promise<R>): Promise<R> => {
-  try { return await fn(); } catch (e) { return { ok: false, error: e instanceof Error && e.message === "done" ? "done" : "not found" }; }
+  try { return await fn(); } catch (e) {
+    if (!(e instanceof Error && (e.message === "done" || e.message === "not found"))) console.error("[placement]", e instanceof Error ? e.stack : e);
+    return { ok: false, error: e instanceof Error && e.message === "done" ? "done" : "not found" };
+  }
 };
 
 // ───────── Прохождение ─────────
@@ -160,7 +163,7 @@ async function closeAndGo(l: Loaded, st: Loaded["st"], sec: Later): Promise<R> {
   if (a.checkpointId) await db.checkpoint.update({ where: { id: a.checkpointId }, data: { status: "review", takenAt: new Date() } }).catch(() => null);
   if (a.mode !== "self") {
     const who = a.mode === "student" ? `${a.student?.name ?? ""} ${a.student?.lastName ?? ""}`.trim() : a.guestName ?? "";
-    await notify({ userId: a.teacherId, kind: "test", title: `${who}: вводный тест пройден — проверьте письмо и говорение`, action: "review", link: `/teacher/placement/${a.id}` });
+    await notify({ userId: a.teacherId, kind: "test", title: `${who}: placement test пройден — проверьте письмо и говорение`, action: "review", link: `/teacher/placement/${a.id}` });
   }
   revalidatePath("/teacher/courses");
   if (a.studentId) revalidatePath(`/teacher/students/${a.studentId}`);
@@ -255,7 +258,7 @@ export async function assignPlacement(studentId: string, expected?: string | nul
   const c = await db.checkpoint.create({ data: { studentId, roadmapId: r?.id ?? null, kind: "entry", source: "placement" } });
   const seen = await seenBy({ studentId });
   await db.placementAttempt.create({ data: { teacherId: me.id, studentId, checkpointId: c.id, mode: "student", token: randomToken(24), state: json(withSeen(emptyState(expectOf(expected)), seen)) } });
-  if (s.userId) await notify({ userId: s.userId, kind: "test", title: "Преподаватель назначил вводный тест", action: "decide", link: `/student/test/${c.id}` });
+  if (s.userId) await notify({ userId: s.userId, kind: "test", title: "Преподаватель назначил placement test", action: "decide", link: `/student/test/${c.id}` });
   refreshT(studentId);
   return { ok: true, id: c.id };
 }
@@ -336,7 +339,7 @@ export async function setShowResult(id: string, on: boolean): Promise<R> {
       const c = await db.checkpoint.findUnique({ where: { id: a.checkpointId } });
       if (c) await db.checkpoint.update({ where: { id: c.id }, data: { results: json({ ...((c.results ?? {}) as object), shown: !!on }) } });
     }
-    if (on && a.student?.userId) await notify({ userId: a.student.userId, kind: "test", title: "Готов результат вводного теста", action: "review", link: `/student/test/${a.checkpointId}`, dedupe: `pl-shown:${id}` });
+    if (on && a.student?.userId) await notify({ userId: a.student.userId, kind: "test", title: "Готов результат placement test", action: "review", link: `/student/test/${a.checkpointId}`, dedupe: `pl-shown:${id}` });
     refreshT(a.studentId);
     revalidatePath(`/teacher/placement/${id}`);
     return { ok: true };

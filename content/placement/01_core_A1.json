@@ -1150,7 +1150,8 @@
     "type": "gap",
     "q": "I always ___ my homework after dinner.",
     "accept": [
-      "do"
+      "do",
+      "finish"
     ],
     "explain_ru": "Сочетание: do homework.",
     "hint_ru": "глагол: делать (домашнее задание)",
@@ -1377,12 +1378,12 @@
     "topic_en": "Verb to be: am / is / are",
     "topic_ru": "Глагол to be: am / is / are",
     "type": "gap",
-    "q": "Where are my keys? They ___ in my bag.",
+    "q": "Oh no! My keys ___ in my bag. Where are they?",
     "accept": [
       "aren't",
       "are not"
     ],
-    "explain_ru": "Ключей нет в сумке — отрицание с they: aren't (are not).",
+    "explain_ru": "Ключей в сумке нет (Where are they?) — отрицание с they: aren't (are not).",
     "hint_ru": "форма глагола to be с отрицанием"
   },
   {
@@ -1869,7 +1870,8 @@
     "accept": [
       "take",
       "get",
-      "call"
+      "call",
+      "catch"
     ],
     "explain_ru": "Взять такси — take / get a taxi.",
     "hint_ru": "глагол: поехать на (такси)",
@@ -1991,5 +1993,43 @@
     "answer": 2,
     "explain_ru": "Искать — look for: I'm looking for my glasses.",
     "group": "a1-v4"
+  },
+  {
+    "id": "G-A1-66",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-there-is-are",
+    "topic_en": "there is / there are",
+    "topic_ru": "Оборот there is / there are",
+    "type": "mcq",
+    "q": "___ two bathrooms in our new flat.",
+    "options": [
+      "There is",
+      "They are",
+      "It is",
+      "There are"
+    ],
+    "answer": 3,
+    "explain_ru": "Есть (имеется) + множественное число — There are."
+  },
+  {
+    "id": "G-A1-67",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-there-is-are",
+    "topic_en": "there is / there are",
+    "topic_ru": "Оборот there is / there are",
+    "type": "mcq",
+    "q": "Excuse me, ___ a bus stop near here?",
+    "options": [
+      "is there",
+      "there is",
+      "are there",
+      "has it"
+    ],
+    "answer": 0,
+    "explain_ru": "Вопрос «есть ли…» с единственным числом — is there."
   }
 ]

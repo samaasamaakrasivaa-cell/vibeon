@@ -1261,7 +1261,15 @@ select.iedit, select.iedit:hover, select.iedit:focus { background-position: righ
 .plscore button.on { background: var(--seg-on); color: var(--accent-text); box-shadow: 0 1px 3px rgba(0, 0, 0, .12); }
 .plprog button { display: inline-flex; align-items: center; gap: 4px; padding: 7px 12px; border-radius: 99px; background: var(--surface); color: var(--accent-text); font-weight: 600; font-size: 13px; border: 1.5px dashed var(--accent); }
 .plprog button:hover { background: var(--accent-bg); }
-.pltips { display: flex; flex-direction: column; gap: 4px; }
+.pltips { display: flex; flex-direction: column; gap: 6px; }
+/* сам вопрос — отдельным блоком и «книжным» шрифтом; инструкция и подсказки — мелким серым */
+.plqbox { display: flex; flex-direction: column; gap: 12px; padding: 20px 22px; border-radius: 16px; background: var(--surface2); border: 1px solid var(--sep); }
+.plqbox .plq { font-family: ui-serif, "New York", "Iowan Old Style", Charter, Georgia, "Noto Serif", "Times New Roman", serif; font-size: 22px; line-height: 1.65; color: var(--text); letter-spacing: .005em; }
+.plqbox .plgap { font-family: var(--font-sans); font-size: 18px; background: var(--surface); }
+.plqbox .plblank { font-family: var(--font-sans); font-size: 18px; }
+.pltip { font-size: 13px; line-height: 1.45; color: var(--text2); }
+[data-text] .tq legend { font-family: ui-serif, "New York", "Iowan Old Style", Charter, Georgia, "Noto Serif", "Times New Roman", serif; font-size: 18px; }
+@media (max-width: 640px) { .plqbox { padding: 16px; } .plqbox .plq { font-size: 19px; } }
 .plhint { display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; padding: 4px 10px; border-radius: 8px; background: var(--warn-bg); color: var(--warn-text); font-size: 13px; font-weight: 600; }
 .plpast { display: flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: 10px; background: var(--accent-bg); color: var(--accent-text); font-size: 13px; font-weight: 600; }
 .plpause { flex-direction: column; gap: 2px; }

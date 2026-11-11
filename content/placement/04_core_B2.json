@@ -830,9 +830,10 @@
     "type": "brackets",
     "q": "We ___ (walk) for hours when we finally saw the hotel.",
     "accept": [
-      "had been walking"
+      "had been walking",
+      "had walked"
     ],
-    "explain_ru": "Длительное действие до момента в прошлом — Past Perfect Continuous: had been walking."
+    "explain_ru": "Долгое действие до момента в прошлом — Past Perfect Continuous: had been walking (had walked тоже верно)."
   },
   {
     "id": "G-B2-29",
@@ -1692,7 +1693,7 @@
     "q": "All the lights are off. They ___ gone to bed.",
     "options": [
       "can't have",
-      "should have",
+      "mustn't have",
       "must have",
       "needn't have"
     ],

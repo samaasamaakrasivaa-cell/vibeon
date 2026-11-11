@@ -6,7 +6,7 @@ import { db } from "@/lib/db";
 import { getT } from "@/lib/i18n/server";
 import { getBank, isOwner } from "@/lib/placement/bank";
 
-export const metadata = { title: "Вводный тест — банк заданий" };
+export const metadata = { title: "Placement test — банк заданий" };
 export const dynamic = "force-dynamic";
 
 /** Режим владельца платформы: правка банка вводного теста. Другим учителям страница недоступна. */

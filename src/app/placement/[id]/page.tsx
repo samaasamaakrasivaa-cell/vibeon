@@ -8,7 +8,7 @@ import { audioUrl, getBank } from "@/lib/placement/bank";
 import { STEPS, summarize } from "@/lib/placement/engine";
 import { publicView, stateOf } from "@/lib/placement/run";
 
-export const metadata = { title: "Вводный тест", robots: { index: false } };
+export const metadata = { title: "Placement test", robots: { index: false } };
 
 /** Прохождение вводного теста — отдельный экран без меню, чтобы ничего не отвлекало. */
 export default async function PlacementPage({ params }: { params: Promise<{ id: string }> }) {

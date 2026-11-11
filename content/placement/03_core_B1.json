@@ -834,7 +834,7 @@
     "q": "I ___ my dentist on Thursday at 3. It's all booked.",
     "options": [
       "see",
-      "will see",
+      "have seen",
       "am seeing",
       "saw"
     ],
@@ -869,12 +869,12 @@
     "topic_en": "Future forms: will / going to / present continuous",
     "topic_ru": "Способы выражения будущего",
     "type": "brackets",
-    "q": "Look at that car! It ___ (crash) into the wall!",
+    "q": "Look at that car — it's going much too fast! It ___ (crash) into the wall!",
     "accept": [
       "is going to crash",
       "'s going to crash"
     ],
-    "explain_ru": "Прогноз по тому, что видим сейчас, — be going to: is going to crash."
+    "explain_ru": "Предсказание по тому, что видим сейчас, — be going to: is going to crash."
   },
   {
     "id": "G-B1-33",
@@ -890,7 +890,7 @@
       "might",
       "mustn't",
       "can",
-      "should"
+      "ought"
     ],
     "answer": 0,
     "explain_ru": "Предположение «возможно» — might."
@@ -1044,7 +1044,7 @@
     "topic_en": "Reported speech: statements",
     "topic_ru": "Косвенная речь: утверждения",
     "type": "mcq",
-    "q": "Tom said he ___ coming to the party.",
+    "q": "Last week Tom said he ___ coming to the party, but in the end he came.",
     "options": [
       "isn't",
       "won't",
@@ -1052,7 +1052,7 @@
       "doesn't"
     ],
     "answer": 2,
-    "explain_ru": "В косвенной речи после said время сдвигается назад: isn't → wasn't."
+    "explain_ru": "Косвенная речь о прошлом (last week, in the end he came): isn't → wasn't."
   },
   {
     "id": "G-B1-43",
@@ -1796,12 +1796,12 @@
     "topic_en": "Passive: present and past simple",
     "topic_ru": "Пассивный залог: Present и Past Simple",
     "type": "brackets",
-    "q": "Our flight ___ (cancel) because of the snow.",
+    "q": "Our flight ___ (cancel) yesterday because of the snow, so we stayed another night.",
     "accept": [
       "was cancelled",
       "was canceled"
     ],
-    "explain_ru": "Рейс отменили — пассив в Past Simple: was cancelled."
+    "explain_ru": "Вчера (yesterday) рейс отменили — пассив в Past Simple: was cancelled."
   },
   {
     "id": "G-B1-71",

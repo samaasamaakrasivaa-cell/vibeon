@@ -5,8 +5,8 @@
     "level": "A2",
     "band": 1,
     "topic_id": "g-a2-past-simple",
-    "topic_en": "Past simple: irregular verbs, negatives and questions",
-    "topic_ru": "Past Simple: неправильные глаголы, отрицания и вопросы",
+    "topic_en": "Past simple: regular and irregular verbs",
+    "topic_ru": "Past Simple: правильные и неправильные глаголы",
     "type": "mcq",
     "q": "I ___ my keys at the gym yesterday, so I had to go back.",
     "options": [
@@ -23,9 +23,9 @@
     "skill": "grammar",
     "level": "A2",
     "band": 2,
-    "topic_id": "g-a2-past-simple",
-    "topic_en": "Past simple: irregular verbs, negatives and questions",
-    "topic_ru": "Past Simple: неправильные глаголы, отрицания и вопросы",
+    "topic_id": "g-a2-past-simple-neg-q",
+    "topic_en": "Past simple: negatives and questions",
+    "topic_ru": "Past Simple: отрицания и вопросы",
     "type": "gap",
     "q": "___ you enjoy the concert last night?",
     "accept": [
@@ -754,8 +754,8 @@
     "level": "A2",
     "band": 1,
     "topic_id": "g-a2-past-simple",
-    "topic_en": "Past simple: irregular verbs, negatives and questions",
-    "topic_ru": "Past Simple: неправильные глаголы, отрицания и вопросы",
+    "topic_en": "Past simple: regular and irregular verbs",
+    "topic_ru": "Past Simple: правильные и неправильные глаголы",
     "type": "mcq",
     "q": "I ___ my old school friend in the supermarket yesterday.",
     "options": [
@@ -772,9 +772,9 @@
     "skill": "grammar",
     "level": "A2",
     "band": 2,
-    "topic_id": "g-a2-past-simple",
-    "topic_en": "Past simple: irregular verbs, negatives and questions",
-    "topic_ru": "Past Simple: неправильные глаголы, отрицания и вопросы",
+    "topic_id": "g-a2-past-simple-neg-q",
+    "topic_en": "Past simple: negatives and questions",
+    "topic_ru": "Past Simple: отрицания и вопросы",
     "type": "mcq",
     "q": "We ___ go out last night. We stayed at home and watched TV.",
     "options": [
@@ -791,15 +791,15 @@
     "skill": "grammar",
     "level": "A2",
     "band": 3,
-    "topic_id": "g-a2-past-simple",
-    "topic_en": "Past simple: irregular verbs, negatives and questions",
-    "topic_ru": "Past Simple: неправильные глаголы, отрицания и вопросы",
+    "topic_id": "g-a2-past-simple-neg-q",
+    "topic_en": "Past simple: negatives and questions",
+    "topic_ru": "Past Simple: отрицания и вопросы",
     "type": "gap",
-    "q": "How much ___ your new phone cost?",
+    "q": "How much ___ your new phone cost when you bought it?",
     "accept": [
       "did"
     ],
-    "explain_ru": "Вопрос в Past Simple: How much did … cost?",
+    "explain_ru": "Покупка уже в прошлом (when you bought it) — вопрос в Past Simple: How much did it cost?",
     "hint_ru": "вспомогательный глагол"
   },
   {
@@ -940,9 +940,9 @@
     "type": "mcq",
     "q": "It's cold in here. — I ___ close the window.",
     "options": [
-      "am going to",
+      "closing",
       "close",
-      "am closing",
+      "closes",
       "will"
     ],
     "answer": 3,
@@ -1282,8 +1282,8 @@
     "level": "A2",
     "band": 1,
     "topic_id": "g-a2-past-simple",
-    "topic_en": "Past simple: irregular verbs, negatives and questions",
-    "topic_ru": "Past Simple: неправильные глаголы, отрицания и вопросы",
+    "topic_en": "Past simple: regular and irregular verbs",
+    "topic_ru": "Past Simple: правильные и неправильные глаголы",
     "type": "mcq",
     "q": "We ___ a lovely time at my sister's wedding last Saturday.",
     "options": [
@@ -1301,8 +1301,8 @@
     "level": "A2",
     "band": 1,
     "topic_id": "g-a2-past-simple",
-    "topic_en": "Past simple: irregular verbs, negatives and questions",
-    "topic_ru": "Past Simple: неправильные глаголы, отрицания и вопросы",
+    "topic_en": "Past simple: regular and irregular verbs",
+    "topic_ru": "Past Simple: правильные и неправильные глаголы",
     "type": "mcq",
     "q": "I ___ to work by bus yesterday because my car was at the garage.",
     "options": [
@@ -1319,9 +1319,9 @@
     "skill": "grammar",
     "level": "A2",
     "band": 2,
-    "topic_id": "g-a2-past-simple",
-    "topic_en": "Past simple: irregular verbs, negatives and questions",
-    "topic_ru": "Past Simple: неправильные глаголы, отрицания и вопросы",
+    "topic_id": "g-a2-past-simple-neg-q",
+    "topic_en": "Past simple: negatives and questions",
+    "topic_ru": "Past Simple: отрицания и вопросы",
     "type": "brackets",
     "q": "I ___ (not / sleep) well last night because of the noise.",
     "accept": [
@@ -1902,5 +1902,43 @@
     "answer": 0,
     "explain_ru": "О человеке и его интересе — interested in; interesting — о предмете.",
     "group": "a2-v4"
+  },
+  {
+    "id": "G-A2-66",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-past-simple-neg-q",
+    "topic_en": "Past simple: negatives and questions",
+    "topic_ru": "Past Simple: отрицания и вопросы",
+    "type": "mcq",
+    "q": "___ you see the football match yesterday?",
+    "options": [
+      "Do",
+      "Did",
+      "Were",
+      "Have"
+    ],
+    "answer": 1,
+    "explain_ru": "Вопрос в прошлом (yesterday) — Did + глагол в начальной форме."
+  },
+  {
+    "id": "G-A2-67",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-past-simple-neg-q",
+    "topic_en": "Past simple: negatives and questions",
+    "topic_ru": "Past Simple: отрицания и вопросы",
+    "type": "mcq",
+    "q": "She ___ come to work on Monday because she was ill.",
+    "options": [
+      "don't",
+      "wasn't",
+      "didn't",
+      "not"
+    ],
+    "answer": 2,
+    "explain_ru": "Отрицание в прошлом — didn't + глагол в начальной форме."
   }
 ]

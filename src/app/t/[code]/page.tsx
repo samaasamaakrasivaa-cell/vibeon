@@ -5,7 +5,7 @@ import { GuestStart } from "@/components/placement/GuestStart";
 import { db } from "@/lib/db";
 import { getT } from "@/lib/i18n/server";
 
-export const metadata = { title: "Вводный тест", robots: { index: false } };
+export const metadata = { title: "Placement test", robots: { index: false } };
 
 /** Ссылка «для нового человека»: вводный тест без регистрации. */
 export default async function GuestTest({ params }: { params: Promise<{ code: string }> }) {
