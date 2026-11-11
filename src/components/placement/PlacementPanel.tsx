@@ -32,9 +32,8 @@ export function PlacementPanel({ students, rows, link, origin, owner }: { studen
           <div className="grow min-w-0">
             <h2>{t("pl.cardTitle")}</h2>
             <div className="plglass">
-              <span><Icon name="target" size="sm" />A1–C1</span>
+              <span><Icon name="target" size="sm" />{t("pl.factAny")}</span>
               <span><Icon name="clock" size="sm" />{t("pl.factTime")}</span>
-              <span><Icon name="spark" size="sm" />{t("pl.factAdaptive")}</span>
             </div>
           </div>
         </div>
@@ -46,7 +45,7 @@ export function PlacementPanel({ students, rows, link, origin, owner }: { studen
         <div className="plhero3-actions">
           <button className="btn plwhite" disabled={pending} onClick={() => run(selfPlacement, (r) => router.push(`/placement/${r.id}`), true)}><Icon name="pencil" size="sm" />{t("pl.takeSelf")}</button>
           <button className="btn plglassbtn" onClick={() => setAssign(true)}><Icon name="user" size="sm" />{t("pl.assign")}</button>
-          <button className="btn plglassbtn" onClick={() => setLinkOpen(true)}><Icon name="link" size="sm" />{t("pl.linkNew")}</button>
+          <span className="pltipwrap" data-tip={t("pl.linkTip")}><button className="btn plglassbtn" onClick={() => setLinkOpen(true)} aria-describedby="pl-link-tip"><Icon name="link" size="sm" />{t("pl.linkNew")}</button><span id="pl-link-tip" className="sr-only">{t("pl.linkTip")}</span></span>
           {owner && <Link className="plownlink" href="/teacher/placement/bank"><Icon name="book" size="sm" />{t("pl.editBank")}</Link>}
         </div>
         {error && <div className="alert">{error}</div>}

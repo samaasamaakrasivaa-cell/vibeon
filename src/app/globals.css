@@ -1262,14 +1262,31 @@ select.iedit, select.iedit:hover, select.iedit:focus { background-position: righ
 .plprog button { display: inline-flex; align-items: center; gap: 4px; padding: 7px 12px; border-radius: 99px; background: var(--surface); color: var(--accent-text); font-weight: 600; font-size: 13px; border: 1.5px dashed var(--accent); }
 .plprog button:hover { background: var(--accent-bg); }
 .pltips { display: flex; flex-direction: column; gap: 6px; }
-/* сам вопрос — отдельным блоком и «книжным» шрифтом; инструкция и подсказки — мелким серым */
-.plqbox { display: flex; flex-direction: column; gap: 12px; padding: 20px 22px; border-radius: 16px; background: var(--surface2); border: 1px solid var(--sep); }
-.plqbox .plq { font-family: ui-serif, "New York", "Iowan Old Style", Charter, Georgia, "Noto Serif", "Times New Roman", serif; font-size: 22px; line-height: 1.65; color: var(--text); letter-spacing: .005em; }
-.plqbox .plgap { font-family: var(--font-sans); font-size: 18px; background: var(--surface); }
-.plqbox .plblank { font-family: var(--font-sans); font-size: 18px; }
+/* сам вопрос — отдельным блоком, тем же шрифтом, но крупнее и плотнее; инструкция и подсказки — мелким серым */
+.plqbox { display: flex; flex-direction: column; gap: 12px; padding: 22px 24px; border-radius: 18px; background: var(--surface2); border: 1px solid var(--sep); }
+.plqbox .plq { font-size: 23px; line-height: 1.5; font-weight: 600; letter-spacing: -.012em; color: var(--text); }
+.plqbox .plgap { font-size: 19px; font-weight: 600; background: var(--surface); }
+.plqbox .plblank { font-size: 21px; font-weight: 700; min-width: 84px; }
 .pltip { font-size: 13px; line-height: 1.45; color: var(--text2); }
-[data-text] .tq legend { font-family: ui-serif, "New York", "Iowan Old Style", Charter, Georgia, "Noto Serif", "Times New Roman", serif; font-size: 18px; }
-@media (max-width: 640px) { .plqbox { padding: 16px; } .plqbox .plq { font-size: 19px; } }
+[data-text] .tq legend { font-size: 17px; letter-spacing: -.005em; }
+@media (max-width: 640px) { .plqbox { padding: 16px 18px; border-radius: 16px; } .plqbox .plq { font-size: 20px; } }
+/* «I don't know» — отдельный вариант под ответами */
+.pldkrow { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; margin-top: -4px; }
+.topt.pldk { display: inline-flex; align-items: center; gap: 7px; font-size: 15px; font-weight: 600; padding-left: 16px; padding-right: 18px; color: var(--text); border-color: var(--text3); }
+.topt.pldk:hover { background: var(--surface2); }
+.topt.pldk.on { border-style: solid; border-color: var(--accent); background: var(--accent-bg); color: var(--accent-text); }
+/* на компьютере пояснение — всплывающей подсказкой; на телефоне (нет наведения) — мелкой строкой под кнопкой */
+.pldkcap { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+@media (hover: none) { .pldkcap { position: static; width: auto; height: auto; overflow: visible; clip: auto; white-space: normal; font-size: 12.5px; line-height: 1.4; color: var(--text2); } }
+/* всплывающая подсказка при наведении (и при фокусе с клавиатуры) */
+[data-tip] { position: relative; }
+[data-tip]::after { content: attr(data-tip); position: absolute; left: 0; bottom: calc(100% + 8px); z-index: 30; width: max-content; max-width: min(320px, calc(100vw - 48px)); padding: 9px 12px; border-radius: 10px;
+  background: var(--text); color: var(--bg); font-size: 13px; font-weight: 500; line-height: 1.4; text-align: left; white-space: normal; letter-spacing: 0;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, .18); opacity: 0; transform: translateY(4px); pointer-events: none; transition: opacity .15s ease, transform .15s ease; }
+[data-tip]:hover::after, [data-tip]:focus-visible::after, [data-tip]:focus-within::after { opacity: 1; transform: translateY(0); transition-delay: .25s; }
+.pltipwrap { display: inline-flex; }
+.pltipwrap[data-tip]::after { left: auto; right: 0; max-width: min(400px, calc(100vw - 48px)); }
+@media (hover: none) { [data-tip]::after { display: none; } }
 .plhint { display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; padding: 4px 10px; border-radius: 8px; background: var(--warn-bg); color: var(--warn-text); font-size: 13px; font-weight: 600; }
 .plpast { display: flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: 10px; background: var(--accent-bg); color: var(--accent-text); font-size: 13px; font-weight: 600; }
 .plpause { flex-direction: column; gap: 2px; }

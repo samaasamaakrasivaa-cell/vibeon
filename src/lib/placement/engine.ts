@@ -162,7 +162,8 @@ export function nextCore(st: PState, bank: Bank, rnd: () => number = Math.random
   const D = st.diag!;
   const dItems = st.core.filter((x) => x.ph === "d" && (st.items[x.id] as CoreItem)?.level === PL_LEVELS[D]);
   const dAcc = stat(st, (it, x) => x.ph === "d" && it.level === PL_LEVELS[D]);
-  if (!st.fb && !st.up && D > 0 && dAcc.n >= FALLBACK_AFTER && dAcc.c / dAcc.n < FALLBACK_BELOW) { st.fb = true; st.diag = D - 1; return nextCore(st, bank, rnd); }
+  // провал на подробной проверке — спускаемся на уровень; если и там провал — ещё ниже (угаданные опорные задания не должны «застрять» наверху)
+  if (!st.up && D > 0 && dAcc.n >= FALLBACK_AFTER && dAcc.c / dAcc.n < FALLBACK_BELOW) { st.fb = true; st.diag = D - 1; return nextCore(st, bank, rnd); }
   void dItems;
   const gs = notLast(st, groupsOf(bank, D));
   // по кругу: сначала из каждой группы простое задание, потом два сложных

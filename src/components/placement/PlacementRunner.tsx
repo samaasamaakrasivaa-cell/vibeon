@@ -9,10 +9,8 @@ import type { PView } from "@/lib/placement/run";
 import { Icon } from "../Icon";
 import type { IconName } from "../icon-paths";
 
-// Внутри теста кнопки и названия разделов — по-английски; пояснения остаются на языке интерфейса.
-const EN_KEYS = new Set(["pl.prevQ", "pl.next", "pl.nextPart", "pl.dontKnow", "pl.saveFix", "pl.hintShow", "pl.finishPart", "pl.goOn", "pl.start", "pl.finish", "pl.check",
-  "pl.showQ", "pl.speakNow", "pl.stop", "pl.rerecord", "pl.recordAgain", "pl.listen", "pl.listenAgain", "pl.listenMine", "pl.again", "pl.saveLater", "pl.exitNow",
-  "pl.backToTest", "pl.showRu", "pl.hideRu", "pl.recTab", "pl.textTab", "pl.playing", "pl.noPlays", "pl.recording"]);
+// Внутри теста названия разделов — по-английски (как и сами задания); кнопки и пояснения — на языке интерфейса.
+const EN_KEYS = new Set(["pl.recTab", "pl.textTab"]);
 function useT() {
   const b = useTBase();
   return { ...b, t: (k: DK, v?: Record<string, string | number>) => (EN_KEYS.has(k) || k.startsWith("pl.part.") ? translate("en", k, v) : b.t(k, v)) };
@@ -103,7 +101,7 @@ export function PlacementRunner({ id, initial, sample, done, home }: { id: strin
       {between ? <Between from={between.from} to={between.to} onGo={() => { setBetween(null); shownAt.current = Date.now(); }} /> : <>
         {v.section === "intro" && <Intro sample={sample} pending={pending} onStart={() => step(() => startPlacement(id))} />}
         {block && (past && back > 0
-          ? <CoreStep key={`past-${past.item.id}`} item={past.item} n={curIdx - back - from + 1} initial={past.dk ? "" : past.given ?? ""} past pending={pending} onBack={curIdx - back > from ? () => openPast(back + 1) : undefined} onAnswer={revise} />
+          ? <CoreStep key={`past-${past.item.id}`} item={past.item} n={curIdx - back - from + 1} initial={past.dk ? "" : past.given ?? ""} initialDk={past.dk} past pending={pending} onBack={curIdx - back > from ? () => openPast(back + 1) : undefined} onAnswer={revise} />
           : (v as Core).item && <CoreStep key={(v as Core).item!.id} item={(v as Core).item!} n={curIdx - from + 1} pending={pending} onBack={curIdx > from ? () => openPast(1) : undefined} onAnswer={(val, dk, h) => step(() => answerCore(id, (v as Core).item!.id, val, ms(), dk, h))} />)}
         {(v.section === "reading" || v.section === "listening") && (
           <TextStep key={(v as unknown as TextV).items.map((x) => x.id).join()} v={v as unknown as TextV} pending={pending} attempt={id} onFinish={() => step(() => finishTexts(id))} />
@@ -215,16 +213,19 @@ function Intro({ sample, pending, onStart }: { sample: string; pending: boolean;
 
 // ───────── Грамматика и лексика ─────────
 
-function CoreStep({ item: it, n, pending, onAnswer, onBack, initial, past }: { item: CoreItemV; n: number; pending: boolean; onAnswer: (val: string | number | null, dk: boolean, hinted: boolean) => void; onBack?: () => void; initial?: string | number; past?: boolean }) {
+function CoreStep({ item: it, n, pending, onAnswer, onBack, initial, initialDk, past }: { item: CoreItemV; n: number; pending: boolean; onAnswer: (val: string | number | null, dk: boolean, hinted: boolean) => void; onBack?: () => void; initial?: string | number; initialDk?: boolean; past?: boolean }) {
   const { t } = useT();
   const [val, setVal] = useState<string | number>(initial ?? "");
+  const [dk, setDk] = useState(!!initialDk);
   const [showHint, setShowHint] = useState(false);
+  const pick = (k: string | number) => { setVal(k); setDk(false); };
+  const submit = () => onAnswer(dk ? null : val, dk, showHint);
   const input = (
-    <input className="input plgap" autoFocus autoComplete="off" autoCapitalize="off" spellCheck={false} value={String(val)} onChange={(e) => setVal(e.target.value)}
+    <input className="input plgap" autoFocus autoComplete="off" autoCapitalize="off" spellCheck={false} value={String(val)} onChange={(e) => pick(e.target.value)}
       onKeyDown={(e) => { if (e.key === "Enter" && String(val).trim()) onAnswer(String(val), false, showHint); }} aria-label={t("pl.answer")} />
   );
   const parts = (s2: string) => { const [a, b] = s2.split("___"); return <p className="plq">{a}{input}{b}</p>; };
-  const empty = val === "" || (typeof val === "string" && !val.trim());
+  const empty = !dk && (val === "" || (typeof val === "string" && !val.trim()));
   const typed = it.type !== "mcq";
   return (
     <section className="card flex flex-col gap-4" data-item={it.id}>
@@ -242,7 +243,13 @@ function CoreStep({ item: it, n, pending, onAnswer, onBack, initial, past }: { i
           </>
         )}
       </div>
-      {it.type === "mcq" && <div className="ploptions">{it.options!.map((o, k) => <button key={k} type="button" className={`topt ${val === k ? "on" : ""}`} aria-pressed={val === k} onClick={() => setVal(k)}>{o}</button>)}</div>}
+      {it.type === "mcq" && <div className="ploptions">{it.options!.map((o, k) => <button key={k} type="button" className={`topt ${!dk && val === k ? "on" : ""}`} aria-pressed={!dk && val === k} onClick={() => pick(k)}>{o}</button>)}</div>}
+      {/* «I don't know» — отдельным вариантом под ответами: лучше честно, чем угадывать */}
+      <div className="pldkrow">
+        <button type="button" className={`topt dk pldk ${dk ? "on" : ""}`} aria-pressed={dk} data-tip={t("pl.dkTip")} aria-describedby="pl-dk-tip"
+          onClick={() => { setDk(!dk); if (!dk) setVal(""); }}><Icon name="qmark" size="sm" />I don&apos;t know</button>
+        <span id="pl-dk-tip" className="pldkcap">{t("pl.dkTip")}</span>
+      </div>
       {typed && (
         <div className="pltips">
           {it.hint && (showHint
@@ -254,8 +261,7 @@ function CoreStep({ item: it, n, pending, onAnswer, onBack, initial, past }: { i
       )}
       <div className="plactions">
         {onBack && <button type="button" className="btn plain mr-auto" disabled={pending} onClick={onBack}><Icon name="chevl" size="sm" />{t("pl.prevQ")}</button>}
-        <button type="button" className="btn plain" disabled={pending} onClick={() => onAnswer(null, true, showHint)}>{t("pl.dontKnow")}</button>
-        <button className="btn primary" disabled={pending || empty} onClick={() => onAnswer(val, false, showHint)}>{past ? t("pl.saveFix") : t("pl.next")}</button>
+        <button className="btn primary" disabled={pending || empty} onClick={submit}>{past ? t("pl.saveFix") : t("pl.next")}</button>
       </div>
     </section>
   );
@@ -294,7 +300,7 @@ function TextStep({ v, pending, onFinish, attempt }: { v: TextV; pending: boolea
         </fieldset>
       ))}
       <div className="plactions">
-        <button className="btn primary" disabled={pending || playing} onClick={finish}>Next<Icon name="right" size="sm" /></button>
+        <button className="btn primary" disabled={pending || playing} onClick={finish}>{t("pl.next")}<Icon name="right" size="sm" /></button>
       </div>
       <p className="small muted m-0 text-right">{left ? t("pl.leftQ", { n: left }) : t("pl.allAnswered")}</p>
     </section>

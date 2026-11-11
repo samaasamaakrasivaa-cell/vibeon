@@ -1213,13 +1213,13 @@ const ru = {
   "pl.tab": "Тесты",
   "pl.tabLead": "Placement test определяет уровень от A1 до C1. Результат приходит вам, а для ученика становится точкой А маршрута.",
   "pl.cardTitle": "Placement test A1–C1",
-  "pl.cardLead": "Ступенчатый тест: автоматически подстраивается под ответы ученика и точно находит его уровень.",
+  "pl.cardLead": "Универсальный многоступенчатый тест: автоматически подстраивается под ответы ученика и точно находит его уровень.",
   "pl.takeSelf": "Пройти самостоятельно",
   "pl.assign": "Назначить ученику",
   "pl.assignDo": "Назначить",
   "pl.assignHint": "Ученик получит уведомление и карточку «Placement test» в кабинете. Незаконченный старый тест заменится.",
   "pl.linkNew": "Ссылка для нового ученика",
-  "pl.linkLead": "Человек без аккаунта проходит тест по ссылке: вводит имя и контакт. Результат придёт вам.",
+  "pl.linkLead": "Скопируйте ссылку и отправьте человеку без аккаунта на платформе. Он вводит имя и контакт и проходит тест; прерваться и продолжить можно по той же ссылке в том же браузере. Когда он закончит, вам придёт уведомление, а результат появится в «Результатах» — письмо и говорение проверяете вы.",
   "pl.linkCreate": "Создать ссылку",
   "pl.linkShow": "Показать результат в конце",
   "pl.linkShowHint": "Предварительный уровень по грамматике, лексике, чтению и аудированию. Письмо и говорение всё равно проверяете вы.",
@@ -1456,7 +1456,7 @@ const ru = {
   "pl.expA1": "Начинающий (A1–A2)",
   "pl.expB1": "Средний (B1)",
   "pl.expB2": "Продвинутый (B2–C1)",
-  "pl.expectHint": "Тест начнёт с этого уровня и будет короче. Если ошиблись — он сам спустится или поднимется.",
+  "pl.expectHint": "Тест пропустит разминку и начнёт поиск сразу с этого уровня — так он чуть короче. Если уровень указан неверно, тест сам спустится или поднимется: точность не страдает.",
   "pl.extraText": "Результат пока неоднозначный. Чтобы уточнить его, сделайте ещё один текст — он последний в этом разделе.",
   "pl.factTime": "40–60 минут",
   "pl.factLevels": "Уровни A1–C1",
@@ -1594,6 +1594,9 @@ const ru = {
   "pl.exRepeats": "Повторная проверка после ошибки ({n}): ошибка подтвердилась в {k}. {list}",
   "pl.nextLeft": "Без ответа: {n}. Они засчитаются как неверные, вернуться к этому тексту будет нельзя. Дальше?",
   "pl.byPrev": "подобран по вашим ответам",
+  "pl.dkTip": "Не уверены в ответе? Лучше выберите этот вариант, чем угадывать, — так тест точнее определит ваш уровень.",
+  "pl.factAny": "Универсальный — для любого уровня",
+  "pl.linkTip": "Для человека без аккаунта на платформе: скопируйте ссылку и отправьте ему. Он вводит имя и контакт и проходит тест; прерваться и продолжить можно по той же ссылке в том же браузере. Когда он закончит, вам придёт уведомление, а результат появится ниже в «Результатах» — письмо и говорение проверяете вы. Одной ссылкой могут пользоваться несколько человек.",
 } as const;
 
 export type DictKey = keyof typeof ru;
@@ -3190,6 +3193,9 @@ const en: Record<DictKey, string> = {
   "pl.exRepeats": "Re-check after a mistake ({n}): confirmed in {k}. {list}",
   "pl.nextLeft": "{n} unanswered — they count as wrong, and you can't come back. Continue?",
   "pl.byPrev": "chosen from your answers",
+  "pl.dkTip": "Not sure? Choose this instead of guessing — it helps the test find your level more accurately.",
+  "pl.factAny": "Universal — for any level",
+  "pl.linkTip": "For someone without an account: copy the link and send it. They enter a name and contact and take the test; they can pause and continue from the same link in the same browser. When they finish, you get a notification and the result appears below in Results — you check writing and speaking. Several people can use one link.",
 };
 
 export const dictionaries: Record<LangCode, Record<DictKey, string>> = { ru, en };
