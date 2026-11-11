@@ -1344,3 +1344,9 @@ select.iedit, select.iedit:hover, select.iedit:focus { background-position: righ
 .plfam-ok .plfam-st { color: var(--ok-text); font-weight: 600; } .plfam-mid .plfam-st { color: var(--warn-text); font-weight: 600; } .plfam-bad .plfam-st { color: var(--bad-text); font-weight: 600; }
 .plfam-ok th b::before, .plfam-mid th b::before, .plfam-bad th b::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 8px; vertical-align: 1px; }
 .plfam-ok th b::before { background: var(--ok); } .plfam-mid th b::before { background: var(--warn); } .plfam-bad th b::before { background: var(--bad); }
+
+/* «Как устроен тест»: шаги лесенки и разделы */
+.plabsec { display: flex; flex-direction: column; gap: 10px; }
+.plsteps3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+@media (max-width: 760px) { .plsteps3 { grid-template-columns: 1fr; } }
+.plabpart { display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; border-radius: 14px; background: var(--surface2); }

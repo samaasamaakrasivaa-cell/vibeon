@@ -9,21 +9,28 @@ const STEPS = ["A1", "A1+", "A2", "A2+", "B1", "B1+", "B2", "B2+", "C1"];
 const PATH = [0, 2, 2, 4, 4, 4, 6, 6, 6, 4, 5, 5, 4, 5, 5, 4, 5, 5];
 const OK = [1, 1, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1];
 
-/** «Как устроен тест» — подробно для учителя: этапы, как оценивается, что вы получите. */
+/** «Как устроен тест» — коротко и тезисами: как ищет уровень, что внутри, как читать результат, почему ему можно доверять. */
 export function PlacementAbout() {
   const { t } = useT();
   const W = 560, H = 190, x0 = 40, dx = (W - x0 - 10) / (PATH.length - 1), y = (s: number) => H - 22 - s * ((H - 40) / 8);
-  const stages: [IconName, DictKey, DictKey][] = [
-    ["sound", "pl.st1", "pl.st1t"], ["book", "pl.st2", "pl.st2t"], ["cards", "pl.st3", "pl.st3t"],
-    ["note", "pl.st4", "pl.st4t"], ["pencil", "pl.st5", "pl.st5t"], ["route", "pl.st6", "pl.st6t"],
-  ];
+  const steps: [IconName, DictKey, DictKey][] = [["spark", "pl.ab2.s1", "pl.ab2.s1t"], ["route", "pl.ab2.s2", "pl.ab2.s2t"], ["target", "pl.ab2.s3", "pl.ab2.s3t"]];
+  const parts: [IconName, DictKey][] = [["book", "pl.ab2.p.core"], ["cards", "pl.ab2.p.vocab"], ["note", "pl.ab2.p.texts"], ["pencil", "pl.ab2.p.ws"]];
+  const list = (title: DictKey, keys: DictKey[]) => (
+    <div className="plabtips">
+      <b>{t(title)}</b>
+      {keys.map((k) => <div key={k} className="plpoint"><span className="pldotc" />{t(k)}</div>)}
+    </div>
+  );
   return (
     <div className="plabout">
-      <ol className="pltimeline">
-        {stages.map(([ic, h, x], i) => (
-          <li key={h}><span className="pltl-ico"><Icon name={ic} size="sm" /></span><div><b>{i + 1}. {t(h)}</b><p>{t(x)}</p></div></li>
-        ))}
-      </ol>
+      <div className="plabsec">
+        <b>{t("pl.ab2.how")}</b>
+        <div className="plsteps3">
+          {steps.map(([ic, h, x], i) => (
+            <div key={h} className="plpart"><span className="plico sm"><Icon name={ic} size="sm" /></span><div><b>{i + 1}. {t(h)}</b><div className="small muted">{t(x)}</div></div></div>
+          ))}
+        </div>
+      </div>
       <div className="plladder">
         <div className="small font-semibold mb-1">{t("pl.ab.ladder")}</div>
         <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={t("pl.ab.ladder")}>
@@ -36,10 +43,17 @@ export function PlacementAbout() {
         </svg>
         <div className="pllegend small muted"><span><i className="ok" />{t("pl.ab.right")}</span><span><i className="bad" />{t("pl.ab.wrong")}</span><span>{t("pl.ab.ladderHint")}</span></div>
       </div>
-      <div className="plabtips">
-        <b>{t("pl.ab.tips")}</b>
-        {(["pl.ab.tip1", "pl.ab.tip2", "pl.ab.tip3", "pl.ab.tip4"] as DictKey[]).map((k) => <div key={k} className="plpoint"><span className="pldotc" />{t(k)}</div>)}
+      <div className="plabsec">
+        <b>{t("pl.ab2.parts")}</b>
+        <div className="flex flex-col gap-2">
+          {parts.map(([ic, k]) => { const [head, ...rest] = t(k).split(" — "); return (
+            <div key={k} className="plabpart"><span className="plico sm"><Icon name={ic} size="sm" /></span><div><b>{head}</b><div className="small muted">{((r) => r.charAt(0).toUpperCase() + r.slice(1))(rest.join(" — "))}</div></div></div>
+          ); })}
+        </div>
       </div>
+      {list("pl.ab2.read", ["pl.ab2.r1", "pl.ab2.r2", "pl.ab2.r3", "pl.ab2.r4"])}
+      {list("pl.ab2.why", ["pl.ab2.w1", "pl.ab2.w2", "pl.ab2.w3", "pl.ab2.w4"])}
+      {list("pl.ab2.tips", ["pl.ab2.t1", "pl.ab2.t2", "pl.ab2.t3", "pl.ab2.t4"])}
     </div>
   );
 }
