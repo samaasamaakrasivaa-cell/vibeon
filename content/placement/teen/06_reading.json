@@ -678,5 +678,345 @@
         "explain_ru": "«3 o'clock at the park gate?» — «Great»."
       }
     ]
+  },
+  {
+    "id": "TR-B1-01",
+    "skill": "reading",
+    "level": "B1",
+    "band": 1,
+    "topic_en": "Article: a teenage inventor",
+    "topic_ru": "Статья: юная изобретательница",
+    "type": "reading",
+    "title": "The Girl Who Built a Beach Robot",
+    "text_type": "article",
+    "passage": "When Lena Petrova was thirteen, she went on holiday to the seaside and was shocked by how much plastic there was on the beach. 'I couldn't stop thinking about it,' she says. Back home, she started reading about the problem online, and after a few months she had an idea: a small robot that could collect rubbish from beaches. Her first robot was made from an old toy car and a kitchen sieve. 'It looked terrible, and it broke after ten minutes,' she laughs. But Lena didn't give up. Two years and twelve robots later, her design won a national science competition for young people. Now a company wants to build her robots for real. Lena, who is now fifteen, hasn't decided what she wants to do after school. 'Maybe engineering,' she says. 'Or maybe something completely different. I'm still only fifteen!'",
+    "words": 142,
+    "questions": [
+      {
+        "id": "TR-B1-01-q1",
+        "q": "What gave Lena the idea for her invention?",
+        "options": [
+          "Seeing plastic on a beach",
+          "An article she read online",
+          "A science lesson at school",
+          "A toy car she got as a present"
+        ],
+        "answer": 0,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "Она увидела пластик на пляже, и это её поразило."
+      },
+      {
+        "id": "TR-B1-01-q2",
+        "q": "What does Lena say about her first robot?",
+        "options": [
+          "It won a science competition",
+          "It didn't work very well",
+          "It was built in a real factory",
+          "It was very expensive to build"
+        ],
+        "answer": 1,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "«It looked terrible, and it broke after ten minutes»."
+      },
+      {
+        "id": "TR-B1-01-q3",
+        "q": "In the text, 'didn't give up' means that Lena…",
+        "options": [
+          "stopped working on it",
+          "felt very sad",
+          "kept trying",
+          "asked her parents for help"
+        ],
+        "answer": 2,
+        "checks": "vocabulary in context",
+        "topic_id": "r-vocabulary-in-context",
+        "explain_ru": "Give up — сдаться; didn't give up — продолжала пробовать."
+      },
+      {
+        "id": "TR-B1-01-q4",
+        "q": "What is happening with Lena's robots now?",
+        "options": [
+          "They clean beaches all over the world",
+          "She is selling them online",
+          "They are on show in a museum",
+          "A company wants to produce them"
+        ],
+        "answer": 3,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "«Now a company wants to build her robots for real»."
+      },
+      {
+        "id": "TR-B1-01-q5",
+        "q": "What can we say about Lena's plans for the future?",
+        "options": [
+          "She isn't sure yet",
+          "She will definitely study engineering",
+          "She wants to start her own company",
+          "She wants to become a science teacher"
+        ],
+        "answer": 0,
+        "checks": "inference",
+        "topic_id": "r-inference",
+        "explain_ru": "«Maybe engineering… Or maybe something completely different» — она ещё не решила."
+      }
+    ]
+  },
+  {
+    "id": "TR-B1-02",
+    "skill": "reading",
+    "level": "B1",
+    "band": 2,
+    "topic_en": "Blog: the new kid at school",
+    "topic_ru": "Блог: новенький в школе",
+    "type": "reading",
+    "title": "Surviving My First Week",
+    "text_type": "blog",
+    "passage": "Moving to a new school in the middle of the year is nobody's dream. When my family moved to Kazan last January, I was terrified. I didn't know anyone, and on my first day I walked into the wrong classroom — twice. By lunchtime I was ready to go home and never come back. Then something unexpected happened. A girl called Dasha sat next to me in the canteen and asked if I liked anime. I did! We talked for the whole break and found out we were both obsessed with the same series. The next day she introduced me to her friends, and by Friday I had a group to sit with. So here's my advice if you're the new kid: don't wait for people to come to you. Find one small thing you have in common with someone. It's much easier than you think.",
+    "words": 146,
+    "questions": [
+      {
+        "id": "TR-B1-02-q1",
+        "q": "Why did the writer change schools?",
+        "options": [
+          "The old school closed down",
+          "The family moved to another city",
+          "There were problems with the teachers",
+          "The writer wanted a stricter school"
+        ],
+        "answer": 1,
+        "checks": "inference",
+        "topic_id": "r-inference",
+        "explain_ru": "«my family moved to Kazan» — семья переехала."
+      },
+      {
+        "id": "TR-B1-02-q2",
+        "q": "What happened on the writer's first day?",
+        "options": [
+          "The writer met Dasha in the morning",
+          "The writer was late for lunch",
+          "The writer went into the wrong room twice",
+          "The writer went home early because of a headache"
+        ],
+        "answer": 2,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "«I walked into the wrong classroom — twice»."
+      },
+      {
+        "id": "TR-B1-02-q3",
+        "q": "How did the writer and Dasha become friends?",
+        "options": [
+          "They were in the same class",
+          "Their parents already knew each other",
+          "A teacher asked Dasha to show the writer around the school",
+          "They discovered they liked the same series"
+        ],
+        "answer": 3,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "«we were both obsessed with the same series»."
+      },
+      {
+        "id": "TR-B1-02-q4",
+        "q": "In the text, 'obsessed with' means…",
+        "options": [
+          "liking something very, very much",
+          "not knowing much about something",
+          "being tired of something",
+          "never having heard of something"
+        ],
+        "answer": 0,
+        "checks": "vocabulary in context",
+        "topic_id": "r-vocabulary-in-context",
+        "explain_ru": "Obsessed with — помешан на чём-то."
+      },
+      {
+        "id": "TR-B1-02-q5",
+        "q": "What is the writer's main advice?",
+        "options": [
+          "Wait for people to talk to you first",
+          "Look for something you share with others",
+          "Join a school club in your first week",
+          "Ask a teacher to introduce you to other students"
+        ],
+        "answer": 1,
+        "checks": "main idea",
+        "topic_id": "r-main-idea",
+        "explain_ru": "«Find one small thing you have in common with someone»."
+      }
+    ]
+  },
+  {
+    "id": "TR-B1-03",
+    "skill": "reading",
+    "level": "B1",
+    "band": 2,
+    "topic_en": "Review: a sci-fi series",
+    "topic_ru": "Отзыв: фантастический сериал",
+    "type": "reading",
+    "title": "Signal Lost — a review",
+    "text_type": "review",
+    "passage": "I started watching Signal Lost because everyone at school was talking about it, and I wasn't disappointed. The series follows four teenagers in a small town where, one morning, every phone and computer suddenly stops working. At first it seems like a fun adventure — no online homework, no messages from parents! But soon the friends realise that something much stranger is going on. The best thing about the series is the characters. They feel like real teenagers: they argue, they make silly jokes, and they make mistakes. The special effects are impressive too, especially in the last episode. My only complaint is that the middle of the season is a bit slow — episodes four and five could easily be one episode. Still, I watched all eight episodes in one weekend, and I can't wait for season two.",
+    "words": 139,
+    "questions": [
+      {
+        "id": "TR-B1-03-q1",
+        "q": "Why did the reviewer start watching the series?",
+        "options": [
+          "A friend sent a link to it",
+          "The reviewer loves science fiction",
+          "People at school were discussing it",
+          "The reviewer saw an advert online"
+        ],
+        "answer": 2,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "«because everyone at school was talking about it»."
+      },
+      {
+        "id": "TR-B1-03-q2",
+        "q": "What happens at the start of the series?",
+        "options": [
+          "Four teenagers disappear from the town",
+          "The town loses electricity every night",
+          "The friends get a strange message",
+          "All phones and computers stop working"
+        ],
+        "answer": 3,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "«every phone and computer suddenly stops working»."
+      },
+      {
+        "id": "TR-B1-03-q3",
+        "q": "What does the reviewer like most?",
+        "options": [
+          "The characters",
+          "The special effects",
+          "The last episode",
+          "The soundtrack"
+        ],
+        "answer": 0,
+        "checks": "writer's attitude",
+        "topic_id": "r-writers-attitude",
+        "explain_ru": "«The best thing about the series is the characters»."
+      },
+      {
+        "id": "TR-B1-03-q4",
+        "q": "What is the reviewer's criticism?",
+        "options": [
+          "Each episode is far too long",
+          "Part of the season is too slow",
+          "The characters are not realistic",
+          "The special effects look cheap"
+        ],
+        "answer": 1,
+        "checks": "writer's attitude",
+        "topic_id": "r-writers-attitude",
+        "explain_ru": "«the middle of the season is a bit slow»."
+      },
+      {
+        "id": "TR-B1-03-q5",
+        "q": "What does the last sentence show?",
+        "options": [
+          "The reviewer had nothing else to do that weekend",
+          "Season two is already available",
+          "The reviewer really enjoyed the series",
+          "The reviewer was a bit disappointed"
+        ],
+        "answer": 2,
+        "checks": "inference",
+        "topic_id": "r-inference",
+        "explain_ru": "Посмотрел всё за выходные и ждёт продолжения — сериал очень понравился."
+      }
+    ]
+  },
+  {
+    "id": "TR-B1-04",
+    "skill": "reading",
+    "level": "B1",
+    "band": 3,
+    "topic_en": "Article: phantom phone vibrations",
+    "topic_ru": "Статья: фантомная вибрация телефона",
+    "type": "reading",
+    "title": "Did Your Phone Just Buzz?",
+    "text_type": "article",
+    "passage": "Have you ever felt your phone vibrate in your pocket, checked it, and found no new messages? If so, you're not alone. Scientists call this 'phantom vibration syndrome', and some studies suggest that up to 90% of phone users have experienced it. Why does it happen? Our brains are constantly trying to predict what is going on around us. If you're waiting for an important message, your brain becomes extra sensitive, so it may 'translate' a small movement of your clothes into a vibration. In other words, your brain would rather make a mistake than miss something important. Is it dangerous? Not really — experts say it's a normal reaction, not an illness. However, if it happens very often, it might be a sign that you're thinking about your phone too much. One simple solution is to switch notifications off for a few hours a day. Your brain will thank you.",
+    "words": 151,
+    "questions": [
+      {
+        "id": "TR-B1-04-q1",
+        "q": "What is 'phantom vibration syndrome'?",
+        "options": [
+          "A phone that vibrates for no reason",
+          "An illness caused by using phones",
+          "Being afraid of missing an important message",
+          "Feeling a phone vibrate when it hasn't"
+        ],
+        "answer": 3,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "Кажется, что телефон вибрирует, а сообщений нет."
+      },
+      {
+        "id": "TR-B1-04-q2",
+        "q": "How common is it, according to the article?",
+        "options": [
+          "Most phone users have had it",
+          "Only a few people have it",
+          "It mostly happens to teenagers",
+          "Scientists don't know yet"
+        ],
+        "answer": 0,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "«up to 90% of phone users have experienced it»."
+      },
+      {
+        "id": "TR-B1-04-q3",
+        "q": "Why does the brain make this mistake?",
+        "options": [
+          "It gets tired after using a phone",
+          "It doesn't want to miss anything important",
+          "Our clothes are often too tight and press on the phone",
+          "Something is wrong with the brain"
+        ],
+        "answer": 1,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "«your brain would rather make a mistake than miss something important»."
+      },
+      {
+        "id": "TR-B1-04-q4",
+        "q": "What do experts think about it?",
+        "options": [
+          "It's a serious problem",
+          "It needs medical treatment",
+          "It's a normal reaction",
+          "It only happens to children"
+        ],
+        "answer": 2,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "«it's a normal reaction, not an illness»."
+      },
+      {
+        "id": "TR-B1-04-q5",
+        "q": "What is the writer's main purpose?",
+        "options": [
+          "To persuade readers to stop using their phones completely",
+          "To advertise a new kind of phone",
+          "To warn readers about a dangerous illness",
+          "To explain a common experience and give advice"
+        ],
+        "answer": 3,
+        "checks": "main idea",
+        "topic_id": "r-main-idea",
+        "explain_ru": "Объясняет, почему так бывает, и даёт простой совет."
+      }
+    ]
   }
 ]

@@ -778,5 +778,395 @@
         "explain_ru": "«Sorry! You're late» — Макс опоздал, и мороженое досталось Люси."
       }
     ]
+  },
+  {
+    "id": "TL-B1-01",
+    "skill": "listening",
+    "level": "B1",
+    "band": 1,
+    "topic_en": "Voice message: tournament changes",
+    "topic_ru": "Голосовое тренера: изменения перед турниром",
+    "type": "listening",
+    "title": "Changes to Saturday's tournament",
+    "situation_ru": "Тренер команды рассказывает об изменениях перед субботним турниром.",
+    "situation_en": "Coach Harris leaves a message for the team about changes to Saturday's tournament.",
+    "speakers": [
+      {
+        "name": "Coach",
+        "gender": "female",
+        "accent": "British"
+      }
+    ],
+    "script": "Coach: Hi everyone, it's Coach Harris. I've got some changes about Saturday's tournament, so please listen carefully. [pause 1s] First of all, the tournament isn't at our school any more. It's been moved to the Riverside Sports Centre, because our gym is being repaired. The bus will leave from the school car park at eight fifteen, not eight thirty, so please don't be late. [pause 1s] Our first match starts at ten, and if we win, we'll play again at around one. Bring your blue kit, not the white one, because the other team is wearing white. You'll also need a packed lunch, because the café at the sports centre is closed this weekend. [pause 1s] Parents are very welcome to come and watch, but they'll have to get there by themselves. There's no room on the bus. Oh, and one last thing: whatever happens, I'm proud of you. See you on Saturday!",
+    "plays": 2,
+    "words": 146,
+    "duration_sec": 51,
+    "questions": [
+      {
+        "id": "TL-B1-01-q1",
+        "q": "Why has the tournament been moved?",
+        "options": [
+          "The school gym is being repaired",
+          "The other team asked for it",
+          "The sports centre has more seats",
+          "There's a problem with the school bus"
+        ],
+        "answer": 0,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "«because our gym is being repaired»."
+      },
+      {
+        "id": "TL-B1-01-q2",
+        "q": "What time does the bus leave?",
+        "options": [
+          "8:30",
+          "8:15",
+          "10:00",
+          "8:50"
+        ],
+        "answer": 1,
+        "checks": "number-time-place",
+        "topic_id": "l-number-time-place",
+        "explain_ru": "«at eight fifteen, not eight thirty»."
+      },
+      {
+        "id": "TL-B1-01-q3",
+        "q": "Which kit should the players bring?",
+        "options": [
+          "The white one",
+          "Both kits",
+          "The blue one",
+          "Their training kit"
+        ],
+        "answer": 2,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "«Bring your blue kit, not the white one»."
+      },
+      {
+        "id": "TL-B1-01-q4",
+        "q": "Why do players need a packed lunch?",
+        "options": [
+          "Lunch there is very expensive",
+          "There won't be time for lunch",
+          "The coach wants to save money",
+          "The café will be closed"
+        ],
+        "answer": 3,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "«the café at the sports centre is closed this weekend»."
+      },
+      {
+        "id": "TL-B1-01-q5",
+        "q": "What does the coach say about parents?",
+        "options": [
+          "They need to travel there separately",
+          "They aren't allowed to watch",
+          "They should bring extra food",
+          "They can come on the team bus"
+        ],
+        "answer": 0,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "«they'll have to get there by themselves. There's no room on the bus»."
+      }
+    ]
+  },
+  {
+    "id": "TL-B1-02",
+    "skill": "listening",
+    "level": "B1",
+    "band": 2,
+    "topic_en": "Dialogue: planning an eco project",
+    "topic_ru": "Диалог: придумываем эко-проект",
+    "type": "listening",
+    "title": "The eco project",
+    "situation_ru": "Нина и Алекс выбирают идею для школьного эко-проекта.",
+    "situation_en": "Nina and Alex are choosing an idea for their school eco project.",
+    "speakers": [
+      {
+        "name": "Nina",
+        "gender": "female",
+        "accent": "American"
+      },
+      {
+        "name": "Alex",
+        "gender": "male",
+        "accent": "American"
+      }
+    ],
+    "script": "Nina: So, we need an idea for the eco project by Friday. Any thoughts?\nAlex: What about a poster about recycling?\nNina: Hmm, everyone does posters. Mr Brown said he wants something original.\nAlex: OK, how about a clothes swap? People bring clothes they don't wear any more and swap them with other people.\nNina: Oh, I like that! My sister has a whole wardrobe of stuff she never wears.\nAlex: We could do it in the school hall on a Saturday.\nNina: The hall's being used for the dance competition next month, though. What about the library?\nAlex: Too small. Maybe the gym, after classes on a Wednesday?\nNina: Perfect. And we could charge fifty cents to come in and give the money to the animal shelter.\nAlex: Great. I'll talk to Mr Brown tomorrow, and you can make the posters.\nNina: So we're doing posters after all!\nAlex: Ha! Only to advertise it.",
+    "plays": 2,
+    "words": 143,
+    "duration_sec": 60,
+    "questions": [
+      {
+        "id": "TL-B1-02-q1",
+        "q": "Why doesn't Nina like Alex's first idea?",
+        "options": [
+          "It would cost too much",
+          "It isn't original enough",
+          "It would be too difficult",
+          "Mr Brown doesn't like posters about recycling"
+        ],
+        "answer": 1,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "«everyone does posters… he wants something original»."
+      },
+      {
+        "id": "TL-B1-02-q2",
+        "q": "What is a clothes swap?",
+        "options": [
+          "People buy cheap second-hand clothes",
+          "People give clothes to an animal shelter",
+          "People exchange clothes they don't wear",
+          "People make new clothes from old ones"
+        ],
+        "answer": 2,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "«People bring clothes they don't wear any more and swap them»."
+      },
+      {
+        "id": "TL-B1-02-q3",
+        "q": "Where will the clothes swap take place?",
+        "options": [
+          "In the school hall",
+          "In the library",
+          "In Mr Brown's classroom",
+          "In the gym"
+        ],
+        "answer": 3,
+        "checks": "number-time-place",
+        "topic_id": "l-number-time-place",
+        "explain_ru": "Зал занят, библиотека мала — выбрали gym."
+      },
+      {
+        "id": "TL-B1-02-q4",
+        "q": "What will they do with the money?",
+        "options": [
+          "Give it to an animal shelter",
+          "Spend it on posters",
+          "Buy new clothes for the school",
+          "Give it to Mr Brown"
+        ],
+        "answer": 0,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "«give the money to the animal shelter»."
+      },
+      {
+        "id": "TL-B1-02-q5",
+        "q": "Why does Nina say 'So we're doing posters after all!'?",
+        "options": [
+          "She's annoyed that Alex changed his mind",
+          "She's joking, because they didn't want posters at first",
+          "She prefers posters to the clothes swap",
+          "She doesn't want to talk to Mr Brown"
+        ],
+        "answer": 1,
+        "checks": "speaker's attitude",
+        "topic_id": "l-speakers-attitude",
+        "explain_ru": "Это шутка: от плакатов отказались, а в итоге всё равно их делают — для рекламы."
+      }
+    ]
+  },
+  {
+    "id": "TL-B1-03",
+    "skill": "listening",
+    "level": "B1",
+    "band": 2,
+    "topic_en": "Podcast: study tips",
+    "topic_ru": "Подкаст: как перестать откладывать",
+    "type": "listening",
+    "title": "Study Hacks",
+    "situation_ru": "Лео ведёт подкаст для школьников и рассказывает, как перестал откладывать уроки.",
+    "situation_en": "Leo hosts a podcast for students. Today he talks about how he stopped putting things off.",
+    "speakers": [
+      {
+        "name": "Leo",
+        "gender": "male",
+        "accent": "British"
+      }
+    ],
+    "script": "Leo: Hi, and welcome back to Study Hacks, the podcast for students who'd rather be doing anything except studying. I'm Leo. [pause 1s] Today's topic is procrastination, or, in simple words, putting things off. I used to be the king of it. I'd sit down to do my homework, then check my phone just for a second, and suddenly it was midnight. [pause 1s] So what changed? Last year I tried something called the Pomodoro technique. You set a timer for twenty-five minutes and work without stopping. Then you take a five-minute break. After four of these, you have a longer break. It sounds too simple to work, but it really helped me. The secret is that twenty-five minutes doesn't feel scary. [pause 1s] My other tip: put your phone in another room. Not on your desk, not in your pocket. Another room. Next week I'll be talking about how to revise for exams without losing your mind. See you then!",
+    "plays": 2,
+    "words": 154,
+    "duration_sec": 67,
+    "questions": [
+      {
+        "id": "TL-B1-03-q1",
+        "q": "Who is the podcast for?",
+        "options": [
+          "Teachers who want new ideas",
+          "Parents of teenagers",
+          "Students who don't enjoy studying",
+          "Young people looking for a job"
+        ],
+        "answer": 2,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "«for students who'd rather be doing anything except studying»."
+      },
+      {
+        "id": "TL-B1-03-q2",
+        "q": "What was Leo's problem in the past?",
+        "options": [
+          "He studied until midnight every day",
+          "He didn't have a phone",
+          "He didn't understand his homework",
+          "He kept delaying his homework"
+        ],
+        "answer": 3,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "Он постоянно откладывал уроки: «I used to be the king of it»."
+      },
+      {
+        "id": "TL-B1-03-q3",
+        "q": "How long is a short break in the Pomodoro technique?",
+        "options": [
+          "Five minutes",
+          "Twenty-five minutes",
+          "Ten minutes",
+          "Fifteen minutes"
+        ],
+        "answer": 0,
+        "checks": "number-time-place",
+        "topic_id": "l-number-time-place",
+        "explain_ru": "«you take a five-minute break»."
+      },
+      {
+        "id": "TL-B1-03-q4",
+        "q": "Why does Leo think the technique works?",
+        "options": [
+          "It's quite complicated, so you have to concentrate hard",
+          "Twenty-five minutes doesn't feel frightening",
+          "His teacher made him use it",
+          "You can check your phone in the breaks"
+        ],
+        "answer": 1,
+        "checks": "speaker's attitude",
+        "topic_id": "l-speakers-attitude",
+        "explain_ru": "«The secret is that twenty-five minutes doesn't feel scary»."
+      },
+      {
+        "id": "TL-B1-03-q5",
+        "q": "What will next week's episode be about?",
+        "options": [
+          "Using your phone less",
+          "Sleeping better before exams",
+          "Revising for exams",
+          "Finding a part-time job"
+        ],
+        "answer": 2,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "«how to revise for exams without losing your mind»."
+      }
+    ]
+  },
+  {
+    "id": "TL-B1-04",
+    "skill": "listening",
+    "level": "B1",
+    "band": 3,
+    "topic_en": "Interview: a teenage volunteer",
+    "topic_ru": "Интервью: подросток-волонтёр",
+    "type": "listening",
+    "title": "Weekends at the shelter",
+    "situation_ru": "Интервью на радио с Дэниелом, который по выходным помогает в приюте для животных.",
+    "situation_en": "A radio host interviews Daniel, who volunteers at an animal shelter at weekends.",
+    "speakers": [
+      {
+        "name": "Host",
+        "gender": "female",
+        "accent": "British"
+      },
+      {
+        "name": "Daniel",
+        "gender": "male",
+        "accent": "British"
+      }
+    ],
+    "script": "Host: Today I'm talking to Daniel, who's sixteen and spends his weekends at an animal shelter. Daniel, how did it all start?\nDaniel: Honestly, it was my mum's idea. She thought I was spending too much time on video games, so she signed me up without asking me. I was pretty annoyed at first.\nHost: And now?\nDaniel: Now I can't imagine my weekends without it. I've been going there for almost two years.\nHost: What do you actually do there?\nDaniel: Mostly I walk the dogs and clean the cages, which isn't very glamorous. But I also take photos of the animals for the shelter's website. Good photos really help animals find new homes faster.\nHost: What's the hardest part?\nDaniel: Saying goodbye, definitely. You get attached to them. But it's the best feeling when a dog you've looked after for months finally goes home with a family.\nHost: Would you recommend volunteering to other teenagers?\nDaniel: Absolutely. Just maybe ask them before you sign them up!",
+    "plays": 2,
+    "words": 158,
+    "duration_sec": 69,
+    "questions": [
+      {
+        "id": "TL-B1-04-q1",
+        "q": "How did Daniel start volunteering?",
+        "options": [
+          "A friend invited him",
+          "He saw an advert online",
+          "His school made him do it",
+          "His mother arranged it"
+        ],
+        "answer": 3,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "«it was my mum's idea… she signed me up»."
+      },
+      {
+        "id": "TL-B1-04-q2",
+        "q": "How did Daniel feel about it at first?",
+        "options": [
+          "Annoyed",
+          "Excited",
+          "Nervous",
+          "Proud"
+        ],
+        "answer": 0,
+        "checks": "speaker's attitude",
+        "topic_id": "l-speakers-attitude",
+        "explain_ru": "«I was pretty annoyed at first»."
+      },
+      {
+        "id": "TL-B1-04-q3",
+        "q": "How long has Daniel been volunteering?",
+        "options": [
+          "About two months",
+          "Almost two years",
+          "Six months",
+          "More than three years"
+        ],
+        "answer": 1,
+        "checks": "number-time-place",
+        "topic_id": "l-number-time-place",
+        "explain_ru": "«for almost two years»."
+      },
+      {
+        "id": "TL-B1-04-q4",
+        "q": "Why are Daniel's photos important?",
+        "options": [
+          "They raise money for the shelter",
+          "They appear in a local newspaper",
+          "They help the animals find homes faster",
+          "They help people find pets that have got lost"
+        ],
+        "answer": 2,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "«Good photos really help animals find new homes faster»."
+      },
+      {
+        "id": "TL-B1-04-q5",
+        "q": "What does Daniel mean by his last comment?",
+        "options": [
+          "Teenagers shouldn't volunteer",
+          "Volunteering is better for adults",
+          "Parents should volunteer at the shelter with their children",
+          "Parents should ask teenagers before deciding for them"
+        ],
+        "answer": 3,
+        "checks": "inference",
+        "topic_id": "l-inference",
+        "explain_ru": "Шутка про маму: лучше спросить подростка, прежде чем записывать его."
+      }
+    ]
   }
 ]

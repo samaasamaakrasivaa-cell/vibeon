@@ -367,5 +367,197 @@
       "Понятное произношение, паузы допустимы"
     ],
     "explain_ru": "Проверяет can, like + -ing, because."
+  },
+  {
+    "id": "TW-B1-01",
+    "skill": "writing",
+    "level": "B1",
+    "band": 1,
+    "topic_en": "Writing: a forum reply about phones",
+    "topic_ru": "Ответ на форуме: слишком много телефона?",
+    "type": "writing",
+    "prompt_en": "You see this post on a forum for teenagers: \"My parents say I spend too much time on my phone. Are they right? What do you think?\" Write a reply. Give your opinion, describe your own phone habits and give one piece of advice.",
+    "prompt_ru": "Пост на форуме: «Родители говорят, что я слишком много сижу в телефоне. Они правы?» Ответь: твоё мнение, твои привычки и один совет.",
+    "min_words": 70,
+    "max_words": 90,
+    "time_min": 12,
+    "expects": [
+      "Все пункты раскрыты, текст разбит на абзацы",
+      "Разнообразные связки (although, however, when, after that)",
+      "Смесь времён: Past Simple, Present Perfect, будущее — с редкими ошибками",
+      "Выражает мнение и чувства, а не только перечисляет факты",
+      "Стиль подходит адресату и жанру"
+    ],
+    "explain_ru": "Проверяет мнение с аргументами, Present Simple / Present Perfect, should.",
+    "points": [
+      "give your opinion",
+      "describe your own phone habits",
+      "give one piece of advice"
+    ],
+    "points_title": "In your reply:"
+  },
+  {
+    "id": "TW-B1-02",
+    "skill": "writing",
+    "level": "B1",
+    "band": 2,
+    "topic_en": "Writing: a story",
+    "topic_ru": "Рассказ по первой фразе",
+    "type": "writing",
+    "prompt_en": "Write a story for a school magazine competition. Your story must begin with this sentence: \"As soon as I opened the door, I knew something was wrong.\" Say what happened, how you felt and how the story ended.",
+    "prompt_ru": "Рассказ для конкурса школьного журнала, первая фраза: «As soon as I opened the door, I knew something was wrong.» Что случилось, что ты чувствовал(а) и чем всё закончилось.",
+    "min_words": 70,
+    "max_words": 90,
+    "time_min": 12,
+    "expects": [
+      "Все пункты раскрыты, текст разбит на абзацы",
+      "Разнообразные связки (although, however, when, after that)",
+      "Смесь времён: Past Simple, Present Perfect, будущее — с редкими ошибками",
+      "Выражает мнение и чувства, а не только перечисляет факты",
+      "Стиль подходит адресату и жанру"
+    ],
+    "explain_ru": "Проверяет рассказ о прошлом: Past Simple, Past Continuous, Past Perfect, связки.",
+    "points": [
+      "say what happened",
+      "say how you felt",
+      "say how the story ended"
+    ],
+    "points_title": "In your story:"
+  },
+  {
+    "id": "TW-B1-03",
+    "skill": "writing",
+    "level": "B1",
+    "band": 3,
+    "topic_en": "Writing: an article about your town",
+    "topic_ru": "Статья: свободный день в твоём городе",
+    "type": "writing",
+    "prompt_en": "Your school website is looking for articles called \"The perfect free day in our town\". Write an article. Say where teenagers should go, what they can do there and why it's a great day out.",
+    "prompt_ru": "Статья для школьного сайта «Идеальный свободный день в нашем городе»: куда пойти подросткам, чем заняться и почему это отличный день.",
+    "min_words": 70,
+    "max_words": 90,
+    "time_min": 12,
+    "expects": [
+      "Все пункты раскрыты, текст разбит на абзацы",
+      "Разнообразные связки (although, however, when, after that)",
+      "Смесь времён: Past Simple, Present Perfect, будущее — с редкими ошибками",
+      "Выражает мнение и чувства, а не только перечисляет факты",
+      "Стиль подходит адресату и жанру"
+    ],
+    "explain_ru": "Проверяет описание, советы и рекомендации, разнообразную лексику.",
+    "points": [
+      "say where teenagers should go",
+      "say what they can do there",
+      "explain why it's a great day out"
+    ],
+    "points_title": "In your article:"
+  },
+  {
+    "id": "TS-B1-01",
+    "skill": "speaking",
+    "level": "B1",
+    "band": 1,
+    "topic_en": "Speaking: online life",
+    "topic_ru": "Говорение: жизнь онлайн",
+    "type": "speaking",
+    "intro_ru": "Ответь на три вопроса о жизни онлайн.",
+    "intro_en": "Answer three questions about your online life.",
+    "questions": [
+      {
+        "q": "How do you usually use the internet in your free time?",
+        "prep_sec": 20,
+        "speak_sec": 40
+      },
+      {
+        "q": "Do you think teenagers spend too much time online? Why, or why not?",
+        "prep_sec": 20,
+        "speak_sec": 45
+      },
+      {
+        "q": "Tell me about something interesting you learned online recently.",
+        "prep_sec": 20,
+        "speak_sec": 45
+      }
+    ],
+    "expects": [
+      "Говорит связно 40–60 секунд по теме",
+      "Объясняет причины и приводит примеры",
+      "Связки first, after that, although, because, so",
+      "Разные времена с ошибками, которые не мешают пониманию",
+      "Произношение понятное, ученик сам исправляет часть ошибок"
+    ],
+    "explain_ru": "Проверяет мнение с причинами и рассказ о недавнем опыте."
+  },
+  {
+    "id": "TS-B1-02",
+    "skill": "speaking",
+    "level": "B1",
+    "band": 2,
+    "topic_en": "Speaking: school and the future",
+    "topic_ru": "Говорение: школа и будущее",
+    "type": "speaking",
+    "intro_ru": "Ответь на три вопроса о школе и будущем.",
+    "intro_en": "Answer three questions about school and your future.",
+    "questions": [
+      {
+        "q": "In your opinion, which school subject is the most useful, and why?",
+        "prep_sec": 20,
+        "speak_sec": 40
+      },
+      {
+        "q": "If you could change one thing about your school, what would it be?",
+        "prep_sec": 20,
+        "speak_sec": 45
+      },
+      {
+        "q": "What would you like to do after you finish school?",
+        "prep_sec": 20,
+        "speak_sec": 45
+      }
+    ],
+    "expects": [
+      "Говорит связно 40–60 секунд по теме",
+      "Объясняет причины и приводит примеры",
+      "Связки first, after that, although, because, so",
+      "Разные времена с ошибками, которые не мешают пониманию",
+      "Произношение понятное, ученик сам исправляет часть ошибок"
+    ],
+    "explain_ru": "Проверяет второй тип условных, будущее и аргументацию."
+  },
+  {
+    "id": "TS-B1-03",
+    "skill": "speaking",
+    "level": "B1",
+    "band": 3,
+    "topic_en": "Speaking: trying something new",
+    "topic_ru": "Говорение: первый раз",
+    "type": "speaking",
+    "intro_ru": "Расскажи историю о том, как ты впервые что-то попробовал(а).",
+    "intro_en": "Tell a story about trying something for the first time.",
+    "questions": [
+      {
+        "q": "Tell me about a time you tried something for the first time. What was it?",
+        "prep_sec": 30,
+        "speak_sec": 50
+      },
+      {
+        "q": "How did you feel before and after?",
+        "prep_sec": 20,
+        "speak_sec": 40
+      },
+      {
+        "q": "Would you recommend it to a friend? Why, or why not?",
+        "prep_sec": 20,
+        "speak_sec": 40
+      }
+    ],
+    "expects": [
+      "Говорит связно 40–60 секунд по теме",
+      "Объясняет причины и приводит примеры",
+      "Связки first, after that, although, because, so",
+      "Разные времена с ошибками, которые не мешают пониманию",
+      "Произношение понятное, ученик сам исправляет часть ошибок"
+    ],
+    "explain_ru": "Проверяет рассказ о прошлом, чувства и рекомендацию."
   }
 ]

@@ -1,1 +1,1941 @@
-[]
+[
+  {
+    "id": "TG-B1-01",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "tg-b1-pp-vs-past",
+    "topic_en": "Present perfect vs past simple",
+    "topic_ru": "Present Perfect или Past Simple",
+    "type": "mcq",
+    "q": "I ___ this phone two years ago, and it still works perfectly.",
+    "options": [
+      "bought",
+      "have bought",
+      "was buying",
+      "had bought"
+    ],
+    "answer": 0,
+    "explain_ru": "Two years ago — точное время в прошлом: Past Simple."
+  },
+  {
+    "id": "TG-B1-02",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "tg-b1-for-since",
+    "topic_en": "For / since",
+    "topic_ru": "for / since",
+    "type": "mcq",
+    "q": "We've known each other ___ we were in kindergarten.",
+    "options": [
+      "for",
+      "since",
+      "from",
+      "during"
+    ],
+    "answer": 1,
+    "explain_ru": "С какого момента — since."
+  },
+  {
+    "id": "TG-B1-03",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "tg-b1-ppc",
+    "topic_en": "Present perfect continuous",
+    "topic_ru": "Present Perfect Continuous",
+    "type": "mcq",
+    "q": "You look exhausted! What ___ you been doing?",
+    "options": [
+      "did",
+      "were",
+      "have",
+      "are"
+    ],
+    "answer": 2,
+    "explain_ru": "Present Perfect Continuous: have you been doing — видно по результату сейчас."
+  },
+  {
+    "id": "TG-B1-04",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "tg-b1-for-since",
+    "topic_en": "For / since",
+    "topic_ru": "for / since",
+    "type": "gap",
+    "q": "My brother has been playing this game ___ three hours. Somebody stop him!",
+    "accept": [
+      "for"
+    ],
+    "explain_ru": "Сколько времени — for.",
+    "hint_ru": "предлог"
+  },
+  {
+    "id": "TG-B1-05",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "tg-b1-pp-vs-past",
+    "topic_en": "Present perfect vs past simple",
+    "topic_ru": "Present Perfect или Past Simple",
+    "type": "mcq",
+    "q": "How long ___ you known your best friend? — Since primary school.",
+    "options": [
+      "did",
+      "are",
+      "do",
+      "have"
+    ],
+    "answer": 3,
+    "explain_ru": "How long + до сих пор — Present Perfect: have you known."
+  },
+  {
+    "id": "TG-B1-06",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "tg-b1-ppc",
+    "topic_en": "Present perfect continuous",
+    "topic_ru": "Present Perfect Continuous",
+    "type": "brackets",
+    "q": "Sorry I'm late! How long have you ___ (wait)?",
+    "accept": [
+      "been waiting"
+    ],
+    "explain_ru": "Действие длится до сих пор — Present Perfect Continuous: have been waiting."
+  },
+  {
+    "id": "TG-B1-07",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 3,
+    "topic_id": "tg-b1-pp-vs-past",
+    "topic_en": "Present perfect vs past simple",
+    "topic_ru": "Present Perfect или Past Simple",
+    "type": "mcq",
+    "q": "When I was ten, I ___ in Kazan for a year, but now I live in Moscow.",
+    "options": [
+      "lived",
+      "have lived",
+      "have been living",
+      "am living"
+    ],
+    "answer": 0,
+    "explain_ru": "Законченный период в прошлом (when I was ten) — Past Simple."
+  },
+  {
+    "id": "TG-B1-08",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 3,
+    "topic_id": "tg-b1-ppc",
+    "topic_en": "Present perfect continuous",
+    "topic_ru": "Present Perfect Continuous",
+    "type": "mcq",
+    "q": "I ___ three episodes today, and I still don't know who the killer is!",
+    "options": [
+      "have been watching",
+      "have watched",
+      "had watched",
+      "was watching"
+    ],
+    "answer": 1,
+    "explain_ru": "Сколько штук сделано — Present Perfect Simple; Continuous не используют с количеством."
+  },
+  {
+    "id": "TG-B1-09",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "tg-b1-used-to",
+    "topic_en": "Used to",
+    "topic_ru": "used to",
+    "type": "mcq",
+    "q": "I ___ be scared of the dark, but now I sleep with the light off.",
+    "options": [
+      "use to",
+      "am used to",
+      "used to",
+      "was used"
+    ],
+    "answer": 2,
+    "explain_ru": "Раньше, а теперь нет — used to + глагол."
+  },
+  {
+    "id": "TG-B1-10",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "tg-b1-past-perfect",
+    "topic_en": "Past perfect",
+    "topic_ru": "Past Perfect",
+    "type": "mcq",
+    "q": "When we got to the cinema, the film ___ already started.",
+    "options": [
+      "has",
+      "was",
+      "did",
+      "had"
+    ],
+    "answer": 3,
+    "explain_ru": "Раньше другого действия в прошлом — Past Perfect: had started."
+  },
+  {
+    "id": "TG-B1-11",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "tg-b1-be-get-used",
+    "topic_en": "Be / get used to",
+    "topic_ru": "be / get used to",
+    "type": "mcq",
+    "q": "My new school starts at 7:30. I can't get used to ___ up so early!",
+    "options": [
+      "getting",
+      "get",
+      "got",
+      "have got"
+    ],
+    "answer": 0,
+    "explain_ru": "Get used to + -ing."
+  },
+  {
+    "id": "TG-B1-12",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "tg-b1-used-to",
+    "topic_en": "Used to",
+    "topic_ru": "used to",
+    "type": "gap",
+    "q": "Did you ___ to have long hair? — Yes, when I was little!",
+    "accept": [
+      "use"
+    ],
+    "explain_ru": "В вопросе с did — use to (без -d).",
+    "hint_ru": "форма used to в вопросе"
+  },
+  {
+    "id": "TG-B1-13",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "tg-b1-past-perfect",
+    "topic_en": "Past perfect",
+    "topic_ru": "Past Perfect",
+    "type": "brackets",
+    "q": "I couldn't log in because I ___ (forget) my password.",
+    "accept": [
+      "had forgotten",
+      "'d forgotten"
+    ],
+    "explain_ru": "Забыл раньше, чем пытался войти — Past Perfect: had forgotten."
+  },
+  {
+    "id": "TG-B1-14",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "tg-b1-used-to",
+    "topic_en": "Used to",
+    "topic_ru": "used to",
+    "type": "mcq",
+    "q": "My grandpa ___ to school on foot, even in winter. Now he drives everywhere.",
+    "options": [
+      "uses to walk",
+      "used to walk",
+      "is used to walking",
+      "was walk"
+    ],
+    "answer": 1,
+    "explain_ru": "Привычка в прошлом — used to walk."
+  },
+  {
+    "id": "TG-B1-15",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 3,
+    "topic_id": "tg-b1-be-get-used",
+    "topic_en": "Be / get used to",
+    "topic_ru": "be / get used to",
+    "type": "mcq",
+    "q": "After a month in London, Anya ___ driving on the left. Now it feels normal.",
+    "options": [
+      "used to",
+      "is using to",
+      "got used to",
+      "use to"
+    ],
+    "answer": 2,
+    "explain_ru": "Привыкла — got used to + -ing; used to значит «раньше делала»."
+  },
+  {
+    "id": "TG-B1-16",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 3,
+    "topic_id": "tg-b1-past-perfect",
+    "topic_en": "Past perfect",
+    "topic_ru": "Past Perfect",
+    "type": "mcq",
+    "q": "By the time Mum came home, we ___ the whole kitchen. She was very surprised!",
+    "options": [
+      "cleaned",
+      "have cleaned",
+      "were cleaning",
+      "had cleaned"
+    ],
+    "answer": 3,
+    "explain_ru": "By the time + прошлое — Past Perfect: had cleaned."
+  },
+  {
+    "id": "TG-B1-17",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "tg-b1-future",
+    "topic_en": "Future forms",
+    "topic_ru": "Способы говорить о будущем",
+    "type": "mcq",
+    "q": "The train ___ at 7:15 tomorrow, so don't be late.",
+    "options": [
+      "leaves",
+      "has left",
+      "will be leave",
+      "leave"
+    ],
+    "answer": 0,
+    "explain_ru": "Расписание — Present Simple: leaves."
+  },
+  {
+    "id": "TG-B1-18",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "tg-b1-future",
+    "topic_en": "Future forms",
+    "topic_ru": "Способы говорить о будущем",
+    "type": "mcq",
+    "q": "I've already decided: I ___ study design after school.",
+    "options": [
+      "am",
+      "'m going to",
+      "shall",
+      "would"
+    ],
+    "answer": 1,
+    "explain_ru": "Решение принято заранее — be going to."
+  },
+  {
+    "id": "TG-B1-19",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "tg-b1-future-continuous",
+    "topic_en": "Future continuous",
+    "topic_ru": "Future Continuous",
+    "type": "mcq",
+    "q": "Don't call me at 8 tonight. I ___ my piano lesson then.",
+    "options": [
+      "'ll have had",
+      "have",
+      "'ll be having",
+      "had"
+    ],
+    "answer": 2,
+    "explain_ru": "Будет в процессе в этот момент — Future Continuous: will be having."
+  },
+  {
+    "id": "TG-B1-20",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "tg-b1-future-continuous",
+    "topic_en": "Future continuous",
+    "topic_ru": "Future Continuous",
+    "type": "gap",
+    "q": "This time next week we ___ be lying on the beach!",
+    "accept": [
+      "will",
+      "'ll"
+    ],
+    "explain_ru": "Процесс в момент будущего — will be lying.",
+    "hint_ru": "вспомогательный глагол"
+  },
+  {
+    "id": "TG-B1-21",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "tg-b1-future",
+    "topic_en": "Future forms",
+    "topic_ru": "Способы говорить о будущем",
+    "type": "mcq",
+    "q": "Look out! You ___ fall off that chair!",
+    "options": [
+      "will",
+      "are falling",
+      "fall",
+      "are going to"
+    ],
+    "answer": 3,
+    "explain_ru": "Видно по ситуации прямо сейчас — be going to."
+  },
+  {
+    "id": "TG-B1-22",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "tg-b1-future-continuous",
+    "topic_en": "Future continuous",
+    "topic_ru": "Future Continuous",
+    "type": "mcq",
+    "q": "___ you be using your laptop this evening? I need to finish my project.",
+    "options": [
+      "Will",
+      "Are",
+      "Do",
+      "Have"
+    ],
+    "answer": 0,
+    "explain_ru": "Вежливо о планах — Will you be using…?"
+  },
+  {
+    "id": "TG-B1-23",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 3,
+    "topic_id": "tg-b1-future",
+    "topic_en": "Future forms",
+    "topic_ru": "Способы говорить о будущем",
+    "type": "brackets",
+    "q": "As soon as I ___ (get) my results, I'll text you.",
+    "accept": [
+      "get"
+    ],
+    "explain_ru": "После as soon as / when о будущем — Present Simple: get."
+  },
+  {
+    "id": "TG-B1-24",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 3,
+    "topic_id": "tg-b1-future-continuous",
+    "topic_en": "Future continuous",
+    "topic_ru": "Future Continuous",
+    "type": "mcq",
+    "q": "Sorry, I can't play online tonight. I ___ for my exam all evening.",
+    "options": [
+      "'m study",
+      "'ll be studying",
+      "study",
+      "'ll have studying"
+    ],
+    "answer": 1,
+    "explain_ru": "Процесс весь вечер в будущем — will be studying."
+  },
+  {
+    "id": "TG-B1-25",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "tg-b1-cond-01",
+    "topic_en": "Zero and first conditional",
+    "topic_ru": "Условные 0 и 1 типа",
+    "type": "mcq",
+    "q": "If you heat ice, it ___.",
+    "options": [
+      "melted",
+      "melt",
+      "melts",
+      "would melts"
+    ],
+    "answer": 2,
+    "explain_ru": "Факт, закон природы — нулевой тип: Present Simple в обеих частях."
+  },
+  {
+    "id": "TG-B1-26",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "tg-b1-cond-01",
+    "topic_en": "Zero and first conditional",
+    "topic_ru": "Условные 0 и 1 типа",
+    "type": "mcq",
+    "q": "If it ___ tomorrow, we'll stay at home and play board games.",
+    "options": [
+      "will rain",
+      "rained",
+      "would rain",
+      "rains"
+    ],
+    "answer": 3,
+    "explain_ru": "Первый тип: if + Present Simple, will — в другой части."
+  },
+  {
+    "id": "TG-B1-27",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "tg-b1-cond-2",
+    "topic_en": "Second conditional",
+    "topic_ru": "Условные 2 типа",
+    "type": "mcq",
+    "q": "If I ___ a million dollars, I'd buy an island.",
+    "options": [
+      "had",
+      "have",
+      "will have",
+      "would have"
+    ],
+    "answer": 0,
+    "explain_ru": "Нереальное условие — второй тип: if + Past Simple."
+  },
+  {
+    "id": "TG-B1-28",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "tg-b1-wish",
+    "topic_en": "Wish + past simple",
+    "topic_ru": "I wish + Past Simple",
+    "type": "mcq",
+    "q": "I wish I ___ a dog! My parents always say no.",
+    "options": [
+      "have",
+      "had",
+      "will have",
+      "am having"
+    ],
+    "answer": 1,
+    "explain_ru": "Wish о настоящем — Past Simple: had."
+  },
+  {
+    "id": "TG-B1-29",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "tg-b1-cond-2",
+    "topic_en": "Second conditional",
+    "topic_ru": "Условные 2 типа",
+    "type": "brackets",
+    "q": "If I ___ (be) you, I'd delete that photo.",
+    "accept": [
+      "were",
+      "was"
+    ],
+    "explain_ru": "If I were you — совет, второй тип."
+  },
+  {
+    "id": "TG-B1-30",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "tg-b1-cond-01",
+    "topic_en": "Zero and first conditional",
+    "topic_ru": "Условные 0 и 1 типа",
+    "type": "gap",
+    "q": "You won't pass the test ___ you study.",
+    "accept": [
+      "unless"
+    ],
+    "explain_ru": "Unless = if not.",
+    "hint_ru": "одно слово, значит if not"
+  },
+  {
+    "id": "TG-B1-31",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 3,
+    "topic_id": "tg-b1-cond-2",
+    "topic_en": "Second conditional",
+    "topic_ru": "Условные 2 типа",
+    "type": "mcq",
+    "q": "What ___ you do if you met your favourite singer?",
+    "options": [
+      "will",
+      "did",
+      "would",
+      "do"
+    ],
+    "answer": 2,
+    "explain_ru": "Второй тип: would + глагол."
+  },
+  {
+    "id": "TG-B1-32",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 3,
+    "topic_id": "tg-b1-wish",
+    "topic_en": "Wish + past simple",
+    "topic_ru": "I wish + Past Simple",
+    "type": "mcq",
+    "q": "I wish I ___ speak Chinese. It would be so useful.",
+    "options": [
+      "can",
+      "will",
+      "am able",
+      "could"
+    ],
+    "answer": 3,
+    "explain_ru": "Wish + could — сожаление об умении."
+  },
+  {
+    "id": "TG-B1-33",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "tg-b1-passive",
+    "topic_en": "Present and past simple passive",
+    "topic_ru": "Пассив: Present и Past Simple",
+    "type": "mcq",
+    "q": "This bridge ___ in 1890.",
+    "options": [
+      "was built",
+      "built",
+      "is built",
+      "has build"
+    ],
+    "answer": 0,
+    "explain_ru": "Мост построили (кто-то) в 1890 — пассив в прошлом: was built."
+  },
+  {
+    "id": "TG-B1-34",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "tg-b1-passive",
+    "topic_en": "Present and past simple passive",
+    "topic_ru": "Пассив: Present и Past Simple",
+    "type": "mcq",
+    "q": "English ___ all over the world.",
+    "options": [
+      "speaks",
+      "is spoken",
+      "is speaking",
+      "spoke"
+    ],
+    "answer": 1,
+    "explain_ru": "На английском говорят — пассив: is spoken."
+  },
+  {
+    "id": "TG-B1-35",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "tg-b1-passive",
+    "topic_en": "Present and past simple passive",
+    "topic_ru": "Пассив: Present и Past Simple",
+    "type": "mcq",
+    "q": "My phone ___ in China.",
+    "options": [
+      "made",
+      "was make",
+      "was made",
+      "makes"
+    ],
+    "answer": 2,
+    "explain_ru": "Телефон сделали — пассив: was made."
+  },
+  {
+    "id": "TG-B1-36",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "tg-b1-passive",
+    "topic_en": "Present and past simple passive",
+    "topic_ru": "Пассив: Present и Past Simple",
+    "type": "gap",
+    "q": "Our school ___ cleaned every evening.",
+    "accept": [
+      "is"
+    ],
+    "explain_ru": "Пассив в настоящем: is cleaned.",
+    "hint_ru": "форма глагола to be"
+  },
+  {
+    "id": "TG-B1-37",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "tg-b1-passive",
+    "topic_en": "Present and past simple passive",
+    "topic_ru": "Пассив: Present и Past Simple",
+    "type": "mcq",
+    "q": "The winners ___ announced tomorrow.",
+    "options": [
+      "will",
+      "would",
+      "have",
+      "will be"
+    ],
+    "answer": 3,
+    "explain_ru": "Пассив в будущем: will be announced."
+  },
+  {
+    "id": "TG-B1-38",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "tg-b1-passive",
+    "topic_en": "Present and past simple passive",
+    "topic_ru": "Пассив: Present и Past Simple",
+    "type": "brackets",
+    "q": "Millions of videos ___ (upload) to the internet every day.",
+    "accept": [
+      "are uploaded"
+    ],
+    "explain_ru": "Видео загружают (каждый день) — пассив: are uploaded."
+  },
+  {
+    "id": "TG-B1-39",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 3,
+    "topic_id": "tg-b1-passive",
+    "topic_en": "Present and past simple passive",
+    "topic_ru": "Пассив: Present и Past Simple",
+    "type": "mcq",
+    "q": "Our class ___ a special prize for the best eco project last week!",
+    "options": [
+      "was given",
+      "gave",
+      "was give",
+      "has been given"
+    ],
+    "answer": 0,
+    "explain_ru": "Нам дали приз (last week) — пассив в Past Simple: was given."
+  },
+  {
+    "id": "TG-B1-40",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 3,
+    "topic_id": "tg-b1-passive",
+    "topic_en": "Present and past simple passive",
+    "topic_ru": "Пассив: Present и Past Simple",
+    "type": "mcq",
+    "q": "Where ___ the first smartphone invented?",
+    "options": [
+      "did",
+      "was",
+      "is",
+      "has"
+    ],
+    "answer": 1,
+    "explain_ru": "Вопрос в пассиве: Where was … invented?"
+  },
+  {
+    "id": "TG-B1-41",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "tg-b1-relatives",
+    "topic_en": "Defining relative clauses",
+    "topic_ru": "Определительные придаточные",
+    "type": "mcq",
+    "q": "That's the girl ___ won the singing contest.",
+    "options": [
+      "which",
+      "where",
+      "who",
+      "whose"
+    ],
+    "answer": 2,
+    "explain_ru": "О человеке — who."
+  },
+  {
+    "id": "TG-B1-42",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "tg-b1-relatives",
+    "topic_en": "Defining relative clauses",
+    "topic_ru": "Определительные придаточные",
+    "type": "mcq",
+    "q": "This is the app ___ helps me learn new words.",
+    "options": [
+      "who",
+      "where",
+      "what",
+      "that"
+    ],
+    "answer": 3,
+    "explain_ru": "О предмете — that / which."
+  },
+  {
+    "id": "TG-B1-43",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "tg-b1-relatives",
+    "topic_en": "Defining relative clauses",
+    "topic_ru": "Определительные придаточные",
+    "type": "mcq",
+    "q": "That's the café ___ we always meet after school.",
+    "options": [
+      "where",
+      "which",
+      "who",
+      "what"
+    ],
+    "answer": 0,
+    "explain_ru": "О месте — where."
+  },
+  {
+    "id": "TG-B1-44",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "tg-b1-relatives",
+    "topic_en": "Defining relative clauses",
+    "topic_ru": "Определительные придаточные",
+    "type": "gap",
+    "q": "I've got a friend ___ dad is a famous chef.",
+    "accept": [
+      "whose"
+    ],
+    "explain_ru": "Чей — whose.",
+    "hint_ru": "относительное местоимение"
+  },
+  {
+    "id": "TG-B1-45",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "tg-b1-relatives",
+    "topic_en": "Defining relative clauses",
+    "topic_ru": "Определительные придаточные",
+    "type": "mcq",
+    "q": "The film ___ we watched yesterday was really scary.",
+    "options": [
+      "who",
+      "that",
+      "where",
+      "what"
+    ],
+    "answer": 1,
+    "explain_ru": "О предмете — that (можно и which или вообще без слова)."
+  },
+  {
+    "id": "TG-B1-46",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "tg-b1-relatives",
+    "topic_en": "Defining relative clauses",
+    "topic_ru": "Определительные придаточные",
+    "type": "mcq",
+    "q": "Is this the boy ___ phone you found?",
+    "options": [
+      "who's",
+      "who",
+      "whose",
+      "which"
+    ],
+    "answer": 2,
+    "explain_ru": "Чей телефон — whose (who's = who is)."
+  },
+  {
+    "id": "TG-B1-47",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 3,
+    "topic_id": "tg-b1-relatives",
+    "topic_en": "Defining relative clauses",
+    "topic_ru": "Определительные придаточные",
+    "type": "mcq",
+    "q": "The game, ___ came out last week, has already sold a million copies.",
+    "options": [
+      "that",
+      "what",
+      "who",
+      "which"
+    ],
+    "answer": 3,
+    "explain_ru": "После запятой (дополнительная информация) — только which, не that."
+  },
+  {
+    "id": "TG-B1-48",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 3,
+    "topic_id": "tg-b1-relatives",
+    "topic_en": "Defining relative clauses",
+    "topic_ru": "Определительные придаточные",
+    "type": "mcq",
+    "q": "Do you know anyone ___ can fix my laptop?",
+    "options": [
+      "who",
+      "which",
+      "whose",
+      "where"
+    ],
+    "answer": 0,
+    "explain_ru": "О человеке — who."
+  },
+  {
+    "id": "TG-B1-49",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "tg-b1-reported",
+    "topic_en": "Reported statements",
+    "topic_ru": "Косвенная речь: утверждения",
+    "type": "mcq",
+    "q": "\"I'm tired,\" said Anna. → Anna said she ___ tired.",
+    "options": [
+      "were",
+      "was",
+      "be",
+      "has"
+    ],
+    "answer": 1,
+    "explain_ru": "В косвенной речи время сдвигается: am → was."
+  },
+  {
+    "id": "TG-B1-50",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "tg-b1-indirect-q",
+    "topic_en": "Reported and indirect questions",
+    "topic_ru": "Косвенные вопросы",
+    "type": "mcq",
+    "q": "Excuse me, can you tell me where the station ___?",
+    "options": [
+      "does",
+      "is it",
+      "is",
+      "it"
+    ],
+    "answer": 2,
+    "explain_ru": "В косвенном вопросе прямой порядок слов: where the station is."
+  },
+  {
+    "id": "TG-B1-51",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "tg-b1-reported",
+    "topic_en": "Reported statements",
+    "topic_ru": "Косвенная речь: утверждения",
+    "type": "mcq",
+    "q": "\"I can't come,\" said Tom. → Tom told me he ___ come to the party.",
+    "options": [
+      "doesn't",
+      "won't to",
+      "not can",
+      "couldn't"
+    ],
+    "answer": 3,
+    "explain_ru": "can't → couldn't."
+  },
+  {
+    "id": "TG-B1-52",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "tg-b1-indirect-q",
+    "topic_en": "Reported and indirect questions",
+    "topic_ru": "Косвенные вопросы",
+    "type": "gap",
+    "q": "My mum asked me ___ I had finished my homework.",
+    "accept": [
+      "if",
+      "whether"
+    ],
+    "explain_ru": "Косвенный вопрос «ли» — if / whether.",
+    "hint_ru": "союз"
+  },
+  {
+    "id": "TG-B1-53",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "tg-b1-reported",
+    "topic_en": "Reported statements",
+    "topic_ru": "Косвенная речь: утверждения",
+    "type": "mcq",
+    "q": "\"I've seen this film,\" she said. → She said she ___ the film before.",
+    "options": [
+      "had seen",
+      "seeing",
+      "sees",
+      "was see"
+    ],
+    "answer": 0,
+    "explain_ru": "Present Perfect → Past Perfect: had seen."
+  },
+  {
+    "id": "TG-B1-54",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "tg-b1-indirect-q",
+    "topic_en": "Reported and indirect questions",
+    "topic_ru": "Косвенные вопросы",
+    "type": "mcq",
+    "q": "Do you know what time ___?",
+    "options": [
+      "does the match start",
+      "the match starts",
+      "starts the match",
+      "the match does start"
+    ],
+    "answer": 1,
+    "explain_ru": "Косвенный вопрос — прямой порядок, без do."
+  },
+  {
+    "id": "TG-B1-55",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 3,
+    "topic_id": "tg-b1-reported",
+    "topic_en": "Reported statements",
+    "topic_ru": "Косвенная речь: утверждения",
+    "type": "mcq",
+    "q": "The teacher told us ___ our phones in our bags.",
+    "options": [
+      "put",
+      "that put",
+      "to put",
+      "putting"
+    ],
+    "answer": 2,
+    "explain_ru": "Просьба или приказ в косвенной речи — tell somebody to do."
+  },
+  {
+    "id": "TG-B1-56",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 3,
+    "topic_id": "tg-b1-indirect-q",
+    "topic_en": "Reported and indirect questions",
+    "topic_ru": "Косвенные вопросы",
+    "type": "brackets",
+    "q": "He asked me where I ___ (buy) my trainers.",
+    "accept": [
+      "had bought",
+      "bought"
+    ],
+    "explain_ru": "Косвенный вопрос о прошлом: had bought (можно bought)."
+  },
+  {
+    "id": "TG-B1-57",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "tg-b1-ing-inf",
+    "topic_en": "Gerund or infinitive",
+    "topic_ru": "-ing или инфинитив",
+    "type": "mcq",
+    "q": "I'm thinking about ___ a podcast with my friends.",
+    "options": [
+      "to start",
+      "start",
+      "started",
+      "starting"
+    ],
+    "answer": 3,
+    "explain_ru": "После предлога about — -ing."
+  },
+  {
+    "id": "TG-B1-58",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "tg-b1-tags",
+    "topic_en": "Question tags",
+    "topic_ru": "Разделительные вопросы",
+    "type": "mcq",
+    "q": "You're coming to the party, ___?",
+    "options": [
+      "aren't you",
+      "don't you",
+      "isn't it",
+      "are you"
+    ],
+    "answer": 0,
+    "explain_ru": "Утверждение с are — хвостик aren't you?"
+  },
+  {
+    "id": "TG-B1-59",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "tg-b1-deduction",
+    "topic_en": "Must / might / can't for deduction",
+    "topic_ru": "Предположение: must / might / can't",
+    "type": "mcq",
+    "q": "He's been playing for six hours. He ___ be tired!",
+    "options": [
+      "can't",
+      "must",
+      "should",
+      "has"
+    ],
+    "answer": 1,
+    "explain_ru": "Почти уверен — must be."
+  },
+  {
+    "id": "TG-B1-60",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "tg-b1-ing-inf",
+    "topic_en": "Gerund or infinitive",
+    "topic_ru": "-ing или инфинитив",
+    "type": "brackets",
+    "q": "I forgot ___ (charge) my phone, so now it's dead.",
+    "accept": [
+      "to charge"
+    ],
+    "explain_ru": "Forget to do — забыть сделать."
+  },
+  {
+    "id": "TG-B1-61",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "tg-b1-deduction",
+    "topic_en": "Must / might / can't for deduction",
+    "topic_ru": "Предположение: must / might / can't",
+    "type": "mcq",
+    "q": "That ___ be Jake's bag. His bag is black, and this one is red.",
+    "options": [
+      "must",
+      "mustn't",
+      "can't",
+      "should"
+    ],
+    "answer": 2,
+    "explain_ru": "Уверен, что нет — can't be."
+  },
+  {
+    "id": "TG-B1-62",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "tg-b1-ing-inf",
+    "topic_en": "Gerund or infinitive",
+    "topic_ru": "-ing или инфинитив",
+    "type": "mcq",
+    "q": "My parents won't let me ___ out after 10.",
+    "options": [
+      "to go",
+      "going",
+      "went",
+      "go"
+    ],
+    "answer": 3,
+    "explain_ru": "Let somebody do — без to."
+  },
+  {
+    "id": "TG-B1-63",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 3,
+    "topic_id": "tg-b1-tags",
+    "topic_en": "Question tags",
+    "topic_ru": "Разделительные вопросы",
+    "type": "mcq",
+    "q": "Nobody called, ___?",
+    "options": [
+      "did they",
+      "didn't they",
+      "did he",
+      "didn't he"
+    ],
+    "answer": 0,
+    "explain_ru": "Nobody — уже отрицание, поэтому хвостик положительный; о nobody говорят they."
+  },
+  {
+    "id": "TG-B1-64",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 3,
+    "topic_id": "tg-b1-deduction",
+    "topic_en": "Must / might / can't for deduction",
+    "topic_ru": "Предположение: must / might / can't",
+    "type": "mcq",
+    "q": "Lisa isn't answering her phone. She ___ be at swimming practice — she sometimes goes on Tuesdays.",
+    "options": [
+      "can't",
+      "might",
+      "mustn't",
+      "should to"
+    ],
+    "answer": 1,
+    "explain_ru": "Возможно, не уверен — might."
+  },
+  {
+    "id": "TV-B1-01",
+    "skill": "vocabulary",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "tv-b1-online",
+    "topic_en": "Social media and online life",
+    "topic_ru": "Соцсети и жизнь онлайн",
+    "type": "mcq",
+    "q": "Please ___ my channel if you like this video!",
+    "options": [
+      "sign",
+      "join in",
+      "subscribe to",
+      "follow up"
+    ],
+    "answer": 2,
+    "explain_ru": "Подписаться на канал — subscribe to.",
+    "group": "t-b1-v1"
+  },
+  {
+    "id": "TV-B1-02",
+    "skill": "vocabulary",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "tv-b1-environment",
+    "topic_en": "Environment",
+    "topic_ru": "Экология",
+    "type": "mcq",
+    "q": "We should ___ plastic bottles instead of throwing them away.",
+    "options": [
+      "waste",
+      "pollute",
+      "destroy",
+      "recycle"
+    ],
+    "answer": 3,
+    "explain_ru": "Перерабатывать — recycle.",
+    "group": "t-b1-v1"
+  },
+  {
+    "id": "TV-B1-03",
+    "skill": "vocabulary",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "tv-b1-entertainment",
+    "topic_en": "Films, series, music",
+    "topic_ru": "Фильмы, сериалы, музыка",
+    "type": "mcq",
+    "q": "The new season of my favourite ___ comes out next week!",
+    "options": [
+      "series",
+      "channel",
+      "screen",
+      "stage"
+    ],
+    "answer": 0,
+    "explain_ru": "Сериал — series.",
+    "group": "t-b1-v1"
+  },
+  {
+    "id": "TV-B1-04",
+    "skill": "vocabulary",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "tv-b1-friendship",
+    "topic_en": "Friendship",
+    "topic_ru": "Дружба",
+    "type": "gap",
+    "q": "Kate and I had a big argument, but we ___ up the next day.",
+    "accept": [
+      "made"
+    ],
+    "explain_ru": "Помириться — make up.",
+    "hint_ru": "одно слово",
+    "group": "t-b1-v1"
+  },
+  {
+    "id": "TV-B1-05",
+    "skill": "vocabulary",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "tv-b1-education",
+    "topic_en": "School and exams",
+    "topic_ru": "Учёба и экзамены",
+    "type": "mcq",
+    "q": "I failed the exam, so I have to ___ it in June.",
+    "options": [
+      "remake",
+      "retake",
+      "revise",
+      "review"
+    ],
+    "answer": 1,
+    "explain_ru": "Пересдать — retake.",
+    "group": "t-b1-v1"
+  },
+  {
+    "id": "TV-B1-06",
+    "skill": "vocabulary",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "tv-b1-future-jobs",
+    "topic_en": "Jobs and future plans",
+    "topic_ru": "Профессии и планы",
+    "type": "mcq",
+    "q": "My cousin is a software ___ — she writes code for apps.",
+    "options": [
+      "driver",
+      "manager",
+      "developer",
+      "builder"
+    ],
+    "answer": 2,
+    "explain_ru": "Разработчик — software developer.",
+    "group": "t-b1-v1"
+  },
+  {
+    "id": "TV-B1-07",
+    "skill": "vocabulary",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "tv-b1-online",
+    "topic_en": "Social media and online life",
+    "topic_ru": "Соцсети и жизнь онлайн",
+    "type": "mcq",
+    "q": "Don't share your ___ with anyone — not even your best friend!",
+    "options": [
+      "post",
+      "follower",
+      "comment",
+      "password"
+    ],
+    "answer": 3,
+    "explain_ru": "Пароль — password.",
+    "group": "t-b1-v1"
+  },
+  {
+    "id": "TV-B1-08",
+    "skill": "vocabulary",
+    "level": "B1",
+    "band": 3,
+    "topic_id": "tv-b1-environment",
+    "topic_en": "Environment",
+    "topic_ru": "Экология",
+    "type": "mcq",
+    "q": "Pandas are an ___ species — there are very few of them left.",
+    "options": [
+      "endangered",
+      "dangerous",
+      "extinct",
+      "wild"
+    ],
+    "answer": 0,
+    "explain_ru": "Под угрозой исчезновения — endangered (extinct — уже вымерли).",
+    "group": "t-b1-v1"
+  },
+  {
+    "id": "TV-B1-09",
+    "skill": "vocabulary",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "tv-b1-prepositions",
+    "topic_en": "Dependent prepositions",
+    "topic_ru": "Предлоги после слов",
+    "type": "mcq",
+    "q": "I'm really good ___ maths, but bad at history.",
+    "options": [
+      "in",
+      "at",
+      "on",
+      "with"
+    ],
+    "answer": 1,
+    "explain_ru": "Good at.",
+    "group": "t-b1-v2"
+  },
+  {
+    "id": "TV-B1-10",
+    "skill": "vocabulary",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "tv-b1-phrasal",
+    "topic_en": "Phrasal verbs",
+    "topic_ru": "Фразовые глаголы",
+    "type": "mcq",
+    "q": "Can you ___ out what this word means?",
+    "options": [
+      "look",
+      "take",
+      "find",
+      "give"
+    ],
+    "answer": 2,
+    "explain_ru": "Выяснить — find out.",
+    "group": "t-b1-v2"
+  },
+  {
+    "id": "TV-B1-11",
+    "skill": "vocabulary",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "tv-b1-collocations",
+    "topic_en": "Collocations",
+    "topic_ru": "Сочетаемость",
+    "type": "mcq",
+    "q": "I need to ___ a decision: pizza or sushi?",
+    "options": [
+      "do",
+      "have",
+      "get",
+      "make"
+    ],
+    "answer": 3,
+    "explain_ru": "Принять решение — make a decision.",
+    "group": "t-b1-v2"
+  },
+  {
+    "id": "TV-B1-12",
+    "skill": "vocabulary",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "tv-b1-prepositions",
+    "topic_en": "Dependent prepositions",
+    "topic_ru": "Предлоги после слов",
+    "type": "gap",
+    "q": "My little sister is afraid ___ spiders.",
+    "accept": [
+      "of"
+    ],
+    "explain_ru": "Afraid of.",
+    "hint_ru": "предлог",
+    "group": "t-b1-v2"
+  },
+  {
+    "id": "TV-B1-13",
+    "skill": "vocabulary",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "tv-b1-phrasal",
+    "topic_en": "Phrasal verbs",
+    "topic_ru": "Фразовые глаголы",
+    "type": "mcq",
+    "q": "I've ___ up a new hobby — skateboarding!",
+    "options": [
+      "taken",
+      "given",
+      "made",
+      "got"
+    ],
+    "answer": 0,
+    "explain_ru": "Начать заниматься — take up.",
+    "group": "t-b1-v2"
+  },
+  {
+    "id": "TV-B1-14",
+    "skill": "vocabulary",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "tv-b1-collocations",
+    "topic_en": "Collocations",
+    "topic_ru": "Сочетаемость",
+    "type": "mcq",
+    "q": "Can you ___ a secret?",
+    "options": [
+      "hold",
+      "keep",
+      "save",
+      "close"
+    ],
+    "answer": 1,
+    "explain_ru": "Хранить секрет — keep a secret.",
+    "group": "t-b1-v2"
+  },
+  {
+    "id": "TV-B1-15",
+    "skill": "vocabulary",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "tv-b1-prepositions",
+    "topic_en": "Dependent prepositions",
+    "topic_ru": "Предлоги после слов",
+    "type": "mcq",
+    "q": "Are we going to the beach? — It depends ___ the weather.",
+    "options": [
+      "of",
+      "from",
+      "on",
+      "in"
+    ],
+    "answer": 2,
+    "explain_ru": "Depend on.",
+    "group": "t-b1-v2"
+  },
+  {
+    "id": "TV-B1-16",
+    "skill": "vocabulary",
+    "level": "B1",
+    "band": 3,
+    "topic_id": "tv-b1-phrasal",
+    "topic_en": "Phrasal verbs",
+    "topic_ru": "Фразовые глаголы",
+    "type": "mcq",
+    "q": "I can't ___ up with my sister's music any more — it's way too loud!",
+    "options": [
+      "get",
+      "keep",
+      "come",
+      "put"
+    ],
+    "answer": 3,
+    "explain_ru": "Терпеть — put up with.",
+    "group": "t-b1-v2"
+  },
+  {
+    "id": "TV-B1-17",
+    "skill": "vocabulary",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "tv-b1-word-formation",
+    "topic_en": "Word formation",
+    "topic_ru": "Словообразование",
+    "type": "wordform",
+    "q": "My new app is really ___. It does everything I need.",
+    "accept": [
+      "useful"
+    ],
+    "explain_ru": "use + -ful → useful.",
+    "base": "USE",
+    "group": "t-b1-v3"
+  },
+  {
+    "id": "TV-B1-18",
+    "skill": "vocabulary",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "tv-b1-word-formation",
+    "topic_en": "Word formation",
+    "topic_ru": "Словообразование",
+    "type": "wordform",
+    "q": "Our teacher is very ___ — she never gets angry.",
+    "accept": [
+      "patient"
+    ],
+    "explain_ru": "Patience (терпение) → patient (терпеливый).",
+    "base": "PATIENCE",
+    "group": "t-b1-v3"
+  },
+  {
+    "id": "TV-B1-19",
+    "skill": "vocabulary",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "tv-b1-word-formation",
+    "topic_en": "Word formation",
+    "topic_ru": "Словообразование",
+    "type": "wordform",
+    "q": "It's ___ to finish all this homework in one evening!",
+    "accept": [
+      "impossible"
+    ],
+    "explain_ru": "Приставка im- → impossible.",
+    "base": "POSSIBLE",
+    "group": "t-b1-v3"
+  },
+  {
+    "id": "TV-B1-20",
+    "skill": "vocabulary",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "tv-b1-word-formation",
+    "topic_en": "Word formation",
+    "topic_ru": "Словообразование",
+    "type": "wordform",
+    "q": "Thanks for the ___ — we had a great time at your party!",
+    "accept": [
+      "invitation"
+    ],
+    "explain_ru": "invite + -ation → invitation.",
+    "base": "INVITE",
+    "group": "t-b1-v3"
+  },
+  {
+    "id": "TV-B1-21",
+    "skill": "vocabulary",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "tv-b1-word-formation",
+    "topic_en": "Word formation",
+    "topic_ru": "Словообразование",
+    "type": "wordform",
+    "q": "The ___ of the game was great, but the ending was disappointing.",
+    "accept": [
+      "beginning"
+    ],
+    "explain_ru": "begin → beginning (удваивается n).",
+    "base": "BEGIN",
+    "group": "t-b1-v3"
+  },
+  {
+    "id": "TV-B1-22",
+    "skill": "vocabulary",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "tv-b1-word-formation",
+    "topic_en": "Word formation",
+    "topic_ru": "Словообразование",
+    "type": "wordform",
+    "q": "My brother is so ___ — he never puts his things away.",
+    "accept": [
+      "untidy"
+    ],
+    "explain_ru": "Приставка un- → untidy.",
+    "base": "TIDY",
+    "group": "t-b1-v3"
+  },
+  {
+    "id": "TV-B1-23",
+    "skill": "vocabulary",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "tv-b1-word-formation",
+    "topic_en": "Word formation",
+    "topic_ru": "Словообразование",
+    "type": "wordform",
+    "q": "There's a big ___ between my phone and yours: mine has three cameras.",
+    "accept": [
+      "difference"
+    ],
+    "explain_ru": "different → difference.",
+    "base": "DIFFERENT",
+    "group": "t-b1-v3"
+  },
+  {
+    "id": "TV-B1-24",
+    "skill": "vocabulary",
+    "level": "B1",
+    "band": 3,
+    "topic_id": "tv-b1-word-formation",
+    "topic_en": "Word formation",
+    "topic_ru": "Словообразование",
+    "type": "wordform",
+    "q": "___, the school trip was cancelled because of the storm.",
+    "accept": [
+      "unfortunately"
+    ],
+    "explain_ru": "un- + fortunate + -ly → unfortunately.",
+    "base": "FORTUNATE",
+    "group": "t-b1-v3"
+  },
+  {
+    "id": "TV-B1-25",
+    "skill": "vocabulary",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "tv-b1-confusing",
+    "topic_en": "Confusing words",
+    "topic_ru": "Похожие слова",
+    "type": "mcq",
+    "q": "Can you ___ me your notes? I missed the lesson.",
+    "options": [
+      "lend",
+      "borrow",
+      "rent",
+      "owe"
+    ],
+    "answer": 0,
+    "explain_ru": "Дать на время — lend.",
+    "group": "t-b1-v4"
+  },
+  {
+    "id": "TV-B1-26",
+    "skill": "vocabulary",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "tv-b1-confusing",
+    "topic_en": "Confusing words",
+    "topic_ru": "Похожие слова",
+    "type": "mcq",
+    "q": "I didn't ___ the joke. Can you explain it?",
+    "options": [
+      "take",
+      "get",
+      "know",
+      "find"
+    ],
+    "answer": 1,
+    "explain_ru": "Понять шутку — get the joke.",
+    "group": "t-b1-v4"
+  },
+  {
+    "id": "TV-B1-27",
+    "skill": "vocabulary",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "tv-b1-confusing",
+    "topic_en": "Confusing words",
+    "topic_ru": "Похожие слова",
+    "type": "mcq",
+    "q": "Prices ___ every year.",
+    "options": [
+      "raise",
+      "arise",
+      "rise",
+      "grow up"
+    ],
+    "answer": 2,
+    "explain_ru": "Подниматься (сами) — rise; raise — поднимать что-то.",
+    "group": "t-b1-v4"
+  },
+  {
+    "id": "TV-B1-28",
+    "skill": "vocabulary",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "tv-b1-confusing",
+    "topic_en": "Confusing words",
+    "topic_ru": "Похожие слова",
+    "type": "mcq",
+    "q": "My teacher always ___ me to read more.",
+    "options": [
+      "says",
+      "speaks",
+      "talks",
+      "tells"
+    ],
+    "answer": 3,
+    "explain_ru": "Tell somebody to do.",
+    "group": "t-b1-v4"
+  },
+  {
+    "id": "TV-B1-29",
+    "skill": "vocabulary",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "tv-b1-confusing",
+    "topic_en": "Confusing words",
+    "topic_ru": "Похожие слова",
+    "type": "mcq",
+    "q": "Please ___ your hand if you have a question.",
+    "options": [
+      "raise",
+      "rise",
+      "grow",
+      "arise"
+    ],
+    "answer": 0,
+    "explain_ru": "Поднять (что-то) — raise.",
+    "group": "t-b1-v4"
+  },
+  {
+    "id": "TV-B1-30",
+    "skill": "vocabulary",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "tv-b1-confusing",
+    "topic_en": "Confusing words",
+    "topic_ru": "Похожие слова",
+    "type": "mcq",
+    "q": "The film was so ___ that I fell asleep.",
+    "options": [
+      "bored",
+      "boring",
+      "bore",
+      "boredom"
+    ],
+    "answer": 1,
+    "explain_ru": "Скучный (о фильме) — boring.",
+    "group": "t-b1-v4"
+  },
+  {
+    "id": "TV-B1-31",
+    "skill": "vocabulary",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "tv-b1-confusing",
+    "topic_en": "Confusing words",
+    "topic_ru": "Похожие слова",
+    "type": "mcq",
+    "q": "I'm so ___ of my little sister — she won a chess tournament!",
+    "options": [
+      "pride",
+      "happy",
+      "proud",
+      "satisfied"
+    ],
+    "answer": 2,
+    "explain_ru": "Гордиться — be proud of.",
+    "group": "t-b1-v4"
+  },
+  {
+    "id": "TV-B1-32",
+    "skill": "vocabulary",
+    "level": "B1",
+    "band": 3,
+    "topic_id": "tv-b1-confusing",
+    "topic_en": "Confusing words",
+    "topic_ru": "Похожие слова",
+    "type": "mcq",
+    "q": "Don't ___ me for losing the match — it was the whole team!",
+    "options": [
+      "accuse",
+      "guilty",
+      "fault",
+      "blame"
+    ],
+    "answer": 3,
+    "explain_ru": "Винить кого-то за что-то — blame somebody for (accuse — of).",
+    "group": "t-b1-v4"
+  },
+  {
+    "id": "TV-B1-33",
+    "skill": "vocabulary",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "tv-b1-idioms",
+    "topic_en": "Common idioms",
+    "topic_ru": "Частые идиомы",
+    "type": "mcq",
+    "q": "The test was a piece of ___ — I finished in ten minutes.",
+    "options": [
+      "cake",
+      "pie",
+      "bread",
+      "chocolate"
+    ],
+    "answer": 0,
+    "explain_ru": "Проще простого — a piece of cake.",
+    "group": "t-b1-v5"
+  },
+  {
+    "id": "TV-B1-34",
+    "skill": "vocabulary",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "tv-b1-idioms",
+    "topic_en": "Common idioms",
+    "topic_ru": "Частые идиомы",
+    "type": "mcq",
+    "q": "Good luck with your concert tonight! Break a ___!",
+    "options": [
+      "arm",
+      "leg",
+      "finger",
+      "foot"
+    ],
+    "answer": 1,
+    "explain_ru": "Ни пуха ни пера — break a leg.",
+    "group": "t-b1-v5"
+  },
+  {
+    "id": "TV-B1-35",
+    "skill": "vocabulary",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "tv-b1-idioms",
+    "topic_en": "Common idioms",
+    "topic_ru": "Частые идиомы",
+    "type": "mcq",
+    "q": "I'm feeling a bit under the ___ today. I think I've got a cold.",
+    "options": [
+      "rain",
+      "sky",
+      "weather",
+      "sun"
+    ],
+    "answer": 2,
+    "explain_ru": "Неважно себя чувствовать — under the weather.",
+    "group": "t-b1-v5"
+  },
+  {
+    "id": "TV-B1-36",
+    "skill": "vocabulary",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "tv-b1-idioms",
+    "topic_en": "Common idioms",
+    "topic_ru": "Частые идиомы",
+    "type": "gap",
+    "q": "Take an umbrella — it's raining cats and ___!",
+    "accept": [
+      "dogs"
+    ],
+    "explain_ru": "Льёт как из ведра — raining cats and dogs.",
+    "hint_ru": "одно слово",
+    "group": "t-b1-v5"
+  },
+  {
+    "id": "TV-B1-37",
+    "skill": "vocabulary",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "tv-b1-idioms",
+    "topic_en": "Common idioms",
+    "topic_ru": "Частые идиомы",
+    "type": "mcq",
+    "q": "Don't worry, my lips are ___. I won't tell anyone.",
+    "options": [
+      "closed",
+      "locked",
+      "shut",
+      "sealed"
+    ],
+    "answer": 3,
+    "explain_ru": "Никому не скажу — my lips are sealed.",
+    "group": "t-b1-v5"
+  },
+  {
+    "id": "TV-B1-38",
+    "skill": "vocabulary",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "tv-b1-idioms",
+    "topic_en": "Common idioms",
+    "topic_ru": "Частые идиомы",
+    "type": "mcq",
+    "q": "I'll ___ an eye on your bag while you're in the shop.",
+    "options": [
+      "keep",
+      "put",
+      "hold",
+      "take"
+    ],
+    "answer": 0,
+    "explain_ru": "Присмотреть — keep an eye on.",
+    "group": "t-b1-v5"
+  },
+  {
+    "id": "TV-B1-39",
+    "skill": "vocabulary",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "tv-b1-idioms",
+    "topic_en": "Common idioms",
+    "topic_ru": "Частые идиомы",
+    "type": "mcq",
+    "q": "Let's call it a ___. We're all tired.",
+    "options": [
+      "time",
+      "day",
+      "stop",
+      "end"
+    ],
+    "answer": 1,
+    "explain_ru": "На сегодня хватит — call it a day.",
+    "group": "t-b1-v5"
+  },
+  {
+    "id": "TV-B1-40",
+    "skill": "vocabulary",
+    "level": "B1",
+    "band": 3,
+    "topic_id": "tv-b1-idioms",
+    "topic_en": "Common idioms",
+    "topic_ru": "Частые идиомы",
+    "type": "mcq",
+    "q": "When I saw my exam results, I was over the ___!",
+    "options": [
+      "sun",
+      "sky",
+      "moon",
+      "stars"
+    ],
+    "answer": 2,
+    "explain_ru": "На седьмом небе — over the moon.",
+    "group": "t-b1-v5"
+  }
+]
