@@ -1,6 +1,6 @@
 import "server-only";
 import type { Prisma } from "@prisma/client";
-import { instruction } from "./bank";
+import { instruction, instructionRu, trackOf } from "./bank";
 import {
   checkCore, coreProgress, coreResult, firstText, levelOfStep, wsStep, nextCore, nextText, nextVocab, pickTask, PL_LEVELS, stepOf, textLevel, vocabProgress, vocabResult,
   type AnyItem, type Bank, type CoreItem, type ListenItem, type PState, type ReadItem, type SpeakItem, type WriteItem,
@@ -88,8 +88,10 @@ export function addNextText(st: PState, bank: Bank, k: "reading" | "listening") 
 /** Задание без ответов — то, что уходит в браузер. */
 export function publicView(st: PState, lang: "ru" | "en", bank?: Bank) {
   void lang;
-  const ins = (k: string, lv?: string) => instruction(k, lv);
-  const base = { section: st.section, level: st.level ?? null, open: st.section === "core" || st.section === "vocab" || st.section === "intro" ? [] : (openOf(st) as string[]), locked: lockedOf(st) as string[] };
+  const track = trackOf(st.track);
+  const ins = (k: string, lv?: string) => instruction(k, lv, track);
+  const insRu = (k: string, lv?: string) => instructionRu(k, lv, track); // Teens A1–A2: перевод инструкции
+  const base = { teen: track === "teen", section: st.section, level: st.level ?? null, open: st.section === "core" || st.section === "vocab" || st.section === "intro" ? [] : (openOf(st) as string[]), locked: lockedOf(st) as string[] };
   if (st.section === "core" || st.section === "vocab") {
     const sec = st.section;
     const last = st.core[st.core.length - 1];
@@ -99,7 +101,7 @@ export function publicView(st: PState, lang: "ru" | "en", bank?: Bank) {
     if (!it) return { ...base, section: sec, n: 0, from: 0, progress, item: null };
     return {
       ...base, section: sec, n: st.core.length, from: Math.max(0, from), progress,
-      item: { id: it.id, type: it.type, skill: it.skill, q: it.q, options: it.options ?? null, base: it.base ?? null, key: it.key ?? null, frame: it.frame ?? null, hint: (it as CoreItem & { hint_ru?: string }).hint_ru ?? null, instr: ins(it.type, it.level) },
+      item: { id: it.id, type: it.type, skill: it.skill, q: it.q, options: it.options ?? null, base: it.base ?? null, key: it.key ?? null, frame: it.frame ?? null, hint: (it as CoreItem & { hint_ru?: string }).hint_ru ?? null, instr: ins(it.type, it.level), instrRu: insRu(it.type, it.level) },
     };
   }
   if (st.section === "reading" || st.section === "listening") {
@@ -113,15 +115,15 @@ export function publicView(st: PState, lang: "ru" | "en", bank?: Bank) {
         ? { id: it.id, title: it.title, passage: it.passage, questions: qs }
         : { id: it.id, title: it.title, situation: (it as ListenItem & { situation_en?: string }).situation_en ?? (it as ListenItem).situation_ru ?? "", audio: (it as ListenItem).audio ?? "", plays: (it as ListenItem).plays ?? 2, used: st.plays[it.id] ?? 0, questions: qs };
     });
-    return { ...base, section: st.section, n: done.length + 1, extra: ids.length >= 3, instr: ins(st.section, st.level), items };
+    return { ...base, section: st.section, n: done.length + 1, extra: ids.length >= 3, instr: ins(st.section, st.level), instrRu: insRu(st.section, st.level), items };
   }
   if (st.section === "writing") {
     const it = st.writing ? (st.items[st.writing.id] as WriteItem) : null;
-    return { ...base, section: "writing" as const, instr: ins("writing", it?.level), text: st.writing?.text ?? "", item: it && { id: it.id, kind: ((k) => k.charAt(0).toUpperCase() + k.slice(1))(it.topic_en.replace(/^Writing:\s*/, "")), prompt_en: it.prompt_en, prompt_ru: it.level === "A1" || it.level === "A2" ? it.prompt_ru : "", points_title: (it as WriteItem & { points_title?: string }).points_title ?? "", points: it.points ?? [], min: it.min_words, max: it.max_words, time: it.time_min } };
+    return { ...base, section: "writing" as const, instr: ins("writing", it?.level), instrRu: insRu("writing", it?.level), text: st.writing?.text ?? "", item: it && { id: it.id, kind: ((k) => k.charAt(0).toUpperCase() + k.slice(1))(it.topic_en.replace(/^Writing:\s*/, "")), prompt_en: it.prompt_en, prompt_ru: it.level === "A1" || it.level === "A2" ? it.prompt_ru : "", points_title: (it as WriteItem & { points_title?: string }).points_title ?? "", points: it.points ?? [], min: it.min_words, max: it.max_words, time: it.time_min } };
   }
   if (st.section === "speaking") {
     const it = st.speaking ? (st.items[st.speaking.id] as SpeakItem) : null;
-    return { ...base, section: "speaking" as const, instr: ins("speaking", it?.level), rec: Object.keys(st.speaking?.rec ?? {}), item: it && { id: it.id, level: it.level, intro: (it as SpeakItem & { intro_en?: string }).intro_en ?? it.intro_ru, questions: it.questions.map((q) => ({ q: q.q, prep: q.prep_sec, speak: q.speak_sec, audio: q.audio ?? null })) } };
+    return { ...base, section: "speaking" as const, instr: ins("speaking", it?.level), instrRu: insRu("speaking", it?.level), rec: Object.keys(st.speaking?.rec ?? {}), item: it && { id: it.id, level: it.level, intro: (it as SpeakItem & { intro_en?: string }).intro_en ?? it.intro_ru, questions: it.questions.map((q) => ({ q: q.q, prep: q.prep_sec, speak: q.speak_sec, audio: q.audio ?? null })) } };
   }
   return { ...base, section: st.section };
 }

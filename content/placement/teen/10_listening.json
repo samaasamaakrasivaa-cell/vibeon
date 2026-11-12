@@ -1,0 +1,97 @@
+[
+  {
+    "id": "TL-A1-01",
+    "skill": "listening",
+    "level": "A1",
+    "band": 1,
+    "topic_en": "Voice message: a birthday party",
+    "topic_ru": "Голосовое: день рождения",
+    "type": "listening",
+    "title": "Mia's party",
+    "situation_ru": "Мия оставляет голосовое сообщение и зовёт на день рождения.",
+    "situation_en": "Your friend Mia leaves you a voice message about her birthday party.",
+    "speakers": [
+      {
+        "name": "Mia",
+        "gender": "female",
+        "accent": "British"
+      }
+    ],
+    "script": "Mia: Hi, it's Mia! [pause 1s] It's my birthday on Saturday, and I'm having a party at my house. It starts at three o'clock. [pause 1s] We're going to play games in the garden, and my mum is making a giant chocolate cake. It's shaped like a dog. Like Pie! [pause 1s] Please bring your swimming things, because we've got a small pool. Oh, and don't bring a present. Just come! Bye!",
+    "plays": 2,
+    "words": 72,
+    "duration_sec": 36,
+    "questions": [
+      {
+        "id": "TL-A1-01-q1",
+        "q": "When is the party?",
+        "options": [
+          "On Saturday",
+          "On Wednesday",
+          "On Thursday",
+          "On Monday"
+        ],
+        "answer": 0,
+        "checks": "number-time-place",
+        "topic_id": "l-number-time-place",
+        "explain_ru": "«It's my birthday on Saturday»."
+      },
+      {
+        "id": "TL-A1-01-q2",
+        "q": "What time does it start?",
+        "options": [
+          "At twelve o'clock",
+          "At three o'clock",
+          "At four o'clock",
+          "At eleven o'clock"
+        ],
+        "answer": 1,
+        "checks": "number-time-place",
+        "topic_id": "l-number-time-place",
+        "explain_ru": "«It starts at three o'clock»."
+      },
+      {
+        "id": "TL-A1-01-q3",
+        "q": "What is special about the cake?",
+        "options": [
+          "It's very small",
+          "It has got candles shaped like stars",
+          "It looks like a dog",
+          "It's a strawberry cake"
+        ],
+        "answer": 2,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "Торт в форме собаки: «It's shaped like a dog»."
+      },
+      {
+        "id": "TL-A1-01-q4",
+        "q": "What should you bring?",
+        "options": [
+          "A birthday present",
+          "A dog",
+          "Her favourite games",
+          "Swimming things"
+        ],
+        "answer": 3,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "«Please bring your swimming things»."
+      },
+      {
+        "id": "TL-A1-01-q5",
+        "q": "Where are they going to play games?",
+        "options": [
+          "In the garden",
+          "In the small pool",
+          "In the big park",
+          "At the robot club"
+        ],
+        "answer": 0,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "«play games in the garden»."
+      }
+    ]
+  }
+]

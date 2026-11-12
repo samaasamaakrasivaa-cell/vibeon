@@ -1,0 +1,42 @@
+{
+  "mcq": {
+    "easy": "Choose the right answer.",
+    "std": "Choose the right answer.",
+    "ru": "Выбери правильный ответ."
+  },
+  "gap": {
+    "easy": "Write one word in the gap.",
+    "std": "Write one word in the gap.",
+    "ru": "Впиши одно слово в пропуск."
+  },
+  "wordform": {
+    "easy": "Make a new word from the word in capitals.",
+    "std": "Use the word in capitals to make a word that fits the gap.",
+    "ru": "Образуй новое слово от слова в рамке."
+  },
+  "brackets": {
+    "easy": "Put the word in brackets in the right form.",
+    "std": "Put the word in brackets in the correct form.",
+    "ru": "Поставь слово из скобок в нужную форму."
+  },
+  "reading": {
+    "easy": "Read the text and answer the questions.",
+    "std": "Read the text and answer the questions.",
+    "ru": "Прочитай текст и ответь на вопросы."
+  },
+  "listening": {
+    "easy": "Read the questions. Then listen. You can listen two times.",
+    "std": "Read the questions, then play the recording. You can listen twice.",
+    "ru": "Сначала прочитай вопросы, потом послушай. Запись можно включить два раза."
+  },
+  "writing": {
+    "easy": "Write your answer. Write about all the points.",
+    "std": "Write your answer and cover all the points.",
+    "ru": "Напиши ответ и расскажи обо всех пунктах."
+  },
+  "speaking": {
+    "easy": "Listen to the question. Think, then answer. You can listen to your answer and record it again.",
+    "std": "Listen to the question, get ready, then answer. You can play back your answer and record it again.",
+    "ru": "Послушай вопрос, подумай и ответь. Свой ответ можно послушать и записать заново."
+  }
+}

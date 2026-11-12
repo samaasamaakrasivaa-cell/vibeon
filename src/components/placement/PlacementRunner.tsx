@@ -2,7 +2,7 @@
 import { createContext, useContext, useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useT as useTBase } from "@/lib/i18n/client";
-import { translate, type DictKey as DK } from "@/lib/i18n/dict";
+import { dictionaries, translate, type DictKey as DK } from "@/lib/i18n/dict";
 import type { DictKey } from "@/lib/i18n/dict";
 import { Flag } from "./Flag";
 import { answerCore, draftText, finishPlacement, finishTexts, goSection, notePlay, peekCore, reviseCore, saveWriting, startPlacement } from "@/lib/placement/actions";
@@ -12,10 +12,19 @@ import type { IconName } from "../icon-paths";
 
 // Внутри теста названия разделов — по-английски (как и сами задания); кнопки и пояснения — на языке интерфейса.
 const EN_KEYS = new Set(["pl.recTab", "pl.textTab"]);
+// Placement test Teens: фразы на «ты» (ключи plt.*) подменяют обычные pl.*
+const TeenCtx = createContext(false);
 function useT() {
   const b = useTBase();
-  return { ...b, t: (k: DK, v?: Record<string, string | number>) => (EN_KEYS.has(k) || k.startsWith("pl.part.") ? translate("en", k, v) : b.t(k, v)) };
+  const teen = useContext(TeenCtx);
+  return { ...b, t: (k: DK, v?: Record<string, string | number>) => {
+    if (EN_KEYS.has(k) || k.startsWith("pl.part.")) return translate("en", k, v);
+    const tk = k.replace(/^pl\./, "plt.") as DK;
+    return teen && tk in dictionaries[b.lang] ? translate(b.lang, tk, v) : b.t(k, v);
+  } };
 }
+/** Инструкция к заданию; у Teens на A1–A2 — с переводом на русский. */
+const Instr = ({ en, ru }: { en?: string; ru?: string }) => <p className="plinstr">{en}{ru && <span className="plinstr-ru">{ru}</span>}</p>;
 
 // Пометить вопрос «на проверку» — только учителю, который проходит тест сам
 const FlagCtx = createContext<{ attempt: string; can: boolean }>({ attempt: "", can: false });
@@ -88,6 +97,7 @@ export function PlacementRunner({ id, initial, sample, done, home, canFlag = fal
   if (v.section === "done") return <>{done}</>;
   if (paused) return <Paused home={home} onBack={() => setPaused(false)} />;
   return (
+    <TeenCtx.Provider value={!!v.teen}>
     <FlagCtx.Provider value={{ attempt: id, can: canFlag }}>
     <div className="flex flex-col gap-4">
       {v.section !== "intro" && (
@@ -130,6 +140,7 @@ export function PlacementRunner({ id, initial, sample, done, home, canFlag = fal
       )}
     </div>
     </FlagCtx.Provider>
+    </TeenCtx.Provider>
   );
 }
 
@@ -250,7 +261,7 @@ function CoreStep({ item: it, n, pending, onAnswer, onBack, initial, initialDk, 
   return (
     <section className="card flex flex-col gap-4" data-item={it.id}>
       {past && <div className="plpast"><Icon name="chevl" size="sm" />{t("pl.pastNote", { n })}</div>}
-      <div className="plinstrrow"><p className="plinstr">{it.instr}</p>{!past && <FlagButton itemId={it.id} />}</div>
+      <div className="plinstrrow"><Instr en={it.instr} ru={it.instrRu ?? undefined} />{!past && <FlagButton itemId={it.id} />}</div>
       <div className="plqbox">
         {it.type === "mcq" && <p className="plq">{it.q.split("___").map((x, i, a) => <span key={i}>{x}{i < a.length - 1 && <span className="plblank">{typeof val === "number" ? it.options![val] : "\u00a0"}</span>}</span>)}</p>}
         {it.type === "wordform" && <><div className="plword"><span className="plbase">{it.base}</span><Icon name="right" size="sm" /><span className="muted small">?</span></div>{parts(it.q)}</>}
@@ -308,7 +319,7 @@ function TextStep({ v, pending, onFinish, attempt }: { v: TextV; pending: boolea
     <section className="card flex flex-col gap-4" data-text={it.id}>
       <div className="flex flex-wrap items-center gap-2"><span className="pill">{t(listen ? "pl.recTab" : "pl.textTab", { n: v.n ?? 1 })}</span>{(v.n ?? 1) > 1 && !v.extra && <span className="small muted">{t("pl.byPrev")}</span>}</div>
       {v.extra && <div className="alert ok" style={{ background: "var(--accent-bg)", color: "var(--accent-text)" }}>{t("pl.extraText")}</div>}
-      <div className="plinstrrow"><p className="plinstr">{v.instr}</p><FlagButton itemId={it.id} questions={it.questions} /></div>
+      <div className="plinstrrow"><Instr en={v.instr} ru={(v as { instrRu?: string }).instrRu} /><FlagButton itemId={it.id} questions={it.questions} /></div>
       <h3 className="m-0">{it.title}</h3>
       {listen ? <Player key={it.id} it={it} attempt={attempt} onPlaying={setPlaying} /> : <div className="tpassage plpassage">{it.passage}</div>}
       {it.questions.map((q, n) => (
@@ -379,7 +390,7 @@ function WriteStep({ v, pending, onSave }: { v: WriteV; pending: boolean; onSave
   const submit = () => { if (n < it.min ? !confirm(t("pl.fewWords", { n, min: it.min })) : !confirm(t("pl.finishWriting"))) return; onSave(text, true); };
   return (
     <section className="card flex flex-col gap-4">
-      <div className="plinstrrow"><p className="plinstr">{v.instr}</p><FlagButton itemId={it.id} /></div>
+      <div className="plinstrrow"><Instr en={v.instr} ru={(v as { instrRu?: string }).instrRu} /><FlagButton itemId={it.id} /></div>
       <div className="plletter">
         <div className="plletter-h"><Icon name="msg" size="sm" /><b>{it.kind}</b><span className="grow" /><span className="small muted">{t("pl.wordsGoal", { a: it.min, b: it.max })}</span></div>
         <p className="plq m-0">{it.prompt_en}</p>
@@ -480,7 +491,7 @@ function SpeakStep({ v, attempt, pending, onFinish, last }: { v: SpeakV; attempt
   const all = done.length >= it.questions.length;
   return (
     <section className="card flex flex-col gap-4">
-      <div className="plinstrrow"><p className="plinstr">{v.instr}</p><FlagButton itemId={it.id} /></div>
+      <div className="plinstrrow"><Instr en={v.instr} ru={(v as { instrRu?: string }).instrRu} /><FlagButton itemId={it.id} /></div>
       <div className="plguide"><Icon name="info" size="sm" /><span><b>{it.intro}</b> {t(`pl.speakGuide.${it.level}` as DictKey)}</span></div>
       <div className="flex flex-col gap-3">
         {it.questions.map((x, i) => {

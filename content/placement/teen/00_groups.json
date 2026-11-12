@@ -1,0 +1,633 @@
+[
+  {
+    "id": "t-a1-01",
+    "level": "A1",
+    "kind": "grammar",
+    "anchor": true,
+    "name_ru": "to be, there is / there are, was / were",
+    "what_ru": "am / is / are, there is / there are; was / were",
+    "topics": [
+      "tg-a1-to-be",
+      "tg-a1-there-is",
+      "tg-a1-was-were"
+    ]
+  },
+  {
+    "id": "t-a1-02",
+    "level": "A1",
+    "kind": "grammar",
+    "anchor": false,
+    "name_ru": "Present Simple",
+    "what_ru": "he plays / does he play / he doesn't play; always, usually, never",
+    "topics": [
+      "tg-a1-present-simple",
+      "tg-a1-frequency"
+    ]
+  },
+  {
+    "id": "t-a1-03",
+    "level": "A1",
+    "kind": "grammar",
+    "anchor": false,
+    "name_ru": "Present Continuous — сейчас",
+    "what_ru": "I'm playing now; like + -ing",
+    "topics": [
+      "tg-a1-pc-now",
+      "tg-a1-like-ing"
+    ]
+  },
+  {
+    "id": "t-a1-04",
+    "level": "A1",
+    "kind": "grammar",
+    "anchor": false,
+    "name_ru": "can, have got, повелительное наклонение",
+    "what_ru": "can / can't; have got; Sit down! Don't run!",
+    "topics": [
+      "tg-a1-can",
+      "tg-a1-have-got",
+      "tg-a1-imperative"
+    ]
+  },
+  {
+    "id": "t-a1-05",
+    "level": "A1",
+    "kind": "grammar",
+    "anchor": false,
+    "name_ru": "Местоимения, принадлежность, вопросы",
+    "what_ru": "I / me / my; Tom's; this / that; what / where / how many",
+    "topics": [
+      "tg-a1-pronouns",
+      "tg-a1-possessives",
+      "tg-a1-this-that",
+      "tg-a1-question-words"
+    ]
+  },
+  {
+    "id": "t-a1-06",
+    "level": "A1",
+    "kind": "grammar",
+    "anchor": false,
+    "name_ru": "Артикли, множественное число, some / any, предлоги",
+    "what_ru": "a / an / the; children, mice; some / any; in / on / at / under",
+    "topics": [
+      "tg-a1-articles",
+      "tg-a1-plurals",
+      "tg-a1-some-any",
+      "tg-a1-prepositions"
+    ]
+  },
+  {
+    "id": "t-a2-01",
+    "level": "A2",
+    "kind": "grammar",
+    "anchor": true,
+    "name_ru": "Past Simple",
+    "what_ru": "went, saw, had; did / didn't",
+    "topics": [
+      "tg-a2-past-simple",
+      "tg-a2-past-neg-q"
+    ]
+  },
+  {
+    "id": "t-a2-02",
+    "level": "A2",
+    "kind": "grammar",
+    "anchor": false,
+    "name_ru": "Past Continuous и Past Simple",
+    "what_ru": "I was playing when my mum called",
+    "topics": [
+      "tg-a2-past-continuous"
+    ]
+  },
+  {
+    "id": "t-a2-03",
+    "level": "A2",
+    "kind": "grammar",
+    "anchor": false,
+    "name_ru": "Present Perfect: опыт и результат",
+    "what_ru": "ever / never; just / already / yet",
+    "topics": [
+      "tg-a2-pp-experience",
+      "tg-a2-pp-just-yet"
+    ]
+  },
+  {
+    "id": "t-a2-04",
+    "level": "A2",
+    "kind": "grammar",
+    "anchor": false,
+    "name_ru": "Будущее",
+    "what_ru": "going to / will / Present Continuous для планов",
+    "topics": [
+      "tg-a2-going-to",
+      "tg-a2-will",
+      "tg-a2-pc-future"
+    ]
+  },
+  {
+    "id": "t-a2-05",
+    "level": "A2",
+    "kind": "grammar",
+    "anchor": false,
+    "name_ru": "Сравнения, наречия, предлоги движения",
+    "what_ru": "bigger / the biggest; too / enough; carefully; across / through",
+    "topics": [
+      "tg-a2-comparatives",
+      "tg-a2-too-enough",
+      "tg-a2-adverbs",
+      "tg-a2-prep-movement"
+    ]
+  },
+  {
+    "id": "t-a2-06",
+    "level": "A2",
+    "kind": "grammar",
+    "anchor": false,
+    "name_ru": "Модальные глаголы",
+    "what_ru": "must / have to / mustn't / should",
+    "topics": [
+      "tg-a2-obligation",
+      "tg-a2-should"
+    ]
+  },
+  {
+    "id": "t-a2-07",
+    "level": "A2",
+    "kind": "grammar",
+    "anchor": false,
+    "name_ru": "Количество и местоимения",
+    "what_ru": "much / many / a lot of; a few / a little; something / anyone; myself",
+    "topics": [
+      "tg-a2-quantifiers",
+      "tg-a2-indefinite",
+      "tg-a2-reflexive"
+    ]
+  },
+  {
+    "id": "t-b1-01",
+    "level": "B1",
+    "kind": "grammar",
+    "anchor": true,
+    "name_ru": "Present Perfect или Past Simple",
+    "what_ru": "for / since; I've lived / I lived; Present Perfect Continuous",
+    "topics": [
+      "tg-b1-pp-vs-past",
+      "tg-b1-for-since",
+      "tg-b1-ppc"
+    ]
+  },
+  {
+    "id": "t-b1-02",
+    "level": "B1",
+    "kind": "grammar",
+    "anchor": false,
+    "name_ru": "Рассказ о прошлом и привычки",
+    "what_ru": "Past Perfect; used to; be / get used to",
+    "topics": [
+      "tg-b1-past-perfect",
+      "tg-b1-used-to",
+      "tg-b1-be-get-used"
+    ]
+  },
+  {
+    "id": "t-b1-03",
+    "level": "B1",
+    "kind": "grammar",
+    "anchor": false,
+    "name_ru": "Будущее",
+    "what_ru": "will / going to / Present Continuous / расписания; Future Continuous",
+    "topics": [
+      "tg-b1-future",
+      "tg-b1-future-continuous"
+    ]
+  },
+  {
+    "id": "t-b1-04",
+    "level": "B1",
+    "kind": "grammar",
+    "anchor": false,
+    "name_ru": "Условные 0, 1, 2 типа и wish",
+    "what_ru": "If you heat ice…; If it rains, we'll…; If I had…, I'd…; I wish I had…",
+    "topics": [
+      "tg-b1-cond-01",
+      "tg-b1-cond-2",
+      "tg-b1-wish"
+    ]
+  },
+  {
+    "id": "t-b1-05",
+    "level": "B1",
+    "kind": "grammar",
+    "anchor": false,
+    "name_ru": "Пассив",
+    "what_ru": "is made / was built",
+    "topics": [
+      "tg-b1-passive"
+    ]
+  },
+  {
+    "id": "t-b1-06",
+    "level": "B1",
+    "kind": "grammar",
+    "anchor": false,
+    "name_ru": "Придаточные с who / which / that / where",
+    "what_ru": "the girl who…, the game which…, the place where…",
+    "topics": [
+      "tg-b1-relatives"
+    ]
+  },
+  {
+    "id": "t-b1-07",
+    "level": "B1",
+    "kind": "grammar",
+    "anchor": false,
+    "name_ru": "Косвенная речь",
+    "what_ru": "She said she was…; He asked if…; Do you know where…?",
+    "topics": [
+      "tg-b1-reported",
+      "tg-b1-indirect-q"
+    ]
+  },
+  {
+    "id": "t-b1-08",
+    "level": "B1",
+    "kind": "grammar",
+    "anchor": false,
+    "name_ru": "Глагольные модели и предположения",
+    "what_ru": "-ing или to; must / might / can't be; question tags",
+    "topics": [
+      "tg-b1-ing-inf",
+      "tg-b1-deduction",
+      "tg-b1-tags"
+    ]
+  },
+  {
+    "id": "t-b2-01",
+    "level": "B2",
+    "kind": "grammar",
+    "anchor": true,
+    "name_ru": "Рассказ о прошлом на уровне B2",
+    "what_ru": "narrative tenses; Present Perfect Continuous",
+    "topics": [
+      "tg-b2-narrative",
+      "tg-b2-ppc"
+    ]
+  },
+  {
+    "id": "t-b2-02",
+    "level": "B2",
+    "kind": "grammar",
+    "anchor": false,
+    "name_ru": "Условные 3 типа, смешанные, wish",
+    "what_ru": "If I had known…; If I had…, I'd be…; I wish I had… / If only",
+    "topics": [
+      "tg-b2-cond-3",
+      "tg-b2-mixed",
+      "tg-b2-wish"
+    ]
+  },
+  {
+    "id": "t-b2-03",
+    "level": "B2",
+    "kind": "grammar",
+    "anchor": false,
+    "name_ru": "Пассив во всех формах",
+    "what_ru": "has been done, will be done; have something done",
+    "topics": [
+      "tg-b2-passive",
+      "tg-b2-causative"
+    ]
+  },
+  {
+    "id": "t-b2-04",
+    "level": "B2",
+    "kind": "grammar",
+    "anchor": false,
+    "name_ru": "Модальные о прошлом",
+    "what_ru": "should have / must have / could have / needn't have",
+    "topics": [
+      "tg-b2-past-modals"
+    ]
+  },
+  {
+    "id": "t-b2-05",
+    "level": "B2",
+    "kind": "grammar",
+    "anchor": false,
+    "name_ru": "Глаголы косвенной речи",
+    "what_ru": "suggest, admit, deny, promise, warn + нужная конструкция",
+    "topics": [
+      "tg-b2-reporting"
+    ]
+  },
+  {
+    "id": "t-b2-06",
+    "level": "B2",
+    "kind": "grammar",
+    "anchor": false,
+    "name_ru": "Связки и придаточные",
+    "what_ru": "although / despite / however; so that / in order to; …, which…",
+    "topics": [
+      "tg-b2-linkers",
+      "tg-b2-purpose",
+      "tg-b2-non-defining"
+    ]
+  },
+  {
+    "id": "t-b2-07",
+    "level": "B2",
+    "kind": "grammar",
+    "anchor": false,
+    "name_ru": "Будущее на уровне B2",
+    "what_ru": "will be doing / will have done",
+    "topics": [
+      "tg-b2-future"
+    ]
+  },
+  {
+    "id": "t-c1-01",
+    "level": "C1",
+    "kind": "grammar",
+    "anchor": true,
+    "name_ru": "Инверсия и выделение (запас)",
+    "what_ru": "Never have I…, Not only…; It was … who…; What I need is…",
+    "topics": [
+      "tg-c1-inversion",
+      "tg-c1-cleft"
+    ]
+  },
+  {
+    "id": "t-c1-02",
+    "level": "C1",
+    "kind": "grammar",
+    "anchor": false,
+    "name_ru": "Сложный пассив и нереальное (запас)",
+    "what_ru": "is said to be…; It's high time…; as if",
+    "topics": [
+      "tg-c1-passive-reporting",
+      "tg-c1-unreal"
+    ]
+  },
+  {
+    "id": "t-a1-v1",
+    "level": "A1",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: слова по темам",
+    "what_ru": "знает ли нужные слова уровня",
+    "topics": [
+      "tv-a1-family-pets",
+      "tv-a1-school",
+      "tv-a1-routine",
+      "tv-a1-food",
+      "tv-a1-clothes",
+      "tv-a1-hobbies",
+      "tv-a1-home",
+      "tv-a1-weather",
+      "tv-a1-numbers-time"
+    ]
+  },
+  {
+    "id": "t-a1-v2",
+    "level": "A1",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: сочетания",
+    "what_ru": "have / go / do / play + слово; простые фразовые глаголы",
+    "topics": [
+      "tv-a1-collocations"
+    ]
+  },
+  {
+    "id": "t-a1-v3",
+    "level": "A1",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: противоположности и описание",
+    "what_ru": "big / small, funny / boring",
+    "topics": [
+      "tv-a1-adjectives"
+    ]
+  },
+  {
+    "id": "t-a1-v4",
+    "level": "A1",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: похожие слова",
+    "what_ru": "look / see / watch, say / tell",
+    "topics": [
+      "tv-a1-confusing"
+    ]
+  },
+  {
+    "id": "t-a2-v1",
+    "level": "A2",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: слова по темам",
+    "what_ru": "знает ли нужные слова уровня",
+    "topics": [
+      "tv-a2-games",
+      "tv-a2-sport",
+      "tv-a2-shopping",
+      "tv-a2-school-life",
+      "tv-a2-gadgets",
+      "tv-a2-holidays",
+      "tv-a2-health"
+    ]
+  },
+  {
+    "id": "t-a2-v2",
+    "level": "A2",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: сочетания и фразовые глаголы",
+    "what_ru": "make / do, turn on, pick up, on foot",
+    "topics": [
+      "tv-a2-collocations"
+    ]
+  },
+  {
+    "id": "t-a2-v3",
+    "level": "A2",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: чувства и характер",
+    "what_ru": "bored / excited, kind / rude",
+    "topics": [
+      "tv-a2-feelings"
+    ]
+  },
+  {
+    "id": "t-a2-v4",
+    "level": "A2",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: похожие слова",
+    "what_ru": "borrow / lend, win / beat, trip / travel",
+    "topics": [
+      "tv-a2-confusing"
+    ]
+  },
+  {
+    "id": "t-b1-v1",
+    "level": "B1",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: слова по темам",
+    "what_ru": "знает ли нужные слова уровня",
+    "topics": [
+      "tv-b1-online",
+      "tv-b1-friendship",
+      "tv-b1-entertainment",
+      "tv-b1-environment",
+      "tv-b1-education",
+      "tv-b1-future-jobs",
+      "tv-b1-traditions"
+    ]
+  },
+  {
+    "id": "t-b1-v2",
+    "level": "B1",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: сочетаемость и фразовые глаголы",
+    "what_ru": "коллокации, фразовые глаголы, предлоги после слов",
+    "topics": [
+      "tv-b1-collocations",
+      "tv-b1-prepositions",
+      "tv-b1-phrasal"
+    ]
+  },
+  {
+    "id": "t-b1-v3",
+    "level": "B1",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: словообразование",
+    "what_ru": "help → helpful, possible → impossible",
+    "topics": [
+      "tv-b1-word-formation"
+    ]
+  },
+  {
+    "id": "t-b1-v4",
+    "level": "B1",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: похожие слова",
+    "what_ru": "lend / borrow, rise / raise",
+    "topics": [
+      "tv-b1-confusing"
+    ]
+  },
+  {
+    "id": "t-b1-v5",
+    "level": "B1",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: идиомы",
+    "what_ru": "a piece of cake, break a leg",
+    "topics": [
+      "tv-b1-idioms"
+    ]
+  },
+  {
+    "id": "t-b2-v1",
+    "level": "B2",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: слова по темам",
+    "what_ru": "знает ли нужные слова уровня",
+    "topics": [
+      "tv-b2-tech",
+      "tv-b2-media",
+      "tv-b2-activism",
+      "tv-b2-lifestyle",
+      "tv-b2-science",
+      "tv-b2-volunteering",
+      "tv-b2-study-abroad"
+    ]
+  },
+  {
+    "id": "t-b2-v2",
+    "level": "B2",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: сочетаемость и фразовые глаголы",
+    "what_ru": "коллокации, многозначные фразовые глаголы",
+    "topics": [
+      "tv-b2-collocations",
+      "tv-b2-phrasal",
+      "tv-b2-prepositions"
+    ]
+  },
+  {
+    "id": "t-b2-v3",
+    "level": "B2",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: словообразование",
+    "what_ru": "flexible → flexibility",
+    "topics": [
+      "tv-b2-word-formation"
+    ]
+  },
+  {
+    "id": "t-b2-v4",
+    "level": "B2",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: похожие слова",
+    "what_ru": "affect / effect, sensible / sensitive",
+    "topics": [
+      "tv-b2-confusing"
+    ]
+  },
+  {
+    "id": "t-b2-v5",
+    "level": "B2",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: идиомы",
+    "what_ru": "break the ice, on the spur of the moment",
+    "topics": [
+      "tv-b2-idioms"
+    ]
+  },
+  {
+    "id": "t-c1-v1",
+    "level": "C1",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: слова уровня C1 (запас)",
+    "what_ru": "академическая и точная лексика",
+    "topics": [
+      "tv-c1-academic"
+    ]
+  },
+  {
+    "id": "t-c1-v2",
+    "level": "C1",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: сильная сочетаемость (запас)",
+    "what_ru": "bitterly disappointed, a firm believer",
+    "topics": [
+      "tv-c1-collocations"
+    ]
+  },
+  {
+    "id": "t-c1-v3",
+    "level": "C1",
+    "kind": "vocabulary",
+    "anchor": false,
+    "name_ru": "Лексика: словообразование C1 (запас)",
+    "what_ru": "incomprehensible, underestimate",
+    "topics": [
+      "tv-c1-word-formation"
+    ]
+  }
+]

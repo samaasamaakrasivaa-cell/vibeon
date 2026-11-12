@@ -1,0 +1,1521 @@
+[
+  {
+    "id": "TG-A1-01",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "tg-a1-to-be",
+    "topic_en": "Verb to be",
+    "topic_ru": "Глагол to be: am / is / are",
+    "type": "mcq",
+    "q": "My dog Pie ___ very small, but he thinks he's a lion.",
+    "options": [
+      "is",
+      "are",
+      "am",
+      "be"
+    ],
+    "answer": 0,
+    "explain_ru": "Pie = he, поэтому is."
+  },
+  {
+    "id": "TG-A1-02",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "tg-a1-to-be",
+    "topic_en": "Verb to be",
+    "topic_ru": "Глагол to be: am / is / are",
+    "type": "gap",
+    "q": "Hi! I ___ Max, and this is my twin sister Mia.",
+    "accept": [
+      "am"
+    ],
+    "explain_ru": "С I глагол to be — am.",
+    "hint_ru": "форма глагола to be"
+  },
+  {
+    "id": "TG-A1-03",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "tg-a1-there-is",
+    "topic_en": "There is / there are",
+    "topic_ru": "There is / there are",
+    "type": "mcq",
+    "q": "___ a huge pizza on the table. Who wants some?",
+    "options": [
+      "There are",
+      "There is",
+      "It is",
+      "Is there"
+    ],
+    "answer": 1,
+    "explain_ru": "Есть (одна пицца) — There is."
+  },
+  {
+    "id": "TG-A1-04",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "tg-a1-was-were",
+    "topic_en": "Was / were",
+    "topic_ru": "Was / were",
+    "type": "mcq",
+    "q": "Yesterday ___ Saturday, so we didn't go to school.",
+    "options": [
+      "were",
+      "is",
+      "was",
+      "be"
+    ],
+    "answer": 2,
+    "explain_ru": "Вчера — прошедшее; yesterday = it → was."
+  },
+  {
+    "id": "TG-A1-05",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "tg-a1-there-is",
+    "topic_en": "There is / there are",
+    "topic_ru": "There is / there are",
+    "type": "mcq",
+    "q": "___ any cookies left? I'm so hungry!",
+    "options": [
+      "Is there",
+      "There are",
+      "Have there",
+      "Are there"
+    ],
+    "answer": 3,
+    "explain_ru": "Вопрос «есть ли» с множественным числом — Are there."
+  },
+  {
+    "id": "TG-A1-06",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "tg-a1-to-be",
+    "topic_en": "Verb to be",
+    "topic_ru": "Глагол to be: am / is / are",
+    "type": "gap",
+    "q": "My parents ___ happy when they saw my room. It was a mess!",
+    "accept": [
+      "weren't",
+      "were not"
+    ],
+    "explain_ru": "В комнате беспорядок — родители не обрадовались: weren't (were not).",
+    "hint_ru": "форма глагола to be в прошлом с отрицанием"
+  },
+  {
+    "id": "TG-A1-07",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "tg-a1-was-were",
+    "topic_en": "Was / were",
+    "topic_ru": "Was / were",
+    "type": "mcq",
+    "q": "___ you at Leo's party last night? I didn't see you!",
+    "options": [
+      "Were",
+      "Was",
+      "Did",
+      "Are"
+    ],
+    "answer": 0,
+    "explain_ru": "Вопрос в прошлом с you — Were you…?"
+  },
+  {
+    "id": "TG-A1-08",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "tg-a1-to-be",
+    "topic_en": "Verb to be",
+    "topic_ru": "Глагол to be: am / is / are",
+    "type": "mcq",
+    "q": "Where ___ my headphones? I can't find them anywhere!",
+    "options": [
+      "is",
+      "are",
+      "am",
+      "be"
+    ],
+    "answer": 1,
+    "explain_ru": "Headphones — множественное число, поэтому are."
+  },
+  {
+    "id": "TG-A1-09",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "tg-a1-present-simple",
+    "topic_en": "Present simple",
+    "topic_ru": "Present Simple",
+    "type": "mcq",
+    "q": "Our cat ___ on my bed every night.",
+    "options": [
+      "sleep",
+      "sleeping",
+      "sleeps",
+      "is sleep"
+    ],
+    "answer": 2,
+    "explain_ru": "Каждую ночь — Present Simple; cat = it → sleeps."
+  },
+  {
+    "id": "TG-A1-10",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "tg-a1-present-simple",
+    "topic_en": "Present simple",
+    "topic_ru": "Present Simple",
+    "type": "mcq",
+    "q": "I ___ my teeth before school.",
+    "options": [
+      "brushes",
+      "brushing",
+      "am brush",
+      "brush"
+    ],
+    "answer": 3,
+    "explain_ru": "С I глагол без окончания: brush."
+  },
+  {
+    "id": "TG-A1-11",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "tg-a1-frequency",
+    "topic_en": "Adverbs of frequency",
+    "topic_ru": "Наречия частоты: always, usually, never",
+    "type": "mcq",
+    "q": "I ___ eat broccoli. I hate it!",
+    "options": [
+      "never",
+      "always",
+      "usually",
+      "often"
+    ],
+    "answer": 0,
+    "explain_ru": "Ненавижу — значит, не ем никогда: never."
+  },
+  {
+    "id": "TG-A1-12",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "tg-a1-present-simple",
+    "topic_en": "Present simple",
+    "topic_ru": "Present Simple",
+    "type": "gap",
+    "q": "___ your brother play computer games?",
+    "accept": [
+      "does"
+    ],
+    "explain_ru": "Вопрос в Present Simple с he (your brother) — Does.",
+    "hint_ru": "вспомогательный глагол"
+  },
+  {
+    "id": "TG-A1-13",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "tg-a1-present-simple",
+    "topic_en": "Present simple",
+    "topic_ru": "Present Simple",
+    "type": "mcq",
+    "q": "My little sister ___ like spiders. She screams every time!",
+    "options": [
+      "don't",
+      "doesn't",
+      "isn't",
+      "not"
+    ],
+    "answer": 1,
+    "explain_ru": "Отрицание с she — doesn't + глагол."
+  },
+  {
+    "id": "TG-A1-14",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "tg-a1-frequency",
+    "topic_en": "Adverbs of frequency",
+    "topic_ru": "Наречия частоты: always, usually, never",
+    "type": "mcq",
+    "q": "Our teacher is super strict. She ___ late.",
+    "options": [
+      "never is",
+      "never",
+      "is never",
+      "never be"
+    ],
+    "answer": 2,
+    "explain_ru": "С глаголом be наречие ставится после него: is never."
+  },
+  {
+    "id": "TG-A1-15",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 3,
+    "topic_id": "tg-a1-present-simple",
+    "topic_en": "Present simple",
+    "topic_ru": "Present Simple",
+    "type": "gap",
+    "q": "What time ___ the film start?",
+    "accept": [
+      "does"
+    ],
+    "explain_ru": "Вопрос в Present Simple с it (the film) — does.",
+    "hint_ru": "вспомогательный глагол"
+  },
+  {
+    "id": "TG-A1-16",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "tg-a1-present-simple",
+    "topic_en": "Present simple",
+    "topic_ru": "Present Simple",
+    "type": "mcq",
+    "q": "Pie the dog ___ socks from everyone in the house.",
+    "options": [
+      "steal",
+      "stealing",
+      "is steal",
+      "steals"
+    ],
+    "answer": 3,
+    "explain_ru": "Pie = he, привычка — Present Simple с -s: steals."
+  },
+  {
+    "id": "TG-A1-17",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "tg-a1-pc-now",
+    "topic_en": "Present continuous for now",
+    "topic_ru": "Present Continuous: действие сейчас",
+    "type": "mcq",
+    "q": "Shh! Grandpa ___ on the sofa.",
+    "options": [
+      "is sleeping",
+      "sleeps",
+      "sleeping",
+      "are sleeping"
+    ],
+    "answer": 0,
+    "explain_ru": "Прямо сейчас — Present Continuous: is sleeping."
+  },
+  {
+    "id": "TG-A1-18",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "tg-a1-pc-now",
+    "topic_en": "Present continuous for now",
+    "topic_ru": "Present Continuous: действие сейчас",
+    "type": "mcq",
+    "q": "Listen! The parrot ___ my phone's ringtone again!",
+    "options": [
+      "copies",
+      "is copying",
+      "copy",
+      "copying"
+    ],
+    "answer": 1,
+    "explain_ru": "Происходит сейчас (Listen!) — is copying."
+  },
+  {
+    "id": "TG-A1-19",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "tg-a1-like-ing",
+    "topic_en": "Like / love / hate + -ing",
+    "topic_ru": "like / love / hate + -ing",
+    "type": "mcq",
+    "q": "I love ___ in the pool in summer.",
+    "options": [
+      "swim",
+      "swims",
+      "swimming",
+      "to swimming"
+    ],
+    "answer": 2,
+    "explain_ru": "После love — глагол с -ing: swimming."
+  },
+  {
+    "id": "TG-A1-20",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "tg-a1-pc-now",
+    "topic_en": "Present continuous for now",
+    "topic_ru": "Present Continuous: действие сейчас",
+    "type": "gap",
+    "q": "Mum, I can't come now. I ___ doing my homework!",
+    "accept": [
+      "am"
+    ],
+    "explain_ru": "Present Continuous: am + -ing.",
+    "hint_ru": "форма глагола to be"
+  },
+  {
+    "id": "TG-A1-21",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "tg-a1-pc-now",
+    "topic_en": "Present continuous for now",
+    "topic_ru": "Present Continuous: действие сейчас",
+    "type": "mcq",
+    "q": "I usually walk to school, but today my dad ___ me in his car.",
+    "options": [
+      "takes",
+      "take",
+      "taking",
+      "is taking"
+    ],
+    "answer": 3,
+    "explain_ru": "Сегодня, в отличие от обычного, — Present Continuous: is taking."
+  },
+  {
+    "id": "TG-A1-22",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "tg-a1-pc-now",
+    "topic_en": "Present continuous for now",
+    "topic_ru": "Present Continuous: действие сейчас",
+    "type": "mcq",
+    "q": "What ___ you doing? Is that a cake or a volcano?",
+    "options": [
+      "are",
+      "do",
+      "is",
+      "does"
+    ],
+    "answer": 0,
+    "explain_ru": "Вопрос о том, что происходит сейчас: What are you doing?"
+  },
+  {
+    "id": "TG-A1-23",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 3,
+    "topic_id": "tg-a1-like-ing",
+    "topic_en": "Like / love / hate + -ing",
+    "topic_ru": "like / love / hate + -ing",
+    "type": "mcq",
+    "q": "My brother hates ___ up early on Saturdays.",
+    "options": [
+      "get",
+      "getting",
+      "gets",
+      "to getting"
+    ],
+    "answer": 1,
+    "explain_ru": "После hate — глагол с -ing: getting."
+  },
+  {
+    "id": "TG-A1-24",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 3,
+    "topic_id": "tg-a1-pc-now",
+    "topic_en": "Present continuous for now",
+    "topic_ru": "Present Continuous: действие сейчас",
+    "type": "gap",
+    "q": "Why ___ the dog barking? Is someone at the door?",
+    "accept": [
+      "is"
+    ],
+    "explain_ru": "Present Continuous с it (the dog): is barking.",
+    "hint_ru": "форма глагола to be"
+  },
+  {
+    "id": "TG-A1-25",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "tg-a1-can",
+    "topic_en": "Can / can't",
+    "topic_ru": "can / can't",
+    "type": "mcq",
+    "q": "My cat ___ open the fridge. It's a big problem!",
+    "options": [
+      "cans",
+      "can to",
+      "can",
+      "is can"
+    ],
+    "answer": 2,
+    "explain_ru": "can + глагол без to, без -s."
+  },
+  {
+    "id": "TG-A1-26",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "tg-a1-have-got",
+    "topic_en": "Have got",
+    "topic_ru": "have got",
+    "type": "mcq",
+    "q": "I ___ got a new skateboard. It's blue!",
+    "options": [
+      "has",
+      "am",
+      "do",
+      "have"
+    ],
+    "answer": 3,
+    "explain_ru": "С I — have got."
+  },
+  {
+    "id": "TG-A1-27",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "tg-a1-imperative",
+    "topic_en": "Imperatives",
+    "topic_ru": "Повелительное наклонение",
+    "type": "mcq",
+    "q": "___ quiet, please. The test is starting.",
+    "options": [
+      "Be",
+      "Is",
+      "Are",
+      "Being"
+    ],
+    "answer": 0,
+    "explain_ru": "Повелительное наклонение — глагол в начальной форме: Be quiet."
+  },
+  {
+    "id": "TG-A1-28",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "tg-a1-can",
+    "topic_en": "Can / can't",
+    "topic_ru": "can / can't",
+    "type": "mcq",
+    "q": "___ you swim? — Yes, I can.",
+    "options": [
+      "Do",
+      "Can",
+      "Are",
+      "Have"
+    ],
+    "answer": 1,
+    "explain_ru": "Ответ Yes, I can — значит, вопрос Can you…?"
+  },
+  {
+    "id": "TG-A1-29",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "tg-a1-have-got",
+    "topic_en": "Have got",
+    "topic_ru": "have got",
+    "type": "mcq",
+    "q": "___ your sister got a phone? — No, she hasn't.",
+    "options": [
+      "Have",
+      "Does",
+      "Has",
+      "Is"
+    ],
+    "answer": 2,
+    "explain_ru": "С she — Has … got?"
+  },
+  {
+    "id": "TG-A1-30",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "tg-a1-imperative",
+    "topic_en": "Imperatives",
+    "topic_ru": "Повелительное наклонение",
+    "type": "mcq",
+    "q": "___ your phone in the lesson, please!",
+    "options": [
+      "Not use",
+      "No use",
+      "Don't using",
+      "Don't use"
+    ],
+    "answer": 3,
+    "explain_ru": "Запрет — Don't + глагол."
+  },
+  {
+    "id": "TG-A1-31",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 3,
+    "topic_id": "tg-a1-can",
+    "topic_en": "Can / can't",
+    "topic_ru": "can / can't",
+    "type": "gap",
+    "q": "I'm sorry, I ___ come to your party. I've got a football match.",
+    "accept": [
+      "can't",
+      "cannot"
+    ],
+    "explain_ru": "Не могу — can't (cannot).",
+    "hint_ru": "модальный глагол с отрицанием"
+  },
+  {
+    "id": "TG-A1-32",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "tg-a1-have-got",
+    "topic_en": "Have got",
+    "topic_ru": "have got",
+    "type": "mcq",
+    "q": "My best friend ___ got three brothers and two dogs!",
+    "options": [
+      "has",
+      "have",
+      "is",
+      "does"
+    ],
+    "answer": 0,
+    "explain_ru": "С he/she — has got."
+  },
+  {
+    "id": "TG-A1-33",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "tg-a1-pronouns",
+    "topic_en": "Personal pronouns",
+    "topic_ru": "Личные местоимения",
+    "type": "mcq",
+    "q": "This is my friend Leo. I sit next to ___ in class.",
+    "options": [
+      "he",
+      "him",
+      "his",
+      "he's"
+    ],
+    "answer": 1,
+    "explain_ru": "После предлога — объектное местоимение: him."
+  },
+  {
+    "id": "TG-A1-34",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "tg-a1-possessives",
+    "topic_en": "Possessives",
+    "topic_ru": "Притяжательные: my, your, Tom's",
+    "type": "mcq",
+    "q": "This is my sister, and this is ___ hamster, Bob.",
+    "options": [
+      "she",
+      "hers",
+      "her",
+      "she's"
+    ],
+    "answer": 2,
+    "explain_ru": "Хомяк сестры — её: her."
+  },
+  {
+    "id": "TG-A1-35",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "tg-a1-this-that",
+    "topic_en": "This / that / these / those",
+    "topic_ru": "this / that / these / those",
+    "type": "mcq",
+    "q": "Look at ___ cat over there! It's on the roof!",
+    "options": [
+      "this",
+      "these",
+      "those",
+      "that"
+    ],
+    "answer": 3,
+    "explain_ru": "Один кот, далеко (over there) — that."
+  },
+  {
+    "id": "TG-A1-36",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "tg-a1-question-words",
+    "topic_en": "Question words",
+    "topic_ru": "Вопросительные слова",
+    "type": "mcq",
+    "q": "___ old are you? — I'm eleven.",
+    "options": [
+      "How",
+      "What",
+      "Who",
+      "Where"
+    ],
+    "answer": 0,
+    "explain_ru": "Возраст — How old…?"
+  },
+  {
+    "id": "TG-A1-37",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "tg-a1-possessives",
+    "topic_en": "Possessives",
+    "topic_ru": "Притяжательные: my, your, Tom's",
+    "type": "mcq",
+    "q": "This isn't my bag. It's ___ bag.",
+    "options": [
+      "Anna",
+      "Anna's",
+      "Annas",
+      "Annas'"
+    ],
+    "answer": 1,
+    "explain_ru": "Принадлежность — 's: Anna's bag."
+  },
+  {
+    "id": "TG-A1-38",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "tg-a1-pronouns",
+    "topic_en": "Personal pronouns",
+    "topic_ru": "Личные местоимения",
+    "type": "mcq",
+    "q": "Is this pen ___? — Yes, it's mine, thanks!",
+    "options": [
+      "your",
+      "you",
+      "yours",
+      "you're"
+    ],
+    "answer": 2,
+    "explain_ru": "Без существительного после — yours."
+  },
+  {
+    "id": "TG-A1-39",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "tg-a1-this-that",
+    "topic_en": "This / that / these / those",
+    "topic_ru": "this / that / these / those",
+    "type": "mcq",
+    "q": "___ shoes over there are my dad's. They're huge!",
+    "options": [
+      "These",
+      "That",
+      "This",
+      "Those"
+    ],
+    "answer": 3,
+    "explain_ru": "Много и далеко — those."
+  },
+  {
+    "id": "TG-A1-40",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 3,
+    "topic_id": "tg-a1-question-words",
+    "topic_en": "Question words",
+    "topic_ru": "Вопросительные слова",
+    "type": "gap",
+    "q": "___ do you usually go to school? — By bus.",
+    "accept": [
+      "how"
+    ],
+    "explain_ru": "Ответ «на автобусе» — вопрос How?",
+    "hint_ru": "вопросительное слово"
+  },
+  {
+    "id": "TG-A1-41",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "tg-a1-articles",
+    "topic_en": "Articles a / an / the",
+    "topic_ru": "Артикли a / an / the",
+    "type": "mcq",
+    "q": "I've got ___ orange in my bag.",
+    "options": [
+      "an",
+      "a",
+      "the",
+      "some"
+    ],
+    "answer": 0,
+    "explain_ru": "Orange начинается с гласного звука — an."
+  },
+  {
+    "id": "TG-A1-42",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "tg-a1-plurals",
+    "topic_en": "Plural nouns",
+    "topic_ru": "Множественное число",
+    "type": "mcq",
+    "q": "There are three ___ in our garden. They eat my mum's flowers!",
+    "options": [
+      "mouses",
+      "mice",
+      "mouse",
+      "mices"
+    ],
+    "answer": 1,
+    "explain_ru": "Mouse — неправильное множественное число: mice."
+  },
+  {
+    "id": "TG-A1-43",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "tg-a1-some-any",
+    "topic_en": "Some / any",
+    "topic_ru": "some / any",
+    "type": "mcq",
+    "q": "There's ___ milk in the fridge.",
+    "options": [
+      "any",
+      "a",
+      "some",
+      "many"
+    ],
+    "answer": 2,
+    "explain_ru": "В утверждении — some."
+  },
+  {
+    "id": "TG-A1-44",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "tg-a1-prepositions",
+    "topic_en": "Prepositions of place and time",
+    "topic_ru": "Предлоги места и времени",
+    "type": "mcq",
+    "q": "My birthday is ___ June.",
+    "options": [
+      "on",
+      "at",
+      "to",
+      "in"
+    ],
+    "answer": 3,
+    "explain_ru": "С месяцами — in."
+  },
+  {
+    "id": "TG-A1-45",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "tg-a1-some-any",
+    "topic_en": "Some / any",
+    "topic_ru": "some / any",
+    "type": "mcq",
+    "q": "Are there ___ biscuits left? — No, the dog ate them all!",
+    "options": [
+      "any",
+      "some",
+      "a",
+      "much"
+    ],
+    "answer": 0,
+    "explain_ru": "В вопросе — any."
+  },
+  {
+    "id": "TG-A1-46",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "tg-a1-plurals",
+    "topic_en": "Plural nouns",
+    "topic_ru": "Множественное число",
+    "type": "mcq",
+    "q": "Our teacher has got two ___ — a boy and a girl.",
+    "options": [
+      "childs",
+      "children",
+      "child",
+      "childrens"
+    ],
+    "answer": 1,
+    "explain_ru": "Child — неправильное множественное число: children."
+  },
+  {
+    "id": "TG-A1-47",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "tg-a1-prepositions",
+    "topic_en": "Prepositions of place and time",
+    "topic_ru": "Предлоги места и времени",
+    "type": "mcq",
+    "q": "The cat is sleeping ___ the bed — I can only see its tail!",
+    "options": [
+      "on",
+      "in front",
+      "under",
+      "at"
+    ],
+    "answer": 2,
+    "explain_ru": "Виден только хвост — кот под кроватью: under."
+  },
+  {
+    "id": "TG-A1-48",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 3,
+    "topic_id": "tg-a1-articles",
+    "topic_en": "Articles a / an / the",
+    "topic_ru": "Артикли a / an / the",
+    "type": "mcq",
+    "q": "I've got a dog and a hamster. ___ dog is called Pie.",
+    "options": [
+      "A",
+      "An",
+      "—",
+      "The"
+    ],
+    "answer": 3,
+    "explain_ru": "Второй раз о том же — the."
+  },
+  {
+    "id": "TV-A1-01",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "tv-a1-family-pets",
+    "topic_en": "Family and pets",
+    "topic_ru": "Семья и питомцы",
+    "type": "mcq",
+    "q": "My mum's brother is my ___.",
+    "options": [
+      "uncle",
+      "aunt",
+      "cousin",
+      "grandpa"
+    ],
+    "answer": 0,
+    "explain_ru": "Брат мамы — дядя: uncle.",
+    "group": "t-a1-v1"
+  },
+  {
+    "id": "TV-A1-02",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "tv-a1-school",
+    "topic_en": "School things and subjects",
+    "topic_ru": "Школа: вещи и предметы",
+    "type": "mcq",
+    "q": "I love numbers, so my favourite subject is ___.",
+    "options": [
+      "music",
+      "maths",
+      "art",
+      "PE"
+    ],
+    "answer": 1,
+    "explain_ru": "Числа — математика: maths.",
+    "group": "t-a1-v1"
+  },
+  {
+    "id": "TV-A1-03",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "tv-a1-food",
+    "topic_en": "Food",
+    "topic_ru": "Еда",
+    "type": "mcq",
+    "q": "I'm thirsty. Can I have a glass of ___?",
+    "options": [
+      "bread",
+      "cheese",
+      "water",
+      "rice"
+    ],
+    "answer": 2,
+    "explain_ru": "Хочется пить — water.",
+    "group": "t-a1-v1"
+  },
+  {
+    "id": "TV-A1-04",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "tv-a1-weather",
+    "topic_en": "Weather",
+    "topic_ru": "Погода",
+    "type": "mcq",
+    "q": "Take your umbrella. It's ___!",
+    "options": [
+      "sunny",
+      "hot",
+      "snowy",
+      "raining"
+    ],
+    "answer": 3,
+    "explain_ru": "Зонт — потому что идёт дождь: raining.",
+    "group": "t-a1-v1"
+  },
+  {
+    "id": "TV-A1-05",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "tv-a1-routine",
+    "topic_en": "Daily routine",
+    "topic_ru": "Распорядок дня",
+    "type": "mcq",
+    "q": "I ___ up at 7 o'clock and have breakfast.",
+    "options": [
+      "get",
+      "go",
+      "have",
+      "make"
+    ],
+    "answer": 0,
+    "explain_ru": "Вставать — get up.",
+    "group": "t-a1-v1"
+  },
+  {
+    "id": "TV-A1-06",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "tv-a1-clothes",
+    "topic_en": "Clothes and colours",
+    "topic_ru": "Одежда и цвета",
+    "type": "mcq",
+    "q": "It's cold. Put on your ___ and your hat.",
+    "options": [
+      "shorts",
+      "scarf",
+      "sandals",
+      "T-shirt"
+    ],
+    "answer": 1,
+    "explain_ru": "В холод — шарф: scarf.",
+    "group": "t-a1-v1"
+  },
+  {
+    "id": "TV-A1-07",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "tv-a1-numbers-time",
+    "topic_en": "Numbers and time",
+    "topic_ru": "Числа и время",
+    "type": "gap",
+    "q": "There are ___ days in a week.",
+    "accept": [
+      "seven",
+      "7"
+    ],
+    "explain_ru": "В неделе семь дней.",
+    "hint_ru": "число",
+    "group": "t-a1-v1"
+  },
+  {
+    "id": "TV-A1-08",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 3,
+    "topic_id": "tv-a1-home",
+    "topic_en": "Home and my room",
+    "topic_ru": "Дом и моя комната",
+    "type": "mcq",
+    "q": "We keep milk and juice in the ___.",
+    "options": [
+      "oven",
+      "sink",
+      "fridge",
+      "bath"
+    ],
+    "answer": 2,
+    "explain_ru": "Молоко хранят в холодильнике — fridge.",
+    "group": "t-a1-v1"
+  },
+  {
+    "id": "TV-A1-09",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "tv-a1-collocations",
+    "topic_en": "Basic collocations",
+    "topic_ru": "Сочетания: play football, do homework",
+    "type": "mcq",
+    "q": "I ___ my homework after school.",
+    "options": [
+      "make",
+      "play",
+      "go",
+      "do"
+    ],
+    "answer": 3,
+    "explain_ru": "Делать домашнее задание — do homework.",
+    "group": "t-a1-v2"
+  },
+  {
+    "id": "TV-A1-10",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "tv-a1-collocations",
+    "topic_en": "Basic collocations",
+    "topic_ru": "Сочетания: play football, do homework",
+    "type": "mcq",
+    "q": "Let's ___ football in the park!",
+    "options": [
+      "play",
+      "do",
+      "go",
+      "make"
+    ],
+    "answer": 0,
+    "explain_ru": "Играть в игру — play football.",
+    "group": "t-a1-v2"
+  },
+  {
+    "id": "TV-A1-11",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "tv-a1-collocations",
+    "topic_en": "Basic collocations",
+    "topic_ru": "Сочетания: play football, do homework",
+    "type": "mcq",
+    "q": "We ___ swimming every Sunday.",
+    "options": [
+      "play",
+      "go",
+      "do",
+      "make"
+    ],
+    "answer": 1,
+    "explain_ru": "Ходить плавать — go swimming.",
+    "group": "t-a1-v2"
+  },
+  {
+    "id": "TV-A1-12",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "tv-a1-collocations",
+    "topic_en": "Basic collocations",
+    "topic_ru": "Сочетания: play football, do homework",
+    "type": "mcq",
+    "q": "Can you ___ a photo of me and my dog?",
+    "options": [
+      "make",
+      "do",
+      "take",
+      "play"
+    ],
+    "answer": 2,
+    "explain_ru": "Сфотографировать — take a photo.",
+    "group": "t-a1-v2"
+  },
+  {
+    "id": "TV-A1-13",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "tv-a1-collocations",
+    "topic_en": "Basic collocations",
+    "topic_ru": "Сочетания: play football, do homework",
+    "type": "mcq",
+    "q": "My brother ___ a lot of noise when he plays the drums.",
+    "options": [
+      "does",
+      "plays",
+      "takes",
+      "makes"
+    ],
+    "answer": 3,
+    "explain_ru": "Шуметь — make a noise.",
+    "group": "t-a1-v2"
+  },
+  {
+    "id": "TV-A1-14",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "tv-a1-collocations",
+    "topic_en": "Basic collocations",
+    "topic_ru": "Сочетания: play football, do homework",
+    "type": "mcq",
+    "q": "I ___ a shower every evening.",
+    "options": [
+      "have",
+      "make",
+      "do",
+      "play"
+    ],
+    "answer": 0,
+    "explain_ru": "Принимать душ — have a shower.",
+    "group": "t-a1-v2"
+  },
+  {
+    "id": "TV-A1-15",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 3,
+    "topic_id": "tv-a1-collocations",
+    "topic_en": "Basic collocations",
+    "topic_ru": "Сочетания: play football, do homework",
+    "type": "gap",
+    "q": "Turn ___ the TV, please. I'm doing my homework.",
+    "accept": [
+      "off"
+    ],
+    "explain_ru": "Выключить — turn off.",
+    "hint_ru": "вторая часть фразового глагола: turn ___ — выключить",
+    "group": "t-a1-v2"
+  },
+  {
+    "id": "TV-A1-16",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 3,
+    "topic_id": "tv-a1-collocations",
+    "topic_en": "Basic collocations",
+    "topic_ru": "Сочетания: play football, do homework",
+    "type": "mcq",
+    "q": "Can you ___ me a favour? Hold my ice cream for a second!",
+    "options": [
+      "make",
+      "do",
+      "give",
+      "take"
+    ],
+    "answer": 1,
+    "explain_ru": "Оказать услугу — do somebody a favour.",
+    "group": "t-a1-v2"
+  },
+  {
+    "id": "TV-A1-17",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "tv-a1-adjectives",
+    "topic_en": "Adjectives and opposites",
+    "topic_ru": "Прилагательные и противоположности",
+    "type": "mcq",
+    "q": "My room isn't big. It's very ___.",
+    "options": [
+      "tall",
+      "old",
+      "small",
+      "slow"
+    ],
+    "answer": 2,
+    "explain_ru": "Противоположность big — small.",
+    "group": "t-a1-v3"
+  },
+  {
+    "id": "TV-A1-18",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "tv-a1-adjectives",
+    "topic_en": "Adjectives and opposites",
+    "topic_ru": "Прилагательные и противоположности",
+    "type": "mcq",
+    "q": "This joke is so ___! I can't stop laughing.",
+    "options": [
+      "sad",
+      "boring",
+      "angry",
+      "funny"
+    ],
+    "answer": 3,
+    "explain_ru": "Не могу перестать смеяться — смешной: funny.",
+    "group": "t-a1-v3"
+  },
+  {
+    "id": "TV-A1-19",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "tv-a1-adjectives",
+    "topic_en": "Adjectives and opposites",
+    "topic_ru": "Прилагательные и противоположности",
+    "type": "mcq",
+    "q": "The lesson wasn't interesting. It was ___.",
+    "options": [
+      "boring",
+      "funny",
+      "exciting",
+      "happy"
+    ],
+    "answer": 0,
+    "explain_ru": "Неинтересный — скучный: boring.",
+    "group": "t-a1-v3"
+  },
+  {
+    "id": "TV-A1-20",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "tv-a1-adjectives",
+    "topic_en": "Adjectives and opposites",
+    "topic_ru": "Прилагательные и противоположности",
+    "type": "gap",
+    "q": "My grandpa isn't young. He's ___.",
+    "accept": [
+      "old"
+    ],
+    "explain_ru": "Противоположность young — old.",
+    "hint_ru": "противоположность слову young",
+    "group": "t-a1-v3"
+  },
+  {
+    "id": "TV-A1-21",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "tv-a1-adjectives",
+    "topic_en": "Adjectives and opposites",
+    "topic_ru": "Прилагательные и противоположности",
+    "type": "mcq",
+    "q": "Be careful! The soup is very ___.",
+    "options": [
+      "cold",
+      "hot",
+      "wet",
+      "slow"
+    ],
+    "answer": 1,
+    "explain_ru": "Осторожно — горячий: hot.",
+    "group": "t-a1-v3"
+  },
+  {
+    "id": "TV-A1-22",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "tv-a1-adjectives",
+    "topic_en": "Adjectives and opposites",
+    "topic_ru": "Прилагательные и противоположности",
+    "type": "mcq",
+    "q": "My dog Pie is never tired. He runs and jumps all day! He's very ___.",
+    "options": [
+      "lazy",
+      "quiet",
+      "active",
+      "slow"
+    ],
+    "answer": 2,
+    "explain_ru": "Бегает и прыгает весь день — активный: active.",
+    "group": "t-a1-v3"
+  },
+  {
+    "id": "TV-A1-23",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "tv-a1-adjectives",
+    "topic_en": "Adjectives and opposites",
+    "topic_ru": "Прилагательные и противоположности",
+    "type": "mcq",
+    "q": "A giraffe is very ___. It can eat leaves from the top of a tree.",
+    "options": [
+      "short",
+      "small",
+      "low",
+      "tall"
+    ],
+    "answer": 3,
+    "explain_ru": "Достаёт до верхушки — высокий: tall.",
+    "group": "t-a1-v3"
+  },
+  {
+    "id": "TV-A1-24",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 3,
+    "topic_id": "tv-a1-adjectives",
+    "topic_en": "Adjectives and opposites",
+    "topic_ru": "Прилагательные и противоположности",
+    "type": "gap",
+    "q": "My trainers aren't clean. They're ___!",
+    "accept": [
+      "dirty"
+    ],
+    "explain_ru": "Противоположность clean — dirty.",
+    "hint_ru": "противоположность слову clean",
+    "group": "t-a1-v3"
+  },
+  {
+    "id": "TV-A1-25",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "tv-a1-confusing",
+    "topic_en": "Confusing words",
+    "topic_ru": "Похожие слова",
+    "type": "mcq",
+    "q": "I ___ TV after dinner.",
+    "options": [
+      "watch",
+      "look",
+      "see",
+      "listen"
+    ],
+    "answer": 0,
+    "explain_ru": "Смотреть телевизор — watch TV.",
+    "group": "t-a1-v4"
+  },
+  {
+    "id": "TV-A1-26",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "tv-a1-confusing",
+    "topic_en": "Confusing words",
+    "topic_ru": "Похожие слова",
+    "type": "mcq",
+    "q": "I ___ to music on the bus.",
+    "options": [
+      "hear",
+      "listen",
+      "watch",
+      "look"
+    ],
+    "answer": 1,
+    "explain_ru": "Слушать музыку — listen to music.",
+    "group": "t-a1-v4"
+  },
+  {
+    "id": "TV-A1-27",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "tv-a1-confusing",
+    "topic_en": "Confusing words",
+    "topic_ru": "Похожие слова",
+    "type": "mcq",
+    "q": "Can you ___ me your name?",
+    "options": [
+      "say",
+      "speak",
+      "tell",
+      "talk"
+    ],
+    "answer": 2,
+    "explain_ru": "Сказать кому-то — tell somebody.",
+    "group": "t-a1-v4"
+  },
+  {
+    "id": "TV-A1-28",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "tv-a1-confusing",
+    "topic_en": "Confusing words",
+    "topic_ru": "Похожие слова",
+    "type": "mcq",
+    "q": "My friend ___ English and German.",
+    "options": [
+      "says",
+      "tells",
+      "talks",
+      "speaks"
+    ],
+    "answer": 3,
+    "explain_ru": "Говорить на языке — speak.",
+    "group": "t-a1-v4"
+  },
+  {
+    "id": "TV-A1-29",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "tv-a1-confusing",
+    "topic_en": "Confusing words",
+    "topic_ru": "Похожие слова",
+    "type": "mcq",
+    "q": "___ at this photo! It's my dog in a hat!",
+    "options": [
+      "Look",
+      "See",
+      "Watch",
+      "Listen"
+    ],
+    "answer": 0,
+    "explain_ru": "Посмотри на — look at.",
+    "group": "t-a1-v4"
+  },
+  {
+    "id": "TV-A1-30",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "tv-a1-confusing",
+    "topic_en": "Confusing words",
+    "topic_ru": "Похожие слова",
+    "type": "mcq",
+    "q": "I can't ___ the board. Can I sit at the front?",
+    "options": [
+      "look",
+      "see",
+      "watch",
+      "listen"
+    ],
+    "answer": 1,
+    "explain_ru": "Видеть (способность) — see.",
+    "group": "t-a1-v4"
+  },
+  {
+    "id": "TV-A1-31",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "tv-a1-confusing",
+    "topic_en": "Confusing words",
+    "topic_ru": "Похожие слова",
+    "type": "mcq",
+    "q": "What did you ___? I didn't hear you.",
+    "options": [
+      "tell",
+      "speak",
+      "say",
+      "talk"
+    ],
+    "answer": 2,
+    "explain_ru": "Сказать (без «кому») — say.",
+    "group": "t-a1-v4"
+  },
+  {
+    "id": "TV-A1-32",
+    "skill": "vocabulary",
+    "level": "A1",
+    "band": 3,
+    "topic_id": "tv-a1-confusing",
+    "topic_en": "Confusing words",
+    "topic_ru": "Похожие слова",
+    "type": "mcq",
+    "q": "Please ___ me a story, Grandma!",
+    "options": [
+      "say",
+      "speak",
+      "talk",
+      "tell"
+    ],
+    "answer": 3,
+    "explain_ru": "Рассказать историю — tell a story.",
+    "group": "t-a1-v4"
+  }
+]

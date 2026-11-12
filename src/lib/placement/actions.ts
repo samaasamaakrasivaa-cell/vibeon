@@ -9,7 +9,7 @@ import { notify } from "../notify";
 import { rateLimit } from "../rate-limit";
 import { getLang } from "../i18n/server";
 import { attemptFor, ptCookie } from "./access";
-import { getBank } from "./bank";
+import { getBank, isOwner, TEEN_READY, trackOf, type Track } from "./bank";
 import { checkCore, emptyState, EXPECT, pickTask, PL_LEVELS, stepIdx, summarize, words, type CoreItem, type Expect, type ListenItem, type ReadItem, type SpeakItem, type WriteItem } from "./engine";
 import { addNextText, advance, closeSection, ensureTasks, enter, goTo, json, LATER, availOf, openOf, publicView, stateOf, type Later, type PView } from "./run";
 import { revealedScripts } from "./review";
@@ -24,7 +24,7 @@ async function load(id: string) {
   return { ...acc, st: stateOf(acc.a.state) };
 }
 async function save(id: string, st: ReturnType<typeof stateOf>, extra: Record<string, unknown> = {}) {
-  const view = publicView(st, await getLang(), (await getBank()).bank); // считает и полоску прогресса — до записи
+  const view = publicView(st, await getLang(), (await getBank(trackOf(st.track))).bank); // считает и полоску прогресса — до записи
   await db.placementAttempt.update({ where: { id }, data: { state: json(st), ...extra } });
   return { ok: true as const, view };
 }
@@ -41,7 +41,7 @@ const wrap = async (fn: () => Promise<R>): Promise<R> => {
 export async function startPlacement(id: string): Promise<R> {
   return wrap(async () => {
     const { a, st } = await load(id);
-    const { bank } = await getBank();
+    const { bank } = await getBank(trackOf(st.track));
     if (!st.core) Object.assign(st, emptyState());
     if (st.section === "intro") { st.section = "core"; enter(st, "core"); }
     advance(st, bank);
@@ -59,7 +59,7 @@ export async function answerCore(id: string, itemId: string, v: string | number 
     const it = st.items[itemId] as CoreItem;
     const val = dk ? null : typeof v === "number" ? v : str(v, 120);
     st.answers[itemId] = { v: val, ok: dk ? false : checkCore(it, val), ms: Math.max(0, Math.min(3600e3, Math.round(ms) || 0)), ...(dk ? { dk: true } : {}), ...(hinted ? { h: true } : {}) };
-    advance(st, (await getBank()).bank);
+    advance(st, (await getBank(trackOf(st.track))).bank);
     return save(id, st);
   });
 }
@@ -96,7 +96,7 @@ export async function finishTexts(id: string): Promise<R> {
       }
       done.push(tid);
     }
-    const { bank } = await getBank();
+    const { bank } = await getBank(trackOf(st.track));
     if (addNextText(st, bank, st.section)) return save(id, st); // следующий текст — по результату предыдущего
     return closeAndGo(acc(), st, st.section);
   });
@@ -147,7 +147,7 @@ export async function goSection(id: string, sec: string): Promise<R> {
   return wrap(async () => {
     const { st } = await load(id);
     if (!(LATER as readonly string[]).includes(sec) || !availOf(st).includes(sec as Later) || st.section === "core" || st.section === "vocab" || st.section === "intro") return { ok: false, error: "section" };
-    ensureTasks(st, (await getBank()).bank); // старые прохождения: задание раздела могло ещё не быть выбрано
+    ensureTasks(st, (await getBank(trackOf(st.track))).bank); // старые прохождения: задание раздела могло ещё не быть выбрано
     goTo(st, sec as Later);
     return save(id, st);
   });
@@ -155,7 +155,7 @@ export async function goSection(id: string, sec: string): Promise<R> {
 
 type Loaded = Awaited<ReturnType<typeof load>>;
 async function closeAndGo(l: Loaded, st: Loaded["st"], sec: Later): Promise<R> {
-  const { bank } = await getBank();
+  const { bank } = await getBank(trackOf(st.track));
   if (!closeSection(st, sec, bank)) return save(l.a.id, st);
   const { a } = l;
   st.section = "done";
@@ -184,7 +184,7 @@ export async function peekCore(id: string, idx: number): Promise<R & { item?: un
     const inBlock = (y?: { ph?: string }) => !!y && (st.section === "vocab" ? !!y.ph?.startsWith("v") : st.section === "core" && !y.ph?.startsWith("v"));
     if (!inBlock(x) || !st.answers[x.id]) return { ok: false, error: "idx" };
     const it = st.items[x.id] as CoreItem;
-    const ins = (await import("./bank")).instruction(it.type, it.level);
+    const ins = (await import("./bank")).instruction(it.type, it.level, trackOf(st.track));
     return { ok: true, item: { id: it.id, type: it.type, skill: it.skill, q: it.q, options: it.options ?? null, base: it.base ?? null, key: it.key ?? null, frame: it.frame ?? null, hint: (it as CoreItem & { hint_ru?: string }).hint_ru ?? null, instr: ins }, given: st.answers[x.id].v, dk: !!st.answers[x.id].dk };
   } catch { return { ok: false, error: "not found" }; }
 }
@@ -214,7 +214,7 @@ export async function startGuest(code: string, name: string, contact: string, co
   if (!c) return { ok: false, error: "contact" };
   if (!consent) return { ok: false, error: "consent" };
   const token = randomToken(24);
-  const a = await db.placementAttempt.create({ data: { teacherId: link.teacherId, linkId: link.id, mode: "link", guestName: n, guestContact: c, token, state: json(emptyState()) } });
+  const a = await db.placementAttempt.create({ data: { teacherId: link.teacherId, linkId: link.id, mode: "link", guestName: n, guestContact: c, token, track: trackOf(link.track), state: json(emptyState(null, trackOf(link.track))) } });
   (await cookies()).set(ptCookie(a.id), token, { httpOnly: true, secure: secureCookies, sameSite: "lax", path: "/", maxAge: 60 * 24 * 3600 });
   return { ok: true, id: a.id };
 }
@@ -234,31 +234,35 @@ const refreshT = (studentId?: string | null) => {
 
 /** «Пройти самой»: учитель проходит тест как ученик, результат видит сразу. */
 /** Пройти тест самому. fresh — начать заново: незаконченный свой тест удаляется; иначе продолжаем незаконченный. */
-export async function selfPlacement(fresh = false): Promise<R> {
+export async function selfPlacement(fresh = false, trackIn?: Track): Promise<R> {
   const me = await requireUser("TEACHER");
-  const unfinished = { teacherId: me.id, mode: "self", status: { in: ["new", "active"] } };
+  const track = teenOk(trackIn, me.email);
+  const unfinished = { teacherId: me.id, mode: "self", track, status: { in: ["new", "active"] } };
   if (fresh) await db.placementAttempt.deleteMany({ where: unfinished });
   else {
     const open = await db.placementAttempt.findFirst({ where: unfinished, orderBy: { createdAt: "desc" } });
     if (open) return { ok: true, id: open.id };
   }
-  const a = await db.placementAttempt.create({ data: { teacherId: me.id, mode: "self", token: randomToken(24), state: json(withSeen(emptyState(), await seenBy({ teacherId: me.id, mode: "self" }))) } });
+  const a = await db.placementAttempt.create({ data: { teacherId: me.id, mode: "self", track, token: randomToken(24), state: json(withSeen(emptyState(null, track), await seenBy({ teacherId: me.id, mode: "self", track }))) } });
   return { ok: true, id: a.id };
 }
 
 /** Назначить вводный тест ученику (из «Курсы → Тесты» или из анкеты). Старый незавершённый тест заменяется. */
 /** Задания из прошлых прохождений — при новом тесте их берём в последнюю очередь. */
-async function seenBy(where: { studentId?: string; teacherId?: string; mode?: string }) {
+async function seenBy(where: { studentId?: string; teacherId?: string; mode?: string; track?: string }) {
   const prev = await db.placementAttempt.findMany({ where, select: { state: true }, orderBy: { createdAt: "desc" }, take: 5 });
   type S = { core?: { id: string }[]; writing?: { id?: string }; speaking?: { id?: string }; wsPrev?: { id?: string }[] };
   return [...new Set(prev.flatMap((p) => { const s = (p.state ?? {}) as S; return [...(s.core ?? []).map((x) => x.id), s.writing?.id, s.speaking?.id, ...(s.wsPrev ?? []).map((x) => x.id)].filter((x): x is string => !!x); }))];
 }
 const withSeen = (st: ReturnType<typeof emptyState>, seen: string[]) => (seen.length ? { ...st, seen } : st);
 
+/** Teens доступна всем, когда банк готов; до этого — только владельцу платформы (для проверки). */
+const teenOk = (t: Track | undefined, email?: string | null): Track => (t === "teen" && (TEEN_READY || isOwner(email)) ? "teen" : "adult");
 const expectOf = (e?: string | null) => (e && e in EXPECT ? (e as Expect) : null);
 
-export async function assignPlacement(studentId: string, expected?: string | null): Promise<R> {
+export async function assignPlacement(studentId: string, expected?: string | null, trackIn?: Track): Promise<R> {
   const me = await requireUser("TEACHER");
+  const track = teenOk(trackIn, me.email);
   const s = await db.student.findUnique({ where: { id: studentId } });
   if (!s || s.teacherId !== me.id) return { ok: false, error: "not found" };
   const old = await db.checkpoint.findMany({ where: { studentId, kind: "entry", status: "assigned" }, select: { id: true } });
@@ -268,18 +272,20 @@ export async function assignPlacement(studentId: string, expected?: string | nul
   }
   const r = await db.roadmap.findFirst({ where: { studentId }, orderBy: { createdAt: "desc" } });
   const c = await db.checkpoint.create({ data: { studentId, roadmapId: r?.id ?? null, kind: "entry", source: "placement" } });
-  const seen = await seenBy({ studentId });
-  await db.placementAttempt.create({ data: { teacherId: me.id, studentId, checkpointId: c.id, mode: "student", token: randomToken(24), state: json(withSeen(emptyState(expectOf(expected)), seen)) } });
+  const seen = await seenBy({ studentId, track });
+  await db.placementAttempt.create({ data: { teacherId: me.id, studentId, checkpointId: c.id, mode: "student", track, token: randomToken(24), state: json(withSeen(emptyState(expectOf(expected), track), seen)) } });
   if (s.userId) await notify({ userId: s.userId, kind: "test", title: "Преподаватель назначил placement test", action: "decide", link: `/student/test/${c.id}` });
   refreshT(studentId);
   return { ok: true, id: c.id };
 }
 
-export async function createPlacementLink(showResult: boolean): Promise<R> {
+export async function createPlacementLink(showResult: boolean, trackIn?: Track): Promise<R> {
   const me = await requireUser("TEACHER");
+  const track = teenOk(trackIn, me.email);
   const code = shortCode(10).toLowerCase();
-  await db.placementLink.updateMany({ where: { teacherId: me.id, active: true }, data: { active: false } });
-  const l = await db.placementLink.create({ data: { teacherId: me.id, code, showResult: !!showResult } });
+  // у каждой версии — своя действующая ссылка
+  await db.placementLink.updateMany({ where: { teacherId: me.id, active: true, track }, data: { active: false } });
+  const l = await db.placementLink.create({ data: { teacherId: me.id, code, showResult: !!showResult, track } });
   refreshT();
   return { ok: true, id: l.code };
 }
@@ -321,7 +327,7 @@ export async function finalizePlacement(id: string, level: string): Promise<R> {
     await db.placementAttempt.update({ where: { id }, data: { level, status: "reviewed", reviewedAt: new Date() } });
     if (a.checkpointId && a.studentId) {
       const st = stateOf(a.state);
-      const { bank } = await getBank();
+      const { bank } = await getBank(trackOf(st.track));
       const sm = summarize(st, bank);
       const pct = (rows: [number, number][]) => { const t = rows.reduce((x, r) => [x[0] + r[0], x[1] + r[1]], [0, 0]); return t[1] ? Math.round((t[0] / t[1]) * 100) : undefined; };
       const skills = {
@@ -400,7 +406,7 @@ export async function assignExtraWS(id: string, kind: "writing" | "speaking", di
     const it = st.items[cur.id] as WriteItem | SpeakItem;
     const li = PL_LEVELS.indexOf(it.level) + (dir > 0 ? 1 : -1);
     if (li < 0 || li > 4) return { ok: false, error: "edge" };
-    const { bank } = await getBank();
+    const { bank } = await getBank(trackOf(st.track));
     const used = [cur.id, ...(st.wsPrev ?? []).map((x) => x.id)];
     const nx = kind === "writing" ? pickTask(bank.writing, PL_LEVELS[li], false, Math.random, used) : pickTask(bank.speaking, PL_LEVELS[li], false, Math.random, used);
     if (!nx) return { ok: false, error: "task" };

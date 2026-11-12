@@ -21,7 +21,7 @@ not someone something somebody one
 ful less ness ment tion sion able ible ly un dis im in ir il mis re pre that which who whose done where when it's under over counter""".split())
 APOS = str.maketrans({"’": "'", "‘": "'", "“": '"', "”": '"'})
 
-topics = {t["topic_id"]: t for t in json.load(open(os.path.join(ROOT, "00_topics.json")))}
+topics = {t["topic_id"]: t for f in ("00_topics.json", "teen/00_topics.json") for t in json.load(open(os.path.join(ROOT, f)))}
 errors, notes = [], []
 err = lambda i, m: errors.append(f"{i}: {m}")
 note = lambda i, m: notes.append(f"{i}: {m}")
@@ -75,7 +75,7 @@ def check_item(it, seen):
     if i in seen:
         err(i, "повтор id")
     seen.add(i)
-    m = re.match(r"^([GVRLWS])-(A1|A2|B1|B2|C1)-\d{2}$", i)
+    m = re.match(r"^T?([GVRLWS])-(A1|A2|B1|B2|C1)-\d{2}$", i)  # T — банк Placement test Teens
     if not m:
         return err(i, "id не по формату X-B1-01")
     if SKILL_OF_PREFIX[m.group(1)] != it.get("skill"):

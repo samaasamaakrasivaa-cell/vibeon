@@ -2,7 +2,7 @@
 import { useRef, useState } from "react";
 import { useT } from "@/lib/i18n/client";
 import { assignPlacement } from "@/lib/placement/actions";
-import { ExpectField } from "../placement/PlacementPanel";
+import { ExpectField, TrackField, trackForAge, type PlTrack } from "../placement/PlacementPanel";
 import { approveRoadmap, assignTest, buildRoadmap, deleteCheckpoint, editStage, manualResults, type RoadmapForm } from "@/lib/roadmap/actions";
 import { LEVELS, ROUTE_TYPES, SKILL_COLOR, SKILL_NAME, SKILLS, txt, type Skill } from "@/lib/roadmap/cefr";
 import { etaRange, fmtHM, PACES, paceKey, paceLabel, parsePace } from "@/lib/roadmap/math";
@@ -14,7 +14,7 @@ import { Mountain } from "./Mountain";
 
 export type CP = { id: string; kind: string; status: string; source: string; level: string | null; skills: Partial<Record<Skill, number>>; weak: [string, string][]; takenAt: string | null; assignedAt: string; stage: number | null; placement?: string | null; pstatus?: string | null };
 export type EditorData = {
-  studentId: string; first: string; ini: string; level: string | null;
+  studentId: string; first: string; ini: string; level: string | null; age?: number | null; teenAvail?: boolean;
   courses: { id: string; title: string; units: number }[];
   checkpoints: CP[];
   roadmap: null | {
@@ -51,6 +51,7 @@ function Checkpoints({ d }: { d: EditorData }) {
   const [manual, setManual] = useState(false);
   const [asg, setAsg] = useState(false);
   const [exp, setExp] = useState("");
+  const [track, setTrack] = useState<PlTrack>(d.teenAvail ? trackForAge(d.age) : "adult");
   const [m, setM] = useState<{ level: string; skills: Record<string, string> }>({ level: d.level ?? "B1", skills: {} });
   const open = d.checkpoints.find((c) => c.status === "assigned" || c.status === "review");
   const c = doneList[Math.max(0, Math.min(i, doneList.length - 1))];
@@ -88,10 +89,11 @@ function Checkpoints({ d }: { d: EditorData }) {
       </div>
       <p className="hint mb-0 mt-3">{t("rm.testHint")}</p>
       <Dialog open={asg} onClose={() => setAsg(false)} title={t("rm.assignEntry")}>
-        <ExpectField value={exp} onChange={setExp} />
+        {d.teenAvail && <TrackField value={track} onChange={setTrack} age={d.age} />}
+        <ExpectField value={exp} onChange={setExp} teen={track === "teen"} />
         <p className="small muted">{t("pl.assignHint")}</p>
         <div className="actions"><button className="btn secondary" onClick={() => setAsg(false)}>{t("common.cancel")}</button>
-          <button className="btn primary" disabled={pending} onClick={() => run(() => assignPlacement(d.studentId, exp || null), () => setAsg(false))}>{t("pl.assignDo")}</button></div>
+          <button className="btn primary" disabled={pending} onClick={() => run(() => assignPlacement(d.studentId, exp || null, track), () => setAsg(false))}>{t("pl.assignDo")}</button></div>
       </Dialog>
       <Dialog open={manual} onClose={() => setManual(false)} title={t("rm.enterManual")}>
         <div className="field"><label htmlFor="mr-l">{t("prof.level")}</label><select id="mr-l" className="select" value={m.level} onChange={(e) => setM({ ...m, level: e.target.value })}>{LEVELS.map((l) => <option key={l}>{l}</option>)}</select></div>

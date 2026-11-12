@@ -5,7 +5,7 @@ import { PlacementReview } from "@/components/placement/PlacementReview";
 import { requireUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { getT } from "@/lib/i18n/server";
-import { getBank, RUBRICS } from "@/lib/placement/bank";
+import { getBank, RUBRICS, trackOf } from "@/lib/placement/bank";
 import { PL_LEVELS, summarize } from "@/lib/placement/engine";
 import { reviewData } from "@/lib/placement/review";
 import { stateOf } from "@/lib/placement/run";
@@ -19,7 +19,7 @@ export default async function PlacementReviewPage({ params }: { params: Promise<
   const a = await db.placementAttempt.findUnique({ where: { id }, include: { student: true } });
   if (!a || a.teacherId !== me.id) notFound();
   const st = stateOf(a.state);
-  const { bank } = await getBank();
+  const { bank } = await getBank(trackOf(st.track));
   const sm = summarize(st, bank);
   const d = reviewData(id, st, true);
   // говорение на уроке: вопросы уровнем выше и ниже из заданий, которых ученик не видел

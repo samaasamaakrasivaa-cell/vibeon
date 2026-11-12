@@ -452,6 +452,7 @@ model PlacementAttempt {
   checkpointId String?           @unique // запись «Входной тест» в маршруте ученика
   linkId       String?
   mode         String // student | self | link
+  track        String            @default("adult") // adult | teen (Placement test Teens)
   guestName    String?
   guestContact String?
   token        String            @unique // доступ к прохождению без входа (для ссылки) — хранится в куке
@@ -478,6 +479,7 @@ model PlacementLink {
   code       String             @unique
   teacherId  String
   showResult Boolean            @default(false) // показывать ли результат в конце
+  track      String             @default("adult") // adult | teen
   active     Boolean            @default(true)
   createdAt  DateTime           @default(now())
   attempts   PlacementAttempt[]

@@ -4,7 +4,7 @@ import { Brand, LogoMark } from "@/components/Logo";
 import { PlacementRunner } from "@/components/placement/PlacementRunner";
 import { getT } from "@/lib/i18n/server";
 import { attemptFor } from "@/lib/placement/access";
-import { audioUrl, getBank } from "@/lib/placement/bank";
+import { audioUrl, getBank, trackOf } from "@/lib/placement/bank";
 import { STEPS, summarize } from "@/lib/placement/engine";
 import { publicView, stateOf } from "@/lib/placement/run";
 
@@ -23,7 +23,7 @@ export default async function PlacementPage({ params }: { params: Promise<{ id: 
 
   let done: React.ReactNode = null;
   if (st.section === "done" || a.status === "submitted" || a.status === "reviewed") {
-    const pre = a.mode === "link" && a.link?.showResult ? summarize(st, (await getBank()).bank) : null;
+    const pre = a.mode === "link" && a.link?.showResult ? summarize(st, (await getBank(trackOf(st.track))).bank) : null;
     const pct = (r?: [number, number]) => (r && r[1] ? Math.round((r[0] / r[1]) * 100) : null);
     done = (
       <section className="card flex flex-col items-center gap-3 text-center">
@@ -53,8 +53,8 @@ export default async function PlacementPage({ params }: { params: Promise<{ id: 
       </header>
       <main className="main">
         <div className="page" style={{ maxWidth: 820 }}>
-          <h1 className="mb-4">{t("pl.title")}</h1>
-          <PlacementRunner id={id} canFlag={a.mode === "self"} initial={done ? { section: "done", level: null, open: [], locked: [] } : publicView(st, lang, (await getBank()).bank)} sample={audioUrl("S-A1-01-q1")} done={done} home={home} />
+          <h1 className="mb-4">{st.track === "teen" ? t("plt.title") : t("pl.title")}</h1>
+          <PlacementRunner id={id} canFlag={a.mode === "self"} initial={done ? { section: "done", level: null, open: [], locked: [], teen: st.track === "teen" } : publicView(st, lang, (await getBank(trackOf(st.track))).bank)} sample={audioUrl("S-A1-01-q1")} done={done} home={home} />
         </div>
       </main>
     </>

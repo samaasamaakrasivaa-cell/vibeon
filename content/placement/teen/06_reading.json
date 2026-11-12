@@ -1,0 +1,172 @@
+[
+  {
+    "id": "TR-A1-01",
+    "skill": "reading",
+    "level": "A1",
+    "band": 1,
+    "topic_en": "Blog: my funny dog",
+    "topic_ru": "Блог: мой смешной пёс",
+    "type": "reading",
+    "title": "Pie, the Sock Thief",
+    "text_type": "blog",
+    "passage": "Hi! My name is Mia and I am eleven. This is my dog, Pie. He is small and brown, and he has got very long ears. Pie loves socks! Every morning he takes socks from my bedroom and hides them in my dad's shoes. Dad is not happy, but we always laugh. Pie doesn't like baths, but he loves the park.",
+    "words": 61,
+    "questions": [
+      {
+        "id": "TR-A1-01-q1",
+        "q": "How old is Mia?",
+        "options": [
+          "Eleven",
+          "Ten",
+          "Twelve",
+          "Seven"
+        ],
+        "answer": 0,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "«I am eleven»."
+      },
+      {
+        "id": "TR-A1-01-q2",
+        "q": "What does Pie look like?",
+        "options": [
+          "Big and black",
+          "Small and brown",
+          "Small and white",
+          "Big and brown"
+        ],
+        "answer": 1,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "«He is small and brown»."
+      },
+      {
+        "id": "TR-A1-01-q3",
+        "q": "Where does Pie hide the socks?",
+        "options": [
+          "Under Mia's bed",
+          "In the garden",
+          "In Dad's shoes",
+          "In the park"
+        ],
+        "answer": 2,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "«hides them in my dad's shoes»."
+      },
+      {
+        "id": "TR-A1-01-q4",
+        "q": "How does the family feel about Pie's game?",
+        "options": [
+          "They are angry",
+          "They are sad",
+          "They are scared",
+          "They laugh"
+        ],
+        "answer": 3,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "«we always laugh»; папа недоволен, но смеются все."
+      },
+      {
+        "id": "TR-A1-01-q5",
+        "q": "What does Pie NOT like?",
+        "options": [
+          "Baths",
+          "Socks",
+          "The park",
+          "Mia's bedroom"
+        ],
+        "answer": 0,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "«Pie doesn't like baths»."
+      }
+    ]
+  },
+  {
+    "id": "TR-A1-02",
+    "skill": "reading",
+    "level": "A1",
+    "band": 2,
+    "topic_en": "Message: a new classmate",
+    "topic_ru": "Сообщение: новый одноклассник",
+    "type": "reading",
+    "title": "Hello from Leo",
+    "text_type": "message",
+    "passage": "Hi everyone! I'm Leo, the new boy in class 6B. I'm from Spain, but now I live near the school with my mum and my little sister. I can speak Spanish and English, and I can play the guitar. I don't like football, but I love basketball. On Fridays I go to the robot club. Can you show me where the canteen is?",
+    "words": 63,
+    "questions": [
+      {
+        "id": "TR-A1-02-q1",
+        "q": "Where is Leo from?",
+        "options": [
+          "England",
+          "Spain",
+          "Italy",
+          "Russia"
+        ],
+        "answer": 1,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "«I'm from Spain»."
+      },
+      {
+        "id": "TR-A1-02-q2",
+        "q": "Who does Leo live with?",
+        "options": [
+          "His dad and his brother",
+          "His grandparents",
+          "His mum and his sister",
+          "His mum and his dad"
+        ],
+        "answer": 2,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "«with my mum and my little sister»."
+      },
+      {
+        "id": "TR-A1-02-q3",
+        "q": "Which sport does Leo love?",
+        "options": [
+          "Football",
+          "Tennis",
+          "Swimming",
+          "Basketball"
+        ],
+        "answer": 3,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "«I don't like football, but I love basketball»."
+      },
+      {
+        "id": "TR-A1-02-q4",
+        "q": "When does Leo go to the robot club?",
+        "options": [
+          "On Fridays",
+          "On Mondays",
+          "Every day",
+          "At the weekend"
+        ],
+        "answer": 0,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "«On Fridays I go to the robot club»."
+      },
+      {
+        "id": "TR-A1-02-q5",
+        "q": "What does Leo want to know?",
+        "options": [
+          "Where the robot club is",
+          "Where the canteen is",
+          "Who plays the guitar",
+          "When the lesson starts"
+        ],
+        "answer": 1,
+        "checks": "main idea",
+        "topic_id": "r-main-idea",
+        "explain_ru": "«Can you show me where the canteen is?»"
+      }
+    ]
+  }
+]

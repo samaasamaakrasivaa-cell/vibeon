@@ -1,0 +1,63 @@
+[
+  {
+    "id": "TW-A1-01",
+    "skill": "writing",
+    "level": "A1",
+    "band": 1,
+    "topic_en": "Writing: a message about your pet",
+    "topic_ru": "Сообщение другу о питомце",
+    "type": "writing",
+    "prompt_en": "Your friend wants to know about your pet (or a pet you would like to have). Write a message. Say what the pet is and what its name is, what it looks like, and one funny thing it does.",
+    "prompt_ru": "Напиши другу о своём питомце (или о том, какого хотел бы завести): кто он и как его зовут, как выглядит и что смешного он делает.",
+    "min_words": 20,
+    "max_words": 35,
+    "time_min": 6,
+    "expects": [
+      "Все пункты задания раскрыты",
+      "Простые предложения с and, but, because",
+      "to be, have got, Present Simple в основном верны",
+      "Слова про животных, внешность, действия"
+    ],
+    "explain_ru": "Проверяет простое описание и Present Simple.",
+    "points": [
+      "say what your pet is and its name",
+      "say what it looks like",
+      "say one funny thing it does"
+    ],
+    "points_title": "In your message:"
+  },
+  {
+    "id": "TS-A1-01",
+    "skill": "speaking",
+    "level": "A1",
+    "band": 1,
+    "topic_en": "Speaking: me and my day",
+    "topic_ru": "Говорение: я и мой день",
+    "type": "speaking",
+    "intro_ru": "Ответь на три простых вопроса о себе.",
+    "intro_en": "Answer three simple questions about yourself.",
+    "questions": [
+      {
+        "q": "What's your name, and how old are you?",
+        "prep_sec": 10,
+        "speak_sec": 20
+      },
+      {
+        "q": "What do you like doing after school?",
+        "prep_sec": 10,
+        "speak_sec": 25
+      },
+      {
+        "q": "Tell me about your best friend.",
+        "prep_sec": 10,
+        "speak_sec": 25
+      }
+    ],
+    "expects": [
+      "Отвечает на все вопросы простыми фразами",
+      "Использует to be, have got, like + -ing",
+      "Понятное произношение, паузы допустимы"
+    ],
+    "explain_ru": "Проверяет простые ответы о себе."
+  }
+]

@@ -1,0 +1,163 @@
+[
+  {
+    "id": "present",
+    "name_ru": "Настоящие времена",
+    "what_ru": "to be, Present Simple и Continuous, Present Perfect",
+    "topics": [
+      "tg-a1-to-be",
+      "tg-a1-there-is",
+      "tg-a1-present-simple",
+      "tg-a1-frequency",
+      "tg-a1-pc-now",
+      "tg-a1-have-got",
+      "tg-a2-pp-experience",
+      "tg-a2-pp-just-yet",
+      "tg-b1-pp-vs-past",
+      "tg-b1-for-since",
+      "tg-b1-ppc",
+      "tg-b2-ppc"
+    ]
+  },
+  {
+    "id": "past",
+    "name_ru": "Прошедшие времена",
+    "what_ru": "Past Simple и Continuous, Past Perfect, used to, рассказ о прошлом",
+    "topics": [
+      "tg-a1-was-were",
+      "tg-a2-past-simple",
+      "tg-a2-past-neg-q",
+      "tg-a2-past-continuous",
+      "tg-b1-past-perfect",
+      "tg-b1-used-to",
+      "tg-b2-narrative"
+    ]
+  },
+  {
+    "id": "future",
+    "name_ru": "Будущее время",
+    "what_ru": "will, going to, Present Continuous для планов, Future Perfect / Continuous, будущее в прошедшем",
+    "topics": [
+      "tg-a2-going-to",
+      "tg-a2-will",
+      "tg-a2-pc-future",
+      "tg-b1-future",
+      "tg-b1-future-continuous",
+      "tg-b2-future"
+    ]
+  },
+  {
+    "id": "modals",
+    "name_ru": "Модальные глаголы",
+    "what_ru": "can, must, have to, should, might; предположения; оттенки модальности",
+    "topics": [
+      "tg-a1-can",
+      "tg-a1-imperative",
+      "tg-a2-obligation",
+      "tg-a2-should",
+      "tg-b1-deduction",
+      "tg-b2-past-modals"
+    ]
+  },
+  {
+    "id": "conditionals",
+    "name_ru": "Условные предложения и нереальность",
+    "what_ru": "0–3 тип, смешанные, wish, would rather, сослагательное наклонение",
+    "topics": [
+      "tg-b1-cond-01",
+      "tg-b1-cond-2",
+      "tg-b1-wish",
+      "tg-b2-cond-3",
+      "tg-b2-mixed",
+      "tg-b2-wish",
+      "tg-c1-unreal"
+    ]
+  },
+  {
+    "id": "passive",
+    "name_ru": "Пассивный залог",
+    "what_ru": "Present / Past Passive, пассив с модальными и перфектом, каузатив, сложный пассив",
+    "topics": [
+      "tg-b1-passive",
+      "tg-b2-passive",
+      "tg-b2-causative",
+      "tg-c1-passive-reporting"
+    ]
+  },
+  {
+    "id": "reported",
+    "name_ru": "Косвенная речь",
+    "what_ru": "утверждения, вопросы, косвенные вопросы, глаголы косвенной речи",
+    "topics": [
+      "tg-b1-reported",
+      "tg-b1-indirect-q",
+      "tg-b2-reporting"
+    ]
+  },
+  {
+    "id": "comparison",
+    "name_ru": "Сравнения, прилагательные и наречия",
+    "what_ru": "степени сравнения, as … as, too / enough, наречия",
+    "topics": [
+      "tg-a2-comparatives",
+      "tg-a2-too-enough",
+      "tg-a2-adverbs"
+    ]
+  },
+  {
+    "id": "articles",
+    "name_ru": "Артикли, существительные и количество",
+    "what_ru": "a / the / без артикля, множественное число, some / any, much / many, both / neither",
+    "topics": [
+      "tg-a1-articles",
+      "tg-a1-plurals",
+      "tg-a1-some-any",
+      "tg-a2-quantifiers"
+    ]
+  },
+  {
+    "id": "pronouns",
+    "name_ru": "Местоимения, предлоги, вопросы",
+    "what_ru": "местоимения, притяжательные, предлоги, вопросительные слова, разделительные вопросы",
+    "topics": [
+      "tg-a1-pronouns",
+      "tg-a1-possessives",
+      "tg-a1-this-that",
+      "tg-a1-question-words",
+      "tg-a1-prepositions",
+      "tg-a2-prep-movement",
+      "tg-a2-indefinite",
+      "tg-a2-reflexive",
+      "tg-b1-tags"
+    ]
+  },
+  {
+    "id": "clauses",
+    "name_ru": "Сложное предложение и связки",
+    "what_ru": "союзы, придаточные, причастные обороты, связки",
+    "topics": [
+      "tg-b1-relatives",
+      "tg-b2-linkers",
+      "tg-b2-purpose",
+      "tg-b2-non-defining"
+    ]
+  },
+  {
+    "id": "patterns",
+    "name_ru": "Глагольные модели",
+    "what_ru": "-ing или инфинитив, инфинитив цели, be / get used to",
+    "topics": [
+      "tg-a1-like-ing",
+      "tg-b1-be-get-used",
+      "tg-b1-ing-inf"
+    ]
+  },
+  {
+    "id": "emphasis",
+    "name_ru": "Инверсия и выделение",
+    "what_ru": "Not only…, Never have I…, It was … that, What I need is…, усиление",
+    "topics": [
+      "tg-c1-inversion",
+      "tg-c1-cleft"
+    ]
+  }
+]

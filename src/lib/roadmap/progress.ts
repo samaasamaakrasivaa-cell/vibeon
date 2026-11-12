@@ -1,5 +1,6 @@
 import "server-only";
 import { db } from "../db";
+import { isOwner, TEEN_READY } from "../placement/bank";
 import { addDaysIso, dayStart, isoDay, mondayOf } from "../time";
 import { parsePace, perWeek, routeState, etaDate, type Pace } from "./math";
 import type { Stage } from "./cefr";
@@ -70,6 +71,8 @@ export async function editorData(studentId: string, teacherId: string, tz: strin
   const paOf = new Map(pas.map((p) => [p.checkpointId!, p]));
   return {
     studentId, first: s.name, ini: `${s.name[0] ?? ""}${s.lastName?.[0] ?? ""}`.toUpperCase(), level: s.level,
+    age: s.birthday ? (() => { const n = new Date(), b = s.birthday!; let a = n.getFullYear() - b.getFullYear(); if (n.getMonth() < b.getMonth() || (n.getMonth() === b.getMonth() && n.getDate() < b.getDate())) a--; return a; })() : null,
+    teenAvail: TEEN_READY || isOwner((await db.user.findUnique({ where: { id: teacherId }, select: { email: true } }))?.email),
     courses: courses.map((c) => ({ id: c.id, title: c.title, units: c._count.units })),
     checkpoints: v.checkpoints.map((c) => {
       const res = (c.results ?? {}) as { skills?: Record<string, number>; weak?: [string, string][] };

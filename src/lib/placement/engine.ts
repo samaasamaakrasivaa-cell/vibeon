@@ -32,6 +32,7 @@ export type Section = (typeof SECTIONS)[number];
 export type Ph = "w" | "l" | "d" | "s" | "x" | "r" | "f" | "vw" | "vm" | "vu" | "vd" | "vl" | "vc";
 export type Ans = { v: string | number | null; ok: boolean | null; ms?: number; dk?: boolean; h?: boolean }; // dk — «Не знаю», h — открыл подсказку
 export type PState = {
+  track?: "adult" | "teen"; // версия теста: взрослая или Placement test Teens
   v: 1;
   section: "intro" | Section | "done";
   beginner?: boolean; // старые прохождения
@@ -64,9 +65,12 @@ export type PState = {
 /** expected: ожидаемый уровень от учителя (A1 / B1 / B2) — тогда без разминки, поиск начинается с него. */
 export const EXPECT = { A1: 0, B1: 2, B2: 3 } as const; // индекс уровня в PL_LEVELS
 export type Expect = keyof typeof EXPECT;
-export const emptyState = (expected?: Expect | null): PState => ({
+/** Teens: «начинающий» — A1, «средний» — A2–B1 (старт с A2), «продвинутый» — B2. */
+const EXPECT_TEEN: Record<Expect, number> = { A1: 0, B1: 1, B2: 3 };
+export const emptyState = (expected?: Expect | null, track: "adult" | "teen" = "adult"): PState => ({
   v: 1, section: "intro", items: {}, core: [], answers: {}, reading: [], listening: [], rdone: [], ldone: [], plays: {},
-  ...(expected && expected in EXPECT ? { start: EXPECT[expected] } : { warm: WARM.length }),
+  ...(track === "teen" ? { track } : {}),
+  ...(expected && expected in EXPECT ? { start: (track === "teen" ? EXPECT_TEEN : EXPECT)[expected] } : { warm: WARM.length }),
 });
 /** Разминка: одно задание A1 и два A2 из опорных групп — они же идут в зачёт этих групп. */
 const WARM = [0, 1, 1];
