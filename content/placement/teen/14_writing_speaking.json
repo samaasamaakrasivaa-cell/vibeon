@@ -59,5 +59,191 @@
       "Понятное произношение, паузы допустимы"
     ],
     "explain_ru": "Проверяет простые ответы о себе."
+  },
+  {
+    "id": "TW-A2-01",
+    "skill": "writing",
+    "level": "A2",
+    "band": 1,
+    "topic_en": "Writing: a message about your weekend",
+    "topic_ru": "Сообщение другу о выходных",
+    "type": "writing",
+    "prompt_en": "Your friend was away last weekend and wants to know what you did. Write a message. Say where you went, who you were with and what was the best (or the funniest) moment.",
+    "prompt_ru": "Друг уезжал на выходные и спрашивает, что ты делал(а). Напиши: куда ходил(а), с кем и какой момент был самым классным (или самым смешным).",
+    "min_words": 35,
+    "max_words": 55,
+    "time_min": 8,
+    "expects": [
+      "Все пункты задания раскрыты, есть приветствие и завершение",
+      "Связки and, but, because, so, then",
+      "Past Simple, Present Perfect, going to / will в основном верны",
+      "Достаточно слов, чтобы описать события, вещи и впечатления"
+    ],
+    "explain_ru": "Проверяет рассказ о прошлом (Past Simple) в дружеском сообщении.",
+    "points": [
+      "say where you went",
+      "say who you were with",
+      "say what the best or funniest moment was"
+    ],
+    "points_title": "In your message:"
+  },
+  {
+    "id": "TW-A2-02",
+    "skill": "writing",
+    "level": "A2",
+    "band": 2,
+    "topic_en": "Writing: a review of a game, app or film",
+    "topic_ru": "Отзыв на игру, приложение или фильм",
+    "type": "writing",
+    "prompt_en": "Write a short review for a school website of a game, app or film you like. Say what it is about, what is good about it and who you would recommend it to.",
+    "prompt_ru": "Напиши короткий отзыв для школьного сайта на игру, приложение или фильм, который тебе нравится: о чём он, что в нём хорошего и кому ты бы его посоветовал(а).",
+    "min_words": 35,
+    "max_words": 55,
+    "time_min": 8,
+    "expects": [
+      "Все пункты задания раскрыты, есть приветствие и завершение",
+      "Связки and, but, because, so, then",
+      "Past Simple, Present Perfect, going to / will в основном верны",
+      "Достаточно слов, чтобы описать события, вещи и впечатления"
+    ],
+    "explain_ru": "Проверяет описание и мнение: Present Simple, сравнения, because.",
+    "points": [
+      "say what it is about",
+      "say what is good about it",
+      "say who you would recommend it to"
+    ],
+    "points_title": "In your review:"
+  },
+  {
+    "id": "TW-A2-03",
+    "skill": "writing",
+    "level": "A2",
+    "band": 3,
+    "topic_en": "Writing: plans for the holidays",
+    "topic_ru": "Письмо: планы на каникулы",
+    "type": "writing",
+    "prompt_en": "Your English-speaking friend asks: \"What are you going to do in the summer holidays?\" Write a reply. Say where you are going, what you are going to do there and invite your friend to do something with you.",
+    "prompt_ru": "Друг спрашивает по-английски о планах на летние каникулы. Ответь: куда поедешь (или где будешь), чем займёшься и позови друга сделать что-то вместе.",
+    "min_words": 35,
+    "max_words": 55,
+    "time_min": 8,
+    "expects": [
+      "Все пункты задания раскрыты, есть приветствие и завершение",
+      "Связки and, but, because, so, then",
+      "Past Simple, Present Perfect, going to / will в основном верны",
+      "Достаточно слов, чтобы описать события, вещи и впечатления"
+    ],
+    "explain_ru": "Проверяет разговор о будущем: going to, will, Present Continuous для планов.",
+    "points": [
+      "say where you are going",
+      "say what you are going to do",
+      "invite your friend to do something with you"
+    ],
+    "points_title": "In your reply:"
+  },
+  {
+    "id": "TS-A2-01",
+    "skill": "speaking",
+    "level": "A2",
+    "band": 1,
+    "topic_en": "Speaking: last weekend and plans",
+    "topic_ru": "Говорение: выходные и планы",
+    "type": "speaking",
+    "intro_ru": "Ответь на три вопроса о прошлых выходных и своих планах.",
+    "intro_en": "Answer three questions about last weekend and your plans.",
+    "questions": [
+      {
+        "q": "What did you do last weekend?",
+        "prep_sec": 15,
+        "speak_sec": 30
+      },
+      {
+        "q": "What was the best thing about it?",
+        "prep_sec": 15,
+        "speak_sec": 30
+      },
+      {
+        "q": "What are you going to do next weekend?",
+        "prep_sec": 15,
+        "speak_sec": 30
+      }
+    ],
+    "expects": [
+      "Говорит о прошлом (Past Simple) и о планах (going to, will)",
+      "Связывает предложения: and, but, because, then",
+      "Достаточно слов, чтобы описать события и впечатления",
+      "Паузы есть, но мысль понятна слушателю"
+    ],
+    "explain_ru": "Проверяет Past Simple и going to в связном рассказе."
+  },
+  {
+    "id": "TS-A2-02",
+    "skill": "speaking",
+    "level": "A2",
+    "band": 2,
+    "topic_en": "Speaking: games, apps and free time",
+    "topic_ru": "Говорение: игры, приложения, свободное время",
+    "type": "speaking",
+    "intro_ru": "Ответь на три вопроса о свободном времени и гаджетах.",
+    "intro_en": "Answer three questions about your free time and gadgets.",
+    "questions": [
+      {
+        "q": "What is your favourite game or app? Why do you like it?",
+        "prep_sec": 15,
+        "speak_sec": 30
+      },
+      {
+        "q": "How much time do you spend on your phone every day? Is it too much?",
+        "prep_sec": 15,
+        "speak_sec": 30
+      },
+      {
+        "q": "Have you ever tried a new hobby? Tell me about it.",
+        "prep_sec": 15,
+        "speak_sec": 30
+      }
+    ],
+    "expects": [
+      "Говорит о прошлом (Past Simple) и о планах (going to, will)",
+      "Связывает предложения: and, but, because, then",
+      "Достаточно слов, чтобы описать события и впечатления",
+      "Паузы есть, но мысль понятна слушателю"
+    ],
+    "explain_ru": "Проверяет мнение с because, Present Perfect для опыта, лексику свободного времени."
+  },
+  {
+    "id": "TS-A2-03",
+    "skill": "speaking",
+    "level": "A2",
+    "band": 3,
+    "topic_en": "Speaking: school and friends",
+    "topic_ru": "Говорение: школа и друзья",
+    "type": "speaking",
+    "intro_ru": "Ответь на три вопроса о школе и друзьях.",
+    "intro_en": "Answer three questions about school and friends.",
+    "questions": [
+      {
+        "q": "What is your favourite school subject, and why?",
+        "prep_sec": 15,
+        "speak_sec": 30
+      },
+      {
+        "q": "Tell me about a funny thing that happened at school.",
+        "prep_sec": 15,
+        "speak_sec": 30
+      },
+      {
+        "q": "What should a new student at your school know?",
+        "prep_sec": 15,
+        "speak_sec": 30
+      }
+    ],
+    "expects": [
+      "Говорит о прошлом (Past Simple) и о планах (going to, will)",
+      "Связывает предложения: and, but, because, then",
+      "Достаточно слов, чтобы описать события и впечатления",
+      "Паузы есть, но мысль понятна слушателю"
+    ],
+    "explain_ru": "Проверяет рассказ о прошлом, советы (should) и сравнения."
   }
 ]

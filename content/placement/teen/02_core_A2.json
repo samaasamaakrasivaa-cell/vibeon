@@ -1,1 +1,1665 @@
-[]
+[
+  {
+    "id": "TG-A2-01",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "tg-a2-past-simple",
+    "topic_en": "Past simple: regular and irregular verbs",
+    "topic_ru": "Past Simple: правильные и неправильные глаголы",
+    "type": "mcq",
+    "q": "Last summer we ___ to the seaside for two weeks.",
+    "options": [
+      "went",
+      "go",
+      "goes",
+      "have gone"
+    ],
+    "answer": 0,
+    "explain_ru": "Last summer — законченное прошлое: went (go — неправильный глагол)."
+  },
+  {
+    "id": "TG-A2-02",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "tg-a2-past-simple",
+    "topic_en": "Past simple: regular and irregular verbs",
+    "topic_ru": "Past Simple: правильные и неправильные глаголы",
+    "type": "brackets",
+    "q": "Yesterday I ___ (watch) three episodes of my favourite series.",
+    "accept": [
+      "watched"
+    ],
+    "explain_ru": "Yesterday — Past Simple: watched."
+  },
+  {
+    "id": "TG-A2-03",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "tg-a2-past-neg-q",
+    "topic_en": "Past simple: negatives and questions",
+    "topic_ru": "Past Simple: отрицания и вопросы",
+    "type": "mcq",
+    "q": "___ you see the match last night? — Yes, it was amazing!",
+    "options": [
+      "Do",
+      "Did",
+      "Were",
+      "Have"
+    ],
+    "answer": 1,
+    "explain_ru": "Вопрос о прошлом (last night) — Did you see…?"
+  },
+  {
+    "id": "TG-A2-04",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "tg-a2-past-neg-q",
+    "topic_en": "Past simple: negatives and questions",
+    "topic_ru": "Past Simple: отрицания и вопросы",
+    "type": "mcq",
+    "q": "I ___ my homework yesterday because the Wi-Fi was down.",
+    "options": [
+      "don't do",
+      "didn't did",
+      "didn't do",
+      "not did"
+    ],
+    "answer": 2,
+    "explain_ru": "Отрицание в прошлом: didn't + глагол в начальной форме — didn't do."
+  },
+  {
+    "id": "TG-A2-05",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "tg-a2-past-simple",
+    "topic_en": "Past simple: regular and irregular verbs",
+    "topic_ru": "Past Simple: правильные и неправильные глаголы",
+    "type": "mcq",
+    "q": "This morning my phone ___ out of my pocket, and now the screen is broken.",
+    "options": [
+      "falled",
+      "fall",
+      "was fall",
+      "fell"
+    ],
+    "answer": 3,
+    "explain_ru": "This morning — уже прошло; fall — неправильный глагол: fell."
+  },
+  {
+    "id": "TG-A2-06",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "tg-a2-past-neg-q",
+    "topic_en": "Past simple: negatives and questions",
+    "topic_ru": "Past Simple: отрицания и вопросы",
+    "type": "gap",
+    "q": "Where ___ you get those trainers? — At the new shop in town. I bought them on Saturday.",
+    "accept": [
+      "did"
+    ],
+    "explain_ru": "Покупка в прошлом (on Saturday) — вопрос с did.",
+    "hint_ru": "вспомогательный глагол"
+  },
+  {
+    "id": "TG-A2-07",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 3,
+    "topic_id": "tg-a2-past-simple",
+    "topic_en": "Past simple: regular and irregular verbs",
+    "topic_ru": "Past Simple: правильные и неправильные глаголы",
+    "type": "mcq",
+    "q": "We ___ our holiday photos to the group chat as soon as we got home.",
+    "options": [
+      "sent",
+      "send",
+      "sended",
+      "have sent"
+    ],
+    "answer": 0,
+    "explain_ru": "As soon as we got home — прошлое; send — неправильный глагол: sent."
+  },
+  {
+    "id": "TG-A2-08",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 3,
+    "topic_id": "tg-a2-past-neg-q",
+    "topic_en": "Past simple: negatives and questions",
+    "topic_ru": "Past Simple: отрицания и вопросы",
+    "type": "mcq",
+    "q": "Who ___ the last piece of pizza? — Not me!",
+    "options": [
+      "did eat",
+      "ate",
+      "did ate",
+      "eaten"
+    ],
+    "answer": 1,
+    "explain_ru": "Вопрос к подлежащему (Who…?) строится без did: Who ate…?"
+  },
+  {
+    "id": "TG-A2-09",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "tg-a2-past-continuous",
+    "topic_en": "Past continuous",
+    "topic_ru": "Past Continuous",
+    "type": "mcq",
+    "q": "I ___ a game when my mum called me for dinner.",
+    "options": [
+      "were playing",
+      "am playing",
+      "was playing",
+      "play"
+    ],
+    "answer": 2,
+    "explain_ru": "Длительное действие в прошлом, которое прервали, — Past Continuous: was playing."
+  },
+  {
+    "id": "TG-A2-10",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "tg-a2-past-continuous",
+    "topic_en": "Past continuous",
+    "topic_ru": "Past Continuous",
+    "type": "mcq",
+    "q": "At 8 o'clock last night we ___ a film.",
+    "options": [
+      "was watching",
+      "are watching",
+      "watch",
+      "were watching"
+    ],
+    "answer": 3,
+    "explain_ru": "В определённый момент в прошлом — Past Continuous; we → were watching."
+  },
+  {
+    "id": "TG-A2-11",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "tg-a2-past-continuous",
+    "topic_en": "Past continuous",
+    "topic_ru": "Past Continuous",
+    "type": "gap",
+    "q": "What ___ you doing at 5 pm yesterday? I called you twice!",
+    "accept": [
+      "were"
+    ],
+    "explain_ru": "Что ты делал в тот момент в прошлом — Past Continuous: were you doing.",
+    "hint_ru": "форма глагола to be"
+  },
+  {
+    "id": "TG-A2-12",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "tg-a2-past-continuous",
+    "topic_en": "Past continuous",
+    "topic_ru": "Past Continuous",
+    "type": "mcq",
+    "q": "It ___ when we left the cinema, so we got wet.",
+    "options": [
+      "was raining",
+      "raining",
+      "is raining",
+      "were raining"
+    ],
+    "answer": 0,
+    "explain_ru": "Фон в прошлом — Past Continuous: it was raining."
+  },
+  {
+    "id": "TG-A2-13",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "tg-a2-past-continuous",
+    "topic_en": "Past continuous",
+    "topic_ru": "Past Continuous",
+    "type": "mcq",
+    "q": "While I ___ to school, I saw a fox in the street.",
+    "options": [
+      "walk",
+      "was walking",
+      "am walking",
+      "were walking"
+    ],
+    "answer": 1,
+    "explain_ru": "While + длительное действие в прошлом — was walking."
+  },
+  {
+    "id": "TG-A2-14",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "tg-a2-past-continuous",
+    "topic_en": "Past continuous",
+    "topic_ru": "Past Continuous",
+    "type": "mcq",
+    "q": "My brother ___ his phone while he was riding his bike. Now the screen is broken.",
+    "options": [
+      "was dropping",
+      "drops",
+      "dropped",
+      "is dropping"
+    ],
+    "answer": 2,
+    "explain_ru": "Короткое действие на фоне длительного — Past Simple: dropped."
+  },
+  {
+    "id": "TG-A2-15",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 3,
+    "topic_id": "tg-a2-past-continuous",
+    "topic_en": "Past continuous",
+    "topic_ru": "Past Continuous",
+    "type": "brackets",
+    "q": "We ___ (not / listen) when the teacher explained the homework, so now we don't know what to do.",
+    "accept": [
+      "weren't listening",
+      "were not listening"
+    ],
+    "explain_ru": "В момент объяснения не слушали — Past Continuous в отрицании: weren't listening."
+  },
+  {
+    "id": "TG-A2-16",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 3,
+    "topic_id": "tg-a2-past-continuous",
+    "topic_en": "Past continuous",
+    "topic_ru": "Past Continuous",
+    "type": "mcq",
+    "q": "When the lights went out, everyone ___ the song contest on TV.",
+    "options": [
+      "has watched",
+      "were watch",
+      "is watching",
+      "was watching"
+    ],
+    "answer": 3,
+    "explain_ru": "Что происходило в момент, когда погас свет, — Past Continuous; everyone → was."
+  },
+  {
+    "id": "TG-A2-17",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "tg-a2-pp-experience",
+    "topic_en": "Present perfect: experience",
+    "topic_ru": "Present Perfect: опыт",
+    "type": "mcq",
+    "q": "___ you ever been to London?",
+    "options": [
+      "Have",
+      "Did",
+      "Are",
+      "Has"
+    ],
+    "answer": 0,
+    "explain_ru": "Опыт (ever) — Present Perfect: Have you ever been…?"
+  },
+  {
+    "id": "TG-A2-18",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "tg-a2-pp-just-yet",
+    "topic_en": "Present perfect: just / already / yet",
+    "topic_ru": "Present Perfect: just / already / yet",
+    "type": "mcq",
+    "q": "I've ___ finished my homework. Can I go out now?",
+    "options": [
+      "yet",
+      "just",
+      "ever",
+      "never"
+    ],
+    "answer": 1,
+    "explain_ru": "Только что закончил — just."
+  },
+  {
+    "id": "TG-A2-19",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "tg-a2-pp-experience",
+    "topic_en": "Present perfect: experience",
+    "topic_ru": "Present Perfect: опыт",
+    "type": "mcq",
+    "q": "I've never ___ sushi. Is it good?",
+    "options": [
+      "ate",
+      "eat",
+      "eaten",
+      "eating"
+    ],
+    "answer": 2,
+    "explain_ru": "Present Perfect: have + третья форма — eaten."
+  },
+  {
+    "id": "TG-A2-20",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "tg-a2-pp-just-yet",
+    "topic_en": "Present perfect: just / already / yet",
+    "topic_ru": "Present Perfect: just / already / yet",
+    "type": "gap",
+    "q": "Have you watched the new episode ___? — No, not yet. No spoilers, please!",
+    "accept": [
+      "yet"
+    ],
+    "explain_ru": "В вопросе «уже?» в конце предложения — yet.",
+    "hint_ru": "наречие"
+  },
+  {
+    "id": "TG-A2-21",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "tg-a2-pp-experience",
+    "topic_en": "Present perfect: experience",
+    "topic_ru": "Present Perfect: опыт",
+    "type": "mcq",
+    "q": "My best friend ___ a horse — she's scared of them.",
+    "options": [
+      "is never riding",
+      "has never rode",
+      "never ride",
+      "has never ridden"
+    ],
+    "answer": 3,
+    "explain_ru": "Опыт (никогда в жизни) — Present Perfect: has never ridden (ride — rode — ridden)."
+  },
+  {
+    "id": "TG-A2-22",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "tg-a2-pp-just-yet",
+    "topic_en": "Present perfect: just / already / yet",
+    "topic_ru": "Present Perfect: just / already / yet",
+    "type": "mcq",
+    "q": "Hurry up! The film has ___ started!",
+    "options": [
+      "already",
+      "yet",
+      "ever",
+      "still"
+    ],
+    "answer": 0,
+    "explain_ru": "Уже — в утверждении already."
+  },
+  {
+    "id": "TG-A2-23",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 3,
+    "topic_id": "tg-a2-pp-experience",
+    "topic_en": "Present perfect: experience",
+    "topic_ru": "Present Perfect: опыт",
+    "type": "mcq",
+    "q": "I ___ my new phone last week, and I've already broken it!",
+    "options": [
+      "have got",
+      "got",
+      "get",
+      "have gotten"
+    ],
+    "answer": 1,
+    "explain_ru": "Last week — точное время в прошлом, поэтому Past Simple: got."
+  },
+  {
+    "id": "TG-A2-24",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 3,
+    "topic_id": "tg-a2-pp-just-yet",
+    "topic_en": "Present perfect: just / already / yet",
+    "topic_ru": "Present Perfect: just / already / yet",
+    "type": "brackets",
+    "q": "I can't play with you — I ___ (not / finish) my project yet.",
+    "accept": [
+      "haven't finished",
+      "have not finished"
+    ],
+    "explain_ru": "Yet в отрицании — Present Perfect: haven't finished."
+  },
+  {
+    "id": "TG-A2-25",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "tg-a2-going-to",
+    "topic_en": "Be going to",
+    "topic_ru": "be going to",
+    "type": "mcq",
+    "q": "Look at those black clouds! It ___ rain.",
+    "options": [
+      "will to",
+      "going to",
+      "is going to",
+      "is go to"
+    ],
+    "answer": 2,
+    "explain_ru": "Видим признаки (тучи) — be going to: is going to rain."
+  },
+  {
+    "id": "TG-A2-26",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "tg-a2-will",
+    "topic_en": "Will",
+    "topic_ru": "will",
+    "type": "mcq",
+    "q": "I'm sure you ___ love this song. It's so good!",
+    "options": [
+      "are",
+      "going",
+      "do",
+      "will"
+    ],
+    "answer": 3,
+    "explain_ru": "Мнение о будущем (I'm sure) — will."
+  },
+  {
+    "id": "TG-A2-27",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "tg-a2-pc-future",
+    "topic_en": "Present continuous for plans",
+    "topic_ru": "Present Continuous для планов",
+    "type": "mcq",
+    "q": "What ___ you doing this weekend? — I'm going to a concert!",
+    "options": [
+      "are",
+      "do",
+      "will",
+      "is"
+    ],
+    "answer": 0,
+    "explain_ru": "План на выходные — Present Continuous: What are you doing…?"
+  },
+  {
+    "id": "TG-A2-28",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "tg-a2-going-to",
+    "topic_en": "Be going to",
+    "topic_ru": "be going to",
+    "type": "gap",
+    "q": "I've got a plan. I ___ going to start a YouTube channel about skateboarding.",
+    "accept": [
+      "am",
+      "'m"
+    ],
+    "explain_ru": "be going to с I — am going to.",
+    "hint_ru": "форма глагола to be"
+  },
+  {
+    "id": "TG-A2-29",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "tg-a2-will",
+    "topic_en": "Will",
+    "topic_ru": "will",
+    "type": "mcq",
+    "q": "This box is too heavy for you. — Don't worry, I ___ help you.",
+    "options": [
+      "am going to",
+      "'ll",
+      "am helping",
+      "help"
+    ],
+    "answer": 1,
+    "explain_ru": "Решение, принятое прямо сейчас, — will: I'll help."
+  },
+  {
+    "id": "TG-A2-30",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "tg-a2-pc-future",
+    "topic_en": "Present continuous for plans",
+    "topic_ru": "Present Continuous для планов",
+    "type": "mcq",
+    "q": "We ___ to Turkey on Friday. Our tickets are already booked!",
+    "options": [
+      "fly",
+      "will flying",
+      "are flying",
+      "flying"
+    ],
+    "answer": 2,
+    "explain_ru": "Договорённость, билеты куплены — Present Continuous: are flying."
+  },
+  {
+    "id": "TG-A2-31",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 3,
+    "topic_id": "tg-a2-going-to",
+    "topic_en": "Be going to",
+    "topic_ru": "be going to",
+    "type": "mcq",
+    "q": "Why have you got paint and brushes? — I ___ my room. I decided yesterday.",
+    "options": [
+      "'ll paint",
+      "paint",
+      "painted",
+      "'m going to paint"
+    ],
+    "answer": 3,
+    "explain_ru": "Решение принято заранее (yesterday) — be going to."
+  },
+  {
+    "id": "TG-A2-32",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 3,
+    "topic_id": "tg-a2-will",
+    "topic_en": "Will",
+    "topic_ru": "will",
+    "type": "gap",
+    "q": "Do you think robots ___ do our homework in the future?",
+    "accept": [
+      "will"
+    ],
+    "explain_ru": "Предсказание о будущем — will.",
+    "hint_ru": "глагол для будущего времени"
+  },
+  {
+    "id": "TG-A2-33",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "tg-a2-comparatives",
+    "topic_en": "Comparatives and superlatives",
+    "topic_ru": "Степени сравнения",
+    "type": "mcq",
+    "q": "My new phone is ___ than my old one.",
+    "options": [
+      "faster",
+      "more fast",
+      "fastest",
+      "the faster"
+    ],
+    "answer": 0,
+    "explain_ru": "Короткое прилагательное + than — faster."
+  },
+  {
+    "id": "TG-A2-34",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "tg-a2-too-enough",
+    "topic_en": "Too / enough",
+    "topic_ru": "too / enough",
+    "type": "mcq",
+    "q": "I can't buy these trainers. They're ___ expensive.",
+    "options": [
+      "enough",
+      "too",
+      "very much",
+      "so much"
+    ],
+    "answer": 1,
+    "explain_ru": "Слишком (дорого, поэтому не могу) — too."
+  },
+  {
+    "id": "TG-A2-35",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "tg-a2-adverbs",
+    "topic_en": "Adverbs of manner",
+    "topic_ru": "Наречия образа действия",
+    "type": "mcq",
+    "q": "Please ride your bike ___. The road is wet.",
+    "options": [
+      "careful",
+      "care",
+      "carefully",
+      "more careful"
+    ],
+    "answer": 2,
+    "explain_ru": "Как ехать? — наречие: carefully."
+  },
+  {
+    "id": "TG-A2-36",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "tg-a2-prep-movement",
+    "topic_en": "Prepositions of movement",
+    "topic_ru": "Предлоги движения",
+    "type": "mcq",
+    "q": "We walked ___ the bridge to the other side of the river.",
+    "options": [
+      "through",
+      "into",
+      "under",
+      "across"
+    ],
+    "answer": 3,
+    "explain_ru": "Через мост на другую сторону — across."
+  },
+  {
+    "id": "TG-A2-37",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "tg-a2-comparatives",
+    "topic_en": "Comparatives and superlatives",
+    "topic_ru": "Степени сравнения",
+    "type": "mcq",
+    "q": "This is ___ game I've ever played!",
+    "options": [
+      "the best",
+      "the better",
+      "best",
+      "the most good"
+    ],
+    "answer": 0,
+    "explain_ru": "Превосходная степень от good — the best."
+  },
+  {
+    "id": "TG-A2-38",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "tg-a2-too-enough",
+    "topic_en": "Too / enough",
+    "topic_ru": "too / enough",
+    "type": "mcq",
+    "q": "I'm not old ___ to watch this film. It's 16+.",
+    "options": [
+      "too",
+      "enough",
+      "very",
+      "so"
+    ],
+    "answer": 1,
+    "explain_ru": "Недостаточно взрослый — not old enough (enough после прилагательного)."
+  },
+  {
+    "id": "TG-A2-39",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "tg-a2-comparatives",
+    "topic_en": "Comparatives and superlatives",
+    "topic_ru": "Степени сравнения",
+    "type": "brackets",
+    "q": "Maths is hard, but physics is even ___ (difficult).",
+    "accept": [
+      "more difficult"
+    ],
+    "explain_ru": "Длинное прилагательное — more difficult."
+  },
+  {
+    "id": "TG-A2-40",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 3,
+    "topic_id": "tg-a2-adverbs",
+    "topic_en": "Adverbs of manner",
+    "topic_ru": "Наречия образа действия",
+    "type": "mcq",
+    "q": "She speaks English so ___ that people think she's from London.",
+    "options": [
+      "good",
+      "better",
+      "well",
+      "nicely"
+    ],
+    "answer": 2,
+    "explain_ru": "Speak — глагол, нужно наречие: well (не good)."
+  },
+  {
+    "id": "TG-A2-41",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "tg-a2-obligation",
+    "topic_en": "Must / have to / mustn't",
+    "topic_ru": "must / have to / mustn't",
+    "type": "mcq",
+    "q": "You ___ use your phone during the test. It's against the rules.",
+    "options": [
+      "don't have to",
+      "must",
+      "should",
+      "mustn't"
+    ],
+    "answer": 3,
+    "explain_ru": "Запрещено правилами — mustn't."
+  },
+  {
+    "id": "TG-A2-42",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "tg-a2-should",
+    "topic_en": "Should",
+    "topic_ru": "should",
+    "type": "mcq",
+    "q": "You look tired. You ___ go to bed earlier.",
+    "options": [
+      "should",
+      "must to",
+      "have",
+      "should to"
+    ],
+    "answer": 0,
+    "explain_ru": "Совет — should + глагол без to."
+  },
+  {
+    "id": "TG-A2-43",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "tg-a2-obligation",
+    "topic_en": "Must / have to / mustn't",
+    "topic_ru": "must / have to / mustn't",
+    "type": "mcq",
+    "q": "Tomorrow is Saturday, so I ___ get up early. I can sleep!",
+    "options": [
+      "mustn't",
+      "don't have to",
+      "must",
+      "have to"
+    ],
+    "answer": 1,
+    "explain_ru": "Нет необходимости — don't have to."
+  },
+  {
+    "id": "TG-A2-44",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "tg-a2-obligation",
+    "topic_en": "Must / have to / mustn't",
+    "topic_ru": "must / have to / mustn't",
+    "type": "gap",
+    "q": "My sister ___ to wear a uniform at her school, but I don't.",
+    "accept": [
+      "has"
+    ],
+    "explain_ru": "have to с she — has to.",
+    "hint_ru": "форма глагола have"
+  },
+  {
+    "id": "TG-A2-45",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "tg-a2-should",
+    "topic_en": "Should",
+    "topic_ru": "should",
+    "type": "mcq",
+    "q": "___ I tell my parents about the bad mark? What do you think?",
+    "options": [
+      "Must",
+      "Have",
+      "Should",
+      "Do"
+    ],
+    "answer": 2,
+    "explain_ru": "Просим совета — Should I…?"
+  },
+  {
+    "id": "TG-A2-46",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "tg-a2-obligation",
+    "topic_en": "Must / have to / mustn't",
+    "topic_ru": "must / have to / mustn't",
+    "type": "mcq",
+    "q": "Yesterday I ___ stay at school until 5 because of an extra lesson.",
+    "options": [
+      "must",
+      "have to",
+      "musted",
+      "had to"
+    ],
+    "answer": 3,
+    "explain_ru": "Обязанность в прошлом — had to (у must нет прошедшей формы)."
+  },
+  {
+    "id": "TG-A2-47",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 3,
+    "topic_id": "tg-a2-should",
+    "topic_en": "Should",
+    "topic_ru": "should",
+    "type": "gap",
+    "q": "You ___ eat so much sugar. It's bad for your teeth.",
+    "accept": [
+      "shouldn't",
+      "should not"
+    ],
+    "explain_ru": "Совет «не стоит» — shouldn't.",
+    "hint_ru": "совет (не приказ), с отрицанием"
+  },
+  {
+    "id": "TG-A2-48",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 3,
+    "topic_id": "tg-a2-obligation",
+    "topic_en": "Must / have to / mustn't",
+    "topic_ru": "must / have to / mustn't",
+    "type": "mcq",
+    "q": "You ___ bring food on the trip — lunch is included.",
+    "options": [
+      "don't have to",
+      "mustn't",
+      "haven't to",
+      "don't must"
+    ],
+    "answer": 0,
+    "explain_ru": "Не нужно (но можно) — don't have to; mustn't значит «нельзя»."
+  },
+  {
+    "id": "TG-A2-49",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "tg-a2-quantifiers",
+    "topic_en": "Quantifiers",
+    "topic_ru": "much / many / a few / a little",
+    "type": "mcq",
+    "q": "How ___ money have you got?",
+    "options": [
+      "many",
+      "much",
+      "lot",
+      "few"
+    ],
+    "answer": 1,
+    "explain_ru": "Money — неисчисляемое: how much."
+  },
+  {
+    "id": "TG-A2-50",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "tg-a2-indefinite",
+    "topic_en": "Indefinite pronouns",
+    "topic_ru": "something / anyone / nobody",
+    "type": "mcq",
+    "q": "I'm bored. There's ___ to do here!",
+    "options": [
+      "anything",
+      "something",
+      "nothing",
+      "nobody"
+    ],
+    "answer": 2,
+    "explain_ru": "Скучно — нечего делать: nothing."
+  },
+  {
+    "id": "TG-A2-51",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "tg-a2-reflexive",
+    "topic_en": "Reflexive pronouns",
+    "topic_ru": "Возвратные местоимения",
+    "type": "mcq",
+    "q": "Be careful with that knife! Don't cut ___!",
+    "options": [
+      "you",
+      "your",
+      "yours",
+      "yourself"
+    ],
+    "answer": 3,
+    "explain_ru": "Действие на самого себя — yourself."
+  },
+  {
+    "id": "TG-A2-52",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "tg-a2-quantifiers",
+    "topic_en": "Quantifiers",
+    "topic_ru": "much / many / a few / a little",
+    "type": "mcq",
+    "q": "There are only ___ people in the cinema. It's almost empty.",
+    "options": [
+      "a few",
+      "a little",
+      "much",
+      "a lot"
+    ],
+    "answer": 0,
+    "explain_ru": "Немного (исчисляемые) — a few."
+  },
+  {
+    "id": "TG-A2-53",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "tg-a2-indefinite",
+    "topic_en": "Indefinite pronouns",
+    "topic_ru": "something / anyone / nobody",
+    "type": "gap",
+    "q": "Is there ___ in the bathroom? The door is locked.",
+    "accept": [
+      "anyone",
+      "anybody",
+      "someone",
+      "somebody"
+    ],
+    "explain_ru": "В вопросе обычно anyone / anybody.",
+    "hint_ru": "неопределённое местоимение"
+  },
+  {
+    "id": "TG-A2-54",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "tg-a2-quantifiers",
+    "topic_en": "Quantifiers",
+    "topic_ru": "much / many / a few / a little",
+    "type": "mcq",
+    "q": "Can I have ___ milk in my tea, please? Just a bit.",
+    "options": [
+      "a few",
+      "a little",
+      "many",
+      "few"
+    ],
+    "answer": 1,
+    "explain_ru": "Немного (неисчисляемое) — a little."
+  },
+  {
+    "id": "TG-A2-55",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 3,
+    "topic_id": "tg-a2-reflexive",
+    "topic_en": "Reflexive pronouns",
+    "topic_ru": "Возвратные местоимения",
+    "type": "mcq",
+    "q": "We made this video ___ — no help from adults!",
+    "options": [
+      "us",
+      "our",
+      "ourselves",
+      "ours"
+    ],
+    "answer": 2,
+    "explain_ru": "Сами — ourselves."
+  },
+  {
+    "id": "TG-A2-56",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 3,
+    "topic_id": "tg-a2-indefinite",
+    "topic_en": "Indefinite pronouns",
+    "topic_ru": "something / anyone / nobody",
+    "type": "mcq",
+    "q": "I've looked ___ for my keys, but I can't find them.",
+    "options": [
+      "anywhere",
+      "somewhere",
+      "nowhere",
+      "everywhere"
+    ],
+    "answer": 3,
+    "explain_ru": "Искал везде — everywhere."
+  },
+  {
+    "id": "TV-A2-01",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "tv-a2-gadgets",
+    "topic_en": "Gadgets",
+    "topic_ru": "Гаджеты",
+    "type": "mcq",
+    "q": "My phone is almost dead. Where's my ___?",
+    "options": [
+      "charger",
+      "keyboard",
+      "speaker",
+      "screen"
+    ],
+    "answer": 0,
+    "explain_ru": "Телефон разряжается — нужна зарядка: charger.",
+    "group": "t-a2-v1"
+  },
+  {
+    "id": "TV-A2-02",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "tv-a2-shopping",
+    "topic_en": "Shopping and pocket money",
+    "topic_ru": "Покупки и карманные деньги",
+    "type": "mcq",
+    "q": "These jeans are too small. Can I try a bigger ___?",
+    "options": [
+      "price",
+      "size",
+      "shape",
+      "number"
+    ],
+    "answer": 1,
+    "explain_ru": "Размер одежды — size.",
+    "group": "t-a2-v1"
+  },
+  {
+    "id": "TV-A2-03",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "tv-a2-sport",
+    "topic_en": "Sport",
+    "topic_ru": "Спорт",
+    "type": "mcq",
+    "q": "In football, only the ___ can touch the ball with their hands.",
+    "options": [
+      "referee",
+      "coach",
+      "goalkeeper",
+      "fan"
+    ],
+    "answer": 2,
+    "explain_ru": "Руками может играть только вратарь — goalkeeper.",
+    "group": "t-a2-v1"
+  },
+  {
+    "id": "TV-A2-04",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "tv-a2-health",
+    "topic_en": "Health",
+    "topic_ru": "Здоровье",
+    "type": "mcq",
+    "q": "I've got a ___. My head really hurts.",
+    "options": [
+      "stomachache",
+      "cold",
+      "temperature",
+      "headache"
+    ],
+    "answer": 3,
+    "explain_ru": "Болит голова — headache.",
+    "group": "t-a2-v1"
+  },
+  {
+    "id": "TV-A2-05",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "tv-a2-games",
+    "topic_en": "Free time and video games",
+    "topic_ru": "Свободное время и компьютерные игры",
+    "type": "mcq",
+    "q": "I can't finish this level! Every time I lose all my ___ and have to start again.",
+    "options": [
+      "lives",
+      "points",
+      "players",
+      "rules"
+    ],
+    "answer": 0,
+    "explain_ru": "В игре «жизни» — lives.",
+    "group": "t-a2-v1"
+  },
+  {
+    "id": "TV-A2-06",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "tv-a2-holidays",
+    "topic_en": "Holidays and travel",
+    "topic_ru": "Каникулы и путешествия",
+    "type": "mcq",
+    "q": "We slept in a tent at a ___ near the lake.",
+    "options": [
+      "hotel",
+      "campsite",
+      "airport",
+      "cottage"
+    ],
+    "answer": 1,
+    "explain_ru": "Палатка — кемпинг: campsite.",
+    "group": "t-a2-v1"
+  },
+  {
+    "id": "TV-A2-07",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "tv-a2-school-life",
+    "topic_en": "School life and rules",
+    "topic_ru": "Школьная жизнь и правила",
+    "type": "gap",
+    "q": "At our school you can't wear jeans. We have to wear a school ___.",
+    "accept": [
+      "uniform"
+    ],
+    "explain_ru": "Школьная форма — school uniform.",
+    "hint_ru": "одно слово",
+    "group": "t-a2-v1"
+  },
+  {
+    "id": "TV-A2-08",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 3,
+    "topic_id": "tv-a2-shopping",
+    "topic_en": "Shopping and pocket money",
+    "topic_ru": "Покупки и карманные деньги",
+    "type": "mcq",
+    "q": "I've spent all my pocket money, so now I'm ___ for a new game.",
+    "options": [
+      "paying back",
+      "spending",
+      "saving up",
+      "buying in"
+    ],
+    "answer": 2,
+    "explain_ru": "Копить на что-то — save up for.",
+    "group": "t-a2-v1"
+  },
+  {
+    "id": "TV-A2-09",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "tv-a2-collocations",
+    "topic_en": "Collocations and phrasal verbs",
+    "topic_ru": "Сочетания и фразовые глаголы",
+    "type": "mcq",
+    "q": "Can you ___ the music down? I'm on the phone!",
+    "options": [
+      "make",
+      "put",
+      "get",
+      "turn"
+    ],
+    "answer": 3,
+    "explain_ru": "Сделать тише — turn down.",
+    "group": "t-a2-v2"
+  },
+  {
+    "id": "TV-A2-10",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "tv-a2-collocations",
+    "topic_en": "Collocations and phrasal verbs",
+    "topic_ru": "Сочетания и фразовые глаголы",
+    "type": "mcq",
+    "q": "We go to school on ___ because it's very close.",
+    "options": [
+      "foot",
+      "feet",
+      "walk",
+      "legs"
+    ],
+    "answer": 0,
+    "explain_ru": "Пешком — on foot.",
+    "group": "t-a2-v2"
+  },
+  {
+    "id": "TV-A2-11",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "tv-a2-collocations",
+    "topic_en": "Collocations and phrasal verbs",
+    "topic_ru": "Сочетания и фразовые глаголы",
+    "type": "mcq",
+    "q": "Oops! I ___ a mistake in my test.",
+    "options": [
+      "did",
+      "made",
+      "took",
+      "had"
+    ],
+    "answer": 1,
+    "explain_ru": "Сделать ошибку — make a mistake.",
+    "group": "t-a2-v2"
+  },
+  {
+    "id": "TV-A2-12",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "tv-a2-collocations",
+    "topic_en": "Collocations and phrasal verbs",
+    "topic_ru": "Сочетания и фразовые глаголы",
+    "type": "gap",
+    "q": "Can you pick me ___ from the station at 6?",
+    "accept": [
+      "up"
+    ],
+    "explain_ru": "Забрать кого-то — pick up.",
+    "hint_ru": "одно слово",
+    "group": "t-a2-v2"
+  },
+  {
+    "id": "TV-A2-13",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "tv-a2-collocations",
+    "topic_en": "Collocations and phrasal verbs",
+    "topic_ru": "Сочетания и фразовые глаголы",
+    "type": "mcq",
+    "q": "Don't give ___! You can do it!",
+    "options": [
+      "on",
+      "away",
+      "up",
+      "off"
+    ],
+    "answer": 2,
+    "explain_ru": "Сдаваться — give up.",
+    "group": "t-a2-v2"
+  },
+  {
+    "id": "TV-A2-14",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "tv-a2-collocations",
+    "topic_en": "Collocations and phrasal verbs",
+    "topic_ru": "Сочетания и фразовые глаголы",
+    "type": "mcq",
+    "q": "I'm going to ___ my best in the competition tomorrow.",
+    "options": [
+      "make",
+      "take",
+      "have",
+      "do"
+    ],
+    "answer": 3,
+    "explain_ru": "Постараться — do your best.",
+    "group": "t-a2-v2"
+  },
+  {
+    "id": "TV-A2-15",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "tv-a2-collocations",
+    "topic_en": "Collocations and phrasal verbs",
+    "topic_ru": "Сочетания и фразовые глаголы",
+    "type": "mcq",
+    "q": "Can you ___ after my hamster while I'm on holiday?",
+    "options": [
+      "look",
+      "take",
+      "watch",
+      "care"
+    ],
+    "answer": 0,
+    "explain_ru": "Присматривать — look after.",
+    "group": "t-a2-v2"
+  },
+  {
+    "id": "TV-A2-16",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 3,
+    "topic_id": "tv-a2-collocations",
+    "topic_en": "Collocations and phrasal verbs",
+    "topic_ru": "Сочетания и фразовые глаголы",
+    "type": "mcq",
+    "q": "We ran ___ of milk, so I had cereal with juice. Yuck!",
+    "options": [
+      "off",
+      "out",
+      "away",
+      "down"
+    ],
+    "answer": 1,
+    "explain_ru": "Закончилось — run out of.",
+    "group": "t-a2-v2"
+  },
+  {
+    "id": "TV-A2-17",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "tv-a2-feelings",
+    "topic_en": "Feelings and personality",
+    "topic_ru": "Чувства и характер",
+    "type": "mcq",
+    "q": "I've got nothing to do. I'm so ___.",
+    "options": [
+      "boring",
+      "excited",
+      "bored",
+      "angry"
+    ],
+    "answer": 2,
+    "explain_ru": "Мне скучно — bored (boring — «скучный» о чём-то).",
+    "group": "t-a2-v3"
+  },
+  {
+    "id": "TV-A2-18",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "tv-a2-feelings",
+    "topic_en": "Feelings and personality",
+    "topic_ru": "Чувства и характер",
+    "type": "mcq",
+    "q": "Tomorrow we're going to a theme park! I'm so ___!",
+    "options": [
+      "exciting",
+      "bored",
+      "worried",
+      "excited"
+    ],
+    "answer": 3,
+    "explain_ru": "Я в предвкушении — excited (exciting — «захватывающий» о чём-то).",
+    "group": "t-a2-v3"
+  },
+  {
+    "id": "TV-A2-19",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "tv-a2-feelings",
+    "topic_en": "Feelings and personality",
+    "topic_ru": "Чувства и характер",
+    "type": "mcq",
+    "q": "My friend always helps people. She's very ___.",
+    "options": [
+      "kind",
+      "rude",
+      "lazy",
+      "shy"
+    ],
+    "answer": 0,
+    "explain_ru": "Всегда помогает — добрая: kind.",
+    "group": "t-a2-v3"
+  },
+  {
+    "id": "TV-A2-20",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "tv-a2-feelings",
+    "topic_en": "Feelings and personality",
+    "topic_ru": "Чувства и характер",
+    "type": "gap",
+    "q": "He never says please or thank you. He's so ___!",
+    "accept": [
+      "rude",
+      "impolite"
+    ],
+    "explain_ru": "Не говорит «пожалуйста» и «спасибо» — грубый: rude.",
+    "hint_ru": "одно прилагательное",
+    "group": "t-a2-v3"
+  },
+  {
+    "id": "TV-A2-21",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "tv-a2-feelings",
+    "topic_en": "Feelings and personality",
+    "topic_ru": "Чувства и характер",
+    "type": "mcq",
+    "q": "I'm a bit ___ about my exam tomorrow. I hope it goes well.",
+    "options": [
+      "bored",
+      "nervous",
+      "relaxed",
+      "proud"
+    ],
+    "answer": 1,
+    "explain_ru": "Волнуюсь перед экзаменом — nervous.",
+    "group": "t-a2-v3"
+  },
+  {
+    "id": "TV-A2-22",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "tv-a2-feelings",
+    "topic_en": "Feelings and personality",
+    "topic_ru": "Чувства и характер",
+    "type": "mcq",
+    "q": "Tom doesn't like talking to new people. He's quite ___.",
+    "options": [
+      "friendly",
+      "noisy",
+      "shy",
+      "brave"
+    ],
+    "answer": 2,
+    "explain_ru": "Стесняется новых людей — shy.",
+    "group": "t-a2-v3"
+  },
+  {
+    "id": "TV-A2-23",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "tv-a2-feelings",
+    "topic_en": "Feelings and personality",
+    "topic_ru": "Чувства и характер",
+    "type": "mcq",
+    "q": "I was so ___ when I fell over in front of the whole class!",
+    "options": [
+      "embarrassing",
+      "proud",
+      "relaxed",
+      "embarrassed"
+    ],
+    "answer": 3,
+    "explain_ru": "Мне было стыдно — embarrassed (embarrassing — «неловкий» о ситуации).",
+    "group": "t-a2-v3"
+  },
+  {
+    "id": "TV-A2-24",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 3,
+    "topic_id": "tv-a2-feelings",
+    "topic_en": "Feelings and personality",
+    "topic_ru": "Чувства и характер",
+    "type": "mcq",
+    "q": "My little brother always wants to be first and gets angry when he loses. He's very ___.",
+    "options": [
+      "competitive",
+      "generous",
+      "patient",
+      "calm"
+    ],
+    "answer": 0,
+    "explain_ru": "Всегда хочет выигрывать — competitive.",
+    "group": "t-a2-v3"
+  },
+  {
+    "id": "TV-A2-25",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "tv-a2-confusing",
+    "topic_en": "Confusing words",
+    "topic_ru": "Похожие слова",
+    "type": "mcq",
+    "q": "Can I ___ your pen? I left mine at home.",
+    "options": [
+      "lend",
+      "borrow",
+      "give",
+      "keep"
+    ],
+    "answer": 1,
+    "explain_ru": "Взять на время у кого-то — borrow.",
+    "group": "t-a2-v4"
+  },
+  {
+    "id": "TV-A2-26",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "tv-a2-confusing",
+    "topic_en": "Confusing words",
+    "topic_ru": "Похожие слова",
+    "type": "mcq",
+    "q": "Yes! Our team ___ the match!",
+    "options": [
+      "beat",
+      "earned",
+      "won",
+      "gained"
+    ],
+    "answer": 2,
+    "explain_ru": "Выиграть матч — win (won); beat — победить кого-то.",
+    "group": "t-a2-v4"
+  },
+  {
+    "id": "TV-A2-27",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "tv-a2-confusing",
+    "topic_en": "Confusing words",
+    "topic_ru": "Похожие слова",
+    "type": "mcq",
+    "q": "How was your school ___ to the museum?",
+    "options": [
+      "travel",
+      "voyage",
+      "way",
+      "trip"
+    ],
+    "answer": 3,
+    "explain_ru": "Поездка, экскурсия — trip.",
+    "group": "t-a2-v4"
+  },
+  {
+    "id": "TV-A2-28",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "tv-a2-confusing",
+    "topic_en": "Confusing words",
+    "topic_ru": "Похожие слова",
+    "type": "mcq",
+    "q": "Can you ___ me your charger? Mine is broken.",
+    "options": [
+      "lend",
+      "borrow",
+      "take",
+      "rent"
+    ],
+    "answer": 0,
+    "explain_ru": "Дать на время кому-то — lend.",
+    "group": "t-a2-v4"
+  },
+  {
+    "id": "TV-A2-29",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "tv-a2-confusing",
+    "topic_en": "Confusing words",
+    "topic_ru": "Похожие слова",
+    "type": "mcq",
+    "q": "We ___ the other team 4–0!",
+    "options": [
+      "won",
+      "beat",
+      "scored",
+      "gained"
+    ],
+    "answer": 1,
+    "explain_ru": "Победить соперника — beat the other team.",
+    "group": "t-a2-v4"
+  },
+  {
+    "id": "TV-A2-30",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "tv-a2-confusing",
+    "topic_en": "Confusing words",
+    "topic_ru": "Похожие слова",
+    "type": "mcq",
+    "q": "I ___ my keys at home, so I couldn't get in.",
+    "options": [
+      "forgot",
+      "lost",
+      "left",
+      "missed"
+    ],
+    "answer": 2,
+    "explain_ru": "Оставить где-то — leave (left); forget не используют с местом.",
+    "group": "t-a2-v4"
+  },
+  {
+    "id": "TV-A2-31",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "tv-a2-confusing",
+    "topic_en": "Confusing words",
+    "topic_ru": "Похожие слова",
+    "type": "mcq",
+    "q": "I often ___ my bus because I get up late.",
+    "options": [
+      "lose",
+      "lack",
+      "fail",
+      "miss"
+    ],
+    "answer": 3,
+    "explain_ru": "Опоздать на автобус — miss the bus.",
+    "group": "t-a2-v4"
+  },
+  {
+    "id": "TV-A2-32",
+    "skill": "vocabulary",
+    "level": "A2",
+    "band": 3,
+    "topic_id": "tv-a2-confusing",
+    "topic_en": "Confusing words",
+    "topic_ru": "Похожие слова",
+    "type": "mcq",
+    "q": "My parents ___ me go to the concert alone!",
+    "options": [
+      "let",
+      "made",
+      "allowed",
+      "agreed"
+    ],
+    "answer": 0,
+    "explain_ru": "Разрешить — let somebody do (allow требует to: allowed me to go).",
+    "group": "t-a2-v4"
+  }
+]

@@ -93,5 +93,395 @@
         "explain_ru": "«play games in the garden»."
       }
     ]
+  },
+  {
+    "id": "TL-A2-01",
+    "skill": "listening",
+    "level": "A2",
+    "band": 1,
+    "topic_en": "Dialogue: going to the cinema",
+    "topic_ru": "Диалог: идём в кино",
+    "type": "listening",
+    "title": "Saturday at the cinema",
+    "situation_ru": "Бен и Хлоя договариваются сходить в кино.",
+    "situation_en": "Two friends, Ben and Chloe, are making plans to go to the cinema.",
+    "speakers": [
+      {
+        "name": "Ben",
+        "gender": "male",
+        "accent": "British"
+      },
+      {
+        "name": "Chloe",
+        "gender": "female",
+        "accent": "British"
+      }
+    ],
+    "script": "Ben: Hi Chloe! Do you want to see the new Space Cats film on Saturday?\nChloe: Yes! But not in the morning. I've got a swimming lesson until twelve.\nBen: OK. There's a show at two fifteen and one at five thirty.\nChloe: Let's go to the earlier one. My mum wants me home for dinner.\nBen: Cool. Tickets are eight pounds, but with a student card they're six.\nChloe: Great, I've got my card. Shall we get popcorn?\nBen: It's really expensive there. I'll bring some snacks from home.\nChloe: Good idea. Where shall we meet?\nBen: In front of the cinema, ten minutes before the start.\nChloe: Perfect. See you on Saturday!",
+    "plays": 2,
+    "words": 104,
+    "duration_sec": 54,
+    "questions": [
+      {
+        "id": "TL-A2-01-q1",
+        "q": "What does Chloe do on Saturday morning?",
+        "options": [
+          "She has a swimming lesson",
+          "She goes to the cinema",
+          "She has lunch with her mum",
+          "She buys tickets"
+        ],
+        "answer": 0,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "«I've got a swimming lesson until twelve»."
+      },
+      {
+        "id": "TL-A2-01-q2",
+        "q": "What time will they see the film?",
+        "options": [
+          "At 12:00",
+          "At 2:15",
+          "At 5:30",
+          "At 2:50"
+        ],
+        "answer": 1,
+        "checks": "number-time-place",
+        "topic_id": "l-number-time-place",
+        "explain_ru": "«Let's go to the earlier one» — это 2:15."
+      },
+      {
+        "id": "TL-A2-01-q3",
+        "q": "How much will Chloe pay for her ticket?",
+        "options": [
+          "£8",
+          "£5",
+          "£6",
+          "£16"
+        ],
+        "answer": 2,
+        "checks": "number-time-place",
+        "topic_id": "l-number-time-place",
+        "explain_ru": "Со студенческой картой — six pounds; карта у Хлои есть."
+      },
+      {
+        "id": "TL-A2-01-q4",
+        "q": "What will Ben bring?",
+        "options": [
+          "Popcorn from the cinema",
+          "Chloe's student card",
+          "Drinks for everyone",
+          "Snacks from home"
+        ],
+        "answer": 3,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "«I'll bring some snacks from home»."
+      },
+      {
+        "id": "TL-A2-01-q5",
+        "q": "Where will they meet?",
+        "options": [
+          "Outside the cinema",
+          "At the swimming pool",
+          "At Chloe's house",
+          "At the bus stop"
+        ],
+        "answer": 0,
+        "checks": "number-time-place",
+        "topic_id": "l-number-time-place",
+        "explain_ru": "«In front of the cinema»."
+      }
+    ]
+  },
+  {
+    "id": "TL-A2-02",
+    "skill": "listening",
+    "level": "A2",
+    "band": 1,
+    "topic_en": "School radio: news",
+    "topic_ru": "Школьное радио: новости",
+    "type": "listening",
+    "title": "School Radio",
+    "situation_ru": "Эми из 8C рассказывает школьные новости недели по школьному радио.",
+    "situation_en": "Amy from class 8C reads the weekly news on the school radio.",
+    "speakers": [
+      {
+        "name": "Amy",
+        "gender": "female",
+        "accent": "American"
+      }
+    ],
+    "script": "Amy: Good morning, everyone, and welcome to School Radio! I'm Amy from class 8C. Here's the news for this week. [pause 1s] First, the school talent show is on Thursday at four o'clock in the main hall. If you want to sing, dance or do magic tricks, write your name on the list outside room twelve before Wednesday. [pause 1s] Second, the library has twenty new books, and most of them are comics — so no excuses! [pause 1s] And finally, some bad news: the basketball court is closed this week because they're painting it. PE lessons will be in the gym. That's all from me. Have a great week!",
+    "plays": 2,
+    "words": 103,
+    "duration_sec": 42,
+    "questions": [
+      {
+        "id": "TL-A2-02-q1",
+        "q": "When is the talent show?",
+        "options": [
+          "On Wednesday at 4",
+          "On Thursday at 4",
+          "On Thursday at 12",
+          "On Friday at 4"
+        ],
+        "answer": 1,
+        "checks": "number-time-place",
+        "topic_id": "l-number-time-place",
+        "explain_ru": "«on Thursday at four o'clock»."
+      },
+      {
+        "id": "TL-A2-02-q2",
+        "q": "Where should you write your name for the show?",
+        "options": [
+          "In the library",
+          "In the main hall",
+          "On a list outside room 12",
+          "On the school website"
+        ],
+        "answer": 2,
+        "checks": "number-time-place",
+        "topic_id": "l-number-time-place",
+        "explain_ru": "«on the list outside room twelve»."
+      },
+      {
+        "id": "TL-A2-02-q3",
+        "q": "What is special about the new library books?",
+        "options": [
+          "They are about magic",
+          "There are more than 200 of them",
+          "They are for teachers",
+          "Most of them are comics"
+        ],
+        "answer": 3,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "«most of them are comics»."
+      },
+      {
+        "id": "TL-A2-02-q4",
+        "q": "Why is the basketball court closed?",
+        "options": [
+          "It's being painted",
+          "It's raining",
+          "It's broken",
+          "There's a show there"
+        ],
+        "answer": 0,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "«because they're painting it»."
+      },
+      {
+        "id": "TL-A2-02-q5",
+        "q": "Where will PE lessons be this week?",
+        "options": [
+          "On the basketball court",
+          "In the gym",
+          "In the main hall",
+          "In the park"
+        ],
+        "answer": 1,
+        "checks": "number-time-place",
+        "topic_id": "l-number-time-place",
+        "explain_ru": "«PE lessons will be in the gym»."
+      }
+    ]
+  },
+  {
+    "id": "TL-A2-03",
+    "skill": "listening",
+    "level": "A2",
+    "band": 2,
+    "topic_en": "Dialogue: buying headphones",
+    "topic_ru": "Диалог: покупаем наушники",
+    "type": "listening",
+    "title": "New headphones",
+    "situation_ru": "Лили выбирает беспроводные наушники в магазине.",
+    "situation_en": "Lily is buying wireless headphones in a shop.",
+    "speakers": [
+      {
+        "name": "Assistant",
+        "gender": "male",
+        "accent": "American"
+      },
+      {
+        "name": "Lily",
+        "gender": "female",
+        "accent": "American"
+      }
+    ],
+    "script": "Assistant: Hi there, can I help you?\nLily: Yes, I'm looking for some wireless headphones. Something not too expensive.\nAssistant: OK. These black ones are really popular. They're forty-five dollars.\nLily: Hmm, that's a bit too much. I've only got thirty-five.\nAssistant: Then try these. They're thirty dollars, and the battery lasts twenty hours.\nLily: Twenty hours? That's longer than my old ones. What colours have you got?\nAssistant: White, pink and green.\nLily: Green, please! All my friends have got white ones, and I want to be different.\nAssistant: Good choice. Do you need a bag?\nLily: No, thanks. I'll put them in my backpack.",
+    "plays": 2,
+    "words": 96,
+    "duration_sec": 50,
+    "questions": [
+      {
+        "id": "TL-A2-03-q1",
+        "q": "How much money has Lily got?",
+        "options": [
+          "$45",
+          "$30",
+          "$35",
+          "$25"
+        ],
+        "answer": 2,
+        "checks": "number-time-place",
+        "topic_id": "l-number-time-place",
+        "explain_ru": "«I've only got thirty-five»."
+      },
+      {
+        "id": "TL-A2-03-q2",
+        "q": "Why doesn't Lily buy the black headphones?",
+        "options": [
+          "She doesn't like the colour",
+          "The battery is bad",
+          "They aren't wireless",
+          "They cost too much"
+        ],
+        "answer": 3,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "«that's a bit too much»."
+      },
+      {
+        "id": "TL-A2-03-q3",
+        "q": "How long does the battery of the cheaper headphones last?",
+        "options": [
+          "20 hours",
+          "30 hours",
+          "45 hours",
+          "12 hours"
+        ],
+        "answer": 0,
+        "checks": "number-time-place",
+        "topic_id": "l-number-time-place",
+        "explain_ru": "«the battery lasts twenty hours»."
+      },
+      {
+        "id": "TL-A2-03-q4",
+        "q": "Which colour does Lily choose?",
+        "options": [
+          "White",
+          "Green",
+          "Pink",
+          "Black"
+        ],
+        "answer": 1,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "«Green, please!»"
+      },
+      {
+        "id": "TL-A2-03-q5",
+        "q": "Why does Lily choose that colour?",
+        "options": [
+          "It's the cheapest",
+          "It's her school's colour",
+          "She wants to look different from her friends",
+          "Her best friend has got the same ones"
+        ],
+        "answer": 2,
+        "checks": "speaker's attitude",
+        "topic_id": "l-speakers-attitude",
+        "explain_ru": "«All my friends have got white ones, and I want to be different»."
+      }
+    ]
+  },
+  {
+    "id": "TL-A2-04",
+    "skill": "listening",
+    "level": "A2",
+    "band": 2,
+    "topic_en": "Voice message: a camping trip",
+    "topic_ru": "Голосовое: поход с палатками",
+    "type": "listening",
+    "title": "The camping trip",
+    "situation_ru": "Джек рассказывает другу в голосовом сообщении, как его семья ездила в кемпинг.",
+    "situation_en": "Jack leaves his friend a voice message about his family's camping trip.",
+    "speakers": [
+      {
+        "name": "Jack",
+        "gender": "male",
+        "accent": "British"
+      }
+    ],
+    "script": "Jack: Hey, it's Jack. You asked about our camping trip, so here's the story. [pause 1s] We arrived at the campsite on Friday evening, and it was raining. Dad couldn't put up the tent, so we slept in the car! [pause 1s] On Saturday the sun came out, and we went kayaking on the lake. My sister fell in the water, but she was OK — she was wearing a life jacket. [pause 1s] In the evening we cooked sausages on a fire. They were black on the outside, but they tasted amazing. We're going again in August. You should come with us!",
+    "plays": 2,
+    "words": 96,
+    "duration_sec": 44,
+    "questions": [
+      {
+        "id": "TL-A2-04-q1",
+        "q": "Where did Jack's family sleep on Friday?",
+        "options": [
+          "In a tent",
+          "In a hotel",
+          "At home",
+          "In the car"
+        ],
+        "answer": 3,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "«we slept in the car»."
+      },
+      {
+        "id": "TL-A2-04-q2",
+        "q": "What was the weather like on Saturday?",
+        "options": [
+          "Sunny",
+          "Rainy",
+          "Windy",
+          "Snowy"
+        ],
+        "answer": 0,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "«On Saturday the sun came out»."
+      },
+      {
+        "id": "TL-A2-04-q3",
+        "q": "What happened to Jack's sister?",
+        "options": [
+          "She got lost",
+          "She fell into the lake",
+          "She hurt her leg",
+          "She lost her life jacket"
+        ],
+        "answer": 1,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "«My sister fell in the water»."
+      },
+      {
+        "id": "TL-A2-04-q4",
+        "q": "What does Jack say about the sausages?",
+        "options": [
+          "They were too small",
+          "They weren't cooked",
+          "They tasted great",
+          "Nobody ate them"
+        ],
+        "answer": 2,
+        "checks": "speaker's attitude",
+        "topic_id": "l-speakers-attitude",
+        "explain_ru": "«they tasted amazing»."
+      },
+      {
+        "id": "TL-A2-04-q5",
+        "q": "What does Jack want his friend to do?",
+        "options": [
+          "Call him back",
+          "Buy a tent",
+          "Send him photos of a summer holiday",
+          "Come camping in August"
+        ],
+        "answer": 3,
+        "checks": "inference",
+        "topic_id": "l-inference",
+        "explain_ru": "«We're going again in August. You should come with us!»"
+      }
+    ]
   }
 ]

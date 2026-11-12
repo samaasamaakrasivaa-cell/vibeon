@@ -130,7 +130,7 @@
         "q": "Which sport does Leo love?",
         "options": [
           "Football",
-          "Tennis",
+          "Table tennis",
           "Swimming",
           "Basketball"
         ],
@@ -166,6 +166,346 @@
         "checks": "main idea",
         "topic_id": "r-main-idea",
         "explain_ru": "«Can you show me where the canteen is?»"
+      }
+    ]
+  },
+  {
+    "id": "TR-A2-01",
+    "skill": "reading",
+    "level": "A2",
+    "band": 1,
+    "topic_en": "Review: a phone game",
+    "topic_ru": "Отзыв: игра на телефоне",
+    "type": "reading",
+    "title": "Pocket Planet: is it worth it?",
+    "text_type": "review",
+    "passage": "Last week I downloaded Pocket Planet, a new game for phones. You build your own small planet, plant trees and look after animals. The graphics are beautiful and the music is relaxing. I played it every evening, and my little brother loved it too. But there is one big problem: the game is free, but every new animal costs money. After three days I had no coins left! My advice: download it, but don't buy anything. I give it three stars out of five. — Max, 13",
+    "words": 87,
+    "questions": [
+      {
+        "id": "TR-A2-01-q1",
+        "q": "What do you do in the game?",
+        "options": [
+          "Build a planet",
+          "Race cars",
+          "Fight monsters",
+          "Build a city"
+        ],
+        "answer": 0,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "«You build your own small planet»."
+      },
+      {
+        "id": "TR-A2-01-q2",
+        "q": "What does Max say about the music?",
+        "options": [
+          "It's too loud",
+          "It's relaxing",
+          "It's boring",
+          "It's exciting"
+        ],
+        "answer": 1,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "«the music is relaxing»."
+      },
+      {
+        "id": "TR-A2-01-q3",
+        "q": "What is the problem with the game?",
+        "options": [
+          "The game is very slow on old phones",
+          "The graphics are bad",
+          "New animals cost money",
+          "It's too difficult for young players"
+        ],
+        "answer": 2,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "«every new animal costs money»."
+      },
+      {
+        "id": "TR-A2-01-q4",
+        "q": "What does Max think you should do?",
+        "options": [
+          "Not download it at all, because it's boring",
+          "Buy all the animals to finish faster",
+          "Only play it with a brother",
+          "Play it, but don't spend money"
+        ],
+        "answer": 3,
+        "checks": "writer's attitude",
+        "topic_id": "r-writers-attitude",
+        "explain_ru": "«download it, but don't buy anything»."
+      },
+      {
+        "id": "TR-A2-01-q5",
+        "q": "How many stars does Max give the game?",
+        "options": [
+          "3 out of 5",
+          "2 out of 5",
+          "4 out of 5",
+          "5 out of 5"
+        ],
+        "answer": 0,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "«three stars out of five»."
+      }
+    ]
+  },
+  {
+    "id": "TR-A2-02",
+    "skill": "reading",
+    "level": "A2",
+    "band": 1,
+    "topic_en": "Story: the wrong bus",
+    "topic_ru": "История: не тот автобус",
+    "type": "reading",
+    "title": "The Wrong Bus",
+    "text_type": "story",
+    "passage": "Last Friday our class went on a trip to the science museum. At the bus station, my friend Sam and I were talking about a video, and we got on the wrong bus! We only noticed when we saw the sea through the window. Sam's phone was dead, so I called our teacher, Ms Green. She wasn't angry — she was laughing. 'Get off at the next stop and wait there,' she said. Twenty minutes later, her car arrived. We missed the dinosaur show, but now everyone at school calls us 'the explorers'.",
+    "words": 93,
+    "questions": [
+      {
+        "id": "TR-A2-02-q1",
+        "q": "Where was the class going?",
+        "options": [
+          "To the sea",
+          "To the science museum",
+          "To the bus station",
+          "To a dinosaur park by the sea"
+        ],
+        "answer": 1,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "«a trip to the science museum»."
+      },
+      {
+        "id": "TR-A2-02-q2",
+        "q": "Why did the two friends get on the wrong bus?",
+        "options": [
+          "They were late and ran to the first bus",
+          "Their phones were dead",
+          "They weren't paying attention",
+          "The teacher told them to take that bus"
+        ],
+        "answer": 2,
+        "checks": "inference",
+        "topic_id": "r-inference",
+        "explain_ru": "Они болтали о видео и не смотрели, куда садятся."
+      },
+      {
+        "id": "TR-A2-02-q3",
+        "q": "How did they know it was the wrong bus?",
+        "options": [
+          "A phone app told them",
+          "The driver said so",
+          "The teacher called them",
+          "They saw the sea"
+        ],
+        "answer": 3,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "«We only noticed when we saw the sea»."
+      },
+      {
+        "id": "TR-A2-02-q4",
+        "q": "How did Ms Green feel?",
+        "options": [
+          "She thought it was funny",
+          "She was angry and shouted at them",
+          "She was worried and called their parents",
+          "She was sad"
+        ],
+        "answer": 0,
+        "checks": "inference",
+        "topic_id": "r-inference",
+        "explain_ru": "«She wasn't angry — she was laughing»."
+      },
+      {
+        "id": "TR-A2-02-q5",
+        "q": "What did the friends miss?",
+        "options": [
+          "The bus home",
+          "The dinosaur show",
+          "Lunch with the rest of the class",
+          "The whole trip to the museum"
+        ],
+        "answer": 1,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "«We missed the dinosaur show»."
+      }
+    ]
+  },
+  {
+    "id": "TR-A2-03",
+    "skill": "reading",
+    "level": "A2",
+    "band": 2,
+    "topic_en": "Article: why teenagers are tired",
+    "topic_ru": "Статья: почему подростки не высыпаются",
+    "type": "reading",
+    "title": "Why Are Teenagers Always Tired?",
+    "text_type": "article",
+    "passage": "Do you find it hard to get up in the morning? It's not because you're lazy. Scientists say that teenagers' bodies want to fall asleep later and wake up later than adults' bodies. Most teenagers need eight to ten hours of sleep, but many get only six or seven. Phones make the problem worse, because the light from the screen tells your brain it's still daytime. So what can you do? Try to go to bed at the same time every night, and leave your phone outside your bedroom.",
+    "words": 89,
+    "questions": [
+      {
+        "id": "TR-A2-03-q1",
+        "q": "What is the article mainly about?",
+        "options": [
+          "Why phones are dangerous for children's eyes",
+          "How scientists study animals' sleep",
+          "Why teenagers are often sleepy",
+          "Why teenagers are lazy"
+        ],
+        "answer": 2,
+        "checks": "main idea",
+        "topic_id": "r-main-idea",
+        "explain_ru": "Вся статья о том, почему подросткам трудно выспаться."
+      },
+      {
+        "id": "TR-A2-03-q2",
+        "q": "How many hours of sleep do most teenagers need?",
+        "options": [
+          "Six or seven",
+          "Five or six",
+          "Ten to twelve",
+          "Eight to ten"
+        ],
+        "answer": 3,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "«need eight to ten hours of sleep»."
+      },
+      {
+        "id": "TR-A2-03-q3",
+        "q": "In the text, 'make the problem worse' means…",
+        "options": [
+          "make it bigger",
+          "stop it",
+          "explain it",
+          "make it easier"
+        ],
+        "answer": 0,
+        "checks": "vocabulary in context",
+        "topic_id": "r-vocabulary-in-context",
+        "explain_ru": "Worse — «хуже»: проблема становится больше."
+      },
+      {
+        "id": "TR-A2-03-q4",
+        "q": "Why is the light from a phone a problem?",
+        "options": [
+          "It hurts your eyes if you read in the dark",
+          "It tells your brain it's still daytime",
+          "It makes you hungry late at night",
+          "It wakes up your parents"
+        ],
+        "answer": 1,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "«tells your brain it's still daytime»."
+      },
+      {
+        "id": "TR-A2-03-q5",
+        "q": "What does the writer suggest?",
+        "options": [
+          "Have a short sleep every afternoon after school",
+          "Get up earlier",
+          "Keep your phone out of your bedroom",
+          "Buy a new phone"
+        ],
+        "answer": 2,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "«leave your phone outside your bedroom»."
+      }
+    ]
+  },
+  {
+    "id": "TR-A2-04",
+    "skill": "reading",
+    "level": "A2",
+    "band": 2,
+    "topic_en": "Blog: a week without a phone",
+    "topic_ru": "Блог: неделя без телефона",
+    "type": "reading",
+    "title": "My No-Phone Week",
+    "text_type": "blog",
+    "passage": "Last month my mum gave me a challenge: one week without my phone. If I did it, she promised to take me to a concert. The first two days were terrible. I didn't know what time it was, and I couldn't text my friends. On day three I found my old bike in the garage and rode to the park. On day five I finished a book — the first one this year! I did it, and I'm going to the concert next Saturday. But honestly? I didn't miss my phone as much as I expected.",
+    "words": 96,
+    "questions": [
+      {
+        "id": "TR-A2-04-q1",
+        "q": "What was the prize for finishing the challenge?",
+        "options": [
+          "A new phone with a better camera",
+          "A new bike",
+          "A book",
+          "A trip to a concert"
+        ],
+        "answer": 3,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "«she promised to take me to a concert»."
+      },
+      {
+        "id": "TR-A2-04-q2",
+        "q": "When was the challenge most difficult?",
+        "options": [
+          "At the start",
+          "At the end",
+          "On day five",
+          "At the weekend"
+        ],
+        "answer": 0,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "«The first two days were terrible»."
+      },
+      {
+        "id": "TR-A2-04-q3",
+        "q": "What did the writer do on day three?",
+        "options": [
+          "Finished a book",
+          "Rode a bike to the park",
+          "Went to a concert with Mum",
+          "Texted a friend"
+        ],
+        "answer": 1,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "«On day three I found my old bike… and rode to the park»."
+      },
+      {
+        "id": "TR-A2-04-q4",
+        "q": "What was special about the book?",
+        "options": [
+          "It was about bikes",
+          "It was a present from Mum for finishing the challenge",
+          "It was the first book the writer finished this year",
+          "It was very short"
+        ],
+        "answer": 2,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "«the first one this year»."
+      },
+      {
+        "id": "TR-A2-04-q5",
+        "q": "How does the writer feel about the week now?",
+        "options": [
+          "It was the worst week ever",
+          "Never again!",
+          "Phones are bad for everyone and should be banned",
+          "It wasn't as hard as expected"
+        ],
+        "answer": 3,
+        "checks": "inference",
+        "topic_id": "r-inference",
+        "explain_ru": "«I didn't miss my phone as much as I expected» — оказалось легче, чем думал."
       }
     ]
   }
