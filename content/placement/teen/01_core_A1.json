@@ -765,7 +765,7 @@
     "topic_en": "Plural nouns",
     "topic_ru": "Множественное число",
     "type": "mcq",
-    "q": "My friend has got two pet ___. They're white and very cute.",
+    "q": "There are three ___ in our garden. Every night they eat my mum's flowers!",
     "options": [
       "mouses",
       "mice",
@@ -773,7 +773,7 @@
       "mices"
     ],
     "answer": 1,
-    "explain_ru": "Mouse — неправильное множественное число: mice."
+    "explain_ru": "Mouse — неправильное множественное число: mice. (Every night — привычка, поэтому they eat.)"
   },
   {
     "id": "TG-A1-43",
