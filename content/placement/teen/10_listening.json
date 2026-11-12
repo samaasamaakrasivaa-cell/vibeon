@@ -17,10 +17,10 @@
         "accent": "British"
       }
     ],
-    "script": "Mia: Hi, it's Mia! [pause 1s] It's my birthday on Saturday, and I'm having a party at my house. It starts at three o'clock. [pause 1s] We're going to play games in the garden, and my mum is making a giant chocolate cake. It's shaped like a dog. Like Pie! [pause 1s] Please bring your swimming things, because we've got a small pool. Oh, and don't bring a present. Just come! Bye!",
+    "script": "Mia: Hi, it's Mia! [pause 1s] It's my birthday on Saturday, and I'm having a party at my house. It starts at three o'clock. [pause 1s] We're going to play games in the garden, and my mum is making pizza for everyone. [pause 1s] Please bring your swimming things, because we've got a small pool. Oh, and don't bring a present. Just come! Bye!",
     "plays": 2,
-    "words": 72,
-    "duration_sec": 36,
+    "words": 60,
+    "duration_sec": 31,
     "questions": [
       {
         "id": "TL-A1-01-q1",
@@ -52,25 +52,25 @@
       },
       {
         "id": "TL-A1-01-q3",
-        "q": "What is special about the cake?",
+        "q": "What is Mia's mum making?",
         "options": [
-          "It's very small",
-          "It has got candles shaped like stars",
-          "It looks like a dog",
-          "It's a strawberry cake"
+          "A cake",
+          "Burgers",
+          "Pizza",
+          "Pancakes"
         ],
         "answer": 2,
         "checks": "detail",
         "topic_id": "l-detail",
-        "explain_ru": "Торт в форме собаки: «It's shaped like a dog»."
+        "explain_ru": "«my mum is making pizza for everyone»."
       },
       {
         "id": "TL-A1-01-q4",
         "q": "What should you bring?",
         "options": [
           "A birthday present",
-          "A dog",
-          "Her favourite games",
+          "A board game",
+          "Her favourite snacks",
           "Swimming things"
         ],
         "answer": 3,

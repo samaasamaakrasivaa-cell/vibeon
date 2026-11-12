@@ -8,7 +8,7 @@
     "topic_en": "Verb to be",
     "topic_ru": "Глагол to be: am / is / are",
     "type": "mcq",
-    "q": "My dog Pie ___ very small, but he thinks he's a lion.",
+    "q": "My phone ___ really old, but it still works.",
     "options": [
       "is",
       "are",
@@ -16,7 +16,7 @@
       "be"
     ],
     "answer": 0,
-    "explain_ru": "Pie = he, поэтому is."
+    "explain_ru": "Phone = it, поэтому is."
   },
   {
     "id": "TG-A1-02",
@@ -62,7 +62,7 @@
     "topic_en": "Was / were",
     "topic_ru": "Was / were",
     "type": "mcq",
-    "q": "Yesterday ___ Saturday, so we didn't go to school.",
+    "q": "Yesterday ___ Sunday, so there was no school.",
     "options": [
       "were",
       "is",
@@ -100,12 +100,12 @@
     "topic_en": "Verb to be",
     "topic_ru": "Глагол to be: am / is / are",
     "type": "gap",
-    "q": "My parents ___ happy when they saw my room. It was a mess!",
+    "q": "My parents ___ happy yesterday. My room was a mess!",
     "accept": [
       "weren't",
       "were not"
     ],
-    "explain_ru": "В комнате беспорядок — родители не обрадовались: weren't (were not).",
+    "explain_ru": "В комнате был беспорядок — родители не обрадовались: weren't (were not).",
     "hint_ru": "форма глагола to be в прошлом с отрицанием"
   },
   {
@@ -117,7 +117,7 @@
     "topic_en": "Was / were",
     "topic_ru": "Was / were",
     "type": "mcq",
-    "q": "___ you at Leo's party last night? I didn't see you!",
+    "q": "___ you at Leo's party on Saturday? — Yes, it was great!",
     "options": [
       "Were",
       "Was",
@@ -282,15 +282,15 @@
     "topic_en": "Present simple",
     "topic_ru": "Present Simple",
     "type": "mcq",
-    "q": "Pie the dog ___ socks from everyone in the house.",
+    "q": "My little brother ___ my headphones every day! So annoying.",
     "options": [
-      "steal",
-      "stealing",
-      "is steal",
-      "steals"
+      "take",
+      "taking",
+      "is take",
+      "takes"
     ],
     "answer": 3,
-    "explain_ru": "Pie = he, привычка — Present Simple с -s: steals."
+    "explain_ru": "Every day — привычка, Present Simple; brother = he → takes."
   },
   {
     "id": "TG-A1-17",
@@ -320,15 +320,15 @@
     "topic_en": "Present continuous for now",
     "topic_ru": "Present Continuous: действие сейчас",
     "type": "mcq",
-    "q": "Listen! The parrot ___ my phone's ringtone again!",
+    "q": "Listen! My sister ___ in the shower again.",
     "options": [
-      "copies",
-      "is copying",
-      "copy",
-      "copying"
+      "sings",
+      "is singing",
+      "sing",
+      "singing"
     ],
     "answer": 1,
-    "explain_ru": "Происходит сейчас (Listen!) — is copying."
+    "explain_ru": "Происходит прямо сейчас (Listen!) — Present Continuous: is singing."
   },
   {
     "id": "TG-A1-19",
@@ -393,7 +393,7 @@
     "topic_en": "Present continuous for now",
     "topic_ru": "Present Continuous: действие сейчас",
     "type": "mcq",
-    "q": "What ___ you doing? Is that a cake or a volcano?",
+    "q": "What ___ you doing? — I'm making a video for my blog.",
     "options": [
       "are",
       "do",
@@ -447,7 +447,7 @@
     "topic_en": "Can / can't",
     "topic_ru": "can / can't",
     "type": "mcq",
-    "q": "My cat ___ open the fridge. It's a big problem!",
+    "q": "My little sister is only five, but she ___ read.",
     "options": [
       "cans",
       "can to",
@@ -765,7 +765,7 @@
     "topic_en": "Plural nouns",
     "topic_ru": "Множественное число",
     "type": "mcq",
-    "q": "There are three ___ in our garden. They eat my mum's flowers!",
+    "q": "My friend has got two pet ___. They're white and very cute.",
     "options": [
       "mouses",
       "mice",
@@ -822,7 +822,7 @@
     "topic_en": "Some / any",
     "topic_ru": "some / any",
     "type": "mcq",
-    "q": "Are there ___ biscuits left? — No, the dog ate them all!",
+    "q": "Are there ___ biscuits left? — No, sorry. Let's order a pizza!",
     "options": [
       "any",
       "some",
@@ -879,7 +879,7 @@
     "topic_en": "Articles a / an / the",
     "topic_ru": "Артикли a / an / the",
     "type": "mcq",
-    "q": "I've got a dog and a hamster. ___ dog is called Pie.",
+    "q": "I've got a dog and a hamster. ___ dog is called Rocky.",
     "options": [
       "A",
       "An",
@@ -1116,7 +1116,7 @@
     "topic_en": "Basic collocations",
     "topic_ru": "Сочетания: play football, do homework",
     "type": "mcq",
-    "q": "Can you ___ a photo of me and my dog?",
+    "q": "Can you ___ a photo of me and my friends?",
     "options": [
       "make",
       "do",
@@ -1176,7 +1176,7 @@
     "topic_en": "Basic collocations",
     "topic_ru": "Сочетания: play football, do homework",
     "type": "gap",
-    "q": "Turn ___ the TV, please. I'm doing my homework.",
+    "q": "Turn ___ your phone, please. The film is starting.",
     "accept": [
       "off"
     ],
@@ -1193,7 +1193,7 @@
     "topic_en": "Basic collocations",
     "topic_ru": "Сочетания: play football, do homework",
     "type": "mcq",
-    "q": "Can you ___ me a favour? Hold my ice cream for a second!",
+    "q": "Can you ___ me a favour? Hold my bag for a second!",
     "options": [
       "make",
       "do",
@@ -1310,7 +1310,7 @@
     "topic_en": "Adjectives and opposites",
     "topic_ru": "Прилагательные и противоположности",
     "type": "mcq",
-    "q": "My dog Pie is never tired. He runs and jumps all day! He's very ___.",
+    "q": "My friend Kate is never tired. She runs and jumps all day! She's very ___.",
     "options": [
       "lazy",
       "quiet",
@@ -1367,7 +1367,7 @@
     "topic_en": "Confusing words",
     "topic_ru": "Похожие слова",
     "type": "mcq",
-    "q": "I ___ TV after dinner.",
+    "q": "I ___ videos on my phone after dinner.",
     "options": [
       "watch",
       "look",
@@ -1375,7 +1375,7 @@
       "listen"
     ],
     "answer": 0,
-    "explain_ru": "Смотреть телевизор — watch TV.",
+    "explain_ru": "Смотреть видео — watch videos.",
     "group": "t-a1-v4"
   },
   {
@@ -1387,7 +1387,7 @@
     "topic_en": "Confusing words",
     "topic_ru": "Похожие слова",
     "type": "mcq",
-    "q": "I ___ to music on the bus.",
+    "q": "I ___ to podcasts on my way to school.",
     "options": [
       "hear",
       "listen",
@@ -1395,7 +1395,7 @@
       "look"
     ],
     "answer": 1,
-    "explain_ru": "Слушать музыку — listen to music.",
+    "explain_ru": "Слушать что-то — listen to.",
     "group": "t-a1-v4"
   },
   {
@@ -1447,7 +1447,7 @@
     "topic_en": "Confusing words",
     "topic_ru": "Похожие слова",
     "type": "mcq",
-    "q": "___ at this photo! It's my dog in a hat!",
+    "q": "___ at this photo! It's me at the beach last summer.",
     "options": [
       "Look",
       "See",
@@ -1487,7 +1487,7 @@
     "topic_en": "Confusing words",
     "topic_ru": "Похожие слова",
     "type": "mcq",
-    "q": "What did you ___? I didn't hear you.",
+    "q": "Sorry, can you ___ that again? I can't hear you.",
     "options": [
       "tell",
       "speak",
@@ -1495,7 +1495,7 @@
       "talk"
     ],
     "answer": 2,
-    "explain_ru": "Сказать (без «кому») — say.",
+    "explain_ru": "Сказать что-то (без «кому») — say.",
     "group": "t-a1-v4"
   },
   {

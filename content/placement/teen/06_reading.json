@@ -9,7 +9,7 @@
     "type": "reading",
     "title": "Pie, the Sock Thief",
     "text_type": "blog",
-    "passage": "Hi! My name is Mia and I am eleven. This is my dog, Pie. He is small and brown, and he has got very long ears. Pie loves socks! Every morning he takes socks from my bedroom and hides them in my dad's shoes. Dad is not happy, but we always laugh. Pie doesn't like baths, but he loves the park.",
+    "passage": "Hi! My name is Mia and I am eleven. This is my dog, Pie. It is small and brown, and it has got very long ears. Pie loves socks! Every morning it takes socks from my bedroom and hides them in my dad's shoes. Dad is not happy, but we always laugh. Pie doesn't like baths, but it loves the park.",
     "words": 61,
     "questions": [
       {
@@ -38,7 +38,7 @@
         "answer": 1,
         "checks": "detail",
         "topic_id": "r-detail",
-        "explain_ru": "«He is small and brown»."
+        "explain_ru": "«It is small and brown»."
       },
       {
         "id": "TR-A1-01-q3",
