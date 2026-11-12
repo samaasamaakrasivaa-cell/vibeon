@@ -1,5 +1,7 @@
 "use client";
 import Link from "next/link";
+import { TeacherInfo } from "../lesson/TeacherInfo";
+import type { TInfo } from "@/lib/tasks/teacher-info";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Dialog } from "../Dialog";
@@ -27,7 +29,7 @@ export type { AiCheck };
 export type ClassData = {
   id: string; templateId: string | null; role: "teacher" | "student"; me: { id: string; name: string };
   teacher: { id: string; name: string; lastName: string | null }; student: { id: string; userId: string | null; name: string; lastName: string | null; level: string | null; course: string | null } | null;
-  title: string | null; crumbs: string | null; course: { title: string; cover: string | null } | null; rubrics: Rubric[]; tasks: CTask[];
+  title: string | null; crumbs: string | null; course: { title: string; cover: string | null } | null; rubrics: Rubric[]; tasks: CTask[]; teacherInfo?: TInfo;
   answers: Answers; statuses: Record<string, string>; reviews: Record<string, Review>; aiDrafts: Record<string, AiCheck>; live: LiveState;
   board: BObj[][]; homework: { extraTaskIds: string[]; wordTraining: string[]; teacherComment: string | null };
   lessonWords: { word: string; tr: string; ex: string }[]; words: Word[]; messages: Msg[];
@@ -238,6 +240,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
             </div>
             <div className="bld-cover mt-3" style={d.course?.cover ? { background: `center / cover url(${d.course.cover})` } : undefined}>{!d.course?.cover && <><Icon name="book" size="lg" /><b>{d.course?.title ?? "VibeOn"}</b></>}</div>
             <h2 className="mt-3">{d.title ?? t("cls.lesson")}</h2>
+            {teacher && d.teacherInfo && <div className="mt-2"><TeacherInfo info={d.teacherInfo} /></div>}
             <div className="mt-3 flex flex-col gap-1">
               {d.rubrics.map((r, i) => (
                 <button key={r.id} className={`bld-sec ${tab === "lesson" && r.id === cur?.id ? "on" : ""}`} onClick={() => { setTab("lesson"); go(r.id); }}>

@@ -6,7 +6,7 @@ import { addDraftTasks, bookCreate, bookPlan, splitToTasks } from "@/lib/ai/acti
 import type { DraftTask } from "@/lib/ai/tasks";
 import { TYPES } from "@/lib/tasks/catalog";
 import { COURSE_CATEGORIES } from "@/lib/tasks/catalog";
-import { importPrompt, parseImport } from "@/lib/tasks/import-json";
+import { importPrompt, parseImport, type ImpMeta } from "@/lib/tasks/import-json";
 import { Dialog } from "../Dialog";
 import { Icon } from "../Icon";
 
@@ -64,6 +64,7 @@ export function ImportDialog({ lessonId, section, rubricId, onClose, onDone }: {
   const [err, setErr] = useState<string | null>(null);
   const [fromJson, setFromJson] = useState(false);
   const [replace, setReplace] = useState(false); // исправленный файл — заменить задания урока, а не добавить ещё раз
+  const [meta, setMeta] = useState<ImpMeta | undefined>(); // блок «Для учителя», длительность, подзаголовок из файла
   const code = (e: unknown) => { const c = String((e as Error).message); return ["limit", "tariff", "off", "fail", "type", "size"].includes(c) ? t(`ai.err.${c}` as "ai.err.fail") : c; };
   const read = async (f?: File) => {
     if (!f) return;
@@ -74,7 +75,7 @@ export function ImportDialog({ lessonId, section, rubricId, onClose, onDone }: {
   const split = async () => {
     // готовый JSON (например, от Claude) — задания сразу, без ИИ-разбора
     const plan = parseImport(text);
-    if (plan) { const all = plan.units.flatMap((u) => u.lessons.flatMap((l) => l.tasks)); setTasks(all); setPicked(new Set(all.map((_, i) => i))); setFromJson(true); return; }
+    if (plan) { const all = plan.units.flatMap((u) => u.lessons.flatMap((l) => l.tasks)); setTasks(all); setPicked(new Set(all.map((_, i) => i))); setFromJson(true); setMeta(plan.units[0]?.lessons[0]?.meta); return; }
     setBusy(t("ai.splitting")); setErr(null);
     const r = await splitToTasks(text).catch(() => ({ ok: false as const, error: t("ai.err.fail") }));
     setBusy(null);
@@ -83,7 +84,7 @@ export function ImportDialog({ lessonId, section, rubricId, onClose, onDone }: {
   const add = async () => {
     setBusy(t("common.saving")); setErr(null);
     if (replace && !confirm(t("ai.replaceSure"))) { setBusy(null); return; }
-    const r = await addDraftTasks(lessonId, section, rubricId, tasks!.filter((_, i) => picked.has(i)), fromJson && replace);
+    const r = await addDraftTasks(lessonId, section, rubricId, tasks!.filter((_, i) => picked.has(i)), fromJson && replace, fromJson ? meta : undefined);
     setBusy(null);
     if (r.ok) { onDone(); onClose(); } else setErr(r.error === "answers" ? t("ai.replaceAnswers") : r.error);
   };
@@ -97,6 +98,7 @@ export function ImportDialog({ lessonId, section, rubricId, onClose, onDone }: {
           <div className="field mt-3"><label htmlFor="imp-t" className="small muted">{t("ai.orPaste")}</label><textarea id="imp-t" className="textarea" style={{ minHeight: 200 }} value={text} onChange={(e) => setText(e.target.value)} /></div>
         </>
       ) : tasks.length ? <>
+        {meta?.teacher && <p className="small m-0 mb-2"><Icon name="lock" size="sm" /> {t("ai.jsonTeacher")}</p>}
         <DraftList tasks={tasks} picked={picked} setPicked={setPicked} />
         {fromJson && <label className="flex items-start gap-2 mt-3 small"><input type="checkbox" checked={replace} onChange={(e) => setReplace(e.target.checked)} /><span><b>{t("ai.replace")}</b><span className="block muted">{t("ai.replaceHint")}</span></span></label>}
       </> : <p className="hint">{t("ai.noTasks")}</p>}

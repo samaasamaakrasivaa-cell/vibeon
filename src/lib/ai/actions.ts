@@ -6,6 +6,8 @@ import { db } from "../db";
 import { requireUser } from "../auth/session";
 import { getT } from "../i18n/server";
 import { isType, type TaskType } from "../tasks/catalog";
+import type { ImpMeta } from "../tasks/import-json";
+import { cleanInfo } from "../tasks/teacher-info";
 import { parse } from "../tasks/parse";
 import { saveTask } from "../teacher/courses";
 import { aiCode, aiCtx } from "./ctx";
@@ -69,7 +71,22 @@ export async function splitToTasks(text: string): Promise<Ok<{ tasks: DraftTask[
   catch (e) { return fail(e); }
 }
 
-export async function addDraftTasks(lessonId: string, section: "lesson" | "homework" | "words", rubricId: string | null, tasks: DraftTask[], replace = false): Promise<Ok<{ n: number }>> {
+/** Сведения урока из готового JSON: блок «Для учителя», длительность (ближайшая из 30/45/60/90/120), подзаголовок. */
+const lessonMeta = (m?: ImpMeta) => {
+  if (!m) return {};
+  const d = m.duration ? [30, 45, 60, 90, 120].reduce((a, b) => (Math.abs(b - m.duration!) < Math.abs(a - m.duration!) ? b : a)) : undefined;
+  const ti = cleanInfo(m.teacher);
+  return { ...(Object.keys(ti).length ? { teacherInfo: ti as Prisma.InputJsonObject } : {}), ...(d ? { durationMin: d } : {}), ...(m.subtitle ? { subtitle: str(m.subtitle, 160) } : {}) };
+};
+
+export async function addDraftTasks(lessonId: string, section: "lesson" | "homework" | "words", rubricId: string | null, tasks: DraftTask[], replace = false, meta?: ImpMeta): Promise<Ok<{ n: number }>> {
+  if (meta) {
+    const user = await requireUser("TEACHER");
+    const l = await db.lessonTemplate.findUnique({ where: { id: lessonId }, include: { unit: { include: { course: true } } } });
+    if (!l || l.unit.course.teacherId !== user.id) return { ok: false, error: "not found" };
+    const m = lessonMeta(meta);
+    if (Object.keys(m).length) await db.lessonTemplate.update({ where: { id: lessonId }, data: m });
+  }
   // replace — исправленный файл заменяет урок целиком: старые задания удаляются (если ученики ещё ничего в нём не отвечали)
   if (replace) {
     const user = await requireUser("TEACHER");
@@ -138,7 +155,7 @@ function splitUnits(files: { role: string; text: string }[]) {
   return real.map((k) => Object.entries(per[k]).map(([role, text]) => ({ role, text })));
 }
 
-export async function bookCreate(plan: { units: { title: string; lessons: { title: string; tasks: DraftTask[] }[] }[] }, f: { courseId?: string; title?: string; level?: string; category?: string }): Promise<Ok<{ id: string; firstLesson: string | null }>> {
+export async function bookCreate(plan: { units: { title: string; lessons: { title: string; tasks: DraftTask[]; meta?: ImpMeta }[] }[] }, f: { courseId?: string; title?: string; level?: string; category?: string }): Promise<Ok<{ id: string; firstLesson: string | null }>> {
   const user = await requireUser("TEACHER");
   const { t } = await getT();
   let courseId = f.courseId;
@@ -162,7 +179,7 @@ export async function bookCreate(plan: { units: { title: string; lessons: { titl
       const parts = [...new Set(tasks.filter((x) => (x.section ?? "lesson") === "lesson").map((x) => str(x.part, 80)).filter(Boolean))];
       const secs = (parts.length ? parts : ["Lead-in"]).map((title) => ({ id: randomUUID(), title }));
       const rubricOf = (x: DraftTask) => secs.find((r) => r.title === str(x.part, 80))?.id ?? secs[0].id;
-      const lesson = await db.lessonTemplate.create({ data: { unitId: unit.id, title: str(l.title, 160) || `Lesson ${lo + 1}`, order: lo++, sections: secs } });
+      const lesson = await db.lessonTemplate.create({ data: { unitId: unit.id, title: str(l.title, 160) || `Lesson ${lo + 1}`, order: lo++, sections: secs, ...lessonMeta(l.meta) } });
       first ??= lesson.id;
       const order: Record<string, number> = {};
       if (tasks.length)

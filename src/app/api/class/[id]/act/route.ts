@@ -207,7 +207,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     case "finish": {
       if (!teacher) return bad();
       const tpl = lesson.templateId ? await db.lessonTemplate.findUnique({ where: { id: lesson.templateId }, include: { tasks: true } }) : null;
-      const hwTasks = tpl?.tasks.filter((t) => t.section === "homework" && !t.hidden).map((t) => t.id) ?? [];
+      const hwTasks = tpl?.tasks.filter((t) => t.section === "homework" && !t.hidden && !(t.options as { teacherOnly?: boolean } | null)?.teacherOnly).map((t) => t.id) ?? [];
       const hw = await db.homework.upsert({ where: { lessonInstanceId: id }, create: { lessonInstanceId: id, taskIds: hwTasks }, update: { taskIds: hwTasks } });
       const hasHw = hw.taskIds.length + hw.extraTaskIds.length + hw.wordTraining.length > 0;
       if (lesson.studentId && tpl) {

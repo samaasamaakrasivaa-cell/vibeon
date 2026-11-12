@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import type { TInfo } from "@/lib/tasks/teacher-info";
 import { ClassRoom, type AiCheck, type Review } from "@/components/class/ClassRoom";
 import type { BObj } from "@/components/class/Board";
 import type { Answers } from "@/components/tasks/store";
@@ -50,7 +51,8 @@ export default async function ClassPage({ params, searchParams }: { params: Prom
         title: data?.l.title ?? null,
         crumbs: data ? `${data.l.unit.course.title} · Unit ${data.unitNo} · Lesson ${data.lessonNo}` : null,
         course: data ? { title: data.l.unit.course.title, cover: data.l.unit.course.cover } : null,
-        rubrics: data?.rubrics ?? [], tasks: data?.tasks ?? [], answers, statuses, reviews, aiDrafts,
+        rubrics: data?.rubrics ?? [], tasks: (data?.tasks ?? []).filter((x) => role === "teacher" || !x.options?.teacherOnly), /* заметки «только учителю» ученику не отдаём */ answers, statuses, reviews, aiDrafts,
+        ...(role === "teacher" && data?.l.teacherInfo ? { teacherInfo: data.l.teacherInfo as TInfo } : {}),
         live: (lesson.live ?? {}) as LiveState, board,
         homework: { extraTaskIds: hw?.extraTaskIds ?? [], wordTraining: hw?.wordTraining ?? [], teacherComment: hw?.teacherComment ?? null },
         lessonWords, words: words.map((w) => ({ id: w.id, word: w.word, translation: w.translation, example: w.example, level: w.level })),

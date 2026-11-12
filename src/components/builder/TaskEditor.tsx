@@ -192,6 +192,7 @@ export function TaskEditor({ lessonId, initial, onSave, onClose, pending, error 
               <div className="small mb-2 font-bold tracking-wide text-text3">{t("bld.options").toUpperCase()}</div>
               <div className="flex flex-wrap gap-2">
                 <IconOpt k="hidden" icon="lockI" label={t("bld.optHidden")} />
+                <IconOpt k="teacherOnly" icon="user" label={t("bld.teacherOnly")} />
                 <IconOpt k="nonum" icon="levelI" label={t("bld.optNonum")} />
                 {CHECK_TYPES(type) && <IconOpt k="noreveal" icon="lock" label={t("bld.optNoreveal")} />}
                 {(TYPES[type].teacherCheck || type === "transform" || type === "translate") && <IconOpt k="check" icon="check" label={t("bld.optTeacher")} />}

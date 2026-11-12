@@ -2,9 +2,12 @@
 // Формат совпадает с заданиями конструктора: type + title + content в разметке платформы (см. HOWTO).
 
 import { HOWTO, isType, TYPES, type TaskType } from "./catalog";
+import { cleanInfo, type TInfo } from "./teacher-info";
 
 export type ImpTask = { type: TaskType; title: string; content: string; section?: "lesson" | "homework" | "words"; teacherOnly?: boolean; part?: string };
-export type ImpPlan = { title?: string; level?: string; units: { title: string; lessons: { title: string; tasks: ImpTask[] }[] }[] };
+/** meta урока: блок «Для учителя», длительность, подзаголовок — не задания, ученик их не видит. */
+export type ImpMeta = { teacher?: TInfo; duration?: number; subtitle?: string };
+export type ImpPlan = { title?: string; level?: string; units: { title: string; lessons: { title: string; tasks: ImpTask[]; meta?: ImpMeta }[] }[] };
 
 const s = (x: unknown, n: number) => (typeof x === "string" ? x : x == null ? "" : String(x)).slice(0, n);
 function task(x: unknown): ImpTask | null {
@@ -23,7 +26,13 @@ export function parseImport(text: string): ImpPlan | null {
   let j: unknown;
   try { j = JSON.parse(raw); } catch { return null; }
   const o = (Array.isArray(j) ? { tasks: j } : j) as Record<string, unknown>;
-  const lesson = (l: unknown, i: number) => { const x = (l ?? {}) as Record<string, unknown>; return { title: s(x.title, 160) || `Lesson ${i + 1}`, tasks: tasksOf(x.tasks) }; };
+  const lesson = (l: unknown, i: number) => {
+    const x = (l ?? {}) as Record<string, unknown>;
+    const teacher = cleanInfo({ level: x.level ?? o.level, ...((x.teacher ?? {}) as object) });
+    const duration = Number(x.duration ?? x.durationMin ?? 0) || undefined;
+    const meta: ImpMeta = { ...(Object.keys(teacher).length ? { teacher } : {}), ...(duration ? { duration } : {}), ...(x.subtitle ? { subtitle: s(x.subtitle, 160) } : {}) };
+    return { title: s(x.title, 160) || `Lesson ${i + 1}`, tasks: tasksOf(x.tasks), ...(Object.keys(meta).length ? { meta } : {}) };
+  };
   let units: ImpPlan["units"] = [];
   if (Array.isArray(o.units)) units = o.units.map((u, i) => { const x = (u ?? {}) as Record<string, unknown>; return { title: s(x.title, 120) || `Unit ${i + 1}`, lessons: Array.isArray(x.lessons) ? x.lessons.map(lesson) : [] }; });
   else if (Array.isArray(o.lessons)) units = [{ title: s(o.unit, 120) || s(o.title, 120) || "Unit 1", lessons: o.lessons.map(lesson) }];
@@ -41,22 +50,42 @@ export function importPrompt() {
 Format:
 {
   "title": "Lesson title",
+  "subtitle": "Short topic line, e.g. Vocabulary: work",
+  "level": "B1",
+  "duration": 60,
+  "teacher": {
+    "info": "Lesson info for the teacher: topic, who it is for, materials, anything technical",
+    "aims": {
+      "main": "The overall aim of the lesson",
+      "vocabulary": "Vocabulary aim",
+      "grammar": "Grammar aim",
+      "skills": "Skills aim (speaking, reading, listening, writing)"
+    },
+    "overview": "Lesson overview: stages in order with minutes, e.g.\\n1. Lead-in (5 min) — ...\\n2. Vocabulary (10 min) — ...",
+    "notes": "Any other comments for the teacher"
+  },
   "tasks": [
+    { "type": "speak", "part": "Lead-in", "title": "Discuss in pairs", "content": "..." },
     { "type": "text", "part": "Reading", "title": "Read the text", "content": "..." },
     { "type": "gap", "part": "Reading", "title": "Complete the sentences", "content": "..." },
-    { "type": "essay", "section": "homework", "title": "Write about ...", "content": "..." }
+    { "type": "wordset", "section": "words", "title": "New words", "content": "word — перевод — example sentence\\n..." },
+    { "type": "gap", "section": "homework", "title": "Homework: complete the sentences", "content": "..." }
   ]
 }
+
+Three places, do not mix them up:
+1. "teacher" — everything only for the teacher: lesson info, level, timing, aims, overview of stages, teacher comments and tips. NEVER put this into "tasks". Level → "level", length in minutes → "duration".
+2. "tasks" with "section": "lesson" (or no section) — what the student does in class. "part" = the lesson stage ("Lead-in", "Vocabulary", "Reading", "Grammar", "Speaking", "Writing"…); tasks with the same part are grouped together.
+3. "tasks" with "section": "homework" — EVERY homework exercise from the material must go here, each as a separate task. "tasks" with "section": "words" — the lesson's new words: ONE "wordset" task with ALL target vocabulary of the lesson (word — Russian translation — example sentence, one word per line). If the material has a vocabulary box, word list or glossary, it must be in "words". If the material has no homework, add none.
 
 Rules:
 - Keep the order of the original lesson. Do not invent new exercises and do not drop any; keep the original wording and answers.
 - "title" — the task instruction the student sees (in English, as in the material).
-- "part" (optional) — the lesson stage the task belongs to, e.g. "Lead-in", "Vocabulary", "Reading", "Grammar", "Speaking". Tasks with the same part are grouped together.
-- "section" (optional) — "lesson" (default), "homework" or "words" (vocabulary list).
-- "teacherOnly": true — for teacher notes, answer keys or tips the student must not see.
 - "content" — the task body in the platform markup for its type (below). Use \\n for new lines. Answers must be inside the markup, not in a separate key.
-- Pictures, audio and video can't go into JSON: where the material has one, add a task { "type": "note", "teacherOnly": true, "title": "Add media", "content": "Add the picture/audio here: <short description, page number>" }.
-- If several lessons: { "lessons": [ { "title": "...", "tasks": [...] }, ... ] }.
+- "teacherOnly": true — only for a teacher note that must stay next to a specific task (answer key, tip). General lesson information goes to "teacher", not here.
+- Pictures, audio and video can't go into JSON: where the material has one, add a task { "type": "note", "teacherOnly": true, "part": "<stage>", "title": "Add media", "content": "Add the picture/audio here: <short description, page number>" }.
+- If several lessons: { "lessons": [ { "title": "...", "teacher": {...}, "tasks": [...] }, ... ] }.
+- Before answering, check: is there a "teacher" block? Are all homework exercises in "homework"? Are all new words in one "wordset" in "words"?
 - Output only the JSON, no comments before or after it.
 
 Task types and markup:

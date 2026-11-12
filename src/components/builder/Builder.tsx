@@ -14,12 +14,14 @@ import { useRouter } from "next/navigation";
 import { useT } from "@/lib/i18n/client";
 import { GROUPS, PRESET, RTIPS, RUBRICS, SAMPLE, TYPES, rubricKey, type Rubric, type TaskType } from "@/lib/tasks/catalog";
 import { thumbSvg } from "@/lib/tasks/thumbs";
-import { assignLesson, deleteTask, placeTasks, resetShare, saveTask, setFavourites, setRubrics, setShare, toggleTaskHidden, updateLessonMeta } from "@/lib/teacher/courses";
+import { assignLesson, deleteTask, placeTasks, resetShare, saveTask, setFavourites, setRubrics, setShare, toggleTaskHidden, updateLessonMeta, updateTeacherInfo } from "@/lib/teacher/courses";
+import { TeacherInfo } from "../lesson/TeacherInfo";
+import { hasInfo, type TInfo } from "@/lib/tasks/teacher-info";
 
 type Part = "lesson" | "homework" | "words";
 export type BTask = TaskData & { section: Part; rubricId: string | null; hidden: boolean };
 export type BuilderData = {
-  id: string; title: string; subtitle: string; durationMin: number; outcomes: string[]; rubrics: Rubric[];
+  id: string; title: string; subtitle: string; durationMin: number; outcomes: string[]; rubrics: Rubric[]; teacherInfo: TInfo;
   course: { id: string; title: string; cover: string | null }; unitNo: number; lessonNo: number;
   tasks: BTask[]; fav: string[]; share: { on: boolean; token: string | null }; appUrl: string;
   students: { id: string; name: string; next: string | null }[];
@@ -44,7 +46,7 @@ export function Builder({ d }: { d: BuilderData }) {
   useEffect(() => { if (!pending) setSaved(true); }, [pending, d]);
 
   const list = d.tasks.filter((x) => x.section === part && (part !== "lesson" || x.rubricId === active || (!x.rubricId && active === rubrics[0]?.id)));
-  const visible = studentView ? list.filter((x) => !x.hidden) : list;
+  const visible = studentView ? list.filter((x) => !x.hidden && !x.options?.teacherOnly) : list; // «вид ученика» — без скрытых и без заметок для учителя
   const count = (p: Part) => d.tasks.filter((x) => x.section === p).length;
   const ri = rubrics.findIndex((r) => r.id === active);
   const cur = rubrics[ri];
@@ -126,6 +128,7 @@ export function Builder({ d }: { d: BuilderData }) {
                   actions={!studentView && (
                     <span className="bld-acts">
                       {task.hidden && <span className="pill grey">{t("bld.hidden")}</span>}
+                      {task.options?.teacherOnly && <span className="pill violet">{t("bld.teacherOnly")}</span>}
                       <button className="iconbtn" title={t("prof.edit")} aria-label={t("prof.edit")} onClick={() => setEditing({ task })}><Icon name="pencil" size="sm" /></button>
                       <button className="iconbtn" title={task.hidden ? t("bld.show") : t("bld.hide")} aria-label={t("bld.hide")} onClick={() => go(() => toggleTaskHidden(task.id))}><Icon name={task.hidden ? "lock" : "lockI"} size="sm" /></button>
                       <button className="iconbtn" disabled={i === 0} aria-label="up" onClick={() => move(i, -1)}>↑</button>
@@ -158,6 +161,8 @@ export function Builder({ d }: { d: BuilderData }) {
           <div className="bld-cover" style={d.course.cover ? { background: `center / cover url(${d.course.cover})` } : undefined}>{!d.course.cover && <><Icon name="book" size="lg" /><b>{d.course.title}</b></>}</div>
           <h2 className="mt-3">{d.title}</h2>
           <input className="editable muted mt-1" defaultValue={d.subtitle} key={d.subtitle} placeholder={t("crs.subtitlePh")} onBlur={(e) => e.target.value !== d.subtitle && go(() => updateLessonMeta(d.id, { subtitle: e.target.value }))} aria-label={t("crs.subtitlePh")} />
+          {/* сведения об уроке, цели и ход урока — сразу под названием, ученику не показываются */}
+          {!studentView && <TeacherInfo info={d.teacherInfo} open={hasInfo(d.teacherInfo)} onSave={(v) => go(() => updateTeacherInfo(d.id, v))} />}
 
           <div className="mt-5 mb-2 flex items-center justify-between"><span className="cardtitle m-0">{t("bld.sections")}</span></div>
           <div className="flex flex-col gap-1">

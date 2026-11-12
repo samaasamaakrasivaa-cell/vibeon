@@ -8,6 +8,7 @@ import { requireUser } from "../auth/session";
 import { randomToken } from "../auth/crypto";
 import { getT } from "../i18n/server";
 import { COURSE_CATEGORIES, isType, PRESET, SAMPLE, type Rubric, type TaskOptions, type TaskType } from "../tasks/catalog";
+import { cleanInfo, type TInfo } from "../tasks/teacher-info";
 
 export type R = { ok: true; id?: string; token?: string } | { ok: false; error: string };
 const clean = (v: unknown, max = 200) => (typeof v === "string" ? v.trim().slice(0, max) : "");
@@ -149,6 +150,15 @@ export async function createLessonTemplate(unitId: string, title: string): Promi
   const l = await db.lessonTemplate.create({ data: { unitId, title: clean(title, 160) || `Lesson ${n + 1}`, order: n, sections: [{ id: randomUUID(), title: "Lead-in" }] } });
   refreshCourse(u.courseId);
   return { ok: true, id: l.id };
+}
+
+/** Блок «Для учителя» (lesson info, aims, overview, заметки) — ученику не показывается. */
+export async function updateTeacherInfo(id: string, info: TInfo): Promise<R> {
+  const teacher = await me();
+  await ownLesson(id, teacher.id);
+  await db.lessonTemplate.update({ where: { id }, data: { teacherInfo: cleanInfo(info) as Prisma.InputJsonObject } });
+  revalidatePath(`/builder/${id}`);
+  return { ok: true };
 }
 
 export async function updateLessonMeta(id: string, f: { title?: string; subtitle?: string; durationMin?: number; outcomes?: string[] }): Promise<R> {

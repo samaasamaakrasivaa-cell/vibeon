@@ -255,6 +255,7 @@ model LessonTemplate {
   subtitle    String? // «Vocabulary: work»
   durationMin Int      @default(60)
   outcomes    String[] // «После урока ученик сможет»
+  teacherInfo Json     @default("{}") // только для учителя: lesson info, aims (общая, лексика, грамматика, навыки), overview, заметки
   shareOn     Boolean  @default(false)
   shareToken String?          @unique // гостевая ссылка «Поделиться»
   createdAt  DateTime         @default(now())

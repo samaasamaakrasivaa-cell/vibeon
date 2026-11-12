@@ -1467,3 +1467,11 @@ select.iedit, select.iedit:hover, select.iedit:focus { background-position: righ
   * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
 .impjson { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; background: var(--violet-bg); margin-bottom: 12px; }
+/* Блок урока «Для учителя» */
+.tinfo { border-radius: 14px; background: var(--violet-bg); padding: 10px 14px; margin-top: 12px; }
+.tinfo > summary { display: flex; align-items: center; gap: 8px; cursor: pointer; list-style: none; }
+.tinfo > summary::-webkit-details-marker { display: none; }
+.tinfo-body { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+.tinfo-row b { display: block; font-size: 12.5px; color: var(--violet); margin-bottom: 2px; }
+.tinfo-t { white-space: pre-wrap; font-size: 13.5px; line-height: 1.5; }
+.tinfo-aims { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; font-size: 13.5px; line-height: 1.45; }
