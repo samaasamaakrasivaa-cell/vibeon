@@ -2,7 +2,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useT } from "@/lib/i18n/client";
-import { resetBankItem, saveBankItem } from "@/lib/placement/bank-actions";
+import { resetBankItem, resolveFlag, saveBankItem } from "@/lib/placement/bank-actions";
 import type { AnyItem, CoreItem, ListenItem, Q, ReadItem, SpeakItem, WriteItem } from "@/lib/placement/engine";
 import { useRun } from "../courses/useRun";
 import { Dialog } from "../Dialog";
@@ -21,9 +21,12 @@ const themeOf = (x: AnyItem, groupName: Map<string, string>) =>
   x.skill === "grammar" || x.skill === "vocabulary" ? groupName.get((x as CoreItem).group ?? "") ?? x.topic_ru : x.topic_ru.replace(/^(Письмо|Говорение):\s*/, "").replace(/^./, (c) => c.toUpperCase());
 
 /** Режим владельца: правка заданий вводного теста и замена озвучки. Фильтры: уровень, тема, поиск по теме и тексту. */
-export function BankEditor({ items, edited, audioEdited, groups }: { items: AnyItem[]; edited: string[]; audioEdited: string[]; groups: { id: string; name: string }[] }) {
+export type FlagRow = { id: string; itemId: string; qid: string | null; note: string; who: string; when: string; resolved: boolean };
+export function BankEditor({ items, edited, audioEdited, groups, flags = [] }: { items: AnyItem[]; edited: string[]; audioEdited: string[]; groups: { id: string; name: string }[]; flags?: FlagRow[] }) {
   const { t } = useT();
-  const [g, setG] = useState<(typeof GROUPS)[number][0]>("core");
+  const router = useRouter();
+  const open0 = flags.filter((f) => !f.resolved).length;
+  const [g, setG] = useState<(typeof GROUPS)[number][0] | "flags">(open0 ? "flags" : "core");
   const [lvl, setLvl] = useState("A1");
   const [theme, setTheme] = useState("");
   const [q, setQ] = useState("");
@@ -37,10 +40,46 @@ export function BankEditor({ items, edited, audioEdited, groups }: { items: AnyI
     return inSection.filter((x) => (!theme || themeOf(x, gName) === theme)
       && (!qq || `${x.id} ${short(x)} ${x.topic_ru} ${x.topic_en} ${themeOf(x, gName)}`.toLowerCase().includes(qq)));
   }, [inSection, theme, q, gName]);
-  const pickSection = (k: (typeof GROUPS)[number][0]) => { setG(k); setTheme(""); setQ(""); };
+  const pickSection = (k: (typeof GROUPS)[number][0] | "flags") => { setG(k); setTheme(""); setQ(""); };
+  const byId = useMemo(() => new Map(items.map((x) => [x.id, x])), [items]);
+  const [showDone, setShowDone] = useState(false);
+  const tabs = (
+    <nav className="tabsbar">
+      <button type="button" aria-current={g === "flags" ? "page" : undefined} onClick={() => pickSection("flags")}><Icon name="flagI" size="sm" /> {t("pl.flagsTab")}{open0 > 0 && <span className="pill orange ml-1">{open0}</span>}</button>
+      {GROUPS.map(([k, label]) => <button key={k} type="button" aria-current={g === k ? "page" : undefined} onClick={() => pickSection(k)}>{t(label)}</button>)}
+    </nav>
+  );
+  if (g === "flags") {
+    const rows = flags.filter((f) => showDone || !f.resolved);
+    return (
+      <div className="flex flex-col gap-4">
+        {tabs}
+        <div className="flex items-center gap-2"><span className="small muted grow">{t("pl.flagsLead")}</span>
+          <label className="small flex items-center gap-2"><input type="checkbox" checked={showDone} onChange={(e) => setShowDone(e.target.checked)} />{t("pl.flagsDone")}</label></div>
+        <section className="card p-0">
+          {rows.map((f) => {
+            const it = byId.get(f.itemId);
+            const qn = f.qid && it && "questions" in it ? (it as ReadItem).questions.findIndex((x) => x.id === f.qid) + 1 : 0;
+            return (
+              <div key={f.id} className={`plrow ${f.resolved ? "opacity-60" : ""}`}>
+                <span className="small muted shrink-0" style={{ width: 92 }}>{f.itemId}{qn > 0 && <span className="block">{t("pl.flagQ", { n: qn })}</span>}</span>
+                <span className="grow min-w-0"><span className="block truncate">{it ? short(it) : f.itemId}</span>
+                  {f.note && <span className="small block" style={{ whiteSpace: "pre-line" }}>«{f.note}»</span>}
+                  <span className="small muted block">{f.who} · {f.when}</span></span>
+                {it && <button type="button" className="btn secondary sm" onClick={() => setOpen(it)}><Icon name="pencil" size="sm" />{t("pl.flagEdit")}</button>}
+                <button type="button" className="btn plain sm" onClick={async () => { await resolveFlag(f.id, !f.resolved); router.refresh(); }}>{f.resolved ? t("pl.flagReopen") : t("pl.flagResolve")}</button>
+              </div>
+            );
+          })}
+          {rows.length === 0 && <p className="hint m-0 p-4">{t("pl.flagsNone")}</p>}
+        </section>
+        {open && <ItemDialog key={open.id} item={open} edited={edited.includes(open.id)} onClose={() => setOpen(null)} />}
+      </div>
+    );
+  }
   return (
     <div className="flex flex-col gap-4">
-      <nav className="tabsbar">{GROUPS.map(([k, label]) => <button key={k} type="button" aria-current={g === k ? "page" : undefined} onClick={() => pickSection(k)}>{t(label)}</button>)}</nav>
+      {tabs}
       <div className="flex flex-wrap items-center gap-2">
         {["A1", "A2", "B1", "B2", "C1"].map((l) => <button key={l} type="button" className={`pchip ${lvl === l ? "on" : ""}`} aria-pressed={lvl === l} onClick={() => { setLvl(l); setTheme(""); }}>{l}</button>)}
         <button type="button" className={`pchip ${lvl === "" ? "on" : ""}`} aria-pressed={lvl === ""} onClick={() => { setLvl(""); setTheme(""); }}>{t("pl.allLevels")}</button>

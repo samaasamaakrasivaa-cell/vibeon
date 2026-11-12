@@ -2,7 +2,7 @@ import "server-only";
 import type { Prisma } from "@prisma/client";
 import { instruction } from "./bank";
 import {
-  checkCore, coreProgress, coreResult, firstText, levelOfStep, nextCore, nextText, nextVocab, pickTask, PL_LEVELS, stepOf, textLevel, vocabProgress, vocabResult,
+  checkCore, coreProgress, coreResult, firstText, levelOfStep, wsStep, nextCore, nextText, nextVocab, pickTask, PL_LEVELS, stepOf, textLevel, vocabProgress, vocabResult,
   type AnyItem, type Bank, type CoreItem, type ListenItem, type PState, type ReadItem, type SpeakItem, type WriteItem,
 } from "./engine";
 
@@ -25,6 +25,9 @@ export function closedOf(st: PState): string[] {
   return i > 0 ? [...LATER.slice(0, i)] : st.section === "done" ? [...LATER] : [];
 }
 export const openOf = (st: PState) => LATER.filter((x) => !closedOf(st).includes(x));
+/** Письмо и говорение открываются, когда закончены чтение и аудирование: их уровень считается по этим навыкам. */
+export const lockedOf = (st: PState): Later[] => (openOf(st).some((x) => x === "reading" || x === "listening") ? ["writing", "speaking"] : []);
+export const availOf = (st: PState) => openOf(st).filter((x) => !lockedOf(st).includes(x));
 export function goTo(st: PState, to: PState["section"]) {
   if (st.section !== "intro" && st.section !== to) leave(st, st.section);
   if (st.section !== to) { st.section = to; enter(st, to); }
@@ -32,7 +35,7 @@ export function goTo(st: PState, to: PState["section"]) {
 /** Закрыть раздел; true — открытых не осталось (тест можно отправлять). */
 export function closeSection(st: PState, sec: Later, bank: Bank) {
   st.closed = [...new Set([...closedOf(st), sec])];
-  const next = openOf(st)[0];
+  const next = availOf(st)[0];
   if (!next) { leave(st, st.section); return true; }
   ensureTasks(st, bank);
   goTo(st, next);
@@ -45,8 +48,11 @@ export function ensureTasks(st: PState, bank: Bank) {
   const L = st.level ?? "A1";
   if (!st.reading.length) { const x = firstText(bank.reading, L, plus); if (x) st.reading = [snap(x)]; }
   if (!st.listening.length) { const x = firstText(bank.listening, L, plus); if (x) st.listening = [snap(x)]; }
-  if (!st.writing) { const w = pickTask(bank.writing, L, plus); if (w) st.writing = { id: snap(w), text: "" }; }
-  if (!st.speaking) { const sp = pickTask(bank.speaking, L, plus); if (sp) st.speaking = { id: snap(sp), rec: {} }; }
+  // письмо и говорение — только когда закончены чтение и аудирование: уровень = средний из трёх навыков
+  if (lockedOf(st).length) return;
+  const at = (kind: "writing" | "speaking") => { const m = wsStep(st, kind) ?? st.step ?? 0; return { lv: levelOfStep(m), plus: m % 2 === 1 || m === 8 }; };
+  if (!st.writing) { const a = at("writing"); const w = pickTask(bank.writing, a.lv, a.plus, Math.random, st.seen ?? []); if (w) st.writing = { id: snap(w), text: "" }; }
+  if (!st.speaking) { const a = at("speaking"); const sp = pickTask(bank.speaking, a.lv, a.plus, Math.random, st.seen ?? []); if (sp) st.speaking = { id: snap(sp), rec: {} }; }
 }
 
 /** Выдать следующее задание грамматики или лексики; когда лексика закончена — открыть остальные разделы. */
@@ -83,7 +89,7 @@ export function addNextText(st: PState, bank: Bank, k: "reading" | "listening") 
 export function publicView(st: PState, lang: "ru" | "en", bank?: Bank) {
   void lang;
   const ins = (k: string, lv?: string) => instruction(k, lv);
-  const base = { section: st.section, level: st.level ?? null, open: st.section === "core" || st.section === "vocab" || st.section === "intro" ? [] : (openOf(st) as string[]) };
+  const base = { section: st.section, level: st.level ?? null, open: st.section === "core" || st.section === "vocab" || st.section === "intro" ? [] : (openOf(st) as string[]), locked: lockedOf(st) as string[] };
   if (st.section === "core" || st.section === "vocab") {
     const sec = st.section;
     const last = st.core[st.core.length - 1];

@@ -37,6 +37,16 @@ export function reviewData(id: string, st: PState, forTeacher: boolean) {
       level: sp.level, intro: sp.intro_ru, expects: sp.expects, noMic: !!(st.speaking as { noMic?: boolean }).noMic,
       questions: sp.questions.map((q, i) => ({ q: q.q, url: st.speaking?.rec?.[String(i + 1)] ? `/api/placement/${id}/rec/${i + 1}` : null, rerec: st.rerec?.[String(i + 1)] ?? 0 })),
     },
+    // прошлые задания письма и говорения (до дополнительного уровнем выше/ниже)
+    prev: (st.wsPrev ?? []).map((x, pi) => {
+      const it = st.items[x.id] as WriteItem | SpeakItem | undefined;
+      return {
+        kind: x.kind, level: it?.level ?? "", marks: x.marks ?? {},
+        prompt: it?.type === "writing" ? it.prompt_en : "", text: x.text ?? "", points: x.points ?? [], pointsList: it?.type === "writing" ? it.points ?? [] : [],
+        questions: it?.type === "speaking" ? it.questions.map((q, i) => ({ q: q.q, url: x.rec?.[String(i + 1)] ? `/api/placement/${id}/rec/p${pi}-${i + 1}` : null, rerec: x.rerec?.[String(i + 1)] ?? 0 })) : [],
+      };
+    }),
+    extra: st.wsExtra ?? {},
     times: Object.fromEntries(Object.entries(st.times ?? {}).filter(([k, v]) => !k.endsWith("At") && v > 0)) as Record<string, number>,
   };
 }

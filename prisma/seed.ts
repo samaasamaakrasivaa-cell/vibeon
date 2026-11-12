@@ -34,6 +34,7 @@ async function main() {
   // Чистим демо-данные учителя
   await db.lessonInstance.deleteMany({ where: { OR: [{ teacherId: teacher.id }, { student: { teacherId: teacher.id } }] } });
   await db.placementAttempt.deleteMany({ where: { teacherId: teacher.id } });
+  await db.placementFlag.deleteMany({ where: { userId: teacher.id } });
   await db.placementLink.deleteMany({ where: { teacherId: teacher.id } });
   await db.student.deleteMany({ where: { teacherId: teacher.id } });
   await db.notification.deleteMany({ where: { userId: { in: [teacher.id, annaUser.id] } } });

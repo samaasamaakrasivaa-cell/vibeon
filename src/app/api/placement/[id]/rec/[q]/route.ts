@@ -38,7 +38,10 @@ export async function GET(_req: NextRequest, { params }: P) {
   const { id, q } = await params;
   const acc = await attemptFor(id);
   if (!acc) return new NextResponse("Not found", { status: 404 });
-  const rec = stateOf(acc.a.state).speaking?.rec?.[q];
+  const st = stateOf(acc.a.state);
+  // p{номер}-{вопрос} — запись из прошлого задания (до дополнительного уровнем выше/ниже)
+  const pm = /^p(\d+)-(\d+)$/.exec(q);
+  const rec = pm ? st.wsPrev?.[Number(pm[1])]?.rec?.[pm[2]] : st.speaking?.rec?.[q];
   if (!rec) return new NextResponse("Not found", { status: 404 });
   const [key, mime] = rec.split("|");
   const f = await readStored(key);

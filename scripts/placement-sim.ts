@@ -8,7 +8,8 @@ const groups = JSON.parse(fs.readFileSync(dir + "00_groups.json", "utf8")) as Gr
 const gOf = new Map(groups.flatMap((g) => g.topics.map((t) => [t, g.id] as const)));
 const core = ["01_core_A1", "02_core_A2", "03_core_B1", "04_core_B2", "05_core_C1"].flatMap((f) => JSON.parse(fs.readFileSync(dir + f + ".json", "utf8"))) as CoreItem[];
 for (const x of core) x.group = x.group ?? gOf.get(x.topic_id);
-const bank: Bank = { groups, core, reading: [], listening: [], writing: [], speaking: [] };
+const families = JSON.parse(fs.readFileSync(dir + "00_families.json", "utf8"));
+const bank: Bank = { groups, families, core, reading: [], listening: [], writing: [], speaking: [] };
 let seed = 7; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
 const MODE = process.argv[2] ?? "warm";
 const expectOf = (T: number) => (T <= 2 ? "A1" : T <= 5 ? "B1" : "B2") as "A1" | "B1" | "B2";

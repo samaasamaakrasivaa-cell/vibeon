@@ -1,8 +1,8 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { useT } from "@/lib/i18n/client";
-import { deletePlacement, finalizePlacement, saveReview, setShowResult } from "@/lib/placement/actions";
-import { finalHint, PL_LEVELS, scoreStep, STEPS, type PLevel, type Summary } from "@/lib/placement/engine";
+import { addSpeakingToLesson, assignExtraWS, deletePlacement, finalizePlacement, saveReview, setShowResult } from "@/lib/placement/actions";
+import { BASE, finalHint, PL_LEVELS, scoreStep, STEPS, type PLevel, type Summary } from "@/lib/placement/engine";
 import type { ReviewData } from "@/lib/placement/review";
 import type { Rubric } from "@/lib/placement/bank";
 import { useRun } from "../courses/useRun";
@@ -13,7 +13,8 @@ import type { DictKey } from "@/lib/i18n/dict";
 type Marks = Record<string, number>;
 export type ReviewProps = {
   id: string; mode: string; status: string; level: string | null; showResult: boolean;
-  sm: Summary; d: ReviewData; review: { writing?: Record<string, unknown>; speaking?: Record<string, unknown>; points?: boolean[]; comment?: string };
+  sm: Summary; d: ReviewData; review: { writing?: Record<string, unknown>; speaking?: Record<string, unknown>; points?: boolean[]; comment?: string; lesson?: { level: string; marks: Record<string, unknown> } | null };
+  lessonQs: { level: string; questions: string[] }[]; // говорение на уроке: вопросы уровнем выше и ниже
   rubrics: { writing: Rubric[]; speaking: Rubric[] }; howTo: string; sublevels: string; total: string;
 };
 const nums = (m?: Record<string, unknown>): Marks => Object.fromEntries(Object.entries(m ?? {}).filter(([, v]) => typeof v === "number")) as Marks;
@@ -30,15 +31,20 @@ export function PlacementReview(p: ReviewProps) {
   const [s, setS] = useState<Marks>(nums(p.review.speaking));
   const [pts, setPts] = useState<boolean[]>(p.review.points ?? []);
   const [comment, setComment] = useState(p.review.comment ?? "");
+  const [lesson, setLesson] = useState<{ level: string; marks: Marks } | null>(p.review.lesson ? { level: p.review.lesson.level, marks: nums(p.review.lesson.marks) } : null);
+  const [lessonMsg, setLessonMsg] = useState<string | null>(null);
   const first = useRef(true);
   useEffect(() => {
     if (first.current) { first.current = false; return; }
-    const h = setTimeout(() => { void saveReview(p.id, { writing: w, speaking: s, points: pts, comment }); }, 800);
+    const h = setTimeout(() => { void saveReview(p.id, { writing: w, speaking: s, points: pts, comment, lesson }); }, 800);
     return () => clearTimeout(h);
-  }, [w, s, pts, comment, p.id]);
+  }, [w, s, pts, comment, lesson, p.id]);
 
   const wHint = p.d.writing ? scoreStep(p.rubrics.writing.map((c) => w[c.id]), p.d.writing.level as PLevel, w.task) : null;
-  const sHint = p.d.speaking ? scoreStep(p.rubrics.speaking.map((c) => s[c.id]), p.d.speaking.level as PLevel) : null;
+  const sTask = p.d.speaking ? scoreStep(p.rubrics.speaking.map((c) => s[c.id]), p.d.speaking.level as PLevel) : null;
+  // оценка говорения на уроке (вопросы уровнем выше/ниже) — самая свежая, поэтому идёт в итог, если заполнена полностью
+  const sLesson = lesson ? scoreStep(p.rubrics.speaking.map((c) => lesson.marks[c.id]), lesson.level as PLevel) : null;
+  const sHint = sLesson ?? sTask;
   const hint = finalHint([p.sm.coreStep, p.sm.vstep, p.sm.readStep, p.sm.listenStep, wHint, sHint]);
   const [lvl, setLvl] = useState(p.level ?? (hint !== null ? STEPS[hint] : ""));
   const L = ["A1", "A2", "B1", "B2", "C1"].filter((l) => p.sm.core[l] || p.sm.reading[l] || p.sm.listening[l]);
@@ -62,6 +68,10 @@ export function PlacementReview(p: ReviewProps) {
     sk(sm.reading, sm.readStep, t("pl.part.reading")), sk(sm.listening, sm.listenStep, t("pl.part.listening")),
     hint !== null ? t(wHint === null || sHint === null ? "pl.exNeedWS" : "pl.exFinal", { h: STEPS[hint] }) : null,
   ].filter(Boolean) as string[];
+  const famLv = PL_LEVELS.filter((l) => sm.families.some((f) => f.by?.[l]?.[1]));
+  // лексика: где слабее всего — вид заданий с самой низкой долей верных (если заданий хотя бы 2)
+  const vAll = (sm.vlevels ?? []).flatMap((x) => x.kinds.map((k) => ({ ...k, level: x.level })));
+  const vWeak = vAll.filter((k) => k.n >= 2 && k.c / k.n < 0.6).sort((a, b) => a.c / a.n - b.c / b.n).slice(0, 3);
   const diagGroups = sm.groups.filter((g) => g.level === sm.diag);
   const otherGroups = sm.groups.filter((g) => g.level !== sm.diag);
   const growth = diagGroups.filter((g) => g.n >= 3 && g.c <= 1);
@@ -110,9 +120,76 @@ export function PlacementReview(p: ReviewProps) {
     );
   };
 
+  // письмо и говорение: подсказка «дать задание уровнем выше/ниже» и кнопки (решение — за учителем)
+  const median3 = (xs: (number | null)[]) => { const v = xs.filter((x): x is number => typeof x === "number").sort((a, b) => a - b); return v.length ? v[Math.floor((v.length - 1) / 2)] : null; };
+  const extraBox = (kind: "writing" | "speaking", level: string, m: Marks, list: Rubric[]) => {
+    const full = list.every((c) => typeof m[c.id] === "number");
+    const sum = list.reduce((a, c) => a + (m[c.id] ?? 0), 0) * (12 / (list.length * 3));
+    const others = median3([sm.coreStep, sm.vstep, kind === "writing" ? sm.readStep : sm.listenStep]);
+    const li = PL_LEVELS.indexOf(level as PLevel), up = PL_LEVELS[li + 1], down = li > 0 ? PL_LEVELS[li - 1] : undefined;
+    const sug = !full ? null : sum >= 11 && up ? "up" : (sum <= 4 || (kind === "writing" && typeof m.task === "number" && m.task <= 1)) && down ? "down" : null;
+    const done = p.d.extra?.[kind];
+    const give = (dir: number, to: string) => {
+      if (!confirm(t(p.mode === "link" ? "pl.extraConfirmGuest" : "pl.extraConfirm", { k: t(`pl.part.${kind}` as DictKey).toLowerCase(), l: to }))) return;
+      run(() => assignExtraWS(p.id, kind, dir));
+    };
+    return (
+      <div className="plextra">
+        {sug === "up" && <p className="m-0"><b>{t("pl.extraUpT")}</b> {t("pl.extraUp", { s: Math.round(sum), l: level, n: up! })}{others !== null && others > BASE[level as PLevel] + 1 ? ` ${t("pl.extraOthers", { o: STEPS[others] })}` : ""}</p>}
+        {sug === "down" && <p className="m-0"><b>{t("pl.extraDownT")}</b> {t("pl.extraDown", { s: Math.round(sum), n: down! })}</p>}
+        {done ? <p className="small muted m-0">{t(waiting ? "pl.extraWaiting" : "pl.extraDone", { d: t(done > 0 ? "pl.extraDirUp" : "pl.extraDirDown") })}</p> : !waiting && (
+          <div className="flex flex-wrap gap-2">
+            {up && <button type="button" className={`btn sm ${sug === "up" ? "primary" : "secondary"}`} disabled={pending} onClick={() => give(1, up)}><Icon name="right" size="sm" />{t("pl.extraGive", { l: up })}</button>}
+            {down && <button type="button" className={`btn sm ${sug === "down" ? "primary" : "secondary"}`} disabled={pending} onClick={() => give(-1, down)}><Icon name="left" size="sm" />{t("pl.extraGive", { l: down })}</button>}
+            <span className="small muted self-center">{t("pl.extraNote")}</span>
+          </div>
+        )}
+      </div>
+    );
+  };
+  const prevBlock = (kind: "writing" | "speaking") => (p.d.prev ?? []).filter((x) => x.kind === kind).map((x, i) => {
+    const list = kind === "writing" ? p.rubrics.writing : p.rubrics.speaking;
+    const full = list.every((c) => typeof x.marks[c.id] === "number");
+    const st2 = full ? scoreStep(list.map((c) => x.marks[c.id]), x.level as PLevel, kind === "writing" ? x.marks.task : undefined) : null;
+    return (
+      <details key={i} className="plprevtask">
+        <summary className="small"><b>{t("pl.prevTask", { l: x.level })}</b>{full && <> · {list.reduce((a, c) => a + (x.marks[c.id] ?? 0), 0)}/{list.length * 3} → {st2 !== null ? STEPS[st2] : "—"}</>}</summary>
+        <div className="flex flex-col gap-2 mt-2">
+          {kind === "writing" ? <><p className="m-0 small">{x.prompt}</p><div className="tpassage plpassage">{x.text || <span className="muted">{t("pl.noAnswer")}</span>}</div></>
+            : x.questions.map((q, k) => <div key={k} className="flex flex-col gap-1"><span className="small"><b>{k + 1}.</b> {q.q}</span>{q.url ? <audio controls preload="none" src={q.url} className="w-full" /> : <span className="small muted">{t("pl.noRec")}</span>}</div>)}
+        </div>
+      </details>
+    );
+  });
+  const addLesson = async (g: { level: string; questions: string[] }) => {
+    const r = await addSpeakingToLesson(p.id, g.level, g.questions);
+    if (r.ok) setLessonMsg(t("pl.lessonAdded", { d: new Date((r as { when?: string }).when ?? Date.now()).toLocaleString("ru-RU", { day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" }) }));
+    else setLessonMsg(t(r.error === "nolesson" ? "pl.lessonNone" : "pl.err.net"));
+  };
+  const lessonBox = () => p.lessonQs.length > 0 && (
+    <details className="pllesson">
+      <summary><Icon name="msg" size="sm" /> <b>{t("pl.lessonT")}</b> <span className="small muted">{t("pl.lessonHint")}</span></summary>
+      <div className="pllessongrid mt-3">
+        {p.lessonQs.map((g) => (
+          <div key={g.level} className="pllessoncol">
+            <b>{t("pl.lessonLevel", { l: g.level })}</b>
+            <div className="small flex flex-col gap-1">{g.questions.map((q, i) => <div key={q}><b>{i + 1}.</b> {q}</div>)}</div>
+            <div className="flex flex-wrap gap-2">
+              {p.mode === "student" && <button type="button" className="btn secondary sm" disabled={pending} onClick={() => void addLesson(g)}><Icon name="plus" size="sm" />{t("pl.lessonAdd")}</button>}
+              <button type="button" className="btn plain sm" onClick={() => { void navigator.clipboard?.writeText(g.questions.map((q, i) => `${i + 1}. ${q}`).join("\n")); setLessonMsg(t("pl.copied")); }}><Icon name="copy" size="sm" />{t("pl.copy")}</button>
+              <button type="button" className={`btn sm ${lesson?.level === g.level ? "primary" : "plain"}`} onClick={() => setLesson(lesson?.level === g.level ? null : { level: g.level, marks: {} })}>{t("pl.lessonRate")}</button>
+            </div>
+          </div>
+        ))}
+      </div>
+      {lessonMsg && <p className="small m-0 mt-2">{lessonMsg}</p>}
+      {lesson && <div className="mt-3">{rubric(t("pl.part.speaking"), p.rubrics.speaking, lesson.marks, (m) => setLesson({ level: lesson.level, marks: m }), sLesson, lesson.level)}<p className="small muted m-0 mt-1">{t("pl.lessonCounts")}</p></div>}
+    </details>
+  );
+
   return (
     <div className="flex flex-col gap-4">
-      {waiting && <div className="alert"><Icon name="hourglass" size="sm" /> {t("pl.inProgress")}</div>}
+      {waiting && <div className="alert flex flex-wrap items-center gap-2"><Icon name="hourglass" size="sm" /> <span className="grow">{t(p.mode === "self" ? "pl.inProgressSelf" : "pl.inProgress")}</span>{p.mode === "self" && <a className="btn primary sm" href={`/placement/${p.id}`}>{t("pl.continueSelf")}</a>}</div>}
 
       <section className="card flex flex-col gap-3">
         <h3 className="m-0">{t("pl.table")}</h3>
@@ -152,15 +229,15 @@ export function PlacementReview(p: ReviewProps) {
           <div className="flex flex-wrap items-center gap-2"><h3 className="m-0 grow">{t("pl.famTitle")}</h3><span className="small muted">{t("pl.famLegend")}</span></div>
           <div className="tblwrap">
             <table className="pltable plfam">
-              <thead><tr><th>{t("pl.famCol")}</th><th>{sm.diag ? t("pl.famAt", { l: sm.diag }) : "—"}</th><th>{t("pl.famAll")}</th><th /></tr></thead>
+              <thead><tr><th>{t("pl.famCol")}</th>{famLv.map((l) => <th key={l} className={l === sm.diag ? "plfam-diag" : undefined}>{l}{l === sm.diag && <div className="small muted">{t("pl.famDiag")}</div>}</th>)}<th>{t("pl.famAll")}</th><th /></tr></thead>
               <tbody>
                 {sm.families.map((f) => {
-                  const r = f.lvl[1] ? f.lvl : f.all, q = r[1] ? r[0] / r[1] : 0;
+                  const r = (f.lvl[1] ?? 0) >= 2 ? f.lvl : f.all, q = r[1] ? r[0] / r[1] : 0;
                   const k = r[1] < 2 ? "few" : q >= 0.85 ? "ok" : q >= 0.5 ? "mid" : "bad";
                   return (
                     <tr key={f.id} className={`plfam-${k}`}>
                       <th><b>{f.name}</b><div className="small muted">{f.what}</div></th>
-                      <td>{f.lvl[1] ? <><b>{f.lvl[0]}/{f.lvl[1]}</b> <span className="muted">{pct(f.lvl)}%</span></> : <span className="muted">—</span>}</td>
+                      {famLv.map((l) => <td key={l} className={l === sm.diag ? "plfam-diag" : undefined}>{f.by?.[l]?.[1] ? <b>{f.by[l][0]}/{f.by[l][1]}</b> : <span className="muted">—</span>}</td>)}
                       <td><b>{f.all[0]}/{f.all[1]}</b> <span className="muted">{pct(f.all)}%</span></td>
                       <td className="plfam-st">{t(`pl.g.${k}` as DictKey)}</td>
                     </tr>
@@ -178,7 +255,25 @@ export function PlacementReview(p: ReviewProps) {
           {growth.length > 0 ? <div className="plgrowth"><b>{t("pl.growth")}:</b> {growth.map((g) => g.name).join(", ")}</div> : diagGroups.length > 0 && <div className="plgrowth ok">{t("pl.noGrowth")}</div>}
           <div className="plgroups">{diagGroups.map(gRow)}</div>
           {otherGroups.length > 0 && <details><summary className="small">{t("pl.mapOther")}</summary><div className="plgroups mt-2">{otherGroups.map(gRow)}</div></details>}
-          {sm.vgroups.length > 0 && <><h3 className="mb-0 mt-2">{t("pl.vmapTitle", { l: sm.vlevel ?? "" })}</h3><div className="plgroups">{sm.vgroups.map(gRow)}</div></>}
+          {(sm.vlevels ?? []).length > 0 && (
+            <>
+              <h3 className="mb-0 mt-2">{t("pl.vTitle")}</h3>
+              <div className="tblwrap">
+                <table className="pltable plfam">
+                  <thead><tr><th>{t("pl.vKind")}</th>{sm.vlevels.map((x) => <th key={x.level} className={x.level === sm.vlevel ? "plfam-diag" : undefined}>{x.level}<div className="small muted">{x.warm ? t("pl.vWarm") : x.level === sm.vlevel ? t("pl.vMain") : t("pl.vUp")}</div></th>)}</tr></thead>
+                  <tbody>
+                    {[...new Set(sm.vlevels.flatMap((x) => x.kinds.map((k) => k.name)))].map((name) => (
+                      <tr key={name}><th><b>{name}</b></th>{sm.vlevels.map((x) => { const k = x.kinds.find((y) => y.name === name); return <td key={x.level} className={x.level === sm.vlevel ? "plfam-diag" : undefined}>{k ? <b className={k.c === k.n ? "plc-ok" : k.c === 0 ? "plc-bad" : undefined}>{k.c}/{k.n}</b> : <span className="muted">—</span>}</td>; })}</tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className={`plgrowth ${vWeak.length ? "" : "ok"}`}>
+                {vWeak.length ? <><b>{t("pl.vWeak")}:</b> {vWeak.map((k) => `${k.name} (${k.level}, ${k.c}/${k.n})`).join("; ")}</> : t("pl.vNoWeak")}
+                {sm.vweak?.length > 0 && <div className="small mt-1">{t("pl.vTopics")}: {sm.vweak.slice(0, 8).join(", ")}</div>}
+              </div>
+            </>
+          )}
         </section>
       )}
 
@@ -213,6 +308,8 @@ export function PlacementReview(p: ReviewProps) {
           )}
           <details><summary className="small">{t("pl.expects")}</summary><ul className="small mt-2">{p.d.writing.expects.map((e) => <li key={e}>{e}</li>)}</ul></details>
           {rubric(t("pl.part.writing"), p.rubrics.writing, w, setW, wHint, p.d.writing.level)}
+          {extraBox("writing", p.d.writing.level, w, p.rubrics.writing)}
+          {prevBlock("writing")}
         </section>
       )}
 
@@ -227,7 +324,10 @@ export function PlacementReview(p: ReviewProps) {
             </div>
           ))}
           <details><summary className="small">{t("pl.expects")}</summary><ul className="small mt-2">{p.d.speaking.expects.map((e) => <li key={e}>{e}</li>)}</ul></details>
-          {rubric(t("pl.part.speaking"), p.rubrics.speaking, s, setS, sHint, p.d.speaking.level)}
+          {rubric(t("pl.part.speaking"), p.rubrics.speaking, s, setS, sTask, p.d.speaking.level)}
+          {extraBox("speaking", p.d.speaking.level, s, p.rubrics.speaking)}
+          {prevBlock("speaking")}
+          {lessonBox()}
         </section>
       )}
 

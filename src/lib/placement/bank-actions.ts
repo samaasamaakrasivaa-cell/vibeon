@@ -91,3 +91,20 @@ export async function resetBankItem(itemId: string, onlyAudio = false): Promise<
   revalidatePath("/teacher/placement/bank");
   return { ok: true };
 }
+
+/** Пометить вопрос «проверить»: любой учитель — при прохождении теста или на разборе. Владелец банка увидит пометку во вкладке «На проверку». */
+export async function flagItem(itemId: string, note: string, qid?: string | null, attemptId?: string | null): Promise<R> {
+  const me = await requireUser("TEACHER");
+  if (!ORIGINAL.has(itemId)) return { ok: false, error: "item" };
+  await db.placementFlag.create({ data: { itemId, qid: s(qid ?? "", 60) || null, note: s(note, 1000), userId: me.id, attemptId: s(attemptId ?? "", 60) || null } });
+  revalidatePath("/teacher/placement/bank");
+  return { ok: true };
+}
+
+/** Пометка разобрана (или снова открыта). */
+export async function resolveFlag(id: string, done = true): Promise<R> {
+  try { await owner(); } catch { return { ok: false, error: "owner" }; }
+  await db.placementFlag.update({ where: { id }, data: { resolvedAt: done ? new Date() : null } });
+  revalidatePath("/teacher/placement/bank");
+  return { ok: true };
+}

@@ -45,7 +45,7 @@ export function PlacementPanel({ students, rows, link, origin, owner }: { studen
         <div className="plhero3-actions">
           <button className="btn plwhite" disabled={pending} onClick={() => run(selfPlacement, (r) => router.push(`/placement/${r.id}`), true)}><Icon name="pencil" size="sm" />{t("pl.takeSelf")}</button>
           <button className="btn plglassbtn" onClick={() => setAssign(true)}><Icon name="user" size="sm" />{t("pl.assign")}</button>
-          <span className="pltipwrap" data-tip={t("pl.linkTip")}><button className="btn plglassbtn" onClick={() => setLinkOpen(true)} aria-describedby="pl-link-tip"><Icon name="link" size="sm" />{t("pl.linkNew")}</button><span id="pl-link-tip" className="sr-only">{t("pl.linkTip")}</span></span>
+          <button className="btn plglassbtn" onClick={() => setLinkOpen(true)}><Icon name="link" size="sm" />{t("pl.linkNew")}</button>
           {owner && <Link className="plownlink" href="/teacher/placement/bank"><Icon name="book" size="sm" />{t("pl.editBank")}</Link>}
         </div>
         {error && <div className="alert">{error}</div>}
@@ -57,7 +57,7 @@ export function PlacementPanel({ students, rows, link, origin, owner }: { studen
         {rows.length === 0 ? <p className="hint m-0">{t("pl.noResults")}</p> : (
           <div className="flex flex-col">
             {rows.map((r) => (
-              <Link key={r.id} href={`/teacher/placement/${r.id}`} className="plrow">
+              <Link key={r.id} href={r.mode === "self" && (r.status === "new" || r.status === "active") ? `/placement/${r.id}` : `/teacher/placement/${r.id}`} className="plrow">
                 <span className="grow min-w-0"><b className="truncate block">{r.who}</b><span className="small muted">{t(`pl.mode.${r.mode}` as "pl.mode.self")} · {r.when}</span></span>
                 {r.level && <span className="lvlsm">{r.level}</span>}
                 <span className={`pill ${r.status === "reviewed" ? "green" : r.status === "submitted" ? "orange" : "grey"}`}>{t(`pl.st.${r.status}` as "pl.st.new")}</span>

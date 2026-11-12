@@ -16,6 +16,10 @@ export default async function BankPage() {
   if (!isOwner(me.email)) notFound();
   const { bank } = await getBank();
   const edits = await db.placementEdit.findMany({ select: { itemId: true, data: true, audio: true } });
+  const fl = await db.placementFlag.findMany({ orderBy: { createdAt: "desc" }, take: 300 });
+  const users = new Map((await db.user.findMany({ where: { id: { in: [...new Set(fl.map((f) => f.userId))] } }, select: { id: true, name: true, email: true } })).map((u) => [u.id, u.name || u.email.replace(/@.*/, "")]));
+  const fmt = new Intl.DateTimeFormat("ru-RU", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "Europe/Moscow" });
+  const flags = fl.map((f) => ({ id: f.id, itemId: f.itemId, qid: f.qid, note: f.note, who: users.get(f.userId) ?? "—", when: fmt.format(f.createdAt), resolved: !!f.resolvedAt }));
   return (
     <div className="page" style={{ maxWidth: 1000 }}>
       <Link href="/teacher/courses?tab=tests" className="small muted">← {t("pl.backTests")}</Link>
@@ -26,6 +30,7 @@ export default async function BankPage() {
         edited={edits.filter((e) => Object.keys((e.data ?? {}) as object).length).map((e) => e.itemId)}
         audioEdited={edits.filter((e) => e.audio).map((e) => e.itemId)}
         groups={bank.groups.map((g) => ({ id: g.id, name: g.name_ru }))}
+        flags={flags}
       />
     </div>
   );

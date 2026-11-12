@@ -6,7 +6,7 @@ import { requireUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { getT } from "@/lib/i18n/server";
 import { getBank, RUBRICS } from "@/lib/placement/bank";
-import { summarize } from "@/lib/placement/engine";
+import { PL_LEVELS, summarize } from "@/lib/placement/engine";
 import { reviewData } from "@/lib/placement/review";
 import { stateOf } from "@/lib/placement/run";
 
@@ -22,6 +22,13 @@ export default async function PlacementReviewPage({ params }: { params: Promise<
   const { bank } = await getBank();
   const sm = summarize(st, bank);
   const d = reviewData(id, st, true);
+  // говорение на уроке: вопросы уровнем выше и ниже из заданий, которых ученик не видел
+  const spLevel = st.speaking ? (st.items[st.speaking.id] as { level?: string })?.level : null;
+  const usedSp = new Set([st.speaking?.id, ...(st.wsPrev ?? []).map((x) => x.id)]);
+  const lessonQs = spLevel ? [-1, 1].map((dlt) => PL_LEVELS[PL_LEVELS.indexOf(spLevel as never) + dlt]).filter(Boolean).map((lv) => ({
+    level: lv as string,
+    questions: bank.speaking.filter((x) => x.level === lv && !usedSp.has(x.id)).flatMap((x) => x.questions.map((q) => q.q)).slice(0, 3),
+  })).filter((x) => x.questions.length) : [];
   const who = a.mode === "student" ? `${a.student?.name ?? ""} ${a.student?.lastName ?? ""}`.trim() : a.mode === "self" ? t("pl.you") : a.guestName ?? "";
   const loc = lang === "ru" ? "ru-RU" : "en-GB";
   const when = a.submittedAt ?? a.startedAt ?? a.createdAt;
@@ -39,7 +46,7 @@ export default async function PlacementReviewPage({ params }: { params: Promise<
       </p>
       <div className="flex flex-col gap-6">
         <PlacementReview
-          id={id} mode={a.mode} status={a.status} level={a.level} showResult={a.showResult} sm={sm} d={d}
+          id={id} lessonQs={lessonQs} mode={a.mode} status={a.status} level={a.level} showResult={a.showResult} sm={sm} d={d}
           review={(a.review ?? {}) as never} rubrics={{ writing: RUBRICS.writing.criteria, speaking: RUBRICS.speaking.criteria }}
           howTo={RUBRICS.how_to_decide_ru} sublevels={RUBRICS.sublevels_ru} total={RUBRICS.total_ru}
         />

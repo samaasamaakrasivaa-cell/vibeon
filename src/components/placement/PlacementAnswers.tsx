@@ -4,6 +4,7 @@ import { useT } from "@/lib/i18n/client";
 import { revealState, toggleReveal } from "@/lib/placement/actions";
 import type { ReviewData } from "@/lib/placement/review";
 import { Icon } from "../Icon";
+import { Flag } from "./Flag";
 
 /**
  * Разбор ответов. Учитель видит скрипты и «глазиком» открывает их ученику;
@@ -45,6 +46,7 @@ export function PlacementAnswers({ id, d, teacher, reveal: initial }: { id: stri
                     <div className="small mt-1">{x.ok ? <b>{x.given}</b> : <>{x.dk ? <span className="pill grey">{t("pl.dontKnow")}</span> : <s className="muted">{x.given || t("pl.noAnswer")}</s>} → <b>{x.right}</b></>}</div>
                     <div className="small muted">{x.hinted && <span className="pill orange mr-1">{t("pl.withHint")}</span>}{x.topic}{x.explain ? ` · ${x.explain}` : ""}</div>
                   </div>{teacher && x.ms !== null && <span className={`plms ${x.ms < 3000 ? "fast" : x.ms > 60000 ? "slow" : ""}`} title={x.ms < 3000 ? t("pl.fastHint") : undefined}>{fmtSec(x.ms)}</span>}
+                  {teacher && <Flag itemId={x.id} attempt={id} />}
                   </div>
                 </div>
               ))}
@@ -59,6 +61,7 @@ export function PlacementAnswers({ id, d, teacher, reveal: initial }: { id: stri
             <span className="pill grey">{t(x.kind === "reading" ? "pl.part.reading" : "pl.part.listening")} · {x.level}</span>
             <h3 className="m-0 grow">{x.title}</h3>
             {teacher && x.plays !== null && <span className="small muted">{t("pl.playsUsed", { n: x.plays })}</span>}
+            {teacher && <Flag itemId={x.id} attempt={id} questions={x.questions} />}
             {teacher && x.kind === "listening" && (
               <button type="button" className={`btn sm ${rev.includes(x.id) ? "primary" : "secondary"}`} aria-pressed={rev.includes(x.id)} onClick={() => flip(x.id)} title={t("pl.eyeHint")}>
                 <Icon name={rev.includes(x.id) ? "eye" : "eyeoff"} size="sm" />{rev.includes(x.id) ? t("pl.scriptShown") : t("pl.showScript")}

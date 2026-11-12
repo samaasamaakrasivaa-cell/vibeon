@@ -486,6 +486,20 @@ model PlacementLink {
 }
 
 /// Правки банка владельцем платформы (поверх файлов content/placement).
+/// Пометка «проверить вопрос» — учитель отметил задание при прохождении или на разборе; владелец банка разбирает их во вкладке «На проверку».
+model PlacementFlag {
+  id         String    @id @default(cuid())
+  itemId     String
+  qid        String? // вопрос к тексту / записи
+  note       String    @default("")
+  userId     String
+  attemptId  String?
+  createdAt  DateTime  @default(now())
+  resolvedAt DateTime?
+
+  @@index([resolvedAt])
+}
+
 model PlacementEdit {
   itemId    String   @id
   data      Json
