@@ -15,6 +15,7 @@ import { addNextText, advance, closeSection, ensureTasks, enter, goTo, json, LAT
 import { revealedScripts } from "./review";
 import { R_BLOCKS, type RCfg, type RSaved, type RVariant } from "./report";
 import { run } from "../ai/gateway";
+import { provider } from "../ai/providers";
 import { aiCode, aiCtx } from "../ai/ctx";
 import type { PlScore } from "../ai/tasks";
 
@@ -514,6 +515,8 @@ export async function sendReport(id: string, on: boolean): Promise<R> {
 export async function aiScore(id: string, kind: "writing" | "speaking", transcripts: string[] = []): Promise<R & { ai?: PlScore }> {
   return wrap(async () => {
     const { me, a } = await teacherAttempt(id);
+    // без настоящего ИИ оценка была бы по длине ответа, а расшифровка — шаблонной: честно говорим, что ИИ не подключён
+    if (provider() === "mock" && process.env.PL_AI_MOCK !== "1") return { ok: false, error: "off" };
     const st = stateOf(a.state);
     const it = kind === "writing" ? (st.writing ? (st.items[st.writing.id] as WriteItem) : null) : (st.speaking ? (st.items[st.speaking.id] as SpeakItem) : null);
     if (!it) return { ok: false, error: "task" };
