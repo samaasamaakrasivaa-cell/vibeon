@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useT } from "@/lib/i18n/client";
+import type { DictKey } from "@/lib/i18n/dict";
 import { assignPlacement, closePlacementLink, createPlacementLink, selfPlacement, setLinkShowResult } from "@/lib/placement/actions";
 import { useRun } from "../courses/useRun";
 import { Dialog } from "../Dialog";
@@ -46,7 +47,7 @@ export function PlacementPanel({ students, rows, links, origin, owner, teen, age
             <h2>{t("pl.cardTitle")}</h2>
             <div className="plglass">
               <span><Icon name="target" size="sm" />{t("pl.factAny")}</span>
-              <span><Icon name="clock" size="sm" />{t("pl.factTime")}</span>
+              <span><Icon name="clock" size="sm" />{teen ? t("pl.factTimeBoth") : t("pl.factTime")}</span>
             </div>
           </div>
         </div>
@@ -98,14 +99,14 @@ export function PlacementPanel({ students, rows, links, origin, owner, teen, age
         {students.length === 0 ? <p className="hint m-0">{t("sch.noStudents")}</p> : <StudentPicker students={students} value={sid} onChange={(v) => { setSid(v); if (teen && v) setTrack(trackForAge(ages[v])); }} />}
         {teen && <TrackField value={track} onChange={setTrack} age={sid ? ages[sid] : null} />}
         <ExpectField value={exp} onChange={setExp} teen={track === "teen"} />
-        <p className="small muted">{t("pl.assignHint")}</p>
+        <Steps keys={["pl.assignS1", "pl.assignS2", "pl.assignS3", "pl.assignS4"]} tip="pl.assignTip" />
         <div className="actions"><button className="btn secondary" onClick={() => setAssign(false)}>{t("common.cancel")}</button>
           <button className="btn primary" disabled={pending || !sid} onClick={() => run(() => assignPlacement(sid!, exp || null, track), () => { setAssign(false); setSid(null); setExp(""); setTrack("adult"); })}>{t("pl.assignDo")}</button></div>
       </Dialog>
 
       <Dialog open={linkOpen} onClose={() => setLinkOpen(false)} title={t("pl.linkNew")}>
         {teen && <TrackField value={linkTrack} onChange={setLinkTrack} />}
-        <p className="small muted mt-0">{t("pl.linkLead")}</p>
+        <Steps keys={["pl.linkS1", "pl.linkS2", "pl.linkS3", "pl.linkS4"]} tip="pl.linkTip" />
         {link ? (
           <>
             <div className="flex gap-2"><input className="input grow" readOnly value={url} onFocus={(e) => e.currentTarget.select()} aria-label={t("pl.linkNew")} /><button className="btn primary" onClick={copy}><Icon name="copy" size="sm" />{copied ? t("pl.copied") : t("pl.copy")}</button></div>
@@ -118,6 +119,18 @@ export function PlacementPanel({ students, rows, links, origin, owner, teen, age
           <div className="actions"><button className="btn primary" disabled={pending} onClick={() => run(() => createPlacementLink(false, linkTrack))}>{t("pl.linkCreate")}</button></div>
         )}
       </Dialog>
+    </div>
+  );
+}
+
+/** «Как это работает» — нумерованные шаги и совет под ними. */
+export function Steps({ keys, tip }: { keys: DictKey[]; tip?: DictKey }) {
+  const { t } = useT();
+  return (
+    <div className="plsteps mt-3">
+      <b className="small">{t("pl.howTitle")}</b>
+      <ol>{keys.map((k) => <li key={k}>{t(k)}</li>)}</ol>
+      {tip && <p className="small muted m-0"><Icon name="info" size="sm" /> {t(tip)}</p>}
     </div>
   );
 }

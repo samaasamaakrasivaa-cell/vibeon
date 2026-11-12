@@ -2,7 +2,7 @@
 import { useRef, useState } from "react";
 import { useT } from "@/lib/i18n/client";
 import { assignPlacement } from "@/lib/placement/actions";
-import { ExpectField, TrackField, trackForAge, type PlTrack } from "../placement/PlacementPanel";
+import { ExpectField, Steps, TrackField, trackForAge, type PlTrack } from "../placement/PlacementPanel";
 import { approveRoadmap, assignTest, buildRoadmap, deleteCheckpoint, editStage, manualResults, type RoadmapForm } from "@/lib/roadmap/actions";
 import { LEVELS, ROUTE_TYPES, SKILL_COLOR, SKILL_NAME, SKILLS, txt, type Skill } from "@/lib/roadmap/cefr";
 import { etaRange, fmtHM, PACES, paceKey, paceLabel, parsePace } from "@/lib/roadmap/math";
@@ -91,7 +91,7 @@ function Checkpoints({ d }: { d: EditorData }) {
       <Dialog open={asg} onClose={() => setAsg(false)} title={t("rm.assignEntry")}>
         {d.teenAvail && <TrackField value={track} onChange={setTrack} age={d.age} />}
         <ExpectField value={exp} onChange={setExp} teen={track === "teen"} />
-        <p className="small muted">{t("pl.assignHint")}</p>
+        <Steps keys={["pl.assignS2", "pl.assignS3", "pl.assignS4"]} tip="pl.assignTip" />
         <div className="actions"><button className="btn secondary" onClick={() => setAsg(false)}>{t("common.cancel")}</button>
           <button className="btn primary" disabled={pending} onClick={() => run(() => assignPlacement(d.studentId, exp || null, track), () => setAsg(false))}>{t("pl.assignDo")}</button></div>
       </Dialog>

@@ -123,7 +123,7 @@ export function publicView(st: PState, lang: "ru" | "en", bank?: Bank) {
   }
   if (st.section === "speaking") {
     const it = st.speaking ? (st.items[st.speaking.id] as SpeakItem) : null;
-    return { ...base, section: "speaking" as const, instr: ins("speaking", it?.level), instrRu: insRu("speaking", it?.level), rec: Object.keys(st.speaking?.rec ?? {}), item: it && { id: it.id, level: it.level, intro: (it as SpeakItem & { intro_en?: string }).intro_en ?? it.intro_ru, questions: it.questions.map((q) => ({ q: q.q, prep: q.prep_sec, speak: q.speak_sec, audio: q.audio ?? null })) } };
+    return { ...base, section: "speaking" as const, instr: ins("speaking", it?.level), instrRu: insRu("speaking", it?.level), rec: Object.keys(st.speaking?.rec ?? {}), peek: st.peek ?? [], item: it && { id: it.id, level: it.level, intro: (it as SpeakItem & { intro_en?: string }).intro_en ?? it.intro_ru, questions: it.questions.map((q) => ({ q: q.q, prep: q.prep_sec, speak: q.speak_sec, audio: q.audio ?? null })) } };
   }
   return { ...base, section: st.section };
 }

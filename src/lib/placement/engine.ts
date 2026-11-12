@@ -30,7 +30,7 @@ export const SECTIONS = ["core", "vocab", "reading", "listening", "writing", "sp
 export type Section = (typeof SECTIONS)[number];
 
 export type Ph = "w" | "l" | "d" | "s" | "x" | "r" | "f" | "vw" | "vm" | "vu" | "vd" | "vl" | "vc";
-export type Ans = { v: string | number | null; ok: boolean | null; ms?: number; dk?: boolean; h?: boolean }; // dk — «Не знаю», h — открыл подсказку
+export type Ans = { v: string | number | null; ok: boolean | null; ms?: number; dk?: boolean; h?: boolean; tr?: (string | number)[] }; // dk — «Не знаю», h — открыл подсказку, tr — что выбирал до итогового ответа
 export type PState = {
   track?: "adult" | "teen"; // версия теста: взрослая или Placement test Teens
   v: 1;
@@ -40,6 +40,8 @@ export type PState = {
   warm?: number; // сколько заданий разминки (A1–A2) в начале, если уровень не отмечен
   pmax?: number; // полоска прогресса ядра не идёт назад
   open?: Record<string, number>; // черновики ответов к текстам и записям — до «Завершить раздел»
+  openTr?: Record<string, number[]>; // прежние варианты в этих черновиках (учителю видно, что ученик менял ответ)
+  peek?: string[]; // номера вопросов говорения, текст которых ученик открыл
   times?: Record<string, number>; // время по разделам, мс
   rerec?: Record<string, number>; // сколько раз перезаписан ответ на вопрос говорения
   items: Record<string, AnyItem>; // снимок выданных заданий (с ответами)
@@ -56,7 +58,7 @@ export type PState = {
   writing?: { id: string; text: string };
   speaking?: { id: string; rec: Record<string, string> }; // номер вопроса → ключ записи
   // дополнительное задание письма/говорения уровнем выше или ниже (даёт учитель): прошлые задания с ответами и оценками
-  wsPrev?: { kind: "writing" | "speaking"; id: string; text?: string; rec?: Record<string, string>; rerec?: Record<string, number>; marks?: Record<string, number>; points?: boolean[] }[];
+  wsPrev?: { kind: "writing" | "speaking"; id: string; text?: string; rec?: Record<string, string>; rerec?: Record<string, number>; peek?: string[]; marks?: Record<string, number>; points?: boolean[] }[];
   wsExtra?: { writing?: number; speaking?: number }; // направление: 1 — выше, -1 — ниже (одно на навык)
   level?: PLevel; step?: number; // level — уровень текстов (меньший из грамматики и лексики), step — итог грамматики
   vstep?: number; // итог лексики

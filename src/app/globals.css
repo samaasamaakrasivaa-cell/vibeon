@@ -1258,10 +1258,17 @@ select.iedit, select.iedit:hover, select.iedit:focus { background-position: righ
 @media (max-width: 560px) { .plglab { display: none; } }
 .plgrowth { padding: 10px 14px; border-radius: 12px; background: var(--bad-bg); color: var(--bad-text); font-size: 14px; }
 .plgrowth.ok { background: var(--ok-bg); color: var(--ok-text); }
+.plsteps { display: flex; flex-direction: column; gap: 6px; padding: 12px 14px; border-radius: 12px; background: var(--fill); }
+.plsteps ol { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 4px; font-size: 13.5px; line-height: 1.45; }
 .plcrit2 { display: flex; flex-direction: column; gap: 4px; padding: 10px 0; border-top: 1px solid var(--sep); }
 .plscore { display: inline-flex; padding: 3px; border-radius: 10px; background: var(--fill); gap: 2px; }
 .plscore button { width: 38px; height: 32px; border-radius: 8px; font-weight: 700; color: var(--text2); }
 .plscore button.on { background: var(--seg-on); color: var(--accent-text); box-shadow: 0 1px 3px rgba(0, 0, 0, .12); }
+.plscale { display: flex; flex-direction: column; gap: 2px; margin-top: 4px; }
+.plscrow { display: flex; align-items: flex-start; gap: 10px; text-align: left; padding: 6px 8px; border-radius: 8px; font-size: 13px; line-height: 1.4; color: var(--text2); }
+.plscrow b { flex-shrink: 0; width: 18px; text-align: center; }
+.plscrow:hover { background: var(--fill); }
+.plscrow.on { background: var(--accent-bg); color: var(--text); }
 .plprog button { display: inline-flex; align-items: center; gap: 4px; padding: 7px 12px; border-radius: 99px; background: var(--surface); color: var(--accent-text); font-weight: 600; font-size: 13px; border: 1.5px dashed var(--accent); }
 .plprog button:hover { background: var(--accent-bg); }
 .pltips { display: flex; flex-direction: column; gap: 6px; }
@@ -1358,6 +1365,11 @@ select.iedit, select.iedit:hover, select.iedit:focus { background-position: righ
 .plabpart { display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; border-radius: 14px; background: var(--surface2); }
 .pldkslow { display: flex; align-items: flex-start; gap: 8px; max-width: 520px; padding: 10px 12px; border-radius: 12px; background: var(--warn-bg); color: var(--warn-text); font-size: 13.5px; line-height: 1.45; animation: pldkin .25s ease; }
 .pldkslow button { margin-left: auto; padding: 0 2px; color: inherit; flex-shrink: 0; }
+.plwelcome { display: flex; flex-direction: column; gap: 12px; }
+.plwel { display: flex; align-items: flex-start; gap: 12px; line-height: 1.5; }
+.plwel .plico { flex-shrink: 0; }
+.pltired { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; background: var(--warn-bg); color: var(--warn-text); }
+.plnum { flex-shrink: 0; min-width: 26px; height: 22px; padding: 0 6px; border-radius: 6px; background: var(--surface-2, rgba(127,127,127,.12)); font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
 @keyframes pldkin { from { opacity: 0; transform: translateY(-4px); } }
 /* строка инструкции с флажком «На проверку» */
 .plinstrrow { display: flex; align-items: flex-start; gap: 10px; }

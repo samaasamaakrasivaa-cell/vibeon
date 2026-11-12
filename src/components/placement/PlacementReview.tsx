@@ -95,12 +95,13 @@ export function PlacementReview(p: ReviewProps) {
   const dks = p.d.core.filter((x) => x.dk).length + [...p.d.reading, ...p.d.listening].reduce((a, x) => a + x.questions.filter((q) => q.dk).length, 0);
 
   const descr = (c: Rubric, level: string, v: number) =>
-    v === 3 ? `${t("pl.sc3")}: ${c.levels[level] ?? ""}` : v === 2 ? `${t("pl.sc2")}: ${c.levels[level] ?? ""}` : v === 1 ? (level === "A1" ? t("pl.sc1A1") : `${t("pl.sc1", { l: prevLevel(level) })}: ${c.levels[prevLevel(level)] ?? ""}`) : t("pl.sc0");
+    v === 3 ? `${t("pl.sc3")}: ${c.levels[level] ?? ""}` : v === 2 ? t("pl.sc2") : v === 1 ? (level === "A1" ? t("pl.sc1A1") : `${t("pl.sc1", { l: prevLevel(level) })}: ${c.levels[prevLevel(level)] ?? ""}`) : t("pl.sc0");
   const rubric = (title: string, list: Rubric[], m: Marks, set: (x: Marks) => void, h: number | null, level: string) => {
     const done = list.filter((c) => typeof m[c.id] === "number");
     const sum = done.reduce((a, c) => a + m[c.id], 0);
     return (
       <div className="plrub">
+        <p className="small muted m-0">{t("pl.scRemind")}</p>
         <div className="flex flex-wrap items-center gap-2"><b className="grow">{t("pl.scTitle", { l: level })}</b>
           {done.length === list.length ? <span className="pill">{t("pl.scSum", { s: sum, m: list.length * 3 })} → {h !== null ? STEPS[h] : "—"}</span> : <span className="small muted">{t("pl.scLeft", { n: list.length - done.length })}</span>}
         </div>
@@ -112,7 +113,14 @@ export function PlacementReview(p: ReviewProps) {
                 {[0, 1, 2, 3].map((v) => <button key={v} type="button" role="radio" aria-checked={m[c.id] === v} className={m[c.id] === v ? "on" : ""} title={descr(c, level, v)} onClick={() => set({ ...m, [c.id]: v })}>{v}</button>)}
               </div>
             </div>
-            <div className="small muted">{typeof m[c.id] === "number" ? descr(c, level, m[c.id]) : `${t("pl.sc3")}: ${c.levels[level] ?? ""}`}</div>
+            {/* шкала видна сразу: что значит каждый балл для этого уровня; строку можно нажать вместо кнопки */}
+            <div className="plscale">
+              {[3, 2, 1, 0].map((v) => (
+                <button key={v} type="button" className={`plscrow ${m[c.id] === v ? "on" : ""}`} onClick={() => set({ ...m, [c.id]: v })}>
+                  <b>{v}</b><span>{descr(c, level, v)}</span>
+                </button>
+              ))}
+            </div>
           </div>
         ))}
         <details><summary className="small">{t("pl.scHow")}</summary><p className="small mt-2 mb-0">{p.total}</p></details>
@@ -319,7 +327,7 @@ export function PlacementReview(p: ReviewProps) {
           {p.d.speaking.noMic && <div className="alert">{t("pl.noMicNote")}</div>}
           {p.d.speaking.questions.map((q, i) => (
             <div key={i} className="flex flex-col gap-1">
-              <span className="small"><b>{i + 1}.</b> {q.q}{q.rerec > 0 && <span className="muted"> · {t("pl.rerecN", { n: q.rerec })}</span>}</span>
+              <span className="small"><b>{i + 1}.</b> {q.q}{q.rerec > 0 && <span className="muted"> · {t("pl.rerecN", { n: q.rerec })}</span>}{q.peek && <span className="pill orange ml-1">{t("pl.peeked")}</span>}</span>
               {q.url ? <audio controls preload="none" src={q.url} className="w-full" /> : <span className="small muted">{t("pl.noRec")}</span>}
             </div>
           ))}

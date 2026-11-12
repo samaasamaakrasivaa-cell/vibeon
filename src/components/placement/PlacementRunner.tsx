@@ -5,7 +5,8 @@ import { useT as useTBase } from "@/lib/i18n/client";
 import { dictionaries, translate, type DictKey as DK } from "@/lib/i18n/dict";
 import type { DictKey } from "@/lib/i18n/dict";
 import { Flag } from "./Flag";
-import { answerCore, draftText, finishPlacement, finishTexts, goSection, notePlay, peekCore, reviseCore, saveWriting, startPlacement } from "@/lib/placement/actions";
+import { Dialog } from "../Dialog";
+import { answerCore, draftText, finishPlacement, finishTexts, goSection, notePlay, peekCore, peekSpeak, reviseCore, saveWriting, startPlacement } from "@/lib/placement/actions";
 import type { PView } from "@/lib/placement/run";
 import { Icon } from "../Icon";
 import type { IconName } from "../icon-paths";
@@ -124,7 +125,7 @@ export function PlacementRunner({ id, initial, sample, done, home, canFlag = fal
         {v.section === "intro" && <Intro sample={sample} pending={pending} onStart={() => step(() => startPlacement(id))} />}
         {block && (past && back > 0
           ? <CoreStep key={`past-${past.item.id}`} item={past.item} n={curIdx - back - from + 1} initial={past.dk ? "" : past.given ?? ""} initialDk={past.dk} past pending={pending} onBack={curIdx - back > from ? () => openPast(back + 1) : undefined} onAnswer={revise} />
-          : (v as Core).item && <CoreStep key={(v as Core).item!.id} item={(v as Core).item!} n={curIdx - from + 1} pending={pending} onBack={curIdx > from ? () => openPast(1) : undefined} onAnswer={(val, dk, h) => step(() => answerCore(id, (v as Core).item!.id, val, ms(), dk, h))} />)}
+          : (v as Core).item && <CoreStep key={(v as Core).item!.id} item={(v as Core).item!} n={curIdx - from + 1} pending={pending} onBack={curIdx > from ? () => openPast(1) : undefined} onAnswer={(val, dk, h, tr) => step(() => answerCore(id, (v as Core).item!.id, val, ms(), dk, h, tr))} />)}
         {(v.section === "reading" || v.section === "listening") && (
           <TextStep key={(v as unknown as TextV).items.map((x) => x.id).join()} v={v as unknown as TextV} pending={pending} attempt={id} onFinish={() => step(() => finishTexts(id))} />
         )}
@@ -135,7 +136,8 @@ export function PlacementRunner({ id, initial, sample, done, home, canFlag = fal
       {v.section !== "intro" && !between && (
         <div className="plpause">
           <button type="button" className="btn plain sm" onClick={() => setPaused(true)}><Icon name="clock" size="sm" />{t("pl.saveLater")}</button>
-          <span className="small muted">{t("pl.saved")}</span>
+          {/* примерно на середине грамматики — мягко напоминаем, что можно передохнуть */}
+          {block && curIdx >= 15 && curIdx < 19 ? <span className="small pltired" role="status"><Icon name="info" size="sm" />{t("pl.tiredTip")}</span> : <span className="small muted">{t("pl.saved")}</span>}
         </div>
       )}
     </div>
@@ -183,6 +185,7 @@ function Intro({ sample, pending, onStart }: { sample: string; pending: boolean;
   const [snd, setSnd] = useState<"idle" | "play" | "ok">("idle");
   const [mic, setMic] = useState<"idle" | "rec" | "ok" | "err">("idle");
   const [back, setBack] = useState<string | null>(null);
+  const [hello, setHello] = useState(false);
   const playSample = () => { const a = new Audio(sample); setSnd("play"); a.onended = () => setSnd("ok"); a.play().catch(() => setSnd("idle")); };
   const testMic = async () => {
     try {
@@ -230,19 +233,30 @@ function Intro({ sample, pending, onStart }: { sample: string; pending: boolean;
           <button type="button" className="btn secondary sm" onClick={testMic} disabled={mic === "rec"}>{mic === "rec" ? "…" : t("pl.check")}</button>
         </div>
       </div>
-      <button className="btn primary lg self-center" disabled={pending} onClick={onStart}>{t("pl.start")}</button>
+      <button className="btn primary lg self-center" disabled={pending} onClick={() => setHello(true)}>{t("pl.start")}</button>
+      {/* напутствие перед первым вопросом: «I don't know» не стыдно, не гуглить, ошибки разберём с учителем, можно передохнуть */}
+      <Dialog open={hello} onClose={() => setHello(false)} title={t("pl.welTitle")}>
+        <div className="plwelcome">
+          {(["Dk", "Google", "Mist", "Pause"] as const).map((k) => (
+            <div key={k} className="plwel"><span className="plico sm"><Icon name={k === "Dk" ? "qmark" : k === "Google" ? "search" : k === "Mist" ? "check" : "clock"} /></span><span>{t(`pl.wel${k}` as DictKey)}</span></div>
+          ))}
+        </div>
+        <div className="flex justify-end mt-4"><button className="btn primary" disabled={pending} onClick={() => { setHello(false); onStart(); }}>{t("pl.welOk")}</button></div>
+      </Dialog>
     </section>
   );
 }
 
 // ───────── Грамматика и лексика ─────────
 
-function CoreStep({ item: it, n, pending, onAnswer, onBack, initial, initialDk, past }: { item: CoreItemV; n: number; pending: boolean; onAnswer: (val: string | number | null, dk: boolean, hinted: boolean) => void; onBack?: () => void; initial?: string | number; initialDk?: boolean; past?: boolean }) {
+function CoreStep({ item: it, n, pending, onAnswer, onBack, initial, initialDk, past }: { item: CoreItemV; n: number; pending: boolean; onAnswer: (val: string | number | null, dk: boolean, hinted: boolean, tried?: number[]) => void; onBack?: () => void; initial?: string | number; initialDk?: boolean; past?: boolean }) {
   const { t } = useT();
   const [val, setVal] = useState<string | number>(initial ?? "");
   const [dk, setDk] = useState(!!initialDk);
   const [showHint, setShowHint] = useState(false);
-  const pick = (k: string | number) => { setVal(k); setDk(false); };
+  // что ученик выбирал до итогового ответа (индексы вариантов, -1 — «Не знаю») — учителю на разборе
+  const tried = useRef<number[]>([]);
+  const pick = (k: string | number) => { if (typeof k === "number") tried.current.push(k); setVal(k); setDk(false); };
   // долго думает над заданием — мягко напоминаем, что лучше честное «I don't know», чем угадывание (один раз на задание)
   const [slow, setSlow] = useState(false);
   useEffect(() => {
@@ -250,7 +264,7 @@ function CoreStep({ item: it, n, pending, onAnswer, onBack, initial, initialDk, 
     const h = setTimeout(() => setSlow(true), (it.type === "mcq" ? SLOW_CHOICE : SLOW_TYPED) * 1000);
     return () => clearTimeout(h);
   }, [it.id, it.type, past]);
-  const submit = () => onAnswer(dk ? null : val, dk, showHint);
+  const submit = () => onAnswer(dk ? null : val, dk, showHint, tried.current);
   const input = (
     <input className="input plgap" autoFocus autoComplete="off" autoCapitalize="off" spellCheck={false} value={String(val)} onChange={(e) => pick(e.target.value)}
       onKeyDown={(e) => { if (e.key === "Enter" && String(val).trim()) onAnswer(String(val), false, showHint); }} aria-label={t("pl.answer")} />
@@ -278,7 +292,7 @@ function CoreStep({ item: it, n, pending, onAnswer, onBack, initial, initialDk, 
       {/* «I don't know» — отдельным вариантом под ответами: лучше честно, чем угадывать */}
       <div className="pldkrow">
         <button type="button" className={`topt dk pldk ${dk ? "on" : ""}`} aria-pressed={dk} data-tip={t("pl.dkTip")} aria-describedby="pl-dk-tip"
-          onClick={() => { setDk(!dk); if (!dk) setVal(""); }}><Icon name="qmark" size="sm" />I don&apos;t know</button>
+          onClick={() => { if (!dk) tried.current.push(-1); setDk(!dk); if (!dk) setVal(""); }}><Icon name="qmark" size="sm" />I don&apos;t know</button>
         <span id="pl-dk-tip" className="pldkcap">{t("pl.dkTip")}</span>
         {slow && !dk && <div className="pldkslow" role="status"><Icon name="info" size="sm" />{t("pl.dkSlow")}<button type="button" className="plain" aria-label={t("pl.hideTip")} onClick={() => setSlow(false)}><Icon name="close" size="sm" /></button></div>}
       </div>
@@ -436,6 +450,10 @@ function SpeakStep({ v, attempt, pending, onFinish, last }: { v: SpeakV; attempt
   const [phase, setPhase] = useState<"ready" | "prep" | "rec" | "up">("ready");
   const [left, setLeft] = useState(0);
   const [micErr, setMicErr] = useState(false);
+  // вопрос — только на слух; текст открывается по кнопке, и учитель видит, что ученик его открывал
+  const [peek, setPeek] = useState<string[]>((v as { peek?: string[] }).peek ?? []);
+  const showText = (i: number) => { const n = String(i + 1); if (!peek.includes(n)) { setPeek([...peek, n]); void peekSpeak(attempt, i + 1); } };
+  const replay = (src: string | null) => { if (src) new Audio(src).play().catch(() => null); };
   const rec = useRef<{ r: MediaRecorder; s: MediaStream; chunks: Blob[] } | null>(null);
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
   useEffect(() => () => { if (timer.current) clearInterval(timer.current); rec.current?.s.getTracks().forEach((x) => x.stop()); }, []);
@@ -503,7 +521,13 @@ function SpeakStep({ v, attempt, pending, onFinish, last }: { v: SpeakV; attempt
                 <span className="grow small muted">{t("pl.qOf", { a: i + 1, b: it.questions.length })} · {t("pl.speakLimit", { s: x.speak })}</span>
                 {has && !active && <button type="button" className="btn plain sm" disabled={busy} onClick={() => { setCur(i); setPhase("ready"); }}>{t("pl.rerecord")}</button>}
               </div>
-              {(active && phase !== "ready") || has ? <p className="plq m-0">{x.q}</p> : null}
+              {active && phase === "prep" && (
+                <div className="flex flex-wrap items-center gap-2">
+                  {x.audio && <button type="button" className="btn plain sm" onClick={() => replay(x.audio)}><Icon name="sound" size="sm" />{t("pl.replayQ")}</button>}
+                  {!peek.includes(n) && <button type="button" className="btn plain sm" onClick={() => showText(i)}><Icon name="eye" size="sm" />{t("pl.showQText")}</button>}
+                </div>
+              )}
+              {(peek.includes(n) || !x.audio) && ((active && phase !== "ready") || has) ? <p className="plq m-0">{x.q}</p> : null}
               {has && !(active && busy) && <audio controls preload="none" src={`/api/placement/${attempt}/rec/${n}?v=${ver[n] ?? 0}`} className="w-full" />}
               {active && (
                 <div className="flex flex-wrap items-center gap-3">

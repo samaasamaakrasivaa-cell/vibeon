@@ -50,15 +50,25 @@ export async function startPlacement(id: string): Promise<R> {
   });
 }
 
+/** Какие варианты ученик выбирал до итогового ответа: индексы вариантов, -1 — «Не знаю». Повторы подряд и итоговый — убираем. */
+function trail(x: unknown, n: number, final: string | number | null): number[] {
+  if (!Array.isArray(x)) return [];
+  const out: number[] = [];
+  for (const k of x.slice(0, 30)) if (Number.isInteger(k) && k >= -1 && k < n && out[out.length - 1] !== k) out.push(k as number);
+  while (out.length && out[out.length - 1] === (final === null ? -1 : final)) out.pop();
+  return out.slice(-10);
+}
+
 /** dk — «Не знаю»: засчитывается как неверный ответ, но в разборе отмечен отдельно. */
-export async function answerCore(id: string, itemId: string, v: string | number | null, ms: number, dk = false, hinted = false): Promise<R> {
+export async function answerCore(id: string, itemId: string, v: string | number | null, ms: number, dk = false, hinted = false, tried: unknown = []): Promise<R> {
   return wrap(async () => {
     const { st } = await load(id);
     const last = st.core[st.core.length - 1];
     if ((st.section !== "core" && st.section !== "vocab") || !last || last.id !== itemId || st.answers[itemId]) return { ok: true, view: publicView(st, await getLang()) };
     const it = st.items[itemId] as CoreItem;
     const val = dk ? null : typeof v === "number" ? v : str(v, 120);
-    st.answers[itemId] = { v: val, ok: dk ? false : checkCore(it, val), ms: Math.max(0, Math.min(3600e3, Math.round(ms) || 0)), ...(dk ? { dk: true } : {}), ...(hinted ? { h: true } : {}) };
+    const tr = trail(tried, it.options?.length ?? 0, val);
+    st.answers[itemId] = { v: val, ok: dk ? false : checkCore(it, val), ms: Math.max(0, Math.min(3600e3, Math.round(ms) || 0)), ...(dk ? { dk: true } : {}), ...(hinted ? { h: true } : {}), ...(tr.length ? { tr } : {}) };
     advance(st, (await getBank(trackOf(st.track))).bank);
     return save(id, st);
   });
@@ -74,6 +84,8 @@ export async function draftText(id: string, qid: string, v: number): Promise<R> 
     const it = ids.filter((x) => !done.includes(x)).map((x) => st.items[x] as ReadItem | ListenItem).find((x) => x.questions.some((q) => q.id === qid));
     const q = it?.questions.find((x) => x.id === qid);
     if (!q || !Number.isInteger(v) || v < -1 || v >= q.options.length) return { ok: false, error: "q" };
+    const prev = st.open?.[qid];
+    if (typeof prev === "number" && prev !== v) st.openTr = { ...(st.openTr ?? {}), [qid]: [...(st.openTr?.[qid] ?? []), prev].slice(-10) };
     st.open = { ...(st.open ?? {}), [qid]: v };
     await db.placementAttempt.update({ where: { id }, data: { state: json(st) } });
     return { ok: true };
@@ -92,13 +104,26 @@ export async function finishTexts(id: string): Promise<R> {
       for (const q of it.questions) {
         const v = st.open?.[q.id];
         const n = typeof v === "number" && v >= 0 && v < q.options.length ? v : null;
-        st.answers[q.id] = { v: n, ok: n === q.answer, ...(v === -1 ? { dk: true } : {}) };
+        const tr = (st.openTr?.[q.id] ?? []).filter((x) => x !== v);
+        st.answers[q.id] = { v: n, ok: n === q.answer, ...(v === -1 ? { dk: true } : {}), ...(tr.length ? { tr } : {}) };
       }
       done.push(tid);
     }
     const { bank } = await getBank(trackOf(st.track));
     if (addNextText(st, bank, st.section)) return save(id, st); // следующий текст — по результату предыдущего
     return closeAndGo(acc(), st, st.section);
+  });
+}
+
+/** Ученик открыл текст вопроса говорения (по умолчанию вопрос только на слух) — учителю это видно. */
+export async function peekSpeak(id: string, n: number): Promise<R> {
+  return wrap(async () => {
+    const { st } = await load(id);
+    const sp = st.speaking ? (st.items[st.speaking.id] as { questions?: unknown[] } | undefined) : undefined;
+    if (!sp?.questions || !Number.isInteger(n) || n < 1 || n > sp.questions.length) return { ok: false, error: "q" };
+    if (!(st.peek ?? []).includes(String(n))) st.peek = [...(st.peek ?? []), String(n)];
+    await db.placementAttempt.update({ where: { id }, data: { state: json(st) } });
+    return { ok: true };
   });
 }
 
@@ -197,7 +222,9 @@ export async function reviseCore(id: string, itemId: string, v: string | number 
     if (!inBlock || !st.answers[itemId]) return { ok: false, error: "idx" };
     const it = st.items[itemId] as CoreItem;
     const val = dk ? null : typeof v === "number" ? v : str(v, 120);
-    st.answers[itemId] = { ...st.answers[itemId], v: val, ok: dk ? false : checkCore(it, val), dk: dk || undefined };
+    const old = st.answers[itemId];
+    const tr = [...(old.tr ?? []), ...(old.dk ? [-1] : old.v !== null && old.v !== val ? [old.v] : [])].slice(-10);
+    st.answers[itemId] = { ...old, v: val, ok: dk ? false : checkCore(it, val), dk: dk || undefined, ...(tr.length ? { tr } : {}) };
     return save(id, st);
   });
 }
@@ -274,7 +301,7 @@ export async function assignPlacement(studentId: string, expected?: string | nul
   const c = await db.checkpoint.create({ data: { studentId, roadmapId: r?.id ?? null, kind: "entry", source: "placement" } });
   const seen = await seenBy({ studentId, track });
   await db.placementAttempt.create({ data: { teacherId: me.id, studentId, checkpointId: c.id, mode: "student", track, token: randomToken(24), state: json(withSeen(emptyState(expectOf(expected), track), seen)) } });
-  if (s.userId) await notify({ userId: s.userId, kind: "test", title: "Преподаватель назначил placement test", action: "decide", link: `/student/test/${c.id}` });
+  if (s.userId) await notify({ userId: s.userId, kind: "test", title: track === "teen" ? "Учитель назначил тебе Placement test Teens — нажми, чтобы начать" : "Преподаватель назначил вам placement test — можно начинать", action: "take", link: `/student/test/${c.id}` });
   refreshT(studentId);
   return { ok: true, id: c.id };
 }
@@ -413,10 +440,10 @@ export async function assignExtraWS(id: string, kind: "writing" | "speaking", di
     const review = (a.review ?? {}) as Record<string, unknown>;
     st.wsPrev = [...(st.wsPrev ?? []), kind === "writing"
       ? { kind, id: cur.id, text: (cur as { text: string }).text, marks: review.writing as Record<string, number>, points: review.points as boolean[] }
-      : { kind, id: cur.id, rec: (cur as { rec: Record<string, string> }).rec, rerec: st.rerec, marks: review.speaking as Record<string, number> }];
+      : { kind, id: cur.id, rec: (cur as { rec: Record<string, string> }).rec, rerec: st.rerec, peek: st.peek, marks: review.speaking as Record<string, number> }];
     st.items[nx.id] = nx;
     if (kind === "writing") st.writing = { id: nx.id, text: "" };
-    else { st.speaking = { id: nx.id, rec: {} }; st.rerec = {}; (st.speaking as { noMic?: boolean }).noMic = undefined; }
+    else { st.speaking = { id: nx.id, rec: {} }; st.rerec = {}; st.peek = undefined; (st.speaking as { noMic?: boolean }).noMic = undefined; }
     st.wsExtra = { ...(st.wsExtra ?? {}), [kind]: dir > 0 ? 1 : -1 };
     st.closed = LATER.filter((x) => x !== kind);
     st.section = kind; enter(st, kind);

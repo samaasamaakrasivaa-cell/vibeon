@@ -30,6 +30,11 @@ export function PlacementAnswers({ id, d, teacher, reveal: initial }: { id: stri
     await toggleReveal(id, itemId);
   });
   const L = ["A1", "A2", "B1", "B2", "C1"];
+  // сквозная нумерация в порядке показа — чтобы ссылаться на вопрос в разговоре и в PDF
+  const num = new Map<string, number>();
+  for (const part of ["core", "vocab"] as const) for (const l of L) for (const x of d.core) if ((part === "vocab") === !!x.vocab && x.level === l) num.set(x.id, num.size + 1);
+  for (const x of [...d.reading, ...d.listening]) for (const q of x.questions) num.set(q.id, num.size + 1);
+  const tried = (list: (string | null)[]) => teacher && list.length > 0 && <div className="small muted"><Icon name="pencil" size="sm" /> {t("pl.tried")}: {list.map((v) => v ?? t("pl.dontKnow")).join(" → ")}</div>;
   return (
     <div className="flex flex-col gap-4">
       {(["core", "vocab"] as const).map((part) => { const list = d.core.filter((x) => (part === "vocab") === !!x.vocab); return list.length > 0 && (
@@ -41,9 +46,10 @@ export function PlacementAnswers({ id, d, teacher, reveal: initial }: { id: stri
             <div className="flex flex-col gap-2">
               {list.filter((x) => x.level === l).map((x) => (
                 <div key={x.id} className={`plans ${x.ok ? "ok" : "bad"}`}>
-                  <div className="flex items-start gap-2"><Icon name={x.ok ? "check" : "close"} size="sm" /><div className="grow">
+                  <div className="flex items-start gap-2"><span className="plnum">{num.get(x.id)}</span><Icon name={x.ok ? "check" : "close"} size="sm" /><div className="grow">
                     {x.base && <span className="plbase sm">{x.base}</span>} {x.type === "transform" ? <><span>{x.q}</span><br /><span>{x.frame}</span></> : <span>{x.q}</span>}
                     <div className="small mt-1">{x.ok ? <b>{x.given}</b> : <>{x.dk ? <span className="pill grey">{t("pl.dontKnow")}</span> : <s className="muted">{x.given || t("pl.noAnswer")}</s>} → <b>{x.right}</b></>}</div>
+                    {tried(x.tried ?? [])}
                     <div className="small muted">{x.hinted && <span className="pill orange mr-1">{t("pl.withHint")}</span>}{x.topic}{x.explain ? ` · ${x.explain}` : ""}</div>
                   </div>{teacher && x.ms !== null && <span className={`plms ${x.ms < 3000 ? "fast" : x.ms > 60000 ? "slow" : ""}`} title={x.ms < 3000 ? t("pl.fastHint") : undefined}>{fmtSec(x.ms)}</span>}
                   {teacher && <Flag itemId={x.id} attempt={id} />}
@@ -72,11 +78,12 @@ export function PlacementAnswers({ id, d, teacher, reveal: initial }: { id: stri
           {x.audio && <audio controls src={x.audio} className="w-full" preload="none" />}
           {teacher && x.script && <details><summary className="small">{t("pl.script")}</summary><div className="tpassage plscript mt-2">{x.script}</div></details>}
           {!teacher && open[x.id] && <div className="tpassage plscript"><div className="small mb-1 font-bold"><Icon name="eye" size="sm" /> {t("pl.script")}</div>{open[x.id]}</div>}
-          {x.questions.map((q, n) => (
+          {x.questions.map((q) => (
             <div key={q.id} className={`plans ${q.ok ? "ok" : "bad"}`}>
-              <div className="flex items-start gap-2"><Icon name={q.ok ? "check" : "close"} size="sm" /><div className="grow">
-                <span>{n + 1}. {q.q}</span>
+              <div className="flex items-start gap-2"><span className="plnum">{num.get(q.id)}</span><Icon name={q.ok ? "check" : "close"} size="sm" /><div className="grow">
+                <span>{q.q}</span>
                 <div className="small mt-1">{q.ok ? <b>{q.options[q.answer]}</b> : <>{q.dk ? <span className="pill grey">{t("pl.dontKnow")}</span> : <s className="muted">{q.given === null ? t("pl.noAnswer") : q.options[Number(q.given)]}</s>} → <b>{q.options[q.answer]}</b></>}</div>
+                {tried(q.tried ?? [])}
                 {q.explain && <div className="small muted">{q.explain}</div>}
               </div></div>
             </div>

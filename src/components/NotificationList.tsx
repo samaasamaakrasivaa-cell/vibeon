@@ -7,7 +7,7 @@ import { Icon } from "./Icon";
 
 export type Note = { id: string; title: string; when: string; unread: boolean; done: boolean; link: string | null; action: string | null };
 
-const ACTION: Record<string, string> = { open_profile: "nt.open", reply: "nt.reply", check_screenshot: "nt.check", decide: "nt.decide", review: "nt.review" };
+const ACTION: Record<string, string> = { open_profile: "nt.open", reply: "nt.reply", check_screenshot: "nt.check", decide: "nt.decide", review: "nt.review", take: "nt.take" };
 
 export function NotificationList({ items }: { items: Note[] }) {
   const { t } = useT();
