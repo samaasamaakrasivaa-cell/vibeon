@@ -79,8 +79,9 @@ export function Builder({ d }: { d: BuilderData }) {
           <input className="editable text-center font-bold" defaultValue={d.title} key={d.title} onBlur={(e) => e.target.value.trim() !== d.title && go(() => updateLessonMeta(d.id, { title: e.target.value }))} aria-label={t("crs.title")} />
         </div>
         <div className="atr">
-          <button className="btn plain sm hide-md" onClick={() => setImp("file")}><Icon name="down" size="sm" />{t("bld.import")}</button>
-          <button className="btn plain sm hide-md" onClick={() => setImp("book")}><Icon name="book" size="sm" />{t("bld.coursebook")}</button>
+          {/* импорт виден всегда; на узком экране — только значок */}
+          <button className="btn plain sm" title={t("bld.import")} aria-label={t("bld.import")} onClick={() => setImp("file")}><Icon name="down" size="sm" /><span className="hide-md">{t("bld.import")}</span></button>
+          <button className="btn plain sm" title={t("bld.coursebook")} aria-label={t("bld.coursebook")} onClick={() => setImp("book")}><Icon name="book" size="sm" /><span className="hide-md">{t("bld.coursebook")}</span></button>
           <span className="small hide-md" style={{ color: saved ? "var(--ok)" : "var(--text3)" }}>{saved ? `✓ ${t("common.saved")}` : t("common.saving")}</span>
           <label className="flex items-center gap-2 small"><Icon name="user" size="sm" /><span className="hide-md">{t("bld.studentView")}</span><span className="switch"><input type="checkbox" checked={studentView} onChange={(e) => setStudentView(e.target.checked)} /><span /></span></label>
           <LangSwitch lang={lang} label={t("common.language")} />

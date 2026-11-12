@@ -70,10 +70,31 @@ export async function splitToTasks(text: string): Promise<Ok<{ tasks: DraftTask[
 }
 
 export async function addDraftTasks(lessonId: string, section: "lesson" | "homework" | "words", rubricId: string | null, tasks: DraftTask[]): Promise<Ok<{ n: number }>> {
+  // готовый JSON с этапами («part») и разделами («section»): этап ищем среди рубрик урока по названию, нет — добавляем новую
+  const withParts = tasks.some((x) => x.part || (x.section && x.section !== "lesson"));
+  let rubricOf = (_x: DraftTask): string | null => rubricId;
+  let secOf = (_x: DraftTask) => section;
+  if (withParts) {
+    const user = await requireUser("TEACHER");
+    const l = await db.lessonTemplate.findUnique({ where: { id: lessonId }, include: { unit: { include: { course: true } } } });
+    if (!l || l.unit.course.teacherId !== user.id) return { ok: false, error: "not found" };
+    const secs = [...((l.sections ?? []) as { id: string; title: string }[])];
+    // урок пустой и в нём одна рубрика по умолчанию — она становится первым этапом из файла
+    let spare = secs.length === 1 && !(await db.task.count({ where: { templateId: lessonId, section: "lesson" } })) ? secs[0] : null;
+    for (const part of [...new Set(tasks.filter((x) => (x.section ?? "lesson") === "lesson").map((x) => str(x.part, 80)).filter(Boolean))]) {
+      const same = secs.find((r) => r.title.trim().toLowerCase() === part.toLowerCase());
+      if (same) { if (same === spare) spare = null; continue; }
+      if (spare) { spare.title = part; spare = null; continue; }
+      secs.push({ id: randomUUID(), title: part });
+    }
+    await db.lessonTemplate.update({ where: { id: lessonId }, data: { sections: secs } });
+    secOf = (x) => (x.section === "homework" || x.section === "words" ? x.section : x.section === "lesson" || x.part ? "lesson" : section);
+    rubricOf = (x) => (secOf(x) !== "lesson" ? null : secs.find((r) => r.title.trim().toLowerCase() === str(x.part, 80).toLowerCase())?.id ?? rubricId ?? secs[0]?.id ?? null);
+  }
   let n = 0;
-  for (const x of tasks.slice(0, 60)) {
+  for (const x of tasks.slice(0, 80)) {
     if (!isType(x.type)) continue;
-    const r = await saveTask(lessonId, null, { section, rubricId, type: x.type, title: x.title, content: x.content, options: x.teacherOnly ? { teacherOnly: true } : {} });
+    const r = await saveTask(lessonId, null, { section: secOf(x), rubricId: rubricOf(x), type: x.type, title: x.title, content: x.content, options: x.teacherOnly ? { teacherOnly: true } : {} });
     if (r.ok) n++;
   }
   return { ok: true, n };
