@@ -48,7 +48,10 @@ export function reviewData(id: string, st: PState, forTeacher: boolean) {
       };
     }),
     extra: st.wsExtra ?? {},
-    times: Object.fromEntries(Object.entries(st.times ?? {}).filter(([k, v]) => !k.endsWith("At") && v > 0)) as Record<string, number>,
+    // время по разделам: всего, из него перерывы (паузы дольше 8 минут между действиями) и их число
+    times: Object.fromEntries(Object.entries(st.times ?? {}).filter(([k, v]) => !/(At|Last|Idle|Pauses)$/.test(k) && v > 0)) as Record<string, number>,
+    idle: Object.fromEntries(Object.entries(st.times ?? {}).filter(([k, v]) => k.endsWith("Idle") && v > 0).map(([k, v]) => [k.slice(0, -4), v])) as Record<string, number>,
+    pauses: Object.fromEntries(Object.entries(st.times ?? {}).filter(([k, v]) => k.endsWith("Pauses") && v > 0).map(([k, v]) => [k.slice(0, -6), v])) as Record<string, number>,
   };
 }
 export type ReviewData = ReturnType<typeof reviewData>;

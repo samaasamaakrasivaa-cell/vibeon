@@ -10,10 +10,21 @@ export const json = (v: unknown) => JSON.parse(JSON.stringify(v)) as Prisma.Inpu
 export const stateOf = (v: unknown) => v as PState;
 
 /** Время по разделам: отметка входа и накопленная длительность (с учётом перерывов не считаем паузы дольше 20 минут). */
-export function enter(st: PState, sec: string) { st.times = { ...(st.times ?? {}), [`${sec}At`]: Date.now() }; }
+export function enter(st: PState, sec: string) { const now = Date.now(); st.times = { ...(st.times ?? {}), [`${sec}At`]: now, [`${sec}Last`]: now }; }
+/** Перерыв: между двумя действиями ученика в разделе прошло больше 8 минут — это время не считаем работой. */
+const IDLE = 8 * 60e3;
+/** Каждое действие ученика (ответ, выбор варианта, прослушивание, черновик письма) — отметка активности в текущем разделе. */
+export function touch(st: PState) {
+  const sec = st.section, now = Date.now(), t = st.times ?? {};
+  if (!t[`${sec}At`]) return;
+  const gap = now - (t[`${sec}Last`] || t[`${sec}At`]);
+  st.times = { ...t, [`${sec}Last`]: now, ...(gap > IDLE ? { [`${sec}Idle`]: (t[`${sec}Idle`] ?? 0) + gap, [`${sec}Pauses`]: (t[`${sec}Pauses`] ?? 0) + 1 } : {}) };
+}
 export function leave(st: PState, sec: string) {
   const at = st.times?.[`${sec}At`];
-  if (at) st.times = { ...st.times, [sec]: (st.times?.[sec] ?? 0) + Math.min(Date.now() - at, 3 * 3600e3), [`${sec}At`]: 0 };
+  if (!at) return;
+  if (st.section === sec) touch(st);
+  st.times = { ...st.times, [sec]: (st.times?.[sec] ?? 0) + Math.min(Date.now() - at, 24 * 3600e3), [`${sec}At`]: 0 };
 }
 
 /** Разделы после ядра: между незавершёнными можно свободно переключаться. */

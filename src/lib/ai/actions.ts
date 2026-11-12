@@ -127,17 +127,20 @@ export async function bookCreate(plan: { units: { title: string; lessons: { titl
     const unit = await db.unit.create({ data: { courseId, title: str(u.title, 120) || `Unit ${uo + 1}`, order: uo++ } });
     let lo = 0;
     for (const l of u.lessons.slice(0, 20)) {
-      const rubric = randomUUID();
-      const lesson = await db.lessonTemplate.create({ data: { unitId: unit.id, title: str(l.title, 160) || `Lesson ${lo + 1}`, order: lo++, sections: [{ id: rubric, title: "Lead-in" }] } });
+      const tasks = l.tasks.filter((x) => isType(x.type)).slice(0, 80);
+      // этапы урока: из «part» готового JSON (по порядку появления), иначе одна рубрика Lead-in
+      const parts = [...new Set(tasks.filter((x) => (x.section ?? "lesson") === "lesson").map((x) => str(x.part, 80)).filter(Boolean))];
+      const secs = (parts.length ? parts : ["Lead-in"]).map((title) => ({ id: randomUUID(), title }));
+      const rubricOf = (x: DraftTask) => secs.find((r) => r.title === str(x.part, 80))?.id ?? secs[0].id;
+      const lesson = await db.lessonTemplate.create({ data: { unitId: unit.id, title: str(l.title, 160) || `Lesson ${lo + 1}`, order: lo++, sections: secs } });
       first ??= lesson.id;
-      const tasks = l.tasks.filter((x) => isType(x.type)).slice(0, 60);
       const order: Record<string, number> = {};
       if (tasks.length)
         await db.task.createMany({
           data: tasks.map((x) => {
             const section = x.section === "homework" || x.section === "words" ? x.section : "lesson";
             order[section] = (order[section] ?? -1) + 1;
-            return { templateId: lesson.id, section, rubricId: section === "lesson" ? rubric : null, type: x.type, title: str(x.title, 300), content: String(x.content ?? "").slice(0, 50000), options: (x.teacherOnly ? { teacherOnly: true } : {}) as Prisma.InputJsonObject, order: order[section] };
+            return { templateId: lesson.id, section, rubricId: section === "lesson" ? rubricOf(x) : null, type: x.type, title: str(x.title, 300), content: String(x.content ?? "").slice(0, 50000), options: (x.teacherOnly ? { teacherOnly: true } : {}) as Prisma.InputJsonObject, order: order[section] };
           }),
         });
     }

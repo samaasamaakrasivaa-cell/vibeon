@@ -1,7 +1,9 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { useT } from "@/lib/i18n/client";
-import { addSpeakingToLesson, assignExtraWS, deletePlacement, finalizePlacement, saveReview, setShowResult } from "@/lib/placement/actions";
+import { addSpeakingToLesson, aiScore, assignExtraWS, deletePlacement, finalizePlacement, saveReview, setShowResult } from "@/lib/placement/actions";
+import { transcribe } from "../ai/audio";
+import type { PlScore } from "@/lib/ai/tasks";
 import { BASE, finalHint, PL_LEVELS, scoreStep, STEPS, type PLevel, type Summary } from "@/lib/placement/engine";
 import type { ReviewData } from "@/lib/placement/review";
 import type { Rubric } from "@/lib/placement/bank";
@@ -12,8 +14,8 @@ import type { DictKey } from "@/lib/i18n/dict";
 
 type Marks = Record<string, number>;
 export type ReviewProps = {
-  id: string; mode: string; status: string; level: string | null; showResult: boolean;
-  sm: Summary; d: ReviewData; review: { writing?: Record<string, unknown>; speaking?: Record<string, unknown>; points?: boolean[]; comment?: string; lesson?: { level: string; marks: Record<string, unknown> } | null };
+  id: string; mode: string; status: string; level: string | null; showResult: boolean; teen?: boolean;
+  sm: Summary; d: ReviewData; review: { writing?: Record<string, unknown>; speaking?: Record<string, unknown>; points?: boolean[]; comment?: string; lesson?: { level: string; marks: Record<string, unknown> } | null; ai?: Partial<Record<"writing" | "speaking", PlScore & { level?: string; transcripts?: string[] }>> };
   lessonQs: { level: string; questions: string[] }[]; // говорение на уроке: вопросы уровнем выше и ниже
   rubrics: { writing: Rubric[]; speaking: Rubric[] }; howTo: string; sublevels: string; total: string;
 };
@@ -24,11 +26,43 @@ const pct = (r?: [number, number]) => (r && r[1] ? Math.round((r[0] / r[1]) * 10
 const cell = (r?: [number, number]) => (r && r[1] ? <><b>{pct(r)}%</b> <span className="muted">{r[0]}/{r[1]}</span></> : <span className="muted">—</span>);
 
 /** Проверка вводного теста учителем: таблица по навыкам, оценки письма и говорения по критериям, итог. */
+// На какой экзамен Cambridge опираются критерии уровня задания (для A1 у взрослых экзамена нет — шкала CEFR)
+const EXAM: Record<string, string> = { A1: "шкала CEFR A1", A2: "A2 Key", B1: "B1 Preliminary", B2: "B2 First", C1: "C1 Advanced" };
+const EXAM_TEEN: Record<string, string> = { A1: "A1 Movers", A2: "A2 Key for Schools", B1: "B1 Preliminary for Schools", B2: "B2 First for Schools", C1: "C1 Advanced" };
+
 export function PlacementReview(p: ReviewProps) {
   const { t } = useT();
   const { run, pending, error } = useRun();
   const [w, setW] = useState<Marks>(nums(p.review.writing));
   const [s, setS] = useState<Marks>(nums(p.review.speaking));
+  // ИИ-проверка: баллы-подсказки по критериям уровня задания (учитель правит), обоснования и вывод
+  const [ai, setAi] = useState(p.review.ai ?? {});
+  const [aiBusy, setAiBusy] = useState<"" | "writing" | "speaking">("");
+  const [aiErr, setAiErr] = useState<string | null>(null);
+  const runAi = async (kind: "writing" | "speaking") => {
+    const cur = kind === "writing" ? w : s;
+    if (Object.keys(cur).length && !confirm(t("pl.aiOverwrite"))) return;
+    setAiBusy(kind); setAiErr(null);
+    try {
+      let tr: string[] = [];
+      if (kind === "speaking") {
+        // записи → WAV в браузере → распознавание речи; пустая запись — пустая строка
+        tr = await Promise.all((p.d.speaking?.questions ?? []).map(async (q) => {
+          if (!q.url) return "";
+          const blob = await (await fetch(q.url)).blob();
+          return transcribe(blob).catch((e: Error) => { throw e; });
+        }));
+      }
+      const r = await aiScore(p.id, kind, tr);
+      if (!r.ok || !r.ai) { const c = (r as { error?: string }).error; setAiErr(t(`pl.aiErr.${c === "off" || c === "limit" || c === "tariff" ? c : "fail"}` as DictKey)); return; }
+      const got = Object.fromEntries(Object.entries(r.ai.scores).filter(([, v]) => typeof v === "number")) as Marks;
+      if (kind === "writing") setW((x) => ({ ...x, ...got })); else setS((x) => ({ ...x, ...got }));
+      setAi((x) => ({ ...x, [kind]: { ...r.ai!, transcripts: tr } }));
+    } catch (e) {
+      const c = (e as Error).message;
+      setAiErr(t(`pl.aiErr.${c === "off" || c === "limit" || c === "tariff" ? c : "fail"}` as DictKey));
+    } finally { setAiBusy(""); }
+  };
   const [pts, setPts] = useState<boolean[]>(p.review.points ?? []);
   const [comment, setComment] = useState(p.review.comment ?? "");
   const [lesson, setLesson] = useState<{ level: string; marks: Marks } | null>(p.review.lesson ? { level: p.review.lesson.level, marks: nums(p.review.lesson.marks) } : null);
@@ -87,8 +121,17 @@ export function PlacementReview(p: ReviewProps) {
       </div>
     );
   };
-  const tm = p.d.times;
+  // активное время = всё время в разделе минус перерывы; перерывы показываем отдельно
+  const idle: Record<string, number> = { ...(p.d.idle ?? {}) }, pauses: Record<string, number> = { ...(p.d.pauses ?? {}) };
+  // старые прохождения без отметок активности: в грамматике и лексике время каждого ответа известно — по нему и считаем
+  for (const [k, vocab] of [["core", false], ["vocab", true]] as const) {
+    if (idle[k] || !p.d.times[k]) continue;
+    const work = p.d.core.filter((x) => !!x.vocab === vocab && x.ms !== null).reduce((a, x) => a + Math.min(x.ms!, 8 * 60e3), 0);
+    if (work && p.d.times[k] - work > 8 * 60e3) { idle[k] = p.d.times[k] - work; pauses[k] = 1; }
+  }
+  const tm = Object.fromEntries(Object.entries(p.d.times).map(([k, v]) => [k, Math.max(0, v - (idle[k] ?? 0))]));
   const total = Object.values(tm).reduce((a, b) => a + b, 0);
+  const idleAll = Object.values(idle).reduce((a, b) => a + b, 0);
   const coreMs = p.d.core.map((x) => x.ms).filter((x): x is number => x !== null);
   const fast = coreMs.filter((x) => x < 3000).length;
   const slow = [...p.d.core].filter((x) => x.ms !== null).sort((a, b) => b.ms! - a.ms!).slice(0, 3).filter((x) => x.ms! > 20000);
@@ -96,23 +139,36 @@ export function PlacementReview(p: ReviewProps) {
 
   const descr = (c: Rubric, level: string, v: number) =>
     v === 3 ? `${t("pl.sc3")}: ${c.levels[level] ?? ""}` : v === 2 ? t("pl.sc2") : v === 1 ? (level === "A1" ? t("pl.sc1A1") : `${t("pl.sc1", { l: prevLevel(level) })}: ${c.levels[prevLevel(level)] ?? ""}`) : t("pl.sc0");
-  const rubric = (title: string, list: Rubric[], m: Marks, set: (x: Marks) => void, h: number | null, level: string) => {
+  const rubric = (title: string, list: Rubric[], m: Marks, set: (x: Marks) => void, h: number | null, level: string, aiKind?: "writing" | "speaking") => {
+    const A = aiKind ? ai[aiKind] : undefined;
     const done = list.filter((c) => typeof m[c.id] === "number");
     const sum = done.reduce((a, c) => a + m[c.id], 0);
     return (
       <div className="plrub">
-        <p className="small muted m-0">{t("pl.scRemind")}</p>
+        <p className="small muted m-0">{t("pl.scRemind", { l: level, ex: (p.teen ? EXAM_TEEN : EXAM)[level] ?? `CEFR ${level}` })}</p>
+        {aiKind && (
+          <div className="plai">
+            <div className="flex flex-wrap items-center gap-2">
+              <button type="button" className="btn secondary sm" disabled={!!aiBusy} onClick={() => runAi(aiKind)}><Icon name="spark" size="sm" />{aiBusy === aiKind ? t(aiKind === "speaking" ? "pl.aiListening" : "pl.aiChecking") : A ? t("pl.aiAgain") : t("pl.aiCheck")}</button>
+              <span className="small muted grow">{t(aiKind === "speaking" ? "pl.aiHintS" : "pl.aiHintW")}</span>
+            </div>
+            {aiErr && aiBusy === "" && <div className="small text-bad">{aiErr}</div>}
+            {A?.summary && <div className="small"><b>{t("pl.aiSummary")}:</b> {A.summary}</div>}
+            {aiKind === "speaking" && A?.transcripts?.some(Boolean) && <details><summary className="small">{t("pl.aiTranscript")}</summary><ol className="small mt-1 mb-0">{A.transcripts.map((x, i) => <li key={i}>{x || "—"}</li>)}</ol></details>}
+          </div>
+        )}
         <div className="flex flex-wrap items-center gap-2"><b className="grow">{t("pl.scTitle", { l: level })}</b>
           {done.length === list.length ? <span className="pill">{t("pl.scSum", { s: sum, m: list.length * 3 })} → {h !== null ? STEPS[h] : "—"}</span> : <span className="small muted">{t("pl.scLeft", { n: list.length - done.length })}</span>}
         </div>
         {list.map((c) => (
           <div key={c.id} className="plcrit2">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="small font-semibold grow">{c.name_ru}</span>
+              <span className="small font-semibold grow">{c.name_ru}{A && typeof A.scores?.[c.id] === "number" && <span className="pill violet ml-2">{t("pl.aiGave", { n: A.scores[c.id] as number })}</span>}</span>
               <div className="plscore" role="radiogroup" aria-label={`${title}: ${c.name_ru}`}>
                 {[0, 1, 2, 3].map((v) => <button key={v} type="button" role="radio" aria-checked={m[c.id] === v} className={m[c.id] === v ? "on" : ""} title={descr(c, level, v)} onClick={() => set({ ...m, [c.id]: v })}>{v}</button>)}
               </div>
             </div>
+            {A?.why?.[c.id] && <div className="small plai-why"><Icon name="spark" size="sm" /> {A.why[c.id]}</div>}
             {/* шкала видна сразу: что значит каждый балл для этого уровня; строку можно нажать вместо кнопки */}
             <div className="plscale">
               {[3, 2, 1, 0].map((v) => (
@@ -240,7 +296,8 @@ export function PlacementReview(p: ReviewProps) {
               <thead><tr><th>{t("pl.famCol")}</th>{famLv.map((l) => <th key={l} className={l === sm.diag ? "plfam-diag" : undefined}>{l}{l === sm.diag && <div className="small muted">{t("pl.famDiag")}</div>}</th>)}<th>{t("pl.famAll")}</th><th /></tr></thead>
               <tbody>
                 {sm.families.map((f) => {
-                  const r = (f.lvl[1] ?? 0) >= 2 ? f.lvl : f.all, q = r[1] ? r[0] / r[1] : 0;
+                  // как в доборе: если у раздела есть темы на уровне проверки — оцениваем по ним, иначе по всем ответам
+                  const r = sm.diag && (f.has ? f.has.includes(sm.diag) : (f.lvl[1] ?? 0) >= 2) ? f.lvl : f.all, q = r[1] ? r[0] / r[1] : 0;
                   const k = r[1] < 3 ? "few" : q >= 0.85 ? "ok" : q >= 0.5 ? "mid" : "bad";
                   return (
                     <tr key={f.id} className={`plfam-${k}`}>
@@ -288,8 +345,9 @@ export function PlacementReview(p: ReviewProps) {
       {total > 0 && (
         <section className="card flex flex-col gap-3">
           <div className="flex items-center gap-2"><h3 className="m-0 grow">{t("pl.timeTitle")}</h3><b>{fmtSec(total)}</b></div>
+          {idleAll > 0 && <p className="small muted m-0">{t("pl.timeIdleNote", { s: fmtSec(idleAll) })}</p>}
           <div className="plsteps">
-            {["core", "vocab", "reading", "listening", "writing", "speaking"].map((k) => <div key={k}><span>{t(`pl.part.${k}` as DictKey)}</span><b className="text-[16px]">{tm[k] ? fmtSec(tm[k]) : "—"}</b></div>)}
+            {["core", "vocab", "reading", "listening", "writing", "speaking"].map((k) => <div key={k}><span>{t(`pl.part.${k}` as DictKey)}</span><b className="text-[16px]">{tm[k] ? fmtSec(tm[k]) : "—"}</b>{idle[k] ? <span className="small muted">{t("pl.timeIdle", { s: fmtSec(idle[k]), n: pauses[k] ?? 1 })}</span> : null}</div>)}
           </div>
           <div className="small flex flex-col gap-1">
             {coreMs.length > 0 && <span>{t("pl.timeAvg", { s: fmtSec(coreMs.reduce((a, b) => a + b, 0) / coreMs.length) })}</span>}
@@ -315,7 +373,7 @@ export function PlacementReview(p: ReviewProps) {
             </div>
           )}
           <details><summary className="small">{t("pl.expects")}</summary><ul className="small mt-2">{p.d.writing.expects.map((e) => <li key={e}>{e}</li>)}</ul></details>
-          {rubric(t("pl.part.writing"), p.rubrics.writing, w, setW, wHint, p.d.writing.level)}
+          {rubric(t("pl.part.writing"), p.rubrics.writing, w, setW, wHint, p.d.writing.level, "writing")}
           {extraBox("writing", p.d.writing.level, w, p.rubrics.writing)}
           {prevBlock("writing")}
         </section>
@@ -332,7 +390,7 @@ export function PlacementReview(p: ReviewProps) {
             </div>
           ))}
           <details><summary className="small">{t("pl.expects")}</summary><ul className="small mt-2">{p.d.speaking.expects.map((e) => <li key={e}>{e}</li>)}</ul></details>
-          {rubric(t("pl.part.speaking"), p.rubrics.speaking, s, setS, sTask, p.d.speaking.level)}
+          {rubric(t("pl.part.speaking"), p.rubrics.speaking, s, setS, sTask, p.d.speaking.level, p.d.speaking.questions.some((q) => q.url) ? "speaking" : undefined)}
           {extraBox("speaking", p.d.speaking.level, s, p.rubrics.speaking)}
           {prevBlock("speaking")}
           {lessonBox()}
@@ -359,7 +417,8 @@ export function PlacementReview(p: ReviewProps) {
           {error && <div className="alert">{error}</div>}
         </section>
       )}
-      <div className="flex justify-end"><button className="btn plain sm" onClick={() => { if (confirm(t("pl.delConfirm"))) run(() => deletePlacement(p.id), () => location.assign("/teacher/courses?tab=tests"), true); }}>{t("pl.delete")}</button></div>
+      {/* удаление — для пробных и случайных прохождений (например, ссылку открыл не тот человек); у ученика пропадёт и результат в кабинете */}
+      <div className="flex flex-wrap items-center justify-end gap-2"><span className="small muted">{t("pl.deleteHint")}</span><button className="btn plain sm" onClick={() => { if (confirm(t("pl.delConfirm"))) run(() => deletePlacement(p.id), () => location.assign("/teacher/courses?tab=tests"), true); }}><Icon name="close" size="sm" />{t("pl.delete")}</button></div>
     </div>
   );
 }

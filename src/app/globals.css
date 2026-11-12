@@ -1258,12 +1258,14 @@ select.iedit, select.iedit:hover, select.iedit:focus { background-position: righ
 @media (max-width: 560px) { .plglab { display: none; } }
 .plgrowth { padding: 10px 14px; border-radius: 12px; background: var(--bad-bg); color: var(--bad-text); font-size: 14px; }
 .plgrowth.ok { background: var(--ok-bg); color: var(--ok-text); }
-.plsteps { display: flex; flex-direction: column; gap: 6px; padding: 12px 14px; border-radius: 12px; background: var(--fill); }
-.plsteps ol { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 4px; font-size: 13.5px; line-height: 1.45; }
+.plhow { display: flex; flex-direction: column; gap: 6px; padding: 12px 14px; border-radius: 12px; background: var(--fill); }
+.plhow ol { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 4px; font-size: 13.5px; line-height: 1.45; }
 .plcrit2 { display: flex; flex-direction: column; gap: 4px; padding: 10px 0; border-top: 1px solid var(--sep); }
 .plscore { display: inline-flex; padding: 3px; border-radius: 10px; background: var(--fill); gap: 2px; }
 .plscore button { width: 38px; height: 32px; border-radius: 8px; font-weight: 700; color: var(--text2); }
 .plscore button.on { background: var(--seg-on); color: var(--accent-text); box-shadow: 0 1px 3px rgba(0, 0, 0, .12); }
+.plai { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border-radius: 12px; background: var(--violet-bg); }
+.plai-why { color: var(--text2); display: flex; gap: 6px; align-items: flex-start; }
 .plscale { display: flex; flex-direction: column; gap: 2px; margin-top: 4px; }
 .plscrow { display: flex; align-items: flex-start; gap: 10px; text-align: left; padding: 6px 8px; border-radius: 8px; font-size: 13px; line-height: 1.4; color: var(--text2); }
 .plscrow b { flex-shrink: 0; width: 18px; text-align: center; }
@@ -1378,6 +1380,7 @@ select.iedit, select.iedit:hover, select.iedit:focus { background-position: righ
 .plflag { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 8px; font-size: 12.5px; font-weight: 600; color: var(--text3); border: 1px solid var(--sep); background: transparent; }
 .plflag:hover, .plflag[aria-expanded="true"] { color: var(--warn-text); border-color: var(--warn-text); }
 .plflag.sent { color: var(--ok-text); border-color: transparent; }
+.plflag.sm { padding: 2px 6px; margin-left: 8px; vertical-align: middle; }
 .plflagbox { position: absolute; right: 0; top: calc(100% + 6px); z-index: 20; width: min(320px, calc(100vw - 48px)); display: flex; flex-direction: column; gap: 8px; padding: 12px; border-radius: 14px; background: var(--surface); border: 1px solid var(--sep); box-shadow: 0 10px 30px rgba(0, 0, 0, .14); }
 /* разбор письма и говорения: дополнительное задание, прошлое задание, вопросы для урока */
 .plextra { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; border-radius: 14px; border: 1px dashed var(--sep); }
@@ -1414,6 +1417,7 @@ select.iedit, select.iedit:hover, select.iedit:focus { background-position: righ
 .rpt-opt textarea { font-size: 13.5px; line-height: 1.45; resize: vertical; }
 .rpt-send { display: flex; flex-direction: column; gap: 6px; padding: 12px; border-radius: 12px; background: var(--fill); }
 .rpt-preview { min-width: 0; }
+.rpt-preview.wide { grid-column: 1 / -1; }
 .rpt-sheet { background: #fff; color: #1d1d1f; border-radius: 6px; box-shadow: 0 2px 18px rgba(0, 0, 0, .12); padding: 40px 44px; font-size: 14px; line-height: 1.5; max-width: 820px; margin: 0 auto; }
 @media (max-width: 600px) { .rpt-sheet { padding: 22px 18px; } }
 .rpt-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 14px; border-bottom: 2px solid #ece8f7; }
@@ -1435,6 +1439,7 @@ select.iedit, select.iedit:hover, select.iedit:focus { background-position: righ
 .rpt-quote { padding: 10px 14px; border-left: 3px solid #d9cdf7; background: #faf8ff; border-radius: 0 8px 8px 0; font-size: 13.5px; }
 .rpt-q { margin: 0 0 6px; font-weight: 600; }
 .rpt-muted { color: #6e6e73; font-size: 12.5px; }
+.rpt-expl { font-size: 12.5px; color: #4a3a7a; background: #f6f2ff; border-radius: 6px; padding: 3px 8px; margin-top: 3px; }
 .rpt-skills { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 @media (max-width: 600px) { .rpt-skills { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .rpt-skills div { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 10px; background: #f6f4fb; }
@@ -1461,3 +1466,4 @@ select.iedit, select.iedit:hover, select.iedit:focus { background-position: righ
   .rpt-b h3, .rpt-head { break-after: avoid; }
   * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
+.impjson { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; background: var(--violet-bg); margin-bottom: 12px; }

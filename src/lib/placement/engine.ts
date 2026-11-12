@@ -94,7 +94,7 @@ const CORE_MAX = 60;
 const CORE_MAX_TEEN = 40; // Teens короче: весь тест ~25–40 минут
 const PER_GROUP = 3; // заданий из каждой группы на подробной проверке
 const FALLBACK_AFTER = 9, FALLBACK_BELOW = 0.4; // после 9 заданий меньше 40% — уровень ниже
-const SLICE_FROM = 0.8, SLICE_GROUPS = 4, SLICE_PER = 2, UP_FROM = 0.7, EDGE_FROM = 0.55, EXTRA = 4, REPEATS = 6, REPEAT_GAP = 3, COVER_MAX = 10, COVER_PER = 3, COVER_MIN = 3, FAM_ENOUGH = 7;
+const SLICE_FROM = 0.8, SLICE_GROUPS = 4, SLICE_PER = 2, UP_FROM = 0.7, EDGE_FROM = 0.55, EXTRA = 4, REPEATS = 6, REPEAT_GAP = 3, COVER_MAX = 16, COVER_PER = 3, COVER_MIN = 3, FAM_ENOUGH = 7;
 // уровень сделан на 80%+ — срез уровня выше (8 заданий); срез 70%+ — уровень выше целиком; 55–70% — ещё 4 задания уровня выше и решение по сумме
 
 // ───────── Ядро: поиск уровня → подробная проверка по группам ─────────
@@ -156,7 +156,9 @@ const levelAcc = (st: PState, li: number) => stat(st, (it, x) => it.level === PL
 
 /** Следующее задание ядра; null — ядро закончено. Отмечает в st этап проверки (diag, fb). */
 export function nextCore(st: PState, bank: Bank, rnd: () => number = Math.random): { item: CoreItem; ph: Ph } | null {
-  if (st.core.length >= (st.track === "teen" ? CORE_MAX_TEEN : CORE_MAX)) return null;
+  const cap = st.track === "teen" ? CORE_MAX_TEEN : CORE_MAX;
+  // лимит длины — для основной проверки; добор по разделам с малым числом ответов идёт и после него (не больше COVER_MAX)
+  if (st.core.length >= cap) return st.diag !== undefined && st.core.length < cap + COVER_MAX ? cover(st, bank, st.diag, rnd) : null;
   const warm = st.warm ?? 0;
   if (st.core.length < warm) {
     // два задания разминки одного уровня подряд — второе из другой группы, чтобы тема не повторялась
@@ -266,7 +268,8 @@ function cover(st: PState, bank: Bank, D: number, rnd: () => number): { item: Co
     const at = (li: number) => f.topics.filter((t) => topicLv.get(t) === li);
     const L = at(D).length ? D : D > 0 && at(D - 1).length ? D - 1 : -1;
     if (L < 0) continue;
-    const s2 = stat(st, (it, x) => it.skill === "grammar" && !x.ph?.startsWith("v") && f.topics.includes(it.topic_id) && PL_LEVELS.indexOf(it.level) >= L);
+    // считаем ровно то, что потом покажет таблица разделов: если у раздела есть темы на уровне проверки — ответы на этом уровне, иначе — все
+    const s2 = stat(st, (it, x) => it.skill === "grammar" && !x.ph?.startsWith("v") && f.topics.includes(it.topic_id) && (L === D ? PL_LEVELS.indexOf(it.level) === D : true));
     const extra = done.filter((x) => f.topics.includes((st.items[x.id] as CoreItem)?.topic_id)).length;
     const need = s2.n < COVER_MIN ? COVER_MIN - s2.n : s2.n === COVER_MIN && s2.c === COVER_MIN - 2 ? 1 : 0; // 1 из 3 — спорно, ещё одно
     if (need > 0 && extra < COVER_PER) cands.push({ f, need, topics: at(L) });

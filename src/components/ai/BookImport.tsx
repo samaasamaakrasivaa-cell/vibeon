@@ -6,6 +6,7 @@ import { addDraftTasks, bookCreate, bookPlan, splitToTasks } from "@/lib/ai/acti
 import type { DraftTask } from "@/lib/ai/tasks";
 import { TYPES } from "@/lib/tasks/catalog";
 import { COURSE_CATEGORIES } from "@/lib/tasks/catalog";
+import { importPrompt, parseImport } from "@/lib/tasks/import-json";
 import { Dialog } from "../Dialog";
 import { Icon } from "../Icon";
 
@@ -19,7 +20,21 @@ export async function extractFile(f: File): Promise<string> {
   return j.text as string;
 }
 
-const ACCEPT = ".docx,.pptx,.pdf,.txt,.md,image/png,image/jpeg,image/webp";
+const ACCEPT = ".docx,.pptx,.pdf,.txt,.md,.json,image/png,image/jpeg,image/webp";
+
+/** Кнопка «Скопировать инструкцию для Claude»: как подготовить готовый JSON урока по своим материалам. */
+function PromptCopy() {
+  const { t } = useT();
+  const [ok, setOk] = useState(false);
+  return (
+    <div className="impjson">
+      <span className="small grow">{t("ai.jsonLead")}</span>
+      <button type="button" className="btn secondary sm" onClick={async () => { try { await navigator.clipboard.writeText(importPrompt()); setOk(true); setTimeout(() => setOk(false), 2500); } catch { /* буфер недоступен */ } }}>
+        <Icon name="copy" size="sm" />{ok ? t("ai.promptCopied") : t("ai.promptCopy")}
+      </button>
+    </div>
+  );
+}
 
 function DraftList({ tasks, picked, setPicked }: { tasks: DraftTask[]; picked: Set<number>; setPicked: (s: Set<number>) => void }) {
   const { lang } = useT();
@@ -50,10 +65,14 @@ export function ImportDialog({ lessonId, section, rubricId, onClose, onDone }: {
   const code = (e: unknown) => { const c = String((e as Error).message); return ["limit", "tariff", "off", "fail", "type", "size"].includes(c) ? t(`ai.err.${c}` as "ai.err.fail") : c; };
   const read = async (f?: File) => {
     if (!f) return;
+    if (/\.json$/i.test(f.name)) { setText(await f.text()); return; } // готовый JSON читаем сами, без распознавания
     setBusy(t("ai.reading")); setErr(null);
     try { setText(await extractFile(f)); } catch (e) { setErr(code(e)); } finally { setBusy(null); }
   };
   const split = async () => {
+    // готовый JSON (например, от Claude) — задания сразу, без ИИ-разбора
+    const plan = parseImport(text);
+    if (plan) { const all = plan.units.flatMap((u) => u.lessons.flatMap((l) => l.tasks)); setTasks(all); setPicked(new Set(all.map((_, i) => i))); return; }
     setBusy(t("ai.splitting")); setErr(null);
     const r = await splitToTasks(text).catch(() => ({ ok: false as const, error: t("ai.err.fail") }));
     setBusy(null);
@@ -70,6 +89,7 @@ export function ImportDialog({ lessonId, section, rubricId, onClose, onDone }: {
       {!tasks ? (
         <>
           <p className="muted mt-0">{t("ai.importLead")}</p>
+          <PromptCopy />
           <label className="upl"><Icon name="clip" />{busy === t("ai.reading") ? busy : t("ai.chooseFile")}<input type="file" hidden accept={ACCEPT} onChange={(e) => read(e.target.files?.[0])} /></label>
           <div className="field mt-3"><label htmlFor="imp-t" className="small muted">{t("ai.orPaste")}</label><textarea id="imp-t" className="textarea" style={{ minHeight: 200 }} value={text} onChange={(e) => setText(e.target.value)} /></div>
         </>
@@ -78,7 +98,7 @@ export function ImportDialog({ lessonId, section, rubricId, onClose, onDone }: {
       <div className="actions">
         {tasks && <button className="btn secondary" onClick={() => setTasks(null)}>{t("common.back")}</button>}
         {!tasks
-          ? <button className="btn primary" disabled={!text.trim() || !!busy} onClick={split}><Icon name="spark" size="sm" />{busy ?? t("ai.split")}</button>
+          ? <button className="btn primary" disabled={!text.trim() || !!busy} onClick={split}>{parseImport(text) ? <><Icon name="check" size="sm" />{t("ai.jsonUse")}</> : <><Icon name="spark" size="sm" />{busy ?? t("ai.split")}</>}</button>
           : <button className="btn primary" disabled={!picked.size || !!busy} onClick={add}>{busy ?? t("ai.addN", { n: picked.size })}</button>}
       </div>
     </Dialog>
@@ -104,6 +124,14 @@ export function BookDialog({ courseId, onClose }: { courseId?: string; onClose: 
   const addFiles = async (picked: FileList | null) => {
     const list = picked ? [...picked] : []; // копия: поле выбора файла очищается сразу после выбора
     if (!list.length) return;
+    // готовый JSON курса или уроков — план сразу, без ИИ
+    const js = list.find((x) => /\.json$/i.test(x.name));
+    if (js) {
+      const p = parseImport(await js.text());
+      if (!p) { setErr(t("ai.jsonBad")); return; }
+      setF((x) => ({ ...x, title: x.title || p.title || js.name.replace(/\.json$/i, ""), level: x.level || p.level || "" }));
+      setPlan({ units: p.units }); setOff(new Set()); return;
+    }
     const fresh = list.map((x) => ({ name: x.name, role: /work ?book|wb/i.test(x.name) ? "workbook" : /teacher|tb\b/i.test(x.name) ? "teacher" : "student", text: null as string | null }));
     setFiles((a) => [...a, ...fresh]);
     const first = list[0].name;
@@ -136,6 +164,7 @@ export function BookDialog({ courseId, onClose }: { courseId?: string; onClose: 
       {!plan ? (
         <>
           <p className="muted mt-0">{t("ai.bookLead")}</p>
+          <PromptCopy />
           {files.map((x, i) => (
             <div key={i} className="bookfile">
               <Icon name="book" size="sm" /><span className="grow truncate">{x.name}{x.text === null ? ` · ${t("ai.reading")}` : x.err ? ` · ${x.err}` : ` · ${t("ai.chars", { n: x.text.length })}`}</span>

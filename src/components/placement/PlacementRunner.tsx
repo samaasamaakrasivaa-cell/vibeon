@@ -29,7 +29,7 @@ const Instr = ({ en, ru }: { en?: string; ru?: string }) => <p className="plinst
 
 // Пометить вопрос «на проверку» — только учителю, который проходит тест сам
 const FlagCtx = createContext<{ attempt: string; can: boolean }>({ attempt: "", can: false });
-function FlagButton(p: { itemId: string; questions?: { id: string }[] }) {
+function FlagButton(p: { itemId: string; qid?: string; small?: boolean }) {
   const { attempt, can } = useContext(FlagCtx);
   return can ? <Flag {...p} attempt={attempt} /> : null;
 }
@@ -333,12 +333,12 @@ function TextStep({ v, pending, onFinish, attempt }: { v: TextV; pending: boolea
     <section className="card flex flex-col gap-4" data-text={it.id}>
       <div className="flex flex-wrap items-center gap-2"><span className="pill">{t(listen ? "pl.recTab" : "pl.textTab", { n: v.n ?? 1 })}</span>{(v.n ?? 1) > 1 && !v.extra && <span className="small muted">{t("pl.byPrev")}</span>}</div>
       {v.extra && <div className="alert ok" style={{ background: "var(--accent-bg)", color: "var(--accent-text)" }}>{t("pl.extraText")}</div>}
-      <div className="plinstrrow"><Instr en={v.instr} ru={(v as { instrRu?: string }).instrRu} /><FlagButton itemId={it.id} questions={it.questions} /></div>
+      <div className="plinstrrow"><Instr en={v.instr} ru={(v as { instrRu?: string }).instrRu} /><FlagButton itemId={it.id} /></div>
       <h3 className="m-0">{it.title}</h3>
       {listen ? <Player key={it.id} it={it} attempt={attempt} onPlaying={setPlaying} /> : <div className="tpassage plpassage">{it.passage}</div>}
       {it.questions.map((q, n) => (
         <fieldset key={q.id} className="tq">
-          <legend><span className="tk-num">{n + 1}</span>{q.q}</legend>
+          <legend><span className="tk-num">{n + 1}</span>{q.q}<FlagButton itemId={it.id} qid={q.id} small /></legend>
           <div className="flex flex-col gap-2">
             {q.options.map((o, k) => <label key={k} className={`topt ${ans[q.id] === k ? "on" : ""}`}><input type="radio" name={q.id} checked={ans[q.id] === k} onChange={() => pick(q.id, k)} />{o}</label>)}
             <label className={`topt dk ${ans[q.id] === -1 ? "on" : ""}`}><input type="radio" name={q.id} checked={ans[q.id] === -1} onChange={() => pick(q.id, -1)} />I don&apos;t know</label>

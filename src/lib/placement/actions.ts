@@ -9,11 +9,14 @@ import { notify } from "../notify";
 import { rateLimit } from "../rate-limit";
 import { getLang } from "../i18n/server";
 import { attemptFor, ptCookie } from "./access";
-import { getBank, isOwner, TEEN_READY, trackOf, type Track } from "./bank";
+import { getBank, isOwner, RUBRICS, TEEN_READY, trackOf, type Track } from "./bank";
 import { checkCore, emptyState, EXPECT, pickTask, PL_LEVELS, stepIdx, summarize, words, type CoreItem, type Expect, type ListenItem, type ReadItem, type SpeakItem, type WriteItem } from "./engine";
-import { addNextText, advance, closeSection, ensureTasks, enter, goTo, json, LATER, availOf, openOf, publicView, stateOf, type Later, type PView } from "./run";
+import { addNextText, advance, closeSection, ensureTasks, enter, goTo, json, LATER, availOf, openOf, publicView, stateOf, touch, type Later, type PView } from "./run";
 import { revealedScripts } from "./review";
 import { R_BLOCKS, type RCfg, type RSaved, type RVariant } from "./report";
+import { run } from "../ai/gateway";
+import { aiCode, aiCtx } from "../ai/ctx";
+import type { PlScore } from "../ai/tasks";
 
 type R = { ok: true; id?: string; view?: PView } | { ok: false; error: string };
 const str = (v: unknown, max = 200) => (typeof v === "string" ? v.trim().slice(0, max) : "");
@@ -25,6 +28,7 @@ async function load(id: string) {
   return { ...acc, st: stateOf(acc.a.state) };
 }
 async function save(id: string, st: ReturnType<typeof stateOf>, extra: Record<string, unknown> = {}) {
+  touch(st);
   const view = publicView(st, await getLang(), (await getBank(trackOf(st.track))).bank); // считает и полоску прогресса — до записи
   await db.placementAttempt.update({ where: { id }, data: { state: json(st), ...extra } });
   return { ok: true as const, view };
@@ -88,6 +92,7 @@ export async function draftText(id: string, qid: string, v: number): Promise<R> 
     const prev = st.open?.[qid];
     if (typeof prev === "number" && prev !== v) st.openTr = { ...(st.openTr ?? {}), [qid]: [...(st.openTr?.[qid] ?? []), prev].slice(-10) };
     st.open = { ...(st.open ?? {}), [qid]: v };
+    touch(st);
     await db.placementAttempt.update({ where: { id }, data: { state: json(st) } });
     return { ok: true };
   });
@@ -500,5 +505,37 @@ export async function sendReport(id: string, on: boolean): Promise<R> {
     if (on && !a.showResult) return setShowResult(id, true);
     revalidatePath(`/teacher/placement/${id}`);
     return { ok: true };
+  });
+}
+
+// ───────── ИИ-проверка письма и говорения ─────────
+
+/** ИИ ставит баллы 0–3 по критериям уровня задания и коротко объясняет; учитель потом правит. transcripts — расшифровки ответов говорения. */
+export async function aiScore(id: string, kind: "writing" | "speaking", transcripts: string[] = []): Promise<R & { ai?: PlScore }> {
+  return wrap(async () => {
+    const { me, a } = await teacherAttempt(id);
+    const st = stateOf(a.state);
+    const it = kind === "writing" ? (st.writing ? (st.items[st.writing.id] as WriteItem) : null) : (st.speaking ? (st.items[st.speaking.id] as SpeakItem) : null);
+    if (!it) return { ok: false, error: "task" };
+    const level = it.level, below = PL_LEVELS[PL_LEVELS.indexOf(level as never) - 1] ?? "";
+    const crit = (kind === "writing" ? RUBRICS.writing : RUBRICS.speaking).criteria.map((c) => ({ id: c.id, name: c.name_ru, level: c.levels[level] ?? "", below: below ? c.levels[below] ?? "" : "" }));
+    let task: string, text: string;
+    if (it.type === "writing") {
+      task = `${it.prompt_en}${it.points?.length ? `\nIn your answer: ${it.points.join("; ")}.` : ""}\n(${it.min_words}–${it.max_words} words)`;
+      text = st.writing?.text ?? "";
+    } else {
+      const qs = (it as SpeakItem).questions;
+      task = qs.map((q, i) => `${i + 1}. ${q.q}`).join("\n");
+      text = qs.map((q, i) => `${i + 1}. ${str(transcripts[i] ?? "", 3000) || "(нет записи)"}`).join("\n");
+    }
+    try {
+      const ai = await run("plscore", { kind, level, below, teen: st.track === "teen", task, text, criteria: crit }, await aiCtx(me));
+      const prev = (a.review ?? {}) as Record<string, unknown>;
+      const prevAi = (prev.ai ?? {}) as Record<string, unknown>;
+      await db.placementAttempt.update({ where: { id }, data: { review: json({ ...prev, ai: { ...prevAi, [kind]: { ...ai, level, at: new Date().toISOString(), ...(kind === "speaking" ? { transcripts: transcripts.map((x) => str(x, 3000)) } : {}) } } }) } });
+      return { ok: true, ai };
+    } catch (e) {
+      return { ok: false, error: aiCode(e) };
+    }
   });
 }

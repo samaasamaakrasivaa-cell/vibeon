@@ -67,7 +67,7 @@ export function PlacementAnswers({ id, d, teacher, reveal: initial }: { id: stri
             <span className="pill grey">{t(x.kind === "reading" ? "pl.part.reading" : "pl.part.listening")} · {x.level}</span>
             <h3 className="m-0 grow">{x.title}</h3>
             {teacher && x.plays !== null && <span className="small muted">{t("pl.playsUsed", { n: x.plays })}</span>}
-            {teacher && <Flag itemId={x.id} attempt={id} questions={x.questions} />}
+            {teacher && <Flag itemId={x.id} attempt={id} />}
             {teacher && x.kind === "listening" && (
               <button type="button" className={`btn sm ${rev.includes(x.id) ? "primary" : "secondary"}`} aria-pressed={rev.includes(x.id)} onClick={() => flip(x.id)} title={t("pl.eyeHint")}>
                 <Icon name={rev.includes(x.id) ? "eye" : "eyeoff"} size="sm" />{rev.includes(x.id) ? t("pl.scriptShown") : t("pl.showScript")}
@@ -81,7 +81,7 @@ export function PlacementAnswers({ id, d, teacher, reveal: initial }: { id: stri
           {x.questions.map((q) => (
             <div key={q.id} className={`plans ${q.ok ? "ok" : "bad"}`}>
               <div className="flex items-start gap-2"><span className="plnum">{num.get(q.id)}</span><Icon name={q.ok ? "check" : "close"} size="sm" /><div className="grow">
-                <span>{q.q}</span>
+                <span>{q.q}</span>{teacher && <span className="ml-2 inline-block align-middle"><Flag itemId={x.id} qid={q.id} attempt={id} small /></span>}
                 <div className="small mt-1">{q.ok ? <b>{q.options[q.answer]}</b> : <>{q.dk ? <span className="pill grey">{t("pl.dontKnow")}</span> : <s className="muted">{q.given === null ? t("pl.noAnswer") : q.options[Number(q.given)]}</s>} → <b>{q.options[q.answer]}</b></>}</div>
                 {tried(q.tried ?? [])}
                 {q.explain && <div className="small muted">{q.explain}</div>}

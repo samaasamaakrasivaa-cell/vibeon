@@ -127,7 +127,7 @@ export function PlacementPanel({ students, rows, links, origin, owner, teen, age
 export function Steps({ keys, tip }: { keys: DictKey[]; tip?: DictKey }) {
   const { t } = useT();
   return (
-    <div className="plsteps mt-3">
+    <div className="plhow mt-3">
       <b className="small">{t("pl.howTitle")}</b>
       <ol>{keys.map((k) => <li key={k}>{t(k)}</li>)}</ol>
       {tip && <p className="small muted m-0"><Icon name="info" size="sm" /> {t(tip)}</p>}
