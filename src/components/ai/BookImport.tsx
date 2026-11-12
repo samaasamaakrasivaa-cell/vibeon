@@ -62,6 +62,8 @@ export function ImportDialog({ lessonId, section, rubricId, onClose, onDone }: {
   const [picked, setPicked] = useState<Set<number>>(new Set());
   const [busy, setBusy] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
+  const [fromJson, setFromJson] = useState(false);
+  const [replace, setReplace] = useState(false); // исправленный файл — заменить задания урока, а не добавить ещё раз
   const code = (e: unknown) => { const c = String((e as Error).message); return ["limit", "tariff", "off", "fail", "type", "size"].includes(c) ? t(`ai.err.${c}` as "ai.err.fail") : c; };
   const read = async (f?: File) => {
     if (!f) return;
@@ -72,7 +74,7 @@ export function ImportDialog({ lessonId, section, rubricId, onClose, onDone }: {
   const split = async () => {
     // готовый JSON (например, от Claude) — задания сразу, без ИИ-разбора
     const plan = parseImport(text);
-    if (plan) { const all = plan.units.flatMap((u) => u.lessons.flatMap((l) => l.tasks)); setTasks(all); setPicked(new Set(all.map((_, i) => i))); return; }
+    if (plan) { const all = plan.units.flatMap((u) => u.lessons.flatMap((l) => l.tasks)); setTasks(all); setPicked(new Set(all.map((_, i) => i))); setFromJson(true); return; }
     setBusy(t("ai.splitting")); setErr(null);
     const r = await splitToTasks(text).catch(() => ({ ok: false as const, error: t("ai.err.fail") }));
     setBusy(null);
@@ -80,9 +82,10 @@ export function ImportDialog({ lessonId, section, rubricId, onClose, onDone }: {
   };
   const add = async () => {
     setBusy(t("common.saving")); setErr(null);
-    const r = await addDraftTasks(lessonId, section, rubricId, tasks!.filter((_, i) => picked.has(i)));
+    if (replace && !confirm(t("ai.replaceSure"))) { setBusy(null); return; }
+    const r = await addDraftTasks(lessonId, section, rubricId, tasks!.filter((_, i) => picked.has(i)), fromJson && replace);
     setBusy(null);
-    if (r.ok) { onDone(); onClose(); } else setErr(r.error);
+    if (r.ok) { onDone(); onClose(); } else setErr(r.error === "answers" ? t("ai.replaceAnswers") : r.error);
   };
   return (
     <Dialog open onClose={onClose} title={t("bld.import")} wide>
@@ -93,7 +96,10 @@ export function ImportDialog({ lessonId, section, rubricId, onClose, onDone }: {
           <label className="upl"><Icon name="clip" />{busy === t("ai.reading") ? busy : t("ai.chooseFile")}<input type="file" hidden accept={ACCEPT} onChange={(e) => read(e.target.files?.[0])} /></label>
           <div className="field mt-3"><label htmlFor="imp-t" className="small muted">{t("ai.orPaste")}</label><textarea id="imp-t" className="textarea" style={{ minHeight: 200 }} value={text} onChange={(e) => setText(e.target.value)} /></div>
         </>
-      ) : tasks.length ? <DraftList tasks={tasks} picked={picked} setPicked={setPicked} /> : <p className="hint">{t("ai.noTasks")}</p>}
+      ) : tasks.length ? <>
+        <DraftList tasks={tasks} picked={picked} setPicked={setPicked} />
+        {fromJson && <label className="flex items-start gap-2 mt-3 small"><input type="checkbox" checked={replace} onChange={(e) => setReplace(e.target.checked)} /><span><b>{t("ai.replace")}</b><span className="block muted">{t("ai.replaceHint")}</span></span></label>}
+      </> : <p className="hint">{t("ai.noTasks")}</p>}
       {err && <div className="alert mt-3">{err}</div>}
       <div className="actions">
         {tasks && <button className="btn secondary" onClick={() => setTasks(null)}>{t("common.back")}</button>}

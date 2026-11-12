@@ -69,7 +69,16 @@ export async function splitToTasks(text: string): Promise<Ok<{ tasks: DraftTask[
   catch (e) { return fail(e); }
 }
 
-export async function addDraftTasks(lessonId: string, section: "lesson" | "homework" | "words", rubricId: string | null, tasks: DraftTask[]): Promise<Ok<{ n: number }>> {
+export async function addDraftTasks(lessonId: string, section: "lesson" | "homework" | "words", rubricId: string | null, tasks: DraftTask[], replace = false): Promise<Ok<{ n: number }>> {
+  // replace — исправленный файл заменяет урок целиком: старые задания удаляются (если ученики ещё ничего в нём не отвечали)
+  if (replace) {
+    const user = await requireUser("TEACHER");
+    const l = await db.lessonTemplate.findUnique({ where: { id: lessonId }, include: { unit: { include: { course: true } } } });
+    if (!l || l.unit.course.teacherId !== user.id) return { ok: false, error: "not found" };
+    if (await db.answer.count({ where: { task: { templateId: lessonId } } })) return { ok: false, error: "answers" };
+    await db.task.deleteMany({ where: { templateId: lessonId } });
+    if (tasks.some((x) => x.part)) await db.lessonTemplate.update({ where: { id: lessonId }, data: { sections: [{ id: randomUUID(), title: str(tasks.find((x) => x.part)?.part, 80) }] } });
+  }
   // готовый JSON с этапами («part») и разделами («section»): этап ищем среди рубрик урока по названию, нет — добавляем новую
   const withParts = tasks.some((x) => x.part || (x.section && x.section !== "lesson"));
   let rubricOf = (_x: DraftTask): string | null => rubricId;

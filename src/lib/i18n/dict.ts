@@ -1858,6 +1858,10 @@ const ru = {
   "ai.promptCopied": "Скопировано",
   "ai.jsonUse": "Загрузить готовые задания",
   "ai.jsonBad": "Файл .json не похож на урок VibeOn — проверьте, что Claude вернул JSON по инструкции.",
+  "ai.replace": "Заменить задания урока этим файлом",
+  "ai.replaceHint": "Для исправленной версии: все прежние задания урока (и домашка) удалятся, вместо них встанут задания из файла. Без галочки задания добавятся к уже имеющимся.",
+  "ai.replaceSure": "Удалить все прежние задания урока и поставить задания из файла?",
+  "ai.replaceAnswers": "В этом уроке уже есть ответы учеников — замена удалила бы их. Исправьте задания вручную или загрузите файл в новый урок.",
 } as const;
 
 export type DictKey = keyof typeof ru;
@@ -3718,6 +3722,10 @@ const en: Record<DictKey, string> = {
   "ai.promptCopied": "Copied",
   "ai.jsonUse": "Load the ready tasks",
   "ai.jsonBad": "This .json doesn't look like a VibeOn lesson — check that Claude returned JSON as instructed.",
+  "ai.replace": "Replace the lesson tasks with this file",
+  "ai.replaceHint": "For a corrected version: all current tasks of the lesson (including homework) are removed and replaced with the tasks from the file. Without the tick, tasks are added to the existing ones.",
+  "ai.replaceSure": "Delete all current tasks of the lesson and use the tasks from the file?",
+  "ai.replaceAnswers": "Students have already answered in this lesson — replacing would delete their answers. Edit the tasks by hand or load the file into a new lesson.",
 };
 
 export const dictionaries: Record<LangCode, Record<DictKey, string>> = { ru, en };
