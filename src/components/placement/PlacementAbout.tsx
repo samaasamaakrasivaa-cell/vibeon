@@ -14,12 +14,18 @@ const CHECK: ["e" | "h" | "r", number][] = [["e", 1], ["e", 1], ["e", 0], ["e", 
 /** «Как устроен тест» — по этапам, коротко и без повторов. */
 export function PlacementAbout() {
   const { t } = useT();
-  const n = WARM.length + FIND.length + CHECK.length;
-  const W = 660, H = 236, x0 = 64, top = 34, dx = (W - x0 - 120) / (n - 1), y = (s: number) => H - 24 - s * ((H - 24 - top - 6) / 8);
-  const xi = (i: number) => x0 + i * dx;
+  // геометрия: слева подписи уровней, в середине три зоны с промежутками (у каждой свои линии), справа — карточка итога
+  const W = 700, H = 250, top = 40, bot = H - 22, xL = 50, xR = 548, gap = 10, pad = 10;
+  const counts = [WARM.length, FIND.length, CHECK.length], n = counts.reduce((a, b) => a + b, 0);
+  const u = (xR - xL - 2 * gap - 3 * 2 * pad) / n;
+  const zx: number[] = []; { let x = xL; for (const c of counts) { zx.push(x); x += c * u + 2 * pad + gap; } }
+  const zw = (k: number) => counts[k] * u + 2 * pad;
+  const y = (s: number) => bot - 10 - s * ((bot - 10 - top - 12) / 8);
+  const px = (k: number, i: number) => zx[k] + pad + (i + 0.5) * u;
   const lane = (k: "e" | "h" | "r") => (k === "h" ? 5 : 4);
-  const zones: [number, number, string][] = [[0, WARM.length - 1, "warm"], [WARM.length, WARM.length + FIND.length - 1, "find"], [WARM.length + FIND.length, n - 1, "check"]];
-  const path = [...WARM, ...FIND];
+  const zones = ["warm", "find", "check"];
+  const path: [number, number, number][] = [...WARM.map(([s2, ok], i) => [px(0, i), s2, ok] as [number, number, number]), ...FIND.map(([s2, ok], i) => [px(1, i), s2, ok] as [number, number, number])];
+  const cardX = xR + 16, cardW = W - cardX - 4;
   const stage = (ic: IconName, title: DictKey, items: DictKey[], key: string) => (
     <li key={key}>
       <span className="pltl-ico"><Icon name={ic} size="sm" /></span>
@@ -42,23 +48,25 @@ export function PlacementAbout() {
       <div className="plladder">
         <div className="small font-semibold mb-1">{t("pl.ab.ladder")}</div>
         <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={t("pl.ab.ladder")}>
-          {STEPS.map((s, i) => <g key={s}><line x1={x0 - dx / 2} x2={W - 6} y1={y(i)} y2={y(i)} className="grid" /><text x={x0 - dx / 2 - 8} y={y(i) + 4} textAnchor="end" className="lab">{s}</text></g>)}
-          {zones.map(([a, b, k]) => (
+          {STEPS.map((s2, i) => <text key={s2} x={xL - 8} y={y(i) + 4} textAnchor="end" className="lab">{s2}</text>)}
+          {zones.map((k, zi) => (
             <g key={k}>
-              <rect x={xi(a) - dx / 2 + 1} y={top - 4} width={(b - a + 1) * dx - 2} height={H - 24 - top + 12} rx="8" className={`zone z-${k}`} />
-              <text x={xi((a + b) / 2)} y={top - 12} textAnchor="middle" className={`ztitle z-${k}`}>{t(`pl.ab.z.${k}` as DictKey)}</text>
+              <rect x={zx[zi]} y={top} width={zw(zi)} height={bot - top} rx="10" className={`zone z-${k}`} />
+              {STEPS.map((s2, i) => <line key={s2} x1={zx[zi] + 4} x2={zx[zi] + zw(zi) - 4} y1={y(i)} y2={y(i)} className="grid" />)}
+              <text x={zx[zi] + zw(zi) / 2} y={top - 12} textAnchor="middle" className={`ztitle z-${k}`}>{t(`pl.ab.z.${k}` as DictKey)}</text>
             </g>
           ))}
-          <polyline points={path.map(([s], i) => `${xi(i)},${y(s)}`).join(" ")} className="path" />
-          <line x1={xi(path.length - 1)} y1={y(path[path.length - 1][0])} x2={xi(path.length)} y2={y(4)} className="path dash" />
-          {path.map(([s, ok], i) => <circle key={i} cx={xi(i)} cy={y(s)} r="5" className={ok ? "ok" : "bad"} />)}
-          {CHECK.map(([k, ok], j) => {
-            const i = path.length + j;
-            return k === "r" ? <circle key={i} cx={xi(i)} cy={y(lane(k))} r="5.5" className={`rep ${ok ? "ok" : "bad"}`} /> : <circle key={i} cx={xi(i)} cy={y(lane(k))} r="5" className={ok ? "ok" : "bad"} />;
-          })}
-          <text x={xi(n - 1) + 12} y={y(4) + 4} className="note">{t("pl.ab3.laneE")}</text>
-          <text x={xi(n - 1) + 12} y={y(5) + 4} className="note">{t("pl.ab3.laneH")}</text>
-          <text x={xi(n - 1) + 12} y={y(6.4)} className="note b">{t("pl.ab3.result")}</text>
+          <polyline points={path.map(([x, s2]) => `${x},${y(s2)}`).join(" ")} className="path" />
+          <line x1={path[path.length - 1][0]} y1={y(path[path.length - 1][1])} x2={px(2, 0)} y2={y(4)} className="path dash" />
+          {path.map(([x, s2, ok], i) => <circle key={i} cx={x} cy={y(s2)} r="5" className={ok ? "ok" : "bad"} />)}
+          {CHECK.map(([k, ok], i) => <circle key={i} cx={px(2, i)} cy={y(lane(k))} r={k === "r" ? 5.5 : 5} className={`${k === "r" ? "rep " : ""}${ok ? "ok" : "bad"}`} />)}
+          <g>
+            <rect x={cardX} y={y(6.6)} width={cardW} height={112} rx="12" className="rescard" />
+            <text x={cardX + 14} y={y(6.6) + 22} className="restitle">{t("pl.ab3.resT")}</text>
+            <text x={cardX + 14} y={y(6.6) + 50} className="resbig">B1+</text>
+            <text x={cardX + 14} y={y(6.6) + 74} className="note">{t("pl.ab3.laneH")}</text>
+            <text x={cardX + 14} y={y(6.6) + 94} className="note">{t("pl.ab3.laneE")}</text>
+          </g>
         </svg>
         <div className="pllegend small muted">
           <span><i className="ok" />{t("pl.ab.right")}</span><span><i className="bad" />{t("pl.ab.wrong")}</span><span><i className="rep" />{t("pl.ab3.rep")}</span>

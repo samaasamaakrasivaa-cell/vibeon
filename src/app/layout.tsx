@@ -3,6 +3,7 @@ import "@fontsource-variable/unbounded/index.css";
 import "./globals.css";
 import { getLang } from "@/lib/i18n/server";
 import { I18nProvider } from "@/lib/i18n/client";
+import { UpdateNotice } from "@/components/UpdateNotice";
 import { Suspense } from "react";
 import { NavLoader } from "@/components/NavLoader";
 
@@ -27,7 +28,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang={lang}>
       <body>
-        <I18nProvider lang={lang}>{children}</I18nProvider>
+        <I18nProvider lang={lang}>{children}<UpdateNotice /></I18nProvider>
         <Suspense fallback={null}><NavLoader /></Suspense>
       </body>
     </html>

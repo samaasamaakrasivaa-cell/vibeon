@@ -1676,7 +1676,7 @@ const ru = {
   "pl.continueSelf": "Продолжить тест",
   "pl.ab.z.warm": "1. разминка",
   "pl.ab.z.find": "2. поиск уровня",
-  "pl.ab.z.check": "3. проверка уровня B1 по всем темам",
+  "pl.ab.z.check": "3. проверка B1 по всем темам",
   "pl.ab2.t5": "Заметили неточность в задании — нажмите «На проверку» прямо в тесте или в разборе ответов.",
   "pl.selfAsk": "У вас есть незаконченный тест ({d}). Продолжить с того места, где вы остановились, или начать заново? При новом начале незаконченный тест удалится.",
   "pl.selfContinue": "Продолжить",
@@ -1718,6 +1718,10 @@ const ru = {
   "pl.ab3.chart": "В зоне проверки нижний ряд — простые задания уровня B1, верхний — сложные (B1+). Простые решены — уровень B1 подтверждён, сложные тоже — итог B1+. Кружки — повторная проверка тем, где были ошибки.",
   "pl.ab3.w1": "Уровень подтверждается десятками заданий по разным темам, а не одним удачным ответом; ошибки перепроверяются.",
   "pl.ab3.w2": "Тест сам поправляет себя: если уровень найден неверно, он спустится или поднимется. «I don't know» вместо угадывания не завышает результат.",
+  "upd.text": "Платформа обновилась. Обновите страницу, чтобы всё работало как надо — несохранённое на этой странице может потеряться.",
+  "upd.reload": "Обновить",
+  "upd.later": "Позже",
+  "pl.ab3.resT": "Итог",
 } as const;
 
 export type DictKey = keyof typeof ru;
@@ -3438,6 +3442,10 @@ const en: Record<DictKey, string> = {
   "pl.ab3.chart": "In the check zone the lower row is easy B1 questions, the upper row hard ones (B1+). Easy ones right — B1 confirmed, hard ones too — B1+. Rings are re-checks of topics with mistakes.",
   "pl.ab3.w1": "A level is confirmed by dozens of questions on different topics, not one lucky answer; mistakes are re-checked.",
   "pl.ab3.w2": "The test corrects itself: if the level is wrong, it goes down or up. “I don't know” instead of guessing keeps the result honest.",
+  "upd.text": "The platform has been updated. Reload the page so everything works — unsaved changes on this page may be lost.",
+  "upd.reload": "Reload",
+  "upd.later": "Later",
+  "pl.ab3.resT": "Result",
 };
 
 export const dictionaries: Record<LangCode, Record<DictKey, string>> = { ru, en };
