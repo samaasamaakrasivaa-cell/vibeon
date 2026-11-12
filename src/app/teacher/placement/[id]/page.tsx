@@ -38,6 +38,7 @@ export default async function PlacementReviewPage({ params }: { params: Promise<
       <div className="mt-2 mb-4 flex flex-wrap items-center gap-3">
         <h1 className="m-0">{t("pl.title")}: {who}</h1>
         <span className={`pill ${a.status === "reviewed" ? "green" : a.status === "submitted" ? "orange" : "grey"}`}>{t(`pl.st.${a.status}` as "pl.st.new")}</span>
+        {(a.status === "submitted" || a.status === "reviewed") && <Link href={`/teacher/placement/${id}/report`} className="btn secondary sm ml-auto">{t("rp.open")}</Link>}
       </div>
       <p className="muted mt-0 mb-5">
         {when.toLocaleDateString(loc, { day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" })}

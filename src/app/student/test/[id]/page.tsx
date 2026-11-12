@@ -10,6 +10,10 @@ import { PlacementAnswers } from "@/components/placement/PlacementAnswers";
 import { SkillBars } from "@/components/roadmap/RoadmapEditor";
 import { reviewData } from "@/lib/placement/review";
 import { stateOf } from "@/lib/placement/run";
+import { ReportSheet } from "@/components/placement/ReportSheet";
+import { PrintButton } from "@/components/placement/PrintButton";
+import { resolve, type RSaved } from "@/lib/placement/report";
+import { reportData } from "@/lib/placement/report-data";
 import type { Skill } from "@/lib/roadmap/cefr";
 
 export const metadata = { title: "Тест" };
@@ -30,6 +34,25 @@ export default async function TestPage({ params }: { params: Promise<{ id: strin
           <section className="card text-center"><h2 className="mt-0">{t("pl.checking")}</h2><p className="muted">{t("pl.checkingSub")}</p><Link className="btn primary" href="/student">{t("pl.toCabinet")}</Link></section>
         </div>
       );
+    // учитель отправил отчёт в кабинет — показываем его (вариант для ученика); разбор ответов — ниже, с той же нумерацией
+    const sentReport = ((pa.review ?? {}) as { report?: RSaved }).report;
+    if (sentReport?.sent) {
+      const st = stateOf(pa.state);
+      const full = await reportData({ ...pa, student: c.student }, st);
+      const r = { ...full, d: reviewData(pa.id, st, false) }; // без скриптов аудирования — их ученику открывает только учитель
+      const cfg = resolve(r.input, "student", sentReport.student);
+      return (
+        <div className="page print" style={{ maxWidth: 900 }}>
+          <div className="mb-4 flex flex-wrap items-center gap-3 noprint"><h1 className="m-0 grow">{t("pl.title")}</h1><PrintButton label={t("rp.download")} /></div>
+          <ReportSheet r={r} v="student" lang={cfg.lang} on={{ ...cfg.on, answers: false }} texts={cfg.texts} />
+          <div className="noprint mt-6">
+            <h2 className="mb-1">{t("pl.answers")}</h2>
+            <p className="small muted mt-0 mb-3">{t("pl.studentAnswersHint")}</p>
+            <PlacementAnswers id={pa.id} d={reviewData(pa.id, st, false)} teacher={false} reveal={[]} />
+          </div>
+        </div>
+      );
+    }
     const res = (c.results ?? {}) as { skills?: Partial<Record<Skill, number>> };
     const comment = ((pa.review ?? {}) as { comment?: string }).comment;
     return (

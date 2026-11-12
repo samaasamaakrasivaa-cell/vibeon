@@ -13,6 +13,7 @@ import { getBank, isOwner, TEEN_READY, trackOf, type Track } from "./bank";
 import { checkCore, emptyState, EXPECT, pickTask, PL_LEVELS, stepIdx, summarize, words, type CoreItem, type Expect, type ListenItem, type ReadItem, type SpeakItem, type WriteItem } from "./engine";
 import { addNextText, advance, closeSection, ensureTasks, enter, goTo, json, LATER, availOf, openOf, publicView, stateOf, type Later, type PView } from "./run";
 import { revealedScripts } from "./review";
+import { R_BLOCKS, type RCfg, type RSaved, type RVariant } from "./report";
 
 type R = { ok: true; id?: string; view?: PView } | { ok: false; error: string };
 const str = (v: unknown, max = 200) => (typeof v === "string" ? v.trim().slice(0, max) : "");
@@ -468,5 +469,36 @@ export async function addSpeakingToLesson(id: string, level: string, questions: 
     const block = [`Placement test — говорение ${str(level, 4)}:`, ...questions.slice(0, 8).map((q, i) => `${i + 1}. ${str(q, 300)}`)].join("\n");
     await db.lessonInstance.update({ where: { id: l.id }, data: { note: l.note ? `${l.note}\n\n${block}` : block } });
     return { ok: true, when: l.startsAt.toISOString() };
+  });
+}
+
+// ───────── Отчёт (PDF и кабинет ученика) ─────────
+
+/** Настройки отчёта для варианта: язык, включённые блоки, правки текстов (по языкам). */
+export async function saveReport(id: string, v: RVariant, cfg: RCfg): Promise<R> {
+  return wrap(async () => {
+    const { a } = await teacherAttempt(id);
+    if (v !== "student" && v !== "parent") return { ok: false, error: "variant" };
+    const prev = (a.review ?? {}) as Record<string, unknown> & { report?: RSaved };
+    const on = Object.fromEntries(R_BLOCKS.filter((b) => typeof cfg?.on?.[b] === "boolean").map((b) => [b, !!cfg.on[b]]));
+    const texts = Object.fromEntries(Object.entries(cfg?.texts ?? {}).filter(([k, t]) => /^(ru|en):(level|strong|work|plan|comment)$/.test(k) && typeof t === "string").map(([k, t]) => [k, str(t, 5000)]));
+    const report: RSaved = { ...(prev.report ?? {}), [v]: { lang: cfg?.lang === "en" ? "en" : "ru", on, texts } };
+    await db.placementAttempt.update({ where: { id }, data: { review: json({ ...prev, report }) } });
+    return { ok: true };
+  });
+}
+
+/** Отправить отчёт (вариант для ученика) в кабинет: ученик видит его на странице теста и получает уведомление. */
+export async function sendReport(id: string, on: boolean): Promise<R> {
+  return wrap(async () => {
+    const { a } = await teacherAttempt(id);
+    if (a.mode !== "student") return { ok: false, error: "mode" };
+    if (on && (!a.level || a.status !== "reviewed")) return { ok: false, error: "level" }; // ученик видит результат только после утверждения уровня
+    const prev = (a.review ?? {}) as Record<string, unknown> & { report?: RSaved };
+    const report: RSaved = { ...(prev.report ?? {}), sent: !!on, ...(on ? { sentAt: new Date().toISOString() } : {}) };
+    await db.placementAttempt.update({ where: { id }, data: { review: json({ ...prev, report }) } });
+    if (on && !a.showResult) return setShowResult(id, true);
+    revalidatePath(`/teacher/placement/${id}`);
+    return { ok: true };
   });
 }
