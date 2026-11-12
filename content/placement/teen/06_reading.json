@@ -508,5 +508,175 @@
         "explain_ru": "«I didn't miss my phone as much as I expected» — оказалось легче, чем думал."
       }
     ]
+  },
+  {
+    "id": "TR-A1-03",
+    "skill": "reading",
+    "level": "A1",
+    "band": 2,
+    "topic_en": "Poster: a new skate park",
+    "topic_ru": "Афиша: новый скейт-парк",
+    "type": "reading",
+    "title": "New Skate Park!",
+    "text_type": "poster",
+    "passage": "NEW SKATE PARK — OPEN FROM SATURDAY! The new skate park is in Green Street, next to the library. It's open every day from 9 am to 8 pm, and it's free for children under 16! You can rent a skateboard and a helmet for £3. Helmets are a must! On Saturday at 2 pm, there's a show with famous skaters from the internet.",
+    "words": 64,
+    "questions": [
+      {
+        "id": "TR-A1-03-q1",
+        "q": "Where is the skate park?",
+        "options": [
+          "Next to the library",
+          "Next to the school",
+          "In the big city park",
+          "Behind the café on Green Street"
+        ],
+        "answer": 0,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "«It's next to the library»."
+      },
+      {
+        "id": "TR-A1-03-q2",
+        "q": "When does it close?",
+        "options": [
+          "At 9 am",
+          "At 8 pm",
+          "At 2 pm",
+          "At 9 pm"
+        ],
+        "answer": 1,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "«from 9 am to 8 pm»."
+      },
+      {
+        "id": "TR-A1-03-q3",
+        "q": "Who can skate for free?",
+        "options": [
+          "Everyone on Saturday",
+          "Everyone with a helmet",
+          "Children under 16",
+          "Children over 16 with a parent"
+        ],
+        "answer": 2,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "«free for children under 16»."
+      },
+      {
+        "id": "TR-A1-03-q4",
+        "q": "What must you wear?",
+        "options": [
+          "Trainers",
+          "A T-shirt",
+          "Gloves and knee pads",
+          "A helmet"
+        ],
+        "answer": 3,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "«Helmets are a must»."
+      },
+      {
+        "id": "TR-A1-03-q5",
+        "q": "What can you see on Saturday afternoon?",
+        "options": [
+          "A skate show",
+          "A new café",
+          "A film about skating",
+          "A party at the library with music"
+        ],
+        "answer": 0,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "«a show with famous skaters»."
+      }
+    ]
+  },
+  {
+    "id": "TR-A1-04",
+    "skill": "reading",
+    "level": "A1",
+    "band": 3,
+    "topic_en": "Chat: making plans",
+    "topic_ru": "Переписка: договариваемся о встрече",
+    "type": "reading",
+    "title": "Zoe and Tom",
+    "text_type": "chat",
+    "passage": "Zoe: Do you want to come to the cinema with me and Kate at 6? Tom: Sorry, I can't. I'm doing my maths homework, and my grandma is here today. Zoe: OK. What about tomorrow? We can take my dog to the park. Tom: Yes! But not in the morning. I've got a football match at 10. Zoe: 3 o'clock at the park gate? Tom: Great!",
+    "words": 66,
+    "questions": [
+      {
+        "id": "TR-A1-04-q1",
+        "q": "What is Tom doing now?",
+        "options": [
+          "Watching a film",
+          "His homework",
+          "Playing football",
+          "Having dinner with Kate"
+        ],
+        "answer": 1,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "«I'm doing my maths homework»."
+      },
+      {
+        "id": "TR-A1-04-q2",
+        "q": "Why can't Tom go to the cinema?",
+        "options": [
+          "He's got a football match",
+          "He doesn't like films about animals",
+          "He's busy at home today",
+          "He's at the park with his dog"
+        ],
+        "answer": 2,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "«I'm doing my maths homework, and my grandma is here today» — он занят дома."
+      },
+      {
+        "id": "TR-A1-04-q3",
+        "q": "Who is going to the cinema with Zoe?",
+        "options": [
+          "Tom",
+          "Tom's grandma",
+          "Her dog",
+          "Kate"
+        ],
+        "answer": 3,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "«with me and Kate»."
+      },
+      {
+        "id": "TR-A1-04-q4",
+        "q": "What is Tom doing tomorrow morning?",
+        "options": [
+          "Playing football",
+          "Going to the park",
+          "Visiting his grandma",
+          "Doing his maths homework"
+        ],
+        "answer": 0,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "«I've got a football match at 10»."
+      },
+      {
+        "id": "TR-A1-04-q5",
+        "q": "Where are Tom and Zoe meeting tomorrow?",
+        "options": [
+          "At the cinema",
+          "At the park gate",
+          "At Tom's house",
+          "At the football match"
+        ],
+        "answer": 1,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "«3 o'clock at the park gate?» — «Great»."
+      }
+    ]
   }
 ]

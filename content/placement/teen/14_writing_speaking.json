@@ -245,5 +245,127 @@
       "Паузы есть, но мысль понятна слушателю"
     ],
     "explain_ru": "Проверяет рассказ о прошлом, советы (should) и сравнения."
+  },
+  {
+    "id": "TW-A1-02",
+    "skill": "writing",
+    "level": "A1",
+    "band": 2,
+    "topic_en": "Writing: a message about your school",
+    "topic_ru": "Сообщение другу о школе",
+    "type": "writing",
+    "prompt_en": "Your new friend from another country wants to know about your school. Write a message. Say what your school is like, what your favourite subject is and what you do at break.",
+    "prompt_ru": "Новый друг из другой страны спрашивает про твою школу. Напиши: какая у тебя школа, какой любимый предмет и что ты делаешь на перемене.",
+    "min_words": 20,
+    "max_words": 35,
+    "time_min": 6,
+    "expects": [
+      "Все пункты задания раскрыты",
+      "Простые предложения с and, but, because",
+      "to be, have got, can, Present Simple в основном верны",
+      "Слова по теме задания"
+    ],
+    "explain_ru": "Проверяет простое описание и Present Simple.",
+    "points": [
+      "say what your school is like",
+      "say what your favourite subject is",
+      "say what you do at break"
+    ],
+    "points_title": "In your message:"
+  },
+  {
+    "id": "TW-A1-03",
+    "skill": "writing",
+    "level": "A1",
+    "band": 3,
+    "topic_en": "Writing: saying no to an invitation",
+    "topic_ru": "Ответ на приглашение: не могу прийти",
+    "type": "writing",
+    "prompt_en": "Your friend invites you to a party on Saturday, but you can't go. Write a message. Say sorry, say why you can't come and suggest another day to meet.",
+    "prompt_ru": "Друг зовёт тебя на вечеринку в субботу, но ты не можешь. Напиши: извинись, объясни, почему не получится, и предложи другой день для встречи.",
+    "min_words": 20,
+    "max_words": 35,
+    "time_min": 6,
+    "expects": [
+      "Все пункты задания раскрыты",
+      "Простые предложения с and, but, because",
+      "to be, have got, can, Present Simple в основном верны",
+      "Слова по теме задания"
+    ],
+    "explain_ru": "Проверяет can't, Present Continuous для планов и простые связки.",
+    "points": [
+      "say sorry",
+      "say why you can't come",
+      "suggest another day to meet"
+    ],
+    "points_title": "In your message:"
+  },
+  {
+    "id": "TS-A1-02",
+    "skill": "speaking",
+    "level": "A1",
+    "band": 2,
+    "topic_en": "Speaking: home and weekends",
+    "topic_ru": "Говорение: дом и выходные",
+    "type": "speaking",
+    "intro_ru": "Ответь на три вопроса о доме и выходных.",
+    "intro_en": "Answer three questions about your home and weekends.",
+    "questions": [
+      {
+        "q": "Tell me about your room. What's in it?",
+        "prep_sec": 10,
+        "speak_sec": 25
+      },
+      {
+        "q": "What do you usually do at the weekend?",
+        "prep_sec": 10,
+        "speak_sec": 25
+      },
+      {
+        "q": "What's your favourite food?",
+        "prep_sec": 10,
+        "speak_sec": 20
+      }
+    ],
+    "expects": [
+      "Отвечает на все вопросы простыми фразами",
+      "Использует to be, have got, can, like + -ing",
+      "Понятное произношение, паузы допустимы"
+    ],
+    "explain_ru": "Проверяет there is / there are, Present Simple, слова по теме дома и еды."
+  },
+  {
+    "id": "TS-A1-03",
+    "skill": "speaking",
+    "level": "A1",
+    "band": 3,
+    "topic_en": "Speaking: games, skills and family",
+    "topic_ru": "Говорение: игры, умения, семья",
+    "type": "speaking",
+    "intro_ru": "Ответь на три вопроса о себе и своей семье.",
+    "intro_en": "Answer three questions about you and your family.",
+    "questions": [
+      {
+        "q": "What's your favourite game or app? Why do you like it?",
+        "prep_sec": 10,
+        "speak_sec": 25
+      },
+      {
+        "q": "What can you do well?",
+        "prep_sec": 10,
+        "speak_sec": 25
+      },
+      {
+        "q": "What does your family like doing together?",
+        "prep_sec": 10,
+        "speak_sec": 25
+      }
+    ],
+    "expects": [
+      "Отвечает на все вопросы простыми фразами",
+      "Использует to be, have got, can, like + -ing",
+      "Понятное произношение, паузы допустимы"
+    ],
+    "explain_ru": "Проверяет can, like + -ing, because."
   }
 ]

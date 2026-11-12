@@ -483,5 +483,300 @@
         "explain_ru": "«We're going again in August. You should come with us!»"
       }
     ]
+  },
+  {
+    "id": "TL-A1-02",
+    "skill": "listening",
+    "level": "A1",
+    "band": 2,
+    "topic_en": "Dialogue: buying a present",
+    "topic_ru": "Диалог: покупаем подарок",
+    "type": "listening",
+    "title": "A present for a friend",
+    "situation_ru": "Эмма выбирает подарок подруге в магазине.",
+    "situation_en": "Emma is buying a birthday present for her friend in a shop.",
+    "speakers": [
+      {
+        "name": "Emma",
+        "gender": "female",
+        "accent": "British"
+      },
+      {
+        "name": "Assistant",
+        "gender": "male",
+        "accent": "British"
+      }
+    ],
+    "script": "Emma: Hi! I want a present for my friend. She's twelve.\nAssistant: OK. What does she like?\nEmma: She loves music, and she's got a cat.\nAssistant: What about this T-shirt? It's got a cat in headphones on it.\nEmma: Ha-ha, that's funny! How much is it?\nAssistant: It's fifteen pounds.\nEmma: Hmm. I've only got ten pounds.\nAssistant: Then what about these cat socks? They're seven pounds.\nEmma: Perfect! And can I have a birthday card too?\nAssistant: Sure. The cards are two pounds. So that's nine pounds, please.",
+    "plays": 2,
+    "words": 80,
+    "duration_sec": 56,
+    "questions": [
+      {
+        "id": "TL-A1-02-q1",
+        "q": "How old is Emma's friend?",
+        "options": [
+          "Twelve",
+          "Ten",
+          "Eleven",
+          "Fifteen"
+        ],
+        "answer": 0,
+        "checks": "number-time-place",
+        "topic_id": "l-number-time-place",
+        "explain_ru": "«She's twelve»."
+      },
+      {
+        "id": "TL-A1-02-q2",
+        "q": "What does Emma's friend love?",
+        "options": [
+          "Football",
+          "Music",
+          "Dogs",
+          "Films"
+        ],
+        "answer": 1,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "«She loves music»."
+      },
+      {
+        "id": "TL-A1-02-q3",
+        "q": "Why doesn't Emma buy the T-shirt?",
+        "options": [
+          "She doesn't like it",
+          "It's too big",
+          "It's too expensive",
+          "Her friend has got one"
+        ],
+        "answer": 2,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "Футболка стоит 15, а у Эммы только 10."
+      },
+      {
+        "id": "TL-A1-02-q4",
+        "q": "What does Emma buy?",
+        "options": [
+          "A T-shirt and a card",
+          "Only socks",
+          "Headphones for her friend",
+          "Socks and a card"
+        ],
+        "answer": 3,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "Носки с котами и открытка."
+      },
+      {
+        "id": "TL-A1-02-q5",
+        "q": "How much does Emma pay?",
+        "options": [
+          "£9",
+          "£7",
+          "£10",
+          "£15"
+        ],
+        "answer": 0,
+        "checks": "number-time-place",
+        "topic_id": "l-number-time-place",
+        "explain_ru": "«So that's nine pounds»."
+      }
+    ]
+  },
+  {
+    "id": "TL-A1-03",
+    "skill": "listening",
+    "level": "A1",
+    "band": 2,
+    "topic_en": "Announcement: a day at summer camp",
+    "topic_ru": "Объявление: день в летнем лагере",
+    "type": "listening",
+    "title": "Sunny Lake Camp",
+    "situation_ru": "Вожатый Сэм рассказывает, какой план на день в лагере.",
+    "situation_en": "Sam, a group leader, tells the group the plan for the day at summer camp.",
+    "speakers": [
+      {
+        "name": "Sam",
+        "gender": "male",
+        "accent": "American"
+      }
+    ],
+    "script": "Sam: Hi everyone, and welcome to Sunny Lake Camp! I'm Sam, your group leader. Here's the plan for today. [pause 1s] Breakfast is at eight o'clock in the big tent. After breakfast, at nine, we've got swimming in the lake. Please don't forget your towels! [pause 1s] Lunch is at one. In the afternoon, you can choose: football or art. And in the evening, there's a disco! [pause 1s] Oh, and one more thing: no phones at dinner. OK? Let's have a great day!",
+    "plays": 2,
+    "words": 77,
+    "duration_sec": 44,
+    "questions": [
+      {
+        "id": "TL-A1-03-q1",
+        "q": "Where is breakfast?",
+        "options": [
+          "By the lake",
+          "In the big tent",
+          "In the dining room",
+          "Outside, next to the football field"
+        ],
+        "answer": 1,
+        "checks": "number-time-place",
+        "topic_id": "l-number-time-place",
+        "explain_ru": "«in the big tent»."
+      },
+      {
+        "id": "TL-A1-03-q2",
+        "q": "What time is swimming?",
+        "options": [
+          "At eight",
+          "At one",
+          "At nine",
+          "At ten"
+        ],
+        "answer": 2,
+        "checks": "number-time-place",
+        "topic_id": "l-number-time-place",
+        "explain_ru": "«at nine, we've got swimming»."
+      },
+      {
+        "id": "TL-A1-03-q3",
+        "q": "What must you bring for swimming?",
+        "options": [
+          "A phone",
+          "A ball",
+          "A bottle of water",
+          "A towel"
+        ],
+        "answer": 3,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "«don't forget your towels»."
+      },
+      {
+        "id": "TL-A1-03-q4",
+        "q": "What can you do in the afternoon?",
+        "options": [
+          "Football or art",
+          "Swimming or football",
+          "Art or music",
+          "A disco"
+        ],
+        "answer": 0,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "«you can choose: football or art»."
+      },
+      {
+        "id": "TL-A1-03-q5",
+        "q": "What is the rule at dinner?",
+        "options": [
+          "No music",
+          "No phones",
+          "No talking",
+          "No football shirts"
+        ],
+        "answer": 1,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "«no phones at dinner»."
+      }
+    ]
+  },
+  {
+    "id": "TL-A1-04",
+    "skill": "listening",
+    "level": "A1",
+    "band": 3,
+    "topic_en": "Phone call: where are you?",
+    "topic_ru": "Звонок: ты где?",
+    "type": "listening",
+    "title": "Where are you, Lucy?",
+    "situation_ru": "Макс звонит Люси: они договорились встретиться в торговом центре.",
+    "situation_en": "Max calls Lucy. They want to meet at the shopping centre.",
+    "speakers": [
+      {
+        "name": "Max",
+        "gender": "male",
+        "accent": "British"
+      },
+      {
+        "name": "Lucy",
+        "gender": "female",
+        "accent": "British"
+      }
+    ],
+    "script": "Max: Hi Lucy, I'm at the shopping centre. Where are you?\nLucy: I'm in the café on the second floor, next to the bookshop.\nMax: Which café? There are two cafés here!\nLucy: The small one with green chairs. I'm sitting by the window.\nMax: OK. What are you wearing?\nLucy: A yellow jacket and a black hat. And I'm eating a big ice cream!\nMax: Ha! I can see you now. Wait. Is that my ice cream?\nLucy: Sorry! You're late. Come on, I can buy you a new one.",
+    "plays": 2,
+    "words": 83,
+    "duration_sec": 51,
+    "questions": [
+      {
+        "id": "TL-A1-04-q1",
+        "q": "Where is Lucy?",
+        "options": [
+          "In the bookshop",
+          "At the cinema",
+          "In a café",
+          "Outside the shopping centre"
+        ],
+        "answer": 2,
+        "checks": "number-time-place",
+        "topic_id": "l-number-time-place",
+        "explain_ru": "«I'm in the café»."
+      },
+      {
+        "id": "TL-A1-04-q2",
+        "q": "Which floor is the café on?",
+        "options": [
+          "The first",
+          "The third",
+          "The ground floor",
+          "The second"
+        ],
+        "answer": 3,
+        "checks": "number-time-place",
+        "topic_id": "l-number-time-place",
+        "explain_ru": "«on the second floor»."
+      },
+      {
+        "id": "TL-A1-04-q3",
+        "q": "What colour are the chairs in the café?",
+        "options": [
+          "Green",
+          "Yellow",
+          "Black",
+          "Blue"
+        ],
+        "answer": 0,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "«The small one with green chairs»."
+      },
+      {
+        "id": "TL-A1-04-q4",
+        "q": "What is Lucy wearing?",
+        "options": [
+          "A black jacket and a yellow hat",
+          "A yellow jacket and a black hat",
+          "A green jacket and a black hat",
+          "A yellow hat and a green jacket"
+        ],
+        "answer": 1,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "«A yellow jacket and a black hat»."
+      },
+      {
+        "id": "TL-A1-04-q5",
+        "q": "Why is Lucy eating Max's ice cream?",
+        "options": [
+          "She is very hungry today",
+          "Max doesn't like ice cream",
+          "Max is late",
+          "It's her birthday"
+        ],
+        "answer": 2,
+        "checks": "inference",
+        "topic_id": "l-inference",
+        "explain_ru": "«Sorry! You're late» — Макс опоздал, и мороженое досталось Люси."
+      }
+    ]
   }
 ]
