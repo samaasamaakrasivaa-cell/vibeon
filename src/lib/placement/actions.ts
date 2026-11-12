@@ -233,11 +233,15 @@ const refreshT = (studentId?: string | null) => {
 };
 
 /** «Пройти самой»: учитель проходит тест как ученик, результат видит сразу. */
-export async function selfPlacement(): Promise<R> {
+/** Пройти тест самому. fresh — начать заново: незаконченный свой тест удаляется; иначе продолжаем незаконченный. */
+export async function selfPlacement(fresh = false): Promise<R> {
   const me = await requireUser("TEACHER");
-  // незаконченный свой тест — продолжаем его, а не начинаем заново
-  const open = await db.placementAttempt.findFirst({ where: { teacherId: me.id, mode: "self", status: { in: ["new", "active"] } }, orderBy: { createdAt: "desc" } });
-  if (open) return { ok: true, id: open.id };
+  const unfinished = { teacherId: me.id, mode: "self", status: { in: ["new", "active"] } };
+  if (fresh) await db.placementAttempt.deleteMany({ where: unfinished });
+  else {
+    const open = await db.placementAttempt.findFirst({ where: unfinished, orderBy: { createdAt: "desc" } });
+    if (open) return { ok: true, id: open.id };
+  }
   const a = await db.placementAttempt.create({ data: { teacherId: me.id, mode: "self", token: randomToken(24), state: json(withSeen(emptyState(), await seenBy({ teacherId: me.id, mode: "self" }))) } });
   return { ok: true, id: a.id };
 }

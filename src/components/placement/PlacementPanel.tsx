@@ -22,6 +22,10 @@ export function PlacementPanel({ students, rows, link, origin, owner }: { studen
   const [exp, setExp] = useState("");
   const [linkOpen, setLinkOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  // свой незаконченный тест: спросить — продолжить или начать заново
+  const selfOpen = rows.find((r) => r.mode === "self" && (r.status === "new" || r.status === "active"));
+  const [selfAsk, setSelfAsk] = useState(false);
+  const startSelf = (fresh: boolean) => run(() => selfPlacement(fresh), (r) => router.push(`/placement/${r.id}`), true);
   const url = link ? `${origin}/t/${link.code}` : "";
   const copy = async () => { await navigator.clipboard.writeText(url).catch(() => null); setCopied(true); setTimeout(() => setCopied(false), 1800); };
   return (
@@ -43,9 +47,9 @@ export function PlacementPanel({ students, rows, link, origin, owner }: { studen
           <div className="plmore2-body"><PlacementAbout /></div>
         </details>
         <div className="plhero3-actions">
-          <button className="btn plwhite" disabled={pending} onClick={() => run(selfPlacement, (r) => router.push(`/placement/${r.id}`), true)}><Icon name="pencil" size="sm" />{t("pl.takeSelf")}</button>
-          <button className="btn plglassbtn" onClick={() => setAssign(true)}><Icon name="user" size="sm" />{t("pl.assign")}</button>
+          <button className="btn plwhite" onClick={() => setAssign(true)}><Icon name="user" size="sm" />{t("pl.assign")}</button>
           <button className="btn plglassbtn" onClick={() => setLinkOpen(true)}><Icon name="link" size="sm" />{t("pl.linkNew")}</button>
+          <button className="btn plglassbtn" disabled={pending} onClick={() => (selfOpen ? setSelfAsk(true) : startSelf(false))}><Icon name="pencil" size="sm" />{t("pl.takeSelf")}</button>
           {owner && <Link className="plownlink" href="/teacher/placement/bank"><Icon name="book" size="sm" />{t("pl.editBank")}</Link>}
         </div>
         {error && <div className="alert">{error}</div>}
@@ -67,6 +71,14 @@ export function PlacementPanel({ students, rows, link, origin, owner }: { studen
           </div>
         )}
       </section>
+
+      <Dialog open={selfAsk} onClose={() => setSelfAsk(false)} title={t("pl.takeSelf")}>
+        <p className="mt-0">{t("pl.selfAsk", { d: selfOpen?.when ?? "" })}</p>
+        <div className="actions">
+          <button className="btn secondary" disabled={pending} onClick={() => { setSelfAsk(false); startSelf(true); }}>{t("pl.selfNew")}</button>
+          <button className="btn primary" onClick={() => { setSelfAsk(false); router.push(`/placement/${selfOpen!.id}`); }}>{t("pl.selfContinue")}</button>
+        </div>
+      </Dialog>
 
       <Dialog open={assign} onClose={() => setAssign(false)} title={t("pl.assign")}>
         {students.length === 0 ? <p className="hint m-0">{t("sch.noStudents")}</p> : <StudentPicker students={students} value={sid} onChange={setSid} />}
