@@ -38,12 +38,12 @@
       },
       {
         "id": "TL-A1-01-q2",
-        "q": "What time does it start?",
+        "q": "What time does the party start?",
         "options": [
-          "At twelve o'clock",
-          "At three o'clock",
-          "At four o'clock",
-          "At eleven o'clock"
+          "2:00",
+          "3:00",
+          "4:00",
+          "1:00"
         ],
         "answer": 1,
         "checks": "number-time-place",
@@ -516,15 +516,15 @@
         "id": "TL-A1-02-q1",
         "q": "How old is Emma's friend?",
         "options": [
-          "Twelve",
-          "Ten",
-          "Eleven",
-          "Fifteen"
+          "12",
+          "10",
+          "11",
+          "15"
         ],
         "answer": 0,
         "checks": "number-time-place",
         "topic_id": "l-number-time-place",
-        "explain_ru": "«She's twelve»."
+        "explain_ru": "«She's twelve» (15 — цена футболки)."
       },
       {
         "id": "TL-A1-02-q2",
@@ -625,15 +625,15 @@
         "id": "TL-A1-03-q2",
         "q": "What time is swimming?",
         "options": [
-          "At eight",
-          "At one",
-          "At nine",
-          "At ten"
+          "8:00",
+          "1:00",
+          "9:00",
+          "10:00"
         ],
         "answer": 2,
         "checks": "number-time-place",
         "topic_id": "l-number-time-place",
-        "explain_ru": "«at nine, we've got swimming»."
+        "explain_ru": "«at nine, we've got swimming» (8:00 — завтрак)."
       },
       {
         "id": "TL-A1-03-q3",
@@ -1166,6 +1166,401 @@
         "checks": "inference",
         "topic_id": "l-inference",
         "explain_ru": "Шутка про маму: лучше спросить подростка, прежде чем записывать его."
+      }
+    ]
+  },
+  {
+    "id": "TL-B2-01",
+    "skill": "listening",
+    "level": "B2",
+    "band": 1,
+    "topic_en": "Conversation: a year abroad",
+    "topic_ru": "Разговор: год учёбы за границей",
+    "type": "listening",
+    "title": "A year abroad?",
+    "situation_ru": "Ученица Софи обсуждает со школьным консультантом, ехать ли ей учиться за границу на год.",
+    "situation_en": "Sophie talks to her school counsellor about spending a year studying abroad.",
+    "speakers": [
+      {
+        "name": "Counsellor",
+        "gender": "male",
+        "accent": "British"
+      },
+      {
+        "name": "Sophie",
+        "gender": "female",
+        "accent": "British"
+      }
+    ],
+    "script": "Counsellor: So, Sophie, you mentioned you're thinking about the exchange programme in Canada. What's attracting you to it?\nSophie: Mainly the language, I suppose. My French is OK, but I'd love to actually be fluent, and the school is in Quebec, so everyone speaks French. Plus, I've never lived away from home, and I think it'd be good for me.\nCounsellor: Those are great reasons. What's holding you back?\nSophie: Honestly, two things. First, I'm worried about falling behind here. If I'm away for a whole year, will I have to repeat it when I come back?\nCounsellor: That's a common worry, but you wouldn't. The programme is recognised by our school, so your grades from Canada would count. You'd just need to do a bit of extra reading over the summer for a couple of subjects.\nSophie: Oh, that's a relief. The other thing is money. My parents are supportive, but it's expensive.\nCounsellor: Have you looked at the scholarships? There's one that covers about half the cost for students with good grades. The deadline's the end of March, so you've got a few weeks.\nSophie: I had no idea! I'll definitely apply.\nCounsellor: Good. And talk to Max in Year 11 — he did the programme last year. He can tell you what it's really like.",
+    "plays": 2,
+    "words": 209,
+    "duration_sec": 104,
+    "questions": [
+      {
+        "id": "TL-B2-01-q1",
+        "q": "What is Sophie's main reason for wanting to go to Canada?",
+        "options": [
+          "To become fluent in French",
+          "To see a new country",
+          "To make new friends",
+          "To get away from her parents"
+        ],
+        "answer": 0,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "«Mainly the language… I'd love to actually be fluent»."
+      },
+      {
+        "id": "TL-B2-01-q2",
+        "q": "What is Sophie worried about?",
+        "options": [
+          "Not understanding French",
+          "Having to repeat the school year",
+          "Feeling lonely",
+          "Missing her family and friends at home"
+        ],
+        "answer": 1,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "«will I have to repeat it when I come back?»"
+      },
+      {
+        "id": "TL-B2-01-q3",
+        "q": "What does the counsellor say about her grades?",
+        "options": [
+          "She would have to take extra exams",
+          "She would lose a year",
+          "Her Canadian grades would be accepted",
+          "She would need to change to another school"
+        ],
+        "answer": 2,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "«your grades from Canada would count»."
+      },
+      {
+        "id": "TL-B2-01-q4",
+        "q": "What does the scholarship cover?",
+        "options": [
+          "The whole cost",
+          "Only the flights",
+          "Only the school fees",
+          "About half the cost"
+        ],
+        "answer": 3,
+        "checks": "number-time-place",
+        "topic_id": "l-number-time-place",
+        "explain_ru": "«covers about half the cost»."
+      },
+      {
+        "id": "TL-B2-01-q5",
+        "q": "Why does the counsellor mention Max?",
+        "options": [
+          "He can describe the experience from his own point of view",
+          "He is responsible for the scholarship",
+          "He is going to Canada too",
+          "He is in charge of the programme in Quebec"
+        ],
+        "answer": 0,
+        "checks": "inference",
+        "topic_id": "l-inference",
+        "explain_ru": "«He can tell you what it's really like»."
+      }
+    ]
+  },
+  {
+    "id": "TL-B2-02",
+    "skill": "listening",
+    "level": "B2",
+    "band": 2,
+    "topic_en": "Podcast: spotting fake news",
+    "topic_ru": "Подкаст: как распознать фейк",
+    "type": "listening",
+    "title": "Is it true?",
+    "situation_ru": "Ведущая подкаста для подростков объясняет, как проверять новости в интернете.",
+    "situation_en": "The host of a podcast for teenagers explains how to check if online news is true.",
+    "speakers": [
+      {
+        "name": "Host",
+        "gender": "female",
+        "accent": "American"
+      }
+    ],
+    "script": "Host: Welcome back to Smart Scroll, the show about life online. Today, we're talking about fake news, and I want to start with a confession. Last month I shared a video of a shark swimming down a flooded street. It had millions of views. It was also completely fake. [pause 1s] So how do you avoid making the same mistake? Here are my three rules. Rule number one: check your emotions. Fake stories are designed to make you feel something strongly, usually anger or surprise, because that's what makes people share without thinking. If a post makes you furious, that's exactly the moment to slow down. [pause 1s] Rule number two: look for the source. Who actually published this? Is it a real news organisation, or an account that was created last week? If you can't find the original source, be suspicious. [pause 1s] Rule number three: see if anyone else is reporting it. If something really huge has happened, several reliable news sites will be covering it. If only one random account is talking about it, there's probably a reason. [pause 1s] And by the way, if you do share something fake, don't just delete it quietly. Tell your followers it was wrong. It's a bit embarrassing, believe me, but it stops the story from spreading further.",
+    "plays": 2,
+    "words": 209,
+    "duration_sec": 104,
+    "questions": [
+      {
+        "id": "TL-B2-02-q1",
+        "q": "Why does the host mention the shark video?",
+        "options": [
+          "To show a funny example of a real flood",
+          "To show that she has also been fooled by fake news",
+          "To explain how videos go viral",
+          "To criticise the people who made it for spreading lies"
+        ],
+        "answer": 1,
+        "checks": "speaker's attitude",
+        "topic_id": "l-speakers-attitude",
+        "explain_ru": "Она признаётся, что сама поделилась фейком."
+      },
+      {
+        "id": "TL-B2-02-q2",
+        "q": "Why are fake stories often designed to make people angry?",
+        "options": [
+          "Angry people read more carefully",
+          "It makes the stories more realistic",
+          "Strong feelings make people share without thinking",
+          "Angry people trust news from big organisations more"
+        ],
+        "answer": 2,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "«that's what makes people share without thinking»."
+      },
+      {
+        "id": "TL-B2-02-q3",
+        "q": "What should you do if you can't find where a story came from?",
+        "options": [
+          "Share it with a warning",
+          "Ask the person who posted it",
+          "Delete your account",
+          "Be suspicious of it"
+        ],
+        "answer": 3,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "«If you can't find the original source, be suspicious»."
+      },
+      {
+        "id": "TL-B2-02-q4",
+        "q": "According to the host, what suggests a story might be fake?",
+        "options": [
+          "Only one unknown account is reporting it",
+          "Lots of news sites are covering it",
+          "It is about a natural disaster",
+          "It has a video with millions of views"
+        ],
+        "answer": 0,
+        "checks": "inference",
+        "topic_id": "l-inference",
+        "explain_ru": "«If only one random account is talking about it, there's probably a reason»."
+      },
+      {
+        "id": "TL-B2-02-q5",
+        "q": "What does the host advise if you've shared something fake?",
+        "options": [
+          "Delete it as quickly as possible",
+          "Tell your followers it was false",
+          "Report the original account",
+          "Stop using social media for a while"
+        ],
+        "answer": 1,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "«Tell your followers it was wrong»."
+      }
+    ]
+  },
+  {
+    "id": "TL-B2-03",
+    "skill": "listening",
+    "level": "B2",
+    "band": 2,
+    "topic_en": "Interview: a teenage river clean-up",
+    "topic_ru": "Интервью: подростки чистят реку",
+    "type": "listening",
+    "title": "The river project",
+    "situation_ru": "Интервью с Ником, который организовал уборку реки в своём городе.",
+    "situation_en": "A local radio presenter interviews Nick, who organised a river clean-up in his town.",
+    "speakers": [
+      {
+        "name": "Presenter",
+        "gender": "female",
+        "accent": "British"
+      },
+      {
+        "name": "Nick",
+        "gender": "male",
+        "accent": "British"
+      }
+    ],
+    "script": "Presenter: Nick, you're fifteen, and last month you got more than two hundred people to clean up the river. How did that happen?\nNick: It started quite small, actually. I go running along the river, and I got fed up with seeing plastic bottles everywhere. So I posted a photo online and asked if anyone wanted to help me clean it up on Saturday. I was expecting maybe five friends to turn up.\nPresenter: And how many came?\nNick: About forty the first time. Then a local news site wrote about it, and the next month it was over two hundred, including whole families.\nPresenter: That's incredible. Were there any difficulties?\nNick: Loads! The biggest one was what to do with all the rubbish. We collected nearly a tonne, and we didn't have anywhere to put it. In the end, the town council agreed to send a lorry, but it took a lot of emails.\nPresenter: What surprised you most?\nNick: Probably how much people wanted to get involved. A lot of people told me they'd been annoyed about the river for years but didn't know where to start. I think sometimes people are just waiting for someone else to go first.\nPresenter: What's next?\nNick: We're going to do it every season now, and I'm trying to persuade the council to put more bins along the path. Fewer bins is part of the problem.",
+    "plays": 2,
+    "words": 225,
+    "duration_sec": 112,
+    "questions": [
+      {
+        "id": "TL-B2-03-q1",
+        "q": "What made Nick start the project?",
+        "options": [
+          "His school asked him to do it",
+          "He saw a news report about the river",
+          "He was annoyed by the rubbish he saw while running",
+          "A friend from his running club suggested the idea to him"
+        ],
+        "answer": 2,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "«I got fed up with seeing plastic bottles everywhere»."
+      },
+      {
+        "id": "TL-B2-03-q2",
+        "q": "How many people came to the first clean-up?",
+        "options": [
+          "About five",
+          "Over two hundred",
+          "About a hundred",
+          "About forty"
+        ],
+        "answer": 3,
+        "checks": "number-time-place",
+        "topic_id": "l-number-time-place",
+        "explain_ru": "«About forty the first time»."
+      },
+      {
+        "id": "TL-B2-03-q3",
+        "q": "What was the biggest problem?",
+        "options": [
+          "Getting rid of the rubbish they collected",
+          "Finding enough volunteers",
+          "Bad weather on the day of the second clean-up",
+          "Getting permission from the council"
+        ],
+        "answer": 0,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "«what to do with all the rubbish»."
+      },
+      {
+        "id": "TL-B2-03-q4",
+        "q": "What surprised Nick most?",
+        "options": [
+          "How much rubbish there was",
+          "How many people wanted to help",
+          "How quickly the council answered",
+          "How much the news wrote about him"
+        ],
+        "answer": 1,
+        "checks": "speaker's attitude",
+        "topic_id": "l-speakers-attitude",
+        "explain_ru": "«how much people wanted to get involved»."
+      },
+      {
+        "id": "TL-B2-03-q5",
+        "q": "What does Nick suggest when he says people are 'waiting for someone else to go first'?",
+        "options": [
+          "Most people are lazy",
+          "People don't like working in groups",
+          "Many people care but need someone to start things",
+          "People will only help if a famous person asks them to"
+        ],
+        "answer": 2,
+        "checks": "inference",
+        "topic_id": "l-inference",
+        "explain_ru": "Людям не всё равно, но им нужен тот, кто начнёт первым."
+      }
+    ]
+  },
+  {
+    "id": "TL-B2-04",
+    "skill": "listening",
+    "level": "B2",
+    "band": 3,
+    "topic_en": "Discussion: AI and homework",
+    "topic_ru": "Спор: ИИ и домашние задания",
+    "type": "listening",
+    "title": "AI and homework",
+    "situation_ru": "Двое друзей спорят, можно ли пользоваться ИИ для домашних заданий.",
+    "situation_en": "Two friends, Emma and Josh, discuss whether it's OK to use AI for homework.",
+    "speakers": [
+      {
+        "name": "Emma",
+        "gender": "female",
+        "accent": "American"
+      },
+      {
+        "name": "Josh",
+        "gender": "male",
+        "accent": "American"
+      }
+    ],
+    "script": "Emma: Did you hear? Mr Clark caught three people using AI for the history essay.\nJosh: Seriously? I mean, I'm not surprised. Half the class uses it.\nEmma: Do you?\nJosh: Sometimes. Not to write the whole thing, though. I use it when I don't understand something, like asking it to explain a topic in a simpler way. It's like having a tutor who never gets tired of your questions.\nEmma: OK, that's different. I don't really see a problem with that. What annoys me is when people just copy whatever it says and hand it in. They're not learning anything.\nJosh: True, but you could say the same about copying from a website, and people have been doing that for years.\nEmma: Sure, but AI makes it so much easier. And the answers sound so convincing, even when they're wrong. My cousin used it for a science project, and it completely invented two of the sources.\nJosh: Yeah, that's the risky part. You still have to check everything.\nEmma: Which kind of defeats the purpose if you were trying to save time.\nJosh: Ha, maybe. Honestly, I think schools should teach us how to use it properly instead of pretending it doesn't exist. It's not going away.\nEmma: That's probably the most sensible thing you've ever said.\nJosh: I'll take that as a compliment.",
+    "plays": 2,
+    "words": 213,
+    "duration_sec": 106,
+    "questions": [
+      {
+        "id": "TL-B2-04-q1",
+        "q": "How does Josh usually use AI?",
+        "options": [
+          "To write his essays for him",
+          "To check his spelling",
+          "To find information quickly for his history essays",
+          "To help him understand difficult topics"
+        ],
+        "answer": 3,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "«I use it when I don't understand something»."
+      },
+      {
+        "id": "TL-B2-04-q2",
+        "q": "What does Emma think about Josh's way of using AI?",
+        "options": [
+          "She thinks it's acceptable",
+          "She thinks it's cheating",
+          "She thinks it's a waste of time",
+          "She hasn't decided yet"
+        ],
+        "answer": 0,
+        "checks": "speaker's attitude",
+        "topic_id": "l-speakers-attitude",
+        "explain_ru": "«I don't really see a problem with that»."
+      },
+      {
+        "id": "TL-B2-04-q3",
+        "q": "What happened to Emma's cousin?",
+        "options": [
+          "The teacher caught them cheating",
+          "The AI made up some sources",
+          "The project won a prize",
+          "The AI refused to help"
+        ],
+        "answer": 1,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "«it completely invented two of the sources»."
+      },
+      {
+        "id": "TL-B2-04-q4",
+        "q": "What does Emma mean when she says checking everything 'defeats the purpose'?",
+        "options": [
+          "Checking is the most important part of homework",
+          "AI is always right, so checking isn't needed",
+          "Using AI doesn't save time if you have to check it all",
+          "Teachers should check every essay for AI before marking it"
+        ],
+        "answer": 2,
+        "checks": "inference",
+        "topic_id": "l-inference",
+        "explain_ru": "Если всё перепроверять, экономии времени не получается."
+      },
+      {
+        "id": "TL-B2-04-q5",
+        "q": "What does Josh think schools should do?",
+        "options": [
+          "Ban AI completely",
+          "Give less homework",
+          "Use AI to mark students' essays and tests",
+          "Teach students how to use AI properly"
+        ],
+        "answer": 3,
+        "checks": "detail",
+        "topic_id": "l-detail",
+        "explain_ru": "«schools should teach us how to use it properly»."
       }
     ]
   }

@@ -9,78 +9,78 @@
     "type": "reading",
     "title": "Pie, the Sock Thief",
     "text_type": "blog",
-    "passage": "Hi! My name is Mia and I am eleven. This is my dog, Pie. It is small and brown, and it has got very long ears. Pie loves socks! Every morning it takes socks from my bedroom and hides them in my dad's shoes. Dad is not happy, but we always laugh. Pie doesn't like baths, but it loves the park.",
-    "words": 61,
+    "passage": "Hi! I'm Mia. I'm eleven, and my brother Tom is fourteen. This is our dog, Pie. It is small and brown, with long ears. Pie loves socks! Every morning it takes Tom's socks and hides them in Dad's shoes. Dad isn't happy, but Tom and I always laugh. Pie hates baths, but it loves the park.",
+    "words": 56,
     "questions": [
       {
         "id": "TR-A1-01-q1",
         "q": "How old is Mia?",
         "options": [
-          "Eleven",
-          "Ten",
-          "Twelve",
-          "Seven"
+          "11",
+          "14",
+          "12",
+          "10"
         ],
         "answer": 0,
         "checks": "detail",
         "topic_id": "r-detail",
-        "explain_ru": "«I am eleven»."
+        "explain_ru": "«I'm eleven» (14 — это брат Том)."
       },
       {
         "id": "TR-A1-01-q2",
         "q": "What does Pie look like?",
         "options": [
-          "Big and black",
-          "Small and brown",
-          "Small and white",
-          "Big and brown"
+          "Small and brown, with short ears",
+          "Small and brown, with long ears",
+          "Big and brown, with long ears",
+          "Small and black, with long ears"
         ],
         "answer": 1,
         "checks": "detail",
         "topic_id": "r-detail",
-        "explain_ru": "«It is small and brown»."
+        "explain_ru": "«It is small and brown, with long ears»."
       },
       {
         "id": "TR-A1-01-q3",
-        "q": "Where does Pie hide the socks?",
+        "q": "Whose socks does Pie take?",
         "options": [
-          "Under Mia's bed",
-          "In the garden",
-          "In Dad's shoes",
-          "In the park"
+          "Mia's",
+          "Dad's",
+          "Tom's",
+          "Mum's"
         ],
         "answer": 2,
         "checks": "detail",
         "topic_id": "r-detail",
-        "explain_ru": "«hides them in my dad's shoes»."
+        "explain_ru": "«it takes Tom's socks» — в папины ботинки он их прячет."
       },
       {
         "id": "TR-A1-01-q4",
-        "q": "How does the family feel about Pie's game?",
+        "q": "Who doesn't like Pie's game?",
         "options": [
-          "They are angry",
-          "They are sad",
-          "They are scared",
-          "They laugh"
+          "Tom",
+          "Mia",
+          "Pie",
+          "Dad"
         ],
         "answer": 3,
         "checks": "detail",
         "topic_id": "r-detail",
-        "explain_ru": "«we always laugh»; папа недоволен, но смеются все."
+        "explain_ru": "«Dad isn't happy, but Tom and I always laugh»."
       },
       {
         "id": "TR-A1-01-q5",
-        "q": "What does Pie NOT like?",
+        "q": "What does Pie hate?",
         "options": [
-          "Baths",
-          "Socks",
-          "The park",
-          "Mia's bedroom"
+          "Having a bath",
+          "Going to the park",
+          "Playing with socks",
+          "Tom's shoes"
         ],
         "answer": 0,
         "checks": "detail",
         "topic_id": "r-detail",
-        "explain_ru": "«Pie doesn't like baths»."
+        "explain_ru": "«Pie hates baths»."
       }
     ]
   },
@@ -99,40 +99,40 @@
     "questions": [
       {
         "id": "TR-A1-02-q1",
-        "q": "Where is Leo from?",
+        "q": "Where does Leo live now?",
         "options": [
-          "England",
-          "Spain",
-          "Italy",
-          "Russia"
+          "In Spain",
+          "Near his new school",
+          "Next to the robot club",
+          "Near his old school"
         ],
         "answer": 1,
         "checks": "detail",
         "topic_id": "r-detail",
-        "explain_ru": "«I'm from Spain»."
+        "explain_ru": "«now I live near the school»."
       },
       {
         "id": "TR-A1-02-q2",
-        "q": "Who does Leo live with?",
+        "q": "How many people live in Leo's home?",
         "options": [
-          "His dad and his brother",
-          "His grandparents",
-          "His mum and his sister",
-          "His mum and his dad"
+          "2",
+          "4",
+          "3",
+          "5"
         ],
         "answer": 2,
-        "checks": "detail",
-        "topic_id": "r-detail",
-        "explain_ru": "«with my mum and my little sister»."
+        "checks": "inference",
+        "topic_id": "r-inference",
+        "explain_ru": "Лео, мама и младшая сестра — трое."
       },
       {
         "id": "TR-A1-02-q3",
-        "q": "Which sport does Leo love?",
+        "q": "Which is true about Leo and sport?",
         "options": [
-          "Football",
-          "Table tennis",
-          "Swimming",
-          "Basketball"
+          "He loves football",
+          "He plays football on Fridays",
+          "He doesn't like any sport",
+          "He likes basketball more than football"
         ],
         "answer": 3,
         "checks": "detail",
@@ -141,12 +141,12 @@
       },
       {
         "id": "TR-A1-02-q4",
-        "q": "When does Leo go to the robot club?",
+        "q": "What does Leo do on Fridays?",
         "options": [
-          "On Fridays",
-          "On Mondays",
-          "Every day",
-          "At the weekend"
+          "He goes to a club about robots",
+          "He plays basketball",
+          "He has a guitar lesson",
+          "He has a Spanish lesson"
         ],
         "answer": 0,
         "checks": "detail",
@@ -155,17 +155,17 @@
       },
       {
         "id": "TR-A1-02-q5",
-        "q": "What does Leo want to know?",
+        "q": "Why does Leo write this message?",
         "options": [
-          "Where the robot club is",
-          "Where the canteen is",
-          "Who plays the guitar",
-          "When the lesson starts"
+          "He wants to start a robot club",
+          "He is new and needs some help",
+          "He is looking for a football team",
+          "He is going back to Spain"
         ],
         "answer": 1,
         "checks": "main idea",
         "topic_id": "r-main-idea",
-        "explain_ru": "«Can you show me where the canteen is?»"
+        "explain_ru": "Он новенький и просит показать столовую."
       }
     ]
   },
@@ -526,71 +526,71 @@
         "id": "TR-A1-03-q1",
         "q": "Where is the skate park?",
         "options": [
-          "Next to the library",
-          "Next to the school",
-          "In the big city park",
-          "Behind the café on Green Street"
+          "In Green Street, next to the library",
+          "In Green Street, next to the school",
+          "In the library on Green Street",
+          "In the park behind the library"
         ],
         "answer": 0,
         "checks": "detail",
         "topic_id": "r-detail",
-        "explain_ru": "«It's next to the library»."
+        "explain_ru": "«in Green Street, next to the library»."
       },
       {
         "id": "TR-A1-03-q2",
-        "q": "When does it close?",
+        "q": "You are 12. You have got your own skateboard and helmet. How much do you pay?",
         "options": [
-          "At 9 am",
-          "At 8 pm",
-          "At 2 pm",
-          "At 9 pm"
+          "£3",
+          "Nothing",
+          "£16",
+          "£12"
         ],
         "answer": 1,
-        "checks": "detail",
-        "topic_id": "r-detail",
-        "explain_ru": "«from 9 am to 8 pm»."
+        "checks": "inference",
+        "topic_id": "r-inference",
+        "explain_ru": "До 16 лет — бесплатно, а платить за прокат не нужно: всё своё."
       },
       {
         "id": "TR-A1-03-q3",
-        "q": "Who can skate for free?",
+        "q": "At what time is the skate park closed?",
         "options": [
-          "Everyone on Saturday",
-          "Everyone with a helmet",
-          "Children under 16",
-          "Children over 16 with a parent"
+          "9 am",
+          "2 pm",
+          "9 pm",
+          "7 pm"
         ],
         "answer": 2,
-        "checks": "detail",
-        "topic_id": "r-detail",
-        "explain_ru": "«free for children under 16»."
+        "checks": "inference",
+        "topic_id": "r-inference",
+        "explain_ru": "Открыт с 9 утра до 8 вечера — в 9 вечера уже закрыт."
       },
       {
         "id": "TR-A1-03-q4",
-        "q": "What must you wear?",
+        "q": "You haven't got a helmet. What can you do?",
         "options": [
-          "Trainers",
-          "A T-shirt",
-          "Gloves and knee pads",
-          "A helmet"
+          "Skate without one",
+          "Get one for free",
+          "Only watch the show",
+          "Rent one for £3"
         ],
         "answer": 3,
         "checks": "detail",
         "topic_id": "r-detail",
-        "explain_ru": "«Helmets are a must»."
+        "explain_ru": "«You can rent a skateboard and a helmet for £3. Helmets are a must!»"
       },
       {
         "id": "TR-A1-03-q5",
-        "q": "What can you see on Saturday afternoon?",
+        "q": "Who is going to be in the show on Saturday?",
         "options": [
-          "A skate show",
-          "A new café",
-          "A film about skating",
-          "A party at the library with music"
+          "Famous skaters",
+          "Children under 16",
+          "People from the library",
+          "The skate park staff"
         ],
         "answer": 0,
         "checks": "detail",
         "topic_id": "r-detail",
-        "explain_ru": "«a show with famous skaters»."
+        "explain_ru": "«a show with famous skaters from the internet»."
       }
     ]
   },
@@ -609,12 +609,12 @@
     "questions": [
       {
         "id": "TR-A1-04-q1",
-        "q": "What is Tom doing now?",
+        "q": "What is Tom doing when Zoe writes?",
         "options": [
           "Watching a film",
-          "His homework",
+          "Homework",
           "Playing football",
-          "Having dinner with Kate"
+          "Walking the dog"
         ],
         "answer": 1,
         "checks": "detail",
@@ -637,45 +637,45 @@
       },
       {
         "id": "TR-A1-04-q3",
-        "q": "Who is going to the cinema with Zoe?",
+        "q": "How many people are going to the cinema?",
         "options": [
-          "Tom",
-          "Tom's grandma",
-          "Her dog",
-          "Kate"
+          "3",
+          "1",
+          "4",
+          "2"
         ],
         "answer": 3,
-        "checks": "detail",
-        "topic_id": "r-detail",
-        "explain_ru": "«with me and Kate»."
+        "checks": "inference",
+        "topic_id": "r-inference",
+        "explain_ru": "Зоя и Кейт — двое; Том не идёт."
       },
       {
         "id": "TR-A1-04-q4",
-        "q": "What is Tom doing tomorrow morning?",
+        "q": "When are Tom and Zoe meeting?",
         "options": [
-          "Playing football",
-          "Going to the park",
-          "Visiting his grandma",
-          "Doing his maths homework"
+          "Tomorrow at 3",
+          "Tomorrow at 10",
+          "Today at 6",
+          "Today at 3"
         ],
         "answer": 0,
         "checks": "detail",
         "topic_id": "r-detail",
-        "explain_ru": "«I've got a football match at 10»."
+        "explain_ru": "«What about tomorrow?… 3 o'clock at the park gate?» — «Great!»"
       },
       {
         "id": "TR-A1-04-q5",
-        "q": "Where are Tom and Zoe meeting tomorrow?",
+        "q": "Where are they going tomorrow?",
         "options": [
-          "At the cinema",
-          "At the park gate",
-          "At Tom's house",
-          "At the football match"
+          "To the cinema with Kate",
+          "To the park with Zoe's dog",
+          "To Tom's football match",
+          "To Tom's grandma's house"
         ],
         "answer": 1,
         "checks": "detail",
         "topic_id": "r-detail",
-        "explain_ru": "«3 o'clock at the park gate?» — «Great»."
+        "explain_ru": "«We can take my dog to the park»."
       }
     ]
   },
@@ -689,12 +689,12 @@
     "type": "reading",
     "title": "The Girl Who Built a Beach Robot",
     "text_type": "article",
-    "passage": "When Lena Petrova was thirteen, she went on holiday to the seaside and was shocked by how much plastic there was on the beach. 'I couldn't stop thinking about it,' she says. Back home, she started reading about the problem online, and after a few months she had an idea: a small robot that could collect rubbish from beaches. Her first robot was made from an old toy car and a kitchen sieve. 'It looked terrible, and it broke after ten minutes,' she laughs. But Lena didn't give up. Two years and twelve robots later, her design won a national science competition for young people. Now a company wants to build her robots for real. Lena, who is now fifteen, hasn't decided what she wants to do after school. 'Maybe engineering,' she says. 'Or maybe something completely different. I'm still only fifteen!'",
+    "passage": "When Maya Collins was thirteen, she went on holiday to the seaside and was shocked by how much plastic there was on the beach. 'I couldn't stop thinking about it,' she says. Back home, she started reading about the problem online, and after a few months she had an idea: a small robot that could collect rubbish from beaches. Her first robot was made from an old toy car and a kitchen sieve. 'It looked terrible, and it broke after ten minutes,' she laughs. But Maya didn't give up. Two years and twelve robots later, her design won a national science competition for young people. Now a company wants to build her robots for real. Maya, who is now fifteen, hasn't decided what she wants to do after school. 'Maybe engineering,' she says. 'Or maybe something completely different. I'm still only fifteen!'",
     "words": 142,
     "questions": [
       {
         "id": "TR-B1-01-q1",
-        "q": "What gave Lena the idea for her invention?",
+        "q": "What gave Maya the idea for her invention?",
         "options": [
           "Seeing plastic on a beach",
           "An article she read online",
@@ -708,7 +708,7 @@
       },
       {
         "id": "TR-B1-01-q2",
-        "q": "What does Lena say about her first robot?",
+        "q": "What does Maya say about her first robot?",
         "options": [
           "It won a science competition",
           "It didn't work very well",
@@ -722,7 +722,7 @@
       },
       {
         "id": "TR-B1-01-q3",
-        "q": "In the text, 'didn't give up' means that Lena…",
+        "q": "In the text, 'didn't give up' means that Maya…",
         "options": [
           "stopped working on it",
           "felt very sad",
@@ -736,7 +736,7 @@
       },
       {
         "id": "TR-B1-01-q4",
-        "q": "What is happening with Lena's robots now?",
+        "q": "What is happening with Maya's robots now?",
         "options": [
           "They clean beaches all over the world",
           "She is selling them online",
@@ -750,7 +750,7 @@
       },
       {
         "id": "TR-B1-01-q5",
-        "q": "What can we say about Lena's plans for the future?",
+        "q": "What can we say about Maya's plans for the future?",
         "options": [
           "She isn't sure yet",
           "She will definitely study engineering",
@@ -774,7 +774,7 @@
     "type": "reading",
     "title": "Surviving My First Week",
     "text_type": "blog",
-    "passage": "Moving to a new school in the middle of the year is nobody's dream. When my family moved to Kazan last January, I was terrified. I didn't know anyone, and on my first day I walked into the wrong classroom — twice. By lunchtime I was ready to go home and never come back. Then something unexpected happened. A girl called Dasha sat next to me in the canteen and asked if I liked anime. I did! We talked for the whole break and found out we were both obsessed with the same series. The next day she introduced me to her friends, and by Friday I had a group to sit with. So here's my advice if you're the new kid: don't wait for people to come to you. Find one small thing you have in common with someone. It's much easier than you think.",
+    "passage": "Moving to a new school in the middle of the year is nobody's dream. When my family moved to Leeds last January, I was terrified. I didn't know anyone, and on my first day I walked into the wrong classroom — twice. By lunchtime I was ready to go home and never come back. Then something unexpected happened. A girl called Priya sat next to me in the canteen and asked if I liked anime. I did! We talked for the whole break and found out we were both obsessed with the same series. The next day she introduced me to her friends, and by Friday I had a group to sit with. So here's my advice if you're the new kid: don't wait for people to come to you. Find one small thing you have in common with someone. It's much easier than you think.",
     "words": 146,
     "questions": [
       {
@@ -789,13 +789,13 @@
         "answer": 1,
         "checks": "inference",
         "topic_id": "r-inference",
-        "explain_ru": "«my family moved to Kazan» — семья переехала."
+        "explain_ru": "«my family moved to Leeds» — семья переехала."
       },
       {
         "id": "TR-B1-02-q2",
         "q": "What happened on the writer's first day?",
         "options": [
-          "The writer met Dasha in the morning",
+          "The writer met Priya in the morning",
           "The writer was late for lunch",
           "The writer went into the wrong room twice",
           "The writer went home early because of a headache"
@@ -807,11 +807,11 @@
       },
       {
         "id": "TR-B1-02-q3",
-        "q": "How did the writer and Dasha become friends?",
+        "q": "How did the writer and Priya become friends?",
         "options": [
           "They were in the same class",
           "Their parents already knew each other",
-          "A teacher asked Dasha to show the writer around the school",
+          "A teacher asked Priya to show the writer around the school",
           "They discovered they liked the same series"
         ],
         "answer": 3,
@@ -1016,6 +1016,346 @@
         "checks": "main idea",
         "topic_id": "r-main-idea",
         "explain_ru": "Объясняет, почему так бывает, и даёт простой совет."
+      }
+    ]
+  },
+  {
+    "id": "TR-B2-01",
+    "skill": "reading",
+    "level": "B2",
+    "band": 1,
+    "topic_en": "Article: phone bans in schools",
+    "topic_ru": "Статья: запрет телефонов в школах",
+    "type": "reading",
+    "title": "Should Schools Ban Phones?",
+    "text_type": "article",
+    "passage": "More and more schools around the world are banning phones during the school day, and the debate about whether this is a good idea is getting louder. Supporters of the bans argue that phones are a constant distraction. Even when a phone is switched off, they say, just having it on your desk makes it harder to concentrate. Some schools that introduced bans have reported that students talk to each other more at break and that cases of online bullying during school hours have dropped. However, not everyone is convinced. Critics point out that phones can be useful learning tools — for looking up information, recording homework or using educational apps. Many parents also want to be able to contact their children in an emergency. And some students argue that banning phones doesn't teach young people how to manage their screen time; it simply moves the problem to after school. Perhaps the answer lies somewhere in the middle. A number of schools now allow phones only for specific tasks in class, while keeping them in lockers the rest of the time. Whether this compromise works, only time will tell.",
+    "words": 189,
+    "questions": [
+      {
+        "id": "TR-B2-01-q1",
+        "q": "According to supporters, what is the main problem with phones at school?",
+        "options": [
+          "They stop students from concentrating",
+          "They are too expensive for some families",
+          "They are often stolen or broken",
+          "They make lessons too short"
+        ],
+        "answer": 0,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "«phones are a constant distraction… makes it harder to concentrate»."
+      },
+      {
+        "id": "TR-B2-01-q2",
+        "q": "What have some schools noticed after introducing a ban?",
+        "options": [
+          "Students' marks have improved a lot",
+          "Students talk to each other more at break",
+          "Parents have stopped complaining about phone bills",
+          "Teachers use fewer apps in lessons"
+        ],
+        "answer": 1,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "«students talk to each other more at break»."
+      },
+      {
+        "id": "TR-B2-01-q3",
+        "q": "Why do some parents disagree with bans?",
+        "options": [
+          "They think phones improve marks",
+          "They don't trust teachers",
+          "They want to reach their children in an emergency",
+          "They think phones help their children get better marks"
+        ],
+        "answer": 2,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "«contact their children in an emergency»."
+      },
+      {
+        "id": "TR-B2-01-q4",
+        "q": "What do some students say about bans?",
+        "options": [
+          "They make school more fun",
+          "They help students sleep better",
+          "Bans should be much stricter and include break times",
+          "They don't solve the problem, they just move it"
+        ],
+        "answer": 3,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "«it simply moves the problem to after school»."
+      },
+      {
+        "id": "TR-B2-01-q5",
+        "q": "What is the writer's attitude to the debate?",
+        "options": [
+          "Balanced — both sides have good points",
+          "Strongly in favour of bans",
+          "Strongly against bans",
+          "Strongly against bans, because phones are useful tools"
+        ],
+        "answer": 0,
+        "checks": "writer's attitude",
+        "topic_id": "r-writers-attitude",
+        "explain_ru": "Автор приводит аргументы обеих сторон и предлагает компромисс."
+      }
+    ]
+  },
+  {
+    "id": "TR-B2-02",
+    "skill": "reading",
+    "level": "B2",
+    "band": 2,
+    "topic_en": "Blog: losing a coding competition",
+    "topic_ru": "Блог: как я проиграл соревнование по программированию",
+    "type": "reading",
+    "title": "Why Losing Was the Best Thing That Happened to Me",
+    "text_type": "blog",
+    "passage": "Last spring I entered my first national coding competition. I'd been teaching myself to code for two years, mostly by watching tutorials late at night, and I was secretly convinced I would win. I didn't. In fact, I came 47th out of 60. For about a week I was too embarrassed to open my laptop. What made it worse was that my app had crashed in the middle of my presentation, in front of the judges and about a hundred people. Then one of the judges emailed me. I assumed she was going to tell me politely that coding wasn't for me. Instead, she said my idea — an app that helps students share notes — was one of the most original in the competition, and that the crash was 'the kind of thing that happens to every developer, usually at the worst possible moment'. She even sent me a list of things to improve. I spent the summer rebuilding the app from scratch, this time testing it properly. It now has a few hundred users at my school. I still haven't won a competition, but I've stopped being afraid of failing in public, and that feels like a bigger prize.",
+    "words": 201,
+    "questions": [
+      {
+        "id": "TR-B2-02-q1",
+        "q": "How did the writer learn to code?",
+        "options": [
+          "At a coding club after school",
+          "Mostly on their own, using online videos",
+          "From an older brother",
+          "On an expensive summer course at a university"
+        ],
+        "answer": 1,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "«teaching myself… mostly by watching tutorials»."
+      },
+      {
+        "id": "TR-B2-02-q2",
+        "q": "How did the writer feel straight after the competition?",
+        "options": [
+          "Proud of the result",
+          "Angry with the judges",
+          "Too ashamed to use the laptop",
+          "Relieved that nobody had seen the presentation"
+        ],
+        "answer": 2,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "«I was too embarrassed to open my laptop»."
+      },
+      {
+        "id": "TR-B2-02-q3",
+        "q": "Why did the writer expect a negative email from the judge?",
+        "options": [
+          "Because the app had copied another idea",
+          "Because the writer had been rude",
+          "Because the judge was famous for being strict",
+          "Because the presentation had gone badly"
+        ],
+        "answer": 3,
+        "checks": "inference",
+        "topic_id": "r-inference",
+        "explain_ru": "После провала на презентации автор ждал, что судья скажет «программирование — не твоё»."
+      },
+      {
+        "id": "TR-B2-02-q4",
+        "q": "What does the judge suggest about the crash?",
+        "options": [
+          "It's a normal experience for programmers",
+          "It shows the writer isn't ready",
+          "It was probably caused by the judges' old computer",
+          "It was the worst she had ever seen"
+        ],
+        "answer": 0,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "«the kind of thing that happens to every developer»."
+      },
+      {
+        "id": "TR-B2-02-q5",
+        "q": "What does the writer think is the most valuable result?",
+        "options": [
+          "Having a few hundred users",
+          "No longer being afraid to fail in public",
+          "Getting a personal email and advice from one of the judges",
+          "Finally winning a competition"
+        ],
+        "answer": 1,
+        "checks": "writer's attitude",
+        "topic_id": "r-writers-attitude",
+        "explain_ru": "«I've stopped being afraid of failing in public, and that feels like a bigger prize»."
+      }
+    ]
+  },
+  {
+    "id": "TR-B2-03",
+    "skill": "reading",
+    "level": "B2",
+    "band": 2,
+    "topic_en": "Review: an escape room",
+    "topic_ru": "Отзыв: квест-комната",
+    "type": "reading",
+    "title": "The Lost Laboratory — escape room review",
+    "text_type": "review",
+    "passage": "For my friend's birthday, five of us tried The Lost Laboratory, the newest escape room in town. The idea is that you're trapped in the lab of a scientist who disappeared in the middle of an experiment, and you have sixty minutes to find out what happened and get out before the 'experiment' destroys the building. First, the positives. The room itself is incredibly detailed: there are bubbling test tubes, a flickering computer screen and a creepy voice that gives you clues if you get stuck. The puzzles are clever and varied — some involve maths, others observation or teamwork — so everyone in our group had a chance to shine. The staff were friendly and clearly loved their job. That said, it's not perfect. A couple of puzzles depend on finding tiny objects in dark corners, which felt more frustrating than challenging. It's also quite pricey if you go as a small group, since you pay per room rather than per person. Overall, though, we had a brilliant time and escaped with just forty seconds to spare. I'd recommend it to groups of four to six who enjoy a challenge — but maybe not to anyone who's scared of the dark.",
+    "words": 202,
+    "questions": [
+      {
+        "id": "TR-B2-03-q1",
+        "q": "What is the story of the escape room?",
+        "options": [
+          "Players are scientists doing an experiment",
+          "Players must rescue a scientist before the building is destroyed",
+          "Players must find out what happened to a missing scientist",
+          "Players are trapped in a dark museum"
+        ],
+        "answer": 2,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "«a scientist who disappeared in the middle of an experiment»."
+      },
+      {
+        "id": "TR-B2-03-q2",
+        "q": "Why does the reviewer like the puzzles?",
+        "options": [
+          "They are all based on maths",
+          "They are very easy to solve",
+          "They can all be solved by one clever person alone",
+          "They use different skills, so everyone can help"
+        ],
+        "answer": 3,
+        "checks": "writer's attitude",
+        "topic_id": "r-writers-attitude",
+        "explain_ru": "«some involve maths, others observation or teamwork — so everyone… had a chance to shine»."
+      },
+      {
+        "id": "TR-B2-03-q3",
+        "q": "What does the reviewer criticise?",
+        "options": [
+          "Some puzzles rely on finding very small objects",
+          "The staff were unfriendly",
+          "The room was too bright",
+          "The story was too complicated to follow in sixty minutes"
+        ],
+        "answer": 0,
+        "checks": "writer's attitude",
+        "topic_id": "r-writers-attitude",
+        "explain_ru": "«depend on finding tiny objects in dark corners»."
+      },
+      {
+        "id": "TR-B2-03-q4",
+        "q": "Why can it be expensive?",
+        "options": [
+          "It costs more at weekends",
+          "The price is for the whole room, not each person",
+          "You have to buy extra clues",
+          "Birthday groups have to pay for extra decorations"
+        ],
+        "answer": 1,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "«you pay per room rather than per person»."
+      },
+      {
+        "id": "TR-B2-03-q5",
+        "q": "In the text, 'with just forty seconds to spare' means the group…",
+        "options": [
+          "needed forty more seconds",
+          "didn't escape and were forty seconds too slow",
+          "escaped just before the time ran out",
+          "escaped forty minutes early"
+        ],
+        "answer": 2,
+        "checks": "vocabulary in context",
+        "topic_id": "r-vocabulary-in-context",
+        "explain_ru": "Успели выбраться, когда оставалось всего 40 секунд."
+      }
+    ]
+  },
+  {
+    "id": "TR-B2-04",
+    "skill": "reading",
+    "level": "B2",
+    "band": 3,
+    "topic_en": "Article: songs stuck in your head",
+    "topic_ru": "Статья: почему песни «застревают» в голове",
+    "type": "reading",
+    "title": "Can't Get It Out of Your Head?",
+    "text_type": "article",
+    "passage": "You hear a few seconds of a song in a shop, and for the rest of the day it plays in your head on repeat. Psychologists call these tunes 'earworms', and studies suggest that around 90% of people experience them at least once a week. So why do some songs stick while others don't? Research shows that earworms tend to have a few things in common: they are usually fairly fast, they have a simple melody that is easy to sing, and they contain an unexpected jump or repetition that our brains find surprising. Interestingly, the songs don't have to be ones we like — many people report being 'infected' by tunes they actively dislike. Earworms are also more likely to appear when our minds are not fully occupied, for example when we are walking or doing the washing-up. So how can you get rid of one? Surprisingly, one of the most effective methods is to listen to the whole song from beginning to end. Scientists believe that our brains keep replaying a tune partly because it feels unfinished. Another option is to give your brain a moderately difficult task, such as a puzzle. Chewing gum may also help, as it makes it harder to 'sing' silently in your head.",
+    "words": 210,
+    "questions": [
+      {
+        "id": "TR-B2-04-q1",
+        "q": "According to the article, how common are earworms?",
+        "options": [
+          "Only musicians get them",
+          "They are quite rare",
+          "They mostly affect children and teenagers who listen to pop",
+          "Most people have them every week"
+        ],
+        "answer": 3,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "«around 90% of people experience them at least once a week»."
+      },
+      {
+        "id": "TR-B2-04-q2",
+        "q": "Which of these is NOT mentioned as a feature of earworms?",
+        "options": [
+          "Long and complicated lyrics",
+          "A fairly fast speed",
+          "A simple melody",
+          "Something surprising in the music"
+        ],
+        "answer": 0,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "В статье названы скорость, простая мелодия и неожиданный скачок; длинного текста нет."
+      },
+      {
+        "id": "TR-B2-04-q3",
+        "q": "What does the writer say about people's feelings towards earworms?",
+        "options": [
+          "People only remember songs they love",
+          "People can get songs they don't even like stuck in their heads",
+          "Most people enjoy having earworms",
+          "Earworms usually make people feel anxious and unable to sleep"
+        ],
+        "answer": 1,
+        "checks": "detail",
+        "topic_id": "r-detail",
+        "explain_ru": "«the songs don't have to be ones we like»."
+      },
+      {
+        "id": "TR-B2-04-q4",
+        "q": "Why might listening to the whole song help?",
+        "options": [
+          "It makes the brain tired of music",
+          "It helps you learn the words",
+          "The brain may stop replaying it once it feels complete",
+          "It gives your brain a difficult new task to concentrate on"
+        ],
+        "answer": 2,
+        "checks": "inference",
+        "topic_id": "r-inference",
+        "explain_ru": "«our brains keep replaying a tune partly because it feels unfinished»."
+      },
+      {
+        "id": "TR-B2-04-q5",
+        "q": "What is the main purpose of the article?",
+        "options": [
+          "To recommend some catchy songs",
+          "To warn readers about a mental illness",
+          "To compare different types of music and explain which are most popular",
+          "To explain a common experience and how to deal with it"
+        ],
+        "answer": 3,
+        "checks": "main idea",
+        "topic_id": "r-main-idea",
+        "explain_ru": "Статья объясняет явление и даёт советы, как от него избавиться."
       }
     ]
   }

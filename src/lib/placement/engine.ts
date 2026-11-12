@@ -70,10 +70,16 @@ const EXPECT_TEEN: Record<Expect, number> = { A1: 0, B1: 1, B2: 3 };
 export const emptyState = (expected?: Expect | null, track: "adult" | "teen" = "adult"): PState => ({
   v: 1, section: "intro", items: {}, core: [], answers: {}, reading: [], listening: [], rdone: [], ldone: [], plays: {},
   ...(track === "teen" ? { track } : {}),
-  ...(expected && expected in EXPECT ? { start: (track === "teen" ? EXPECT_TEEN : EXPECT)[expected] } : { warm: WARM.length }),
+  // Teens: разминка всегда (мягкий вход с базы A1), поиск по умолчанию — с A2
+  ...(track === "teen"
+    ? { warm: WARM_TEEN.length, start: expected && expected in EXPECT ? EXPECT_TEEN[expected] : 1 }
+    : expected && expected in EXPECT ? { start: EXPECT[expected] } : { warm: WARM.length }),
 });
 /** Разминка: одно задание A1 и два A2 из опорных групп — они же идут в зачёт этих групп. */
 const WARM = [0, 1, 1];
+/** Teens: четыре простых задания A1 по базе (to be, Present Simple с вопросами, Present Continuous, can / have got), потом два A2. */
+const WARM_TEEN = [0, 0, 0, 0, 1, 1];
+const warmOf = (st: PState) => (st.track === "teen" ? WARM_TEEN : WARM);
 
 export const BASE: Record<PLevel, number> = { A1: 0, A2: 2, B1: 4, B2: 6, C1: 8 };
 /** band 1 уровня X → X, band 2 и 3 → X+ (у C1 — всегда C1). */
@@ -83,9 +89,10 @@ export const subOf = (s: number): Sub => STEPS[Math.max(0, Math.min(8, Math.roun
 export const stepIdx = (sub: string) => STEPS.indexOf(sub as Sub);
 
 const CORE_MAX = 60;
+const CORE_MAX_TEEN = 40; // Teens короче: весь тест ~25–40 минут
 const PER_GROUP = 3; // заданий из каждой группы на подробной проверке
 const FALLBACK_AFTER = 9, FALLBACK_BELOW = 0.4; // после 9 заданий меньше 40% — уровень ниже
-const SLICE_FROM = 0.8, SLICE_GROUPS = 4, SLICE_PER = 2, UP_FROM = 0.7, EDGE_FROM = 0.55, EXTRA = 4, REPEATS = 6, REPEAT_GAP = 3, COVER_MAX = 8, COVER_PER = 2, FAM_ENOUGH = 7;
+const SLICE_FROM = 0.8, SLICE_GROUPS = 4, SLICE_PER = 2, UP_FROM = 0.7, EDGE_FROM = 0.55, EXTRA = 4, REPEATS = 6, REPEAT_GAP = 3, COVER_MAX = 10, COVER_PER = 3, COVER_MIN = 3, FAM_ENOUGH = 7;
 // уровень сделан на 80%+ — срез уровня выше (8 заданий); срез 70%+ — уровень выше целиком; 55–70% — ещё 4 задания уровня выше и решение по сумме
 
 // ───────── Ядро: поиск уровня → подробная проверка по группам ─────────
@@ -147,13 +154,16 @@ const levelAcc = (st: PState, li: number) => stat(st, (it, x) => it.level === PL
 
 /** Следующее задание ядра; null — ядро закончено. Отмечает в st этап проверки (diag, fb). */
 export function nextCore(st: PState, bank: Bank, rnd: () => number = Math.random): { item: CoreItem; ph: Ph } | null {
-  if (st.core.length >= CORE_MAX) return null;
+  if (st.core.length >= (st.track === "teen" ? CORE_MAX_TEEN : CORE_MAX)) return null;
   const warm = st.warm ?? 0;
   if (st.core.length < warm) {
     // два задания разминки одного уровня подряд — второе из другой группы, чтобы тема не повторялась
-    const i = st.core.length, lv = WARM[i];
+    const W = warmOf(st), i = st.core.length, lv = W[i];
     const others = groupsOf(bank, lv).filter((g) => !g.anchor);
-    const gid = i > 0 && WARM[i - 1] === lv && others.length ? others[Math.floor(rnd() * others.length)].id : anchorOf(bank, lv).id;
+    const k = W.slice(0, i).filter((x) => x === lv).length; // какое по счёту задание этого уровня в разминке
+    const gid = k === 0 || !others.length ? anchorOf(bank, lv).id
+      : st.track === "teen" && lv === 0 ? groupsOf(bank, lv)[Math.min(k, groupsOf(bank, lv).length - 1)].id // Teens A1: группы по порядку — база
+      : others[Math.floor(rnd() * others.length)].id;
     const it = pickFrom(st, bank, gid, rnd, "easy");
     if (it) return { item: it, ph: "w" };
   }
@@ -238,7 +248,7 @@ export function nextCore(st: PState, bank: Bank, rnd: () => number = Math.random
   return cover(st, bank, D, rnd);
 }
 
-/** Добор в конце грамматики: в каждом большом разделе (времена, условные, глагольные модели…) должно быть хотя бы 2 ответа
+/** Добор в конце грамматики: в каждом большом разделе (времена, условные, глагольные модели…) должно быть хотя бы 3 ответа
  *  на уровне проверки (или уровнем ниже, если на этом уровне у раздела нет тем); 1 из 2 — спорно, даём ещё одно. */
 function cover(st: PState, bank: Bank, D: number, rnd: () => number): { item: CoreItem; ph: Ph } | null {
   const fams = bank.families ?? [];
@@ -256,7 +266,7 @@ function cover(st: PState, bank: Bank, D: number, rnd: () => number): { item: Co
     if (L < 0) continue;
     const s2 = stat(st, (it, x) => it.skill === "grammar" && !x.ph?.startsWith("v") && f.topics.includes(it.topic_id) && PL_LEVELS.indexOf(it.level) >= L);
     const extra = done.filter((x) => f.topics.includes((st.items[x.id] as CoreItem)?.topic_id)).length;
-    const need = s2.n < 2 ? 2 - s2.n : s2.n === 2 && s2.c === 1 ? 1 : 0;
+    const need = s2.n < COVER_MIN ? COVER_MIN - s2.n : s2.n === COVER_MIN && s2.c === COVER_MIN - 2 ? 1 : 0; // 1 из 3 — спорно, ещё одно
     if (need > 0 && extra < COVER_PER) cands.push({ f, need, topics: at(L) });
   }
   cands.sort((a, b) => b.need - a.need || Number(a.f.id === lastFam) - Number(b.f.id === lastFam));
@@ -287,7 +297,8 @@ export function repeats(st: PState) {
 // 70%+ — по одному заданию каждого вида уровнем выше; меньше 40% — 6 заданий уровнем ниже.
 
 const VKINDS = ["v1", "v2", "v3", "v4", "v5"] as const;
-const vGroup = (bank: Bank, li: number, k: string) => bank.groups.find((g) => g.id === `${PL_LEVELS[li].toLowerCase()}-${k}`);
+// id вида: «a1-v2» во взрослом банке, «t-a1-v2» — в Teens
+const vGroup = (bank: Bank, li: number, k: string) => bank.groups.find((g) => g.kind === "vocabulary" && g.level === PL_LEVELS[li] && g.id.endsWith(`-${k}`));
 const vKinds = (bank: Bank, li: number) => VKINDS.filter((k) => vGroup(bank, li, k));
 const vStat = (st: PState, li: number, phs: Ph[]) => stat(st, (it, x) => it.level === PL_LEVELS[li] && !!x.ph && phs.includes(x.ph) && it.skill === "vocabulary");
 const gLevel = (st: PState) => Math.floor(Math.max(0, Math.min(8, st.step ?? 0)) / 2);
@@ -315,7 +326,7 @@ export function nextVocab(st: PState, bank: Bank, rnd: () => number = Math.rando
     const n = st.core.filter((x) => x.ph === "vw").length;
     if (n < order.length) {
       const g = vGroup(bank, G - 1, order[n])!;
-      const it = pickFrom(st, bank, g.id, rnd, "easy", order[n] === "v2" ? /preposition/ : undefined);
+      const it = (order[n] === "v2" ? pickFrom(st, bank, g.id, rnd, "easy", /preposition/) : null) ?? pickFrom(st, bank, g.id, rnd, "easy");
       if (it) return { item: it, ph: "vw" };
     }
   }
@@ -475,7 +486,7 @@ export type Summary = {
   groups: GroupRes[]; // карта тем грамматики: все группы, где были задания
   vstep: number | null; vlevel: PLevel | null; vgroups: GroupRes[]; // лексика: итог, найденный уровень, три вида на нём
   vprobes: { level: PLevel; c: number; n: number; pass: boolean | undefined }[];
-  families: { id: string; name: string; what: string; lvl: [number, number]; all: [number, number]; by: Record<string, [number, number]> }[]; // грамматика по большим разделам: по уровням, на уровне проверки и всего
+  families: { id: string; name: string; what: string; lvl: [number, number]; all: [number, number]; by: Record<string, [number, number]>; has?: string[] }[]; // грамматика по большим разделам: по уровням, на уровне проверки и всего
   vlevels: { level: PLevel; warm: boolean; kinds: { id: string; name: string; c: number; n: number }[] }[]; // лексика: виды заданий на каждом уровне
   vweak: string[]; // темы лексики, где были ошибки
   repeats: { topic: string; again: boolean; firstId: string | null }[]; // повторная проверка после ошибки
@@ -516,7 +527,9 @@ export function summarize(st: PState, bank: Bank): Summary {
   const reading = byLevelOf(st, st.rdone), listening = byLevelOf(st, st.ldone);
   const order = new Map(bank.groups.map((g, i) => [g.id, i]));
   const famOf = new Map((bank.families ?? []).flatMap((f) => f.topics.map((t) => [t, f.id] as const)));
-  const fam = new Map((bank.families ?? []).map((f) => [f.id, { id: f.id, name: f.name_ru, what: f.what_ru, lvl: [0, 0] as [number, number], all: [0, 0] as [number, number], by: {} as Record<string, [number, number]> }]));
+  const topicLevel = new Map(bank.core.filter((x) => x.skill === "grammar").map((x) => [x.topic_id, x.level] as const));
+  // has — уровни, на которых у раздела вообще есть темы (иначе в таблице «не входит в уровень», а не «мало данных»)
+  const fam = new Map((bank.families ?? []).map((f) => [f.id, { id: f.id, name: f.name_ru, what: f.what_ru, lvl: [0, 0] as [number, number], all: [0, 0] as [number, number], by: {} as Record<string, [number, number]>, has: [...new Set(f.topics.map((t) => topicLevel.get(t)).filter(Boolean) as string[])] }]));
   const DL = st.diag !== undefined ? PL_LEVELS[st.diag] : null;
   for (const x of st.core) {
     const it = st.items[x.id] as CoreItem; const a = st.answers[x.id];

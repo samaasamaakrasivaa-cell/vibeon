@@ -1661,5 +1661,211 @@
     "answer": 0,
     "explain_ru": "Разрешить — let somebody do (allow требует to: allowed me to go).",
     "group": "t-a2-v4"
+  },
+  {
+    "id": "TG-A2-57",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "tg-a2-pc-future",
+    "topic_en": "Present continuous for plans",
+    "topic_ru": "Present Continuous для планов",
+    "type": "mcq",
+    "q": "I ___ my cousins on Sunday — we've already bought the train tickets.",
+    "options": [
+      "visit",
+      "'m visiting",
+      "visited",
+      "'m visit"
+    ],
+    "answer": 1,
+    "explain_ru": "Договорённость, билеты куплены — Present Continuous: I'm visiting."
+  },
+  {
+    "id": "TG-A2-58",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "tg-a2-pc-future",
+    "topic_en": "Present continuous for plans",
+    "topic_ru": "Present Continuous для планов",
+    "type": "gap",
+    "q": "What time ___ you meeting Sam tomorrow?",
+    "accept": [
+      "are"
+    ],
+    "explain_ru": "План на завтра — Present Continuous: are you meeting.",
+    "hint_ru": "форма глагола to be"
+  },
+  {
+    "id": "TG-A2-59",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "tg-a2-too-enough",
+    "topic_en": "Too / enough",
+    "topic_ru": "too / enough",
+    "type": "mcq",
+    "q": "The water is ___ cold to swim today!",
+    "options": [
+      "enough",
+      "very much",
+      "too",
+      "a lot"
+    ],
+    "answer": 2,
+    "explain_ru": "Слишком холодная — too cold."
+  },
+  {
+    "id": "TG-A2-60",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "tg-a2-too-enough",
+    "topic_en": "Too / enough",
+    "topic_ru": "too / enough",
+    "type": "mcq",
+    "q": "Is your room big ___ for a sofa?",
+    "options": [
+      "too",
+      "very",
+      "so",
+      "enough"
+    ],
+    "answer": 3,
+    "explain_ru": "Достаточно большая — big enough."
+  },
+  {
+    "id": "TG-A2-61",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "tg-a2-adverbs",
+    "topic_en": "Adverbs of manner",
+    "topic_ru": "Наречия образа действия",
+    "type": "mcq",
+    "q": "My grandpa drives very ___.",
+    "options": [
+      "slowly",
+      "slow",
+      "slower",
+      "slowness"
+    ],
+    "answer": 0,
+    "explain_ru": "Как водит? — наречие: slowly."
+  },
+  {
+    "id": "TG-A2-62",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "tg-a2-adverbs",
+    "topic_en": "Adverbs of manner",
+    "topic_ru": "Наречия образа действия",
+    "type": "mcq",
+    "q": "Please talk ___ — the baby is sleeping.",
+    "options": [
+      "quiet",
+      "quietly",
+      "quieter",
+      "more quiet"
+    ],
+    "answer": 1,
+    "explain_ru": "Как говорить? — наречие: quietly."
+  },
+  {
+    "id": "TG-A2-63",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "tg-a2-prep-movement",
+    "topic_en": "Prepositions of movement",
+    "topic_ru": "Предлоги движения",
+    "type": "mcq",
+    "q": "The cat ran ___ the tree when it saw the dog.",
+    "options": [
+      "over",
+      "across",
+      "up",
+      "through"
+    ],
+    "answer": 2,
+    "explain_ru": "Залезть на дерево — up."
+  },
+  {
+    "id": "TG-A2-64",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "tg-a2-prep-movement",
+    "topic_en": "Prepositions of movement",
+    "topic_ru": "Предлоги движения",
+    "type": "mcq",
+    "q": "We walked ___ the forest for two hours.",
+    "options": [
+      "over",
+      "up",
+      "on",
+      "through"
+    ],
+    "answer": 3,
+    "explain_ru": "Сквозь лес — through."
+  },
+  {
+    "id": "TG-A2-65",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "tg-a2-prep-movement",
+    "topic_en": "Prepositions of movement",
+    "topic_ru": "Предлоги движения",
+    "type": "mcq",
+    "q": "She jumped ___ the pool and swam to the other side.",
+    "options": [
+      "into",
+      "inside",
+      "at",
+      "onto"
+    ],
+    "answer": 0,
+    "explain_ru": "Внутрь (в воду) — into."
+  },
+  {
+    "id": "TG-A2-66",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "tg-a2-reflexive",
+    "topic_en": "Reflexive pronouns",
+    "topic_ru": "Возвратные местоимения",
+    "type": "mcq",
+    "q": "I taught ___ to play the guitar.",
+    "options": [
+      "me",
+      "myself",
+      "my",
+      "mine"
+    ],
+    "answer": 1,
+    "explain_ru": "Сам себя научил — myself."
+  },
+  {
+    "id": "TG-A2-67",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "tg-a2-reflexive",
+    "topic_en": "Reflexive pronouns",
+    "topic_ru": "Возвратные местоимения",
+    "type": "mcq",
+    "q": "Did you enjoy ___ at the party, guys?",
+    "options": [
+      "yourself",
+      "you",
+      "yourselves",
+      "your"
+    ],
+    "answer": 2,
+    "explain_ru": "Guys — несколько человек: yourselves."
   }
 ]

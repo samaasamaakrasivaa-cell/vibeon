@@ -1,1 +1,634 @@
-[]
+[
+  {
+    "id": "TG-C1-01",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "tg-c1-inversion",
+    "topic_en": "Inversion",
+    "topic_ru": "Инверсия",
+    "type": "mcq",
+    "q": "Not only ___ late, but she also forgot the tickets.",
+    "options": [
+      "was she",
+      "she was",
+      "she is",
+      "did she was"
+    ],
+    "answer": 0,
+    "explain_ru": "После Not only в начале предложения — инверсия: was she.",
+    "copied_from": "G-C1-07"
+  },
+  {
+    "id": "TG-C1-02",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "tg-c1-inversion",
+    "topic_en": "Inversion",
+    "topic_ru": "Инверсия",
+    "type": "mcq",
+    "q": "Never ___ such a beautiful sunset.",
+    "options": [
+      "I have seen",
+      "I saw",
+      "have I seen",
+      "did I saw"
+    ],
+    "answer": 2,
+    "explain_ru": "После Never в начале — обратный порядок слов: Never have I seen…",
+    "copied_from": "G-C1-56"
+  },
+  {
+    "id": "TG-C1-03",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "tg-c1-inversion",
+    "topic_en": "Inversion",
+    "topic_ru": "Инверсия",
+    "type": "mcq",
+    "q": "Hardly ___ sat down when the phone rang.",
+    "options": [
+      "we had",
+      "had we",
+      "did we",
+      "have we"
+    ],
+    "answer": 1,
+    "explain_ru": "Hardly … when — инверсия с Past Perfect: Hardly had we sat down…",
+    "copied_from": "G-C1-58"
+  },
+  {
+    "id": "TG-C1-04",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 2,
+    "topic_id": "tg-c1-inversion",
+    "topic_en": "Inversion",
+    "topic_ru": "Инверсия",
+    "type": "brackets",
+    "q": "Little ___ (I / know) how expensive the trip would be.",
+    "explain_ru": "После little в начале предложения — инверсия: Little did I know.",
+    "accept": [
+      "did i know"
+    ],
+    "copied_from": "G-C1-01"
+  },
+  {
+    "id": "TG-C1-05",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 3,
+    "topic_id": "tg-c1-inversion",
+    "topic_en": "Inversion",
+    "topic_ru": "Инверсия",
+    "type": "gap",
+    "q": "Under no circumstances ___ you share your password with anyone.",
+    "accept": [
+      "should",
+      "must",
+      "can",
+      "may"
+    ],
+    "explain_ru": "После Under no circumstances в начале — инверсия с модальным глаголом.",
+    "hint_ru": "модальный глагол",
+    "copied_from": "G-C1-17"
+  },
+  {
+    "id": "TG-C1-06",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "tg-c1-cleft",
+    "topic_en": "Cleft sentences",
+    "topic_ru": "Выделение: It was… / What…",
+    "type": "mcq",
+    "q": "All I want ___ a quiet weekend at home.",
+    "options": [
+      "are",
+      "be",
+      "is",
+      "does"
+    ],
+    "answer": 2,
+    "explain_ru": "All I want is… — всё, что мне нужно, — это…",
+    "copied_from": "G-C1-59"
+  },
+  {
+    "id": "TG-C1-07",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 2,
+    "topic_id": "tg-c1-cleft",
+    "topic_en": "Cleft sentences",
+    "topic_ru": "Выделение: It was… / What…",
+    "type": "brackets",
+    "q": "___ (what / surprise) me most was how friendly everyone was.",
+    "accept": [
+      "what surprised"
+    ],
+    "explain_ru": "Выделение с what: What surprised me most was…",
+    "copied_from": "G-C1-61"
+  },
+  {
+    "id": "TG-C1-08",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 3,
+    "topic_id": "tg-c1-cleft",
+    "topic_en": "Cleft sentences",
+    "topic_ru": "Выделение: It was… / What…",
+    "type": "brackets",
+    "q": "It ___ (be) only when I got home that I realised I'd lost my wallet.",
+    "accept": [
+      "was"
+    ],
+    "explain_ru": "Выделительная конструкция It was … that…: it was only when…",
+    "copied_from": "G-C1-26"
+  },
+  {
+    "id": "TG-C1-09",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "tg-c1-passive-reporting",
+    "topic_en": "Passive reporting structures",
+    "topic_ru": "Сложный пассив",
+    "type": "mcq",
+    "q": "The new model is expected ___ in shops next spring.",
+    "options": [
+      "appearing",
+      "to have appeared",
+      "appear",
+      "to appear"
+    ],
+    "answer": 3,
+    "explain_ru": "Ожидается в будущем — is expected to + глагол.",
+    "copied_from": "G-C1-65"
+  },
+  {
+    "id": "TG-C1-10",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "tg-c1-passive-reporting",
+    "topic_en": "Passive reporting structures",
+    "topic_ru": "Сложный пассив",
+    "type": "mcq",
+    "q": "The singer is said ___ a new album at the moment.",
+    "options": [
+      "to be recording",
+      "to record",
+      "recording",
+      "to have recorded"
+    ],
+    "answer": 0,
+    "explain_ru": "Процесс сейчас (at the moment) — is said to be + -ing.",
+    "copied_from": "G-C1-66"
+  },
+  {
+    "id": "TG-C1-11",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "tg-c1-passive-reporting",
+    "topic_en": "Passive reporting structures",
+    "topic_ru": "Сложный пассив",
+    "type": "brackets",
+    "q": "At the moment, the painting ___ (think / be) worth over a million pounds.",
+    "accept": [
+      "is thought to be"
+    ],
+    "explain_ru": "Сейчас (at the moment) так считают — безличный пассив в настоящем: is thought to be.",
+    "copied_from": "G-C1-27"
+  },
+  {
+    "id": "TG-C1-12",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 2,
+    "topic_id": "tg-c1-passive-reporting",
+    "topic_en": "Passive reporting structures",
+    "topic_ru": "Сложный пассив",
+    "type": "mcq",
+    "q": "The fire is believed ___ by a faulty cable.",
+    "options": [
+      "to cause",
+      "to have been caused",
+      "being caused",
+      "to be causing"
+    ],
+    "answer": 1,
+    "explain_ru": "Пассив о прошлом событии: is believed to have been caused.",
+    "copied_from": "G-C1-28"
+  },
+  {
+    "id": "TG-C1-13",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 3,
+    "topic_id": "tg-c1-passive-reporting",
+    "topic_en": "Passive reporting structures",
+    "topic_ru": "Сложный пассив",
+    "type": "brackets",
+    "q": "The castle is believed ___ (build) in the 12th century.",
+    "explain_ru": "Сложный пассив о прошлом: is believed to have been + третья форма.",
+    "accept": [
+      "to have been built"
+    ],
+    "copied_from": "G-C1-04"
+  },
+  {
+    "id": "TG-C1-14",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "tg-c1-unreal",
+    "topic_en": "Unreal past",
+    "topic_ru": "Нереальное прошлое",
+    "type": "mcq",
+    "q": "He talks as if he ___ the boss, but he only started last month.",
+    "options": [
+      "is being",
+      "were",
+      "had",
+      "be"
+    ],
+    "answer": 1,
+    "explain_ru": "Нереальное сравнение — as if + Past Simple (were).",
+    "copied_from": "G-C1-63"
+  },
+  {
+    "id": "TG-C1-15",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 3,
+    "topic_id": "tg-c1-unreal",
+    "topic_en": "Unreal past",
+    "topic_ru": "Нереальное прошлое",
+    "type": "mcq",
+    "q": "It's high time we ___ a proper holiday. We haven't been away for years.",
+    "options": [
+      "take",
+      "have taken",
+      "took",
+      "will take"
+    ],
+    "answer": 2,
+    "explain_ru": "После it's high time we используется Past Simple.",
+    "copied_from": "G-C1-16"
+  },
+  {
+    "id": "TG-C1-16",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 3,
+    "topic_id": "tg-c1-unreal",
+    "topic_en": "Unreal past",
+    "topic_ru": "Нереальное прошлое",
+    "type": "brackets",
+    "q": "I'd rather you ___ (not / tell) anyone about this yet.",
+    "explain_ru": "I'd rather + подлежащее + Past Simple — «я бы предпочёл, чтобы ты...».",
+    "accept": [
+      "didn't tell",
+      "did not tell"
+    ],
+    "copied_from": "G-C1-05"
+  },
+  {
+    "id": "TV-C1-01",
+    "skill": "vocabulary",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "tv-c1-academic",
+    "topic_en": "Academic vocabulary",
+    "topic_ru": "Академическая лексика",
+    "type": "wordform",
+    "q": "There is growing ___ that spending time in nature reduces stress.",
+    "base": "EVIDENT",
+    "accept": [
+      "evidence"
+    ],
+    "explain_ru": "Существительное от evident — evidence (доказательства).",
+    "group": "t-c1-v1",
+    "copied_from": "V-C1-04"
+  },
+  {
+    "id": "TV-C1-02",
+    "skill": "vocabulary",
+    "level": "C1",
+    "band": 2,
+    "topic_id": "tv-c1-academic",
+    "topic_en": "Academic vocabulary",
+    "topic_ru": "Академическая лексика",
+    "type": "wordform",
+    "q": "The survey found a strong ___ between sleep and productivity.",
+    "base": "RELATE",
+    "accept": [
+      "relationship",
+      "relation"
+    ],
+    "explain_ru": "Существительное от relate — relationship (связь).",
+    "group": "t-c1-v1",
+    "copied_from": "V-C1-05"
+  },
+  {
+    "id": "TV-C1-03",
+    "skill": "vocabulary",
+    "level": "C1",
+    "band": 3,
+    "topic_id": "tv-c1-academic",
+    "topic_en": "Academic vocabulary",
+    "topic_ru": "Академическая лексика",
+    "type": "wordform",
+    "q": "The ___ of the results is limited, as only 50 people took part.",
+    "base": "RELY",
+    "accept": [
+      "reliability"
+    ],
+    "explain_ru": "Существительное от rely — reliability (надёжность).",
+    "group": "t-c1-v1",
+    "copied_from": "V-C1-06"
+  },
+  {
+    "id": "TV-C1-04",
+    "skill": "vocabulary",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "tv-c1-academic",
+    "topic_en": "Academic vocabulary",
+    "topic_ru": "Академическая лексика",
+    "type": "wordform",
+    "q": "There has been significant ___ in the number of people working from home.",
+    "accept": [
+      "growth"
+    ],
+    "explain_ru": "От grow — существительное growth (рост).",
+    "base": "GROW",
+    "group": "t-c1-v1",
+    "copied_from": "V-C1-37"
+  },
+  {
+    "id": "TV-C1-05",
+    "skill": "vocabulary",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "tv-c1-academic",
+    "topic_en": "Academic vocabulary",
+    "topic_ru": "Академическая лексика",
+    "type": "mcq",
+    "q": "The study ___ that people sleep better after exercise.",
+    "options": [
+      "tells",
+      "speaks",
+      "suggests",
+      "says to"
+    ],
+    "answer": 2,
+    "explain_ru": "В академическом стиле: the study suggests / indicates that…",
+    "group": "t-c1-v1",
+    "copied_from": "V-C1-23"
+  },
+  {
+    "id": "TV-C1-06",
+    "skill": "vocabulary",
+    "level": "C1",
+    "band": 2,
+    "topic_id": "tv-c1-academic",
+    "topic_en": "Academic vocabulary",
+    "topic_ru": "Академическая лексика",
+    "type": "mcq",
+    "q": "There is a growing ___ among scientists that the climate is changing faster than expected.",
+    "options": [
+      "agreement on",
+      "opinion",
+      "accord",
+      "consensus"
+    ],
+    "answer": 3,
+    "explain_ru": "Научный консенсус — consensus among scientists.",
+    "group": "t-c1-v1",
+    "copied_from": "V-C1-24"
+  },
+  {
+    "id": "TV-C1-07",
+    "skill": "vocabulary",
+    "level": "C1",
+    "band": 3,
+    "topic_id": "tv-c1-academic",
+    "topic_en": "Academic vocabulary",
+    "topic_ru": "Академическая лексика",
+    "type": "gap",
+    "q": "The results ___ the theory that stress affects memory.",
+    "accept": [
+      "support",
+      "confirm",
+      "strengthen",
+      "back"
+    ],
+    "explain_ru": "Результаты подтверждают теорию — support / confirm the theory.",
+    "hint_ru": "глагол: подтверждают",
+    "group": "t-c1-v1",
+    "copied_from": "V-C1-27"
+  },
+  {
+    "id": "TV-C1-08",
+    "skill": "vocabulary",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "tv-c1-collocations",
+    "topic_en": "Strong collocations",
+    "topic_ru": "Сильная сочетаемость",
+    "type": "mcq",
+    "q": "I was ___ disappointed when the concert was cancelled.",
+    "options": [
+      "heavily",
+      "bitterly",
+      "strongly",
+      "highly"
+    ],
+    "answer": 1,
+    "explain_ru": "Устойчивое сочетание bitterly disappointed — «горько разочарован».",
+    "group": "t-c1-v2",
+    "copied_from": "V-C1-08"
+  },
+  {
+    "id": "TV-C1-09",
+    "skill": "vocabulary",
+    "level": "C1",
+    "band": 2,
+    "topic_id": "tv-c1-collocations",
+    "topic_en": "Strong collocations",
+    "topic_ru": "Сильная сочетаемость",
+    "type": "mcq",
+    "q": "I'm a ___ believer in taking regular breaks.",
+    "options": [
+      "hard",
+      "solid",
+      "firm",
+      "tight"
+    ],
+    "answer": 2,
+    "explain_ru": "Устойчивое сочетание a firm believer — «убеждённый сторонник».",
+    "group": "t-c1-v2",
+    "copied_from": "V-C1-09"
+  },
+  {
+    "id": "TV-C1-10",
+    "skill": "vocabulary",
+    "level": "C1",
+    "band": 2,
+    "topic_id": "tv-c1-collocations",
+    "topic_en": "Strong collocations",
+    "topic_ru": "Сильная сочетаемость",
+    "type": "mcq",
+    "q": "There is ___ evidence that the treatment works.",
+    "options": [
+      "heavy",
+      "strong",
+      "big",
+      "hard"
+    ],
+    "answer": 1,
+    "explain_ru": "Устойчивое сочетание: strong evidence.",
+    "group": "t-c1-v2",
+    "copied_from": "V-C1-21"
+  },
+  {
+    "id": "TV-C1-11",
+    "skill": "vocabulary",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "tv-c1-collocations",
+    "topic_en": "Strong collocations",
+    "topic_ru": "Сильная сочетаемость",
+    "type": "mcq",
+    "q": "It's ___ important that you arrive on time.",
+    "options": [
+      "heavily",
+      "strongly",
+      "vitally",
+      "deeply"
+    ],
+    "answer": 2,
+    "explain_ru": "Крайне важно — vitally important.",
+    "group": "t-c1-v2",
+    "copied_from": "V-C1-33"
+  },
+  {
+    "id": "TV-C1-12",
+    "skill": "vocabulary",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "tv-c1-collocations",
+    "topic_en": "Strong collocations",
+    "topic_ru": "Сильная сочетаемость",
+    "type": "mcq",
+    "q": "We need to ___ up with a better plan before Monday.",
+    "options": [
+      "make",
+      "bring",
+      "set",
+      "come"
+    ],
+    "answer": 3,
+    "explain_ru": "Придумать — come up with.",
+    "group": "t-c1-v2",
+    "copied_from": "V-C1-34"
+  },
+  {
+    "id": "TV-C1-13",
+    "skill": "vocabulary",
+    "level": "C1",
+    "band": 3,
+    "topic_id": "tv-c1-collocations",
+    "topic_en": "Strong collocations",
+    "topic_ru": "Сильная сочетаемость",
+    "type": "mcq",
+    "q": "The plan sounded great at first, but it didn't ___ in practice.",
+    "options": [
+      "turn up",
+      "break out",
+      "set off",
+      "pan out"
+    ],
+    "answer": 3,
+    "explain_ru": "Pan out — сложиться, получиться (о плане).",
+    "group": "t-c1-v2",
+    "copied_from": "V-C1-14"
+  },
+  {
+    "id": "TV-C1-14",
+    "skill": "vocabulary",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "tv-c1-word-formation",
+    "topic_en": "Advanced word formation",
+    "topic_ru": "Словообразование C1",
+    "type": "wordform",
+    "q": "The conference was completely ___: nobody knew which room to go to, and the speakers arrived late.",
+    "base": "ORGANISE",
+    "accept": [
+      "disorganised",
+      "disorganized"
+    ],
+    "explain_ru": "По смыслу нужна противоположность organised с приставкой dis-: disorganised — плохо организованный.",
+    "group": "t-c1-v3",
+    "copied_from": "V-C1-01"
+  },
+  {
+    "id": "TV-C1-15",
+    "skill": "vocabulary",
+    "level": "C1",
+    "band": 2,
+    "topic_id": "tv-c1-word-formation",
+    "topic_en": "Advanced word formation",
+    "topic_ru": "Словообразование C1",
+    "type": "wordform",
+    "q": "I clearly ___ how long the journey would take. We arrived two hours late.",
+    "base": "ESTIMATE",
+    "accept": [
+      "underestimated"
+    ],
+    "explain_ru": "Приставка under- значит «недо-»: underestimate — недооценить.",
+    "group": "t-c1-v3",
+    "copied_from": "V-C1-02"
+  },
+  {
+    "id": "TV-C1-16",
+    "skill": "vocabulary",
+    "level": "C1",
+    "band": 3,
+    "topic_id": "tv-c1-word-formation",
+    "topic_en": "Advanced word formation",
+    "topic_ru": "Словообразование C1",
+    "type": "wordform",
+    "q": "His ___ rude reply surprised everyone. He's usually so polite.",
+    "base": "CHARACTER",
+    "accept": [
+      "uncharacteristically"
+    ],
+    "explain_ru": "Нужно наречие с отрицательной приставкой: uncharacteristically — нетипично для него.",
+    "group": "t-c1-v3",
+    "copied_from": "V-C1-03"
+  },
+  {
+    "id": "TV-C1-17",
+    "skill": "vocabulary",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "tv-c1-word-formation",
+    "topic_en": "Advanced word formation",
+    "topic_ru": "Словообразование C1",
+    "type": "wordform",
+    "q": "The instructions were completely ___. I couldn't understand a word.",
+    "accept": [
+      "incomprehensible"
+    ],
+    "explain_ru": "От comprehend: comprehensible → incomprehensible (непонятный).",
+    "base": "COMPREHEND",
+    "group": "t-c1-v3",
+    "copied_from": "V-C1-36"
+  }
+]

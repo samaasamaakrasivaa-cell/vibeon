@@ -7,8 +7,8 @@
     "topic_en": "Writing: a message about your pet",
     "topic_ru": "Сообщение другу о питомце",
     "type": "writing",
-    "prompt_en": "Your friend wants to know about your pet (or a pet you would like to have). Write a message. Say what the pet is and what its name is, what it looks like, and one funny thing it does.",
-    "prompt_ru": "Напиши другу о своём питомце (или о том, какого хотел бы завести): кто он и как его зовут, как выглядит и что смешного он делает.",
+    "prompt_en": "Your friend wants to know about your pet (or a pet you would like to have). Write a message to your friend.",
+    "prompt_ru": "Друг хочет узнать о твоём питомце (или о том, которого ты хотел(а) бы завести). Напиши ему сообщение.",
     "min_words": 20,
     "max_words": 35,
     "time_min": 6,
@@ -40,17 +40,17 @@
       {
         "q": "What's your name, and how old are you?",
         "prep_sec": 10,
-        "speak_sec": 20
+        "speak_sec": 40
       },
       {
         "q": "What do you like doing after school?",
         "prep_sec": 10,
-        "speak_sec": 25
+        "speak_sec": 40
       },
       {
         "q": "Tell me about your best friend.",
         "prep_sec": 10,
-        "speak_sec": 25
+        "speak_sec": 40
       }
     ],
     "expects": [
@@ -68,8 +68,8 @@
     "topic_en": "Writing: a message about your weekend",
     "topic_ru": "Сообщение другу о выходных",
     "type": "writing",
-    "prompt_en": "Your friend was away last weekend and wants to know what you did. Write a message. Say where you went, who you were with and what was the best (or the funniest) moment.",
-    "prompt_ru": "Друг уезжал на выходные и спрашивает, что ты делал(а). Напиши: куда ходил(а), с кем и какой момент был самым классным (или самым смешным).",
+    "prompt_en": "Your friend was away last weekend and wants to know what you did. Write a message to your friend.",
+    "prompt_ru": "Друг уезжал на выходные и спрашивает, что ты делал(а). Напиши ему сообщение.",
     "min_words": 35,
     "max_words": 55,
     "time_min": 8,
@@ -95,8 +95,8 @@
     "topic_en": "Writing: a review of a game, app or film",
     "topic_ru": "Отзыв на игру, приложение или фильм",
     "type": "writing",
-    "prompt_en": "Write a short review for a school website of a game, app or film you like. Say what it is about, what is good about it and who you would recommend it to.",
-    "prompt_ru": "Напиши короткий отзыв для школьного сайта на игру, приложение или фильм, который тебе нравится: о чём он, что в нём хорошего и кому ты бы его посоветовал(а).",
+    "prompt_en": "A school website wants short reviews of games, apps and films that students like. Write a review.",
+    "prompt_ru": "Школьный сайт собирает короткие отзывы учеников об играх, приложениях и фильмах. Напиши отзыв.",
     "min_words": 35,
     "max_words": 55,
     "time_min": 8,
@@ -122,8 +122,8 @@
     "topic_en": "Writing: plans for the holidays",
     "topic_ru": "Письмо: планы на каникулы",
     "type": "writing",
-    "prompt_en": "Your English-speaking friend asks: \"What are you going to do in the summer holidays?\" Write a reply. Say where you are going, what you are going to do there and invite your friend to do something with you.",
-    "prompt_ru": "Друг спрашивает по-английски о планах на летние каникулы. Ответь: куда поедешь (или где будешь), чем займёшься и позови друга сделать что-то вместе.",
+    "prompt_en": "Your English-speaking friend asks: \"What are you going to do in the summer holidays?\" Write a reply.",
+    "prompt_ru": "Друг спрашивает по-английски о твоих планах на летние каникулы. Напиши ответ.",
     "min_words": 35,
     "max_words": 55,
     "time_min": 8,
@@ -155,17 +155,17 @@
       {
         "q": "What did you do last weekend?",
         "prep_sec": 15,
-        "speak_sec": 30
+        "speak_sec": 50
       },
       {
         "q": "What was the best thing about it?",
         "prep_sec": 15,
-        "speak_sec": 30
+        "speak_sec": 50
       },
       {
         "q": "What are you going to do next weekend?",
         "prep_sec": 15,
-        "speak_sec": 30
+        "speak_sec": 50
       }
     ],
     "expects": [
@@ -190,17 +190,17 @@
       {
         "q": "What is your favourite game or app? Why do you like it?",
         "prep_sec": 15,
-        "speak_sec": 30
+        "speak_sec": 50
       },
       {
         "q": "How much time do you spend on your phone every day? Is it too much?",
         "prep_sec": 15,
-        "speak_sec": 30
+        "speak_sec": 50
       },
       {
         "q": "Have you ever tried a new hobby? Tell me about it.",
         "prep_sec": 15,
-        "speak_sec": 30
+        "speak_sec": 50
       }
     ],
     "expects": [
@@ -225,17 +225,17 @@
       {
         "q": "What is your favourite school subject, and why?",
         "prep_sec": 15,
-        "speak_sec": 30
+        "speak_sec": 50
       },
       {
         "q": "Tell me about a funny thing that happened at school.",
         "prep_sec": 15,
-        "speak_sec": 30
+        "speak_sec": 50
       },
       {
         "q": "What should a new student at your school know?",
         "prep_sec": 15,
-        "speak_sec": 30
+        "speak_sec": 50
       }
     ],
     "expects": [
@@ -254,8 +254,8 @@
     "topic_en": "Writing: a message about your school",
     "topic_ru": "Сообщение другу о школе",
     "type": "writing",
-    "prompt_en": "Your new friend from another country wants to know about your school. Write a message. Say what your school is like, what your favourite subject is and what you do at break.",
-    "prompt_ru": "Новый друг из другой страны спрашивает про твою школу. Напиши: какая у тебя школа, какой любимый предмет и что ты делаешь на перемене.",
+    "prompt_en": "Your new friend from another country wants to know about your school. Write a message to your friend.",
+    "prompt_ru": "Новый друг из другой страны хочет узнать о твоей школе. Напиши ему сообщение.",
     "min_words": 20,
     "max_words": 35,
     "time_min": 6,
@@ -281,8 +281,8 @@
     "topic_en": "Writing: saying no to an invitation",
     "topic_ru": "Ответ на приглашение: не могу прийти",
     "type": "writing",
-    "prompt_en": "Your friend invites you to a party on Saturday, but you can't go. Write a message. Say sorry, say why you can't come and suggest another day to meet.",
-    "prompt_ru": "Друг зовёт тебя на вечеринку в субботу, но ты не можешь. Напиши: извинись, объясни, почему не получится, и предложи другой день для встречи.",
+    "prompt_en": "Your friend invites you to a party on Saturday, but you can't go. Write a message to your friend.",
+    "prompt_ru": "Друг зовёт тебя на вечеринку в субботу, но ты не можешь. Напиши ему сообщение.",
     "min_words": 20,
     "max_words": 35,
     "time_min": 6,
@@ -314,17 +314,17 @@
       {
         "q": "Tell me about your room. What's in it?",
         "prep_sec": 10,
-        "speak_sec": 25
+        "speak_sec": 40
       },
       {
         "q": "What do you usually do at the weekend?",
         "prep_sec": 10,
-        "speak_sec": 25
+        "speak_sec": 40
       },
       {
         "q": "What's your favourite food?",
         "prep_sec": 10,
-        "speak_sec": 20
+        "speak_sec": 40
       }
     ],
     "expects": [
@@ -348,17 +348,17 @@
       {
         "q": "What's your favourite game or app? Why do you like it?",
         "prep_sec": 10,
-        "speak_sec": 25
+        "speak_sec": 40
       },
       {
         "q": "What can you do well?",
         "prep_sec": 10,
-        "speak_sec": 25
+        "speak_sec": 40
       },
       {
         "q": "What does your family like doing together?",
         "prep_sec": 10,
-        "speak_sec": 25
+        "speak_sec": 40
       }
     ],
     "expects": [
@@ -376,8 +376,8 @@
     "topic_en": "Writing: a forum reply about phones",
     "topic_ru": "Ответ на форуме: слишком много телефона?",
     "type": "writing",
-    "prompt_en": "You see this post on a forum for teenagers: \"My parents say I spend too much time on my phone. Are they right? What do you think?\" Write a reply. Give your opinion, describe your own phone habits and give one piece of advice.",
-    "prompt_ru": "Пост на форуме: «Родители говорят, что я слишком много сижу в телефоне. Они правы?» Ответь: твоё мнение, твои привычки и один совет.",
+    "prompt_en": "You see this post on a forum for teenagers: \"My parents say I spend too much time on my phone. Are they right?\" Write a reply.",
+    "prompt_ru": "Пост на форуме: «Родители говорят, что я слишком много сижу в телефоне. Они правы?» Напиши ответ.",
     "min_words": 70,
     "max_words": 90,
     "time_min": 12,
@@ -404,8 +404,8 @@
     "topic_en": "Writing: a story",
     "topic_ru": "Рассказ по первой фразе",
     "type": "writing",
-    "prompt_en": "Write a story for a school magazine competition. Your story must begin with this sentence: \"As soon as I opened the door, I knew something was wrong.\" Say what happened, how you felt and how the story ended.",
-    "prompt_ru": "Рассказ для конкурса школьного журнала, первая фраза: «As soon as I opened the door, I knew something was wrong.» Что случилось, что ты чувствовал(а) и чем всё закончилось.",
+    "prompt_en": "Write a story for a school magazine competition. Your story must begin with this sentence: \"As soon as I opened the door, I knew something was wrong.\"",
+    "prompt_ru": "Рассказ для конкурса школьного журнала. Он должен начинаться с фразы: «As soon as I opened the door, I knew something was wrong.»",
     "min_words": 70,
     "max_words": 90,
     "time_min": 12,
@@ -432,8 +432,8 @@
     "topic_en": "Writing: an article about your town",
     "topic_ru": "Статья: свободный день в твоём городе",
     "type": "writing",
-    "prompt_en": "Your school website is looking for articles called \"The perfect free day in our town\". Write an article. Say where teenagers should go, what they can do there and why it's a great day out.",
-    "prompt_ru": "Статья для школьного сайта «Идеальный свободный день в нашем городе»: куда пойти подросткам, чем заняться и почему это отличный день.",
+    "prompt_en": "Your school website is looking for articles called \"The perfect free day in our town\". Write an article.",
+    "prompt_ru": "Школьный сайт собирает статьи «Идеальный свободный день в нашем городе». Напиши статью.",
     "min_words": 70,
     "max_words": 90,
     "time_min": 12,
@@ -466,17 +466,17 @@
       {
         "q": "How do you usually use the internet in your free time?",
         "prep_sec": 20,
-        "speak_sec": 40
+        "speak_sec": 60
       },
       {
         "q": "Do you think teenagers spend too much time online? Why, or why not?",
         "prep_sec": 20,
-        "speak_sec": 45
+        "speak_sec": 60
       },
       {
         "q": "Tell me about something interesting you learned online recently.",
         "prep_sec": 20,
-        "speak_sec": 45
+        "speak_sec": 60
       }
     ],
     "expects": [
@@ -502,17 +502,17 @@
       {
         "q": "In your opinion, which school subject is the most useful, and why?",
         "prep_sec": 20,
-        "speak_sec": 40
+        "speak_sec": 60
       },
       {
         "q": "If you could change one thing about your school, what would it be?",
         "prep_sec": 20,
-        "speak_sec": 45
+        "speak_sec": 60
       },
       {
         "q": "What would you like to do after you finish school?",
         "prep_sec": 20,
-        "speak_sec": 45
+        "speak_sec": 60
       }
     ],
     "expects": [
@@ -538,17 +538,17 @@
       {
         "q": "Tell me about a time you tried something for the first time. What was it?",
         "prep_sec": 30,
-        "speak_sec": 50
+        "speak_sec": 60
       },
       {
         "q": "How did you feel before and after?",
         "prep_sec": 20,
-        "speak_sec": 40
+        "speak_sec": 60
       },
       {
         "q": "Would you recommend it to a friend? Why, or why not?",
         "prep_sec": 20,
-        "speak_sec": 40
+        "speak_sec": 60
       }
     ],
     "expects": [
@@ -559,5 +559,182 @@
       "Произношение понятное, ученик сам исправляет часть ошибок"
     ],
     "explain_ru": "Проверяет рассказ о прошлом, чувства и рекомендацию."
+  },
+  {
+    "id": "TW-B2-01",
+    "skill": "writing",
+    "level": "B2",
+    "band": 1,
+    "topic_en": "Writing: an opinion essay about homework",
+    "topic_ru": "Эссе-мнение: нужна ли домашняя работа",
+    "type": "writing",
+    "prompt_en": "Your teacher has asked you to write an essay with the title \"Homework does more harm than good.\" Do you agree?",
+    "prompt_ru": "Учитель задал эссе на тему «Домашние задания приносят больше вреда, чем пользы». Ты согласен(на)?",
+    "min_words": 110,
+    "max_words": 140,
+    "time_min": 18,
+    "expects": [
+      "Чёткая позиция и аргументы с примерами",
+      "Вступление, основная часть и вывод; абзацы связаны (On the other hand, What is more)",
+      "Разнообразная лексика по теме, есть коллокации",
+      "Сложные конструкции (условные, пассив, относительные придаточные) в основном верны",
+      "Стиль соответствует жанру"
+    ],
+    "explain_ru": "Проверяет аргументацию, связки и сложные конструкции.",
+    "points": [
+      "give your opinion with reasons",
+      "consider the opposite point of view",
+      "suggest a better approach"
+    ],
+    "points_title": "In your essay:"
+  },
+  {
+    "id": "TW-B2-02",
+    "skill": "writing",
+    "level": "B2",
+    "band": 2,
+    "topic_en": "Writing: a review",
+    "topic_ru": "Отзыв: событие, приложение или сериал",
+    "type": "writing",
+    "prompt_en": "An English-language website for teenagers wants reviews of something you've recently experienced: an event, an app or a series. Write a review.",
+    "prompt_ru": "Англоязычный сайт для подростков собирает отзывы о недавнем событии, приложении или сериале. Напиши отзыв.",
+    "min_words": 110,
+    "max_words": 140,
+    "time_min": 18,
+    "expects": [
+      "Чёткая позиция и аргументы с примерами",
+      "Вступление, основная часть и вывод; абзацы связаны (On the other hand, What is more)",
+      "Разнообразная лексика по теме, есть коллокации",
+      "Сложные конструкции (условные, пассив, относительные придаточные) в основном верны",
+      "Стиль соответствует жанру"
+    ],
+    "explain_ru": "Проверяет описание, оценку и рекомендацию в жанре отзыва.",
+    "points": [
+      "describe it",
+      "say what worked and what didn't",
+      "say who would enjoy it"
+    ],
+    "points_title": "In your review:"
+  },
+  {
+    "id": "TW-B2-03",
+    "skill": "writing",
+    "level": "B2",
+    "band": 3,
+    "topic_en": "Writing: an application to volunteer",
+    "topic_ru": "Письмо-заявка: волонтёр на фестивале",
+    "type": "writing",
+    "prompt_en": "An international summer festival in your city is looking for teenage volunteers who speak English. Write an email of application.",
+    "prompt_ru": "Международный летний фестиваль в твоём городе ищет волонтёров-подростков со знанием английского. Напиши письмо-заявку.",
+    "min_words": 110,
+    "max_words": 140,
+    "time_min": 18,
+    "expects": [
+      "Чёткая позиция и аргументы с примерами",
+      "Вступление, основная часть и вывод; абзацы связаны (On the other hand, What is more)",
+      "Разнообразная лексика по теме, есть коллокации",
+      "Сложные конструкции (условные, пассив, относительные придаточные) в основном верны",
+      "Стиль соответствует жанру"
+    ],
+    "explain_ru": "Проверяет полуофициальный стиль, аргументацию и лексику по теме.",
+    "points": [
+      "explain why you'd like to volunteer",
+      "describe relevant skills or experience",
+      "say what you hope to gain"
+    ],
+    "points_title": "In your email:"
+  },
+  {
+    "id": "TS-B2-01",
+    "skill": "speaking",
+    "level": "B2",
+    "band": 1,
+    "topic_en": "Speaking: technology and AI",
+    "topic_ru": "Говорение: технологии и ИИ",
+    "type": "speaking",
+    "intro_ru": "Выскажи мнение о технологиях и приведи аргументы.",
+    "intro_en": "Give your opinion about technology and support it with reasons.",
+    "questions": [
+      {
+        "q": "How has artificial intelligence changed the way young people study? Is that a good thing?",
+        "prep_sec": 30,
+        "speak_sec": 75
+      },
+      {
+        "q": "Some people say that teenagers will never need to learn foreign languages because of translation apps. Do you agree?",
+        "prep_sec": 30,
+        "speak_sec": 75
+      }
+    ],
+    "expects": [
+      "Высказывает мнение и подкрепляет его аргументами и примерами",
+      "Сравнивает варианты и учитывает другую точку зрения",
+      "Разнообразная лексика, есть фразы для выражения мнения",
+      "Сложные конструкции в основном верны, ошибки не мешают пониманию",
+      "Говорит достаточно бегло, паузы — на поиск идей, а не слов"
+    ],
+    "explain_ru": "Проверяет аргументацию, сравнение точек зрения и лексику B2."
+  },
+  {
+    "id": "TS-B2-02",
+    "skill": "speaking",
+    "level": "B2",
+    "band": 2,
+    "topic_en": "Speaking: influencers and social media",
+    "topic_ru": "Говорение: блогеры и соцсети",
+    "type": "speaking",
+    "intro_ru": "Выскажи мнение о блогерах и соцсетях.",
+    "intro_en": "Give your opinion about influencers and social media.",
+    "questions": [
+      {
+        "q": "Why do you think so many teenagers want to become influencers? Is it a realistic career?",
+        "prep_sec": 30,
+        "speak_sec": 75
+      },
+      {
+        "q": "Should social media platforms have a minimum age? Why, or why not?",
+        "prep_sec": 30,
+        "speak_sec": 75
+      }
+    ],
+    "expects": [
+      "Высказывает мнение и подкрепляет его аргументами и примерами",
+      "Сравнивает варианты и учитывает другую точку зрения",
+      "Разнообразная лексика, есть фразы для выражения мнения",
+      "Сложные конструкции в основном верны, ошибки не мешают пониманию",
+      "Говорит достаточно бегло, паузы — на поиск идей, а не слов"
+    ],
+    "explain_ru": "Проверяет мнение, примеры и сложные конструкции."
+  },
+  {
+    "id": "TS-B2-03",
+    "skill": "speaking",
+    "level": "B2",
+    "band": 3,
+    "topic_en": "Speaking: making a difference",
+    "topic_ru": "Говорение: можем ли мы что-то изменить",
+    "type": "speaking",
+    "intro_ru": "Расскажи и порассуждай о том, может ли один человек что-то изменить.",
+    "intro_en": "Talk about whether one person can make a difference.",
+    "questions": [
+      {
+        "q": "Tell me about a person, famous or not, who has made a positive difference in their community. What did they do?",
+        "prep_sec": 30,
+        "speak_sec": 75
+      },
+      {
+        "q": "Do you think young people can really change things, for example in the environment? What would you do if you had the chance?",
+        "prep_sec": 30,
+        "speak_sec": 75
+      }
+    ],
+    "expects": [
+      "Высказывает мнение и подкрепляет его аргументами и примерами",
+      "Сравнивает варианты и учитывает другую точку зрения",
+      "Разнообразная лексика, есть фразы для выражения мнения",
+      "Сложные конструкции в основном верны, ошибки не мешают пониманию",
+      "Говорит достаточно бегло, паузы — на поиск идей, а не слов"
+    ],
+    "explain_ru": "Проверяет рассказ, условные предложения и аргументацию."
   }
 ]

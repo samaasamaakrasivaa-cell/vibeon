@@ -28,8 +28,8 @@
     "std": "Read the questions, then play the recording. You can listen twice."
   },
   "writing": {
-    "easy": "Write your answer. Write about all the points.",
-    "std": "Write your answer and cover all the points."
+    "easy": "Do the task below. Write your answer in the box.",
+    "std": "Read the task below and write your answer in the box."
   },
   "speaking": {
     "easy": "Listen to the question. Think, then answer. You can listen to your answer and record it again.",

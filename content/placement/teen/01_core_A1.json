@@ -1517,5 +1517,490 @@
     "answer": 3,
     "explain_ru": "Рассказать историю — tell a story.",
     "group": "t-a1-v4"
+  },
+  {
+    "id": "TG-A1-49",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "tg-a1-there-is",
+    "topic_en": "There is / there are",
+    "topic_ru": "There is / there are",
+    "type": "mcq",
+    "q": "___ two new students in our class this year.",
+    "options": [
+      "There are",
+      "There is",
+      "They are",
+      "It is"
+    ],
+    "answer": 0,
+    "explain_ru": "Есть (два ученика) — There are."
+  },
+  {
+    "id": "TG-A1-50",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "tg-a1-there-is",
+    "topic_en": "There is / there are",
+    "topic_ru": "There is / there are",
+    "type": "gap",
+    "q": "___ there a bus stop near your house? — Yes, there is.",
+    "accept": [
+      "is"
+    ],
+    "explain_ru": "Вопрос «есть ли» (одна остановка) — Is there…?",
+    "hint_ru": "форма глагола to be"
+  },
+  {
+    "id": "TG-A1-51",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "tg-a1-was-were",
+    "topic_en": "Was / were",
+    "topic_ru": "Was / were",
+    "type": "mcq",
+    "q": "My phone ___ on the table five minutes ago. Where is it now?",
+    "options": [
+      "were",
+      "was",
+      "is",
+      "be"
+    ],
+    "answer": 1,
+    "explain_ru": "Five minutes ago — прошедшее; phone = it → was."
+  },
+  {
+    "id": "TG-A1-52",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "tg-a1-was-were",
+    "topic_en": "Was / were",
+    "topic_ru": "Was / were",
+    "type": "mcq",
+    "q": "We ___ at home last night — we were at the cinema!",
+    "options": [
+      "wasn't",
+      "aren't",
+      "weren't",
+      "didn't"
+    ],
+    "answer": 2,
+    "explain_ru": "Прошлое с we, отрицание — weren't."
+  },
+  {
+    "id": "TG-A1-53",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "tg-a1-frequency",
+    "topic_en": "Adverbs of frequency",
+    "topic_ru": "Наречия частоты: always, usually, never",
+    "type": "mcq",
+    "q": "We ___ have pizza on Fridays. It's our family tradition!",
+    "options": [
+      "never",
+      "ever",
+      "hardly",
+      "always"
+    ],
+    "answer": 3,
+    "explain_ru": "Традиция — всегда: always."
+  },
+  {
+    "id": "TG-A1-54",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "tg-a1-frequency",
+    "topic_en": "Adverbs of frequency",
+    "topic_ru": "Наречия частоты: always, usually, never",
+    "type": "mcq",
+    "q": "My brother is ___ late for school. He gets up at 8:15 every day!",
+    "options": [
+      "always",
+      "never",
+      "ever",
+      "sometimes"
+    ],
+    "answer": 0,
+    "explain_ru": "Каждый день встаёт поздно — всегда опаздывает: always."
+  },
+  {
+    "id": "TG-A1-55",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "tg-a1-like-ing",
+    "topic_en": "Like / love / hate + -ing",
+    "topic_ru": "like / love / hate + -ing",
+    "type": "mcq",
+    "q": "My sister loves ___ selfies.",
+    "options": [
+      "take",
+      "taking",
+      "takes",
+      "to taking"
+    ],
+    "answer": 1,
+    "explain_ru": "После love — глагол с -ing: taking."
+  },
+  {
+    "id": "TG-A1-56",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "tg-a1-like-ing",
+    "topic_en": "Like / love / hate + -ing",
+    "topic_ru": "like / love / hate + -ing",
+    "type": "brackets",
+    "q": "Do you like ___ (play) board games?",
+    "accept": [
+      "playing",
+      "to play"
+    ],
+    "explain_ru": "После like — playing (можно и to play)."
+  },
+  {
+    "id": "TG-A1-57",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "tg-a1-imperative",
+    "topic_en": "Imperatives",
+    "topic_ru": "Повелительное наклонение",
+    "type": "mcq",
+    "q": "___ at the board, please.",
+    "options": [
+      "Looks",
+      "Looking",
+      "Look",
+      "To look"
+    ],
+    "answer": 2,
+    "explain_ru": "Просьба — глагол в начальной форме: Look."
+  },
+  {
+    "id": "TG-A1-58",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "tg-a1-imperative",
+    "topic_en": "Imperatives",
+    "topic_ru": "Повелительное наклонение",
+    "type": "mcq",
+    "q": "___ late for the bus! It leaves at 8.",
+    "options": [
+      "Not be",
+      "Don't",
+      "Be not",
+      "Don't be"
+    ],
+    "answer": 3,
+    "explain_ru": "Запрет с be — Don't be."
+  },
+  {
+    "id": "TG-A1-59",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "tg-a1-pronouns",
+    "topic_en": "Personal pronouns",
+    "topic_ru": "Личные местоимения",
+    "type": "mcq",
+    "q": "My grandma lives in Spain. I call ___ every Sunday.",
+    "options": [
+      "her",
+      "she",
+      "hers",
+      "he"
+    ],
+    "answer": 0,
+    "explain_ru": "После глагола — объектное местоимение: her."
+  },
+  {
+    "id": "TG-A1-60",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "tg-a1-pronouns",
+    "topic_en": "Personal pronouns",
+    "topic_ru": "Личные местоимения",
+    "type": "mcq",
+    "q": "Can you help ___? We can't open the door!",
+    "options": [
+      "we",
+      "us",
+      "our",
+      "ours"
+    ],
+    "answer": 1,
+    "explain_ru": "Помочь нам — us."
+  },
+  {
+    "id": "TG-A1-61",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "tg-a1-possessives",
+    "topic_en": "Possessives",
+    "topic_ru": "Притяжательные: my, your, Tom's",
+    "type": "mcq",
+    "q": "Tom and Kate are my friends. ___ house is next to the park.",
+    "options": [
+      "They",
+      "There",
+      "Their",
+      "They're"
+    ],
+    "answer": 2,
+    "explain_ru": "Их дом — their."
+  },
+  {
+    "id": "TG-A1-62",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "tg-a1-possessives",
+    "topic_en": "Possessives",
+    "topic_ru": "Притяжательные: my, your, Tom's",
+    "type": "mcq",
+    "q": "Whose jacket is this? — It's ___.",
+    "options": [
+      "my brother",
+      "my brothers",
+      "of my brother",
+      "my brother's"
+    ],
+    "answer": 3,
+    "explain_ru": "Принадлежность — 's: my brother's."
+  },
+  {
+    "id": "TG-A1-63",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "tg-a1-this-that",
+    "topic_en": "This / that / these / those",
+    "topic_ru": "this / that / these / those",
+    "type": "mcq",
+    "q": "___ are my new trainers. Do you like them?",
+    "options": [
+      "These",
+      "This",
+      "That",
+      "It"
+    ],
+    "answer": 0,
+    "explain_ru": "Много и рядом (на мне) — these."
+  },
+  {
+    "id": "TG-A1-64",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "tg-a1-this-that",
+    "topic_en": "This / that / these / those",
+    "topic_ru": "this / that / these / those",
+    "type": "mcq",
+    "q": "Look at ___ birds up in the sky!",
+    "options": [
+      "this",
+      "those",
+      "that",
+      "them"
+    ],
+    "answer": 1,
+    "explain_ru": "Много и далеко — those."
+  },
+  {
+    "id": "TG-A1-65",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "tg-a1-question-words",
+    "topic_en": "Question words",
+    "topic_ru": "Вопросительные слова",
+    "type": "mcq",
+    "q": "___ is your best friend? — Kate.",
+    "options": [
+      "What",
+      "Where",
+      "Who",
+      "When"
+    ],
+    "answer": 2,
+    "explain_ru": "О человеке — Who."
+  },
+  {
+    "id": "TG-A1-66",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "tg-a1-question-words",
+    "topic_en": "Question words",
+    "topic_ru": "Вопросительные слова",
+    "type": "gap",
+    "q": "___ is your birthday? — In May.",
+    "accept": [
+      "when"
+    ],
+    "explain_ru": "Ответ о времени (In May) — When.",
+    "hint_ru": "вопросительное слово"
+  },
+  {
+    "id": "TG-A1-67",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "tg-a1-articles",
+    "topic_en": "Articles a / an / the",
+    "topic_ru": "Артикли a / an / the",
+    "type": "mcq",
+    "q": "I want to be ___ actor.",
+    "options": [
+      "a",
+      "the",
+      "—",
+      "an"
+    ],
+    "answer": 3,
+    "explain_ru": "Actor начинается с гласного звука — an."
+  },
+  {
+    "id": "TG-A1-68",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "tg-a1-articles",
+    "topic_en": "Articles a / an / the",
+    "topic_ru": "Артикли a / an / the",
+    "type": "mcq",
+    "q": "We go to school by ___ bus.",
+    "options": [
+      "—",
+      "a",
+      "the",
+      "an"
+    ],
+    "answer": 0,
+    "explain_ru": "By bus — без артикля."
+  },
+  {
+    "id": "TG-A1-69",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "tg-a1-plurals",
+    "topic_en": "Plural nouns",
+    "topic_ru": "Множественное число",
+    "type": "mcq",
+    "q": "There are 500 ___ at our school.",
+    "options": [
+      "student",
+      "students",
+      "studentes",
+      "student's"
+    ],
+    "answer": 1,
+    "explain_ru": "Много — множественное число: students."
+  },
+  {
+    "id": "TG-A1-70",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "tg-a1-plurals",
+    "topic_en": "Plural nouns",
+    "topic_ru": "Множественное число",
+    "type": "mcq",
+    "q": "My little brother has lost two ___ this week!",
+    "options": [
+      "tooths",
+      "tooth",
+      "teeth",
+      "teeths"
+    ],
+    "answer": 2,
+    "explain_ru": "Tooth — неправильное множественное число: teeth."
+  },
+  {
+    "id": "TG-A1-71",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "tg-a1-some-any",
+    "topic_en": "Some / any",
+    "topic_ru": "some / any",
+    "type": "mcq",
+    "q": "I haven't got ___ brothers or sisters.",
+    "options": [
+      "some",
+      "a",
+      "an",
+      "any"
+    ],
+    "answer": 3,
+    "explain_ru": "В отрицании — any."
+  },
+  {
+    "id": "TG-A1-72",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "tg-a1-some-any",
+    "topic_en": "Some / any",
+    "topic_ru": "some / any",
+    "type": "mcq",
+    "q": "Would you like ___ juice?",
+    "options": [
+      "some",
+      "any",
+      "a",
+      "many"
+    ],
+    "answer": 0,
+    "explain_ru": "В предложении чего-то (Would you like…?) — some."
+  },
+  {
+    "id": "TG-A1-73",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "tg-a1-prepositions",
+    "topic_en": "Prepositions of place and time",
+    "topic_ru": "Предлоги места и времени",
+    "type": "mcq",
+    "q": "The film starts ___ 7 o'clock.",
+    "options": [
+      "in",
+      "at",
+      "on",
+      "to"
+    ],
+    "answer": 1,
+    "explain_ru": "Со временем на часах — at."
+  },
+  {
+    "id": "TG-A1-74",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "tg-a1-prepositions",
+    "topic_en": "Prepositions of place and time",
+    "topic_ru": "Предлоги места и времени",
+    "type": "mcq",
+    "q": "I always do my homework ___ the evening.",
+    "options": [
+      "at",
+      "on",
+      "in",
+      "to"
+    ],
+    "answer": 2,
+    "explain_ru": "In the evening."
   }
 ]

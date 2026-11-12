@@ -1764,6 +1764,7 @@ const ru = {
   "plt.expB2": "Продвинутый (B2)",
   "pl.bankAdult": "Взрослый банк",
   "pl.bankTeen": "Банк Teens",
+  "pl.famNotIn": "не входит в уровень",
 } as const;
 
 export type DictKey = keyof typeof ru;
@@ -3530,6 +3531,7 @@ const en: Record<DictKey, string> = {
   "plt.expB2": "Advanced (B2)",
   "pl.bankAdult": "Adult bank",
   "pl.bankTeen": "Teens bank",
+  "pl.famNotIn": "not part of this level",
 };
 
 export const dictionaries: Record<LangCode, Record<DictKey, string>> = { ru, en };

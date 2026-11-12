@@ -7,7 +7,7 @@ const DIR = path.join(process.cwd(), "content", "placement", "audio");
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ name: string }> }) {
   const name = (await params).name;
-  if (!/^[LS]-[ABC][12]-\d{2}(-q\d)?\.mp3$/.test(name)) return new NextResponse("Not found", { status: 404 });
+  if (!/^T?[LS]-[ABC][12]-\d{2}(-q\d)?\.mp3$/.test(name)) return new NextResponse("Not found", { status: 404 });
   const buf = await readFile(path.join(DIR, name)).catch(() => null);
   if (!buf) return new NextResponse("Not found", { status: 404 });
   const base = { "Content-Type": "audio/mpeg", "Cache-Control": "public, max-age=86400", "Accept-Ranges": "bytes" };

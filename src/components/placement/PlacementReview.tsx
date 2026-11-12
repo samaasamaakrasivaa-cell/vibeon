@@ -233,11 +233,11 @@ export function PlacementReview(p: ReviewProps) {
               <tbody>
                 {sm.families.map((f) => {
                   const r = (f.lvl[1] ?? 0) >= 2 ? f.lvl : f.all, q = r[1] ? r[0] / r[1] : 0;
-                  const k = r[1] < 2 ? "few" : q >= 0.85 ? "ok" : q >= 0.5 ? "mid" : "bad";
+                  const k = r[1] < 3 ? "few" : q >= 0.85 ? "ok" : q >= 0.5 ? "mid" : "bad";
                   return (
                     <tr key={f.id} className={`plfam-${k}`}>
                       <th><b>{f.name}</b><div className="small muted">{f.what}</div></th>
-                      {famLv.map((l) => <td key={l} className={l === sm.diag ? "plfam-diag" : undefined}>{f.by?.[l]?.[1] ? <b>{f.by[l][0]}/{f.by[l][1]}</b> : <span className="muted">—</span>}</td>)}
+                      {famLv.map((l) => <td key={l} className={l === sm.diag ? "plfam-diag" : undefined}>{f.by?.[l]?.[1] ? <b>{f.by[l][0]}/{f.by[l][1]}</b> : f.has && !f.has.includes(l) ? <span className="small muted">{t("pl.famNotIn")}</span> : <span className="muted">—</span>}</td>)}
                       <td><b>{f.all[0]}/{f.all[1]}</b> <span className="muted">{pct(f.all)}%</span></td>
                       <td className="plfam-st">{t(`pl.g.${k}` as DictKey)}</td>
                     </tr>

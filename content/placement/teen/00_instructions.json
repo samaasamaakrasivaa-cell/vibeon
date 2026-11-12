@@ -30,9 +30,9 @@
     "ru": "Сначала прочитай вопросы, потом послушай. Запись можно включить два раза."
   },
   "writing": {
-    "easy": "Write your answer. Write about all the points.",
-    "std": "Write your answer and cover all the points.",
-    "ru": "Напиши ответ и расскажи обо всех пунктах."
+    "easy": "Do the task below. Write your answer in the box.",
+    "std": "Read the task below and write your answer in the box.",
+    "ru": "Выполни задание ниже и напиши ответ в поле."
   },
   "speaking": {
     "easy": "Listen to the question. Think, then answer. You can listen to your answer and record it again.",

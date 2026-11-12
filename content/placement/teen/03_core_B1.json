@@ -115,7 +115,7 @@
     "topic_en": "Present perfect vs past simple",
     "topic_ru": "Present Perfect или Past Simple",
     "type": "mcq",
-    "q": "When I was ten, I ___ in Kazan for a year, but now I live in Moscow.",
+    "q": "When I was ten, I ___ in Leeds for a year, but now I live in Manchester.",
     "options": [
       "lived",
       "have lived",
@@ -261,7 +261,7 @@
     "topic_en": "Be / get used to",
     "topic_ru": "be / get used to",
     "type": "mcq",
-    "q": "After a month in London, Anya ___ driving on the left. Now it feels normal.",
+    "q": "My cousin moved to Scotland in January. At first she hated the rain, but she soon ___ it.",
     "options": [
       "used to",
       "is using to",
@@ -269,7 +269,7 @@
       "use to"
     ],
     "answer": 2,
-    "explain_ru": "Привыкла — got used to + -ing; used to значит «раньше делала»."
+    "explain_ru": "Привыкла — got used to (+ существительное / -ing); used to значит «раньше делала»."
   },
   {
     "id": "TG-B1-16",
@@ -1937,5 +1937,150 @@
     "answer": 2,
     "explain_ru": "На седьмом небе — over the moon.",
     "group": "t-b1-v5"
+  },
+  {
+    "id": "TG-B1-65",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "tg-b1-for-since",
+    "topic_en": "For / since",
+    "topic_ru": "for / since",
+    "type": "mcq",
+    "q": "I've had this phone ___ 2023.",
+    "options": [
+      "for",
+      "from",
+      "in",
+      "since"
+    ],
+    "answer": 3,
+    "explain_ru": "С какого момента (год) — since."
+  },
+  {
+    "id": "TG-B1-66",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "tg-b1-for-since",
+    "topic_en": "For / since",
+    "topic_ru": "for / since",
+    "type": "gap",
+    "q": "We haven't seen each other ___ ages!",
+    "accept": [
+      "for"
+    ],
+    "explain_ru": "Сколько времени — for ages.",
+    "hint_ru": "предлог"
+  },
+  {
+    "id": "TG-B1-67",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "tg-b1-be-get-used",
+    "topic_en": "Be / get used to",
+    "topic_ru": "be / get used to",
+    "type": "mcq",
+    "q": "I'm not used to ___ in such a big school.",
+    "options": [
+      "studying",
+      "study",
+      "studied",
+      "have studied"
+    ],
+    "answer": 0,
+    "explain_ru": "Be used to + -ing."
+  },
+  {
+    "id": "TG-B1-68",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "tg-b1-be-get-used",
+    "topic_en": "Be / get used to",
+    "topic_ru": "be / get used to",
+    "type": "mcq",
+    "q": "Don't worry, you'll soon ___ used to the new timetable.",
+    "options": [
+      "use",
+      "get",
+      "have",
+      "do"
+    ],
+    "answer": 1,
+    "explain_ru": "Привыкнуть — get used to."
+  },
+  {
+    "id": "TG-B1-69",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "tg-b1-wish",
+    "topic_en": "Wish + past simple",
+    "topic_ru": "I wish + Past Simple",
+    "type": "mcq",
+    "q": "I wish it ___ summer already!",
+    "options": [
+      "is",
+      "will be",
+      "were",
+      "has been"
+    ],
+    "answer": 2,
+    "explain_ru": "Wish о настоящем — Past Simple: were (в разговоре и was)."
+  },
+  {
+    "id": "TG-B1-70",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "tg-b1-wish",
+    "topic_en": "Wish + past simple",
+    "topic_ru": "I wish + Past Simple",
+    "type": "brackets",
+    "q": "I wish I ___ (have) more free time.",
+    "accept": [
+      "had"
+    ],
+    "explain_ru": "Wish о настоящем — Past Simple: had."
+  },
+  {
+    "id": "TG-B1-71",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "tg-b1-tags",
+    "topic_en": "Question tags",
+    "topic_ru": "Разделительные вопросы",
+    "type": "mcq",
+    "q": "She can swim, ___?",
+    "options": [
+      "doesn't she",
+      "isn't she",
+      "can she",
+      "can't she"
+    ],
+    "answer": 3,
+    "explain_ru": "Утверждение с can — хвостик can't she?"
+  },
+  {
+    "id": "TG-B1-72",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "tg-b1-tags",
+    "topic_en": "Question tags",
+    "topic_ru": "Разделительные вопросы",
+    "type": "mcq",
+    "q": "Let's order pizza, ___?",
+    "options": [
+      "shall we",
+      "will you",
+      "do we",
+      "aren't we"
+    ],
+    "answer": 0,
+    "explain_ru": "После Let's — shall we?"
   }
 ]
