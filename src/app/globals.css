@@ -338,7 +338,7 @@ details.how[open] summary { margin-bottom: 6px; }
 .dlg.wide { width: min(640px, calc(100vw - 24px)); }
 .dlg::backdrop { background: rgba(0, 0, 0, .32); backdrop-filter: blur(2px); }
 .dlgin { position: relative; padding: 24px; }
-.dlgx { position: absolute; top: 14px; right: 14px; }
+.dlgx { position: absolute; top: 8px; right: 8px; z-index: 30; width: 48px; height: 48px; } /* крестик над содержимым окна, область нажатия крупнее */
 .dlg .actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; margin-top: 20px; }
 .setting { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; }
 .pick { max-height: 220px; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; border-radius: 12px; background: var(--surface2); padding: 4px; }

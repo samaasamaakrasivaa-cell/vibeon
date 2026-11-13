@@ -1888,6 +1888,9 @@ const ru = {
   "bld.fmtU": "Подчёркнутый",
   "bld.fmtMark": "Маркер",
   "bld.fmtColor": "Цвет текста",
+  "bld.retype": "Сменить тип задания",
+  "bld.retypeHint": "Формулировка сохранится. Содержание сохранится, если формат подходит (✓ в списке), иначе поле очистится.",
+  "bld.retypeLose": "У этого типа другой формат содержания — поле «Содержание» очистится (формулировка останется). Продолжить?",
 } as const;
 
 export type DictKey = keyof typeof ru;
@@ -3778,6 +3781,9 @@ const en: Record<DictKey, string> = {
   "bld.fmtU": "Underline",
   "bld.fmtMark": "Highlight",
   "bld.fmtColor": "Text colour",
+  "bld.retype": "Change task type",
+  "bld.retypeHint": "The instruction is kept. The content is kept if the format fits (✓ in the list); otherwise it is cleared.",
+  "bld.retypeLose": "This type uses a different content format — the Content field will be cleared (the instruction stays). Continue?",
 };
 
 export const dictionaries: Record<LangCode, Record<DictKey, string>> = { ru, en };

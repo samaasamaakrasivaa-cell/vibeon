@@ -5,7 +5,7 @@ import { Icon } from "../Icon";
 import { TaskCard, type TaskData } from "../tasks/TaskView";
 import { upload } from "../courses/CourseView";
 import { useT } from "@/lib/i18n/client";
-import { HELP, HOWTO, PRESET, TYPES, type TaskOptions, type TaskType } from "@/lib/tasks/catalog";
+import { GROUPS, HELP, HOWTO, PRESET, TYPES, type TaskOptions, type TaskType } from "@/lib/tasks/catalog";
 import { thumbSvg } from "@/lib/tasks/thumbs";
 import { fileToTask, helpTask } from "@/lib/ai/actions";
 import { extractFile } from "../ai/BookImport";
@@ -15,6 +15,14 @@ const CONTENT_TYPES: TaskType[] = ["gap", "drag", "dropdown", "test", "tf", "pai
 const FMT_TYPES: TaskType[] = ["text", "note", "vocab", "speak", "open", "essay", "record", "gap", "drag", "dropdown", "test", "tf"];
 const FMT_COLORS = ["blue", "red", "green", "purple", "orange"] as const;
 const CHECK_TYPES = (t: TaskType) => !!TYPES[t].checkable;
+/** Смена типа: внутри одной «семьи» содержание подходит без правок и сохраняется; иначе поле очищается. */
+const FAMILIES: TaskType[][] = [
+  ["speak", "open", "essay", "record", "text", "note", "vocab", "dictation", "textorder"], // текст / строки
+  ["gap", "drag"],
+  ["letters", "crossword", "picture"],
+];
+const famOf = (x: TaskType) => FAMILIES.findIndex((f) => f.includes(x));
+const KEEP_OPTS = ["nonum", "teacherOnly", "hidden"] as const;
 
 export function TaskEditor({ lessonId, initial, onSave, onClose, pending, error }: {
   lessonId: string; initial: TaskData; onSave: (t: TaskData) => void; onClose: () => void; pending: boolean; error: string | null;
@@ -31,7 +39,21 @@ export function TaskEditor({ lessonId, initial, onSave, onClose, pending, error 
   const [ai, setAi] = useState<"help" | "file" | null>(null);
   const [aiErr, setAiErr] = useState<string | null>(null);
   const [undo, setUndo] = useState<string | null>(null);
+  const [retype, setRetype] = useState(false);
   const type = task.type;
+  // «Сменить тип задания»: формулировка остаётся; содержание — если формат совместим; заметка, ставшая заданием, снова видна ученику
+  const changeType = (to: TaskType) => {
+    if (to === type) { setRetype(false); return; }
+    const keep = famOf(to) >= 0 && famOf(to) === famOf(type);
+    const opts: TaskOptions = Object.fromEntries(KEEP_OPTS.filter((k) => o[k] !== undefined).map((k) => [k, o[k]])) as TaskOptions;
+    if (type === "note" && to !== "note") delete opts.teacherOnly;
+    if (to === "note") opts.teacherOnly = true;
+    if (to === "drag") opts.mode = "drag";
+    if (!keep && task.content.trim() && !confirm(t("bld.retypeLose"))) return;
+    setOwn(true);
+    setTask((x) => ({ ...x, type: to, content: keep ? x.content : "", options: opts }));
+    setRetype(false);
+  };
   const isGap = type === "gap" || type === "drag";
 
   /** Панель разметки: [ ] — пропуск, ✓ — верный вариант, 1. — нумерация строк. */
@@ -100,7 +122,16 @@ export function TaskEditor({ lessonId, initial, onSave, onClose, pending, error 
         <div className="ted-l">
           <div className="mb-4 flex items-center gap-3">
             <span className="ted-thumb" dangerouslySetInnerHTML={{ __html: thumbSvg(type) }} />
-            <h2>{lang === "en" ? TYPES[type].en : TYPES[type].ru}</h2>
+            <h2 className="grow">{lang === "en" ? TYPES[type].en : TYPES[type].ru}</h2>
+            {type !== "divider" && (retype ? (
+              <select className="select" style={{ width: "auto", maxWidth: 260 }} autoFocus value={type} onChange={(e) => changeType(e.target.value as TaskType)} onBlur={() => setRetype(false)} aria-label={t("bld.retype")}>
+                {GROUPS.map(([g, en, ru]) => (
+                  <optgroup key={g} label={lang === "en" ? en : ru}>
+                    {(Object.keys(TYPES) as TaskType[]).filter((k) => TYPES[k].g === g).map((k) => <option key={k} value={k}>{lang === "en" ? TYPES[k].en : TYPES[k].ru}{k !== type && famOf(k) >= 0 && famOf(k) === famOf(type) ? " ✓" : ""}</option>)}
+                  </optgroup>
+                ))}
+              </select>
+            ) : <button type="button" className="btn secondary sm" onClick={() => setRetype(true)} title={t("bld.retypeHint")}><Icon name="move" size="sm" />{t("bld.retype")}</button>)}
           </div>
 
           {type !== "divider" && (
