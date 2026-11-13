@@ -270,6 +270,8 @@ function sanitizeOptions(o: TaskOptions): Prisma.InputJsonObject {
     ns: !!o.ns || undefined, check: !!o.check || undefined, multi: !!o.multi || undefined, teacherOnly: !!o.teacherOnly || undefined,
     aipre: !!o.aipre || undefined, ai: !!o.ai || undefined, aiPrompt: clean(o.aiPrompt, 500) || undefined, aiGoal: clean(o.aiGoal, 300) || undefined, aiWords: clean(o.aiWords, 500) || undefined,
     aiMins: o.aiMins && o.aiMins > 0 && o.aiMins <= 60 ? Math.round(o.aiMins) : undefined,
+    clipStart: o.clipStart && o.clipStart > 0 && o.clipStart < 86400 ? Math.round(o.clipStart) : undefined,
+    clipEnd: o.clipEnd && o.clipEnd > (o.clipStart ?? 0) && o.clipEnd < 86400 ? Math.round(o.clipEnd) : undefined,
   }));
 }
 

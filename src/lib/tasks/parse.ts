@@ -235,14 +235,20 @@ export function series<T>(arr: T[], size?: number) {
 }
 
 /** Встраиваемый плеер для ссылок на видео. */
-export function videoEmbed(url: string): { kind: "iframe" | "file"; src: string } | null {
+/** Встраивание видео; clip — отрывок в секундах. YouTube и файл — начало и конец; Rutube и VK — только начало. */
+export function videoEmbed(url: string, clip?: { start?: number; end?: number }): { kind: "iframe" | "file"; src: string; host?: "youtube" | "rutube" | "vk"; endOk?: boolean } | null {
   if (!url) return null;
-  let m = /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)([\w-]{11})/.exec(url);
-  if (m) return { kind: "iframe", src: `https://www.youtube-nocookie.com/embed/${m[1]}` };
+  const s = clip?.start && clip.start > 0 ? Math.round(clip.start) : 0, e = clip?.end && clip.end > s ? Math.round(clip.end) : 0;
+  let m = /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/|youtube\.com\/embed\/)([\w-]{11})/.exec(url);
+  if (m) { const q = [s ? `start=${s}` : "", e ? `end=${e}` : "", "rel=0"].filter(Boolean).join("&"); return { kind: "iframe", host: "youtube", endOk: true, src: `https://www.youtube-nocookie.com/embed/${m[1]}?${q}` }; }
   m = /rutube\.ru\/video\/([\w]+)/.exec(url);
-  if (m) return { kind: "iframe", src: `https://rutube.ru/play/embed/${m[1]}` };
+  if (m) return { kind: "iframe", host: "rutube", src: `https://rutube.ru/play/embed/${m[1]}${s ? `?t=${s}` : ""}` };
   m = /vk(?:video)?\.(?:com|ru)\/video(-?\d+)_(\d+)/.exec(url);
-  if (m) return { kind: "iframe", src: `https://vk.com/video_ext.php?oid=${m[1]}&id=${m[2]}&hd=2` };
-  if (/\.(mp4|webm|mov|m4v)(\?|$)/i.test(url) || url.startsWith("/api/files/")) return { kind: "file", src: url };
+  if (m) return { kind: "iframe", host: "vk", src: `https://vk.com/video_ext.php?oid=${m[1]}&id=${m[2]}&hd=2${s ? `&t=${Math.floor(s / 60)}m${s % 60}s` : ""}` };
+  if (/\.(mp4|webm|mov|m4v)(\?|$)/i.test(url) || url.startsWith("/api/files/")) return { kind: "file", endOk: true, src: s || e ? `${url}#t=${s}${e ? `,${e}` : ""}` : url };
   return { kind: "iframe", src: url };
 }
+/** 754 → «12:34», 3754 → «1:02:34». */
+export const fmtTime = (x: number) => { const h = Math.floor(x / 3600), m = Math.floor((x % 3600) / 60), s = Math.floor(x % 60); return `${h ? `${h}:${String(m).padStart(2, "0")}` : m}:${String(s).padStart(2, "0")}`; };
+/** «12:34», «1:02:34» или число секунд → секунды. */
+export const parseTime = (v: string) => { const p = v.trim().split(":").map(Number); if (p.some((x) => !Number.isFinite(x))) return NaN; return p.reduce((a, x) => a * 60 + x, 0); };

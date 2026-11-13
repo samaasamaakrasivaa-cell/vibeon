@@ -1487,3 +1487,23 @@ select.iedit, select.iedit:hover, select.iedit:focus { background-position: righ
 .tedfmt { display: inline-flex; flex-wrap: wrap; gap: 4px; padding-left: 6px; margin-left: 2px; border-left: 1px solid var(--sep); }
 .tedfmt .pchip { min-width: 30px; justify-content: center; }
 .tedcol span { font-weight: 800; }
+/* скрытое от ученика задание: учителю — обычная читаемая карточка с пунктирной рамкой, без полупрозрачности */
+.tk-teacheronly > .tk { outline: 2px dashed color-mix(in srgb, var(--violet) 45%, transparent); outline-offset: -2px; }
+.bld-movemenu { position: absolute; right: 0; top: calc(100% + 4px); z-index: 25; min-width: 220px; display: flex; flex-direction: column; padding: 8px 6px; border-radius: 14px; background: var(--surface); border: 1px solid var(--sep); box-shadow: 0 10px 30px rgba(0,0,0,.14); }
+.bld-movemenu button { display: flex; align-items: center; gap: 8px; text-align: left; padding: 7px 10px; border-radius: 8px; font-size: 14px; }
+.bld-movemenu button:hover { background: var(--fill); }
+/* Отрывок видео: два бегунка на одной дорожке */
+.vclip { display: flex; flex-direction: column; gap: 10px; padding: 12px 14px; border-radius: 14px; background: var(--fill); margin-top: 10px; }
+.vclip-probe { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; border: 0; }
+.vclip-range { position: relative; height: 28px; }
+.vclip-range::before { content: ""; position: absolute; left: 0; right: 0; top: 12px; height: 4px; border-radius: 2px; background: var(--sep); }
+.vclip-sel { position: absolute; top: 12px; height: 4px; border-radius: 2px; background: var(--accent); pointer-events: none; }
+.vclip-range input[type=range] { position: absolute; inset: 0; width: 100%; margin: 0; background: transparent; pointer-events: none; -webkit-appearance: none; appearance: none; height: 28px; }
+.vclip-range input[type=range]::-webkit-slider-thumb { pointer-events: auto; -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: var(--surface); border: 2px solid var(--accent); box-shadow: 0 1px 4px rgba(0,0,0,.2); cursor: grab; position: relative; z-index: 2; }
+.vclip-range input[type=range]::-moz-range-thumb { pointer-events: auto; width: 18px; height: 18px; border-radius: 50%; background: var(--surface); border: 2px solid var(--accent); cursor: grab; }
+.vclip-range input[type=range]::-webkit-slider-runnable-track { background: transparent; }
+.vclip-f { display: flex; flex-direction: column; gap: 2px; } .vclip-f .input { width: 96px; }
+.impmode { display: flex; flex-direction: column; gap: 8px; }
+.impmode label { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--sep); cursor: pointer; }
+.impmode label:has(input:checked) { border-color: var(--accent); background: var(--accent-bg); }
+.impmode input { margin-top: 3px; }

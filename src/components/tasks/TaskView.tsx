@@ -4,7 +4,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useT } from "@/lib/i18n/client";
 import { numbered, type TaskOptions, type TaskType } from "@/lib/tasks/catalog";
-import { buildCrossword, dictationGrade, parse, same, series, shuffle, videoEmbed, type Seg } from "@/lib/tasks/parse";
+import { buildCrossword, dictationGrade, fmtTime, parse, same, series, shuffle, videoEmbed, type Seg } from "@/lib/tasks/parse";
 import { Icon } from "../Icon";
 import { useSlot, useTaskRole } from "./store";
 import { AiTalk } from "../ai/AiTalk";
@@ -648,9 +648,10 @@ export function TaskBody({ task }: { task: TaskData }) {
     case "crossword": return <CrosswordView key={task.content} task={task} />;
     case "image": return <Images o={o} />;
     case "video": {
-      const v = videoEmbed(o.src ?? "");
+      const v = videoEmbed(o.src ?? "", { start: o.clipStart, end: o.clipEnd });
       return (
         <div>
+          {(o.clipStart || o.clipEnd) && v ? <div className="small muted mb-2 flex items-center gap-1"><Icon name="clock" size="sm" />{t("tk.clip", { a: fmtTime(o.clipStart ?? 0), b: o.clipEnd ? fmtTime(o.clipEnd) : "…" })}</div> : null}
           {!v ? <div className="tk-empty"><Icon name="video" />{t("tk.noVideo")}</div> : v.kind === "file" ? <video src={v.src} controls className="tk-img" /> : <iframe src={v.src} className="tk-video" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowFullScreen title={task.title} />}
           <Script o={o} />
         </div>

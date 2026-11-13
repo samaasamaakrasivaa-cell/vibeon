@@ -203,4 +203,5 @@ export type TaskOptions = {
   src?: string; images?: { src: string; caption?: string }[]; layout?: "carousel" | "stack"; pics?: string[];
   url?: string; label?: string; ns?: boolean; check?: boolean; multi?: boolean; across?: boolean; teacherOnly?: boolean;
   aipre?: boolean; ai?: boolean; aiPrompt?: string; aiGoal?: string; aiWords?: string; aiMins?: number;
+  clipStart?: number; clipEnd?: number; // отрывок видео, секунды
 };

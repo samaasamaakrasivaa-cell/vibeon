@@ -55,7 +55,7 @@ function DraftList({ tasks, picked, setPicked }: { tasks: DraftTask[]; picked: S
 }
 
 /** «Импорт» в конструкторе: файл или вставленный текст → задания урока. */
-export function ImportDialog({ lessonId, section, rubricId, onClose, onDone }: { lessonId: string; section: "lesson" | "homework" | "words"; rubricId: string | null; onClose: () => void; onDone: () => void }) {
+export function ImportDialog({ lessonId, section, rubricId, onClose, onDone, hasTasks = false }: { lessonId: string; section: "lesson" | "homework" | "words"; rubricId: string | null; onClose: () => void; onDone: () => void; hasTasks?: boolean }) {
   const { t } = useT();
   const [text, setText] = useState("");
   const [tasks, setTasks] = useState<DraftTask[] | null>(null);
@@ -63,7 +63,7 @@ export function ImportDialog({ lessonId, section, rubricId, onClose, onDone }: {
   const [busy, setBusy] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [fromJson, setFromJson] = useState(false);
-  const [replace, setReplace] = useState(false); // исправленный файл — заменить задания урока, а не добавить ещё раз
+  const [replace, setReplace] = useState(hasTasks); // в уроке уже есть задания — по умолчанию файл заменяет урок целиком (исправленная версия)
   const [meta, setMeta] = useState<ImpMeta | undefined>(); // блок «Для учителя», длительность, подзаголовок из файла
   const code = (e: unknown) => { const c = String((e as Error).message); return ["limit", "tariff", "off", "fail", "type", "size"].includes(c) ? t(`ai.err.${c}` as "ai.err.fail") : c; };
   const read = async (f?: File) => {
@@ -100,7 +100,12 @@ export function ImportDialog({ lessonId, section, rubricId, onClose, onDone }: {
       ) : tasks.length ? <>
         {meta?.teacher && <p className="small m-0 mb-2"><Icon name="lock" size="sm" /> {t("ai.jsonTeacher")}</p>}
         <DraftList tasks={tasks} picked={picked} setPicked={setPicked} />
-        {fromJson && <label className="flex items-start gap-2 mt-3 small"><input type="checkbox" checked={replace} onChange={(e) => setReplace(e.target.checked)} /><span><b>{t("ai.replace")}</b><span className="block muted">{t("ai.replaceHint")}</span></span></label>}
+        {fromJson && hasTasks && (
+          <div className="impmode mt-3" role="radiogroup" aria-label={t("ai.replace")}>
+            <label><input type="radio" checked={replace} onChange={() => setReplace(true)} /><span><b>{t("ai.replace")}</b><span className="block small muted">{t("ai.replaceHint")}</span></span></label>
+            <label><input type="radio" checked={!replace} onChange={() => setReplace(false)} /><span><b>{t("ai.appendAll")}</b><span className="block small muted">{t("ai.appendHint")}</span></span></label>
+          </div>
+        )}
       </> : <p className="hint">{t("ai.noTasks")}</p>}
       {err && <div className="alert mt-3">{err}</div>}
       <div className="actions">

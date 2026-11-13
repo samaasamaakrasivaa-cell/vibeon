@@ -34,6 +34,13 @@ export function Builder({ d }: { d: BuilderData }) {
   const [rubrics, setRub] = useState(d.rubrics);
   useEffect(() => { setRub(d.rubrics); }, [d.rubrics]);
   const [active, setActive] = useState(d.rubrics[0]?.id ?? null);
+  // «Переместить в другой раздел»: этапы урока, домашка, новые слова
+  const [moving, setMoving] = useState<string | null>(null);
+  const inDest = (x: BTask, sec: Part, rid: string | null) => x.section === sec && (sec !== "lesson" || x.rubricId === rid || (!x.rubricId && rid === d.rubrics[0]?.id));
+  const moveTo = (task: BTask, sec: Part, rid: string | null) => {
+    setMoving(null);
+    go(() => placeTasks(d.id, sec, rid, [...d.tasks.filter((x) => x.id !== task.id && inDest(x, sec, rid)).map((x) => x.id), task.id]));
+  };
   useEffect(() => { if (!rubrics.some((r) => r.id === active)) setActive(rubrics[0]?.id ?? null); }, [rubrics, active]);
   const [studentView, setStudentView] = useState(false);
   const [catalog, setCatalog] = useState<{ index: number } | null>(null);
@@ -121,7 +128,7 @@ export function Builder({ d }: { d: BuilderData }) {
           )}
           {visible.map((task, i) => (
             <div key={task.id}>
-              <div className={task.hidden ? "opacity-55" : ""}>
+              <div className={task.hidden || task.options?.teacherOnly ? "tk-teacheronly" : ""}>
                 <TaskCard
                   task={task}
                   index={visible.filter((x, j) => j <= i && numbered(x)).length - 1}
@@ -134,7 +141,17 @@ export function Builder({ d }: { d: BuilderData }) {
                       {(() => { const sees = !task.hidden && !task.options?.teacherOnly; return <button className={`iconbtn ${sees ? "" : "text-violet"}`} title={sees ? t("bld.eyeOn") : t("bld.eyeOff")} aria-label={sees ? t("bld.eyeOn") : t("bld.eyeOff")} aria-pressed={!sees} onClick={() => go(() => toggleStudentSees(task.id))}><Icon name={sees ? "eye" : "eyeoff"} size="sm" /></button>; })()}
                       <button className="iconbtn" disabled={i === 0} aria-label="up" onClick={() => move(i, -1)}>↑</button>
                       <button className="iconbtn" disabled={i === visible.length - 1} aria-label="down" onClick={() => move(i, 1)}>↓</button>
-                      {part !== "homework" && <button className="iconbtn" title={t("bld.toHw")} aria-label={t("bld.toHw")} onClick={() => go(() => placeTasks(d.id, "homework", null, [...d.tasks.filter((x) => x.section === "homework").map((x) => x.id), task.id]))}><Icon name="inbox" size="sm" /></button>}
+                      <span className="relative">
+                        <button className="iconbtn" title={t("bld.moveTo")} aria-label={t("bld.moveTo")} aria-expanded={moving === task.id} onClick={() => setMoving(moving === task.id ? null : task.id)}><Icon name="shift" size="sm" /></button>
+                        {moving === task.id && (
+                          <div className="bld-movemenu" role="menu">
+                            <div className="small muted px-2 pb-1">{t("bld.moveTo")}</div>
+                            {rubrics.map((r) => !inDest(task, "lesson", r.id) && <button key={r.id} type="button" role="menuitem" onClick={() => moveTo(task, "lesson", r.id)}><Icon name="book" size="sm" />{r.title}</button>)}
+                            {task.section !== "homework" && <button type="button" role="menuitem" onClick={() => moveTo(task, "homework", null)}><Icon name="home" size="sm" />{t("nav.homework")}</button>}
+                            {task.section !== "words" && <button type="button" role="menuitem" onClick={() => moveTo(task, "words", null)}><Icon name="cards" size="sm" />{t("bld.newWords")}</button>}
+                          </div>
+                        )}
+                      </span>
                       <button className="iconbtn" title={t("common.delete")} aria-label={t("common.delete")} onClick={() => confirm(t("bld.delTaskQ")) && go(() => deleteTask(task.id))}><Icon name="close" size="sm" /></button>
                     </span>
                   )}
@@ -210,7 +227,7 @@ export function Builder({ d }: { d: BuilderData }) {
           onSave={(task) => go(() => saveTask(d.id, editing.task.id === "new" ? null : editing.task.id, { section: editing.task.section, rubricId: editing.task.rubricId, type: task.type, title: task.title, content: task.content, options: task.options }, editing.index), () => setEditing(null))}
         />
       )}
-      {imp === "file" && <ImportDialog lessonId={d.id} section={part} rubricId={part === "lesson" ? active : null} onClose={() => setImp(null)} onDone={() => setTimeout(() => router.refresh(), 0)} />}
+      {imp === "file" && <ImportDialog hasTasks={d.tasks.length > 0} lessonId={d.id} section={part} rubricId={part === "lesson" ? active : null} onClose={() => setImp(null)} onDone={() => setTimeout(() => router.refresh(), 0)} />}
       {imp === "book" && <BookDialog courseId={d.course.id} onClose={() => setImp(null)} />}
       {shareOpen && <ShareDialog d={d} onClose={() => setShareOpen(false)} />}
       {startOpen && (

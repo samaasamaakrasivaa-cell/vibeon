@@ -19,6 +19,8 @@ export const ICONS = {
   cal: "<rect x=\"3\" y=\"5\" width=\"18\" height=\"16\" rx=\"2\"/><path d=\"M16 3v4M8 3v4M3 11h18\"/>",
   users: "<circle cx=\"9\" cy=\"8\" r=\"3.5\"/><path d=\"M2.5 20c.8-3.5 3.5-5 6.5-5s5.7 1.5 6.5 5\"/><path d=\"M16 4.5a3.5 3.5 0 0 1 0 7M18 15c2 .5 3.2 2.2 3.5 5\"/>",
   inbox: "<path d=\"M4 13h4l2 3h4l2-3h4\"/><path d=\"M4 13l2.5-7h11L20 13v6H4z\"/>",
+  home: '<path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/>',
+  shift: '<path d="M7 4v13M3 13l4 4 4-4"/><path d="M14 7h7M14 12h7M14 17h4"/>',
   book: "<path d=\"M4 19V5a2 2 0 0 1 2-2h13v14H6a2 2 0 0 0-2 2 2 2 0 0 0 2 2h13\"/>",
   coin: "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M15 9.5c-.5-1-1.6-1.5-3-1.5-1.7 0-3 .8-3 2s1.3 1.7 3 2 3 .8 3 2-1.3 2-3 2c-1.4 0-2.5-.5-3-1.5M12 6.5v11\"/>",
   check: "<path d=\"M5 12l5 5L20 7\"/>",

@@ -1,5 +1,6 @@
 "use client";
 import { useRef, useState } from "react";
+import { VideoClip } from "./VideoClip";
 import { Dialog } from "../Dialog";
 import { Icon } from "../Icon";
 import { TaskCard, type TaskData } from "../tasks/TaskView";
@@ -215,6 +216,7 @@ export function TaskEditor({ lessonId, initial, onSave, onClose, pending, error 
                 <Icon name="plus" />{uploading ? t("bld.uploading") : t("bld.orFile")}
                 <input type="file" accept={type === "video" ? "video/*" : "audio/*"} hidden onChange={(e) => doUpload(e.target.files, (u) => setO({ src: u[0] }))} />
               </label>
+              {type === "video" && o.src && <VideoClip src={o.src} start={o.clipStart} end={o.clipEnd} onChange={(x) => setO(x)} />}
               <label htmlFor="te-script" className="flabel mt-2">{t("bld.script")}</label>
               <textarea id="te-script" className="textarea" value={o.script ?? ""} onChange={(e) => setO({ script: e.target.value })} />
             </div>
