@@ -597,11 +597,44 @@ function CrosswordView({ task }: { task: TaskData }) {
   const ck = useChecker(o, task.id);
   const [cell, setCell] = useSlot<Record<string, string>>(task.id, "cell", {});
   const refs = useRef<Record<string, HTMLInputElement | null>>({});
+  // направление ввода: держится, пока ученик сам его не сменит (клик по той же клетке, стрелки, клик по вопросу)
+  const [dir, setDir] = useState<"across" | "down">("across");
+  const [at, setAt] = useState<string | null>(null);
+  const dirRef = useRef(dir); dirRef.current = dir;
+  const backRef = useRef<(k: string) => void>(() => {});
   if (!cw) return <p className="hint">{t("tk.empty")}</p>;
   const nums = new Map(cw.words.map((w) => [`${w.row},${w.col}`, w.n]));
-  const wordOk = (w: (typeof cw.words)[number]) => w.word.split("").every((ch, i) => (cell[`${w.across ? w.row : w.row + i},${w.across ? w.col + i : w.col}`] ?? "").toUpperCase() === ch);
+  const cellsOf = (w: (typeof cw.words)[number]) => w.word.split("").map((_, i) => `${w.across ? w.row : w.row + i},${w.across ? w.col + i : w.col}`);
+  const wordOk = (w: (typeof cw.words)[number]) => w.word.split("").every((ch, i) => (cell[cellsOf(w)[i]] ?? "").toUpperCase() === ch);
   const errors = cw.words.filter((w) => !wordOk(w)).length;
-  const okCells = new Set(cw.words.filter(wordOk).flatMap((w) => w.word.split("").map((_, i) => `${w.across ? w.row : w.row + i},${w.across ? w.col + i : w.col}`)));
+  const okCells = new Set(cw.words.filter(wordOk).flatMap(cellsOf));
+  // в каких направлениях есть слово через клетку
+  const dirs = new Map<string, Set<"across" | "down">>();
+  for (const w of cw.words) for (const k of cellsOf(w)) { const x = dirs.get(k) ?? new Set(); x.add(w.across ? "across" : "down"); dirs.set(k, x); }
+  const has = (k: string) => !!refs.current[k];
+  const step = (k: string, d: "across" | "down", by: 1 | -1) => { const [r, c] = k.split(",").map(Number); return d === "across" ? `${r},${c + by}` : `${r + by},${c}`; };
+  const go = (k: string) => refs.current[k]?.focus();
+  // текущее слово — подсветка клеток
+  const active = at ? cw.words.find((w) => (w.across ? "across" : "down") === dir && cellsOf(w).includes(at)) ?? cw.words.find((w) => cellsOf(w).includes(at)) : null;
+  const inWord = new Set(active ? cellsOf(active) : []);
+  const onFocus = (k: string) => {
+    setAt(k);
+    const ds = dirs.get(k);
+    if (ds && !ds.has(dirRef.current)) setDir([...ds][0]); // в клетке есть слово только другого направления
+  };
+  // Backspace: стереть букву и перейти на предыдущую клетку (в пустой клетке — стереть предыдущую)
+  const back = (k: string) => {
+    const d = dirRef.current, prev = step(k, d, -1);
+    if (cell[k]) { setCell((x) => ({ ...x, [k]: "" })); if (has(prev)) go(prev); return; }
+    if (has(prev)) { setCell((x) => ({ ...x, [prev]: "" })); go(prev); }
+  };
+  backRef.current = back;
+  const onKey = (e: React.KeyboardEvent<HTMLInputElement>, k: string) => {
+    if (e.key === "Backspace") { e.preventDefault(); back(k); return; }
+    const arrows: Record<string, ["across" | "down", 1 | -1]> = { ArrowRight: ["across", 1], ArrowLeft: ["across", -1], ArrowDown: ["down", 1], ArrowUp: ["down", -1] };
+    const a = arrows[e.key];
+    if (a) { e.preventDefault(); setDir(a[0]); const n = step(k, a[0], a[1]); if (has(n)) go(n); }
+  };
   return (
     <div className="flex flex-col gap-4">
       <div className="tk-cw" style={{ gridTemplateColumns: `repeat(${cw.cols}, 34px)` }}>
@@ -610,13 +643,21 @@ function CrosswordView({ task }: { task: TaskData }) {
           if (!ch) return <div key={k} />;
           const m = ck.checked && cell[k] ? (okCells.has(k) ? "ok" : cell[k].toUpperCase() === ch ? "" : "bad") : "";
           return (
-            <div key={k} className="tk-cell">
+            <div key={k} className={`tk-cell ${inWord.has(k) ? "inword" : ""}`}>
               {nums.has(k) && <span className="tk-cn">{nums.get(k)}</span>}
-              <input ref={(el) => { refs.current[k] = el; }} maxLength={1} className={m} value={cell[k] ?? ""} aria-label={`cell ${r + 1}-${c + 1}`}
+              <input ref={(el) => {
+                  refs.current[k] = el;
+                  // телефон: Backspace в пустой клетке приходит только как beforeinput
+                  if (el && !el.dataset.bs) { el.dataset.bs = "1"; el.addEventListener("beforeinput", (ev) => { if ((ev as InputEvent).inputType === "deleteContentBackward" && !el.value) { ev.preventDefault(); el.dispatchEvent(new CustomEvent("cw-back")); } }); el.addEventListener("cw-back", () => backRef.current(k)); }
+                }}
+                maxLength={1} className={m} value={cell[k] ?? ""} aria-label={`cell ${r + 1}-${c + 1}`} autoComplete="off" autoCapitalize="characters" spellCheck={false}
+                onFocus={() => onFocus(k)}
+                onMouseDown={() => { const ds = dirs.get(k); if (at === k && ds && ds.size > 1) setDir((d) => (d === "across" ? "down" : "across")); }}
+                onKeyDown={(e) => onKey(e, k)}
                 onChange={(e) => {
                   const v = e.target.value.slice(-1);
                   setCell((x) => ({ ...x, [k]: v }));
-                  if (v) (refs.current[`${r},${c + 1}`] ?? refs.current[`${r + 1},${c}`])?.focus();
+                  if (v) { const n = step(k, dirRef.current, 1); if (has(n)) go(n); }
                 }} />
             </div>
           );
@@ -627,7 +668,7 @@ function CrosswordView({ task }: { task: TaskData }) {
           <div key={String(across)}>
             <div className="small mb-1 font-semibold text-text2">{across ? t("tk.across") : t("tk.down")}</div>
             {cw.words.filter((w) => w.across === across).sort((a, b) => a.n - b.n).map((w) => (
-              <div key={w.n + w.word} className={`small ${ck.checked ? (wordOk(w) ? "text-ok" : "") : ""}`}><b>{w.n}.</b> {w.clue || "—"} ({w.word.length})</div>
+              <button type="button" key={w.n + w.word} className={`tk-clue small ${ck.checked ? (wordOk(w) ? "text-ok" : "") : ""} ${active === w ? "on" : ""}`} onClick={() => { setDir(w.across ? "across" : "down"); const first = cellsOf(w).find((x) => !cell[x]) ?? cellsOf(w)[0]; go(first); }}><b>{w.n}.</b> {w.clue || "—"} ({w.word.length})</button>
             ))}
           </div>
         ))}

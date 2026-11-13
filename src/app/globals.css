@@ -1729,3 +1729,9 @@ button.grp-row:hover { background: var(--fill); }
 .cls-person.on { background: var(--accent-bg); color: var(--accent); }
 .cls-person i { position: absolute; right: -1px; bottom: -1px; width: 9px; height: 9px; border-radius: 50%; background: var(--grey, #aeaeb2); box-shadow: 0 0 0 2px var(--surface); }
 .cls-person.on i { background: var(--ok); }
+/* кроссворд: текущее слово и вопросы */
+.tk-cell.inword input { background: color-mix(in srgb, var(--accent-bg) 55%, var(--surface)); }
+.tk-cell.inword input:focus { background: var(--accent-bg); }
+.tk-clue { display: block; width: 100%; text-align: left; border: 0; background: transparent; font: inherit; color: inherit; padding: 3px 6px; margin: 0 -6px; border-radius: 8px; cursor: pointer; }
+.tk-clue:hover { background: var(--fill); }
+.tk-clue.on { background: var(--accent-bg); }
