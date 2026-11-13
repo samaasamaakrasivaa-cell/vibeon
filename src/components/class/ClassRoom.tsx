@@ -87,6 +87,28 @@ export function ClassRoom({ d }: { d: ClassData }) {
     return () => document.removeEventListener("mousedown", h);
   }, [panel]);
 
+  // «Показать ученику» (указка): ученика переносит туда, где задание, — вкладка, секция, прокрутка; задание мигает зелёным 3 раза
+  const flashTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const spotlight = useCallback((taskId: string, where?: string) => {
+    const task = d.tasks.find((x) => x.id === taskId);
+    if (!task) return;
+    // учитель указал из домашки — во «Домашку»; иначе туда, где задание лежит
+    const inHw = where === "homework" || task.section === "homework";
+    setTab(inHw ? "homework" : "lesson");
+    if (!inHw) {
+      const rid = task.rubricId && d.rubrics.some((r) => r.id === task.rubricId) ? task.rubricId : d.rubrics[0]?.id ?? null;
+      if (rid) setRubric(rid);
+    }
+    setFlash(null); // повторная указка на то же задание — мигание начинается заново
+    if (flashTimer.current) clearTimeout(flashTimer.current);
+    requestAnimationFrame(() => setFlash(taskId));
+    // ждём, пока откроется нужная секция, и прокручиваем к заданию
+    let tries = 0;
+    const scroll = () => { const el = document.getElementById(`task-${taskId}`); if (el) el.scrollIntoView({ behavior: "smooth", block: "center" }); else if (tries++ < 10) setTimeout(scroll, 100); };
+    setTimeout(scroll, 120);
+    flashTimer.current = setTimeout(() => setFlash(null), 3600);
+  }, [d.tasks, d.rubrics]);
+
   const onEvent = useCallback((ev: string, x: Record<string, unknown>) => {
     // чей ответ: sid; ученик группы получает только свои
     const sid = (x.sid as string | undefined) ?? own;
@@ -97,7 +119,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
       if (!teacher) {
         if ("rubricId" in x && x.rubricId) setRubric(x.rubricId as string);
         if ("tab" in x && x.tab) setTab(x.tab as typeof tab);
-        if (x.spotlight) { const s = x.spotlight as { taskId: string }; setTab("lesson"); setFlash(s.taskId); setTimeout(() => document.getElementById(`task-${s.taskId}`)?.scrollIntoView({ behavior: "smooth", block: "center" }), 150); setTimeout(() => setFlash(null), 4000); }
+        if (x.spotlight) spotlight((x.spotlight as { taskId: string }).taskId, x.tab as string | undefined);
         if ("page" in x && typeof x.page === "number") setPage(x.page);
       }
     } else if (ev === "hw") setHw((h) => ({ ...h, ...x }));
@@ -129,7 +151,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
     else if (ev === "presence") setOnline(x.online as string[]);
     else if (ev === "reload") router.refresh();
     else if (ev === "finished" && !teacher) setFinished(true);
-  }, [d.me.id, teacher, router, own]);
+  }, [d.me.id, teacher, router, own, spotlight]);
   const { connected, send: rawSend } = useLive(d.id, onEvent);
   // учитель в группе действует за выбранного ученика: ответы, проверка, слова, отзыв
   const send = useCallback((type: string, data: Record<string, unknown> = {}) => rawSend(type, gTeacher ? { studentId: viewRef.current, ...data } : data), [rawSend, gTeacher]);
@@ -221,7 +243,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
         {/* групповой урок: чьи ответы смотреть — компактно, рядом с инструментами; повторное нажатие — снять выбор */}
         {gTeacher && <StudentChips task={task} members={d.group!.members} ansBy={ansBy} sel={sid} online={online} onPick={(x) => setTaskView((v) => ({ ...v, [task.id]: v[task.id] === x ? "" : x }))} />}
         {inHw && <span className={`pill ${statuses[task.id] === "NEEDS_REVIEW" && !reviews[task.id] ? "orange" : "grey"}`}>{statusLabel(statuses[task.id], !!reviews[task.id], t)}</span>}
-        <button className={`iconbtn ${live.spotlight?.taskId === task.id ? "bd-on" : ""}`} title={t("cls.show")} aria-label={t("cls.show")} onClick={() => patchLive({ spotlight: { taskId: task.id, at: Date.now() }, rubricId: cur?.id ?? null, tab: "lesson" })}><Icon name="pointer" size="sm" /></button>
+        <button className={`iconbtn ${live.spotlight?.taskId === task.id ? "bd-on" : ""}`} title={t("cls.show")} aria-label={t("cls.show")} onClick={() => { patchLive({ spotlight: { taskId: task.id, at: Date.now() }, ...(inHw ? { tab: "homework" } : { rubricId: cur?.id ?? null, tab: "lesson" }) }); setFlash(null); requestAnimationFrame(() => setFlash(task.id)); setTimeout(() => setFlash(null), 3600); }}><Icon name="pointer" size="sm" /></button>
         {!inHw && <button className={`iconbtn ${isHw ? "bd-on" : ""}`} title={isHw ? t("cls.fromHw") : t("bld.toHw")} aria-label={t("bld.toHw")} onClick={() => { const on = !isHw; setHw((h) => ({ ...h, extraTaskIds: on ? [...h.extraTaskIds, task.id] : h.extraTaskIds.filter((x) => x !== task.id) })); send("hw", { taskId: task.id, on }); }}><Icon name="home" size="sm" /></button>}
         {isHidden && <span className="pill violet">{t("bld.notSeen")}</span>}
         {/* глазик: открыт — ученик видит; закрыт — скрыто от ученика (для учителя задание остаётся обычным, не полупрозрачным) */}
