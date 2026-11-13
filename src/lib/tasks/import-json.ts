@@ -5,7 +5,7 @@ import { HOWTO, isType, TYPES, type TaskType } from "./catalog";
 import { cleanInfo, type TInfo } from "./teacher-info";
 
 /** Опции из файла: Useful phrases, выделение слов, закреплённые строки (0-based). */
-export type ImpOpts = { markable?: boolean; help?: { vocab?: string; grammar?: string }; fixed?: number[] };
+export type ImpOpts = { markable?: boolean; help?: { vocab?: string; grammar?: string }; fixed?: number[]; teacherKey?: string };
 export type ImpTask = { type: TaskType; title: string; content: string; section?: "lesson" | "homework" | "words"; teacherOnly?: boolean; part?: string; options?: ImpOpts };
 /** Многострочная формулировка: до 1500 знаков, не больше одной пустой строки подряд. */
 export const cleanTitle = (x: string) => x.replace(/\r\n?/g, "\n").replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim().slice(0, 1500);
@@ -16,6 +16,7 @@ export function cleanOpts(o: ImpOpts | undefined, type: string): ImpOpts {
   const h = o.help && typeof o.help === "object" ? { vocab: s(o.help.vocab, 3000).trim(), grammar: s(o.help.grammar, 3000).trim() } : null;
   return {
     ...(o.markable === true && type === "text" ? { markable: true } : {}),
+    ...(typeof o.teacherKey === "string" && o.teacherKey.trim() ? { teacherKey: o.teacherKey.trim().slice(0, 5000) } : {}),
     ...(h && (h.vocab || h.grammar) ? { help: { ...(h.vocab ? { vocab: h.vocab } : {}), ...(h.grammar ? { grammar: h.grammar } : {}) } } : {}),
     ...(type === "textorder" && Array.isArray(o.fixed) ? { fixed: [...new Set(o.fixed.filter((v) => Number.isInteger(v) && v >= 0 && v < 200))].sort((a, b) => a - b) } : {}),
   };
@@ -23,6 +24,9 @@ export function cleanOpts(o: ImpOpts | undefined, type: string): ImpOpts {
 function opts(o: Record<string, unknown>, type: string): ImpOpts | undefined {
   const r: ImpOpts = {};
   if (o.markable === true && type === "text") r.markable = true;
+  const kv = o.teacherKey ?? o.key; // ответы для учителя: строка или список строк
+  const key = typeof kv === "string" || Array.isArray(kv) ? lines(kv) : "";
+  if (key) r.teacherKey = key.slice(0, 5000);
   const h = (o.help ?? o.usefulPhrases ?? null) as Record<string, unknown> | null;
   if (h && typeof h === "object") { const vocab = lines(h.vocab ?? h.vocabulary), grammar = lines(h.grammar ?? h.patterns); if (vocab || grammar) r.help = { ...(vocab ? { vocab } : {}), ...(grammar ? { grammar } : {}) }; }
   // в файле строки нумеруются с 1 (первая, последняя…), на платформе — с 0; "last" — последняя строка
@@ -132,6 +136,9 @@ Rules:
 - "content" — the task body in the platform markup for its type (below). Use \\n for new lines. Answers must be inside the markup, not in a separate key.
 - "title" may have several lines: use \\n between lines and \\n\\n for an empty line between paragraphs (e.g. a situation, then the instruction).
 - "help" — a "Useful phrases" box for a reading, writing or speaking task, hidden under a button until the student needs it: "help": { "vocab": "phrase one\\nphrase two", "grammar": "pattern one\\npattern two" } (one item per line). Use it when the material gives language support for THAT task; a box that stands on its own as a separate block on the page is still a "vocab" task.
+- "teacherKey" — answers for the teacher that the student must not see, for tasks whose answers are not in the markup (e.g. "find phrases in the text", open questions, discussion): "teacherKey": "1 — to be honest\\n2 — as far as I know". The teacher opens them with a button.
+- Comments in the middle of the lesson that are not exercises (an introduction to a situation, "Now you will read about four people who…", a short explanation before a stage) → an "info" task: no task number, soft background; "title" optional.
+- "speak" tasks: by default the student records an answer (a monologue).
 - "markable": true on a "text" task — the student can tap words in the text to highlight them (a free tool for working with a text, no right answers). Use it when the material asks to underline or highlight words in a text.
 - "fixed" on a "textorder" task — line numbers (from 1) that stay in place and are not shuffled, e.g. "fixed": [1, "last"] for a dialogue whose first and last lines are given.
 - "teacherOnly": true — only for a teacher note that must stay next to a specific task (answer key, tip). General lesson information goes to "teacher", not here. Every "note" task is hidden from the student automatically; add "teacherOnly": false only if the student must see that note.

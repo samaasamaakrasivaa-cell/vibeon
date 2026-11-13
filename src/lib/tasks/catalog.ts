@@ -1,7 +1,7 @@
 // Каталог типов заданий конструктора (по прототипу lesson-builder.html и Разметка_заданий.md).
 
 export type TaskType =
-  | "image" | "video" | "audio" | "text" | "wordset" | "vocab" | "note" | "link" | "divider"
+  | "image" | "video" | "audio" | "text" | "wordset" | "vocab" | "info" | "note" | "link" | "divider"
   | "gap" | "drag" | "dropdown" | "test" | "tf" | "pairs" | "columns" | "picture"
   | "sentence" | "textorder" | "letters" | "essay" | "open" | "record" | "speak"
   | "errors" | "mark" | "transform" | "translate" | "dictation" | "crossword";
@@ -24,6 +24,7 @@ export const TYPES: Record<TaskType, Def> = {
   text: { g: "media", en: "Text", ru: "Текст" },
   wordset: { g: "media", en: "Word set", ru: "Набор слов" },
   vocab: { g: "media", en: "Useful vocabulary", ru: "Useful vocabulary (рамка со словами)" },
+  info: { g: "media", en: "Lead-in text (no number)", ru: "Пояснение (вводный текст без номера)" },
   note: { g: "media", en: "Note", ru: "Заметка" },
   link: { g: "media", en: "Link", ru: "Ссылка" },
   divider: { g: "tech", en: "Divider", ru: "Разделитель" },
@@ -51,12 +52,13 @@ export const TYPES: Record<TaskType, Def> = {
 };
 export const ALL_TYPES = Object.keys(TYPES) as TaskType[];
 export const isType = (t: string): t is TaskType => t in TYPES;
-/** Есть ли у задания номер: только у заданий с формулировкой; без номера — разделитель, рамка Useful vocabulary и «без номера». */
+/** Есть ли у задания номер: только у заданий с формулировкой; без номера — разделитель, рамка Useful vocabulary и пояснение. */
 export const numbered = (x: { type: string; title?: string | null; options?: { nonum?: boolean } | null }) =>
-  x.type !== "divider" && x.type !== "vocab" && !x.options?.nonum && !!x.title?.trim();
+  x.type !== "divider" && x.type !== "vocab" && x.type !== "info" && !!x.title?.trim();
 
 export const PRESET: Record<TaskType, string[]> = {
   vocab: ["Useful vocabulary"],
+  info: [""],
   image: ["Look at the picture.", "Look at the picture and describe it.", "How does the picture make you feel?", "Do you see yourself in this picture?", "What story could this picture tell?", "What happened just before this picture was taken?"],
   video: ["Watch the video.", "Watch the video and answer the questions.", "Watch and summarise the video.", "Watch the video. What surprised you?"],
   audio: ["Listen.", "Listen and answer the questions.", "Listen and summarise.", "Listen and complete the sentences."],
@@ -90,6 +92,7 @@ export const PRESET: Record<TaskType, string[]> = {
 
 /** «Как оформить это задание» (EN, RU). */
 export const HOWTO: Partial<Record<TaskType, [string, string]>> = {
+  info: ["A comment in the middle of the lesson: introduce the situation, explain what comes next (e.g. \"Now you will read four people talking about…\"). Shown on a soft background, without a task number. The heading is optional. **bold**, *italic*; an empty line starts a new paragraph.", "Комментарий посреди урока: ввести в ситуацию, объяснить, что будет дальше (например, «Сейчас вы прочитаете, как четыре человека рассказывают о…»). Показывается на мягком фоне, без номера задания. Заголовок — по желанию. **жирный**, *курсив*; пустая строка — новый абзац."],
   vocab: ["Useful words and phrases, one per line (or separated by commas). Shown in a coloured frame without a task number — put it anywhere in the lesson, e.g. under a speaking task.", "Полезные слова и фразы — по одному на строку (или через запятую). Показываются в цветной рамке без номера задания — ставьте в любое место урока, например под говорением."],
   gap: ["Put the answer in square brackets: She [went] home. The student sees a gap there. A hint goes in round brackets after it: [went](go). If two answers are right, split them with /: [colour / color].", "Возьмите ответ в квадратные скобки: She [went] home. Ученик увидит на этом месте пропуск. Подсказку пишите в круглых скобках после: [went](go). Если верны два ответа, разделите их /: [colour / color]."],
   dropdown: ["Put all options in one pair of brackets, split by /, and mark the right one with *: It’s fine to [make* / do / take] mistakes.", "Все варианты — в одних скобках через /, верный отметьте звёздочкой *: It’s fine to [make* / do / take] mistakes."],
@@ -120,6 +123,7 @@ HOWTO.drag = HOWTO.gap;
 /** Короткая подсказка под полем (EN, RU). */
 export const HELP: Partial<Record<TaskType, [string, string]>> = {
   vocab: ["one word or phrase per line", "по слову или фразе на строку"],
+  info: ["the text of the comment", "текст пояснения"],
   gap: ["[word] — gap · [went](go) — hint · [a / b] — both right", "[слово] — пропуск · [went](go) — подсказка · [a / b] — оба верны"],
   drag: ["[word] — gap; words go into the box", "[слово] — пропуск; слова уйдут в блок"],
   dropdown: ["[right* / wrong / wrong]", "[верный* / неверный / неверный]"],
@@ -144,6 +148,7 @@ export const HELP: Partial<Record<TaskType, [string, string]>> = {
 
 /** Пример содержания — подставляется в новое задание. */
 export const SAMPLE: Partial<Record<TaskType, string>> = {
+  info: "Now you are going to read about four people who changed their jobs. Think: would you do the same?",
   vocab: "I'd rather…\nIn my opinion,\nOn the other hand,\nto be honest",
   gap: "Yesterday I [went](go) to the cinema.\nShe [has lived](live) here since 2019.\nThere’s little point in [trying] to be perfect.",
   drag: "Don’t let fear [hold you back].\nShe decided to [give it a go].\nYou don’t have to [get it right] the first time.\nIt’s a [worthwhile] project.\nWe can’t control the [outcome].",
@@ -205,11 +210,13 @@ export const COURSE_CATEGORIES: [string, string, string][] = [
 export type TaskOptions = {
   hidden?: boolean; nonum?: boolean; noreveal?: boolean; checkMode?: "instant" | "button"; mode?: "gap" | "drag";
   split?: boolean; seriesSize?: number; limitWords?: number; limitSec?: number; showScript?: boolean; script?: string;
-  src?: string; images?: { src: string; caption?: string }[]; layout?: "carousel" | "stack"; pics?: string[];
+  src?: string; images?: { src: string; caption?: string; size?: "s" | "l" }[]; layout?: "carousel" | "stack"; pics?: string[];
   url?: string; label?: string; ns?: boolean; check?: boolean; multi?: boolean; across?: boolean; teacherOnly?: boolean;
   aipre?: boolean; ai?: boolean; aiPrompt?: string; aiGoal?: string; aiWords?: string; aiMins?: number;
   clipStart?: number; clipEnd?: number; // отрывок видео, секунды
   markable?: boolean; // текст: ученик может выделять слова
-  help?: { vocab?: string; grammar?: string }; // Useful phrases под формулировкой: открываются по кнопке
+  help?: { vocab?: string; grammar?: string; hidden?: boolean }; // Useful phrases под формулировкой: открываются по кнопке; hidden — сохранены, но ученику не показываются
+  teacherKey?: string; // ответы для учителя: ученику не отдаются, учитель раскрывает их сам
+  aiTalk?: boolean; // говорение: диалог с ИИ вместо записи ответа
   fixed?: number[]; // текст по порядку: строки, закреплённые на своих местах
 };

@@ -265,7 +265,7 @@ function sanitizeOptions(o: TaskOptions): Prisma.InputJsonObject {
     limitSec: o.limitSec && o.limitSec > 0 && o.limitSec <= 600 ? Math.round(o.limitSec) : undefined,
     showScript: !!o.showScript || undefined, script: clean(o.script, 20000) || undefined,
     src: okUrl(o.src), url: okUrl(o.url), label: clean(o.label, 200) || undefined,
-    images: (o.images ?? []).map((im) => ({ src: okUrl(im.src), caption: clean(im.caption, 300) || undefined })).filter((im) => im.src).slice(0, 30),
+    images: (o.images ?? []).map((im) => ({ src: okUrl(im.src), caption: clean(im.caption, 300) || undefined, size: im.size === "s" || im.size === "l" ? im.size : undefined })).filter((im) => im.src).slice(0, 30),
     layout: o.layout === "stack" ? "stack" : undefined,
     pics: (o.pics ?? []).map((u) => okUrl(u) ?? "").slice(0, 60),
     ns: !!o.ns || undefined, check: !!o.check || undefined, multi: !!o.multi || undefined, teacherOnly: !!o.teacherOnly || undefined,
@@ -274,7 +274,9 @@ function sanitizeOptions(o: TaskOptions): Prisma.InputJsonObject {
     clipStart: o.clipStart && o.clipStart > 0 && o.clipStart < 86400 ? Math.round(o.clipStart) : undefined,
     clipEnd: o.clipEnd && o.clipEnd > (o.clipStart ?? 0) && o.clipEnd < 86400 ? Math.round(o.clipEnd) : undefined,
     markable: !!o.markable || undefined,
-    help: o.help && (clean(o.help.vocab, 3000) || clean(o.help.grammar, 3000)) ? { vocab: clean(o.help.vocab, 3000) || undefined, grammar: clean(o.help.grammar, 3000) || undefined } : undefined,
+    help: o.help && (clean(o.help.vocab, 3000) || clean(o.help.grammar, 3000)) ? { vocab: clean(o.help.vocab, 3000) || undefined, grammar: clean(o.help.grammar, 3000) || undefined, hidden: !!o.help.hidden || undefined } : undefined,
+    teacherKey: clean(o.teacherKey, 5000) || undefined,
+    aiTalk: !!o.aiTalk || undefined,
     fixed: Array.isArray(o.fixed) && o.fixed.length ? [...new Set(o.fixed.filter((x) => Number.isInteger(x) && x >= 0 && x < 200))].sort((a, b) => a - b) : undefined,
   }));
 }
@@ -373,6 +375,29 @@ export async function resetShare(lessonId: string): Promise<R> {
 }
 
 // ───────── Избранные типы заданий ─────────
+
+/** Избранные типы и свои формулировки учителя — для каталога и редактора (каталог открывают и из урока, и из конструктора). */
+export async function getBuilderPrefs(): Promise<{ fav: string[]; titles: Record<string, string[]> }> {
+  const teacher = await me();
+  const prof = await db.teacherProfile.findUnique({ where: { userId: teacher.id }, select: { settings: true } });
+  const st = (prof?.settings ?? {}) as { favTypes?: string[]; myTitles?: Record<string, string[]> };
+  return { fav: (st.favTypes ?? []).filter(isType), titles: st.myTitles ?? {} };
+}
+
+/** «Сохранить формулировку»: своя формулировка становится подсказкой-кнопкой у этого типа задания (remove — убрать). */
+export async function saveMyTitle(type: string, title: string, remove = false): Promise<{ ok: boolean; titles?: string[] }> {
+  if (!isType(type)) return { ok: false };
+  const teacher = await me();
+  const x = cleanTitle(String(title ?? ""));
+  if (!x) return { ok: false };
+  const prof = await db.teacherProfile.findUnique({ where: { userId: teacher.id } });
+  if (!prof) return { ok: false };
+  const st = (prof.settings ?? {}) as { myTitles?: Record<string, string[]> };
+  const cur = (st.myTitles?.[type] ?? []).filter((v) => v !== x);
+  const list = remove ? cur : [...cur, x].slice(-12);
+  await db.teacherProfile.update({ where: { userId: teacher.id }, data: { settings: { ...(st as object), myTitles: { ...(st.myTitles ?? {}), [type]: list } } } });
+  return { ok: true, titles: list };
+}
 
 export async function setFavourites(types: string[]): Promise<R> {
   const teacher = await me();

@@ -9,6 +9,7 @@ const THUMB={
  audio:`${[0,1,2,3,4,5,6,7,8].map(i=>`<line x1="${16+i*6}" y1="${21-[4,9,6,12,8,11,5,9,4][i]}" x2="${16+i*6}" y2="${21+[4,9,6,12,8,11,5,9,4][i]}" ${B}/>`).join("")}`,
  text:ln(12,10,56)+ln(12,17,50)+ln(12,24,56)+ln(12,31,38),
  wordset:[8,18,28].map(y=>`<path d="M12 ${y-2}h3l3-3v10l-3-3h-3z" fill="currentColor" opacity=".55"/>`+ln(24,y,22)+ln(50,y,16)).join(""),
+ info:`<rect x="8" y="6" width="64" height="30" rx="6" fill="currentColor" opacity=".12"/>`+ln(16,15,48)+ln(16,22,40)+ln(16,29,26),
  note:bx(10,6,60,30,1)+ln(16,15,40)+ln(16,23,30),
  link:`<rect x="20" y="14" width="40" height="14" rx="7" fill="currentColor" opacity=".55"/>`,
  divider:`<path d="M10 21l6-5 6 5 6-5 6 5 6-5 6 5 6-5 6 5 6-5" ${B}/>`,

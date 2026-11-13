@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Catalog } from "./Catalog";
 import { VideoClip } from "./VideoClip";
 import { Dialog } from "../Dialog";
@@ -10,11 +10,12 @@ import { useT } from "@/lib/i18n/client";
 import { HELP, HOWTO, PRESET, TYPES, type TaskOptions, type TaskType } from "@/lib/tasks/catalog";
 import { thumbSvg } from "@/lib/tasks/thumbs";
 import { fileToTask, helpTask } from "@/lib/ai/actions";
+import { getBuilderPrefs, saveMyTitle } from "@/lib/teacher/courses";
 import { extractFile } from "../ai/BookImport";
 
-const CONTENT_TYPES: TaskType[] = ["gap", "drag", "dropdown", "test", "tf", "pairs", "columns", "picture", "sentence", "textorder", "letters", "essay", "open", "record", "speak", "errors", "mark", "transform", "translate", "dictation", "crossword", "wordset", "vocab", "text", "note"];
+const CONTENT_TYPES: TaskType[] = ["gap", "drag", "dropdown", "test", "tf", "pairs", "columns", "picture", "sentence", "textorder", "letters", "essay", "open", "record", "speak", "errors", "mark", "transform", "translate", "dictation", "crossword", "wordset", "vocab", "info", "text", "note"];
 /** Где в содержании работает оформление (жирный, курсив, цвет, маркер): тексты, вопросы, утверждения, строки с пропусками. */
-const FMT_TYPES: TaskType[] = ["text", "note", "vocab", "speak", "open", "essay", "record", "gap", "drag", "dropdown", "test", "tf"];
+const FMT_TYPES: TaskType[] = ["text", "info", "note", "vocab", "speak", "open", "essay", "record", "gap", "drag", "dropdown", "test", "tf"];
 const FMT_COLORS = ["blue", "red", "green", "purple", "orange"] as const;
 const CHECK_TYPES = (t: TaskType) => !!TYPES[t].checkable;
 /** Смена типа: внутри одной «семьи» содержание подходит без правок и сохраняется; иначе поле очищается. */
@@ -24,9 +25,10 @@ const FAMILIES: TaskType[][] = [
   ["letters", "crossword", "picture"],
 ];
 const famOf = (x: TaskType) => FAMILIES.findIndex((f) => f.includes(x));
-const KEEP_OPTS = ["nonum", "teacherOnly", "hidden", "help"] as const;
+const KEEP_OPTS = ["nonum", "teacherOnly", "hidden", "help", "teacherKey"] as const;
+let MY_TITLES: Record<string, string[]> | null = null; // свои формулировки: помним между открытиями редактора
 /** Useful phrases — у заданий, где ученик работает с текстом, пишет или говорит (не у медиа, заметок и разделителей). */
-const HELP_TYPES = (x: TaskType) => !["divider", "vocab", "note", "image", "audio", "video", "link", "wordset", "picture"].includes(x);
+const HELP_TYPES = (x: TaskType) => !["divider", "vocab", "info", "note", "image", "audio", "video", "link", "wordset", "picture"].includes(x);
 
 export function TaskEditor({ lessonId, initial, onSave, onClose, pending, error }: {
   lessonId: string; initial: TaskData; onSave: (t: TaskData) => void; onClose: () => void; pending: boolean; error: string | null;
@@ -36,8 +38,16 @@ export function TaskEditor({ lessonId, initial, onSave, onClose, pending, error 
   const [task, setTask] = useState<TaskData>(initial);
   const o = task.options;
   const setO = (p: Partial<TaskOptions>) => setTask((x) => ({ ...x, options: { ...x.options, ...p } }));
-  const [own, setOwn] = useState(!PRESET[task.type]?.includes(task.title));
   const ta = useRef<HTMLTextAreaElement>(null);
+  const tt = useRef<HTMLTextAreaElement>(null); // формулировка
+  const lastField = useRef<"title" | "content">("content"); // B / I / цвет — к тому полю, где курсор был последним
+  // свои сохранённые формулировки (кнопки-подсказки у каждого типа задания)
+  const [mine, setMine] = useState<Record<string, string[]>>(MY_TITLES ?? {});
+  useEffect(() => { getBuilderPrefs().then((p) => { if (p) { MY_TITLES = p.titles; setMine(p.titles); } }).catch(() => {}); }, []);
+  const [keyOn, setKeyOn] = useState(!!initial.options.teacherKey);
+  const [limitOn, setLimitOn] = useState(!!initial.options.limitWords);
+  const [dragImg, setDragImg] = useState<number | null>(null);
+  const [overImg, setOverImg] = useState<number | null>(null);
   const [uploading, setUploading] = useState(false);
   const [upErr, setUpErr] = useState<string | null>(null);
   const [ai, setAi] = useState<"help" | "file" | null>(null);
@@ -54,7 +64,6 @@ export function TaskEditor({ lessonId, initial, onSave, onClose, pending, error 
     if (to === "note") opts.teacherOnly = true;
     if (to === "drag") opts.mode = "drag";
     if (!keep && task.content.trim() && !confirm(t("bld.retypeLose"))) return;
-    setOwn(true);
     setTask((x) => ({ ...x, type: to, content: keep ? x.content : "", options: opts }));
     setRetype(false);
   };
@@ -63,13 +72,54 @@ export function TaskEditor({ lessonId, initial, onSave, onClose, pending, error 
   /** Панель разметки: [ ] — пропуск, ✓ — верный вариант, 1. — нумерация строк. */
   // оформление выделенного текста: **жирный**, *курсив*, __подчёркнутый__, ==маркер==, {blue}цвет{/}
   const fmt = (open: string, close = open) => {
-    const el = ta.current;
+    const isTitle = lastField.current === "title" && !!tt.current;
+    const el = isTitle ? tt.current : ta.current;
     if (!el) return;
     const { selectionStart: a, selectionEnd: b, value } = el;
-    const sel = value.slice(a, b) || "text";
-    const next = value.slice(0, a) + open + sel + close + value.slice(b);
-    setTask((x) => ({ ...x, content: next }));
-    requestAnimationFrame(() => { el.focus(); el.setSelectionRange(a + open.length, a + open.length + sel.length); });
+    const put = (next: string, s0: number, s1: number) => {
+      setTask((x) => (isTitle ? { ...x, title: next } : { ...x, content: next }));
+      requestAnimationFrame(() => { el.focus(); el.setSelectionRange(s0, s1); });
+    };
+    const sel = value.slice(a, b);
+    const isColor = open.startsWith("{");
+    const anyColor = /^\{\w+\}$/;
+    // уже оформлено так же — повторное нажатие снимает оформление: маркеры внутри выделения…
+    if (sel.length > open.length + close.length && (isColor ? anyColor.test(sel.slice(0, sel.indexOf("}") + 1)) && sel.endsWith(close) : sel.startsWith(open) && sel.endsWith(close)) && !(open === "*" && sel.startsWith("**") && !sel.startsWith("***"))) {
+      const o = isColor ? sel.indexOf("}") + 1 : open.length;
+      const inner = sel.slice(o, sel.length - close.length);
+      const was = isColor ? sel.slice(0, o) : open;
+      if (isColor && was !== open) return put(value.slice(0, a) + open + inner + close + value.slice(b), a, a + open.length + inner.length + close.length); // другой цвет — заменить
+      return put(value.slice(0, a) + inner + value.slice(b), a, a + inner.length);
+    }
+    // …или вокруг него
+    const before = value.slice(0, a), after = value.slice(b);
+    const cm = isColor ? /\{\w+\}$/.exec(before) : null;
+    const hasOpen = isColor ? !!cm : before.endsWith(open) && !(open === "*" && before.endsWith("**") && !before.endsWith("***"));
+    if (sel && hasOpen && after.startsWith(close)) {
+      const ol = isColor ? cm![0].length : open.length;
+      if (isColor && cm![0] !== open) return put(before.slice(0, -ol) + open + sel + after, a - ol + open.length, a - ol + open.length + sel.length);
+      return put(before.slice(0, -ol) + sel + after.slice(close.length), a - ol, a - ol + sel.length);
+    }
+    const txt = sel || "text";
+    put(before + open + txt + close + after, a + open.length, a + open.length + txt.length);
+  };
+  /** «Снять оформление» с выделенного (или со всего поля, если ничего не выделено). */
+  const unfmt = () => {
+    const isTitle = lastField.current === "title" && !!tt.current;
+    const el = isTitle ? tt.current : ta.current;
+    if (!el) return;
+    let { selectionStart: a, selectionEnd: b } = el;
+    const value = el.value;
+    if (a === b) { a = 0; b = value.length; }
+    // захватываем маркеры, стоящие вплотную к выделению
+    while (a > 0 && /[*_=]/.test(value[a - 1])) a--;
+    while (b < value.length && /[*_=]/.test(value[b])) b++;
+    const m1 = /\{\w+\}$/.exec(value.slice(0, a)); if (m1) a -= m1[0].length;
+    const m2 = /^\{\/\w*\}/.exec(value.slice(b)); if (m2) b += m2[0].length;
+    const plain = value.slice(a, b).replace(/\*\*|__|==|\{\/?\w*\}/g, "").replace(/(^|[\s(])\*(?=\S)/g, "$1").replace(/(\S)\*(?=[\s.,!?;:)]|$)/g, "$1");
+    const next = value.slice(0, a) + plain + value.slice(b);
+    setTask((x) => (isTitle ? { ...x, title: next } : { ...x, content: next }));
+    requestAnimationFrame(() => { el.focus(); el.setSelectionRange(a, a + plain.length); });
   };
   const wrap = (kind: "gap" | "star" | "num") => {
     const el = ta.current;
@@ -136,17 +186,26 @@ export function TaskEditor({ lessonId, initial, onSave, onClose, pending, error 
           {type !== "divider" && (
             <div className="field">
               <span className="flabel">{t("bld.instruction")}</span>
-              {own || !PRESET[type]?.length ? (
-                <textarea className="input ted-title" rows={Math.min(8, Math.max(1, task.title.split("\n").length))} value={task.title} onChange={(e) => setTask({ ...task, title: e.target.value })} placeholder={PRESET[type]?.[0]} autoFocus aria-label={t("bld.instruction")} />
-              ) : (
-                <div className="input font-semibold ted-title">{task.title}</div>
-              )}
-              {(own || !PRESET[type]?.length) && <span className="hint">{t("bld.titleHint")}</span>}
+              <textarea ref={tt} className="input ted-title" rows={Math.min(8, Math.max(1, task.title.split("\n").length))} value={task.title} onFocus={() => (lastField.current = "title")} onChange={(e) => setTask({ ...task, title: e.target.value })} placeholder={type === "info" ? t("bld.infoTitlePh") : PRESET[type]?.[0]} autoFocus aria-label={t("bld.instruction")} />
+              <span className="hint">{t("bld.titleHint")}</span>
               <div className="flex flex-wrap gap-1.5">
                 {PRESET[type]?.filter(Boolean).map((p) => (
-                  <button key={p} type="button" className={`pchip ${task.title === p && !own ? "on" : ""}`} onClick={() => { setOwn(false); setTask({ ...task, title: p }); }}>{p}</button>
+                  <button key={p} type="button" className={`pchip ${task.title === p ? "on" : ""}`} onClick={() => setTask({ ...task, title: p })}>{p}</button>
                 ))}
-                <button type="button" className="pchip add" onClick={() => setOwn(true)}>+ {t("bld.ownInstruction")}</button>
+                {(mine[type] ?? []).map((p) => (
+                  <span key={p} className={`pchip ted-mytitle ${task.title === p ? "on" : ""}`}>
+                    <button type="button" className="plain" onClick={() => setTask({ ...task, title: p })} title={p}>★ {p.length > 60 ? `${p.slice(0, 60).replace(/\n+/g, " ")}…` : p.replace(/\n+/g, " ")}</button>
+                    <button type="button" className="x" aria-label={t("bld.myTitleDel")} title={t("bld.myTitleDel")} onClick={() => void saveMyTitle(type, p, true).then((r) => { if (r.ok && r.titles) { const n = { ...mine, [type]: r.titles }; MY_TITLES = n; setMine(n); } })}>✕</button>
+                  </span>
+                ))}
+                {(() => {
+                  const cur = task.title.trim();
+                  const can = !!cur && !PRESET[type]?.includes(cur) && !(mine[type] ?? []).includes(cur);
+                  return (
+                    <button type="button" className="pchip add" disabled={!can} title={can ? t("bld.myTitleSaveHint") : t("bld.myTitleSaveNo")}
+                      onClick={() => void saveMyTitle(type, cur).then((r) => { if (r.ok && r.titles) { const n = { ...mine, [type]: r.titles }; MY_TITLES = n; setMine(n); } })}>☆ {t("bld.myTitleSave")}</button>
+                  );
+                })()}
               </div>
             </div>
           )}
@@ -155,18 +214,19 @@ export function TaskEditor({ lessonId, initial, onSave, onClose, pending, error 
             <div className="field mt-4">
               <span className="flabel">{t("bld.content")}</span>
               <div className="tedbox">
-                <textarea ref={ta} className="tedta" value={task.content} onChange={(e) => setTask({ ...task, content: e.target.value })} spellCheck={false} aria-label={t("bld.content")} />
+                <textarea ref={ta} className="tedta" value={task.content} onFocus={() => (lastField.current = "content")} onChange={(e) => setTask({ ...task, content: e.target.value })} spellCheck={false} aria-label={t("bld.content")} />
                 <div className="flex flex-wrap items-center gap-2 px-2 pb-2">
                   {(isGap || type === "dropdown" || type === "errors") && <button type="button" className="pchip" onClick={() => wrap("gap")} title={t("bld.mkGap")}>[ ]</button>}
                   {(type === "dropdown" || type === "test" || type === "errors") && <button type="button" className="pchip" onClick={() => wrap("star")} title={t("bld.mkRight")}>✓</button>}
                   <button type="button" className="pchip" onClick={() => wrap("num")} title={t("bld.mkNum")}>1.</button>
                   {FMT_TYPES.includes(type) && (
-                    <span className="tedfmt" role="group" aria-label={t("bld.fmt")}>
+                    <span className="tedfmt" role="group" aria-label={t("bld.fmt")} onMouseDown={(e) => e.preventDefault()}>
                       <button type="button" className="pchip" onClick={() => fmt("**")} title={t("bld.fmtB")}><b>B</b></button>
                       <button type="button" className="pchip" onClick={() => fmt("*")} title={t("bld.fmtI")}><i>I</i></button>
                       <button type="button" className="pchip" onClick={() => fmt("__")} title={t("bld.fmtU")}><u>U</u></button>
                       <button type="button" className="pchip" onClick={() => fmt("==")} title={t("bld.fmtMark")}><mark className="tk-mark">ab</mark></button>
                       {FMT_COLORS.map((c) => <button key={c} type="button" className="pchip tedcol" onClick={() => fmt(`{${c}}`, "{/}")} title={t("bld.fmtColor")} aria-label={`${t("bld.fmtColor")}: ${c}`}><span className={`tk-c-${c}`}>A</span></button>)}
+                      <button type="button" className="pchip" onClick={unfmt} title={t("bld.fmtClear")} aria-label={t("bld.fmtClear")}><s>T</s><sub>x</sub></button>
                     </span>
                   )}
                   <span className="grow" />
@@ -183,30 +243,48 @@ export function TaskEditor({ lessonId, initial, onSave, onClose, pending, error 
           )}
 
           {/* Материалы */}
-          {(type === "image" || type === "text") && (
-            <div className="field mt-4">
-              <span className="flabel">{type === "image" ? t("bld.images") : t("bld.textPic")}</span>
-              <div className="flex flex-col gap-2">
-                {(o.images ?? []).map((im, i) => (
-                  <div key={i} className="flex items-center gap-2">
-                    <img src={im.src} alt="" className="h-12 w-16 rounded-lg object-cover" />
-                    <input className="input" value={im.caption ?? ""} placeholder={t("bld.caption")} onChange={(e) => setO({ images: (o.images ?? []).map((x, j) => (j === i ? { ...x, caption: e.target.value } : x)) })} />
-                    <button type="button" className="iconbtn" aria-label={t("common.delete")} onClick={() => setO({ images: (o.images ?? []).filter((_, j) => j !== i) })}>✕</button>
-                  </div>
-                ))}
-                <label className="upl">
-                  <Icon name="plus" />{uploading ? t("bld.uploading") : type === "image" ? t("bld.uploadImages") : t("bld.uploadImage")}
-                  <input type="file" accept="image/*" multiple={type === "image"} hidden onChange={(e) => doUpload(e.target.files, (urls) => setO({ images: [...(type === "image" ? o.images ?? [] : []), ...urls.map((src) => ({ src }))] }))} />
-                </label>
-                {type === "image" && (o.images?.length ?? 0) > 1 && (
-                  <div className="seg self-start">
-                    <button type="button" aria-pressed={o.layout !== "stack"} onClick={() => setO({ layout: undefined })}>{t("bld.carousel")}</button>
-                    <button type="button" aria-pressed={o.layout === "stack"} onClick={() => setO({ layout: "stack" })}>{t("bld.stack")}</button>
-                  </div>
-                )}
+          {(type === "image" || type === "text" || type === "textorder") && (() => {
+            const imgs = o.images ?? [];
+            const many = type !== "text";
+            const setImgs = (n: NonNullable<TaskOptions["images"]>) => setO({ images: n });
+            const move = (from: number, to: number) => { if (from === to || to < 0 || to >= imgs.length) return; const n = [...imgs]; const [v] = n.splice(from, 1); n.splice(to, 0, v); setImgs(n); };
+            return (
+              <div className="field mt-4">
+                <span className="flabel">{type === "text" ? t("bld.textPic") : type === "textorder" ? t("bld.orderPics") : t("bld.images")}</span>
+                <div className="ted-imgs">
+                  {imgs.map((im, i) => (
+                    // зажать и перетащить — поменять порядок; стрелки — то же для телефона
+                    <div key={im.src + i} className={`ted-img ${overImg === i && dragImg !== null && dragImg !== i ? "over" : ""}`} draggable={many}
+                      onDragStart={() => setDragImg(i)} onDragOver={(e) => { e.preventDefault(); setOverImg(i); }} onDragLeave={() => setOverImg(null)}
+                      onDrop={() => { if (dragImg !== null) move(dragImg, i); setDragImg(null); setOverImg(null); }} onDragEnd={() => { setDragImg(null); setOverImg(null); }}>
+                      {many && <span className="grip" title={t("bld.imgDrag")}><Icon name="move" size="sm" /></span>}
+                      <img src={im.src} alt="" className="h-12 w-16 rounded-lg object-cover" draggable={false} />
+                      <input className="input" value={im.caption ?? ""} placeholder={t("bld.caption")} onChange={(e) => setImgs(imgs.map((x, j) => (j === i ? { ...x, caption: e.target.value } : x)))} />
+                      <div className="seg shrink-0" role="group" aria-label={t("bld.imgSize")} title={t("bld.imgSize")}>
+                        {([["s", "S"], [undefined, "M"], ["l", "L"]] as const).map(([v, lab]) => <button key={lab} type="button" aria-pressed={im.size === v} onClick={() => setImgs(imgs.map((x, j) => (j === i ? { ...x, size: v } : x)))}>{lab}</button>)}
+                      </div>
+                      {many && imgs.length > 1 && <>
+                        <button type="button" className="iconbtn" aria-label="up" disabled={i === 0} onClick={() => move(i, i - 1)}>↑</button>
+                        <button type="button" className="iconbtn" aria-label="down" disabled={i === imgs.length - 1} onClick={() => move(i, i + 1)}>↓</button>
+                      </>}
+                      <button type="button" className="iconbtn" aria-label={t("common.delete")} onClick={() => setImgs(imgs.filter((_, j) => j !== i))}>✕</button>
+                    </div>
+                  ))}
+                  {many && imgs.length > 1 && <span className="hint">{t("bld.imgDragHint")}</span>}
+                  <label className="upl">
+                    <Icon name="plus" />{uploading ? t("bld.uploading") : many ? t("bld.uploadImages") : t("bld.uploadImage")}
+                    <input type="file" accept="image/*" multiple={many} hidden onChange={(e) => doUpload(e.target.files, (urls) => setImgs([...(many ? imgs : []), ...urls.map((src) => ({ src }))]))} />
+                  </label>
+                  {many && imgs.length > 1 && (
+                    <div className="seg self-start">
+                      <button type="button" aria-pressed={o.layout !== "stack"} onClick={() => setO({ layout: undefined })}>{t("bld.carousel")}</button>
+                      <button type="button" aria-pressed={o.layout === "stack"} onClick={() => setO({ layout: "stack" })}>{t("bld.stack")}</button>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
           {(type === "video" || type === "audio") && (
             <div className="field mt-4">
               <label htmlFor="te-src" className="flabel">{type === "video" ? t("bld.videoLink") : t("bld.audioLink")}</label>
@@ -264,11 +342,21 @@ export function TaskEditor({ lessonId, initial, onSave, onClose, pending, error 
             <details className="ted-help mt-4" open={!!(o.help?.vocab || o.help?.grammar)}>
               <summary><Icon name="eye" size="sm" /> {t("bld.help")}</summary>
               <span className="hint">{t("bld.helpHint")}</span>
+              <label className="setting"><span className="small font-semibold">{t("bld.helpShow")}</span><span className="switch"><input type="checkbox" checked={!o.help?.hidden} onChange={(e) => setO({ help: { ...o.help, hidden: !e.target.checked || undefined } })} /><span /></span></label>
               <label className="flabel mt-2" htmlFor="te-hv">{t("bld.helpVocab")}</label>
               <textarea id="te-hv" className="textarea" rows={3} value={o.help?.vocab ?? ""} onChange={(e) => setO({ help: { ...o.help, vocab: e.target.value } })} placeholder={"to be keen on\nas far as I know"} />
               <label className="flabel mt-2" htmlFor="te-hg">{t("bld.helpGrammar")}</label>
               <textarea id="te-hg" className="textarea" rows={3} value={o.help?.grammar ?? ""} onChange={(e) => setO({ help: { ...o.help, grammar: e.target.value } })} placeholder={"I'd rather + infinitive\nIf I were you, I'd…"} />
             </details>
+          )}
+          {type !== "divider" && (
+            <div className="ted-key mt-4">
+              <label className="setting"><span className="small font-semibold"><Icon name="eyeoff" size="sm" /> {t("bld.key")}</span><span className="switch"><input type="checkbox" checked={keyOn} onChange={(e) => { setKeyOn(e.target.checked); if (!e.target.checked) setO({ teacherKey: undefined }); }} /><span /></span></label>
+              {keyOn && <>
+                <span className="hint">{t("bld.keyHint")}</span>
+                <textarea className="textarea mt-1" rows={3} value={o.teacherKey ?? ""} onChange={(e) => setO({ teacherKey: e.target.value })} placeholder={t("bld.keyPh")} aria-label={t("bld.key")} />
+              </>}
+            </div>
           )}
           {upErr && <div className="alert mt-2">{t("bld.uploadErr")}: {upErr}</div>}
 
@@ -309,10 +397,12 @@ export function TaskEditor({ lessonId, initial, onSave, onClose, pending, error 
                   </>
                 )}
                 {type === "tf" && <label className="setting"><span>{t("bld.ns")}</span><span className="switch"><input type="checkbox" checked={!!o.ns} onChange={(e) => setO({ ns: e.target.checked })} /><span /></span></label>}
-                {type === "essay" && <div className="setting"><span>{t("bld.wordLimit")}</span><input className="input" style={{ width: 90 }} inputMode="numeric" value={o.limitWords ?? ""} placeholder="150" onChange={(e) => setO({ limitWords: Number(e.target.value.replace(/\D/g, "")) || undefined })} /></div>}
+                {type === "essay" && <label className="setting"><span>{t("bld.wordLimitOn")}</span><span className="switch"><input type="checkbox" checked={limitOn} onChange={(e) => { setLimitOn(e.target.checked); if (!e.target.checked) setO({ limitWords: undefined }); }} /><span /></span></label>}
+                {type === "essay" && limitOn && <div className="setting"><span className="small muted">{t("bld.wordLimit")}</span><input className="input" style={{ width: 90 }} inputMode="numeric" value={o.limitWords ?? ""} placeholder="150" autoFocus onChange={(e) => setO({ limitWords: Number(e.target.value.replace(/\D/g, "")) || undefined })} /></div>}
                 {type === "letters" && <div className="setting"><span>{t("bld.timer")}</span><input className="input" style={{ width: 90 }} inputMode="numeric" value={o.limitSec ?? ""} placeholder="—" onChange={(e) => setO({ limitSec: Number(e.target.value.replace(/\D/g, "")) || undefined })} /></div>}
                 {(type === "video" || type === "audio") && <label className="setting"><span>{t("bld.showScript")}</span><span className="switch"><input type="checkbox" checked={!!o.showScript} onChange={(e) => setO({ showScript: e.target.checked })} /><span /></span></label>}
-                {type === "speak" && (
+                {type === "speak" && <label className="setting"><span>{t("bld.aiTalkOn")}<br /><span className="small muted">{t("bld.aiTalkHint")}</span></span><span className="switch"><input type="checkbox" checked={!!o.aiTalk} onChange={(e) => setO({ aiTalk: e.target.checked || undefined })} /><span /></span></label>}
+                {type === "speak" && o.aiTalk && (
                   <div className="flex flex-col gap-2 rounded-xl bg-fill p-3">
                     <b className="small">{t("tk.aiTalk")}</b>
                     <div className="field"><label htmlFor="te-aip" className="small muted">{t("bld.aiPrompt")}</label><input id="te-aip" className="input" value={o.aiPrompt ?? ""} placeholder={t("bld.aiPromptPh")} onChange={(e) => setO({ aiPrompt: e.target.value })} /></div>

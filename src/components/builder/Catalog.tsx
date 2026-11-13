@@ -1,21 +1,26 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useT } from "@/lib/i18n/client";
 import { GROUPS, TYPES, type TaskType } from "@/lib/tasks/catalog";
 import { thumbSvg } from "@/lib/tasks/thumbs";
-import { setFavourites } from "@/lib/teacher/courses";
+import { getBuilderPrefs, setFavourites } from "@/lib/teacher/courses";
 import { Dialog } from "../Dialog";
 import { Icon } from "../Icon";
+
+// избранное общее для всех мест, где открывают каталог (конструктор, урок, «Сменить тип»): помним последнее состояние
+let FAV: string[] | null = null;
 
 /** Каталог типов заданий с картинками-превью: добавление задания и «Сменить тип задания» (mark — подходит без потери содержания, current — текущий тип). */
 export function Catalog({ fav: initialFav, onPick, onClose, onImport, title, mark, current, hint }: { fav: string[]; onPick: (t: TaskType) => void; onClose: () => void; onImport?: () => void; title?: string; mark?: (t: TaskType) => boolean; current?: TaskType; hint?: string }) {
   const { t, lang } = useT();
   const [q, setQ] = useState("");
-  const [fav, setFav] = useState(initialFav);
+  const [fav, setFav] = useState<string[]>(FAV ?? initialFav);
+  const touched = useRef(false); // успели нажать сердечко до ответа сервера — не перетираем
+  useEffect(() => { let on = true; getBuilderPrefs().then((p) => { if (on && p && !touched.current) { FAV = p.fav; setFav(p.fav); } }).catch(() => {}); return () => { on = false; }; }, []);
   const name = (k: TaskType) => (lang === "en" ? TYPES[k].en : TYPES[k].ru);
   const all = (Object.keys(TYPES) as TaskType[]).filter((k) => TYPES[k].g !== "tech" || k === "divider");
   const match = useMemo(() => all.filter((k) => !q || name(k).toLowerCase().includes(q.toLowerCase()) || TYPES[k].en.toLowerCase().includes(q.toLowerCase())), [q, lang]); // eslint-disable-line react-hooks/exhaustive-deps
-  const toggle = (k: string) => { const n = fav.includes(k) ? fav.filter((x) => x !== k) : [...fav, k]; setFav(n); setFavourites(n); };
+  const toggle = (k: string) => { const n = fav.includes(k) ? fav.filter((x) => x !== k) : [...fav, k]; touched.current = true; FAV = n; setFav(n); void setFavourites(n); };
   const card = (k: TaskType) => (
     <button key={k} type="button" className={`catcard ${k === current ? "cur" : ""} ${mark?.(k) ? "fit" : ""}`} onClick={() => onPick(k)} aria-current={k === current || undefined}>
       {mark?.(k) && <span className="catfit" title={t("bld.retypeFit")}>✓</span>}

@@ -21,8 +21,9 @@ export async function loadLesson(id: string) {
 }
 
 /** Задания по порядку для печати и «Поделиться». */
-export function ordered(rubrics: Rubric[], all: Awaited<ReturnType<typeof loadLesson>> extends infer X ? X extends { tasks: infer T } ? T : never : never) {
-  const tasks = all.filter((t) => !t.options?.teacherOnly); // печать и «Поделиться» — без заметок для учителя
+/** teacher — печать для себя: ответы для учителя остаются; «Поделиться» — без них. */
+export function ordered(rubrics: Rubric[], all: Awaited<ReturnType<typeof loadLesson>> extends infer X ? X extends { tasks: infer T } ? T : never : never, teacher = false) {
+  const tasks = all.filter((t) => !t.options?.teacherOnly).map((t) => (teacher || (!t.options?.teacherKey && !t.options?.help?.hidden) ? t : { ...t, options: { ...t.options, teacherKey: undefined, help: t.options?.help?.hidden ? undefined : t.options?.help } })); // печать и «Поделиться» — без заметок для учителя
   const first = rubrics[0]?.id;
   const groups = rubrics.map((r) => ({ title: r.title, tasks: tasks.filter((t) => t.section === "lesson" && (t.rubricId === r.id || (!t.rubricId && r.id === first)) && !t.hidden) }));
   const orphan = tasks.filter((t) => t.section === "lesson" && t.rubricId && !rubrics.some((r) => r.id === t.rubricId) && !t.hidden);

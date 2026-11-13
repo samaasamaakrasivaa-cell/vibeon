@@ -190,20 +190,49 @@ function MarkWords({ task, content }: { task: TaskData; content?: string }) {
   const role = useTaskRole();
   const teacher = !!ctx?.teacher && role === "teacher";
   const [view, setView] = useState<"student" | "mine">("student"); // учитель: смотрит выделения ученика или выделяет своё
-  if (p.kind !== "mark") return null;
-  const mine = new Set(ctx?.mine[task.id] ?? []);
+  const [drag, setDrag] = useState<{ from: number; to: number } | null>(null);
+  const dragRef = useRef(drag); dragRef.current = drag;
+  const mine = useMemo(() => new Set(ctx?.mine[task.id] ?? []), [ctx?.mine, task.id]);
+  const own = useMemo(() => new Set(Object.entries(sel).filter(([, v]) => v).map(([k]) => +k)), [sel]);
   const shown = !!ctx?.shown.includes(task.id);
   const editMine = teacher && view === "mine";
-  const tap = (i: number) => {
-    if (editMine) { const n = new Set(mine); if (n.has(i)) n.delete(i); else n.add(i); ctx!.setMine(task.id, [...n]); return; }
-    if (teacher) return; // выделения ученика учитель только смотрит
-    setSel((x) => ({ ...x, [i]: !x[i] }));
+  const canEdit = editMine || !teacher; // выделения ученика учитель только смотрит
+  // выделение — набор слов; соседние выделенные слова — один фрагмент
+  const put = (n: Set<number>) => { if (editMine) ctx!.setMine(task.id, [...n].sort((x, y) => x - y)); else setSel(Object.fromEntries([...n].map((k) => [k, true]))); };
+  const cur = editMine ? mine : own;
+  const run = (i: number, S: Set<number>) => { const r = [i]; for (let k = i - 1; S.has(k); k--) r.push(k); for (let k = i + 1; S.has(k); k++) r.push(k); return r; };
+  // нажатие: на выделенном — снять весь фрагмент, на обычном — выделить слово
+  const tap = (i: number) => { if (!canEdit) return; const n = new Set(cur); if (n.has(i)) run(i, n).forEach((k) => n.delete(k)); else n.add(i); put(n); };
+  // протянули от слова до слова — выделить фрагмент целиком (или снять, если он уже весь выделен)
+  const range = (a: number, b: number) => {
+    if (!canEdit) return;
+    const lo = Math.min(a, b), hi = Math.max(a, b), n = new Set(cur);
+    const all = Array.from({ length: hi - lo + 1 }, (_, k) => lo + k);
+    if (all.every((k) => n.has(k))) all.forEach((k) => n.delete(k)); else all.forEach((k) => n.add(k));
+    put(n);
   };
-  const cls = (i: number) => {
-    const st = !!sel[i], tc = mine.has(i);
-    if (editMine) return tc ? "tch" : "";
-    if (teacher) return st ? "on" : "";
-    return `${st ? "on" : ""} ${shown && tc ? "tch" : ""}`;
+  useEffect(() => {
+    if (!drag) return;
+    const up = () => { const d = dragRef.current; setDrag(null); if (!d) return; if (d.from === d.to) tap(d.from); else range(d.from, d.to); };
+    const cancel = () => setDrag(null);
+    window.addEventListener("pointerup", up); window.addEventListener("pointercancel", cancel);
+    return () => { window.removeEventListener("pointerup", up); window.removeEventListener("pointercancel", cancel); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [drag !== null]);
+  if (p.kind !== "mark") return null;
+  const inDrag = (i: number) => !!drag && i >= Math.min(drag.from, drag.to) && i <= Math.max(drag.from, drag.to);
+  const layers = (i: number) => {
+    const st = own.has(i), tc = mine.has(i);
+    if (editMine) return { on: false, tch: tc };
+    if (teacher) return { on: st, tch: false };
+    return { on: st, tch: shown && tc };
+  };
+  const cls = (i: number) => { const l = layers(i); return `${l.on ? "on" : ""} ${l.tch ? "tch" : ""} ${inDrag(i) ? "drag" : ""}`; };
+  const onMove = (e: React.PointerEvent) => {
+    if (!drag) return;
+    const el = (document.elementFromPoint(e.clientX, e.clientY) as HTMLElement | null)?.closest("[data-w]");
+    const w = el ? Number(el.getAttribute("data-w")) : NaN;
+    if (Number.isFinite(w) && w !== drag.to) setDrag({ ...drag, to: w });
   };
   return (
     <div className="flex flex-col gap-3">
@@ -216,17 +245,29 @@ function MarkWords({ task, content }: { task: TaskData; content?: string }) {
           {view === "mine" && <button type="button" className={`btn sm ${shown ? "primary" : "secondary"}`} disabled={!mine.size && !shown} onClick={() => ctx!.toggleShown(task.id)}><Icon name={shown ? "eye" : "eyeoff"} size="sm" />{shown ? t("tk.markShown") : t("tk.markShow")}</button>}
         </div>
       ) : <p className="hint m-0">{t("tk.markFree")}{shown && mine.size ? ` ${t("tk.markTeacherOn")}` : ""}</p>}
-      <div className={`tk-marktext ${teacher && view === "student" ? "ro" : ""}`}>
+      <div className={`tk-marktext ${canEdit ? "" : "ro"}`} onPointerMove={onMove}>
         {p.lines.map((line, li) => (
           <p key={li} className="m-0">
-            {line.length === 0 ? "\u00a0" : line.map((x, k) => x.t === "x" ? <span key={k}>{x.v}</span> : (
-              <span key={k} role="button" tabIndex={0} aria-pressed={cls(x.i).includes("on") || cls(x.i).includes("tch")} className={`tk-mk ${cls(x.i)}`}
-                onClick={() => tap(x.i)} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); tap(x.i); } }}>{x.v}</span>
-            ))}
+            {line.length === 0 ? "\u00a0" : line.map((x, k) => {
+              if (x.t === "x") {
+                // промежуток внутри фрагмента закрашивается вместе со словами — фрагмент выглядит одной плашкой
+                const a = line[k - 1], b = line[k + 1];
+                if (a?.t !== "w" || b?.t !== "w") return <span key={k}>{x.v}</span>;
+                const la = layers(a.i), lb = layers(b.i);
+                const c = `${la.on && lb.on ? "on" : ""} ${la.tch && lb.tch ? "tch" : ""} ${inDrag(a.i) && inDrag(b.i) ? "drag" : ""}`.trim();
+                return <span key={k} className={c ? `tk-mk-gap ${c}` : undefined}>{x.v}</span>;
+              }
+              const l = layers(x.i);
+              return (
+                <span key={k} data-w={x.i} role="button" tabIndex={0} aria-pressed={l.on || l.tch} className={`tk-mk ${cls(x.i)}`}
+                  onPointerDown={(e) => { if (!canEdit || e.button > 0) return; e.preventDefault(); setDrag({ from: x.i, to: x.i }); }}
+                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); tap(x.i); } }}>{x.v}</span>
+              );
+            })}
           </p>
         ))}
       </div>
-      {!teacher && Object.values(sel).some(Boolean) && <button type="button" className="btn plain sm self-start" onClick={() => setSel({})}>{t("tk.markClear")}</button>}
+      {!teacher && own.size > 0 && <button type="button" className="btn plain sm self-start" onClick={() => setSel({})}>{t("tk.markClear")}</button>}
     </div>
   );
 }
@@ -615,18 +656,29 @@ function Rich({ text }: { text: string }) {
   return <div className="tk-rich" dangerouslySetInnerHTML={{ __html: html }} />;
 }
 
+/** Картинка: размер (s — поменьше, l — во всю ширину), по нажатию — увеличить на весь экран. */
+function Pic({ im, cls = "" }: { im: { src: string; caption?: string; size?: "s" | "l" }; cls?: string }) {
+  const [zoom, setZoom] = useState(false);
+  return (
+    <>
+      <img src={im.src} alt={im.caption ?? ""} className={`tk-img ${im.size ? `sz-${im.size}` : ""} ${cls}`} onClick={() => setZoom(true)} />
+      {zoom && <div className="tk-zoom" role="dialog" aria-modal onClick={() => setZoom(false)}><img src={im.src} alt={im.caption ?? ""} /><button type="button" className="tk-zoom-x" aria-label="close"><Icon name="close" /></button></div>}
+    </>
+  );
+}
+
 function Images({ o }: { o: TaskOptions }) {
   const { t } = useT();
   const imgs = o.images ?? [];
   const [i, setI] = useState(0);
   if (!imgs.length) return <div className="tk-empty"><Icon name="image" />{t("tk.noImages")}</div>;
   if (o.layout === "stack" || imgs.length === 1)
-    return <div className="flex flex-col gap-3">{imgs.map((im, k) => <figure key={k} className="m-0"><img src={im.src} alt={im.caption ?? ""} className="tk-img" />{im.caption && <figcaption className="small muted mt-1">{im.caption}</figcaption>}</figure>)}</div>;
+    return <div className="flex flex-col gap-3">{imgs.map((im, k) => <figure key={k} className="m-0"><Pic im={im} />{im.caption && <figcaption className="small muted mt-1">{im.caption}</figcaption>}</figure>)}</div>;
   const im = imgs[Math.min(i, imgs.length - 1)];
   return (
     <figure className="m-0">
       <div className="relative">
-        <img src={im.src} alt={im.caption ?? ""} className="tk-img" />
+        <Pic im={im} />
         <button type="button" className="tk-nav l" onClick={() => setI((i - 1 + imgs.length) % imgs.length)} aria-label="prev"><Icon name="chevl" /></button>
         <button type="button" className="tk-nav r" onClick={() => setI((i + 1) % imgs.length)} aria-label="next"><Icon name="right" /></button>
       </div>
@@ -715,7 +767,7 @@ export function TaskBody({ task }: { task: TaskData }) {
     case "picture": return <Sort key={task.content + (o.pics ?? []).join()} task={task} pictures />;
     case "sentence": return <Build key={task.content} task={task} />;
     case "letters": return <Build key={task.content + o.limitSec} task={task} letters />;
-    case "textorder": return <Order key={task.content} task={task} />;
+    case "textorder": return <div className="flex flex-col gap-3">{(o.images?.length ?? 0) > 0 && <Images o={o} />}<Order key={task.content} task={task} /></div>;
     case "transform":
     case "translate": return <Arrow key={task.content} task={task} />;
     case "dictation": return <Dictation key={task.content} task={task} />;
@@ -733,7 +785,8 @@ export function TaskBody({ task }: { task: TaskData }) {
     }
     case "audio":
       return <div>{o.src ? <audio controls src={o.src} className="w-full" /> : <div className="tk-empty"><Icon name="sound" />{t("tk.noAudio")}</div>}<Script o={o} /></div>;
-    case "text": return <div>{o.images?.[0] && <img src={o.images[0].src} alt="" className="tk-img mb-3" />}{o.markable ? <MarkWords task={task} /> : <Rich text={task.content} />}</div>;
+    case "text": return <div>{o.images?.[0] && <Pic im={o.images[0]} cls="mb-3" />}{o.markable ? <MarkWords task={task} /> : <Rich text={task.content} />}</div>;
+    case "info": return <Rich text={task.content} />;
     case "note": return <div className="tk-note"><Rich text={task.content} /></div>;
     case "vocab": return p.kind === "lines" ? <div className="tk-vocab-items">{p.items.map((w, i) => <span key={i} className="tk-vocab-w"><Inl text={w} /></span>)}</div> : null;
     case "link": return o.url ? <a href={o.url} target="_blank" rel="noreferrer" className="btn tinted"><Icon name="link" size="sm" />{o.label || o.url}</a> : <div className="tk-empty"><Icon name="link" />{t("tk.noLink")}</div>;
@@ -756,7 +809,8 @@ export function TaskBody({ task }: { task: TaskData }) {
         <div className="flex flex-col gap-3">
           {/* один вопрос — без номера строки */}
           {p.kind === "lines" && p.items.map((q, i) => <div key={i}>{p.items.length > 1 && <Num i={i} o={o} />} <Inl text={q} /></div>)}
-          <AiTalk task={task} />
+          {/* по умолчанию — запись ответа (монолог); диалог с ИИ — только если учитель включил */}
+          {o.aiTalk ? <AiTalk task={task} /> : <Recorder task={task} />}
         </div>
       );
     case "open": return <Open task={task} />;
@@ -805,19 +859,36 @@ export function TitleText({ text }: { text: string }) {
 function HelpPhrases({ task }: { task: TaskData }) {
   const { t } = useT();
   const [open, setOpen] = useState(false);
+  const role = useTaskRole();
   const h = task.options.help;
   const list = (x?: string) => (x ?? "").split("\n").map((l) => l.trim()).filter(Boolean);
   const vocab = list(h?.vocab), grammar = list(h?.grammar);
   if (!vocab.length && !grammar.length) return null;
+  if (h?.hidden && role === "student") return null; // скрыты учителем: остаются в задании, ученик их не видит
   return (
-    <div className="tk-help">
-      <button type="button" className="tk-help-btn" aria-expanded={open} onClick={() => setOpen((x) => !x)}><Icon name={open ? "eyeoff" : "eye"} size="sm" />{t("tk.help")}</button>
+    <div className={`tk-help ${h?.hidden ? "off" : ""}`}>
+      <button type="button" className="tk-help-btn" aria-expanded={open} onClick={() => setOpen((x) => !x)}><Icon name={open ? "eyeoff" : "eye"} size="sm" />{t("tk.help")}{h?.hidden && <span className="tk-help-off">· {t("tk.helpHidden")}</span>}</button>
       {open && (
         <div className="tk-help-box">
           {vocab.length > 0 && <div><b>{t("tk.helpVocab")}</b><ul className="tk-help-v">{vocab.map((x, i) => <li key={i}><Inl text={x} /></li>)}</ul></div>}
           {grammar.length > 0 && <div><b>{t("tk.helpGrammar")}</b><ul className="tk-help-g">{grammar.map((x, i) => <li key={i}><Inl text={x} /></li>)}</ul></div>}
         </div>
       )}
+    </div>
+  );
+}
+
+/** Ответы для учителя: ученику не приходят с сервера; учитель раскрывает их сам. */
+function TeacherKey({ task }: { task: TaskData }) {
+  const { t } = useT();
+  const [open, setOpen] = useState(false);
+  const role = useTaskRole();
+  const k = task.options.teacherKey?.trim();
+  if (!k || role === "student") return null;
+  return (
+    <div className="tk-tkey">
+      <button type="button" className="tk-tkey-btn" aria-expanded={open} onClick={() => setOpen((x) => !x)}><Icon name={open ? "eyeoff" : "eye"} size="sm" />{open ? t("tk.keyHide") : t("tk.keyShow")}</button>
+      {open && <div className="tk-tkey-box"><Rich text={k} /></div>}
     </div>
   );
 }
@@ -831,6 +902,16 @@ export function TaskCard({ task, index, actions }: { task: TaskData; index: numb
       <article className="tk tk-vocab">
         <header className="tk-head"><h3 className="tk-title tk-vocab-t"><Inl text={task.title || "Useful vocabulary"} /></h3>{actions}</header>
         <TaskBody task={task} />
+        <TeacherKey task={task} />
+      </article>
+    );
+  // пояснение посреди урока: мягкий фон, без номера, заголовок — по желанию
+  if (task.type === "info")
+    return (
+      <article className="tk tk-info">
+        {(task.title.trim() || actions) && <header className="tk-head"><h3 className="tk-title tk-info-t"><TitleText text={task.title} /></h3>{actions}</header>}
+        <Rich text={task.content} />
+        <TeacherKey task={task} />
       </article>
     );
   const head = !!task.title.trim() || !!actions; // нет формулировки — нет ни номера, ни пустой шапки
@@ -843,6 +924,7 @@ export function TaskCard({ task, index, actions }: { task: TaskData; index: numb
       </header>}
       <HelpPhrases task={task} />
       <TaskBody task={task} />
+      <TeacherKey task={task} />
     </article>
   );
 }

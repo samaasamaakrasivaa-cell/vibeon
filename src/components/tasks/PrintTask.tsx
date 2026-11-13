@@ -99,10 +99,11 @@ export function PrintTask({ task, n, keys }: { task: TaskData; n: number; keys: 
   }
   return (
     <section className="ptask">
-      <h3 style={{ whiteSpace: "pre-line" }}>{n}. {task.title.replace(/\*\*|__|==|\{\/?\w*\}/g, "")}</h3>
-      {(o.help?.vocab || o.help?.grammar) && <p className="small"><b>Useful phrases:</b> {[o.help.vocab, o.help.grammar].filter(Boolean).join("\n").split("\n").filter((x) => x.trim()).join(" · ")}</p>}
+      <h3 style={{ whiteSpace: "pre-line" }}>{n ? `${n}. ` : ""}{task.title.replace(/\*\*|__|==|\{\/?\w*\}/g, "")}</h3>
+      {!o.help?.hidden && (o.help?.vocab || o.help?.grammar) && <p className="small"><b>Useful phrases:</b> {[o.help.vocab, o.help.grammar].filter(Boolean).join("\n").split("\n").filter((x) => x.trim()).join(" · ")}</p>}
       {body}
       {keys && answers.filter(Boolean).length > 0 && <div className="pkey"><b>Key:</b> {answers.filter(Boolean).join("; ")}</div>}
+      {keys && o.teacherKey && <div className="pkey" style={{ whiteSpace: "pre-line" }}><b>Key:</b> {o.teacherKey}</div>}
     </section>
   );
 }

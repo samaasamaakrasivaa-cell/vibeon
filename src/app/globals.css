@@ -1549,3 +1549,40 @@ select.iedit, select.iedit:hover, select.iedit:focus { background-position: righ
 .ted-help { border: 1px solid var(--sep); border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; }
 .ted-help summary { cursor: pointer; font-weight: 600; font-size: 14px; color: var(--violet); display: flex; align-items: center; gap: 6px; }
 .ted-help[open] summary { margin-bottom: 4px; }
+
+/* «Выдели слова»: протянуть от слова до слова — один фрагмент */
+.tk-marktext { user-select: none; -webkit-user-select: none; touch-action: pan-y; }
+.tk-mk.drag, .tk-mk-gap.drag { background: color-mix(in srgb, #ffe58a 70%, transparent); }
+.tk-mk-gap.on { background: #ffe58a; color: #3a2f00; }
+.tk-mk-gap.tch { background: color-mix(in srgb, var(--accent) 22%, transparent); box-shadow: inset 0 -2px 0 var(--accent); }
+.tk-mk-gap.on.tch { background: #ffe58a; box-shadow: inset 0 -2.5px 0 var(--accent); }
+/* пояснение посреди урока: мягкий фон, без номера */
+.tk.tk-info { background: color-mix(in srgb, var(--accent-bg) 70%, var(--surface)); border: 0; box-shadow: none; font-size: 15.5px; color: var(--text); }
+.tk.tk-info .tk-head { border-bottom: 0; padding-bottom: 0; margin-bottom: 6px; }
+.tk-info-t { font-size: 16px; color: var(--text); }
+.tk.tk-info .tk-rich p:last-child { margin-bottom: 0; }
+/* ответы для учителя */
+.tk-tkey { margin-top: 14px; padding-top: 10px; border-top: 1px dashed var(--sep); }
+.tk-tkey-btn { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--warn-text); background: var(--warn-bg); border: 0; border-radius: 999px; padding: 4px 12px; cursor: pointer; }
+.tk-tkey-box { margin-top: 8px; padding: 10px 14px; border-radius: 12px; background: var(--warn-bg); color: var(--text); font-size: 14px; }
+.tk-tkey-box .tk-rich p:last-child { margin-bottom: 0; }
+/* Useful phrases, скрытые от ученика: учитель видит их приглушёнными */
+.tk-help.off .tk-help-btn { background: var(--fill); color: var(--text3); }
+.tk-help-off { font-weight: 500; }
+/* картинки: размер и увеличение */
+.tk-img { cursor: zoom-in; }
+.tk-img.sz-s { width: 55%; max-height: 300px; margin-inline: auto; }
+.tk-img.sz-l { max-height: none; }
+.tk-zoom { position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,.82); display: flex; align-items: center; justify-content: center; padding: 24px; cursor: zoom-out; }
+.tk-zoom img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px; }
+.tk-zoom-x { position: absolute; top: 14px; right: 14px; width: 40px; height: 40px; border-radius: 50%; border: 0; background: rgba(255,255,255,.15); color: #fff; display: flex; align-items: center; justify-content: center; }
+@media (max-width: 640px) { .tk-img.sz-s { width: 80%; } }
+/* редактор: список картинок — перетаскивание и размер */
+.ted-imgs { display: flex; flex-direction: column; gap: 8px; }
+.ted-img { display: flex; align-items: center; gap: 8px; padding: 6px; border-radius: 12px; background: var(--surface); border: 1.5px solid var(--sep); }
+.ted-img.over { border-color: var(--accent); background: var(--accent-bg); }
+.ted-img .grip { cursor: grab; color: var(--text3); padding: 0 2px; }
+.ted-img .seg button { padding: 4px 8px; font-size: 12px; }
+.ted-key { border: 1px solid var(--sep); border-radius: 12px; padding: 10px 12px; }
+.ted-mytitle .x { margin-left: 6px; opacity: .55; }
+.ted-mytitle .x:hover { opacity: 1; }
