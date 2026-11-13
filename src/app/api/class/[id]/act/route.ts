@@ -124,7 +124,17 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     }
     // ── чат урока (это переписка учителя и ученика)
     case "chat": {
-      if (group || !lesson.studentId) return bad("no student"); // в групповом занятии переписка — в «Сообщениях» с каждым учеником
+      // групповой урок — общий чат группы (учитель и все ученики)
+      if (group) {
+        const gid = host.groupId ?? lesson.groupId;
+        if (!gid) return bad("no group");
+        const text = str(body.text, 4000).trim();
+        if (!text) return bad();
+        const m = await db.groupMessage.create({ data: { groupId: gid, senderId: user.id, text } });
+        publish(ch, "chat", { id: m.id, text, by, at: m.createdAt });
+        return NextResponse.json({ ok: true });
+      }
+      if (!lesson.studentId) return bad("no student");
       const text = str(body.text, 4000).trim();
       if (!text) return bad();
       const m = await db.message.create({ data: { studentId: lesson.studentId, senderId: user.id, text } });

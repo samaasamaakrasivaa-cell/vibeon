@@ -8,7 +8,13 @@ import { getT } from "../i18n/server";
 // оплата, абонементы, домашка и кабинет ученика работают как с обычными уроками, а в расписании и в классе это одно занятие.
 
 type R = { ok: true; id?: string } | { ok: false; error: string };
-type Input = { title: string; price?: number | null; memberIds: string[] };
+type Input = { title: string; price?: number | null; memberIds: string[]; level?: string; callLink?: string; info?: string };
+// настройки группы: уровень, ссылка на созвон (подставляется в класс), «О группе» — заметка учителя
+const extra = (i: Input) => ({
+  level: (i.level ?? "").trim().slice(0, 20) || null,
+  callLink: /^https?:\/\/\S+$/i.test((i.callLink ?? "").trim()) ? (i.callLink ?? "").trim().slice(0, 500) : null,
+  info: (i.info ?? "").trim().slice(0, 3000) || null,
+});
 
 async function me() {
   return requireUser("TEACHER");
@@ -35,7 +41,8 @@ export async function createGroup(input: Input): Promise<R> {
   if (!title) return { ok: false, error: t("grp.err.title") };
   const members = await ownStudents(input.memberIds ?? [], teacher.id);
   if (members.length < 1) return { ok: false, error: t("grp.err.members") };
-  const g = await db.group.create({ data: { teacherId: teacher.id, title, price: cleanPrice(input.price), members: { create: members.map((s) => ({ studentId: s.id })) } } });
+  if (input.callLink?.trim() && !extra(input).callLink) return { ok: false, error: t("grp.err.link") };
+  const g = await db.group.create({ data: { teacherId: teacher.id, title, price: cleanPrice(input.price), ...extra(input), members: { create: members.map((s) => ({ studentId: s.id })) } } });
   refresh();
   return { ok: true, id: g.id };
 }
@@ -51,6 +58,7 @@ export async function updateGroup(id: string, input: Input): Promise<R> {
   const members = await ownStudents(input.memberIds ?? [], teacher.id);
   if (members.length < 1) return { ok: false, error: t("grp.err.members") };
   const price = cleanPrice(input.price);
+  if (input.callLink?.trim() && !extra(input).callLink) return { ok: false, error: t("grp.err.link") };
   const now = new Date();
   const was = new Set(g.members.map((m) => m.studentId));
   const next = new Set(members.map((s) => s.id));
@@ -58,7 +66,7 @@ export async function updateGroup(id: string, input: Input): Promise<R> {
   const removed = [...was].filter((x) => !next.has(x));
 
   await db.$transaction(async (tx) => {
-    await tx.group.update({ where: { id }, data: { title, price } });
+    await tx.group.update({ where: { id }, data: { title, price, ...extra(input) } });
     if (removed.length) {
       await tx.groupMember.deleteMany({ where: { groupId: id, studentId: { in: removed } } });
       await tx.lessonInstance.deleteMany({ where: { groupId: id, studentId: { in: removed }, status: "PLANNED", startsAt: { gt: now } } });

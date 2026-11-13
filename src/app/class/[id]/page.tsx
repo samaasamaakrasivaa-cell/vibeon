@@ -33,8 +33,10 @@ export default async function ClassPage({ params, searchParams }: { params: Prom
     db.word.findMany({ where: { sourceLessonId: { in: ids } }, orderBy: { createdAt: "asc" } }),
     lesson.studentId && !group ? db.message.findMany({ where: { studentId: lesson.studentId }, orderBy: { createdAt: "desc" }, take: 50 }) : [],
     role === "teacher" ? db.lessonTemplate.findMany({ where: { unit: { course: { teacherId: teacherUser.id } } }, include: { unit: { include: { course: true } } }, orderBy: [{ unit: { course: { order: "asc" } } }, { unit: { order: "asc" } }, { order: "asc" }] }) : [],
-    group && lesson.groupId ? db.group.findUnique({ where: { id: lesson.groupId }, select: { title: true } }) : null,
+    group && (host.groupId ?? lesson.groupId) ? db.group.findUnique({ where: { id: (host.groupId ?? lesson.groupId)! }, select: { title: true, callLink: true, messages: { orderBy: { createdAt: "desc" }, take: 60 } } }) : null,
   ]);
+  // чат группового урока: имена всех участников
+  const chatNames: Record<string, string> = Object.fromEntries(slot.filter((x) => x.student?.userId).map((x) => [x.student!.userId!, x.student!.name]));
   // ответы, проверки и слова — по ученикам
   const pack = (sid: string | null) => {
     const rows = allRows.filter((a) => a.studentId === sid);
@@ -75,9 +77,10 @@ export default async function ClassPage({ params, searchParams }: { params: Prom
         live: (host.live ?? {}) as LiveState, board,
         homework: { extraTaskIds: hw?.extraTaskIds ?? [], wordTraining: hw?.wordTraining ?? [], teacherComment: hw?.teacherComment ?? null },
         lessonWords, words: words.map((w) => ({ id: w.id, word: w.word, translation: w.translation, example: w.example, level: w.level })),
-        messages: messages.reverse().map((m) => ({ id: m.id, text: m.text, by: m.senderId, at: m.createdAt.toISOString() })),
+        messages: (group ? [...(grp?.messages ?? [])] : messages).reverse().map((m) => ({ id: m.id, text: m.text, by: m.senderId, at: m.createdAt.toISOString() })),
+        ...(group ? { chatNames } : {}),
         note: host.note, studentNote: role === "student" ? lesson.studentNote : group ? null : lesson.studentNote,
-        callLink: lesson.callLink || host.callLink || (group ? null : lesson.student?.callLink) || teacherUser.teacherProfile?.callLink || null,
+        callLink: lesson.callLink || host.callLink || (group ? grp?.callLink : lesson.student?.callLink) || teacherUser.teacherProfile?.callLink || null,
         when: `${host.startsAt.toLocaleDateString(loc, { weekday: "short", day: "numeric", month: "long", timeZone: tz })}, ${hhmm(host.startsAt, tz)}`,
         durationMin: host.durationMin, status: host.status, goal: roadmap?.goal ?? null,
         templates: templates.map((x) => ({ id: x.id, label: `${x.unit.course.title} · ${x.unit.title} · ${x.title}` })),

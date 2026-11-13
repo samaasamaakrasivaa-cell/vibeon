@@ -1652,3 +1652,30 @@ select.iedit, select.iedit:hover, select.iedit:focus { background-position: righ
 .cls-who button { display: inline-flex; align-items: center; gap: 6px; border: 0; border-radius: 999px; padding: 5px 12px; background: var(--fill); color: var(--text); font: inherit; font-size: 14px; cursor: pointer; }
 .cls-who button[aria-pressed="true"] { background: var(--accent); color: #fff; }
 .cls-who .dot { width: 7px; height: 7px; }
+.grp-when { display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 12px; border-radius: 12px; background: var(--surface2); font-size: 14px; }
+.grp-add { color: var(--accent); width: 100%; border: 0; background: transparent; font: inherit; text-align: left; }
+.grp-add .avatar { background: var(--accent-bg); color: var(--accent); }
+button.grp-row { width: 100%; border: 0; background: transparent; font: inherit; color: inherit; }
+button.grp-row:hover { background: var(--fill); }
+
+/* групповой урок: дорожки выполнения над заданием */
+.gtrack { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 8px; }
+.gtrack-m { display: flex; flex-direction: column; gap: 5px; min-width: 112px; padding: 6px 10px 8px; border-radius: 12px; border: 1.5px solid var(--sep); background: var(--surface); font: inherit; text-align: left; cursor: pointer; color: var(--text); }
+.gtrack-m:hover { border-color: color-mix(in srgb, var(--accent) 40%, var(--sep)); }
+.gtrack-m.on { border-color: var(--accent); background: var(--accent-bg); }
+.gtrack-n { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; }
+.gtrack-n .dot { width: 7px; height: 7px; }
+.gtrack-bar { display: flex; gap: 2px; height: 6px; }
+.gtrack-bar i { flex: 1; min-width: 4px; border-radius: 3px; background: var(--fill); }
+.gtrack-bar i.ok { background: var(--ok); }
+.gtrack-bar i.bad { background: var(--bad); }
+.gtrack-bar i.done { background: var(--accent); }
+/* таймер: минуты и секунды */
+.ctimer-big { display: flex; align-items: center; justify-content: center; gap: 4px; margin: 4px 0 10px; font-size: 40px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.ctimer-big input { width: 2.2ch; border: 0; border-radius: 10px; background: var(--fill); font: inherit; text-align: center; color: var(--text); padding: 2px 4px; }
+.ctimer-big input:focus { outline: 2px solid var(--accent); }
+.ctimer-row { display: grid; grid-template-columns: 64px 1fr 28px; align-items: center; gap: 8px; font-size: 13px; color: var(--text2); margin-top: 4px; }
+.ctimer-row input { accent-color: var(--accent); width: 100%; }
+.ctimer-row b { text-align: right; color: var(--text); font-variant-numeric: tabular-nums; }
+.ctimer-presets { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.cls-addsec { color: var(--accent); }

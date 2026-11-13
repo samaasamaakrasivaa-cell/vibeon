@@ -184,10 +184,26 @@ model Group {
   teacherId String
   title     String
   price     Int? // цена группового занятия для одного ученика, ₽ (пусто — индивидуальная цена ученика)
+  level     String? // уровень группы
+  callLink  String? // ссылка на созвон группы
+  info      String? // о группе: цели, учебник, договорённости — пишет учитель
   createdAt DateTime         @default(now())
   teacher   TeacherProfile   @relation(fields: [teacherId], references: [userId], onDelete: Cascade)
   members   GroupMember[]
   lessons   LessonInstance[]
+  messages  GroupMessage[]
+}
+
+/// Чат группы: учитель и все ученики группы (в групповом классе)
+model GroupMessage {
+  id        String   @id @default(cuid())
+  groupId   String
+  senderId  String
+  text      String
+  createdAt DateTime @default(now())
+  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@index([groupId, createdAt])
 }
 
 model GroupMember {

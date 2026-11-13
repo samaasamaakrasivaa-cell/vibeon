@@ -26,6 +26,17 @@ export default async function Students({ searchParams }: { searchParams: Promise
     orderBy: [{ name: "asc" }],
   });
   const groups = await db.group.findMany({ where: { teacherId: me.id }, include: { members: true }, orderBy: { createdAt: "asc" } });
+  // время группы в расписании: ближайшее занятие (и «каждую неделю», если это серия)
+  const next = await Promise.all(groups.map((g) => db.lessonInstance.findFirst({ where: { groupId: g.id, status: "PLANNED", startsAt: { gt: new Date() } }, orderBy: { startsAt: "asc" }, select: { startsAt: true, seriesId: true, durationMin: true } })));
+  const whenOf = (i: number) => {
+    const l = next[i];
+    if (!l) return null;
+    const loc = lang === "ru" ? "ru-RU" : "en-GB";
+    const time = l.startsAt.toLocaleTimeString(loc, { hour: "2-digit", minute: "2-digit", timeZone: me.timezone });
+    return l.seriesId
+      ? `${t("grp.every")} ${l.startsAt.toLocaleDateString(loc, { weekday: "short", timeZone: me.timezone })}, ${time}`
+      : `${l.startsAt.toLocaleDateString(loc, { weekday: "short", day: "numeric", month: "short", timeZone: me.timezone })}, ${time}`;
+  };
   const active = all.filter((s) => s.status === "ACTIVE");
   const invited = all.filter((s) => s.status === "INVITED");
   const archived = all.filter((s) => s.status === "ARCHIVED");
@@ -63,7 +74,7 @@ export default async function Students({ searchParams }: { searchParams: Promise
           <StudentsGrid title={t("stu.registered")} cards={active.map((s, i) => card(s, i, s.course ?? s.level ?? s.email ?? ""))} empty={t("inviteT.none")} />
           {/* группы: выбрать учеников галочками — и ставить группу в расписание одним занятием */}
           <Groups
-            groups={groups.map((g) => ({ id: g.id, title: g.title, price: g.price, members: g.members.map((m) => m.studentId) }))}
+            groups={groups.map((g, i) => ({ id: g.id, title: g.title, price: g.price, members: g.members.map((m) => m.studentId), level: g.level, callLink: g.callLink, info: g.info, when: whenOf(i) }))}
             students={[...active, ...invited].map((s, i) => ({ id: s.id, name: full(s), initials: initials(s.name, s.lastName), color: i }))}
           />
           {invited.length > 0 && (
