@@ -186,13 +186,19 @@ function Intro({ sample, pending, onStart }: { sample: string; pending: boolean;
   const [mic, setMic] = useState<"idle" | "rec" | "ok" | "err">("idle");
   const [back, setBack] = useState<string | null>(null);
   const [hello, setHello] = useState(false);
-  const playSample = () => { const a = new Audio(sample); setSnd("play"); a.onended = () => setSnd("ok"); a.play().catch(() => setSnd("idle")); };
+  // один плеер на проверку звука и «Послушать себя» — его можно остановить
+  const ia = useRef<HTMLAudioElement | null>(null);
+  const [mine, setMine] = useState(false);
+  const stopAll = () => { ia.current?.pause(); ia.current = null; setMine(false); setSnd((x) => (x === "play" ? "ok" : x)); };
+  useEffect(() => () => { ia.current?.pause(); }, []);
+  const playSample = () => { stopAll(); const a = new Audio(sample); ia.current = a; setSnd("play"); a.onended = () => setSnd("ok"); a.play().catch(() => setSnd("idle")); };
+  const playMine = (url: string) => { stopAll(); const a = new Audio(url); ia.current = a; setMine(true); a.onended = () => setMine(false); a.play().catch(() => setMine(false)); };
   const testMic = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const rec = new MediaRecorder(stream), chunks: Blob[] = [];
       rec.ondataavailable = (e) => chunks.push(e.data);
-      rec.onstop = () => { stream.getTracks().forEach((x) => x.stop()); const url = URL.createObjectURL(new Blob(chunks, { type: rec.mimeType })); setBack(url); setMic("ok"); new Audio(url).play().catch(() => null); };
+      rec.onstop = () => { stream.getTracks().forEach((x) => x.stop()); const url = URL.createObjectURL(new Blob(chunks, { type: rec.mimeType })); setBack(url); setMic("ok"); playMine(url); };
       setMic("rec"); rec.start(); setTimeout(() => rec.state !== "inactive" && rec.stop(), 3000);
     } catch { setMic("err"); }
   };
@@ -224,12 +230,16 @@ function Intro({ sample, pending, onStart }: { sample: string; pending: boolean;
         <div className="plcheck">
           <span className={`plck ${snd === "ok" ? "ok" : ""}`}><Icon name={snd === "ok" ? "check" : "sound"} size="sm" /></span>
           <div className="grow"><b>{t("pl.sound")}</b><div className="small muted">{t("pl.soundHint")}</div></div>
-          <button type="button" className="btn secondary sm" onClick={playSample} disabled={snd === "play"}>{snd === "play" ? t("pl.playing") : snd === "ok" ? t("pl.again") : t("pl.check")}</button>
+          {snd === "play"
+            ? <button type="button" className="btn secondary sm" onClick={stopAll}>{t("pl.stopSound")}</button>
+            : <button type="button" className="btn secondary sm" onClick={playSample}>{snd === "ok" ? t("pl.again") : t("pl.check")}</button>}
         </div>
         <div className="plcheck">
           <span className={`plck ${mic === "ok" ? "ok" : mic === "err" ? "bad" : ""}`}><Icon name={mic === "ok" ? "check" : "mic"} size="sm" /></span>
           <div className="grow"><b>{t("pl.mic")}</b><div className="small muted">{mic === "err" ? t("pl.micErr") : mic === "rec" ? t("pl.micRec") : t("pl.micHint")}</div></div>
-          {back && mic === "ok" && <button type="button" className="btn plain sm" onClick={() => new Audio(back).play()}>{t("pl.listenMine")}</button>}
+          {back && mic === "ok" && (mine
+            ? <button type="button" className="btn plain sm" onClick={stopAll}>{t("pl.stopSound")}</button>
+            : <button type="button" className="btn plain sm" onClick={() => playMine(back)}>{t("pl.listenMine")}</button>)}
           <button type="button" className="btn secondary sm" onClick={testMic} disabled={mic === "rec"}>{mic === "rec" ? "…" : t("pl.check")}</button>
         </div>
       </div>
@@ -321,6 +331,7 @@ function TextStep({ v, pending, onFinish, attempt }: { v: TextV; pending: boolea
   const it = v.items[0];
   const [ans, setAns] = useState<Record<string, number>>(() => Object.fromEntries(v.items.flatMap((x) => x.questions.filter((q) => q.v !== null).map((q) => [q.id, q.v!]))));
   const [playing, setPlaying] = useState(false);
+  const [lastPlay, setLastPlay] = useState(false); // идёт последнее прослушивание — «Дальше» уже можно нажать
   const listen = v.section === "listening";
   const pick = (qid: string, k: number) => { setAns((a) => ({ ...a, [qid]: k })); void draftText(attempt, qid, k); };
   const left = it ? it.questions.filter((q) => ans[q.id] === undefined).length : 0;
@@ -335,7 +346,7 @@ function TextStep({ v, pending, onFinish, attempt }: { v: TextV; pending: boolea
       {v.extra && <div className="alert ok" style={{ background: "var(--accent-bg)", color: "var(--accent-text)" }}>{t("pl.extraText")}</div>}
       <div className="plinstrrow"><Instr en={v.instr} ru={(v as { instrRu?: string }).instrRu} /><FlagButton itemId={it.id} /></div>
       <h3 className="m-0">{it.title}</h3>
-      {listen ? <Player key={it.id} it={it} attempt={attempt} onPlaying={setPlaying} /> : <div className="tpassage plpassage">{it.passage}</div>}
+      {listen ? <Player key={it.id} it={it} attempt={attempt} onPlaying={(p, last) => { setPlaying(p); setLastPlay(!!last); }} /> : <div className="tpassage plpassage">{it.passage}</div>}
       {it.questions.map((q, n) => (
         <fieldset key={q.id} className="tq">
           <legend><span className="tk-num">{n + 1}</span>{q.q}<FlagButton itemId={it.id} qid={q.id} small /></legend>
@@ -346,18 +357,19 @@ function TextStep({ v, pending, onFinish, attempt }: { v: TextV; pending: boolea
         </fieldset>
       ))}
       <div className="plactions">
-        <button className="btn primary" disabled={pending || playing} onClick={finish}>{t("pl.next")}<Icon name="right" size="sm" /></button>
+        <button className="btn primary" disabled={pending || (playing && !lastPlay)} onClick={finish}>{t("pl.next")}<Icon name="right" size="sm" /></button>
       </div>
       <p className="small muted m-0 text-right">{left ? t("pl.leftQ", { n: left }) : t("pl.allAnswered")}</p>
     </section>
   );
 }
 
-function Player({ it, attempt, onPlaying }: { it: TItem; attempt: string; onPlaying: (p: boolean) => void }) {
+function Player({ it, attempt, onPlaying }: { it: TItem; attempt: string; onPlaying: (p: boolean, last?: boolean) => void }) {
   const { t } = useT();
   const plays = it.plays ?? 2;
   const [used, setUsed] = useState(it.used ?? 0);
-  const [playing, setPlaying] = useState(false);
+  const [playing, setPlaying] = useState(false); // прослушивание идёт (в том числе на паузе)
+  const [paused, setPaused] = useState(false);
   const [pos, setPos] = useState(0);
   const audio = useRef<HTMLAudioElement | null>(null);
   const play = async () => {
@@ -366,21 +378,31 @@ function Player({ it, attempt, onPlaying }: { it: TItem; attempt: string; onPlay
     if (!r.ok) { setUsed(plays); return; }
     setUsed(used + 1);
     const a = audio.current!;
-    a.currentTime = 0; setPlaying(true); onPlaying(true);
+    a.currentTime = 0; setPlaying(true); setPaused(false); onPlaying(true, used + 1 >= plays);
     a.play().catch(() => { setPlaying(false); onPlaying(false); });
   };
+  // пауза не тратит прослушивание: продолжить можно с того же места
+  const toggle = () => {
+    const a = audio.current;
+    if (!a) return;
+    if (a.paused) { void a.play(); setPaused(false); } else { a.pause(); setPaused(true); }
+  };
+  const label = playing ? (paused ? t("pl.paused") : t("pl.playing")) : used >= plays ? t("pl.noPlays") : used ? t("pl.listenAgain") : t("pl.listen");
   return (
     <div className="plaudio">
       {it.situation && <p className="m-0">{it.situation}</p>}
-      <audio ref={audio} src={it.audio} preload="auto" onTimeUpdate={(e) => setPos(e.currentTarget.duration ? e.currentTarget.currentTime / e.currentTarget.duration : 0)} onEnded={() => { setPlaying(false); onPlaying(false); setPos(0); }} />
+      <audio ref={audio} src={it.audio} preload="auto" onTimeUpdate={(e) => setPos(e.currentTarget.duration ? e.currentTarget.currentTime / e.currentTarget.duration : 0)} onEnded={() => { setPlaying(false); setPaused(false); onPlaying(false); setPos(0); }} />
       <div className="flex flex-wrap items-center gap-3">
-        <button type="button" className="plplay" disabled={playing || used >= plays} onClick={play} aria-label={used ? t("pl.listenAgain") : t("pl.listen")}><Icon name="sound" /></button>
+        {playing
+          ? <button type="button" className="plplay" onClick={toggle} aria-label={paused ? t("pl.resume") : t("pl.pause")} title={paused ? t("pl.resume") : t("pl.pause")}>{paused ? <Icon name="sound" /> : <span className="plpause" aria-hidden />}</button>
+          : <button type="button" className="plplay" disabled={used >= plays} onClick={play} aria-label={used ? t("pl.listenAgain") : t("pl.listen")}><Icon name="sound" /></button>}
         <div className="grow min-w-[180px]">
-          <b>{playing ? t("pl.playing") : used >= plays ? t("pl.noPlays") : used ? t("pl.listenAgain") : t("pl.listen")}</b>
+          <b>{label}</b>
           <div className="plbar mt-2"><div style={{ width: `${pos * 100}%` }} /></div>
         </div>
         <div className="plplays">{Array.from({ length: plays }, (_, i) => <span key={i} className={i < used ? "used" : ""}>{t("pl.playN", { n: i + 1 })}</span>)}</div>
       </div>
+      {playing && used >= plays && <p className="small muted m-0">{t("pl.nextAnytime")}</p>}
     </div>
   );
 }
@@ -453,10 +475,20 @@ function SpeakStep({ v, attempt, pending, onFinish, last }: { v: SpeakV; attempt
   // вопрос — только на слух; текст открывается по кнопке, и учитель видит, что ученик его открывал
   const [peek, setPeek] = useState<string[]>((v as { peek?: string[] }).peek ?? []);
   const showText = (i: number) => { const n = String(i + 1); if (!peek.includes(n)) { setPeek([...peek, n]); void peekSpeak(attempt, i + 1); } };
-  const replay = (src: string | null) => { if (src) new Audio(src).play().catch(() => null); };
+  // звук вопроса: один плеер, его можно остановить
+  const qa = useRef<HTMLAudioElement | null>(null);
+  const [qPlaying, setQPlaying] = useState(false);
+  const stopQ = () => { qa.current?.pause(); qa.current = null; setQPlaying(false); };
+  const replay = (src: string | null) => {
+    if (!src) return;
+    stopQ();
+    const a = new Audio(src); qa.current = a; setQPlaying(true);
+    a.onended = () => { if (qa.current === a) { qa.current = null; setQPlaying(false); } };
+    a.play().catch(() => setQPlaying(false));
+  };
   const rec = useRef<{ r: MediaRecorder; s: MediaStream; chunks: Blob[] } | null>(null);
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
-  useEffect(() => () => { if (timer.current) clearInterval(timer.current); rec.current?.s.getTracks().forEach((x) => x.stop()); }, []);
+  useEffect(() => () => { if (timer.current) clearInterval(timer.current); rec.current?.s.getTracks().forEach((x) => x.stop()); qa.current?.pause(); }, []);
   if (!it) return null;
   const q = cur !== null ? it.questions[cur] : null;
   const busy = phase !== "ready";
@@ -468,12 +500,13 @@ function SpeakStep({ v, attempt, pending, onFinish, last }: { v: SpeakV; attempt
   };
   const begin = () => {
     if (!q) return;
-    if (q.audio) new Audio(q.audio).play().catch(() => null);
+    if (q.audio) replay(q.audio);
     setPhase("prep");
     countdown(q.prep, record);
   };
   async function record() {
     if (timer.current) { clearInterval(timer.current); timer.current = null; }
+    stopQ(); // начали говорить — вопрос больше не звучит
     try {
       const s = await navigator.mediaDevices.getUserMedia({ audio: true });
       const r = new MediaRecorder(s), chunks: Blob[] = [];
@@ -523,7 +556,9 @@ function SpeakStep({ v, attempt, pending, onFinish, last }: { v: SpeakV; attempt
               </div>
               {active && phase === "prep" && (
                 <div className="flex flex-wrap items-center gap-2">
-                  {x.audio && <button type="button" className="btn plain sm" onClick={() => replay(x.audio)}><Icon name="sound" size="sm" />{t("pl.replayQ")}</button>}
+                  {x.audio && (qPlaying
+                    ? <button type="button" className="btn plain sm" onClick={stopQ}><span className="plpause sm" aria-hidden />{t("pl.stopSound")}</button>
+                    : <button type="button" className="btn plain sm" onClick={() => replay(x.audio)}><Icon name="sound" size="sm" />{t("pl.replayQ")}</button>)}
                   {!peek.includes(n) && <button type="button" className="btn plain sm" onClick={() => showText(i)}><Icon name="eye" size="sm" />{t("pl.showQText")}</button>}
                 </div>
               )}

@@ -3,6 +3,7 @@ import { Clock } from "./Clock";
 import { Icon } from "./Icon";
 import { NotificationList } from "./NotificationList";
 import { HideSteps } from "./teacher/HideSteps";
+import { LessonQuick } from "./teacher/WeekGrid";
 import { getT } from "@/lib/i18n/server";
 import { greetingKey, hourIn } from "@/lib/greeting";
 import { db } from "@/lib/db";
@@ -161,7 +162,15 @@ export async function Dashboard({ user, role, day }: { user: User; role: "TEACHE
                     {l.note && <div className="tl-note" title={l.note}><Icon name="msg" size="sm" />{l.note}</div>}
                   </div>
                   <div className="tl-act">
+
                     <Link href={`/class/${l.id}`} className={`btn sm ${soon || live ? "primary" : "secondary"}`}><Icon name="class" size="sm" />{role === "TEACHER" ? t("dash.openClass") : t("cls.enter")}</Link>
+                    <div className="tl-quick">
+                    {role === "TEACHER" && <LessonQuick l={{
+                      id: l.id, day: 0, startMin: 0, dur: l.durationMin, status: l.status, who, isTrial: l.isTrial, isGroup: !!l.slotId, note: l.note,
+                      date: isoDay(l.startsAt, tz), start: hhmm(l.startsAt, tz), end: hhmm(new Date(end), tz), weekly: !!l.seriesId, past: end <= now.getTime(),
+                      studentId: l.studentId, charged: l.charged, moved: !!l.movedFrom, price: l.price ?? 0, hw: null,
+                    }} />}
+                    </div>
                   </div>
                 </div>
               );

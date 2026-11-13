@@ -2015,6 +2015,21 @@ const ru = {
   "grp.delete": "Удалить группу",
   "grp.every": "каждый",
   "grp.err.link": "Ссылка должна начинаться с https://",
+  "pl.paused": "Пауза",
+  "pl.resume": "Продолжить",
+  "pl.pause": "Пауза",
+  "pl.nextAnytime": "Это последнее прослушивание — «Дальше» можно нажать в любой момент.",
+  "pl.stopSound": "Остановить",
+  "crs.createLesson": "Создать",
+  "crs.createBuild": "Создать и открыть конструктор",
+  "crs.details": "Подробнее об уроке",
+  "crs.duration": "Длительность",
+  "crs.later": "можно заполнить позже",
+  "crs.lessonTitle": "Название урока",
+  "crs.lessonTitlePh": "Например: Work-life balance",
+  "crs.newLesson": "Новый урок",
+  "crs.newLessonHint": "Цели, сведения об уроке и ход урока можно заполнить позже — или они подтянутся из файла при импорте урока.",
+  "crs.topic": "Тема",
 } as const;
 
 export type DictKey = keyof typeof ru;
@@ -4032,6 +4047,21 @@ const en: Record<DictKey, string> = {
   "grp.delete": "Delete the group",
   "grp.every": "every",
   "grp.err.link": "The link must start with https://",
+  "pl.paused": "Pause",
+  "pl.resume": "Continue",
+  "pl.pause": "Pause",
+  "pl.nextAnytime": "This is your last listening — you can press Next at any time.",
+  "pl.stopSound": "Stop",
+  "crs.createLesson": "Create",
+  "crs.createBuild": "Create and open the builder",
+  "crs.details": "Lesson details",
+  "crs.duration": "Length",
+  "crs.later": "you can fill this in later",
+  "crs.lessonTitle": "Lesson title",
+  "crs.lessonTitlePh": "E.g. Work-life balance",
+  "crs.newLesson": "New lesson",
+  "crs.newLessonHint": "Aims, lesson info and the plan can be added later — or they come from the file when you import a lesson.",
+  "crs.topic": "Topic",
 };
 
 export const dictionaries: Record<LangCode, Record<DictKey, string>> = { ru, en };

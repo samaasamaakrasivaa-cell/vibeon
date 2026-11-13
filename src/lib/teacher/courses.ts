@@ -144,11 +144,16 @@ export async function reorderUnits(courseId: string, ids: string[]): Promise<R> 
 
 // ───────── Уроки (шаблоны) ─────────
 
-export async function createLessonTemplate(unitId: string, title: string): Promise<R> {
+export async function createLessonTemplate(unitId: string, title: string, extra?: { subtitle?: string; durationMin?: number; info?: TInfo }): Promise<R> {
   const teacher = await me();
   const u = await ownUnit(unitId, teacher.id);
   const n = await db.lessonTemplate.count({ where: { unitId } });
-  const l = await db.lessonTemplate.create({ data: { unitId, title: clean(title, 160) || `Lesson ${n + 1}`, order: n, sections: [{ id: randomUUID(), title: "Lead-in" }] } });
+  const l = await db.lessonTemplate.create({ data: {
+    unitId, title: clean(title, 160) || `Lesson ${n + 1}`, order: n, sections: [{ id: randomUUID(), title: "Lead-in" }],
+    subtitle: clean(extra?.subtitle, 160) || null,
+    ...(extra?.durationMin && [30, 45, 60, 90, 120].includes(extra.durationMin) ? { durationMin: extra.durationMin } : {}),
+    ...(extra?.info ? { teacherInfo: cleanInfo(extra.info) as Prisma.InputJsonObject } : {}),
+  } });
   refreshCourse(u.courseId);
   return { ok: true, id: l.id };
 }

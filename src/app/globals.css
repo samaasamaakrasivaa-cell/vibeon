@@ -1679,3 +1679,32 @@ button.grp-row:hover { background: var(--fill); }
 .ctimer-row b { text-align: right; color: var(--text); font-variant-numeric: tabular-nums; }
 .ctimer-presets { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
 .cls-addsec { color: var(--accent); }
+/* пауза в плеере теста */
+.plpause { display: inline-block; width: 14px; height: 16px; border-left: 4.5px solid currentColor; border-right: 4.5px solid currentColor; box-sizing: border-box; }
+.plpause.sm { width: 10px; height: 12px; border-left-width: 3px; border-right-width: 3px; margin-right: 4px; }
+/* «Сегодня»: перенести / отменить под кнопкой класса */
+.tl-act { display: flex; flex-direction: column; align-items: stretch; gap: 4px; }
+.tl-quick { display: flex; gap: 2px; justify-content: center; }
+.tl-quick:empty { display: none; }
+.tl-quick .btn { padding-left: 8px; padding-right: 8px; font-size: 13px; color: var(--text2); }
+@media (max-width: 760px) { .tl-quick .btn { width: auto !important; flex: 1; } }
+
+/* ── Курс: строка урока и подробности ── */
+.lrow-wrap + .lrow-wrap { border-top: .5px solid var(--sep); }
+.lrow-wrap.open { background: var(--surface2); }
+.lrow { min-height: 64px; }
+.lrow-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; border: 0; background: transparent; padding: 0; text-align: left; font: inherit; color: var(--text); cursor: pointer; }
+.lrow-main b { font-size: 16px; font-weight: 600; letter-spacing: -.01em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lrow-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; font-size: 13.5px; color: var(--text2); }
+.lrow-meta .pill { font-size: 11.5px; padding: 1px 8px; }
+.lacts { display: flex; align-items: center; gap: 4px; flex: none; }
+.lacts .btn.plain { color: var(--accent); }
+.lrow-more svg { transition: transform .2s; }
+.lrow-more.on svg { transform: rotate(180deg); }
+.lrow-det { padding: 4px 20px 18px 108px; display: flex; flex-direction: column; gap: 12px; }
+.lrow-det .tinfo { background: var(--surface); }
+.lrow-det .editable.input { margin: 0; padding: 0 12px; }
+.nl-aims summary { cursor: pointer; font-weight: 600; font-size: 14px; }
+@media (max-width: 760px) { .lrow-det { padding: 4px 14px 16px; } .lrow-main b { white-space: normal; } }
+.lrow-det .editable.input { background: var(--surface); height: 44px; padding: 0 12px; border-radius: 12px; }
+.lrow-det .select { background-color: var(--surface); }

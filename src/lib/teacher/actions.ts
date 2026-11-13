@@ -165,8 +165,11 @@ export async function deleteLesson(id: string, scope: "one" | "following" = "one
   const l = await ownLesson(id, teacher.id);
   const slot = await slotOf(l);
   for (const x of slot) await restorePackLesson(x);
-  if (scope === "following" && l.seriesId)
+  if (scope === "following" && l.seriesId) {
     await db.lessonInstance.deleteMany({ where: { seriesId: l.seriesId, startsAt: { gte: l.startsAt }, teacherId: teacher.id } });
+    // серия закончилась: оставшиеся (прошлые) уроки отвязываем, иначе автопродление серии вернуло бы удалённые уроки
+    await db.lessonInstance.updateMany({ where: { seriesId: l.seriesId, teacherId: teacher.id }, data: { seriesId: null } });
+  }
   else await db.lessonInstance.deleteMany({ where: { id: { in: slot.map((x) => x.id) } } });
   refresh(l.studentId);
   return { ok: true };

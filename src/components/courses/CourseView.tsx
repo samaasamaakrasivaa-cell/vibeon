@@ -7,12 +7,16 @@ import { useT } from "@/lib/i18n/client";
 import { COURSE_CATEGORIES } from "@/lib/tasks/catalog";
 import {
   assignLesson, createLessonTemplate, createUnit, deleteCourse, deleteLessonTemplate, deleteUnit, mergeLessons,
-  placeLessons, reorderUnits, updateCourse, updateLessonMeta, updateUnit,
+  placeLessons, reorderUnits, updateCourse, updateLessonMeta, updateTeacherInfo, updateUnit,
 } from "@/lib/teacher/courses";
 import { COVER, COVER_INK } from "./CoursesBoard";
+import { TeacherInfo } from "../lesson/TeacherInfo";
+import { AIM_KEYS, hasInfo, type TInfo } from "@/lib/tasks/teacher-info";
+import type { DictKey } from "@/lib/i18n/dict";
+import { useRouter } from "next/navigation";
 import { useRun } from "./useRun";
 
-type Lesson = { id: string; title: string; subtitle: string | null; durationMin: number; tasks: number };
+type Lesson = { id: string; title: string; subtitle: string | null; durationMin: number; tasks: number; info: TInfo };
 type Unit = { id: string; title: string; collapsed: boolean; lessons: Lesson[] };
 export type CourseData = { id: string; title: string; level: string | null; category: string; cover: string | null; color: number; units: Unit[]; studentsOn: number };
 export type AssignStudent = { id: string; name: string; next: string | null };
@@ -44,6 +48,8 @@ export function CourseView({ c, students }: { c: CourseData; students: AssignStu
   const [checked, setChecked] = useState<string[]>([]);
   const [assign, setAssign] = useState<Lesson | null>(null);
   const [edit, setEdit] = useState(false);
+  const [open, setOpen] = useState<string | null>(null); // развёрнутый урок: сведения, цели, ход урока
+  const [newIn, setNewIn] = useState<string | null>(null); // «+ Урок»: окно нового урока в этом юните
   const [f, setF] = useState({ title: c.title, level: c.level ?? "", category: c.category });
   const fileRef = useRef<HTMLInputElement>(null);
   const lessonsTotal = units.reduce((a, u) => a + u.lessons.length, 0);
@@ -113,7 +119,7 @@ export function CourseView({ c, students }: { c: CourseData; students: AssignStu
             <span className="unitbadge"><small>UNIT</small><b>{ui + 1}</b></span>
             <div className="min-w-0 flex-1"><Editable className="text-[19px] font-bold" value={u.title} onSave={(v) => run(() => updateUnit(u.id, { title: v }))} /></div>
             <span className="small muted whitespace-nowrap">{t("crs.lessons", { n: u.lessons.length })}</span>
-            <button className="btn secondary sm" disabled={pending} onClick={() => run(() => createLessonTemplate(u.id, ""))}><Icon name="plus" size="sm" />{t("crs.lesson")}</button>
+            <button className="btn secondary sm" disabled={pending} onClick={() => setNewIn(u.id)}><Icon name="plus" size="sm" />{t("crs.lesson")}</button>
             <button className="iconbtn" title={t("crs.delUnit")} aria-label={t("crs.delUnit")} onClick={() => confirm(t("crs.delUnitQ", { name: u.title })) && run(() => deleteUnit(u.id))}>✕</button>
           </div>
           {!u.collapsed && (
@@ -122,21 +128,39 @@ export function CourseView({ c, students }: { c: CourseData; students: AssignStu
               {u.lessons.map((l) => {
                 n++;
                 return (
-                  <div key={l.id} className={`lrow ${drag?.id === l.id ? "dragging" : ""}`} draggable onDragStart={(e) => { e.stopPropagation(); setDrag({ kind: "lesson", id: l.id }); }}
+                  <div key={l.id} className={`lrow-wrap ${open === l.id ? "open" : ""}`}>
+                  <div className={`lrow ${drag?.id === l.id ? "dragging" : ""}`} draggable onDragStart={(e) => { e.stopPropagation(); setDrag({ kind: "lesson", id: l.id }); }}
                     onDragOver={(e) => e.preventDefault()} onDrop={(e) => { e.stopPropagation(); dropLesson(u.id, l.id); }}>
                     <span className="draghandle">⋮⋮</span>
                     <input type="checkbox" className="check" checked={checked.includes(l.id)} onChange={(e) => setChecked(e.target.checked ? [...checked, l.id] : checked.filter((x) => x !== l.id))} aria-label={t("crs.select")} />
                     <span className="ln">{n}</span>
-                    <div className="grow">
-                      <Editable className="font-semibold" value={l.title} onSave={(v) => run(() => updateLessonMeta(l.id, { title: v }))} />
-                      <Editable className="small" value={l.subtitle ?? ""} placeholder={t("crs.subtitlePh")} onSave={(v) => run(() => updateLessonMeta(l.id, { subtitle: v }))} />
-                    </div>
-                    <span className="dur small inline-flex items-center gap-1 text-text3 whitespace-nowrap"><Icon name="clock" size="sm" />{l.durationMin} {t("dash.min")} · {t("crs.tasks", { n: l.tasks })}</span>
-                    <div className="lacts flex gap-2">
+                    <button type="button" className="lrow-main" onClick={() => setOpen(open === l.id ? null : l.id)} aria-expanded={open === l.id}>
+                      <b>{l.title}</b>
+                      <span className="lrow-meta">
+                        {l.subtitle && <span>{l.subtitle}</span>}
+                        {l.info.level && <span className="pill blue">{l.info.level}</span>}
+                        <span className="text-text3">{l.durationMin} {t("dash.min")} · {t("crs.tasks", { n: l.tasks })}</span>
+                      </span>
+                    </button>
+                    <div className="lacts">
+                      <button type="button" className={`iconbtn lrow-more ${open === l.id ? "on" : ""}`} title={t("crs.details")} aria-label={t("crs.details")} onClick={() => setOpen(open === l.id ? null : l.id)}><Icon name="chevd" size="sm" /></button>
                       <Link href={`/builder/${l.id}`} className="btn secondary sm"><Icon name="pencil" size="sm" />{t("crs.builder")}</Link>
-                      <button className="btn primary sm" onClick={() => setAssign(l)}>{t("crs.assign")}</button>
-                      <button className="iconbtn" title={t("common.delete")} aria-label={t("common.delete")} onClick={() => confirm(t("crs.delLessonQ", { name: l.title })) && run(() => deleteLessonTemplate(l.id))}>✕</button>
+                      <button className="btn plain sm" onClick={() => setAssign(l)}><Icon name="send" size="sm" />{t("crs.assign")}</button>
+                      <button className="iconbtn" title={t("common.delete")} aria-label={t("common.delete")} onClick={() => confirm(t("crs.delLessonQ", { name: l.title })) && run(() => deleteLessonTemplate(l.id))}><Icon name="close" size="sm" /></button>
                     </div>
+                  </div>
+                  {open === l.id && (
+                    <div className="lrow-det">
+                      <div className="grid gap-3 sm:grid-cols-[1fr_1fr_140px]">
+                        <label className="field"><span className="flabel">{t("crs.lessonTitle")}</span><Editable className="input" value={l.title} onSave={(v) => run(() => updateLessonMeta(l.id, { title: v }))} /></label>
+                        <label className="field"><span className="flabel">{t("crs.topic")}</span><Editable className="input" value={l.subtitle ?? ""} placeholder={t("crs.subtitlePh")} onSave={(v) => run(() => updateLessonMeta(l.id, { subtitle: v }))} /></label>
+                        <label className="field"><span className="flabel">{t("crs.duration")}</span>
+                          <select className="select" value={l.durationMin} onChange={(e) => run(() => updateLessonMeta(l.id, { durationMin: +e.target.value }))}>{[30, 45, 60, 90, 120].map((m) => <option key={m} value={m}>{m} {t("dash.min")}</option>)}</select>
+                        </label>
+                      </div>
+                      <TeacherInfo info={l.info} open onSave={(v) => run(() => updateTeacherInfo(l.id, v))} />
+                    </div>
+                  )}
                   </div>
                 );
               })}
@@ -144,6 +168,8 @@ export function CourseView({ c, students }: { c: CourseData; students: AssignStu
           )}
         </section>
       ))}
+
+      {newIn && <NewLesson unitId={newIn} onClose={() => setNewIn(null)} />}
 
       <div className="mt-8 border-t border-sep pt-4">
         <button className="btn plain" style={{ color: "var(--bad)" }} onClick={() => confirm(t("crs.delCourseQ", { name: c.title })) && run(() => deleteCourse(c.id))}>{t("crs.delCourse")}</button>
@@ -182,5 +208,51 @@ export function CourseView({ c, students }: { c: CourseData; students: AssignStu
         </div>
       </Dialog>
     </>
+  );
+}
+
+/** «+ Урок»: название (обязательно), тема, длительность, уровень и цели — по желанию, их можно заполнить позже или подтянуть из файла урока. */
+function NewLesson({ unitId, onClose }: { unitId: string; onClose: () => void }) {
+  const { t } = useT();
+  const router = useRouter();
+  const [title, setTitle] = useState("");
+  const [subtitle, setSubtitle] = useState("");
+  const [dur, setDur] = useState(60);
+  const [level, setLevel] = useState("");
+  const [aims, setAims] = useState<Record<string, string>>({});
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const create = async (thenBuild: boolean) => {
+    setBusy(true); setErr(null);
+    const info: TInfo = { level, aims };
+    const r = await createLessonTemplate(unitId, title, { subtitle, durationMin: dur, info: hasInfo(info) ? info : undefined }).catch(() => ({ ok: false as const, error: t("pl.err.net") }));
+    setBusy(false);
+    if (!r.ok) { setErr(r.error); return; }
+    if (thenBuild && r.id) router.push(`/builder/${r.id}`); else { router.refresh(); onClose(); }
+  };
+  return (
+    <Dialog open onClose={onClose} title={t("crs.newLesson")}>
+      <div className="flex flex-col gap-4">
+        <label className="field"><span className="flabel">{t("crs.lessonTitle")}</span><input className="input" autoFocus value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t("crs.lessonTitlePh")} maxLength={160} /></label>
+        <div className="grid grid-cols-[1fr_120px_96px] gap-3">
+          <label className="field"><span className="flabel">{t("crs.topic")}</span><input className="input" value={subtitle} onChange={(e) => setSubtitle(e.target.value)} placeholder={t("crs.subtitlePh")} maxLength={160} /></label>
+          <label className="field"><span className="flabel">{t("crs.duration")}</span><select className="select" value={dur} onChange={(e) => setDur(+e.target.value)}>{[30, 45, 60, 90, 120].map((m) => <option key={m} value={m}>{m} {t("dash.min")}</option>)}</select></label>
+          <label className="field"><span className="flabel">{t("ti.level")}</span><input className="input" value={level} onChange={(e) => setLevel(e.target.value)} placeholder="B1" maxLength={20} /></label>
+        </div>
+        <details className="nl-aims">
+          <summary>{t("ti.aims")} <span className="small muted">— {t("crs.later")}</span></summary>
+          <div className="flex flex-col gap-2 mt-2">
+            {AIM_KEYS.map((k) => <label key={k} className="field"><span className="small">{t(`ti.aim.${k}` as DictKey)}</span><textarea className="textarea" rows={2} value={aims[k] ?? ""} onChange={(e) => setAims((a) => ({ ...a, [k]: e.target.value }))} /></label>)}
+          </div>
+        </details>
+        <p className="hint m-0">{t("crs.newLessonHint")}</p>
+        {err && <div className="alert">{err}</div>}
+      </div>
+      <div className="actions">
+        <button type="button" className="btn secondary" onClick={onClose}>{t("common.cancel")}</button>
+        <button type="button" className="btn secondary" disabled={busy || !title.trim()} onClick={() => void create(false)}>{t("crs.createLesson")}</button>
+        <button type="button" className="btn primary" disabled={busy || !title.trim()} onClick={() => void create(true)}>{t("crs.createBuild")}</button>
+      </div>
+    </Dialog>
   );
 }

@@ -61,7 +61,7 @@ export function WeekGrid(props: {
   const pickTime = (e: React.MouseEvent<HTMLDivElement>, day: Day) => {
     if ((e.target as HTMLElement).closest(".lesson")) return;
     const y = e.clientY - e.currentTarget.getBoundingClientRect().top;
-    const min = Math.max(0, Math.round(((y / PX) * 60) / 30) * 30) + hourFrom * 60;
+    const min = Math.max(0, Math.floor(y / PX) * 60) + hourFrom * 60; // нажали между 18 и 19 — урок в 18:00
     const h = Math.min(23, Math.floor(min / 60));
     setNewAt({ date: day.iso, start: `${String(h).padStart(2, "0")}:${String(min % 60).padStart(2, "0")}` });
   };
@@ -291,10 +291,24 @@ function NewLessonDialog({ at, students, groups, preset, onClose, now }: { at: {
   );
 }
 
-function LessonDialog({ l, onClose }: { l: GridLesson; onClose: () => void }) {
+/** «Сегодня» на главной: перенести или отменить урок прямо оттуда (то же окно, что в расписании). */
+export function LessonQuick({ l }: { l: GridLesson }) {
+  const { t } = useT();
+  const [open, setOpen] = useState<"move" | "cancel" | null>(null);
+  if (l.status !== "PLANNED" || l.past) return null;
+  return (
+    <>
+      <button type="button" className="btn plain sm" onClick={() => setOpen("move")}><Icon name="move" size="sm" />{t("sch.move")}</button>
+      <button type="button" className="btn plain sm" onClick={() => setOpen("cancel")}><Icon name="calx" size="sm" />{t("sch.cancelLesson")}</button>
+      {open && <LessonDialog l={l} initial={open} onClose={() => setOpen(null)} />}
+    </>
+  );
+}
+
+function LessonDialog({ l, onClose, initial = "main" }: { l: GridLesson; onClose: () => void; initial?: "main" | "move" | "cancel" }) {
   const { t } = useT();
   const { pending, error, run } = useRun();
-  const [mode, setMode] = useState<"main" | "move" | "miss" | "cancel" | "del">("main");
+  const [mode, setMode] = useState<"main" | "move" | "miss" | "cancel" | "del">(initial);
   const [fix, setFix] = useState(false); // исправление ошибки — не считать переносом
   // Новый статус показываем сразу после успешного действия, не дожидаясь обновления страницы
   const setStatus = (status: GridLesson["status"], charged?: boolean, close = false) =>

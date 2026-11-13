@@ -6,6 +6,7 @@ import { requireUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { getT } from "@/lib/i18n/server";
 import { hhmm } from "@/lib/time";
+import type { TInfo } from "@/lib/tasks/teacher-info";
 
 export const metadata = { title: "Курс" };
 
@@ -31,7 +32,7 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
       <CourseView
         c={{
           id: c.id, title: c.title, level: c.level, category: c.category ?? "general", cover: c.cover, color: c.color, studentsOn,
-          units: c.units.map((u) => ({ id: u.id, title: u.title, collapsed: u.collapsed, lessons: u.lessons.map((l) => ({ id: l.id, title: l.title, subtitle: l.subtitle, durationMin: l.durationMin, tasks: l._count.tasks })) })),
+          units: c.units.map((u) => ({ id: u.id, title: u.title, collapsed: u.collapsed, lessons: u.lessons.map((l) => ({ id: l.id, title: l.title, subtitle: l.subtitle, durationMin: l.durationMin, tasks: l._count.tasks, info: (l.teacherInfo ?? {}) as TInfo })) })),
         }}
         students={students.map((s) => ({
           id: s.id, name: [s.name, s.lastName].filter(Boolean).join(" "),
