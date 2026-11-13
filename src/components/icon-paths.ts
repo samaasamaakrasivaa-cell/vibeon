@@ -62,6 +62,7 @@ export const ICONS = {
   note: "<path d=\"M5 3h10l4 4v14H5z\"/><path d=\"M9 12h6M9 16h4\"/>",
   mic2: "<rect x=\"9\" y=\"3\" width=\"6\" height=\"11\" rx=\"3\"/><path d=\"M5 11a7 7 0 0 0 14 0M12 18v3\"/>",
   pointer: '<path d="M5 3l14 7-6.5 2L10 18.5z"/><path d="M12.5 12l5 5"/>',
+  undo: '<path d="M4 9h11a5 5 0 0 1 0 10H9"/><path d="M8 5L4 9l4 4"/>',
   pin: '<path d="M9 4h6l-1 6 3 3H7l3-3z"/><path d="M12 13v8"/>',
   lock: "<rect x=\"5\" y=\"11\" width=\"14\" height=\"10\" rx=\"2\"/><path d=\"M8 11V7a4 4 0 0 1 8 0v4\"/>",
   telegram: "<path d=\"M21 4L3 11l6 2 2 6 3-4 5 4z\"/><path d=\"M9 13l9-7\"/>",

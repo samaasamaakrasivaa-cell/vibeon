@@ -1708,3 +1708,24 @@ button.grp-row:hover { background: var(--fill); }
 @media (max-width: 760px) { .lrow-det { padding: 4px 14px 16px; } .lrow-main b { white-space: normal; } }
 .lrow-det .editable.input { background: var(--surface); height: 44px; padding: 0 12px; border-radius: 12px; }
 .lrow-det .select { background-color: var(--surface); }
+
+/* групповой урок: ученики у инструментов задания */
+.schips { display: inline-flex; align-items: center; gap: 4px; margin-right: 6px; }
+.schip { display: inline-flex; flex-direction: column; justify-content: center; gap: 3px; height: 30px; padding: 0 8px; border-radius: 9px; border: 1px solid var(--sep); background: var(--surface); font: inherit; cursor: pointer; color: var(--text2); }
+.schip:hover { border-color: color-mix(in srgb, var(--accent) 40%, var(--sep)); }
+.schip.on { border-color: var(--accent); background: var(--accent-bg); color: var(--accent); }
+.schip-n { font-size: 12px; font-weight: 600; line-height: 1; white-space: nowrap; }
+.schip-bar { display: flex; gap: 1px; height: 3px; min-width: 28px; }
+.schip-bar i { flex: 1; min-width: 3px; border-radius: 2px; background: var(--fill); }
+.schip-bar i.ok { background: var(--ok); }
+.schip-bar i.bad { background: var(--bad); }
+.schip-bar i.done { background: var(--accent); }
+.tk-viewing > .tk { box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--accent) 45%, transparent); }
+.tk-viewing-note { margin: 6px 4px 0; }
+/* шапка класса: кто в классе */
+.cls-people { display: inline-flex; align-items: center; }
+.cls-person { position: relative; width: 30px; height: 30px; margin-left: 6px; border-radius: 50%; background: var(--fill); color: var(--text3); font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 0 0 2px var(--bar, var(--surface)); }
+.cls-person:first-child { margin-left: 0; }
+.cls-person.on { background: var(--accent-bg); color: var(--accent); }
+.cls-person i { position: absolute; right: -1px; bottom: -1px; width: 9px; height: 9px; border-radius: 50%; background: var(--grey, #aeaeb2); box-shadow: 0 0 0 2px var(--surface); }
+.cls-person.on i { background: var(--ok); }

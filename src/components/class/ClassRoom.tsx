@@ -116,6 +116,14 @@ export function ClassRoom({ d }: { d: ClassData }) {
       });
     } else if (ev === "chat") { setMsgs((m) => (m.some((y) => y.id === x.id) ? m : [...m, x as unknown as Msg])); if (x.by !== d.me.id) setUnread((u) => u + 1); }
     else if (ev === "note") setNotes((n) => ({ ...n, [x.who as string]: x.text as string }));
+    else if (ev === "reset") {
+      // учитель сбросил ответы задания: одному ученику (sid) или всем
+      const taskId = x.taskId as string, who = x.sid as string | null;
+      if (!teacher && who && who !== own) return;
+      setAnsBy((all) => Object.fromEntries(Object.entries(all).map(([k, a]) => [k, who && k !== who ? a : Object.fromEntries(Object.entries(a).filter(([tk]) => tk !== taskId))])));
+      setRevBy((all) => Object.fromEntries(Object.entries(all).map(([k, r]) => [k, who && k !== who ? r : Object.fromEntries(Object.entries(r).filter(([tk]) => tk !== taskId))])));
+      setResetTick((r) => ({ ...r, [taskId]: (r[taskId] ?? 0) + 1 }));
+    }
     else if (ev === "review") { if (!mineOnly) setRevBy((all) => ({ ...all, [sid]: { ...(all[sid] ?? {}), [x.taskId as string]: x.review as Review } })); }
     else if (ev === "word") { if (!mineOnly) setWordsBy((all) => { const w = all[sid] ?? []; return { ...all, [sid]: x.op === "add" ? [...w, x.word as Word] : w.filter((y) => y.id !== x.id) }; }); }
     else if (ev === "presence") setOnline(x.online as string[]);
@@ -139,7 +147,11 @@ export function ClassRoom({ d }: { d: ClassData }) {
     setRubric(r.id); setTab("lesson"); patchLive({ rubricId: r.id });
     await send("reload"); router.refresh();
   };
-  const sidFor = (taskId: string) => taskView[taskId] ?? d.group?.members[0]?.sid ?? own;
+  const sidFor = (taskId: string): string | null => (gTeacher ? taskView[taskId] || null : viewSid);
+  // учитель в группе без выбранного ученика пробует задание сам — его ответы никуда не сохраняются
+  const [sandbox, setSandbox] = useState<Answers>({});
+  // «Сбросить ответы»: счётчик пересоздаёт задание с чистого листа
+  const [resetTick, setResetTick] = useState<Record<string, number>>({});
   const setAnswerFor = useCallback((sid: string, taskId: string, key: string, value: unknown) => {
     setAnsBy((all) => { const a = all[sid] ?? {}; return { ...all, [sid]: { ...a, [taskId]: { ...(a[taskId] ?? {}), [key]: value } } }; });
     const k = sid + taskId + key;
@@ -175,6 +187,13 @@ export function ClassRoom({ d }: { d: ClassData }) {
   const studentOnline = d.group ? d.group.members.some((m) => m.userId && online.includes(m.userId)) : d.student?.userId ? online.includes(d.student.userId) : false;
   const teacherOnline = online.includes(d.teacher.id);
   const other = teacher ? studentOnline : teacherOnline;
+  // участники урока для шапки: учитель, затем ученики (в группе — все)
+  const people: { id: string; name: string }[] = [
+    { id: d.teacher.id, name: d.teacher.name },
+    ...(d.group
+      ? (teacher ? d.group.members.filter((m) => m.userId).map((m) => ({ id: m.userId!, name: m.name })) : Object.entries(d.chatNames ?? {}).map(([id, name]) => ({ id, name })))
+      : d.student?.userId ? [{ id: d.student.userId, name: d.student.name }] : []),
+  ];
   const timerLeft = live.timer ? Math.max(0, Math.round((live.timer.endsAt - now) / 1000)) : 0;
   const [catalog, setCatalog] = useState<{ index: number } | null>(null);
   const [editing, setEditing] = useState<{ task: CTask; index: number } | null>(null);
@@ -184,19 +203,30 @@ export function ClassRoom({ d }: { d: ClassData }) {
 
   const taskActions = (task: CTask, inHw: boolean) => {
     if (!teacher) return <AskButton task={task} send={send} context={`${d.crumbs ?? ""} · ${cur?.title ?? ""}`} />;
-    const sid = gTeacher ? sidFor(task.id) : viewSid;
-    const statuses = gTeacher ? d.byStudent?.[sid]?.statuses ?? {} : statusesAll;
-    const reviews = revBy[sid] ?? {};
+    const sid = sidFor(task.id);
+    const statuses = gTeacher ? (sid ? d.byStudent?.[sid]?.statuses ?? {} : {}) : statusesAll;
+    const reviews = sid ? revBy[sid] ?? {} : {};
     const isHidden = hidden.has(task.id);
     const isHw = hw.extraTaskIds.includes(task.id);
+    const hasAnswer = gTeacher ? (sid ? !!ansBy[sid]?.[task.id] : Object.values(ansBy).some((a) => a[task.id]) || !!sandbox[task.id]) : !!answers[task.id];
+    const reset = () => {
+      const who = gTeacher ? sid : null;
+      const name = who ? d.group?.members.find((m) => m.sid === who)?.name : null;
+      if (!confirm(gTeacher && !who ? t("cls.resetAllQ") : t("cls.resetQ", { name: name ?? d.student?.name ?? "" }))) return;
+      setSandbox((sb) => Object.fromEntries(Object.entries(sb).filter(([k]) => k !== task.id)));
+      void rawSend("reset", { taskId: task.id, ...(who ? { studentId: who } : {}) });
+    };
     return (
       <span className="bld-acts">
+        {/* групповой урок: чьи ответы смотреть — компактно, рядом с инструментами; повторное нажатие — снять выбор */}
+        {gTeacher && <StudentChips task={task} members={d.group!.members} ansBy={ansBy} sel={sid} online={online} onPick={(x) => setTaskView((v) => ({ ...v, [task.id]: v[task.id] === x ? "" : x }))} />}
         {inHw && <span className={`pill ${statuses[task.id] === "NEEDS_REVIEW" && !reviews[task.id] ? "orange" : "grey"}`}>{statusLabel(statuses[task.id], !!reviews[task.id], t)}</span>}
         <button className={`iconbtn ${live.spotlight?.taskId === task.id ? "bd-on" : ""}`} title={t("cls.show")} aria-label={t("cls.show")} onClick={() => patchLive({ spotlight: { taskId: task.id, at: Date.now() }, rubricId: cur?.id ?? null, tab: "lesson" })}><Icon name="pointer" size="sm" /></button>
         {!inHw && <button className={`iconbtn ${isHw ? "bd-on" : ""}`} title={isHw ? t("cls.fromHw") : t("bld.toHw")} aria-label={t("bld.toHw")} onClick={() => { const on = !isHw; setHw((h) => ({ ...h, extraTaskIds: on ? [...h.extraTaskIds, task.id] : h.extraTaskIds.filter((x) => x !== task.id) })); send("hw", { taskId: task.id, on }); }}><Icon name="home" size="sm" /></button>}
         {isHidden && <span className="pill violet">{t("bld.notSeen")}</span>}
         {/* глазик: открыт — ученик видит; закрыт — скрыто от ученика (для учителя задание остаётся обычным, не полупрозрачным) */}
         <button className={`iconbtn ${isHidden ? "text-violet" : ""}`} title={isHidden ? t("bld.eyeOff") : t("bld.eyeOn")} aria-label={isHidden ? t("bld.eyeOff") : t("bld.eyeOn")} aria-pressed={isHidden} onClick={() => patchLive({ hidden: isHidden ? [...hidden].filter((x) => x !== task.id) : [...hidden, task.id] })}><Icon name={isHidden ? "eyeoff" : "eye"} size="sm" /></button>
+        {hasAnswer && <button type="button" className="iconbtn" title={gTeacher && !sid ? t("cls.resetAll") : t("cls.reset")} aria-label={gTeacher && !sid ? t("cls.resetAll") : t("cls.reset")} onClick={reset}><Icon name="undo" size="sm" /></button>}
         <button type="button" className="iconbtn" title={t("bld.editTask")} aria-label={t("bld.editTask")} onClick={() => setEditing({ task, index: -1 })}><Icon name="pencil" size="sm" /></button>
       </span>
     );
@@ -207,20 +237,22 @@ export function ClassRoom({ d }: { d: ClassData }) {
       {teacher && !inHw && <Plus onClick={() => setCatalog({ index: 0 })} />}
       {list.length === 0 && <div className="tk-empty"><Icon name="book" />{inHw ? t("cls.noHw") : t("bld.emptyStudent")}</div>}
       {list.map((task, i) => {
-        const card = <TaskCard task={task} index={list.filter((x, j) => j <= i && numbered(x)).length - 1} actions={taskActions(task, inHw)} />;
-        // групповой урок: дорожки выполнения всех учеников над заданием; нажали на имя — в задании ответы этого ученика
-        const sid = gTeacher ? sidFor(task.id) : viewSid;
-        const m = d.group?.members.find((x) => x.sid === sid);
+        const card = <TaskCard key={resetTick[task.id] ?? 0} task={task} index={list.filter((x, j) => j <= i && numbered(x)).length - 1} actions={taskActions(task, inHw)} />;
+        // групповой урок: выбран ученик — его ответы, только просмотр (учитель ничего не меняет у ученика);
+        // никто не выбран — учитель пробует задание сам, это никуда не сохраняется
+        const sid = sidFor(task.id);
+        const m = sid ? d.group?.members.find((x) => x.sid === sid) : undefined;
         const sendFor = (type: string, x: Record<string, unknown> = {}) => rawSend(type, { ...x, studentId: sid });
         return (
-        <div key={task.id} id={`task-${task.id}`} className={`${flash === task.id ? "cls-flash" : ""} ${teacher && hidden.has(task.id) ? "tk-teacheronly" : ""}`}>
-          {gTeacher && <GroupTrack task={task} members={d.group!.members} ansBy={ansBy} sel={sid} online={online} onPick={(x) => setTaskView((v) => ({ ...v, [task.id]: x }))} />}
+        <div key={task.id} id={`task-${task.id}`} className={`${flash === task.id ? "cls-flash" : ""} ${teacher && hidden.has(task.id) ? "tk-teacheronly" : ""} ${gTeacher && sid ? "tk-viewing" : ""}`}>
           {gTeacher ? (
-            <AnswerProvider key={sid} answers={ansBy[sid] ?? {}} onSet={(tid, k, v) => setAnswerFor(sid, tid, k, v)} role="teacher">
+            <AnswerProvider key={`${sid ?? "me"}-${resetTick[task.id] ?? 0}`} answers={sid ? ansBy[sid] ?? {} : sandbox}
+              onSet={(tid, k, v) => { if (!sid) setSandbox((sb) => ({ ...sb, [tid]: { ...(sb[tid] ?? {}), [k]: v } })); }} role="teacher">
               <MarkCtx.Provider value={{ ...marks, student: m?.name ?? "" }}>{card}</MarkCtx.Provider>
             </AnswerProvider>
           ) : card}
-          {inHw && teacher && (TYPES[task.type].teacherCheck || task.type === "transform" || task.type === "translate") && <ReviewBox key={sid} lessonId={m?.instanceId ?? d.id} task={task} review={(revBy[sid] ?? {})[task.id]} draft={(gTeacher ? d.byStudent?.[sid]?.aiDrafts ?? {} : aiDrafts)[task.id]} answered={!!(ansBy[sid] ?? {})[task.id]} send={gTeacher ? sendFor : send} />}
+          {gTeacher && sid && <div className="tk-viewing-note small muted">{t("grp.viewing", { name: m?.name ?? "" })}</div>}
+          {inHw && teacher && (!gTeacher || sid) && (TYPES[task.type].teacherCheck || task.type === "transform" || task.type === "translate") && <ReviewBox key={sid ?? "_"} lessonId={m?.instanceId ?? d.id} task={task} review={(revBy[sid ?? own] ?? {})[task.id]} draft={(gTeacher ? d.byStudent?.[sid ?? ""]?.aiDrafts ?? {} : aiDrafts)[task.id]} answered={!!(ansBy[sid ?? own] ?? {})[task.id]} send={gTeacher ? sendFor : send} />}
           {inHw && !teacher && reviews[task.id] && <div className={`alert mt-2 ${reviews[task.id].ok ? "ok" : ""}`}>{reviews[task.id].ok ? "✓ " : ""}{t("cls.teacherSays")}: {reviews[task.id].comment || (reviews[task.id].ok ? t("cls.reviewedOk") : "—")}</div>}
           {inHw && !teacher && reviews[task.id]?.ai && <div className="mt-2"><AiCheckView check={reviews[task.id].ai!} /></div>}
           {teacher && !inHw && <Plus onClick={() => setCatalog({ index: i + 1 })} />}
@@ -249,6 +281,14 @@ export function ClassRoom({ d }: { d: ClassData }) {
             {teacher && <button className="btn secondary sm" onClick={() => setDlg("about")}><Icon name="info" size="sm" />{t("cls.about")}</button>}
             <LangSwitch lang={lang} label={t("common.language")} />
             <span className={`dot`} title={connected ? t("cls.online") : t("cls.offline")} style={{ background: connected ? "var(--ok)" : "var(--warn)" }} />
+            {/* кто в классе: учитель и ученики, зелёная точка — сейчас онлайн */}
+            <span className="cls-people" aria-label={t("cls.whoIn")}>
+              {people.map((x) => (
+                <span key={x.id} className={`cls-person ${online.includes(x.id) || x.id === d.me.id ? "on" : ""}`} title={`${x.name}${x.id === d.me.id ? ` (${t("cls.you")})` : ""} — ${online.includes(x.id) || x.id === d.me.id ? t("cls.isOnline") : t("cls.isOffline")}`}>
+                  {x.name.slice(0, 1).toUpperCase()}<i />
+                </span>
+              ))}
+            </span>
             <Link href={d.homeHref} className="iconbtn" title={t("cls.exit")} aria-label={t("cls.exit")}><Icon name="logout" size="sm" /></Link>
           </div>
         </header>
@@ -330,7 +370,6 @@ export function ClassRoom({ d }: { d: ClassData }) {
             </div>
             <div className="bld-cover mt-3" style={d.course?.cover ? { background: `center / cover url(${d.course.cover})` } : undefined}>{!d.course?.cover && <><Icon name="book" size="lg" /><b>{d.course?.title ?? "VibeOn"}</b></>}</div>
             <h2 className="mt-3">{d.title ?? t("cls.lesson")}</h2>
-            {teacher && d.teacherInfo && <div className="mt-2"><TeacherInfo info={d.teacherInfo} /></div>}
             <div className="mt-3 flex flex-col gap-1">
               {d.rubrics.map((r, i) => (
                 <button key={r.id} className={`bld-sec ${tab === "lesson" && r.id === cur?.id ? "on" : ""}`} onClick={() => { setTab("lesson"); go(r.id); }}>
@@ -347,7 +386,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
                 <div className="flex gap-2"><button type="button" className="btn primary sm" disabled={!secName.trim()} onClick={() => void addSection(secName)}>{t("bld.secAdd")}</button><button type="button" className="btn plain sm" onClick={() => setAddSec(false)}>{t("common.cancel")}</button></div>
               </div>
             ) : <button type="button" className="bld-sec cls-addsec mt-1" onClick={() => setAddSec(true)}><Icon name="plus" size="sm" /><span className="grow">{t("bld.addRubric")}</span></button>)}
-            <NoteBox title={teacher ? t("cls.teacherNote") : t("cls.myNotes")} value={teacher ? notes.teacher : notes.student} onSave={(v) => send("note", { text: v })} />
+            <NoteBox key="note" title={teacher ? t("cls.teacherNote") : t("cls.myNotes")} value={teacher ? notes.teacher : notes.student} onSave={(v) => send("note", { text: v })} />
             {!teacher && notes.teacher && <div className="alert mt-3" style={{ background: "var(--warn-bg)", color: "var(--warn-text)" }}><b className="block small">{t("cls.fromTeacher")}</b>{notes.teacher}</div>}
             {teacher && (
               <div className="mt-4 flex flex-col gap-2">
@@ -357,6 +396,8 @@ export function ClassRoom({ d }: { d: ClassData }) {
               </div>
             )}
             {!teacher && tab !== "homework" && hw.teacherComment && <div className="alert mt-3" style={{ background: "var(--accent-bg)", color: "var(--accent-text)" }}><b className="block small">{t("cls.hwComment")}</b>{hw.teacherComment}</div>}
+            {/* сведения об уроке, цели и ход урока — внизу панели, раскрываются вниз */}
+            {teacher && d.teacherInfo && <div className="mt-4"><TeacherInfo info={d.teacherInfo} /></div>}
           </aside>
         </div>
 
@@ -698,23 +739,24 @@ function ClassDialogs({ which, close, d, hwComment, send, onFinished }: { which:
   );
 }
 
-/** Дорожки выполнения задания по ученикам группы: зелёное — верно, красное — ошибка, серое — ещё не сделано. */
-function GroupTrack({ task, members, ansBy, sel, online, onPick }: { task: CTask; members: NonNullable<ClassData["group"]>["members"]; ansBy: Record<string, Answers>; sel: string; online: string[]; onPick: (sid: string) => void }) {
+/** Ученики группы у инструментов задания: имя, мини-дорожка (зелёное — верно, красное — ошибка, серое — ещё нет). */
+function StudentChips({ task, members, ansBy, sel, online, onPick }: { task: CTask; members: NonNullable<ClassData["group"]>["members"]; ansBy: Record<string, Answers>; sel: string | null; online: string[]; onPick: (sid: string) => void }) {
   const { t } = useT();
   const rows = members.map((m) => ({ m, steps: progressOf(task, ansBy[m.sid]?.[task.id] as Record<string, unknown> | undefined) }));
   if (rows.every((r) => r.steps === null)) return null; // у задания нет ответов (текст, картинка…)
   return (
-    <div className="gtrack" role="group" aria-label={t("grp.answersOf")}>
+    <span className="schips" role="group" aria-label={t("grp.answersOf")}>
       {rows.map(({ m, steps }) => {
         const st = summary(steps ?? []);
         return (
-          <button key={m.sid} type="button" className={`gtrack-m ${sel === m.sid ? "on" : ""}`} aria-pressed={sel === m.sid} onClick={() => onPick(m.sid)}
-            title={`${m.name}: ${t("grp.trackTip", { ok: st.ok, bad: st.bad, total: st.total })}`}>
-            <span className="gtrack-n"><i className="dot" style={{ background: m.userId && online.includes(m.userId) ? "var(--ok)" : "var(--grey)" }} />{m.name.split(" ")[0]}{st.done && st.bad === 0 ? " ✓" : ""}</span>
-            <span className="gtrack-bar">{(steps ?? []).map((x: Step, i) => <i key={i} className={x} />)}</span>
+          <button key={m.sid} type="button" className={`schip ${sel === m.sid ? "on" : ""}`} aria-pressed={sel === m.sid} onClick={() => onPick(m.sid)}
+            title={`${m.name}${m.userId && online.includes(m.userId) ? ` · ${t("grp.inClass")}` : ""}: ${t("grp.trackTip", { ok: st.ok, bad: st.bad, total: st.total })}${sel === m.sid ? ` · ${t("grp.unpick")}` : ` · ${t("grp.pickHint")}`}`}>
+            <span className="schip-n">{m.name.split(" ")[0]}{st.done && st.bad === 0 ? " ✓" : ""}</span>
+            <span className="schip-bar">{(steps ?? []).map((x: Step, i) => <i key={i} className={x} />)}</span>
           </button>
         );
       })}
-    </div>
+    </span>
   );
 }
+

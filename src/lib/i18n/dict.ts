@@ -2030,6 +2030,17 @@ const ru = {
   "crs.newLesson": "Новый урок",
   "crs.newLessonHint": "Цели, сведения об уроке и ход урока можно заполнить позже — или они подтянутся из файла при импорте урока.",
   "crs.topic": "Тема",
+  "cls.reset": "Сбросить ответы",
+  "cls.resetAll": "Сбросить ответы всех учеников",
+  "cls.resetQ": "Сбросить ответы {name} в этом задании? Задание начнётся с чистого листа.",
+  "cls.resetAllQ": "Сбросить ответы всех учеников в этом задании? Задание у всех начнётся с чистого листа.",
+  "grp.viewing": "Ответы: {name} — только просмотр. Нажмите на имя ещё раз, чтобы снять выбор.",
+  "grp.unpick": "нажмите, чтобы снять выбор",
+  "grp.pickHint": "нажмите, чтобы посмотреть ответы",
+  "cls.whoIn": "Кто в классе",
+  "cls.you": "вы",
+  "cls.isOnline": "в классе",
+  "cls.isOffline": "не в классе",
 } as const;
 
 export type DictKey = keyof typeof ru;
@@ -4062,6 +4073,17 @@ const en: Record<DictKey, string> = {
   "crs.newLesson": "New lesson",
   "crs.newLessonHint": "Aims, lesson info and the plan can be added later — or they come from the file when you import a lesson.",
   "crs.topic": "Topic",
+  "cls.reset": "Reset answers",
+  "cls.resetAll": "Reset all students' answers",
+  "cls.resetQ": "Reset {name}'s answers in this task? The task starts from scratch.",
+  "cls.resetAllQ": "Reset all students' answers in this task? It starts from scratch for everyone.",
+  "grp.viewing": "Answers of {name} — view only. Tap the name again to unselect.",
+  "grp.unpick": "tap to unselect",
+  "grp.pickHint": "tap to see the answers",
+  "cls.whoIn": "Who is in class",
+  "cls.you": "you",
+  "cls.isOnline": "in class",
+  "cls.isOffline": "not in class",
 };
 
 export const dictionaries: Record<LangCode, Record<DictKey, string>> = { ru, en };

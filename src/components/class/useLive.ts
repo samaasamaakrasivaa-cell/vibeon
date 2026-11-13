@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 
 type Handler = (event: string, data: Record<string, unknown>) => void;
-const EVENTS = ["answer", "live", "hw", "board", "chat", "note", "question", "review", "word", "presence", "reload", "finished"];
+const EVENTS = ["answer", "live", "hw", "board", "chat", "note", "question", "review", "word", "presence", "reload", "finished", "reset"];
 
 /** Подключение к классу: события с сервера (SSE) и отправка действий. Переподключается само. */
 export function useLive(lessonId: string, onEvent: Handler) {

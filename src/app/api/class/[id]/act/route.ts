@@ -52,6 +52,18 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       return NextResponse.json({ ok: true });
       });
     }
+    // ── «Сбросить ответы» задания: одному ученику (studentId) или всем ученикам занятия
+    case "reset": {
+      if (!teacher) return bad("teacher only");
+      const taskId = str(body.taskId, 60);
+      if (!taskId) return bad();
+      const who = str(body.studentId, 60) || null;
+      const ids = who ? slot.filter((x) => x.studentId === who).map((x) => x.id) : slotIds;
+      if (!ids.length) return bad("student");
+      await db.answer.deleteMany({ where: { lessonInstanceId: { in: ids }, taskId } });
+      publish(ch, "reset", { taskId, sid: who ?? (group ? null : lesson.studentId) });
+      return NextResponse.json({ ok: true });
+    }
     // ── состояние урока: рубрика, «показать ученику», скрытые, таймер, доска…
     case "live": {
       if (!teacher) return bad("teacher only");
