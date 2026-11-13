@@ -17,7 +17,7 @@ import { GROUPS, numbered, PRESET, RTIPS, RUBRICS, SAMPLE, TYPES, rubricKey, typ
 import { thumbSvg } from "@/lib/tasks/thumbs";
 import { assignLesson, deleteTask, placeTasks, resetShare, saveTask, setFavourites, setRubrics, setShare, toggleStudentSees, updateLessonMeta, updateTeacherInfo } from "@/lib/teacher/courses";
 import { TeacherInfo } from "../lesson/TeacherInfo";
-import { hasInfo, type TInfo } from "@/lib/tasks/teacher-info";
+import type { TInfo } from "@/lib/tasks/teacher-info";
 
 type Part = "lesson" | "homework" | "words";
 export type BTask = TaskData & { section: Part; rubricId: string | null; hidden: boolean };
@@ -35,6 +35,8 @@ export function Builder({ d }: { d: BuilderData }) {
   const [rubrics, setRub] = useState(d.rubrics);
   useEffect(() => { setRub(d.rubrics); }, [d.rubrics]);
   const [active, setActive] = useState(d.rubrics[0]?.id ?? null);
+  const [addSec, setAddSec] = useState(false); // «Новая секция»: своё название или готовое
+  const [secName, setSecName] = useState("");
   // «Переместить в другой раздел»: этапы урока, домашка, новые слова
   const [moving, setMoving] = useState<string | null>(null);
   const inDest = (x: BTask, sec: Part, rid: string | null) => x.section === sec && (sec !== "lesson" || x.rubricId === rid || (!x.rubricId && rid === d.rubrics[0]?.id));
@@ -177,43 +179,65 @@ export function Builder({ d }: { d: BuilderData }) {
         </main>
 
         <aside className="bld-side">
-          <div className="bld-cover" style={d.course.cover ? { background: `center / cover url(${d.course.cover})` } : undefined}>{!d.course.cover && <><Icon name="book" size="lg" /><b>{d.course.title}</b></>}</div>
-          <h2 className="mt-3">{d.title}</h2>
-          <input className="editable muted mt-1" defaultValue={d.subtitle} key={d.subtitle} placeholder={t("crs.subtitlePh")} onBlur={(e) => e.target.value !== d.subtitle && go(() => updateLessonMeta(d.id, { subtitle: e.target.value }))} aria-label={t("crs.subtitlePh")} />
-          {/* сведения об уроке, цели и ход урока — сразу под названием, ученику не показываются */}
-          {!studentView && <TeacherInfo info={d.teacherInfo} open={hasInfo(d.teacherInfo)} onSave={(v) => go(() => updateTeacherInfo(d.id, v))} />}
-
-          <div className="mt-5 mb-2 flex items-center justify-between"><span className="cardtitle m-0">{t("bld.sections")}</span></div>
-          <div className="flex flex-col gap-1">
-            {rubrics.map((r, i) => (
-              <button key={r.id} type="button" className={`bld-sec ${part === "lesson" && r.id === active ? "on" : ""}`} onClick={() => { setPart("lesson"); setActive(r.id); }}
-                draggable={!studentView} onDragStart={(e) => e.dataTransfer.setData("text/rubric", r.id)} onDragOver={(e) => e.preventDefault()}
-                onDrop={(e) => { const from = rubrics.findIndex((x) => x.id === e.dataTransfer.getData("text/rubric")); if (from >= 0 && from !== i) { const n = [...rubrics]; const [x] = n.splice(from, 1); n.splice(i, 0, x); saveRubrics(n); } }}>
-                <span className="ln">{i + 1}</span><span className="grow">{r.title}</span><small>{d.tasks.filter((x) => x.section === "lesson" && (x.rubricId === r.id || (!x.rubricId && i === 0))).length}</small>
-              </button>
-            ))}
+          {/* шапка: учебник, урок, подзаголовок */}
+          <div className="bs-head">
+            <div className="bs-cover" style={d.course.cover ? { background: `center / cover url(${d.course.cover})` } : undefined}>{!d.course.cover && <Icon name="book" size="lg" />}</div>
+            <div className="bs-course">{d.course.title}</div>
+            <h2 className="bs-title">{d.title}</h2>
+            <input className="editable bs-sub" defaultValue={d.subtitle} key={d.subtitle} placeholder={t("crs.subtitlePh")} onBlur={(e) => e.target.value !== d.subtitle && go(() => updateLessonMeta(d.id, { subtitle: e.target.value }))} aria-label={t("crs.subtitlePh")} readOnly={studentView} />
           </div>
 
-          {!studentView && (
-            <>
-              <div className="cardtitle mt-5">{t("bld.stages")}</div>
-              <div className="flex flex-wrap gap-1.5">
-                {RUBRICS.filter((x) => !rubrics.some((r) => r.title.toLowerCase() === x.toLowerCase())).map((x) => (
-                  <button key={x} type="button" className="pchip add" onClick={() => { const r = { id: randomId(), title: x }; saveRubrics([...rubrics, r]); setPart("lesson"); setActive(r.id); }}>+ {x}</button>
-                ))}
-              </div>
-              {key && part === "lesson" && (
-                <div className="aitip mt-4">
-                  <div className="mb-1 flex items-center gap-1.5 font-semibold text-violet"><Icon name="spark" size="sm" />{t("bld.tipsFor", { name: cur?.title ?? "" })}</div>
-                  {RTIPS[key].tips.map((x, i) => <p key={i} className="small m-0 mb-1">• {L(x)}</p>)}
-                  <div className="mt-2 flex flex-wrap gap-1.5">
-                    {RTIPS[key].tasks.map((ty) => <button key={ty} type="button" className="pchip" onClick={() => newTask(ty, list.length)}>+ {lang === "en" ? TYPES[ty].en : TYPES[ty].ru}</button>)}
+          {/* секции урока: список, перетаскивание, добавление своей или готовой */}
+          <section className="bs-group">
+            <div className="bs-label"><span>{t("bld.sections")}</span>
+              {!studentView && <button type="button" className="bs-plus" aria-label={t("bld.addRubric")} title={t("bld.addRubric")} aria-expanded={addSec} onClick={() => setAddSec((x) => !x)}><Icon name="plus" size="sm" /></button>}
+            </div>
+            <div className="bs-list">
+              {rubrics.map((r, i) => (
+                <button key={r.id} type="button" className={`bs-row ${part === "lesson" && r.id === active ? "on" : ""}`} onClick={() => { setPart("lesson"); setActive(r.id); }}
+                  draggable={!studentView} onDragStart={(e) => e.dataTransfer.setData("text/rubric", r.id)} onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => { const from = rubrics.findIndex((x) => x.id === e.dataTransfer.getData("text/rubric")); if (from >= 0 && from !== i) { const n = [...rubrics]; const [x] = n.splice(from, 1); n.splice(i, 0, x); saveRubrics(n); } }}>
+                  <span className="ln">{i + 1}</span><span className="grow">{r.title}</span><span className="bs-count">{d.tasks.filter((x) => x.section === "lesson" && (x.rubricId === r.id || (!x.rubricId && i === 0))).length}</span>
+                </button>
+              ))}
+              {!studentView && !addSec && <button type="button" className="bs-row bs-addrow" onClick={() => setAddSec(true)}><span className="ln"><Icon name="plus" size="sm" /></span><span className="grow">{t("bld.addRubric")}</span></button>}
+            </div>
+            {!studentView && addSec && (() => {
+              const add = (title: string) => { const x = title.trim(); if (!x) return; const r = { id: randomId(), title: x.slice(0, 80) }; saveRubrics([...rubrics, r]); setPart("lesson"); setActive(r.id); setSecName(""); setAddSec(false); };
+              const ready = RUBRICS.filter((x) => !rubrics.some((r) => r.title.toLowerCase() === x.toLowerCase()));
+              return (
+                <div className="bs-new">
+                  <input className="input" autoFocus value={secName} placeholder={t("bld.secName")} aria-label={t("bld.secName")} onChange={(e) => setSecName(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") add(secName); if (e.key === "Escape") { setAddSec(false); setSecName(""); } }} />
+                  {ready.length > 0 && <>
+                    <div className="bs-hint">{t("bld.secPick")}</div>
+                    <div className="flex flex-wrap gap-1.5">{ready.map((x) => <button key={x} type="button" className="pchip" onClick={() => add(x)}>{x}</button>)}</div>
+                  </>}
+                  <div className="flex gap-2">
+                    <button type="button" className="btn primary sm" disabled={!secName.trim()} onClick={() => add(secName)}>{t("bld.secAdd")}</button>
+                    <button type="button" className="btn plain sm" onClick={() => { setAddSec(false); setSecName(""); }}>{t("common.cancel")}</button>
                   </div>
                 </div>
-              )}
-            </>
+              );
+            })()}
+          </section>
+
+          {!studentView && key && part === "lesson" && (
+            <section className="bs-group">
+              <div className="bs-label"><span>{t("bld.tipsFor", { name: cur?.title ?? "" })}</span></div>
+              <div className="bs-card bs-tips">
+                {RTIPS[key].tips.map((x, i) => <p key={i}>{L(x)}</p>)}
+                <div className="flex flex-wrap gap-1.5">
+                  {RTIPS[key].tasks.map((ty) => <button key={ty} type="button" className="pchip" onClick={() => newTask(ty, list.length)}>+ {lang === "en" ? TYPES[ty].en : TYPES[ty].ru}</button>)}
+                </div>
+              </div>
+            </section>
           )}
+
           <Outcomes d={d} onSave={(v) => go(() => updateLessonMeta(d.id, { outcomes: v }))} readOnly={studentView} />
+
+          {/* сведения об уроке, цели и ход урока — в самом низу; ученику не показываются */}
+          {!studentView && <TeacherInfo info={d.teacherInfo} open={false} onSave={(v) => go(() => updateTeacherInfo(d.id, v))} />}
         </aside>
       </div>
 
@@ -255,12 +279,12 @@ function Outcomes({ d, onSave, readOnly }: { d: BuilderData; onSave: (v: string[
   const [v, setV] = useState(d.outcomes.join("\n"));
   useEffect(() => { setV(d.outcomes.join("\n")); }, [d.outcomes]);
   return (
-    <div className="bld-out mt-5">
-      <div className="cardtitle">{t("bld.outcomes")}</div>
-      {readOnly ? <ul className="m-0 pl-5">{d.outcomes.map((x, i) => <li key={i}>{x}</li>)}</ul> : (
-        <textarea className="textarea" value={v} placeholder={t("bld.outcomesPh")} onChange={(e) => setV(e.target.value)} onBlur={() => v !== d.outcomes.join("\n") && onSave(v.split("\n"))} aria-label={t("bld.outcomes")} />
+    <section className="bs-group">
+      <div className="bs-label"><span>{t("bld.outcomes")}</span></div>
+      {readOnly ? <ul className="bs-card m-0 pl-8">{d.outcomes.map((x, i) => <li key={i}>{x}</li>)}</ul> : (
+        <textarea className="textarea bs-out" rows={3} value={v} placeholder={t("bld.outcomesPh")} onChange={(e) => setV(e.target.value)} onBlur={() => v !== d.outcomes.join("\n") && onSave(v.split("\n"))} aria-label={t("bld.outcomes")} />
       )}
-    </div>
+    </section>
   );
 }
 

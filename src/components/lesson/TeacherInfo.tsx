@@ -17,7 +17,8 @@ export function TeacherInfo({ info, onSave, open: open0 = false }: { info: TInfo
   const row = (label: string, text?: string) => text ? <div className="tinfo-row"><b>{label}</b><div className="tinfo-t">{text}</div></div> : null;
   return (
     <details className="tinfo" open={open0 || edit}>
-      <summary><Icon name="lock" size="sm" /><b className="grow">{t("ti.title")}</b><span className="small muted">{t("ti.only")}</span></summary>
+      <summary><span className="tinfo-ic"><Icon name="lock" size="sm" /></span><b className="grow">{t("ti.title")}</b><Icon name="chevd" size="sm" className="tinfo-chev" /></summary>
+      <p className="tinfo-note">{t("ti.only")}</p>
       {!edit ? (
         <div className="tinfo-body">
           {!hasInfo(v) && <p className="small muted m-0">{t("ti.empty")}</p>}

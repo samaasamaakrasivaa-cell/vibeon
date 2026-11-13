@@ -1586,3 +1586,45 @@ select.iedit, select.iedit:hover, select.iedit:focus { background-position: righ
 .ted-key { border: 1px solid var(--sep); border-radius: 12px; padding: 10px 12px; }
 .ted-mytitle .x { margin-left: 6px; opacity: .55; }
 .ted-mytitle .x:hover { opacity: 1; }
+
+/* ── Конструктор: правая панель в стиле сгруппированных списков ── */
+.bld-side { padding: 16px; display: flex; flex-direction: column; gap: 24px; }
+.bs-head { display: flex; flex-direction: column; }
+.bs-cover { height: 92px; border-radius: 14px; background: var(--accent-bg); color: var(--accent); display: flex; align-items: center; justify-content: center; }
+.bs-course { margin-top: 14px; font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--text3); }
+.bs-title { margin: 4px 0 0; font-size: 20px; line-height: 1.25; font-weight: 700; letter-spacing: -.015em; }
+.bs-sub { margin-top: 4px; font-size: 14px; color: var(--text2); }
+.bs-group { display: flex; flex-direction: column; }
+.bs-label { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 26px; padding: 0 4px 8px; font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--text3); }
+.bs-plus { width: 26px; height: 26px; flex: none; border: 0; border-radius: 50%; background: var(--accent-bg); color: var(--accent); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: transform .15s; }
+.bs-plus[aria-expanded="true"] { transform: rotate(45deg); }
+.bs-list { background: var(--surface2); border-radius: 14px; overflow: hidden; }
+.bs-row { position: relative; display: flex; align-items: center; gap: 12px; width: 100%; min-height: 44px; padding: 0 14px 0 12px; border: 0; background: transparent; font: inherit; font-size: 15px; color: var(--text); text-align: left; cursor: pointer; }
+.bs-row + .bs-row::before { content: ""; position: absolute; top: 0; left: 46px; right: 0; height: 1px; background: var(--sep); }
+.bs-row:hover { background: color-mix(in srgb, var(--fill) 55%, transparent); }
+.bs-row.on { background: var(--accent-bg); color: var(--accent); font-weight: 600; }
+.bs-row.on::before, .bs-row.on + .bs-row::before { opacity: 0; }
+.bs-row .ln { width: 22px; height: 22px; flex: none; border-radius: 7px; background: var(--fill); color: var(--text2); font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
+.bs-row.on .ln { background: var(--accent); color: #fff; }
+.bs-row .grow { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bs-count { font-size: 13px; color: var(--text3); font-variant-numeric: tabular-nums; }
+.bs-row.on .bs-count { color: var(--accent); }
+.bs-addrow { color: var(--accent); }
+.bs-addrow .ln { background: transparent; color: var(--accent); }
+.bs-new { margin-top: 10px; padding: 12px; border-radius: 14px; background: var(--surface2); display: flex; flex-direction: column; gap: 10px; }
+.bs-hint { font-size: 13px; color: var(--text3); }
+.bs-card { padding: 12px 14px; border-radius: 14px; background: var(--surface2); }
+.bs-tips { display: flex; flex-direction: column; gap: 8px; font-size: 14px; line-height: 1.45; color: var(--text2); }
+.bs-tips p { margin: 0; }
+.bs-out { min-height: 84px; }
+/* «Для учителя»: аккуратная сворачиваемая карточка */
+.tinfo { margin-top: 0; padding: 0; border-radius: 14px; background: var(--surface2); }
+.tinfo > summary { min-height: 48px; padding: 0 14px 0 10px; gap: 10px; }
+.tinfo > summary b { font-size: 15px; font-weight: 600; }
+.tinfo-ic { width: 28px; height: 28px; border-radius: 8px; background: var(--violet-bg); color: var(--violet); display: inline-flex; align-items: center; justify-content: center; flex: none; }
+.tinfo-chev { color: var(--text3); transition: transform .2s; }
+.tinfo[open] .tinfo-chev { transform: rotate(180deg); }
+.tinfo-note { margin: 0 14px; font-size: 12.5px; color: var(--text3); }
+.tinfo-body { margin-top: 0; padding: 12px 14px 14px; }
+.bs-new .input { background: var(--surface); }
+.bs-new .pchip { background: var(--surface); }
