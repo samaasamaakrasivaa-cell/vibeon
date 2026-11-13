@@ -17,7 +17,7 @@ import { useLive } from "./useLive";
 import { AiCheckView, type AiCheck } from "../ai/AiCheckView";
 import { askAi, checkAnswer } from "@/lib/ai/actions";
 import { useT } from "@/lib/i18n/client";
-import { PRESET, SAMPLE, TYPES, type Rubric, type TaskType } from "@/lib/tasks/catalog";
+import { numbered, PRESET, SAMPLE, TYPES, type Rubric, type TaskType } from "@/lib/tasks/catalog";
 import { saveTask } from "@/lib/teacher/courses";
 import type { LiveState } from "@/lib/live/access";
 
@@ -143,7 +143,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
       {list.length === 0 && <div className="tk-empty"><Icon name="book" />{inHw ? t("cls.noHw") : t("bld.emptyStudent")}</div>}
       {list.map((task, i) => (
         <div key={task.id} id={`task-${task.id}`} className={`${flash === task.id ? "cls-flash" : ""} ${hidden.has(task.id) ? "opacity-55" : ""}`}>
-          <TaskCard task={task} index={i} actions={taskActions(task, inHw)} />
+          <TaskCard task={task} index={list.filter((x, j) => j <= i && numbered(x)).length - 1} actions={taskActions(task, inHw)} />
           {inHw && teacher && (TYPES[task.type].teacherCheck || task.type === "transform" || task.type === "translate") && <ReviewBox lessonId={d.id} task={task} review={reviews[task.id]} draft={d.aiDrafts[task.id]} answered={!!answers[task.id]} send={send} />}
           {inHw && !teacher && reviews[task.id] && <div className={`alert mt-2 ${reviews[task.id].ok ? "ok" : ""}`}>{reviews[task.id].ok ? "✓ " : ""}{t("cls.teacherSays")}: {reviews[task.id].comment || (reviews[task.id].ok ? t("cls.reviewedOk") : "—")}</div>}
           {inHw && !teacher && reviews[task.id]?.ai && <div className="mt-2"><AiCheckView check={reviews[task.id].ai!} /></div>}
@@ -262,7 +262,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
           </aside>
         </div>
 
-        {catalog && <Catalog fav={[]} onClose={() => setCatalog(null)} onPick={(ty: TaskType) => { const idx = catalog.index; setCatalog(null); setEditing({ index: idx, task: { id: "new", type: ty, title: PRESET[ty]?.[0] ?? "", content: SAMPLE[ty] ?? "", options: {}, section: "lesson", rubricId: cur?.id ?? null, hidden: false } }); }} />}
+        {catalog && <Catalog fav={[]} onClose={() => setCatalog(null)} onPick={(ty: TaskType) => { const idx = catalog.index; setCatalog(null); setEditing({ index: idx, task: { id: "new", type: ty, title: PRESET[ty]?.[0] ?? "", content: SAMPLE[ty] ?? "", options: ty === "note" ? { teacherOnly: true } : {}, section: "lesson", rubricId: cur?.id ?? null, hidden: false } }); }} />}
         {editing && (
           <TaskEditor lessonId={templateOf(d)} initial={editing.task} pending={saving} error={null} onClose={() => setEditing(null)}
             onSave={async (task) => {

@@ -92,6 +92,10 @@ export function parse(type: TaskType, content: string): Parsed {
       return { kind: "words", items: lines(c).map((l) => { const [w, ...h] = l.split(DASH); return { word: w.trim(), hint: h.join(" — ").trim() }; }).filter((x) => x.word) };
     case "sentence":
       return { kind: "sentences", items: lines(c).map((l) => l.split(/\s+/).map((w) => w.replace(/_/g, " ")).filter(Boolean)) };
+    case "vocab": {
+      const ls = lines(c);
+      return { kind: "lines", items: ls.length === 1 && ls[0].includes(",") ? ls[0].split(",").map((x) => x.trim()).filter(Boolean) : ls };
+    }
     case "textorder":
     case "speak":
     case "dictation":

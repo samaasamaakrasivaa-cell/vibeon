@@ -308,6 +308,17 @@ export async function deleteTask(id: string): Promise<R> {
   return { ok: true };
 }
 
+/** Глазик: видит ли задание ученик (закрытый глазик — только учитель). Старое «скрыто» снимается тем же нажатием. */
+export async function toggleStudentSees(id: string): Promise<R> {
+  const teacher = await me();
+  const t = await ownTask(id, teacher.id);
+  const o = (t.options ?? {}) as Record<string, unknown>;
+  const options = t.hidden ? { ...o, hidden: undefined, teacherOnly: undefined } : { ...o, teacherOnly: o.teacherOnly ? undefined : true };
+  await db.task.update({ where: { id }, data: { hidden: false, options: JSON.parse(JSON.stringify(options)) } });
+  refreshBuilder(t.templateId);
+  return { ok: true };
+}
+
 export async function toggleTaskHidden(id: string): Promise<R> {
   const teacher = await me();
   const t = await ownTask(id, teacher.id);

@@ -12,9 +12,9 @@ import { TaskEditor } from "./TaskEditor";
 import { BookDialog, ImportDialog } from "../ai/BookImport";
 import { useRouter } from "next/navigation";
 import { useT } from "@/lib/i18n/client";
-import { GROUPS, PRESET, RTIPS, RUBRICS, SAMPLE, TYPES, rubricKey, type Rubric, type TaskType } from "@/lib/tasks/catalog";
+import { GROUPS, numbered, PRESET, RTIPS, RUBRICS, SAMPLE, TYPES, rubricKey, type Rubric, type TaskType } from "@/lib/tasks/catalog";
 import { thumbSvg } from "@/lib/tasks/thumbs";
-import { assignLesson, deleteTask, placeTasks, resetShare, saveTask, setFavourites, setRubrics, setShare, toggleTaskHidden, updateLessonMeta, updateTeacherInfo } from "@/lib/teacher/courses";
+import { assignLesson, deleteTask, placeTasks, resetShare, saveTask, setFavourites, setRubrics, setShare, toggleStudentSees, updateLessonMeta, updateTeacherInfo } from "@/lib/teacher/courses";
 import { TeacherInfo } from "../lesson/TeacherInfo";
 import { hasInfo, type TInfo } from "@/lib/tasks/teacher-info";
 
@@ -56,7 +56,7 @@ export function Builder({ d }: { d: BuilderData }) {
 
   const saveRubrics = (next: Rubric[]) => { setRub(next); go(() => setRubrics(d.id, next)); };
   const newTask = (type: TaskType, index: number) =>
-    setEditing({ index, task: { id: "new", type, title: PRESET[type]?.[0] ?? "", content: SAMPLE[type] ?? "", options: type === "drag" ? { mode: "drag" } : {}, section: part, rubricId: part === "lesson" ? active : null, hidden: false } });
+    setEditing({ index, task: { id: "new", type, title: PRESET[type]?.[0] ?? "", content: SAMPLE[type] ?? "", options: type === "drag" ? { mode: "drag" } : type === "note" ? { teacherOnly: true } : {}, /* заметка — по умолчанию только учителю */ section: part, rubricId: part === "lesson" ? active : null, hidden: false } });
   const move = (i: number, dir: -1 | 1) => {
     const ids = list.map((x) => x.id);
     const j = i + dir;
@@ -124,13 +124,14 @@ export function Builder({ d }: { d: BuilderData }) {
               <div className={task.hidden ? "opacity-55" : ""}>
                 <TaskCard
                   task={task}
-                  index={visible.filter((x, j) => j <= i && x.type !== "divider" && !x.options.nonum).length - 1}
+                  index={visible.filter((x, j) => j <= i && numbered(x)).length - 1}
                   actions={!studentView && (
                     <span className="bld-acts">
                       {task.hidden && <span className="pill grey">{t("bld.hidden")}</span>}
-                      {task.options?.teacherOnly && <span className="pill violet">{t("bld.teacherOnly")}</span>}
+                      {task.options?.teacherOnly && <span className="pill violet">{t("bld.notSeen")}</span>}
                       <button className="iconbtn" title={t("prof.edit")} aria-label={t("prof.edit")} onClick={() => setEditing({ task })}><Icon name="pencil" size="sm" /></button>
-                      <button className="iconbtn" title={task.hidden ? t("bld.show") : t("bld.hide")} aria-label={t("bld.hide")} onClick={() => go(() => toggleTaskHidden(task.id))}><Icon name={task.hidden ? "lock" : "lockI"} size="sm" /></button>
+                      {/* глазик: открыт — ученик видит, закрыт — только учитель */}
+                      {(() => { const sees = !task.hidden && !task.options?.teacherOnly; return <button className={`iconbtn ${sees ? "" : "text-violet"}`} title={sees ? t("bld.eyeOn") : t("bld.eyeOff")} aria-label={sees ? t("bld.eyeOn") : t("bld.eyeOff")} aria-pressed={!sees} onClick={() => go(() => toggleStudentSees(task.id))}><Icon name={sees ? "eye" : "eyeoff"} size="sm" /></button>; })()}
                       <button className="iconbtn" disabled={i === 0} aria-label="up" onClick={() => move(i, -1)}>↑</button>
                       <button className="iconbtn" disabled={i === visible.length - 1} aria-label="down" onClick={() => move(i, 1)}>↓</button>
                       {part !== "homework" && <button className="iconbtn" title={t("bld.toHw")} aria-label={t("bld.toHw")} onClick={() => go(() => placeTasks(d.id, "homework", null, [...d.tasks.filter((x) => x.section === "homework").map((x) => x.id), task.id]))}><Icon name="inbox" size="sm" /></button>}

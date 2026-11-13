@@ -1475,3 +1475,15 @@ select.iedit, select.iedit:hover, select.iedit:focus { background-position: righ
 .tinfo-row b { display: block; font-size: 12.5px; color: var(--violet); margin-bottom: 2px; }
 .tinfo-t { white-space: pre-wrap; font-size: 13.5px; line-height: 1.5; }
 .tinfo-aims { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; font-size: 13.5px; line-height: 1.45; }
+/* Оформление текста в заданиях и рамка Useful vocabulary */
+.tk-mark { background: #fff3a8; color: inherit; padding: 0 2px; border-radius: 3px; }
+.tk-c-blue { color: #1f6feb; } .tk-c-red { color: #d6334a; } .tk-c-green { color: #1e8e4e; } .tk-c-purple { color: #8a3ffc; } .tk-c-orange { color: #d9730d; }
+:root[data-theme="dark"] .tk-mark { background: #6b5a12; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .tk-mark { background: #6b5a12; } }
+.tk.tk-vocab { background: var(--violet-bg); border: 1.5px solid color-mix(in srgb, var(--violet) 35%, transparent); }
+.tk-vocab-t { font-size: 14px; color: var(--violet); text-transform: none; }
+.tk-vocab-items { display: flex; flex-wrap: wrap; gap: 8px; }
+.tk-vocab-w { padding: 5px 12px; border-radius: 999px; background: var(--surface); font-weight: 600; font-size: 14px; }
+.tedfmt { display: inline-flex; flex-wrap: wrap; gap: 4px; padding-left: 6px; margin-left: 2px; border-left: 1px solid var(--sep); }
+.tedfmt .pchip { min-width: 30px; justify-content: center; }
+.tedcol span { font-weight: 800; }

@@ -1879,6 +1879,15 @@ const ru = {
   "ti.notes": "Заметки",
   "ti.edit": "Изменить",
   "ai.jsonTeacher": "Сведения об уроке, цели и ход урока из файла попадут в блок «Для учителя» — ученик их не увидит.",
+  "bld.eyeOn": "Ученик видит — нажмите, чтобы скрыть",
+  "bld.eyeOff": "Скрыто от ученика",
+  "bld.notSeen": "Ученик не видит",
+  "bld.fmt": "Оформление текста",
+  "bld.fmtB": "Жирный (выделите текст)",
+  "bld.fmtI": "Курсив",
+  "bld.fmtU": "Подчёркнутый",
+  "bld.fmtMark": "Маркер",
+  "bld.fmtColor": "Цвет текста",
 } as const;
 
 export type DictKey = keyof typeof ru;
@@ -3760,6 +3769,15 @@ const en: Record<DictKey, string> = {
   "ti.notes": "Notes",
   "ti.edit": "Edit",
   "ai.jsonTeacher": "Lesson info, aims and overview from the file go to the “For the teacher” block — the student won't see them.",
+  "bld.eyeOn": "The student sees it — click to hide",
+  "bld.eyeOff": "Hidden from the student",
+  "bld.notSeen": "Student can't see",
+  "bld.fmt": "Text formatting",
+  "bld.fmtB": "Bold (select text first)",
+  "bld.fmtI": "Italic",
+  "bld.fmtU": "Underline",
+  "bld.fmtMark": "Highlight",
+  "bld.fmtColor": "Text colour",
 };
 
 export const dictionaries: Record<LangCode, Record<DictKey, string>> = { ru, en };

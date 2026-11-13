@@ -15,7 +15,7 @@ function task(x: unknown): ImpTask | null {
   const type = s(o.type, 20);
   if (!isType(type) || TYPES[type].g === "tech") return null;
   const sec = o.section === "homework" || o.section === "words" ? o.section : "lesson";
-  return { type, title: s(o.title, 300), content: s(o.content, 50000), section: sec, teacherOnly: o.teacherOnly === true || undefined, part: s(o.part, 80) || undefined };
+  return { type, title: s(o.title, 300), content: s(o.content, 50000), section: sec, teacherOnly: o.teacherOnly === true || (type === "note" && o.teacherOnly !== false) || undefined, /* заметки — по умолчанию только учителю */ part: s(o.part, 80) || undefined };
 }
 const tasksOf = (x: unknown) => (Array.isArray(x) ? x.map(task).filter((t): t is ImpTask => !!t) : []);
 
@@ -80,9 +80,11 @@ Three places, do not mix them up:
 
 Rules:
 - Keep the order of the original lesson. Do not invent new exercises and do not drop any; keep the original wording and answers.
-- "title" — the task instruction the student sees (in English, as in the material).
+- "title" — the task instruction the student sees (in English, as in the material). Tasks with a title get a task number; if a block has no instruction (a question card, a text, a picture), leave "title" empty — it will have no number.
+- "Useful language", "support words", "phrases to help you" and similar boxes → a separate "vocab" task placed right after the task it supports (same "part"); it is shown as a coloured frame with no task number. Put the box heading (if any) into "title".
+- Formatting inside "content" and "title": **bold**, *italic*, __underline__, ==highlight==, and colour {blue}text{/} (blue, red, green, purple, orange). Keep the emphasis of the original material (e.g. key words in bold, examples in italics).
 - "content" — the task body in the platform markup for its type (below). Use \\n for new lines. Answers must be inside the markup, not in a separate key.
-- "teacherOnly": true — only for a teacher note that must stay next to a specific task (answer key, tip). General lesson information goes to "teacher", not here.
+- "teacherOnly": true — only for a teacher note that must stay next to a specific task (answer key, tip). General lesson information goes to "teacher", not here. Every "note" task is hidden from the student automatically; add "teacherOnly": false only if the student must see that note.
 - Pictures, audio and video can't go into JSON: where the material has one, add a task { "type": "note", "teacherOnly": true, "part": "<stage>", "title": "Add media", "content": "Add the picture/audio here: <short description, page number>" }.
 - If several lessons: { "lessons": [ { "title": "...", "teacher": {...}, "tasks": [...] }, ... ] }.
 - Before answering, check: is there a "teacher" block? Are all homework exercises in "homework"? Are all new words in one "wordset" in "words"?

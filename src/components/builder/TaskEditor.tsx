@@ -10,7 +10,10 @@ import { thumbSvg } from "@/lib/tasks/thumbs";
 import { fileToTask, helpTask } from "@/lib/ai/actions";
 import { extractFile } from "../ai/BookImport";
 
-const CONTENT_TYPES: TaskType[] = ["gap", "drag", "dropdown", "test", "tf", "pairs", "columns", "picture", "sentence", "textorder", "letters", "essay", "open", "record", "speak", "errors", "transform", "translate", "dictation", "crossword", "wordset", "text", "note"];
+const CONTENT_TYPES: TaskType[] = ["gap", "drag", "dropdown", "test", "tf", "pairs", "columns", "picture", "sentence", "textorder", "letters", "essay", "open", "record", "speak", "errors", "transform", "translate", "dictation", "crossword", "wordset", "vocab", "text", "note"];
+/** Где в содержании работает оформление (жирный, курсив, цвет, маркер): тексты, вопросы, утверждения, строки с пропусками. */
+const FMT_TYPES: TaskType[] = ["text", "note", "vocab", "speak", "open", "essay", "record", "gap", "drag", "dropdown", "test", "tf"];
+const FMT_COLORS = ["blue", "red", "green", "purple", "orange"] as const;
 const CHECK_TYPES = (t: TaskType) => !!TYPES[t].checkable;
 
 export function TaskEditor({ lessonId, initial, onSave, onClose, pending, error }: {
@@ -32,6 +35,16 @@ export function TaskEditor({ lessonId, initial, onSave, onClose, pending, error 
   const isGap = type === "gap" || type === "drag";
 
   /** Панель разметки: [ ] — пропуск, ✓ — верный вариант, 1. — нумерация строк. */
+  // оформление выделенного текста: **жирный**, *курсив*, __подчёркнутый__, ==маркер==, {blue}цвет{/}
+  const fmt = (open: string, close = open) => {
+    const el = ta.current;
+    if (!el) return;
+    const { selectionStart: a, selectionEnd: b, value } = el;
+    const sel = value.slice(a, b) || "text";
+    const next = value.slice(0, a) + open + sel + close + value.slice(b);
+    setTask((x) => ({ ...x, content: next }));
+    requestAnimationFrame(() => { el.focus(); el.setSelectionRange(a + open.length, a + open.length + sel.length); });
+  };
   const wrap = (kind: "gap" | "star" | "num") => {
     const el = ta.current;
     if (!el) return;
@@ -116,6 +129,15 @@ export function TaskEditor({ lessonId, initial, onSave, onClose, pending, error 
                   {(isGap || type === "dropdown" || type === "errors") && <button type="button" className="pchip" onClick={() => wrap("gap")} title={t("bld.mkGap")}>[ ]</button>}
                   {(type === "dropdown" || type === "test" || type === "errors") && <button type="button" className="pchip" onClick={() => wrap("star")} title={t("bld.mkRight")}>✓</button>}
                   <button type="button" className="pchip" onClick={() => wrap("num")} title={t("bld.mkNum")}>1.</button>
+                  {FMT_TYPES.includes(type) && (
+                    <span className="tedfmt" role="group" aria-label={t("bld.fmt")}>
+                      <button type="button" className="pchip" onClick={() => fmt("**")} title={t("bld.fmtB")}><b>B</b></button>
+                      <button type="button" className="pchip" onClick={() => fmt("*")} title={t("bld.fmtI")}><i>I</i></button>
+                      <button type="button" className="pchip" onClick={() => fmt("__")} title={t("bld.fmtU")}><u>U</u></button>
+                      <button type="button" className="pchip" onClick={() => fmt("==")} title={t("bld.fmtMark")}><mark className="tk-mark">ab</mark></button>
+                      {FMT_COLORS.map((c) => <button key={c} type="button" className="pchip tedcol" onClick={() => fmt(`{${c}}`, "{/}")} title={t("bld.fmtColor")} aria-label={`${t("bld.fmtColor")}: ${c}`}><span className={`tk-c-${c}`}>A</span></button>)}
+                    </span>
+                  )}
                   <span className="grow" />
                   {undo !== null && <button type="button" className="pchip" onClick={() => { setTask((x) => ({ ...x, content: undo })); setUndo(null); }}>↶ {t("ai.undo")}</button>}
                   <label className={`pchip ${ai ? "opacity-60" : ""}`} title={t("ai.fromFileHint")}><Icon name="clip" size="sm" />{ai === "file" ? t("ai.reading") : t("bld.fromFile")}
@@ -191,8 +213,7 @@ export function TaskEditor({ lessonId, initial, onSave, onClose, pending, error 
             <div className="mt-5 border-t border-sep pt-4">
               <div className="small mb-2 font-bold tracking-wide text-text3">{t("bld.options").toUpperCase()}</div>
               <div className="flex flex-wrap gap-2">
-                <IconOpt k="hidden" icon="lockI" label={t("bld.optHidden")} />
-                <IconOpt k="teacherOnly" icon="user" label={t("bld.teacherOnly")} />
+                <IconOpt k="teacherOnly" icon="eyeoff" label={t("bld.eyeOff")} />
                 <IconOpt k="nonum" icon="levelI" label={t("bld.optNonum")} />
                 {CHECK_TYPES(type) && <IconOpt k="noreveal" icon="lock" label={t("bld.optNoreveal")} />}
                 {(TYPES[type].teacherCheck || type === "transform" || type === "translate") && <IconOpt k="check" icon="check" label={t("bld.optTeacher")} />}

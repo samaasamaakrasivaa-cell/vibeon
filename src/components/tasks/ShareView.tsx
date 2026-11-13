@@ -2,11 +2,12 @@
 import { useT } from "@/lib/i18n/client";
 import { Brand, LogoMark } from "../Logo";
 import { TaskCard, type TaskData } from "./TaskView";
+import { numbered } from "@/lib/tasks/catalog";
 
 export function ShareView({ title, course, groups, homework, words }: { title: string; course: string; groups: { title: string; tasks: TaskData[] }[]; homework: TaskData[]; words: TaskData[] }) {
   const { t } = useT();
   let n = -1;
-  const list = (tasks: TaskData[]) => tasks.map((task) => <TaskCard key={task.id} task={task} index={task.type === "divider" ? -1 : ++n} />);
+  const list = (tasks: TaskData[]) => tasks.map((task) => <TaskCard key={task.id} task={task} index={numbered(task) ? ++n : -1} />);
   return (
     <>
       <header className="apptop flexbar"><a href="/" className="atl"><LogoMark /><Brand /></a><span className="small muted">{t("shr.guest")}</span></header>

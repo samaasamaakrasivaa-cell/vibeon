@@ -3,7 +3,7 @@
 // Используется в превью конструктора («Ученик увидит»), в «Поделиться», а на этапах 5–6 — в уроке и кабинете ученика.
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useT } from "@/lib/i18n/client";
-import type { TaskOptions, TaskType } from "@/lib/tasks/catalog";
+import { numbered, type TaskOptions, type TaskType } from "@/lib/tasks/catalog";
 import { buildCrossword, dictationGrade, parse, same, series, shuffle, videoEmbed, type Seg } from "@/lib/tasks/parse";
 import { Icon } from "../Icon";
 import { useSlot, useTaskRole } from "./store";
@@ -92,7 +92,7 @@ function Gaps({ task, kind }: { task: TaskData; kind: "gap" | "dropdown" }) {
                   <Num i={i} o={o} />
                   <span>
                     {l.map((s, si) => {
-                      if (s.t === "text") return <span key={si}>{s.v}</span>;
+                      if (s.t === "text") return <Inl key={si} text={s.v} />;
                       const k = `${i}:${si}`;
                       const m = markOf(k, s);
                       const shown = ck.reveal(k) && m === "bad";
@@ -192,7 +192,7 @@ function Test({ task }: { task: TaskData }) {
         const multi = q.correct.length > 1 || o.multi;
         return (
           <div key={qi}>
-            <div className="mb-2 font-semibold"><Num i={qi} o={o} /> {q.q}</div>
+            <div className="mb-2 font-semibold"><Num i={qi} o={o} /> <Inl text={q.q} /></div>
             <div className="flex flex-col gap-1.5">
               {q.options.map((op, oi) => {
                 const sel = (ans[qi] ?? []).includes(oi);
@@ -228,7 +228,7 @@ function TF({ task }: { task: TaskData }) {
     <div className="flex flex-col gap-3">
       {p.items.map((it, i) => (
         <div key={i} className="tk-tf">
-          <span className="grow"><Num i={i} o={o} /> {it.s}</span>
+          <span className="grow"><Num i={i} o={o} /> <Inl text={it.s} /></span>
           <div className="seg xs">
             {opts.map(([v, l]) => {
               const sel = ans[i] === v;
@@ -524,11 +524,21 @@ function CrosswordView({ task }: { task: TaskData }) {
 }
 
 // ───────── Материалы и открытые ответы ─────────
-function Rich({ text }: { text: string }) {
-  const html = text
+/** Строчное оформление: **жирный**, *курсив*, __подчёркнутый__, ==маркер==, {blue}цвет{/} (blue, red, green, purple, orange). */
+const COLORS = ["blue", "red", "green", "purple", "orange"];
+export function inlineHtml(text: string) {
+  return text
     .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
     .replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/(^|[^*])\*(?!\s)(.+?)\*/g, "$1<i>$2</i>").replace(/__(.+?)__/g, "<u>$1</u>")
-    .split(/\n\s*\n/).map((p) => `<p>${p.replace(/\n/g, "<br/>")}</p>`).join("");
+    .replace(/==(.+?)==/g, '<mark class="tk-mark">$1</mark>')
+    .replace(/\{(\w+)\}([\s\S]+?)\{\/\w*\}/g, (m, c: string, x: string) => (COLORS.includes(c) ? `<span class="tk-c-${c}">${x}</span>` : m));
+}
+/** Короткий текст с оформлением (вопрос, утверждение, строка задания). */
+export function Inl({ text }: { text: string }) {
+  return /[*_={]/.test(text) ? <span dangerouslySetInnerHTML={{ __html: inlineHtml(text) }} /> : <>{text}</>;
+}
+function Rich({ text }: { text: string }) {
+  const html = inlineHtml(text).split(/\n\s*\n/).map((p) => `<p>${p.replace(/\n/g, "<br/>")}</p>`).join("");
   return <div className="tk-rich" dangerouslySetInnerHTML={{ __html: html }} />;
 }
 
@@ -650,6 +660,7 @@ export function TaskBody({ task }: { task: TaskData }) {
       return <div>{o.src ? <audio controls src={o.src} className="w-full" /> : <div className="tk-empty"><Icon name="sound" />{t("tk.noAudio")}</div>}<Script o={o} /></div>;
     case "text": return <div>{o.images?.[0] && <img src={o.images[0].src} alt="" className="tk-img mb-3" />}<Rich text={task.content} /></div>;
     case "note": return <div className="tk-note"><Rich text={task.content} /></div>;
+    case "vocab": return p.kind === "lines" ? <div className="tk-vocab-items">{p.items.map((w, i) => <span key={i} className="tk-vocab-w"><Inl text={w} /></span>)}</div> : null;
     case "link": return o.url ? <a href={o.url} target="_blank" rel="noreferrer" className="btn tinted"><Icon name="link" size="sm" />{o.label || o.url}</a> : <div className="tk-empty"><Icon name="link" />{t("tk.noLink")}</div>;
     case "divider": return <hr className="tk-hr" />;
     case "wordset":
@@ -668,7 +679,8 @@ export function TaskBody({ task }: { task: TaskData }) {
     case "speak":
       return (
         <div className="flex flex-col gap-3">
-          {p.kind === "lines" && p.items.map((q, i) => <div key={i}><Num i={i} o={o} /> {q}</div>)}
+          {/* один вопрос — без номера строки */}
+          {p.kind === "lines" && p.items.map((q, i) => <div key={i}>{p.items.length > 1 && <Num i={i} o={o} />} <Inl text={q} /></div>)}
           <AiTalk task={task} />
         </div>
       );
@@ -686,7 +698,7 @@ function Open({ task }: { task: TaskData }) {
   return (
     <div className="flex flex-col gap-4">
       {p.kind === "lines" && p.items.map((q, i) => (
-        <div key={i}><div className="mb-1.5"><Num i={i} o={task.options} /> {q}</div>
+        <div key={i}><div className="mb-1.5">{p.items.length > 1 && <Num i={i} o={task.options} />} <Inl text={q} /></div>
           <textarea className="textarea" aria-label={q} value={val[i] ?? ""} onChange={(e) => setVal((x) => ({ ...x, [i]: e.target.value }))} /></div>
       ))}
       <span className="hint">{t("tk.teacherChecks")}</span>
@@ -711,13 +723,22 @@ function Essay({ task }: { task: TaskData }) {
 /** Карточка задания: номер + формулировка + содержимое. */
 export function TaskCard({ task, index, actions }: { task: TaskData; index: number; actions?: React.ReactNode }) {
   if (task.type === "divider") return <hr className="tk-hr" />;
+  // рамка Useful vocabulary: без номера, заголовок — внутри рамки
+  if (task.type === "vocab")
+    return (
+      <article className="tk tk-vocab">
+        <header className="tk-head"><h3 className="tk-title tk-vocab-t"><Inl text={task.title || "Useful vocabulary"} /></h3>{actions}</header>
+        <TaskBody task={task} />
+      </article>
+    );
+  const head = !!task.title.trim() || !!actions; // нет формулировки — нет ни номера, ни пустой шапки
   return (
     <article className="tk">
-      <header className="tk-head">
-        {index >= 0 && <span className="tk-num">{index + 1}</span>}
-        <h3 className="tk-title">{task.title}</h3>
+      {head && <header className="tk-head">
+        {index >= 0 && numbered(task) && <span className="tk-num">{index + 1}</span>}
+        <h3 className="tk-title"><Inl text={task.title} /></h3>
         {actions}
-      </header>
+      </header>}
       <TaskBody task={task} />
     </article>
   );
