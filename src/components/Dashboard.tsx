@@ -4,6 +4,7 @@ import { Icon } from "./Icon";
 import { NotificationList } from "./NotificationList";
 import { HideSteps } from "./teacher/HideSteps";
 import { LessonQuick } from "./teacher/WeekGrid";
+import { nextBirthday } from "@/lib/birthdays";
 import { getT } from "@/lib/i18n/server";
 import { greetingKey, hourIn } from "@/lib/greeting";
 import { db } from "@/lib/db";
@@ -83,6 +84,13 @@ export async function Dashboard({ user, role, day }: { user: User; role: "TEACHE
     ];
     if (steps.slice(0, 3).every((s) => s.done) || (prof?.settings as { firstStepsHidden?: boolean } | null)?.firstStepsHidden) steps = [];
   }
+
+  // дни рождения учеников в ближайшие 30 дней (дата — из анкеты)
+  const bdays = role === "TEACHER"
+    ? (await db.student.findMany({ where: { teacherId: user.id, status: "ACTIVE", birthday: { not: null } }, select: { id: true, name: true, lastName: true, birthday: true } }))
+        .map((s) => ({ s, b: nextBirthday(s.birthday!, todayIso) })).filter((x) => x.b.days <= 30).sort((a, b) => a.b.days - b.b.days)
+    : [];
+  const bdWhen = (n: number) => (n === 0 ? t("bd.today") : n === 1 ? t("bd.tomorrow") : t("bd.inDays", { n }));
 
   return (
     <div className="page">
@@ -191,6 +199,26 @@ export async function Dashboard({ user, role, day }: { user: User; role: "TEACHE
           ))}
         </div>
       </section>
+
+      {bdays.length > 0 && (
+        <section className="card bdcard">
+          <div className="mb-3 flex items-baseline justify-between gap-3">
+            <h3 className="m-0">🎂 {t("bd.title")}</h3>
+            <span className="small muted">{t("bd.sub")}</span>
+          </div>
+          <div className="bdlist">
+            {bdays.map(({ s, b }) => (
+              <Link key={s.id} href={`/teacher/students/${s.id}`} className={`bdrow ${b.days === 0 ? "now" : b.days <= 3 ? "soon" : ""}`}>
+                <span className="avatar">{initials(s.name, s.lastName)}</span>
+                <span className="grow"><b>{[s.name, s.lastName].filter(Boolean).join(" ")}</b>
+                  <span className="small muted block">{new Date(`${b.iso}T12:00:00Z`).toLocaleDateString(loc, { day: "numeric", month: "long", weekday: "short", timeZone: "UTC" })}{b.age ? ` · ${t("bd.turns", { n: b.age })}` : ""}{b.iso.slice(0, 7) === todayIso.slice(0, 7) ? ` · ${t("bd.thisMonth")}` : ""}</span>
+                </span>
+                <span className={`pill ${b.days === 0 ? "orange" : b.days <= 3 ? "violet" : "grey"}`}>{bdWhen(b.days)}</span>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       <section className="card">
         <NotificationList

@@ -2028,7 +2028,7 @@ const ru = {
   "crs.lessonTitle": "Название урока",
   "crs.lessonTitlePh": "Например: Work-life balance",
   "crs.newLesson": "Новый урок",
-  "crs.newLessonHint": "Цели, сведения об уроке и ход урока можно заполнить позже — или они подтянутся из файла при импорте урока.",
+  "crs.newLessonHint": "Всё, кроме названия, можно заполнить позже: это тот же блок «Для учителя», что в конструкторе урока, — он же подтянется из файла при импорте.",
   "crs.topic": "Тема",
   "cls.reset": "Сбросить ответы",
   "cls.resetAll": "Сбросить ответы всех учеников",
@@ -2041,6 +2041,17 @@ const ru = {
   "cls.you": "вы",
   "cls.isOnline": "в классе",
   "cls.isOffline": "не в классе",
+  "bd.title": "Дни рождения",
+  "bd.sub": "ближайшие 30 дней · напомню за 3 дня и в сам день",
+  "bd.today": "сегодня 🎉",
+  "bd.tomorrow": "завтра",
+  "bd.inDays": "через {n} дн.",
+  "bd.turns": "исполнится {n}",
+  "bd.thisMonth": "в этом месяце",
+  "bld.coverSet": "Картинка урока",
+  "bld.coverAdd": "Картинка урока",
+  "bld.coverChange": "Сменить",
+  "bld.coverDel": "Убрать картинку урока",
 } as const;
 
 export type DictKey = keyof typeof ru;
@@ -4071,7 +4082,7 @@ const en: Record<DictKey, string> = {
   "crs.lessonTitle": "Lesson title",
   "crs.lessonTitlePh": "E.g. Work-life balance",
   "crs.newLesson": "New lesson",
-  "crs.newLessonHint": "Aims, lesson info and the plan can be added later — or they come from the file when you import a lesson.",
+  "crs.newLessonHint": "Everything except the title can be filled in later: it is the same “For the teacher” block as in the lesson builder, and it comes from the file when you import a lesson.",
   "crs.topic": "Topic",
   "cls.reset": "Reset answers",
   "cls.resetAll": "Reset all students' answers",
@@ -4084,6 +4095,17 @@ const en: Record<DictKey, string> = {
   "cls.you": "you",
   "cls.isOnline": "in class",
   "cls.isOffline": "not in class",
+  "bd.title": "Birthdays",
+  "bd.sub": "next 30 days · reminder 3 days before and on the day",
+  "bd.today": "today 🎉",
+  "bd.tomorrow": "tomorrow",
+  "bd.inDays": "in {n} days",
+  "bd.turns": "turns {n}",
+  "bd.thisMonth": "this month",
+  "bld.coverSet": "Lesson picture",
+  "bld.coverAdd": "Lesson picture",
+  "bld.coverChange": "Change",
+  "bld.coverDel": "Remove the lesson picture",
 };
 
 export const dictionaries: Record<LangCode, Record<DictKey, string>> = { ru, en };

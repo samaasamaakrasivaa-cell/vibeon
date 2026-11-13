@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { upload } from "../courses/CourseView";
 import { randomId } from "./rid";
 import { Dialog } from "../Dialog";
 import { Icon } from "../Icon";
@@ -22,7 +23,7 @@ import type { TInfo } from "@/lib/tasks/teacher-info";
 type Part = "lesson" | "homework" | "words";
 export type BTask = TaskData & { section: Part; rubricId: string | null; hidden: boolean };
 export type BuilderData = {
-  id: string; title: string; subtitle: string; durationMin: number; outcomes: string[]; rubrics: Rubric[]; teacherInfo: TInfo;
+  id: string; title: string; subtitle: string; cover: string | null; durationMin: number; outcomes: string[]; rubrics: Rubric[]; teacherInfo: TInfo;
   course: { id: string; title: string; cover: string | null }; unitNo: number; lessonNo: number;
   tasks: BTask[]; fav: string[]; share: { on: boolean; token: string | null }; appUrl: string;
   students: { id: string; name: string; next: string | null }[];
@@ -36,6 +37,7 @@ export function Builder({ d }: { d: BuilderData }) {
   useEffect(() => { setRub(d.rubrics); }, [d.rubrics]);
   const [active, setActive] = useState(d.rubrics[0]?.id ?? null);
   const [addSec, setAddSec] = useState(false); // «Новая секция»: своё название или готовое
+  const coverRef = useRef<HTMLInputElement>(null);
   const [secName, setSecName] = useState("");
   // «Переместить в другой раздел»: этапы урока, домашка, новые слова
   const [moving, setMoving] = useState<string | null>(null);
@@ -181,10 +183,29 @@ export function Builder({ d }: { d: BuilderData }) {
         <aside className="bld-side">
           {/* шапка: учебник, урок, подзаголовок */}
           <div className="bs-head">
-            <div className="bs-cover" style={d.course.cover ? { background: `center / cover url(${d.course.cover})` } : undefined}>{!d.course.cover && <Icon name="book" size="lg" />}</div>
-            <div className="bs-course">{d.course.title}</div>
+            {/* картинка урока: своя (загружает учитель) или обложка курса */}
+            <div className="bs-cover" style={(d.cover || d.course.cover) ? { background: `center / cover url(${d.cover || d.course.cover})` } : undefined}>
+              {!d.cover && !d.course.cover && <Icon name="image" size="lg" />}
+              {!studentView && (
+                <span className="bs-cover-acts">
+                  <button type="button" className="bs-cover-btn" onClick={() => coverRef.current?.click()} title={t("bld.coverSet")} aria-label={t("bld.coverSet")}><Icon name="image" size="sm" />{d.cover ? t("bld.coverChange") : t("bld.coverAdd")}</button>
+                  {d.cover && <button type="button" className="bs-cover-btn" onClick={() => go(() => updateLessonMeta(d.id, { cover: null }))} aria-label={t("bld.coverDel")} title={t("bld.coverDel")}><Icon name="close" size="sm" /></button>}
+                </span>
+              )}
+              <input ref={coverRef} type="file" accept="image/*" hidden onChange={async (e) => { const f = e.target.files?.[0]; e.target.value = ""; if (f) { const r = await upload(f).catch(() => null); if (r) go(() => updateLessonMeta(d.id, { cover: r.url })); } }} />
+            </div>
+            <div className="bs-course">Course {d.course.title}</div>
             <h2 className="bs-title">{d.title}</h2>
-            <input className="editable bs-sub" defaultValue={d.subtitle} key={d.subtitle} placeholder={t("crs.subtitlePh")} onBlur={(e) => e.target.value !== d.subtitle && go(() => updateLessonMeta(d.id, { subtitle: e.target.value }))} aria-label={t("crs.subtitlePh")} readOnly={studentView} />
+            {/* тема урока — из Lesson info блока «Для учителя» (или подзаголовок урока) */}
+            {(d.teacherInfo.info || d.subtitle) && <div className="bs-sub">{(d.teacherInfo.info || d.subtitle).split("\n")[0]}</div>}
+            <div className="bs-meta">
+              {d.teacherInfo.level && <span className="pill blue">{d.teacherInfo.level}</span>}
+              {studentView ? <span className="small muted">{d.durationMin} {t("dash.min")}</span> : (
+                <select className="bs-dur" value={d.durationMin} aria-label={t("crs.duration")} onChange={(e) => go(() => updateLessonMeta(d.id, { durationMin: +e.target.value }))}>
+                  {[30, 45, 60, 90, 120].map((m) => <option key={m} value={m}>{m} {t("dash.min")}</option>)}
+                </select>
+              )}
+            </div>
           </div>
 
           {/* секции урока: список, перетаскивание, добавление своей или готовой */}

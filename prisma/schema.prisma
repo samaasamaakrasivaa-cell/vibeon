@@ -270,6 +270,7 @@ model LessonTemplate {
   order      Int              @default(0)
   sections   Json             @default("[]") // секции урока: Урок / Домашка / Новые слова + рубрики
   subtitle    String? // «Vocabulary: work»
+  cover       String? // картинка урока (иначе — обложка курса)
   durationMin Int      @default(60)
   outcomes    String[] // «После урока ученик сможет»
   teacherInfo Json     @default("{}") // только для учителя: lesson info, aims (общая, лексика, грамматика, навыки), overview, заметки

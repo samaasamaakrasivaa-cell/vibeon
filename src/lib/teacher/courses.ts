@@ -167,7 +167,7 @@ export async function updateTeacherInfo(id: string, info: TInfo): Promise<R> {
   return { ok: true };
 }
 
-export async function updateLessonMeta(id: string, f: { title?: string; subtitle?: string; durationMin?: number; outcomes?: string[] }): Promise<R> {
+export async function updateLessonMeta(id: string, f: { title?: string; subtitle?: string; durationMin?: number; outcomes?: string[]; cover?: string | null }): Promise<R> {
   const teacher = await me();
   const l = await ownLesson(id, teacher.id);
   await db.lessonTemplate.update({
@@ -177,6 +177,8 @@ export async function updateLessonMeta(id: string, f: { title?: string; subtitle
       subtitle: f.subtitle !== undefined ? clean(f.subtitle, 160) || null : undefined,
       durationMin: f.durationMin && [30, 45, 60, 90, 120].includes(f.durationMin) ? f.durationMin : undefined,
       outcomes: f.outcomes?.map((x) => clean(x, 200)).filter(Boolean).slice(0, 20),
+      // картинка урока: только загруженный файл или https-ссылка; null — убрать
+      cover: f.cover === null ? null : f.cover && (/^https?:\/\//.test(f.cover) || f.cover.startsWith("/api/files/")) ? f.cover.slice(0, 1000) : undefined,
     },
   });
   refreshCourse(l.unit.courseId);

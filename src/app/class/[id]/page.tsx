@@ -71,7 +71,7 @@ export default async function ClassPage({ params, searchParams }: { params: Prom
         student: lesson.student && !(group && role === "teacher") ? { id: lesson.student.id, userId: lesson.student.userId, name: lesson.student.name, lastName: lesson.student.lastName, level: lesson.student.level, course: lesson.student.course } : null,
         title: data?.l.title ?? null,
         crumbs: data ? `${data.l.unit.course.title} · Unit ${data.unitNo} · Lesson ${data.lessonNo}` : null,
-        course: data ? { title: data.l.unit.course.title, cover: data.l.unit.course.cover } : null,
+        course: data ? { title: data.l.unit.course.title, cover: data.l.cover || data.l.unit.course.cover } : null,
         rubrics: data?.rubrics ?? [], tasks: (data?.tasks ?? []).filter((x) => role === "teacher" || !x.options?.teacherOnly).map((x) => (role === "teacher" || (!x.options?.teacherKey && !x.options?.help?.hidden) ? x : { ...x, options: { ...x.options, teacherKey: undefined, help: x.options?.help?.hidden ? undefined : x.options?.help } })), /* заметки «только учителю», ответы для учителя и скрытые Useful phrases ученику не отдаём */ answers, statuses, reviews, aiDrafts,
         ...(role === "teacher" && data?.l.teacherInfo ? { teacherInfo: data.l.teacherInfo as TInfo } : {}),
         live: (host.live ?? {}) as LiveState, board,

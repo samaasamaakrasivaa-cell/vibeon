@@ -4,6 +4,7 @@ import { hhmm, isoDay, minutesOfDay, partsIn } from "../time";
 import { deliverPending, notify } from "./index";
 import { settingsOf } from "./settings";
 import { pluralForm } from "@/lib/i18n/dict";
+import { nextBirthday } from "../birthdays";
 
 /** Напоминание об уроке: за N минут (из настроек), ученику и учителю; ссылка на класс. */
 async function lessonReminders(now: Date) {
@@ -67,6 +68,26 @@ async function homeworkReminders(now: Date) {
   }
 }
 
+/** Дни рождения учеников: учителю — за 3 дня и в сам день (дата из анкеты ученика). */
+async function birthdayReminders(now: Date) {
+  const list = await db.student.findMany({ where: { status: "ACTIVE", birthday: { not: null } }, select: { id: true, name: true, lastName: true, birthday: true, teacherId: true } });
+  const teachers = new Map((await db.user.findMany({ where: { id: { in: [...new Set(list.map((s) => s.teacherId))] } }, select: { id: true, timezone: true } })).map((u) => [u.id, u]));
+  for (const s of list) {
+    const tu = teachers.get(s.teacherId);
+    if (!tu || !s.birthday) continue;
+    const b = nextBirthday(s.birthday, isoDay(now, tu.timezone));
+    if (b.days !== 0 && b.days !== 3) continue;
+    const name = [s.name, s.lastName].filter(Boolean).join(" ");
+    const date = new Date(`${b.iso}T12:00:00Z`).toLocaleDateString("ru-RU", { day: "numeric", month: "long", timeZone: "UTC" });
+    const age = b.age ? ` (исполнится ${b.age})` : "";
+    await notify({
+      userId: s.teacherId, kind: "birthday", link: `/teacher/students/${s.id}`,
+      title: b.days === 0 ? `Сегодня день рождения у ${name}${age} 🎂` : `Через 3 дня, ${date}, день рождения у ${name}${age}`,
+      dedupe: `bday:${s.id}:${b.iso}:${b.days}`,
+    });
+  }
+}
+
 let running = false;
 export async function runNotify(now = new Date()) {
   if (running) return;
@@ -75,6 +96,7 @@ export async function runNotify(now = new Date()) {
     await lessonReminders(now);
     await wordReminders(now);
     await homeworkReminders(now);
+    await birthdayReminders(now);
     await deliverPending(now);
   } catch (e) {
     console.error("[notify]", e);

@@ -1735,3 +1735,20 @@ button.grp-row:hover { background: var(--fill); }
 .tk-clue { display: block; width: 100%; text-align: left; border: 0; background: transparent; font: inherit; color: inherit; padding: 3px 6px; margin: 0 -6px; border-radius: 8px; cursor: pointer; }
 .tk-clue:hover { background: var(--fill); }
 .tk-clue.on { background: var(--accent-bg); }
+
+/* главная учителя: дни рождения */
+.bdlist { display: flex; flex-direction: column; gap: 6px; }
+.bdrow { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 14px; background: var(--surface2); color: var(--text); }
+.bdrow:hover { background: var(--fill); }
+.bdrow.now { background: var(--warn-bg); }
+.bdrow .grow { flex: 1; min-width: 0; }
+/* конструктор: картинка урока и характеристики */
+.bs-cover { position: relative; height: 120px; overflow: hidden; }
+.bs-cover-acts { position: absolute; right: 8px; bottom: 8px; display: flex; gap: 4px; opacity: 0; transition: opacity .15s; }
+.bs-cover:hover .bs-cover-acts, .bs-cover:focus-within .bs-cover-acts { opacity: 1; }
+.bs-cover-btn { display: inline-flex; align-items: center; gap: 5px; height: 28px; padding: 0 10px; border: 0; border-radius: 999px; background: rgba(0,0,0,.55); color: #fff; font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; backdrop-filter: blur(8px); }
+@media (hover: none) { .bs-cover-acts { opacity: 1; } }
+.bs-course { text-transform: none; letter-spacing: 0; font-size: 13px; }
+.bs-meta { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+.bs-dur { border: 0; border-radius: 999px; background: var(--fill); color: var(--text2); font: inherit; font-size: 13px; font-weight: 500; padding: 3px 26px 3px 10px; cursor: pointer; }
+.lrow-theme { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 420px; }

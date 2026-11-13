@@ -26,7 +26,7 @@ export default async function BuilderPage({ params }: { params: Promise<{ id: st
   return (
     <Builder
       d={{
-        id: l.id, title: l.title, subtitle: l.subtitle ?? "", durationMin: l.durationMin, outcomes: l.outcomes, teacherInfo: (l.teacherInfo ?? {}) as TInfo,
+        id: l.id, title: l.title, subtitle: l.subtitle ?? "", cover: l.cover, durationMin: l.durationMin, outcomes: l.outcomes, teacherInfo: (l.teacherInfo ?? {}) as TInfo,
         rubrics: data.rubrics, unitNo: data.unitNo, lessonNo: data.lessonNo, tasks: data.tasks,
         course: { id: l.unit.course.id, title: l.unit.course.title, cover: l.unit.course.cover },
         fav: ((prof?.settings as { favTypes?: string[] })?.favTypes) ?? ["gap", "tf"],

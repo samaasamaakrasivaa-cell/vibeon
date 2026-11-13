@@ -137,7 +137,7 @@ export function CourseView({ c, students }: { c: CourseData; students: AssignStu
                     <button type="button" className="lrow-main" onClick={() => setOpen(open === l.id ? null : l.id)} aria-expanded={open === l.id}>
                       <b>{l.title}</b>
                       <span className="lrow-meta">
-                        {l.subtitle && <span>{l.subtitle}</span>}
+                        {(l.info.info || l.subtitle) && <span className="lrow-theme">{(l.info.info || l.subtitle || "").split("\n")[0]}</span>}
                         {l.info.level && <span className="pill blue">{l.info.level}</span>}
                         <span className="text-text3">{l.durationMin} {t("dash.min")} · {t("crs.tasks", { n: l.tasks })}</span>
                       </span>
@@ -151,9 +151,8 @@ export function CourseView({ c, students }: { c: CourseData; students: AssignStu
                   </div>
                   {open === l.id && (
                     <div className="lrow-det">
-                      <div className="grid gap-3 sm:grid-cols-[1fr_1fr_140px]">
+                      <div className="grid gap-3 sm:grid-cols-[1fr_140px]">
                         <label className="field"><span className="flabel">{t("crs.lessonTitle")}</span><Editable className="input" value={l.title} onSave={(v) => run(() => updateLessonMeta(l.id, { title: v }))} /></label>
-                        <label className="field"><span className="flabel">{t("crs.topic")}</span><Editable className="input" value={l.subtitle ?? ""} placeholder={t("crs.subtitlePh")} onSave={(v) => run(() => updateLessonMeta(l.id, { subtitle: v }))} /></label>
                         <label className="field"><span className="flabel">{t("crs.duration")}</span>
                           <select className="select" value={l.durationMin} onChange={(e) => run(() => updateLessonMeta(l.id, { durationMin: +e.target.value }))}>{[30, 45, 60, 90, 120].map((m) => <option key={m} value={m}>{m} {t("dash.min")}</option>)}</select>
                         </label>
@@ -216,33 +215,37 @@ function NewLesson({ unitId, onClose }: { unitId: string; onClose: () => void })
   const { t } = useT();
   const router = useRouter();
   const [title, setTitle] = useState("");
-  const [subtitle, setSubtitle] = useState("");
   const [dur, setDur] = useState(60);
   const [level, setLevel] = useState("");
+  const [info, setInfo] = useState("");
   const [aims, setAims] = useState<Record<string, string>>({});
+  const [overview, setOverview] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const create = async (thenBuild: boolean) => {
     setBusy(true); setErr(null);
-    const info: TInfo = { level, aims };
-    const r = await createLessonTemplate(unitId, title, { subtitle, durationMin: dur, info: hasInfo(info) ? info : undefined }).catch(() => ({ ok: false as const, error: t("pl.err.net") }));
+    // те же поля, что в блоке «Для учителя» в конструкторе: уровень, Lesson info, цели, ход урока
+    const ti: TInfo = { level, info, aims, overview };
+    const r = await createLessonTemplate(unitId, title, { durationMin: dur, info: hasInfo(ti) ? ti : undefined }).catch(() => ({ ok: false as const, error: t("pl.err.net") }));
     setBusy(false);
     if (!r.ok) { setErr(r.error); return; }
     if (thenBuild && r.id) router.push(`/builder/${r.id}`); else { router.refresh(); onClose(); }
   };
   return (
-    <Dialog open onClose={onClose} title={t("crs.newLesson")}>
+    <Dialog open onClose={onClose} title={t("crs.newLesson")} wide>
       <div className="flex flex-col gap-4">
-        <label className="field"><span className="flabel">{t("crs.lessonTitle")}</span><input className="input" autoFocus value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t("crs.lessonTitlePh")} maxLength={160} /></label>
-        <div className="grid grid-cols-[1fr_120px_96px] gap-3">
-          <label className="field"><span className="flabel">{t("crs.topic")}</span><input className="input" value={subtitle} onChange={(e) => setSubtitle(e.target.value)} placeholder={t("crs.subtitlePh")} maxLength={160} /></label>
+        <div className="grid gap-3 sm:grid-cols-[1fr_120px_96px]">
+          <label className="field"><span className="flabel">{t("crs.lessonTitle")}</span><input className="input" autoFocus value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t("crs.lessonTitlePh")} maxLength={160} /></label>
           <label className="field"><span className="flabel">{t("crs.duration")}</span><select className="select" value={dur} onChange={(e) => setDur(+e.target.value)}>{[30, 45, 60, 90, 120].map((m) => <option key={m} value={m}>{m} {t("dash.min")}</option>)}</select></label>
           <label className="field"><span className="flabel">{t("ti.level")}</span><input className="input" value={level} onChange={(e) => setLevel(e.target.value)} placeholder="B1" maxLength={20} /></label>
         </div>
         <details className="nl-aims">
-          <summary>{t("ti.aims")} <span className="small muted">— {t("crs.later")}</span></summary>
-          <div className="flex flex-col gap-2 mt-2">
+          <summary>{t("ti.title")}: {t("ti.info")}, {t("ti.aims")}, {t("ti.overview")} <span className="small muted">— {t("crs.later")}</span></summary>
+          <div className="flex flex-col gap-3 mt-3">
+            <label className="field"><span className="flabel">{t("ti.info")}</span><textarea className="textarea" rows={2} value={info} onChange={(e) => setInfo(e.target.value)} placeholder={t("ti.infoPh")} /></label>
+            <div className="flabel">{t("ti.aims")}</div>
             {AIM_KEYS.map((k) => <label key={k} className="field"><span className="small">{t(`ti.aim.${k}` as DictKey)}</span><textarea className="textarea" rows={2} value={aims[k] ?? ""} onChange={(e) => setAims((a) => ({ ...a, [k]: e.target.value }))} /></label>)}
+            <label className="field"><span className="flabel">{t("ti.overview")}</span><textarea className="textarea" rows={4} value={overview} onChange={(e) => setOverview(e.target.value)} placeholder={t("ti.overviewPh")} /></label>
           </div>
         </details>
         <p className="hint m-0">{t("crs.newLessonHint")}</p>
