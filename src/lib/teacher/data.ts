@@ -1,4 +1,5 @@
 import "server-only";
+import { randomUUID } from "node:crypto";
 import { db } from "../db";
 
 /** Прошедшие запланированные уроки считаем проведёнными; учитель может поменять на «пропуск» или «отмену». */
@@ -20,7 +21,21 @@ export async function extendSeries(teacherId: string) {
   for (const s of series) {
     if (!s.seriesId || !s._max.startsAt || s._max.startsAt > horizon) continue;
     const last = await db.lessonInstance.findFirst({ where: { seriesId: s.seriesId, startsAt: s._max.startsAt } });
-    if (!last || (last.studentId && !(await db.student.findFirst({ where: { id: last.studentId, status: "ACTIVE" } })))) continue;
+    if (!last) continue;
+    // группа: продлеваем на её нынешний состав, у каждой недели — своё общее занятие (slotId)
+    if (last.groupId && last.slotId) {
+      const g = await db.group.findUnique({ where: { id: last.groupId }, include: { members: { include: { student: true } } } });
+      const members = (g?.members ?? []).map((m) => m.student).filter((x) => x.status === "ACTIVE" || x.status === "INVITED");
+      if (!g || !members.length) continue;
+      await db.lessonInstance.createMany({
+        data: Array.from({ length: 26 }, (_, i) => {
+          const slotId = randomUUID();
+          return members.map((m) => ({ teacherId, studentId: m.id, groupId: g.id, slotId, durationMin: last.durationMin, price: g.price ?? m.price ?? null, seriesId: s.seriesId, startsAt: new Date(last.startsAt.getTime() + (i + 1) * 7 * 864e5) }));
+        }).flat(),
+      });
+      continue;
+    }
+    if (last.studentId && !(await db.student.findFirst({ where: { id: last.studentId, status: "ACTIVE" } }))) continue;
     await db.lessonInstance.createMany({
       data: Array.from({ length: 26 }, (_, i) => ({
         teacherId, studentId: last.studentId, groupId: last.groupId, durationMin: last.durationMin, price: last.price,
@@ -39,6 +54,12 @@ export const lessonInclude = {
   student: { select: { id: true, name: true, lastName: true, price: true } },
   group: { select: { id: true, title: true } },
 } as const;
+
+/** Групповое занятие в расписании и на «Сегодня» — одна строка (первый урок занятия). */
+export function oneSlot<T extends { slotId: string | null }>(rows: T[]) {
+  const seen = new Set<string>();
+  return rows.filter((l) => !l.slotId || (seen.has(l.slotId) ? false : (seen.add(l.slotId), true)));
+}
 
 export function lessonWho(l: { trialName: string | null; student: { name: string; lastName: string | null } | null; group: { title: string } | null }) {
   return l.group?.title ?? (l.student ? [l.student.name, l.student.lastName].filter(Boolean).join(" ") : (l.trialName ?? "—"));

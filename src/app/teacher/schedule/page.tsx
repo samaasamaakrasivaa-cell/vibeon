@@ -5,13 +5,13 @@ import { requireUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { getT } from "@/lib/i18n/server";
 import { addDaysIso, dayStart, hhmm, isoDay, minutesOfDay, mondayOf, parseIsoDay, partsIn, weekRange } from "@/lib/time";
-import { earnedOf, lessonInclude, lessonWho, rub, syncSchedule } from "@/lib/teacher/data";
+import { earnedOf, lessonInclude, lessonWho, oneSlot, rub, syncSchedule } from "@/lib/teacher/data";
 import { initials } from "@/lib/invite";
 import { homeworkFor } from "@/lib/homework";
 
 export const metadata = { title: "Расписание" };
 
-export default async function Schedule({ searchParams }: { searchParams: Promise<{ w?: string; new?: string; student?: string; trial?: string; date?: string }> }) {
+export default async function Schedule({ searchParams }: { searchParams: Promise<{ w?: string; new?: string; student?: string; group?: string; trial?: string; date?: string }> }) {
   const { t, lang } = await getT();
   const me = await requireUser("TEACHER");
   const tz = me.timezone;
@@ -23,16 +23,21 @@ export default async function Schedule({ searchParams }: { searchParams: Promise
   const from = dayStart(monday, tz);
   const to = dayStart(addDaysIso(monday, 7), tz);
 
-  const [rows, students, hws] = await Promise.all([
+  const [rows, students, hws, groups] = await Promise.all([
     db.lessonInstance.findMany({ where: { teacherId: me.id, startsAt: { gte: from, lt: to } }, include: lessonInclude, orderBy: { startsAt: "asc" } }),
     db.student.findMany({ where: { teacherId: me.id, status: { in: ["ACTIVE", "INVITED"] } }, orderBy: [{ status: "asc" }, { name: "asc" }] }),
     homeworkFor({ teacherId: me.id }),
+    db.group.findMany({ where: { teacherId: me.id }, include: { members: { include: { student: { select: { name: true, lastName: true } } } } }, orderBy: { title: "asc" } }),
   ]);
+  const groupOf = new Map(groups.map((g) => [g.id, g]));
+  // групповое занятие — одним блоком; у кого из группы урок — по урокам этого занятия
+  const slotMembers = new Map<string, string[]>();
+  for (const l of rows) if (l.slotId && l.student) slotMembers.set(l.slotId, [...(slotMembers.get(l.slotId) ?? []), l.student.name]);
   const hwOf = new Map(hws.map((h) => [h.lesson.id, h.state]));
 
   const loc = lang === "ru" ? "ru-RU" : "en-GB";
   const now = new Date();
-  const lessons: GridLesson[] = rows.map((l) => {
+  const lessons: GridLesson[] = oneSlot(rows).map((l) => {
     const end = new Date(l.startsAt.getTime() + l.durationMin * 60000);
     const day = Math.round((dayStart(isoDay(l.startsAt, tz), tz).getTime() - from.getTime()) / 864e5);
     return {
@@ -40,6 +45,8 @@ export default async function Schedule({ searchParams }: { searchParams: Promise
       isTrial: l.isTrial, isGroup: !!l.group, note: l.note, date: isoDay(l.startsAt, tz), start: hhmm(l.startsAt, tz), end: hhmm(end, tz),
       weekly: !!l.seriesId, past: end <= now, studentId: l.studentId, charged: l.charged, moved: !!l.movedFrom, price: l.price ?? 0,
       hw: hwOf.get(l.id) ?? null,
+      group: l.slotId && l.groupId ? { id: l.groupId, members: slotMembers.get(l.slotId) ?? [] } : null,
+      ...(l.slotId ? { who: groupOf.get(l.groupId ?? "")?.title ?? (slotMembers.get(l.slotId) ?? []).join(", "), isGroup: true, studentId: null, price: rows.filter((x) => x.slotId === l.slotId).reduce((a, x) => a + (x.price ?? 0), 0) } : {}),
     };
   });
 
@@ -85,9 +92,10 @@ export default async function Schedule({ searchParams }: { searchParams: Promise
           todayIso={todayIso}
           nowMin={partsIn(now, tz).h * 60 + partsIn(now, tz).min}
           students={students.map((s) => ({ id: s.id, name: [s.name, s.lastName].filter(Boolean).join(" "), initials: initials(s.name, s.lastName) }))}
+          groups={groups.filter((g) => g.members.length).map((g) => ({ id: g.id, name: `${g.title} · ${g.members.length}`, initials: g.title.slice(0, 2).toUpperCase() }))}
           weekTotal={rub(weekTotal, lang)}
           legend
-          preset={sp.new ? { studentId: sp.student, trial: sp.trial === "1", date: parseIsoDay(sp.date) ? sp.date : undefined } : undefined}
+          preset={sp.new ? { studentId: sp.student, groupId: sp.group, trial: sp.trial === "1", date: parseIsoDay(sp.date) ? sp.date : undefined } : undefined}
         />
       </section>
       <p className="hint mt-3">{t("sch.hint")}</p>

@@ -12,7 +12,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   if (!user) return new Response("auth", { status: 401 });
   const acc = await classAccess(id, user);
   if (!acc) return new Response("forbidden", { status: 403 });
-  const ch = `class:${id}`;
+  const ch = `class:${acc.host.id}`; // у группового занятия класс общий
   const enc = new TextEncoder();
   let cleanup = () => {};
   const stream = new ReadableStream({

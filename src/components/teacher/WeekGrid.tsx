@@ -13,6 +13,7 @@ export type GridLesson = {
   id: string; day: number; startMin: number; dur: number; status: "PLANNED" | "DONE" | "MISSED" | "CANCELLED";
   who: string; isTrial: boolean; isGroup: boolean; note: string | null; date: string; start: string; end: string;
   weekly: boolean; past: boolean; studentId: string | null; charged: boolean; moved: boolean; price: number;
+  group?: { id: string; members: string[] } | null; // групповое занятие: состав
   hw: "review" | "notdone" | "checked" | null;
 };
 export type GridStudent = { id: string; name: string; initials: string };
@@ -22,7 +23,7 @@ const PX = 44; // высота часа, px
 
 export function WeekGrid(props: {
   days: Day[]; lessons: GridLesson[]; hourFrom: number; hourTo: number; nowDay: number; nowMin: number; todayIso: string;
-  students: GridStudent[]; weekTotal: string; legend: boolean; preset?: { studentId?: string; trial?: boolean; date?: string };
+  students: GridStudent[]; groups?: GridStudent[]; weekTotal: string; legend: boolean; preset?: { studentId?: string; groupId?: string; trial?: boolean; date?: string };
 }) {
   const { t } = useT();
   const { days, hourFrom, hourTo } = props;
@@ -123,7 +124,7 @@ export function WeekGrid(props: {
       </div>
 
       {newAt && (
-        <NewLessonDialog now={{ iso: props.todayIso, min: props.nowMin }} at={newAt} students={props.students} preset={props.preset} onClose={() => setNewAt(null)} />
+        <NewLessonDialog now={{ iso: props.todayIso, min: props.nowMin }} at={newAt} students={props.students} groups={props.groups ?? []} preset={props.preset} onClose={() => setNewAt(null)} />
       )}
       {open && <LessonDialog l={open} onClose={() => setOpenId(null)} />}
     </>
@@ -158,7 +159,7 @@ function nextSlot(todayIso: string, nowMin: number) {
 }
 
 /** Выбор ученика: выпадающий список; если учеников больше 5 — поиск по имени сверху. */
-export function StudentPicker({ students, value, onChange }: { students: GridStudent[]; value: string | null; onChange: (id: string | null) => void }) {
+export function StudentPicker({ students, value, onChange, placeholder }: { students: GridStudent[]; value: string | null; onChange: (id: string | null) => void; placeholder?: string }) {
   const { t } = useT();
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
@@ -174,7 +175,7 @@ export function StudentPicker({ students, value, onChange }: { students: GridStu
   return (
     <div className="spick" ref={box}>
       <button type="button" className="input spick-btn" aria-expanded={open} aria-haspopup="listbox" onClick={() => setOpen(!open)}>
-        {cur ? <><span className="avatar">{cur.initials}</span><span className="grow truncate text-left">{cur.name}</span></> : <span className="grow text-left text-text3">{t("sch.pickStudent")}</span>}
+        {cur ? <><span className="avatar">{cur.initials}</span><span className="grow truncate text-left">{cur.name}</span></> : <span className="grow text-left text-text3">{placeholder ?? t("sch.pickStudent")}</span>}
         <Icon name="chevd" size="sm" />
       </button>
       {open && (
@@ -195,10 +196,13 @@ export function StudentPicker({ students, value, onChange }: { students: GridStu
   );
 }
 
-function NewLessonDialog({ at, students, preset, onClose, now }: { at: { date: string; start: string }; students: GridStudent[]; preset?: { studentId?: string; trial?: boolean; date?: string }; onClose: () => void; now: { iso: string; min: number } }) {
+function NewLessonDialog({ at, students, groups, preset, onClose, now }: { at: { date: string; start: string }; students: GridStudent[]; groups: GridStudent[]; preset?: { studentId?: string; groupId?: string; trial?: boolean; date?: string }; onClose: () => void; now: { iso: string; min: number } }) {
   const { t } = useT();
   const { pending, error, run } = useRun();
   const [studentId, setStudentId] = useState<string | null>(preset?.studentId ?? null);
+  // кто: ученик или группа (групповое занятие — у каждого ученика группы свой урок в одном общем классе)
+  const [kind, setKind] = useState<"one" | "group">(preset?.groupId ? "group" : "one");
+  const [groupId, setGroupId] = useState<string | null>(preset?.groupId ?? null);
   const [trial, setTrial] = useState(!!preset?.trial);
   const [trialName, setTrialName] = useState("");
   const [date, setDate] = useState(at.date);
@@ -216,12 +220,21 @@ function NewLessonDialog({ at, students, preset, onClose, now }: { at: { date: s
       <div className="flex flex-col gap-4">
         <div className="field">
           <span className="flabel">{t("sch.who")}</span>
-          {students.length === 0 ? <p className="hint m-0">{t("sch.noStudents")}</p> : <StudentPicker students={students} value={studentId} onChange={setStudentId} />}
+          {groups.length > 0 && !trial && (
+            <div className="seg mb-2 self-start">
+              <button type="button" aria-pressed={kind === "one"} onClick={() => setKind("one")}>{t("grp.one")}</button>
+              <button type="button" aria-pressed={kind === "group"} onClick={() => setKind("group")}><Icon name="group" size="sm" />{t("grp.group")}</button>
+            </div>
+          )}
+          {kind === "group" && !trial
+            ? <StudentPicker students={groups} value={groupId} onChange={setGroupId} placeholder={t("grp.pick")} />
+            : students.length === 0 ? <p className="hint m-0">{t("sch.noStudents")}</p> : <StudentPicker students={students} value={studentId} onChange={setStudentId} />}
+          {kind === "group" && !trial && groupId && <span className="hint">{t("grp.lessonHint")}</span>}
         </div>
-        <label className="setting">
+        {kind === "one" && <label className="setting">
           <span>{t("sch.trial")}</span>
           <span className="switch"><input type="checkbox" checked={trial} onChange={(e) => { setTrial(e.target.checked); if (e.target.checked) setRepeat(false); else setPaid(false); }} /><span /></span>
-        </label>
+        </label>}
         {needName && (
           <div className="field">
             <label htmlFor="tn">{t("sch.trialName")}</label>
@@ -267,8 +280,9 @@ function NewLessonDialog({ at, students, preset, onClose, now }: { at: { date: s
       <div className="actions">
         <button type="button" className="btn secondary" onClick={onClose}>{t("common.cancel")}</button>
         <button
-          type="button" className="btn primary" disabled={pending}
-          onClick={() => run(() => createLesson({ studentId, isTrial: trial, trialName, date, start, durationMin: dur, repeat, trialPrice: trial && paid ? Number(price) || 0 : 0 }), onClose)}
+          type="button" className="btn primary"
+          disabled={pending || (kind === "group" && !trial && !groupId)}
+          onClick={() => run(() => createLesson(kind === "group" && !trial ? { groupId, isTrial: false, date, start, durationMin: dur, repeat } : { studentId, isTrial: trial, trialName, date, start, durationMin: dur, repeat, trialPrice: trial && paid ? Number(price) || 0 : 0 }), onClose)}
         >
           {t("sch.add")}
         </button>
@@ -405,7 +419,8 @@ function LessonDialog({ l, onClose }: { l: GridLesson; onClose: () => void }) {
         </div>
         <Link href={`/class/${l.id}`} className="btn primary sm"><Icon name="class" size="sm" />{t("dash.openClass")}</Link>
       </div>
-      {l.studentId && <Link href={`/teacher/students/${l.studentId}`} className="alink mt-3 inline-block text-[14px]">{t("sch.openProfile")}</Link>}
+      {l.group ? <p className="small muted mt-3 mb-0 flex flex-wrap items-center gap-1.5"><Icon name="group" size="sm" />{l.group.members.join(", ")} · <Link href="/teacher/students#groups" className="alink">{t("grp.edit")}</Link></p>
+        : l.studentId && <Link href={`/teacher/students/${l.studentId}`} className="alink mt-3 inline-block text-[14px]">{t("sch.openProfile")}</Link>}
     </Dialog>
   );
 }

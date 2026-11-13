@@ -1628,3 +1628,27 @@ select.iedit, select.iedit:hover, select.iedit:focus { background-position: righ
 .tinfo-body { margin-top: 0; padding: 12px 14px 14px; }
 .bs-new .input { background: var(--surface); }
 .bs-new .pchip { background: var(--surface); }
+
+/* ── Группы учеников ── */
+.grp-empty { display: flex; align-items: center; gap: 14px; width: 100%; padding: 16px 18px; border-radius: 18px; border: 1.5px dashed var(--sep); background: var(--surface); text-align: left; font: inherit; color: var(--text); cursor: pointer; }
+.grp-empty:disabled { cursor: default; opacity: .7; }
+.grp-empty .ico, .grp-ic { width: 40px; height: 40px; border-radius: 12px; background: var(--violet-bg); color: var(--violet); display: inline-flex; align-items: center; justify-content: center; flex: none; }
+.grp-ic { width: 30px; height: 30px; border-radius: 9px; }
+.grp-empty small { display: block; color: var(--text3); font-size: 13px; margin-top: 2px; }
+.grp-card { background: var(--surface); border-radius: 18px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; border: 1px solid var(--sep); }
+.grp-faces { display: flex; padding-left: 6px; }
+.grp-faces .avatar { margin-left: -6px; box-shadow: 0 0 0 2px var(--surface); }
+.grp-more { background: var(--fill); color: var(--text2); font-size: 11px; }
+.grp-names { line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.grp-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-top: auto; }
+.grp-pick { max-height: 300px; overflow-y: auto; border-radius: 14px; background: var(--surface2); }
+.grp-row { position: relative; display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 0 14px 0 10px; cursor: pointer; }
+.grp-row + .grp-row::before { content: ""; position: absolute; top: 0; left: 52px; right: 0; height: 1px; background: var(--sep); }
+.grp-row.on { background: var(--accent-bg); }
+.grp-row input { width: 20px; height: 20px; accent-color: var(--accent); }
+/* групповой класс: чьи ответы смотрит учитель */
+.cls-who { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 8px; margin-bottom: 16px; padding: 8px 10px; border-radius: 14px; background: var(--surface); border: 1px solid var(--sep); }
+.cls-who-l { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 14px; margin-right: 4px; color: var(--violet); }
+.cls-who button { display: inline-flex; align-items: center; gap: 6px; border: 0; border-radius: 999px; padding: 5px 12px; background: var(--fill); color: var(--text); font: inherit; font-size: 14px; cursor: pointer; }
+.cls-who button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+.cls-who .dot { width: 7px; height: 7px; }

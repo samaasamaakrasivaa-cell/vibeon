@@ -7,7 +7,7 @@ import { getT } from "@/lib/i18n/server";
 import { greetingKey, hourIn } from "@/lib/greeting";
 import { db } from "@/lib/db";
 import { addDaysIso, dayStart, hhmm, isoDay, mondayOf } from "@/lib/time";
-import { lessonInclude, lessonWho, syncSchedule } from "@/lib/teacher/data";
+import { lessonInclude, lessonWho, oneSlot, syncSchedule } from "@/lib/teacher/data";
 import { initials } from "@/lib/invite";
 import { homeworkFor, type HwState } from "@/lib/homework";
 import type { User } from "@prisma/client";
@@ -23,11 +23,12 @@ export async function Dashboard({ user, role, day }: { user: User; role: "TEACHE
   if (role === "TEACHER") await syncSchedule(user.id);
 
   const where = role === "TEACHER" ? { teacherId: user.id } : { student: { userId: user.id } };
-  const [lessons, notifications, hws] = await Promise.all([
+  const [lessonsAll, notifications, hws] = await Promise.all([
     db.lessonInstance.findMany({ where: { ...where, startsAt: { gte: from, lt: to }, status: { not: "CANCELLED" } }, include: lessonInclude, orderBy: { startsAt: "asc" } }),
     db.notification.findMany({ where: { userId: user.id }, orderBy: { createdAt: "desc" }, take: 15 }),
     role === "TEACHER" ? homeworkFor({ teacherId: user.id }) : Promise.resolve([]),
   ]);
+  const lessons = role === "TEACHER" ? oneSlot(lessonsAll) : lessonsAll; // групповое занятие у учителя — одной строкой
   // домашка к уроку = домашка с предыдущего занятия этого ученика
   const hwBefore = (studentId: string | null, at: Date) => (studentId ? hws.find((h) => h.lesson.studentId === studentId && h.lesson.startsAt < at) ?? null : null);
   const hwPill = { review: ["orange", "hwT.review"], notdone: ["red", "hwT.notdone"], checked: ["green", "hwT.checked"] } as const satisfies Record<HwState, readonly [string, string]>;
@@ -124,10 +125,10 @@ export async function Dashboard({ user, role, day }: { user: User; role: "TEACHE
               const soon = inMin > 0 && inMin <= 60;
               const who = role === "TEACHER" ? lessonWho(l) : t("dash.lesson");
               const x = extra.get(l.id);
-              const st = x?.student;
+              const st = l.slotId ? null : x?.student; // у группы — без абонемента, долга и дня рождения одного ученика
               const pack = st?.payType === "PACK" ? st.packs[0] : null;
               const debt = st?.invoices.reduce((a, i) => a + i.amount, 0) ?? 0;
-              const hw = hwBefore(l.studentId, l.startsAt);
+              const hw = l.slotId ? null : hwBefore(l.studentId, l.startsAt);
               const bday = st?.birthday && isoDay(st.birthday, "UTC").slice(5) === sel.slice(5);
               const first = !!st && !l.isTrial && st._count.lessons === 0;
               return (
@@ -141,7 +142,7 @@ export async function Dashboard({ user, role, day }: { user: User; role: "TEACHE
                   <div className="tl-main">
                     <div className="tl-who">
                       <span className="avatar">{l.group ? <Icon name="group" size="sm" /> : initials(...(who.split(" ") as [string, string]))}</span>
-                      {role === "TEACHER" && l.studentId ? <Link href={`/teacher/students/${l.studentId}`} className="hover:text-accent">{who}</Link> : <span>{who}</span>}
+                      {role === "TEACHER" && l.studentId && !l.slotId ? <Link href={`/teacher/students/${l.studentId}`} className="hover:text-accent">{who}</Link> : <span>{who}</span>}
                       {l.isTrial && <span className="pill violet">{t("sch.trial")}</span>}
                       {first && <span className="pill violet">{t("today.first")}</span>}
                       {bday && <span className="pill orange">🎂 {t("today.bday")}</span>}

@@ -24,6 +24,12 @@ async function ownLesson(id: string, teacherId: string) {
   return l;
 }
 
+/** Групповое занятие: уроки всех учеников с тем же slotId; обычный урок — только он сам. */
+async function slotOf<T extends { id: string; slotId: string | null; teacherId: string | null }>(l: T) {
+  if (!l.slotId) return [l];
+  return db.lessonInstance.findMany({ where: { slotId: l.slotId, teacherId: l.teacherId } });
+}
+
 async function ownStudent(id: string, teacherId: string) {
   const s = await db.student.findUnique({ where: { id } });
   if (!s || s.teacherId !== teacherId) throw new Error("not found");
@@ -52,6 +58,7 @@ function tgNick(v: string) {
 
 export async function createLesson(input: {
   studentId?: string | null;
+  groupId?: string | null; // групповое занятие: урок каждому ученику группы, связанные общим slotId
   isTrial: boolean;
   trialName?: string;
   date: string;
@@ -65,6 +72,24 @@ export async function createLesson(input: {
   const startsAt = parseWhen(input.date, input.start, teacher.timezone);
   if (!startsAt) return { ok: false, error: t("sch.err.time") };
   const durationMin = DURATIONS.includes(input.durationMin) ? input.durationMin : 60;
+
+  // групповое занятие
+  if (input.groupId && !input.isTrial) {
+    const g = await db.group.findUnique({ where: { id: input.groupId }, include: { members: { include: { student: true } } } });
+    if (!g || g.teacherId !== teacher.id) return { ok: false, error: t("sch.err.student") };
+    const members = g.members.map((m) => m.student).filter((x) => x.status !== "ARCHIVED");
+    if (!members.length) return { ok: false, error: t("grp.err.members") };
+    const seriesId = input.repeat ? randomUUID() : null;
+    const weeks = input.repeat ? SERIES_WEEKS : 1;
+    await db.lessonInstance.createMany({
+      data: Array.from({ length: weeks }, (_, i) => {
+        const slotId = randomUUID(), at = new Date(startsAt.getTime() + i * 7 * 864e5);
+        return members.map((m) => ({ teacherId: teacher.id, studentId: m.id, groupId: g.id, slotId, seriesId, startsAt: at, durationMin, isTrial: false, price: g.price ?? m.price ?? null }));
+      }).flat(),
+    });
+    refresh();
+    return { ok: true };
+  }
 
   let student = null;
   if (input.studentId) student = await ownStudent(input.studentId, teacher.id);
@@ -94,7 +119,7 @@ export async function createLesson(input: {
 export async function saveLessonNote(id: string, note: string): Promise<Result> {
   const teacher = await me();
   const l = await ownLesson(id, teacher.id);
-  await db.lessonInstance.update({ where: { id }, data: { note: note.trim().slice(0, 2000) || null } });
+  await db.lessonInstance.updateMany({ where: { id: { in: (await slotOf(l)).map((x) => x.id) } }, data: { note: note.trim().slice(0, 2000) || null } });
   refresh(l.studentId);
   return { ok: true };
 }
@@ -103,7 +128,7 @@ export async function setLessonStatus(id: string, status: LessonStatus, charged 
   const teacher = await me();
   const l = await ownLesson(id, teacher.id);
   if (!["DONE", "MISSED", "CANCELLED", "PLANNED"].includes(status)) return { ok: false, error: "status" };
-  await db.lessonInstance.update({ where: { id }, data: { status, charged: status === "MISSED" ? charged : status === "DONE" } });
+  await db.lessonInstance.updateMany({ where: { id: { in: (await slotOf(l)).map((x) => x.id) } }, data: { status, charged: status === "MISSED" ? charged : status === "DONE" } });
   refresh(l.studentId);
   return { ok: true };
 }
@@ -117,11 +142,13 @@ export async function moveLesson(id: string, date: string, start: string, fix = 
   // Переносится только этот урок; еженедельная серия остаётся в своё время.
   // fix — исправление ошибки (неверно поставили дату): не считается переносом и не попадает в статистику переносов.
   const past = startsAt.getTime() + l.durationMin * 60000 < Date.now();
-  await db.lessonInstance.update({
-    where: { id },
-    data: { startsAt, movedFrom: fix ? l.movedFrom : l.movedFrom ?? l.startsAt, seriesId: null, status: fix && past ? l.status : "PLANNED", ...(!past ? { deductedAt: null } : {}) },
-  });
-  if (!past) await restorePackLesson(l);
+  for (const x of await slotOf(l)) { // групповое занятие переносится целиком
+    await db.lessonInstance.update({
+      where: { id: x.id },
+      data: { startsAt, movedFrom: fix ? x.movedFrom : x.movedFrom ?? x.startsAt, seriesId: null, status: fix && past ? x.status : "PLANNED", ...(!past ? { deductedAt: null } : {}) },
+    });
+    if (!past) await restorePackLesson(x);
+  }
   refresh(l.studentId);
   return { ok: true };
 }
@@ -136,10 +163,11 @@ async function restorePackLesson(l: { studentId: string | null; deductedAt: Date
 export async function deleteLesson(id: string, scope: "one" | "following" = "one"): Promise<Result> {
   const teacher = await me();
   const l = await ownLesson(id, teacher.id);
-  await restorePackLesson(l);
+  const slot = await slotOf(l);
+  for (const x of slot) await restorePackLesson(x);
   if (scope === "following" && l.seriesId)
     await db.lessonInstance.deleteMany({ where: { seriesId: l.seriesId, startsAt: { gte: l.startsAt }, teacherId: teacher.id } });
-  else await db.lessonInstance.delete({ where: { id } });
+  else await db.lessonInstance.deleteMany({ where: { id: { in: slot.map((x) => x.id) } } });
   refresh(l.studentId);
   return { ok: true };
 }
@@ -149,6 +177,20 @@ export async function makeWeekly(id: string): Promise<Result> {
   const l = await ownLesson(id, teacher.id);
   if (l.seriesId || l.isTrial) return { ok: true };
   const seriesId = randomUUID();
+  if (l.slotId) { // групповое занятие: серия на всех учеников, у каждой недели — своё занятие
+    const slot = await slotOf(l);
+    await db.$transaction([
+      db.lessonInstance.updateMany({ where: { id: { in: slot.map((x) => x.id) } }, data: { seriesId } }),
+      db.lessonInstance.createMany({
+        data: Array.from({ length: SERIES_WEEKS - 1 }, (_, i) => {
+          const slotId = randomUUID();
+          return slot.map((x) => ({ teacherId: teacher.id, studentId: x.studentId, groupId: x.groupId, slotId, durationMin: x.durationMin, price: x.price, seriesId, startsAt: new Date(l.startsAt.getTime() + (i + 1) * 7 * 864e5) }));
+        }).flat(),
+      }),
+    ]);
+    refresh();
+    return { ok: true };
+  }
   await db.$transaction([
     db.lessonInstance.update({ where: { id }, data: { seriesId } }),
     db.lessonInstance.createMany({

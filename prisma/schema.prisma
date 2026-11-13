@@ -183,6 +183,7 @@ model Group {
   id        String           @id @default(cuid())
   teacherId String
   title     String
+  price     Int? // цена группового занятия для одного ученика, ₽ (пусто — индивидуальная цена ученика)
   createdAt DateTime         @default(now())
   teacher   TeacherProfile   @relation(fields: [teacherId], references: [userId], onDelete: Cascade)
   members   GroupMember[]
@@ -293,6 +294,7 @@ model LessonInstance {
   templateId  String?
   studentId   String?
   groupId     String?
+  slotId      String? // групповое занятие: у каждого ученика свой урок, общий slotId связывает их в одно занятие и один класс
   startsAt    DateTime
   durationMin Int             @default(60)
   status      LessonStatus    @default(PLANNED)
@@ -316,7 +318,7 @@ model LessonInstance {
   createdAt   DateTime        @default(now())
   template    LessonTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
   student     Student?        @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  group       Group?          @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  group       Group?          @relation(fields: [groupId], references: [id], onDelete: SetNull)
   answers     Answer[]
   homework    Homework?
   feedback    Feedback[]
@@ -325,6 +327,7 @@ model LessonInstance {
   @@index([studentId, startsAt])
   @@index([teacherId, startsAt])
   @@index([seriesId])
+  @@index([slotId])
 }
 
 enum AnswerStatus {

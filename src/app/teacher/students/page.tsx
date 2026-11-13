@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { DeleteInvite, InviteButton, StudentsGrid, type Card } from "@/components/teacher/StudentsGrid";
 import { CopyLink, LinkMaker } from "@/components/teacher/InviteForm";
+import { Groups } from "@/components/teacher/Groups";
 import { renewInviteAction } from "@/lib/auth/actions";
 import { requireUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
@@ -24,6 +25,7 @@ export default async function Students({ searchParams }: { searchParams: Promise
     include: { invites: { orderBy: { createdAt: "desc" }, take: 1 }, packs: { orderBy: { startsAt: "desc" }, take: 1 } },
     orderBy: [{ name: "asc" }],
   });
+  const groups = await db.group.findMany({ where: { teacherId: me.id }, include: { members: true }, orderBy: { createdAt: "asc" } });
   const active = all.filter((s) => s.status === "ACTIVE");
   const invited = all.filter((s) => s.status === "INVITED");
   const archived = all.filter((s) => s.status === "ARCHIVED");
@@ -59,6 +61,11 @@ export default async function Students({ searchParams }: { searchParams: Promise
       {tab === "profiles" && (
         <>
           <StudentsGrid title={t("stu.registered")} cards={active.map((s, i) => card(s, i, s.course ?? s.level ?? s.email ?? ""))} empty={t("inviteT.none")} />
+          {/* группы: выбрать учеников галочками — и ставить группу в расписание одним занятием */}
+          <Groups
+            groups={groups.map((g) => ({ id: g.id, title: g.title, price: g.price, members: g.members.map((m) => m.studentId) }))}
+            students={[...active, ...invited].map((s, i) => ({ id: s.id, name: full(s), initials: initials(s.name, s.lastName), color: i }))}
+          />
           {invited.length > 0 && (
             <section className="mt-10">
               <div className="secthead">

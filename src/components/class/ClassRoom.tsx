@@ -35,6 +35,9 @@ export type ClassData = {
   lessonWords: { word: string; tr: string; ex: string }[]; words: Word[]; messages: Msg[];
   note: string | null; studentNote: string | null; callLink: string | null; when: string; durationMin: number; status: string; goal: string | null;
   templates: { id: string; label: string }[]; homeHref: string; initialTab?: "lesson" | "homework" | "words" | "board"; addHw?: boolean;
+  /** Групповое занятие: у каждого ученика свой урок (instanceId), класс общий. Учитель переключается между учениками. */
+  group?: { title: string; members: { sid: string; instanceId: string; userId: string | null; name: string }[] };
+  byStudent?: Record<string, { answers: Answers; statuses: Record<string, string>; reviews: Record<string, Review>; aiDrafts: Record<string, AiCheck>; words: Word[] }>;
 };
 
 export function ClassRoom({ d }: { d: ClassData }) {
@@ -43,14 +46,26 @@ export function ClassRoom({ d }: { d: ClassData }) {
   const teacher = d.role === "teacher";
   const [tab, setTab] = useState<"lesson" | "homework" | "words" | "board">(d.initialTab ?? "lesson");
   const [addHwTip, setAddHwTip] = useState(!!d.addHw); // пришли из «Домашки» по «+»: подсказать, как добавить задания
-  const [answers, setAnswers] = useState<Answers>(d.answers);
+  // ответы, проверки и слова — по ученикам (в группе учитель смотрит выбранного ученика)
+  const gTeacher = teacher && !!d.group;
+  const own = d.student?.id ?? "_";
+  // открыли урок конкретного ученика (например, из «Домашки») — сразу его ответы
+  const [viewSid, setViewSid] = useState<string>(gTeacher ? (d.group!.members.find((m) => m.instanceId === d.id) ?? d.group!.members[0])?.sid ?? "_" : own);
+  const viewRef = useRef(viewSid); viewRef.current = viewSid;
+  const [ansBy, setAnsBy] = useState<Record<string, Answers>>(() => (gTeacher ? Object.fromEntries(Object.entries(d.byStudent ?? {}).map(([k, v]) => [k, v.answers])) : { [own]: d.answers }));
+  const answers = ansBy[viewSid] ?? {};
+  const statuses = gTeacher ? d.byStudent?.[viewSid]?.statuses ?? {} : d.statuses;
+  const aiDrafts = gTeacher ? d.byStudent?.[viewSid]?.aiDrafts ?? {} : d.aiDrafts;
+  const viewMember = d.group?.members.find((m) => m.sid === viewSid);
   const [live, setLive] = useState<LiveState>(d.live ?? {});
   const [hw, setHw] = useState(d.homework);
   const [board, setBoard] = useState<BObj[][]>(d.board.length ? d.board : [[]]);
   const [page, setPage] = useState(d.live?.page ?? 0);
   const [msgs, setMsgs] = useState<Msg[]>(d.messages);
-  const [words, setWords] = useState<Word[]>(d.words);
-  const [reviews, setReviews] = useState(d.reviews);
+  const [wordsBy, setWordsBy] = useState<Record<string, Word[]>>(() => (gTeacher ? Object.fromEntries(Object.entries(d.byStudent ?? {}).map(([k, v]) => [k, v.words])) : { [own]: d.words }));
+  const words = wordsBy[viewSid] ?? [];
+  const [revBy, setRevBy] = useState<Record<string, Record<string, Review>>>(() => (gTeacher ? Object.fromEntries(Object.entries(d.byStudent ?? {}).map(([k, v]) => [k, v.reviews])) : { [own]: d.reviews }));
+  const reviews = revBy[viewSid] ?? {};
   const [online, setOnline] = useState<string[]>([]);
   const [panel, setPanel] = useState<"chat" | "dict" | "timer" | null>(null);
   const [unread, setUnread] = useState(0);
@@ -63,7 +78,10 @@ export function ClassRoom({ d }: { d: ClassData }) {
   const pending = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
   const onEvent = useCallback((ev: string, x: Record<string, unknown>) => {
-    if (ev === "answer") { if (x.by !== d.me.id) setAnswers((a) => ({ ...a, [x.taskId as string]: { ...(a[x.taskId as string] ?? {}), [x.key as string]: x.value } })); }
+    // чей ответ: sid; ученик группы получает только свои
+    const sid = (x.sid as string | undefined) ?? own;
+    const mineOnly = !teacher && x.sid !== undefined && x.sid !== own;
+    if (ev === "answer") { if (x.by !== d.me.id && !mineOnly) setAnsBy((all) => { const a = all[sid] ?? {}; return { ...all, [sid]: { ...a, [x.taskId as string]: { ...(a[x.taskId as string] ?? {}), [x.key as string]: x.value } } }; }); }
     else if (ev === "live") {
       setLive((l) => ({ ...l, ...x }));
       if (!teacher) {
@@ -88,18 +106,21 @@ export function ClassRoom({ d }: { d: ClassData }) {
       });
     } else if (ev === "chat") { setMsgs((m) => (m.some((y) => y.id === x.id) ? m : [...m, x as unknown as Msg])); if (x.by !== d.me.id) setUnread((u) => u + 1); }
     else if (ev === "note") setNotes((n) => ({ ...n, [x.who as string]: x.text as string }));
-    else if (ev === "review") setReviews((r) => ({ ...r, [x.taskId as string]: x.review as Review }));
-    else if (ev === "word") { if (x.op === "add") setWords((w) => [...w, x.word as Word]); else setWords((w) => w.filter((y) => y.id !== x.id)); }
+    else if (ev === "review") { if (!mineOnly) setRevBy((all) => ({ ...all, [sid]: { ...(all[sid] ?? {}), [x.taskId as string]: x.review as Review } })); }
+    else if (ev === "word") { if (!mineOnly) setWordsBy((all) => { const w = all[sid] ?? []; return { ...all, [sid]: x.op === "add" ? [...w, x.word as Word] : w.filter((y) => y.id !== x.id) }; }); }
     else if (ev === "presence") setOnline(x.online as string[]);
     else if (ev === "reload") router.refresh();
     else if (ev === "finished" && !teacher) setFinished(true);
-  }, [d.me.id, teacher, router]);
-  const { connected, send } = useLive(d.id, onEvent);
+  }, [d.me.id, teacher, router, own]);
+  const { connected, send: rawSend } = useLive(d.id, onEvent);
+  // учитель в группе действует за выбранного ученика: ответы, проверка, слова, отзыв
+  const send = useCallback((type: string, data: Record<string, unknown> = {}) => rawSend(type, gTeacher ? { studentId: viewRef.current, ...data } : data), [rawSend, gTeacher]);
 
   // ответы: сразу в интерфейс, на сервер — с небольшой задержкой (набор текста)
   const setAnswer = useCallback((taskId: string, key: string, value: unknown) => {
-    setAnswers((a) => ({ ...a, [taskId]: { ...(a[taskId] ?? {}), [key]: value } }));
-    const k = taskId + key;
+    const sid = viewRef.current;
+    setAnsBy((all) => { const a = all[sid] ?? {}; return { ...all, [sid]: { ...a, [taskId]: { ...(a[taskId] ?? {}), [key]: value } } }; });
+    const k = sid + taskId + key;
     clearTimeout(pending.current[k]);
     pending.current[k] = setTimeout(() => send("answer", { taskId, key, value }), key === "val" || key === "text" || key === "cell" || key === "fix" ? 350 : 0);
   }, [send]);
@@ -108,19 +129,19 @@ export function ClassRoom({ d }: { d: ClassData }) {
   const hidden = new Set(live.hidden ?? []);
   // «Выдели слова»: выделения учителя живут в состоянии урока; ученику показываются, только если учитель нажал «Показать ученику»
   const marks: MarkLayer = useMemo(() => ({
-    teacher, student: d.student?.name ?? "",
+    teacher, student: viewMember?.name ?? d.student?.name ?? "",
     mine: live.marks ?? {}, shown: live.marksShown ?? [],
     setMine: (taskId, ids) => patchLive({ marks: { ...(live.marks ?? {}), [taskId]: ids } }),
     toggleShown: (taskId) => { const s = live.marksShown ?? []; patchLive({ marksShown: s.includes(taskId) ? s.filter((x) => x !== taskId) : [...s, taskId] }); },
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }), [teacher, d.student?.name, live.marks, live.marksShown]);
+  }), [teacher, d.student?.name, viewMember?.name, live.marks, live.marksShown]);
   const lessonTasks = d.tasks.filter((x) => x.section === "lesson" && !x.hidden && (teacher || !hidden.has(x.id)));
   const ri = Math.max(0, d.rubrics.findIndex((r) => r.id === rubric));
   const cur = d.rubrics[ri];
   const inRubric = lessonTasks.filter((x) => x.rubricId === cur?.id || (!x.rubricId && ri === 0) || (x.rubricId && !d.rubrics.some((r) => r.id === x.rubricId) && ri === 0));
   const hwTasks = [...d.tasks.filter((x) => x.section === "homework" && !x.hidden), ...d.tasks.filter((x) => hw.extraTaskIds.includes(x.id))];
   const go = (id: string) => { setRubric(id); if (teacher) patchLive({ rubricId: id }); };
-  const studentOnline = d.student?.userId ? online.includes(d.student.userId) : false;
+  const studentOnline = d.group ? d.group.members.some((m) => m.userId && online.includes(m.userId)) : d.student?.userId ? online.includes(d.student.userId) : false;
   const teacherOnline = online.includes(d.teacher.id);
   const other = teacher ? studentOnline : teacherOnline;
   const timerLeft = live.timer ? Math.max(0, Math.round((live.timer.endsAt - now) / 1000)) : 0;
@@ -136,7 +157,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
     const isHw = hw.extraTaskIds.includes(task.id);
     return (
       <span className="bld-acts">
-        {inHw && <span className={`pill ${d.statuses[task.id] === "NEEDS_REVIEW" && !reviews[task.id] ? "orange" : "grey"}`}>{statusLabel(d.statuses[task.id], !!reviews[task.id], t)}</span>}
+        {inHw && <span className={`pill ${statuses[task.id] === "NEEDS_REVIEW" && !reviews[task.id] ? "orange" : "grey"}`}>{statusLabel(statuses[task.id], !!reviews[task.id], t)}</span>}
         <button className={`iconbtn ${live.spotlight?.taskId === task.id ? "bd-on" : ""}`} title={t("cls.show")} aria-label={t("cls.show")} onClick={() => patchLive({ spotlight: { taskId: task.id, at: Date.now() }, rubricId: cur?.id ?? null, tab: "lesson" })}><Icon name="move" size="sm" /></button>
         {!inHw && <button className={`iconbtn ${isHw ? "bd-on" : ""}`} title={isHw ? t("cls.fromHw") : t("bld.toHw")} aria-label={t("bld.toHw")} onClick={() => { const on = !isHw; setHw((h) => ({ ...h, extraTaskIds: on ? [...h.extraTaskIds, task.id] : h.extraTaskIds.filter((x) => x !== task.id) })); send("hw", { taskId: task.id, on }); }}><Icon name="home" size="sm" /></button>}
         {isHidden && <span className="pill violet">{t("bld.notSeen")}</span>}
@@ -154,7 +175,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
       {list.map((task, i) => (
         <div key={task.id} id={`task-${task.id}`} className={`${flash === task.id ? "cls-flash" : ""} ${teacher && hidden.has(task.id) ? "tk-teacheronly" : ""}`}>
           <TaskCard task={task} index={list.filter((x, j) => j <= i && numbered(x)).length - 1} actions={taskActions(task, inHw)} />
-          {inHw && teacher && (TYPES[task.type].teacherCheck || task.type === "transform" || task.type === "translate") && <ReviewBox lessonId={d.id} task={task} review={reviews[task.id]} draft={d.aiDrafts[task.id]} answered={!!answers[task.id]} send={send} />}
+          {inHw && teacher && (TYPES[task.type].teacherCheck || task.type === "transform" || task.type === "translate") && <ReviewBox key={viewSid} lessonId={viewMember?.instanceId ?? d.id} task={task} review={reviews[task.id]} draft={aiDrafts[task.id]} answered={!!answers[task.id]} send={send} />}
           {inHw && !teacher && reviews[task.id] && <div className={`alert mt-2 ${reviews[task.id].ok ? "ok" : ""}`}>{reviews[task.id].ok ? "✓ " : ""}{t("cls.teacherSays")}: {reviews[task.id].comment || (reviews[task.id].ok ? t("cls.reviewedOk") : "—")}</div>}
           {inHw && !teacher && reviews[task.id]?.ai && <div className="mt-2"><AiCheckView check={reviews[task.id].ai!} /></div>}
           {teacher && !inHw && <Plus onClick={() => setCatalog({ index: i + 1 })} />}
@@ -188,7 +209,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
 
         <div className="cls-grid">
           <nav className="cls-rail">
-            <button aria-pressed={panel === "chat"} onClick={() => { setPanel(panel === "chat" ? null : "chat"); setUnread(0); }}><Icon name="msg" /><span>{t("nav.chat")}</span>{unread > 0 && <i className="count">{unread}</i>}</button>
+            {!d.group && <button aria-pressed={panel === "chat"} onClick={() => { setPanel(panel === "chat" ? null : "chat"); setUnread(0); }}><Icon name="msg" /><span>{t("nav.chat")}</span>{unread > 0 && <i className="count">{unread}</i>}</button>}
             <button aria-pressed={panel === "dict"} onClick={() => setPanel(panel === "dict" ? null : "dict")}><Icon name="book" /><span>{t("cls.dict")}</span></button>
             {teacher && <button aria-pressed={panel === "timer"} onClick={() => setPanel(panel === "timer" ? null : "timer")}><Icon name="clock" /><span>{t("cls.timer")}</span></button>}
             {live.timer && timerLeft > 0 && <div className="cls-timer">{Math.floor(timerLeft / 60)}:{String(timerLeft % 60).padStart(2, "0")}</div>}
@@ -203,7 +224,18 @@ export function ClassRoom({ d }: { d: ClassData }) {
             </aside>
           )}
 
-          <main className="cls-main">
+          <main className="cls-main" key={gTeacher ? viewSid : undefined}>
+            {gTeacher && (tab === "lesson" || tab === "homework" || tab === "words") && (
+              <div className="cls-who" role="group" aria-label={t("grp.answersOf")}>
+                <span className="cls-who-l"><Icon name="group" size="sm" />{d.group!.title}</span>
+                <span className="small muted">{t("grp.answersOf")}:</span>
+                {d.group!.members.map((m) => (
+                  <button key={m.sid} type="button" aria-pressed={viewSid === m.sid} onClick={() => setViewSid(m.sid)} title={m.userId && online.includes(m.userId) ? t("grp.inClass") : t("grp.notInClass")}>
+                    <i className="dot" style={{ background: m.userId && online.includes(m.userId) ? "var(--ok)" : "var(--grey)" }} />{m.name}
+                  </button>
+                ))}
+              </div>
+            )}
             {teacher && addHwTip && tab === "lesson" && (
               <div className="alert ok mb-4 flex items-start justify-between gap-3">
                 <span><b className="block">{t("cls.addHwTitle")}</b>{t("cls.addHwText")}</span>
@@ -232,7 +264,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
               )
             )}
             {tab === "homework" && (
-              <Homework teacher={teacher} tasks={hwTasks} statuses={d.statuses} reviews={reviews} training={hw.wordTraining} comment={hw.teacherComment} render={renderTasks} />
+              <Homework teacher={teacher} tasks={hwTasks} statuses={statuses} reviews={reviews} training={hw.wordTraining} comment={hw.teacherComment} render={renderTasks} />
             )}
             {tab === "words" && <Words teacher={teacher} lessonWords={d.lessonWords} words={words} training={hw.wordTraining} send={send} setHw={setHw} />}
             {tab === "board" && (
@@ -246,8 +278,9 @@ export function ClassRoom({ d }: { d: ClassData }) {
               <a href={d.callLink} target="_blank" rel="noreferrer" className="btn w-full cls-call"><Icon name="phone" size="sm" />{t("cls.joinCall")}</a>
             ) : <span className="btn w-full cls-call off" title={t("cls.noCallHint")}><Icon name="phone" size="sm" />{t("cls.noCall")}</span>}
             <div className="mt-2 flex items-center justify-center gap-2 small muted">
-              <span className="relative"><span className="avatar" style={{ width: 22, height: 22, fontSize: 9 }}>{(teacher ? d.student?.name : d.teacher.name)?.[0] ?? "?"}</span><i className="dot" style={{ position: "absolute", right: -2, bottom: -2, background: other ? "var(--ok)" : "var(--grey)" }} /></span>
-              {other ? (teacher ? t("cls.studentIn", { name: d.student?.name ?? "" }) : t("cls.teacherIn")) : (teacher ? t("cls.studentOut", { name: d.student?.name ?? t("cls.student") }) : t("cls.teacherOut"))}
+              <span className="relative"><span className="avatar" style={{ width: 22, height: 22, fontSize: 9 }}>{gTeacher ? <Icon name="group" size="sm" /> : (teacher ? d.student?.name : d.teacher.name)?.[0] ?? "?"}</span><i className="dot" style={{ position: "absolute", right: -2, bottom: -2, background: other ? "var(--ok)" : "var(--grey)" }} /></span>
+              {gTeacher ? t("grp.online", { n: d.group!.members.filter((m) => m.userId && online.includes(m.userId)).length, total: d.group!.members.length })
+                : other ? (teacher ? t("cls.studentIn", { name: d.student?.name ?? "" }) : t("cls.teacherIn")) : (teacher ? t("cls.studentOut", { name: d.student?.name ?? t("cls.student") }) : t("cls.teacherOut"))}
             </div>
             <div className="bld-cover mt-3" style={d.course?.cover ? { background: `center / cover url(${d.course.cover})` } : undefined}>{!d.course?.cover && <><Icon name="book" size="lg" /><b>{d.course?.title ?? "VibeOn"}</b></>}</div>
             <h2 className="mt-3">{d.title ?? t("cls.lesson")}</h2>

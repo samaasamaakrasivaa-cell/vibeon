@@ -9,7 +9,7 @@ import { pluralForm } from "@/lib/i18n/dict";
 async function lessonReminders(now: Date) {
   const soon = await db.lessonInstance.findMany({
     where: { status: "PLANNED", startsAt: { gt: now, lte: new Date(now.getTime() + 1441 * 60e3) } },
-    include: { student: { include: { user: true } }, template: true },
+    include: { student: { include: { user: true } }, template: true, group: { select: { title: true } } },
   });
   const teachers = new Map<string, Awaited<ReturnType<typeof db.user.findUnique>>>();
   for (const l of soon) {
@@ -23,9 +23,9 @@ async function lessonReminders(now: Date) {
       const when = left >= 60 * 20 ? `завтра в ${hhmm(l.startsAt, u.timezone)}` : left >= 90 ? `в ${hhmm(l.startsAt, u.timezone)}` : `через ${left} мин`;
       const what = l.template?.title ? `«${l.template.title}»` : "";
       const title = u.role === "TEACHER"
-        ? `Урок ${when}: ${l.isTrial ? `пробный${l.trialName ? ` — ${l.trialName}` : ""}` : `${l.student?.name ?? ""} ${what}`}`.trim()
+        ? `Урок ${when}: ${l.isTrial ? `пробный${l.trialName ? ` — ${l.trialName}` : ""}` : `${l.group ? `группа «${l.group.title}»` : l.student?.name ?? ""} ${what}`}`.trim()
         : `Урок ${when}${what ? ` ${what}` : ""}. Ссылка на урок — в кабинете`;
-      await notify({ userId: u.id, kind: "lesson", title, link: `/class/${l.id}`, dedupe: `lesson:${l.id}:${u.id}:${l.startsAt.getTime()}` });
+      await notify({ userId: u.id, kind: "lesson", title, link: `/class/${l.id}`, dedupe: `lesson:${u.role === "TEACHER" && l.slotId ? l.slotId : l.id}:${u.id}:${l.startsAt.getTime()}` });
     }
   }
 }
