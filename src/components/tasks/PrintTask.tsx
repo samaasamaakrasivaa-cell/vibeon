@@ -38,6 +38,13 @@ export function PrintTask({ task, n, keys }: { task: TaskData; n: number; keys: 
       body = <div className="pcols"><ol>{p.pairs.map((x, i) => <li key={i}>{x[0]}</li>)}</ol><ol type="a">{right.map((ri) => <li key={ri}>{p.pairs[ri][1]}</li>)}</ol></div>;
       break;
     }
+    case "mark": {
+      // печать: текст без скобок; в ключах — слова, которые нужно было найти
+      const tg = p.lines.flat().filter((x) => x.t === "w" && x.target).map((x) => x.v);
+      if (tg.length) answers.push(tg.join(", "));
+      body = <div>{p.lines.map((l, i) => <p key={i} className="m-0">{l.map((x) => x.v).join("") || "\u00a0"}</p>)}</div>;
+      break;
+    }
     case "columns": {
       const words = shuffle(p.cols.flatMap((c) => c.words), task.id);
       p.cols.forEach((c) => answers.push(`${c.name}: ${c.words.join(", ")}`));

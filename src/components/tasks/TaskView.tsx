@@ -177,6 +177,43 @@ function Errors({ task }: { task: TaskData }) {
   );
 }
 
+// ───────── Выдели слова в тексте ─────────
+// Ученик нажимает на слова — они выделяются плашкой. Слова в [скобках] нужно найти (тогда есть проверка); без скобок — свободное выделение.
+function MarkWords({ task }: { task: TaskData }) {
+  const { t } = useT();
+  const o = task.options;
+  const p = useMemo(() => parse("mark", task.content), [task.content]);
+  const ck = useChecker(o, task.id);
+  const [sel, setSel] = useSlot<Record<number, boolean>>(task.id, "sel", {});
+  if (p.kind !== "mark") return null;
+  const check = p.targets > 0;
+  const words = p.lines.flat().filter((x): x is Extract<typeof x, { t: "w" }> => x.t === "w");
+  const missed = words.filter((w) => w.target && !sel[w.i]).length, wrong = words.filter((w) => !w.target && sel[w.i]).length;
+  const errors = Math.min(p.targets, missed + wrong);
+  const cls = (w: (typeof words)[number]) => {
+    const on = !!sel[w.i];
+    if (!check || !ck.checked) return on ? "on" : "";
+    return on ? (w.target ? "on ok" : "on bad") : w.target && ck.reveal("all") ? "miss" : "";
+  };
+  return (
+    <div className="flex flex-col gap-3">
+      <p className="hint m-0">{check ? t("tk.markHint", { n: p.targets }) : t("tk.markFree")}</p>
+      <div className="tk-marktext">
+        {p.lines.map((line, li) => (
+          <p key={li} className="m-0">
+            {line.length === 0 ? "\u00a0" : line.map((x, k) => x.t === "x" ? <span key={k}>{x.v}</span> : (
+              <span key={k} role="button" tabIndex={0} aria-pressed={!!sel[x.i]} data-ans={x.target ? "1" : undefined} className={`tk-mk ${cls(x)}`}
+                onClick={() => { setSel((s) => ({ ...s, [x.i]: !s[x.i] })); if (ck.instant) ck.bump("all"); }}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSel((s) => ({ ...s, [x.i]: !s[x.i] })); } }}>{x.v}</span>
+            ))}
+          </p>
+        ))}
+      </div>
+      {check && <CheckBar ck={ck} errors={errors} total={p.targets} onReset={() => setSel((s) => Object.fromEntries(Object.entries(s).filter(([k, v]) => v && words.find((w) => w.i === Number(k))?.target)))} onCheck={() => ck.bump("all")} />}
+    </div>
+  );
+}
+
 // ───────── Тест ─────────
 function Test({ task }: { task: TaskData }) {
   const o = task.options;
@@ -634,6 +671,7 @@ export function TaskBody({ task }: { task: TaskData }) {
     case "dropdown":
       return <Gaps key={task.content} task={task} kind="dropdown" />;
     case "errors": return <Errors key={task.content} task={task} />;
+    case "mark": return <MarkWords key={task.content} task={task} />;
     case "test": return <Test key={task.content} task={task} />;
     case "tf": return <TF key={task.content} task={task} />;
     case "pairs": return <Pairs key={task.content} task={task} />;

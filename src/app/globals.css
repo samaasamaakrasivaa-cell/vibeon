@@ -1514,3 +1514,11 @@ select.iedit, select.iedit:hover, select.iedit:focus { background-position: righ
 .vclip-now { position: absolute; top: 6px; width: 2px; height: 16px; background: var(--bad); border-radius: 1px; pointer-events: none; transform: translateX(-1px); }
 .impsum { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: center; padding: 10px 12px; border-radius: 12px; background: var(--fill); margin-bottom: 10px; font-size: 14px; }
 .impsum.ok { background: var(--ok-bg); color: var(--ok-text); }
+/* Выдели слова в тексте */
+.tk-marktext { display: flex; flex-direction: column; gap: 6px; font-size: 16px; line-height: 2; }
+.tk-mk { cursor: pointer; border-radius: 6px; padding: 1px 2px; margin: 0 -1px; transition: background .12s; } /* плашка шире слова, но текст не раздвигается */
+.tk-mk:hover { background: var(--fill); }
+.tk-mk.on { background: #ffe58a; color: #3a2f00; box-shadow: 0 0 0 1px #f2c94c inset; }
+.tk-mk.ok { background: var(--ok-bg); color: var(--ok-text); box-shadow: 0 0 0 1.5px var(--ok) inset; }
+.tk-mk.bad { background: var(--bad-bg); color: var(--bad-text); box-shadow: 0 0 0 1.5px var(--bad) inset; }
+.tk-mk.miss { box-shadow: 0 0 0 1.5px var(--ok) inset; border-bottom: 2px dashed var(--ok); }

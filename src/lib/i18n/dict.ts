@@ -1920,6 +1920,9 @@ const ru = {
   "ai.impDone": "Загружено: в урок — {l}, в домашку — {h}, в новые слова — {w}.",
   "ai.impLimit": "Ещё {n} заданий не поместились (больше 300 в одном уроке) — разделите урок на два.",
   "ai.impOk": "Готово",
+  "tk.markHint": "Нажимайте на слова, чтобы выделить их. Нужно найти: {n}.",
+  "tk.markFree": "Нажимайте на слова, чтобы выделить их; нажмите ещё раз — выделение снимется.",
+  "bld.mkFind": "Отметить слово, которое нужно найти (выделите его в тексте)",
 } as const;
 
 export type DictKey = keyof typeof ru;
@@ -3842,6 +3845,9 @@ const en: Record<DictKey, string> = {
   "ai.impDone": "Loaded: lesson — {l}, homework — {h}, new words — {w}.",
   "ai.impLimit": "{n} more tasks didn't fit (over 300 in one lesson) — split the lesson in two.",
   "ai.impOk": "Done",
+  "tk.markHint": "Tap words to highlight them. Words to find: {n}.",
+  "tk.markFree": "Tap words to highlight them; tap again to remove the highlight.",
+  "bld.mkFind": "Mark a word to find (select it in the text)",
 };
 
 export const dictionaries: Record<LangCode, Record<DictKey, string>> = { ru, en };

@@ -13,7 +13,11 @@ export type Parsed =
   | { kind: "lines"; items: string[] } // textorder, speak, dictation, open
   | { kind: "pairsArrow"; items: { q: string; key?: string; answers: string[] }[] } // transform, translate
   | { kind: "wordset"; items: { word: string; tr: string; ex: string }[] }
-  | { kind: "text"; text: string };
+  | { kind: "text"; text: string }
+  | { kind: "mark"; lines: MarkTok[][]; targets: number }; // выдели слова: строки из слов и промежутков
+
+/** Слово (или фраза из [скобок]) — можно выделить; target — его нужно найти. Остальное — пробелы и знаки. */
+export type MarkTok = { t: "w"; v: string; target: boolean; i: number } | { t: "x"; v: string };
 
 const stripNum = (l: string) => l.replace(/^\s*(\d+[.)]|[a-zA-Zа-яА-Я][)]|[-•*])\s+/, "");
 const lines = (c: string) => c.split(/\r?\n/).map((l) => stripNum(l.trim())).filter(Boolean);
@@ -116,6 +120,22 @@ export function parse(type: TaskType, content: string): Parsed {
         kind: "wordset",
         items: lines(c).map((l) => { const [word = "", tr = "", ...ex] = l.split(DASH); return { word: word.trim(), tr: tr.trim(), ex: ex.join(" — ").trim() }; }).filter((x) => x.word),
       };
+    case "mark": {
+      let i = 0, targets = 0;
+      const out = c.split(/\r?\n/).map((line) => {
+        const toks: MarkTok[] = [];
+        for (const part of line.split(/(\[[^\]]+\])/)) {
+          if (!part) continue;
+          if (/^\[[^\]]+\]$/.test(part)) { toks.push({ t: "w", v: part.slice(1, -1).trim(), target: true, i: i++ }); targets++; continue; }
+          for (const w of part.split(/([\p{L}\p{N}’'][\p{L}\p{N}’'-]*)/u)) {
+            if (!w) continue;
+            if (/^[\p{L}\p{N}’']/u.test(w)) toks.push({ t: "w", v: w, target: false, i: i++ }); else toks.push({ t: "x", v: w });
+          }
+        }
+        return toks;
+      });
+      return { kind: "mark", lines: out, targets };
+    }
     default:
       return { kind: "text", text: c };
   }

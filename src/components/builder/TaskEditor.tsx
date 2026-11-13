@@ -12,14 +12,14 @@ import { thumbSvg } from "@/lib/tasks/thumbs";
 import { fileToTask, helpTask } from "@/lib/ai/actions";
 import { extractFile } from "../ai/BookImport";
 
-const CONTENT_TYPES: TaskType[] = ["gap", "drag", "dropdown", "test", "tf", "pairs", "columns", "picture", "sentence", "textorder", "letters", "essay", "open", "record", "speak", "errors", "transform", "translate", "dictation", "crossword", "wordset", "vocab", "text", "note"];
+const CONTENT_TYPES: TaskType[] = ["gap", "drag", "dropdown", "test", "tf", "pairs", "columns", "picture", "sentence", "textorder", "letters", "essay", "open", "record", "speak", "errors", "mark", "transform", "translate", "dictation", "crossword", "wordset", "vocab", "text", "note"];
 /** Где в содержании работает оформление (жирный, курсив, цвет, маркер): тексты, вопросы, утверждения, строки с пропусками. */
 const FMT_TYPES: TaskType[] = ["text", "note", "vocab", "speak", "open", "essay", "record", "gap", "drag", "dropdown", "test", "tf"];
 const FMT_COLORS = ["blue", "red", "green", "purple", "orange"] as const;
 const CHECK_TYPES = (t: TaskType) => !!TYPES[t].checkable;
 /** Смена типа: внутри одной «семьи» содержание подходит без правок и сохраняется; иначе поле очищается. */
 const FAMILIES: TaskType[][] = [
-  ["speak", "open", "essay", "record", "text", "note", "vocab", "dictation", "textorder"], // текст / строки
+  ["speak", "open", "essay", "record", "text", "note", "vocab", "dictation", "textorder", "mark"], // текст / строки
   ["gap", "drag"],
   ["letters", "crossword", "picture"],
 ];
@@ -154,7 +154,7 @@ export function TaskEditor({ lessonId, initial, onSave, onClose, pending, error 
               <div className="tedbox">
                 <textarea ref={ta} className="tedta" value={task.content} onChange={(e) => setTask({ ...task, content: e.target.value })} spellCheck={false} aria-label={t("bld.content")} />
                 <div className="flex flex-wrap items-center gap-2 px-2 pb-2">
-                  {(isGap || type === "dropdown" || type === "errors") && <button type="button" className="pchip" onClick={() => wrap("gap")} title={t("bld.mkGap")}>[ ]</button>}
+                  {(isGap || type === "dropdown" || type === "errors" || type === "mark") && <button type="button" className="pchip" onClick={() => wrap("gap")} title={type === "mark" ? t("bld.mkFind") : t("bld.mkGap")}>[ ]</button>}
                   {(type === "dropdown" || type === "test" || type === "errors") && <button type="button" className="pchip" onClick={() => wrap("star")} title={t("bld.mkRight")}>✓</button>}
                   <button type="button" className="pchip" onClick={() => wrap("num")} title={t("bld.mkNum")}>1.</button>
                   {FMT_TYPES.includes(type) && (
