@@ -1494,7 +1494,6 @@ select.iedit, select.iedit:hover, select.iedit:focus { background-position: righ
 .bld-movemenu button:hover { background: var(--fill); }
 /* Отрывок видео: два бегунка на одной дорожке */
 .vclip { display: flex; flex-direction: column; gap: 10px; padding: 12px 14px; border-radius: 14px; background: var(--fill); margin-top: 10px; }
-.vclip-probe { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; border: 0; }
 .vclip-range { position: relative; height: 28px; }
 .vclip-range::before { content: ""; position: absolute; left: 0; right: 0; top: 12px; height: 4px; border-radius: 2px; background: var(--sep); }
 .vclip-sel { position: absolute; top: 12px; height: 4px; border-radius: 2px; background: var(--accent); pointer-events: none; }
@@ -1507,3 +1506,9 @@ select.iedit, select.iedit:hover, select.iedit:focus { background-position: righ
 .impmode label { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--sep); cursor: pointer; }
 .impmode label:has(input:checked) { border-color: var(--accent); background: var(--accent-bg); }
 .impmode input { margin-top: 3px; }
+.catcard { position: relative; }
+.catcard.cur { outline: 2px solid var(--accent); }
+.catcard.fit .thumbw { box-shadow: 0 0 0 2px color-mix(in srgb, var(--ok) 50%, transparent); border-radius: 10px; }
+.catfit { position: absolute; left: 8px; top: 6px; width: 20px; height: 20px; border-radius: 50%; background: var(--ok); color: #fff; font-size: 12px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; }
+.vclip-player { width: 100%; aspect-ratio: 16 / 9; border: 0; border-radius: 12px; background: #000; }
+.vclip-now { position: absolute; top: 6px; width: 2px; height: 16px; background: var(--bad); border-radius: 1px; pointer-events: none; transform: translateX(-1px); }

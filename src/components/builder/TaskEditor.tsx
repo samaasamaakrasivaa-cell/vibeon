@@ -1,12 +1,13 @@
 "use client";
 import { useRef, useState } from "react";
+import { Catalog } from "./Catalog";
 import { VideoClip } from "./VideoClip";
 import { Dialog } from "../Dialog";
 import { Icon } from "../Icon";
 import { TaskCard, type TaskData } from "../tasks/TaskView";
 import { upload } from "../courses/CourseView";
 import { useT } from "@/lib/i18n/client";
-import { GROUPS, HELP, HOWTO, PRESET, TYPES, type TaskOptions, type TaskType } from "@/lib/tasks/catalog";
+import { HELP, HOWTO, PRESET, TYPES, type TaskOptions, type TaskType } from "@/lib/tasks/catalog";
 import { thumbSvg } from "@/lib/tasks/thumbs";
 import { fileToTask, helpTask } from "@/lib/ai/actions";
 import { extractFile } from "../ai/BookImport";
@@ -118,21 +119,16 @@ export function TaskEditor({ lessonId, initial, onSave, onClose, pending, error 
   );
 
   return (
+    <>
+    {/* «Сменить тип задания» — тот же каталог с картинками, что при добавлении; ✓ — содержание сохранится */}
+    {retype && <Catalog fav={[]} current={type} title={t("bld.retype")} hint={t("bld.retypeHint")} mark={(k) => k !== type && famOf(k) >= 0 && famOf(k) === famOf(type)} onClose={() => setRetype(false)} onPick={changeType} />}
     <Dialog open onClose={onClose} wide>
       <div className="ted">
         <div className="ted-l">
           <div className="mb-4 flex items-center gap-3">
             <span className="ted-thumb" dangerouslySetInnerHTML={{ __html: thumbSvg(type) }} />
             <h2 className="grow">{lang === "en" ? TYPES[type].en : TYPES[type].ru}</h2>
-            {type !== "divider" && (retype ? (
-              <select className="select" style={{ width: "auto", maxWidth: 260 }} autoFocus value={type} onChange={(e) => changeType(e.target.value as TaskType)} onBlur={() => setRetype(false)} aria-label={t("bld.retype")}>
-                {GROUPS.map(([g, en, ru]) => (
-                  <optgroup key={g} label={lang === "en" ? en : ru}>
-                    {(Object.keys(TYPES) as TaskType[]).filter((k) => TYPES[k].g === g).map((k) => <option key={k} value={k}>{lang === "en" ? TYPES[k].en : TYPES[k].ru}{k !== type && famOf(k) >= 0 && famOf(k) === famOf(type) ? " ✓" : ""}</option>)}
-                  </optgroup>
-                ))}
-              </select>
-            ) : <button type="button" className="btn secondary sm" onClick={() => setRetype(true)} title={t("bld.retypeHint")}><Icon name="move" size="sm" />{t("bld.retype")}</button>)}
+            {type !== "divider" && <button type="button" className="btn secondary sm" onClick={() => setRetype(true)} title={t("bld.retypeHint")}><Icon name="move" size="sm" />{t("bld.retype")}</button>}
           </div>
 
           {type !== "divider" && (
@@ -307,5 +303,6 @@ export function TaskEditor({ lessonId, initial, onSave, onClose, pending, error 
         <button className="btn primary" disabled={pending || uploading} onClick={() => onSave(task)}>{t("bld.saveTask")}</button>
       </div>
     </Dialog>
+    </>
   );
 }

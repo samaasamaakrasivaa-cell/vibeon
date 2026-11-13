@@ -288,6 +288,7 @@ export async function saveTask(lessonId: string, taskId: string | null, input: T
     const t = await ownTask(taskId, teacher.id);
     if (t.templateId !== lessonId) return { ok: false, error: "not found" };
     await db.task.update({ where: { id: taskId }, data });
+    if (t.type !== data.type) await db.answer.deleteMany({ where: { taskId } }); // другой тип — старый ответ не подходит, задание снова не выполнено
     refreshBuilder(lessonId);
     return { ok: true, id: taskId };
   }

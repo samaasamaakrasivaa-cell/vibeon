@@ -88,12 +88,14 @@ export async function addDraftTasks(lessonId: string, section: "lesson" | "homew
     if (Object.keys(m).length) await db.lessonTemplate.update({ where: { id: lessonId }, data: m });
   }
   // replace — исправленный файл заменяет урок целиком: старые задания удаляются (если ученики ещё ничего в нём не отвечали)
+  // замена урока: задания, которые в новом файле те же (тот же тип, формулировка и раздел), обновляются на месте —
+  // ответы учеников на них сохраняются; изменённые и новые создаются заново, лишние старые удаляются вместе с ответами
+  let old: { id: string; type: string; title: string; section: string }[] = [];
   if (replace) {
     const user = await requireUser("TEACHER");
     const l = await db.lessonTemplate.findUnique({ where: { id: lessonId }, include: { unit: { include: { course: true } } } });
     if (!l || l.unit.course.teacherId !== user.id) return { ok: false, error: "not found" };
-    if (await db.answer.count({ where: { task: { templateId: lessonId } } })) return { ok: false, error: "answers" };
-    await db.task.deleteMany({ where: { templateId: lessonId } });
+    old = await db.task.findMany({ where: { templateId: lessonId }, orderBy: { order: "asc" }, select: { id: true, type: true, title: true, section: true } });
     if (tasks.some((x) => x.part)) await db.lessonTemplate.update({ where: { id: lessonId }, data: { sections: [{ id: randomUUID(), title: str(tasks.find((x) => x.part)?.part, 80) }] } });
   }
   // готовый JSON с этапами («part») и разделами («section»): этап ищем среди рубрик урока по названию, нет — добавляем новую
@@ -105,8 +107,8 @@ export async function addDraftTasks(lessonId: string, section: "lesson" | "homew
     const l = await db.lessonTemplate.findUnique({ where: { id: lessonId }, include: { unit: { include: { course: true } } } });
     if (!l || l.unit.course.teacherId !== user.id) return { ok: false, error: "not found" };
     const secs = [...((l.sections ?? []) as { id: string; title: string }[])];
-    // урок пустой и в нём одна рубрика по умолчанию — она становится первым этапом из файла
-    let spare = secs.length === 1 && !(await db.task.count({ where: { templateId: lessonId, section: "lesson" } })) ? secs[0] : null;
+    // урок пустой (или заменяется целиком) и в нём одна рубрика — она становится первым этапом из файла
+    let spare = secs.length === 1 && (replace || !(await db.task.count({ where: { templateId: lessonId, section: "lesson" } }))) ? secs[0] : null;
     for (const part of [...new Set(tasks.filter((x) => (x.section ?? "lesson") === "lesson").map((x) => str(x.part, 80)).filter(Boolean))]) {
       const same = secs.find((r) => r.title.trim().toLowerCase() === part.toLowerCase());
       if (same) { if (same === spare) spare = null; continue; }
@@ -118,10 +120,20 @@ export async function addDraftTasks(lessonId: string, section: "lesson" | "homew
     rubricOf = (x) => (secOf(x) !== "lesson" ? null : secs.find((r) => r.title.trim().toLowerCase() === str(x.part, 80).toLowerCase())?.id ?? rubricId ?? secs[0]?.id ?? null);
   }
   let n = 0;
+  const final: { id: string; section: string; rubricId: string | null }[] = [];
   for (const x of tasks.slice(0, 80)) {
     if (!isType(x.type)) continue;
-    const r = await saveTask(lessonId, null, { section: secOf(x), rubricId: rubricOf(x), type: x.type, title: x.title, content: x.content, options: x.teacherOnly ? { teacherOnly: true } : {} });
-    if (r.ok) n++;
+    const sec = secOf(x), rid = rubricOf(x);
+    const mi = old.findIndex((o) => o.type === x.type && o.title.trim() === str(x.title, 300).trim() && o.section === sec);
+    const keep = mi >= 0 ? old.splice(mi, 1)[0].id : null;
+    const r = await saveTask(lessonId, keep, { section: sec, rubricId: rid, type: x.type, title: x.title, content: x.content, options: x.teacherOnly ? { teacherOnly: true } : {} });
+    if (r.ok) { n++; if ("id" in r && r.id) final.push({ id: String(r.id), section: sec, rubricId: sec === "lesson" ? rid : null }); }
+  }
+  if (replace) {
+    if (old.length) await db.task.deleteMany({ where: { id: { in: old.map((o) => o.id) }, templateId: lessonId } });
+    // порядок — как в файле, внутри каждого раздела и этапа
+    const pos: Record<string, number> = {};
+    await db.$transaction(final.map((f) => { const k = `${f.section}:${f.rubricId}`; pos[k] = (pos[k] ?? -1) + 1; return db.task.update({ where: { id: f.id }, data: { order: pos[k] } }); }));
   }
   return { ok: true, n };
 }

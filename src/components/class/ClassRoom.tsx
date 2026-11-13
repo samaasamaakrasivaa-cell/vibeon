@@ -10,7 +10,7 @@ import { LangSwitch } from "../LangSwitch";
 import { LogoMark } from "../Logo";
 import { TaskCard, type TaskData } from "../tasks/TaskView";
 import { AnswerProvider, type Answers } from "../tasks/store";
-import { Catalog } from "../builder/Builder";
+import { Catalog } from "../builder/Catalog";
 import { TaskEditor } from "../builder/TaskEditor";
 import { Board, type BObj } from "./Board";
 import { useLive } from "./useLive";
