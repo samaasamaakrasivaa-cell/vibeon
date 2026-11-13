@@ -6,7 +6,7 @@ import { addDraftTasks, bookCreate, bookPlan, splitToTasks } from "@/lib/ai/acti
 import type { DraftTask } from "@/lib/ai/tasks";
 import { TYPES } from "@/lib/tasks/catalog";
 import { COURSE_CATEGORIES } from "@/lib/tasks/catalog";
-import { importPrompt, parseImport, type ImpMeta } from "@/lib/tasks/import-json";
+import { countBySection, importPrompt, parseImport, wordCount, type ImpIssue, type ImpMeta, type ImpTask } from "@/lib/tasks/import-json";
 import { Dialog } from "../Dialog";
 import { Icon } from "../Icon";
 
@@ -54,6 +54,22 @@ function DraftList({ tasks, picked, setPicked }: { tasks: DraftTask[]; picked: S
   );
 }
 
+/** Сводка файла перед загрузкой: сколько заданий уйдёт в урок, домашку и новые слова, и что пропущено. */
+function ImportSummary({ tasks, issues }: { tasks: ImpTask[]; issues: ImpIssue[] }) {
+  const { t } = useT();
+  const c = countBySection(tasks), w = wordCount(tasks.filter((x) => x.section === "words"));
+  return (
+    <div className="impsum">
+      <span><b>{t("ai.impLesson")}</b> {c.lesson}</span><span><b>{t("ai.impHw")}</b> {c.homework}</span><span><b>{t("ai.impWords")}</b> {c.words}{w ? ` (${t("ai.impWordsN", { n: w })})` : ""}</span>
+      {issues.length > 0 && (
+        <details className="w-full"><summary className="small text-bad">{t("ai.impIssues", { n: issues.length })}</summary>
+          <ul className="small mt-1 mb-0">{issues.map((x, i) => <li key={i}>{t("ai.impIssue", { n: x.n, title: x.title || "—", why: t(`ai.impWhy.${x.reason}` as "ai.impWhy.type") })}</li>)}</ul>
+        </details>
+      )}
+    </div>
+  );
+}
+
 /** «Импорт» в конструкторе: файл или вставленный текст → задания урока. */
 export function ImportDialog({ lessonId, section, rubricId, onClose, onDone, hasTasks = false }: { lessonId: string; section: "lesson" | "homework" | "words"; rubricId: string | null; onClose: () => void; onDone: () => void; hasTasks?: boolean }) {
   const { t } = useT();
@@ -65,6 +81,8 @@ export function ImportDialog({ lessonId, section, rubricId, onClose, onDone, has
   const [fromJson, setFromJson] = useState(false);
   const [replace, setReplace] = useState(hasTasks); // в уроке уже есть задания — по умолчанию файл заменяет урок целиком (исправленная версия)
   const [meta, setMeta] = useState<ImpMeta | undefined>(); // блок «Для учителя», длительность, подзаголовок из файла
+  const [issues, setIssues] = useState<ImpIssue[]>([]); // задания файла, которые пропущены (остальные загружаются)
+  const [result, setResult] = useState<{ by: Record<string, number>; failed: { title: string; error: string }[] } | null>(null);
   const code = (e: unknown) => { const c = String((e as Error).message); return ["limit", "tariff", "off", "fail", "type", "size"].includes(c) ? t(`ai.err.${c}` as "ai.err.fail") : c; };
   const read = async (f?: File) => {
     if (!f) return;
@@ -75,7 +93,7 @@ export function ImportDialog({ lessonId, section, rubricId, onClose, onDone, has
   const split = async () => {
     // готовый JSON (например, от Claude) — задания сразу, без ИИ-разбора
     const plan = parseImport(text);
-    if (plan) { const all = plan.units.flatMap((u) => u.lessons.flatMap((l) => l.tasks)); setTasks(all); setPicked(new Set(all.map((_, i) => i))); setFromJson(true); setMeta(plan.units[0]?.lessons[0]?.meta); return; }
+    if (plan) { const all = plan.units.flatMap((u) => u.lessons.flatMap((l) => l.tasks)); setTasks(all); setPicked(new Set(all.map((_, i) => i))); setFromJson(true); setMeta(plan.units[0]?.lessons[0]?.meta); setIssues(plan.issues ?? []); return; }
     setBusy(t("ai.splitting")); setErr(null);
     const r = await splitToTasks(text).catch(() => ({ ok: false as const, error: t("ai.err.fail") }));
     setBusy(null);
@@ -86,10 +104,21 @@ export function ImportDialog({ lessonId, section, rubricId, onClose, onDone, has
     if (replace && !confirm(t("ai.replaceSure"))) { setBusy(null); return; }
     const r = await addDraftTasks(lessonId, section, rubricId, tasks!.filter((_, i) => picked.has(i)), fromJson && replace, fromJson ? meta : undefined);
     setBusy(null);
-    if (r.ok) { onDone(); onClose(); } else setErr(r.error === "answers" ? t("ai.replaceAnswers") : r.error);
+    if (!r.ok) { setErr(r.error === "answers" ? t("ai.replaceAnswers") : r.error); return; }
+    onDone();
+    // итог по разделам; есть пропуски — показываем, иначе сразу закрываем
+    const res = r as { by?: Record<string, number>; failed?: { title: string; error: string }[] };
+    if (fromJson || res.failed?.length) setResult({ by: res.by ?? {}, failed: res.failed ?? [] }); else onClose();
   };
   return (
     <Dialog open onClose={onClose} title={t("bld.import")} wide>
+      {result ? (
+        <>
+          <div className="impsum ok"><Icon name="check" size="sm" /><span>{t("ai.impDone", { l: result.by.lesson ?? 0, h: result.by.homework ?? 0, w: result.by.words ?? 0 })}</span></div>
+          {result.failed.length > 0 && <ul className="small mt-2 mb-0">{result.failed.map((f, i) => <li key={i}>{f.error.startsWith("limit:") ? t("ai.impLimit", { n: f.error.slice(6) }) : `${f.title || "—"}: ${f.error}`}</li>)}</ul>}
+          <div className="actions"><button className="btn primary" onClick={onClose}>{t("ai.impOk")}</button></div>
+        </>
+      ) : <>
       {!tasks ? (
         <>
           <p className="muted mt-0">{t("ai.importLead")}</p>
@@ -98,6 +127,7 @@ export function ImportDialog({ lessonId, section, rubricId, onClose, onDone, has
           <div className="field mt-3"><label htmlFor="imp-t" className="small muted">{t("ai.orPaste")}</label><textarea id="imp-t" className="textarea" style={{ minHeight: 200 }} value={text} onChange={(e) => setText(e.target.value)} /></div>
         </>
       ) : tasks.length ? <>
+        {fromJson && <ImportSummary tasks={tasks.filter((_, i) => picked.has(i)) as ImpTask[]} issues={issues} />}
         {meta?.teacher && <p className="small m-0 mb-2"><Icon name="lock" size="sm" /> {t("ai.jsonTeacher")}</p>}
         <DraftList tasks={tasks} picked={picked} setPicked={setPicked} />
         {fromJson && hasTasks && (
@@ -114,6 +144,7 @@ export function ImportDialog({ lessonId, section, rubricId, onClose, onDone, has
           ? <button className="btn primary" disabled={!text.trim() || !!busy} onClick={split}>{parseImport(text) ? <><Icon name="check" size="sm" />{t("ai.jsonUse")}</> : <><Icon name="spark" size="sm" />{busy ?? t("ai.split")}</>}</button>
           : <button className="btn primary" disabled={!picked.size || !!busy} onClick={add}>{busy ?? t("ai.addN", { n: picked.size })}</button>}
       </div>
+      </>}
     </Dialog>
   );
 }
@@ -128,6 +159,7 @@ export function BookDialog({ courseId, onClose }: { courseId?: string; onClose: 
   const [files, setFiles] = useState<BookFile[]>([]);
   const [plan, setPlan] = useState<Plan | null>(null);
   const [off, setOff] = useState<Set<string>>(new Set()); // снятые уроки «u-l»
+  const [bookIssues, setBookIssues] = useState<ImpIssue[]>([]); // пропущенные задания готового JSON
   const [open, setOpen] = useState<string | null>("0-0");
   const [f, setF] = useState({ title: "", level: "", category: "general" });
   const [busy, setBusy] = useState<string | null>(null);
@@ -143,7 +175,7 @@ export function BookDialog({ courseId, onClose }: { courseId?: string; onClose: 
       const p = parseImport(await js.text());
       if (!p) { setErr(t("ai.jsonBad")); return; }
       setF((x) => ({ ...x, title: x.title || p.title || js.name.replace(/\.json$/i, ""), level: x.level || p.level || "" }));
-      setPlan({ units: p.units }); setOff(new Set()); return;
+      setPlan({ units: p.units }); setBookIssues(p.issues ?? []); setOff(new Set()); return;
     }
     const fresh = list.map((x) => ({ name: x.name, role: /work ?book|wb/i.test(x.name) ? "workbook" : /teacher|tb\b/i.test(x.name) ? "teacher" : "student", text: null as string | null }));
     setFiles((a) => [...a, ...fresh]);
@@ -197,6 +229,7 @@ export function BookDialog({ courseId, onClose }: { courseId?: string; onClose: 
       ) : (
         <>
           <p className="muted mt-0">{t("ai.bookCheck")}</p>
+          {plan.units.some((u) => u.lessons.some((l) => l.tasks.some((x) => x.section && x.section !== "lesson"))) || bookIssues.length ? <ImportSummary tasks={plan.units.flatMap((u) => u.lessons.flatMap((l) => l.tasks)) as ImpTask[]} issues={bookIssues} /> : null}
           <div className="pick" style={{ maxHeight: 420 }}>
             {plan.units.map((u, ui) => (
               <div key={ui} className="mb-3">

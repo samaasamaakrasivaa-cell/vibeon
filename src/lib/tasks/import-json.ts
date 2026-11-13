@@ -7,17 +7,33 @@ import { cleanInfo, type TInfo } from "./teacher-info";
 export type ImpTask = { type: TaskType; title: string; content: string; section?: "lesson" | "homework" | "words"; teacherOnly?: boolean; part?: string };
 /** meta урока: блок «Для учителя», длительность, подзаголовок — не задания, ученик их не видит. */
 export type ImpMeta = { teacher?: TInfo; duration?: number; subtitle?: string };
-export type ImpPlan = { title?: string; level?: string; units: { title: string; lessons: { title: string; tasks: ImpTask[]; meta?: ImpMeta }[] }[] };
+/** Проблема с отдельным заданием файла: оно пропущено, остальные загружаются. */
+export type ImpIssue = { lesson: string; n: number; title: string; reason: "type" | "content" | "empty" };
+export type ImpPlan = { title?: string; level?: string; units: { title: string; lessons: { title: string; tasks: ImpTask[]; meta?: ImpMeta }[] }[]; issues?: ImpIssue[] };
+/** Сколько заданий в каждом разделе (для сводки перед загрузкой и после). */
+export const countBySection = (tasks: { section?: string }[]) => ({
+  lesson: tasks.filter((x) => (x.section ?? "lesson") === "lesson").length,
+  homework: tasks.filter((x) => x.section === "homework").length,
+  words: tasks.filter((x) => x.section === "words").length,
+});
+/** Сколько слов в наборах слов (по строке на слово). */
+export const wordCount = (tasks: ImpTask[]) => tasks.filter((x) => x.type === "wordset").reduce((a, x) => a + x.content.split("\n").filter((l) => l.trim()).length, 0);
+/** Сколько заданий одного урока платформа принимает за раз. */
+export const MAX_TASKS = 300;
 
 const s = (x: unknown, n: number) => (typeof x === "string" ? x : x == null ? "" : String(x)).slice(0, n);
-function task(x: unknown): ImpTask | null {
+// одно плохое задание пропускается с пометкой, остальные (в том числе домашка и слова после него) загружаются
+function task(x: unknown, bad?: (reason: ImpIssue["reason"]) => void): ImpTask | null {
   const o = (x ?? {}) as Record<string, unknown>;
   const type = s(o.type, 20);
-  if (!isType(type) || TYPES[type].g === "tech") return null;
+  if (!isType(type) || TYPES[type].g === "tech") { bad?.("type"); return null; }
+  if (o.content != null && typeof o.content !== "string") { bad?.("content"); return null; }
+  if (!["image", "audio", "video", "link", "divider"].includes(type) && !String(o.content ?? "").trim() && !String(o.title ?? "").trim()) { bad?.("empty"); return null; }
   const sec = o.section === "homework" || o.section === "words" ? o.section : "lesson";
   return { type, title: s(o.title, 300), content: s(o.content, 50000), section: sec, teacherOnly: o.teacherOnly === true || (type === "note" && o.teacherOnly !== false) || undefined, /* заметки — по умолчанию только учителю */ part: s(o.part, 80) || undefined };
 }
-const tasksOf = (x: unknown) => (Array.isArray(x) ? x.map(task).filter((t): t is ImpTask => !!t) : []);
+const tasksOf = (x: unknown, lesson = "", issues?: ImpIssue[]) =>
+  Array.isArray(x) ? x.map((t, i) => task(t, (reason) => issues?.push({ lesson, n: i + 1, title: s((t as { title?: unknown })?.title, 80), reason }))).filter((t): t is ImpTask => !!t) : [];
 
 /** Разбирает текст: JSON урока ({title, tasks}), нескольких уроков ({lessons}) или курса ({units}). null — это не JSON такого вида. */
 export function parseImport(text: string): ImpPlan | null {
@@ -26,12 +42,14 @@ export function parseImport(text: string): ImpPlan | null {
   let j: unknown;
   try { j = JSON.parse(raw); } catch { return null; }
   const o = (Array.isArray(j) ? { tasks: j } : j) as Record<string, unknown>;
+  const issues: ImpIssue[] = [];
   const lesson = (l: unknown, i: number) => {
     const x = (l ?? {}) as Record<string, unknown>;
     const teacher = cleanInfo({ level: x.level ?? o.level, ...((x.teacher ?? {}) as object) });
     const duration = Number(x.duration ?? x.durationMin ?? 0) || undefined;
     const meta: ImpMeta = { ...(Object.keys(teacher).length ? { teacher } : {}), ...(duration ? { duration } : {}), ...(x.subtitle ? { subtitle: s(x.subtitle, 160) } : {}) };
-    return { title: s(x.title, 160) || `Lesson ${i + 1}`, tasks: tasksOf(x.tasks), ...(Object.keys(meta).length ? { meta } : {}) };
+    const title = s(x.title, 160) || `Lesson ${i + 1}`;
+    return { title, tasks: tasksOf(x.tasks, title, issues), ...(Object.keys(meta).length ? { meta } : {}) };
   };
   let units: ImpPlan["units"] = [];
   if (Array.isArray(o.units)) units = o.units.map((u, i) => { const x = (u ?? {}) as Record<string, unknown>; return { title: s(x.title, 120) || `Unit ${i + 1}`, lessons: Array.isArray(x.lessons) ? x.lessons.map(lesson) : [] }; });
@@ -39,7 +57,7 @@ export function parseImport(text: string): ImpPlan | null {
   else if (Array.isArray(o.tasks)) units = [{ title: s(o.unit, 120) || "Unit 1", lessons: [lesson(o, 0)] }];
   else return null;
   units = units.map((u) => ({ ...u, lessons: u.lessons.filter((l) => l.tasks.length) })).filter((u) => u.lessons.length);
-  return units.length ? { title: s(o.course ?? (Array.isArray(o.units) ? o.title : ""), 120) || undefined, level: s(o.level, 40) || undefined, units } : null;
+  return units.length ? { title: s(o.course ?? (Array.isArray(o.units) ? o.title : ""), 120) || undefined, level: s(o.level, 40) || undefined, units, ...(issues.length ? { issues } : {}) } : null;
 }
 
 /** Инструкция для Claude (или другого ИИ): как подготовить JSON, который платформа примет без правок. */

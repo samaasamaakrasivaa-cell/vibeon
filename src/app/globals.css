@@ -1512,3 +1512,5 @@ select.iedit, select.iedit:hover, select.iedit:focus { background-position: righ
 .catfit { position: absolute; left: 8px; top: 6px; width: 20px; height: 20px; border-radius: 50%; background: var(--ok); color: #fff; font-size: 12px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; }
 .vclip-player { width: 100%; aspect-ratio: 16 / 9; border: 0; border-radius: 12px; background: #000; }
 .vclip-now { position: absolute; top: 6px; width: 2px; height: 16px; background: var(--bad); border-radius: 1px; pointer-events: none; transform: translateX(-1px); }
+.impsum { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: center; padding: 10px 12px; border-radius: 12px; background: var(--fill); margin-bottom: 10px; font-size: 14px; }
+.impsum.ok { background: var(--ok-bg); color: var(--ok-text); }

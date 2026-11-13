@@ -6,7 +6,7 @@ import { db } from "../db";
 import { requireUser } from "../auth/session";
 import { getT } from "../i18n/server";
 import { isType, type TaskType } from "../tasks/catalog";
-import type { ImpMeta } from "../tasks/import-json";
+import { MAX_TASKS, type ImpMeta } from "../tasks/import-json";
 import { cleanInfo } from "../tasks/teacher-info";
 import { parse } from "../tasks/parse";
 import { saveTask } from "../teacher/courses";
@@ -79,7 +79,7 @@ const lessonMeta = (m?: ImpMeta) => {
   return { ...(Object.keys(ti).length ? { teacherInfo: ti as Prisma.InputJsonObject } : {}), ...(d ? { durationMin: d } : {}), ...(m.subtitle ? { subtitle: str(m.subtitle, 160) } : {}) };
 };
 
-export async function addDraftTasks(lessonId: string, section: "lesson" | "homework" | "words", rubricId: string | null, tasks: DraftTask[], replace = false, meta?: ImpMeta): Promise<Ok<{ n: number }>> {
+export async function addDraftTasks(lessonId: string, section: "lesson" | "homework" | "words", rubricId: string | null, tasks: DraftTask[], replace = false, meta?: ImpMeta): Promise<Ok<{ n: number; by: Record<"lesson" | "homework" | "words", number>; failed: { title: string; error: string }[] }>> {
   if (meta) {
     const user = await requireUser("TEACHER");
     const l = await db.lessonTemplate.findUnique({ where: { id: lessonId }, include: { unit: { include: { course: true } } } });
@@ -121,13 +121,16 @@ export async function addDraftTasks(lessonId: string, section: "lesson" | "homew
   }
   let n = 0;
   const final: { id: string; section: string; rubricId: string | null }[] = [];
-  for (const x of tasks.slice(0, 80)) {
-    if (!isType(x.type)) continue;
+  const by = { lesson: 0, homework: 0, words: 0 }, failed: { title: string; error: string }[] = [];
+  // все задания файла (до MAX_TASKS) — раньше здесь было 80, и домашка со словами в конце длинного урока молча терялись
+  for (const x of tasks.slice(0, MAX_TASKS)) {
+    if (!isType(x.type)) { failed.push({ title: str(x.title, 80), error: "type" }); continue; }
     const sec = secOf(x), rid = rubricOf(x);
     const mi = old.findIndex((o) => o.type === x.type && o.title.trim() === str(x.title, 300).trim() && o.section === sec);
     const keep = mi >= 0 ? old.splice(mi, 1)[0].id : null;
     const r = await saveTask(lessonId, keep, { section: sec, rubricId: rid, type: x.type, title: x.title, content: x.content, options: x.teacherOnly ? { teacherOnly: true } : {} });
-    if (r.ok) { n++; if ("id" in r && r.id) final.push({ id: String(r.id), section: sec, rubricId: sec === "lesson" ? rid : null }); }
+    if (r.ok) { n++; by[sec as keyof typeof by]++; if ("id" in r && r.id) final.push({ id: String(r.id), section: sec, rubricId: sec === "lesson" ? rid : null }); }
+    else failed.push({ title: str(x.title, 80), error: r.error ?? "fail" });
   }
   if (replace) {
     if (old.length) await db.task.deleteMany({ where: { id: { in: old.map((o) => o.id) }, templateId: lessonId } });
@@ -135,7 +138,8 @@ export async function addDraftTasks(lessonId: string, section: "lesson" | "homew
     const pos: Record<string, number> = {};
     await db.$transaction(final.map((f) => { const k = `${f.section}:${f.rubricId}`; pos[k] = (pos[k] ?? -1) + 1; return db.task.update({ where: { id: f.id }, data: { order: pos[k] } }); }));
   }
-  return { ok: true, n };
+  if (tasks.length > MAX_TASKS) failed.push({ title: "", error: `limit:${tasks.length - MAX_TASKS}` });
+  return { ok: true, n, by, failed };
 }
 
 /** «Из учебника»: файлы с ролями → план курса (юниты, уроки, задания) для проверки урок за уроком. */
@@ -186,7 +190,7 @@ export async function bookCreate(plan: { units: { title: string; lessons: { titl
     const unit = await db.unit.create({ data: { courseId, title: str(u.title, 120) || `Unit ${uo + 1}`, order: uo++ } });
     let lo = 0;
     for (const l of u.lessons.slice(0, 20)) {
-      const tasks = l.tasks.filter((x) => isType(x.type)).slice(0, 80);
+      const tasks = l.tasks.filter((x) => isType(x.type)).slice(0, MAX_TASKS);
       // этапы урока: из «part» готового JSON (по порядку появления), иначе одна рубрика Lead-in
       const parts = [...new Set(tasks.filter((x) => (x.section ?? "lesson") === "lesson").map((x) => str(x.part, 80)).filter(Boolean))];
       const secs = (parts.length ? parts : ["Lead-in"]).map((title) => ({ id: randomUUID(), title }));

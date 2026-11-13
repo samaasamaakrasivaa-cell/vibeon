@@ -1908,6 +1908,18 @@ const ru = {
   "bld.clipNow": "сейчас {t}",
   "bld.clipPlay": "Запустите видео — и отмечайте начало и конец по ходу просмотра",
   "bld.clipFromStart": "К началу отрывка",
+  "ai.impLesson": "Урок:",
+  "ai.impHw": "Домашка:",
+  "ai.impWords": "Новые слова:",
+  "ai.impWordsN": "{n} слов",
+  "ai.impIssues": "Пропущено заданий: {n} — подробнее",
+  "ai.impIssue": "№{n} «{title}»: {why}",
+  "ai.impWhy.type": "неизвестный тип задания",
+  "ai.impWhy.content": "содержание не текст (например, объект) — пропущено, остальные загружаются",
+  "ai.impWhy.empty": "пустое задание",
+  "ai.impDone": "Загружено: в урок — {l}, в домашку — {h}, в новые слова — {w}.",
+  "ai.impLimit": "Ещё {n} заданий не поместились (больше 300 в одном уроке) — разделите урок на два.",
+  "ai.impOk": "Готово",
 } as const;
 
 export type DictKey = keyof typeof ru;
@@ -3818,6 +3830,18 @@ const en: Record<DictKey, string> = {
   "bld.clipNow": "now {t}",
   "bld.clipPlay": "Play the video and mark the start and end as you watch",
   "bld.clipFromStart": "Go to clip start",
+  "ai.impLesson": "Lesson:",
+  "ai.impHw": "Homework:",
+  "ai.impWords": "New words:",
+  "ai.impWordsN": "{n} words",
+  "ai.impIssues": "Skipped tasks: {n} — details",
+  "ai.impIssue": "#{n} “{title}”: {why}",
+  "ai.impWhy.type": "unknown task type",
+  "ai.impWhy.content": "content is not text (e.g. an object) — skipped, the rest is loaded",
+  "ai.impWhy.empty": "empty task",
+  "ai.impDone": "Loaded: lesson — {l}, homework — {h}, new words — {w}.",
+  "ai.impLimit": "{n} more tasks didn't fit (over 300 in one lesson) — split the lesson in two.",
+  "ai.impOk": "Done",
 };
 
 export const dictionaries: Record<LangCode, Record<DictKey, string>> = { ru, en };
