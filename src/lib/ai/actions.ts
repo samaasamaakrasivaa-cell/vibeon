@@ -6,7 +6,7 @@ import { db } from "../db";
 import { requireUser } from "../auth/session";
 import { getT } from "../i18n/server";
 import { isType, type TaskType } from "../tasks/catalog";
-import { MAX_TASKS, type ImpMeta } from "../tasks/import-json";
+import { cleanOpts, cleanTitle, MAX_TASKS, type ImpMeta } from "../tasks/import-json";
 import { cleanInfo } from "../tasks/teacher-info";
 import { parse } from "../tasks/parse";
 import { saveTask } from "../teacher/courses";
@@ -126,9 +126,9 @@ export async function addDraftTasks(lessonId: string, section: "lesson" | "homew
   for (const x of tasks.slice(0, MAX_TASKS)) {
     if (!isType(x.type)) { failed.push({ title: str(x.title, 80), error: "type" }); continue; }
     const sec = secOf(x), rid = rubricOf(x);
-    const mi = old.findIndex((o) => o.type === x.type && o.title.trim() === str(x.title, 300).trim() && o.section === sec);
+    const mi = old.findIndex((o) => o.type === x.type && o.title.trim() === str(x.title, 1500).trim() && o.section === sec);
     const keep = mi >= 0 ? old.splice(mi, 1)[0].id : null;
-    const r = await saveTask(lessonId, keep, { section: sec, rubricId: rid, type: x.type, title: x.title, content: x.content, options: x.teacherOnly ? { teacherOnly: true } : {} });
+    const r = await saveTask(lessonId, keep, { section: sec, rubricId: rid, type: x.type, title: x.title, content: x.content, options: { ...(x.options ?? {}), ...(x.teacherOnly ? { teacherOnly: true } : {}) } });
     if (r.ok) { n++; by[sec as keyof typeof by]++; if ("id" in r && r.id) final.push({ id: String(r.id), section: sec, rubricId: sec === "lesson" ? rid : null }); }
     else failed.push({ title: str(x.title, 80), error: r.error ?? "fail" });
   }
@@ -203,7 +203,7 @@ export async function bookCreate(plan: { units: { title: string; lessons: { titl
           data: tasks.map((x) => {
             const section = x.section === "homework" || x.section === "words" ? x.section : "lesson";
             order[section] = (order[section] ?? -1) + 1;
-            return { templateId: lesson.id, section, rubricId: section === "lesson" ? rubricOf(x) : null, type: x.type, title: str(x.title, 300), content: String(x.content ?? "").slice(0, 50000), options: (x.teacherOnly ? { teacherOnly: true } : {}) as Prisma.InputJsonObject, order: order[section] };
+            return { templateId: lesson.id, section, rubricId: section === "lesson" ? rubricOf(x) : null, type: x.type, title: cleanTitle(str(x.title, 3000)), content: String(x.content ?? "").slice(0, 50000), options: { ...cleanOpts(x.options, x.type), ...(x.teacherOnly ? { teacherOnly: true } : {}) } as Prisma.InputJsonObject, order: order[section] };
           }),
         });
     }

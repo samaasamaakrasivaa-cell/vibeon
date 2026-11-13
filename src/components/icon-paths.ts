@@ -61,6 +61,7 @@ export const ICONS = {
   clip: "<path d=\"M20 11l-8.5 8.5a5 5 0 0 1-7-7L13 4a3.5 3.5 0 0 1 5 5l-8.5 8.5a2 2 0 0 1-3-3L14 7\"/>",
   note: "<path d=\"M5 3h10l4 4v14H5z\"/><path d=\"M9 12h6M9 16h4\"/>",
   mic2: "<rect x=\"9\" y=\"3\" width=\"6\" height=\"11\" rx=\"3\"/><path d=\"M5 11a7 7 0 0 0 14 0M12 18v3\"/>",
+  pin: '<path d="M9 4h6l-1 6 3 3H7l3-3z"/><path d="M12 13v8"/>',
   lock: "<rect x=\"5\" y=\"11\" width=\"14\" height=\"10\" rx=\"2\"/><path d=\"M8 11V7a4 4 0 0 1 8 0v4\"/>",
   telegram: "<path d=\"M21 4L3 11l6 2 2 6 3-4 5 4z\"/><path d=\"M9 13l9-7\"/>",
 } as const;

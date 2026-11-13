@@ -43,7 +43,7 @@ export const TYPES: Record<TaskType, Def> = {
   record: { g: "prod", en: "Record audio", ru: "Запись аудио", teacherCheck: true },
   speak: { g: "prod", en: "Speaking", ru: "Говорение" },
   errors: { g: "extra", en: "Find and fix the mistake", ru: "Найди и исправь ошибку", checkable: true },
-  mark: { g: "extra", en: "Highlight words in a text", ru: "Выдели слова в тексте", checkable: true },
+  mark: { g: "extra", en: "Highlight words in a text", ru: "Выдели слова в тексте" },
   transform: { g: "extra", en: "Key word transformation", ru: "Перефразирование", checkable: true },
   translate: { g: "extra", en: "Translate sentences", ru: "Перевод предложений", checkable: true },
   dictation: { g: "extra", en: "Dictation", ru: "Диктант", checkable: true },
@@ -81,7 +81,7 @@ export const PRESET: Record<TaskType, string[]> = {
   record: ["Record your answer.", "Tell us about it."],
   speak: ["Discuss the questions.", "Talk to your partner.", "Role-play the situation."],
   errors: ["Find and fix the mistakes.", "Each sentence has one mistake. Find it."],
-  mark: ["Highlight the words.", "Find and highlight all the verbs in the past.", "Highlight the key words in the text.", "Highlight the phrases that show the speaker’s opinion."],
+  mark: ["Read the text and highlight the words you want to remember.", "Highlight the words and phrases that are new for you.", "Highlight the key words in the text.", "Read and highlight anything you find interesting."],
   transform: ["Rewrite the sentences using the word given."],
   translate: ["Translate into English.", "Translate the sentences using the new words."],
   dictation: ["Listen and write.", "Write the sentences you hear."],
@@ -101,7 +101,7 @@ export const HOWTO: Partial<Record<TaskType, [string, string]>> = {
   textorder: ["Write the lines in the right order. The student gets them mixed up.", "Пишите строки в правильном порядке. Ученик получит их вперемешку."],
   letters: ["word — hint: patient — able to wait calmly", "слово — подсказка: patient — able to wait calmly"],
   test: ["Question on one line, options below it, one per line. Mark the right one with *. Leave an empty line between questions.", "Вопрос на одной строке, ниже варианты, по одному на строку. Верный отметьте *. Между вопросами — пустая строка."],
-  mark: ["Write the text. Put the words or phrases the student must find in square brackets: I [went] home and [saw] a film. The student taps words to highlight them; brackets are not shown. A phrase in one pair of brackets counts as one item: [look after]. Without brackets the student highlights freely and nothing is checked.", "Напишите текст. Слова или фразы, которые ученик должен найти, возьмите в квадратные скобки: I [went] home and [saw] a film. Ученик нажимает на слова — они выделяются плашкой; скобок он не видит. Фраза в одних скобках — один элемент: [look after]. Без скобок ученик выделяет что хочет, проверки нет."],
+  mark: ["Write or paste the text. The student taps any words to highlight them for themselves and taps again to remove the highlight. There is no right or wrong answer and nothing is checked.", "Напишите или вставьте текст. Ученик нажимает на любые слова — они выделяются для него; повторное нажатие снимает выделение. Правильных и неправильных ответов нет, ничего не проверяется."],
   errors: ["Put both forms in square brackets with / and mark the right one with *: She [don’t / doesn’t*] like coffee. The student sees the wrong form in the sentence.", "Обе формы — в квадратных скобках через /, верную отметьте *: She [don’t / doesn’t*] like coffee. Ученик увидит в предложении неверную форму."],
   transform: ["Sentence | KEY WORD → answer. Several right answers: split them with /.", "Предложение | КЛЮЧЕВОЕ СЛОВО → ответ. Несколько верных ответов — через /."],
   translate: ["Russian sentence → English answer. Several right answers: split them with /.", "Русское предложение → английский ответ. Несколько верных ответов — через /."],
@@ -132,7 +132,7 @@ export const HELP: Partial<Record<TaskType, [string, string]>> = {
   letters: ["word — hint", "слово — подсказка"],
   test: ["question, options below, right one with *", "вопрос, ниже варианты, верный с *"],
   errors: ["[wrong / right*]", "[неверно / верно*]"],
-  mark: ["[word] — to find · without brackets — free highlighting", "[слово] — найти · без скобок — выделяет что хочет"],
+  mark: ["the text; the student highlights words himself", "текст; ученик сам выделяет слова"],
   transform: ["sentence | KEY WORD → answer", "предложение | КЛЮЧ → ответ"],
   translate: ["Russian → English", "русское → английское"],
   crossword: ["word — clue", "слово — подсказка"],
@@ -156,7 +156,7 @@ export const SAMPLE: Partial<Record<TaskType, string>> = {
   letters: "summer — warm season\nautumn — leaves fall",
   test: "They ___ to the cinema at the moment.\nare going*\ngoing\ngo\n\nWhat do you do?\nI’m a manager.*\nI’m managing.\nI manage.",
   errors: "She [don’t / doesn’t*] like coffee.\nI [am agree / agree*] with you.",
-  mark: "Last summer I [went] to the seaside. I [swam] every day and [ate] a lot of ice cream. Now I study at home.",
+  mark: "Last summer I went to the seaside. I swam every day and ate a lot of ice cream. In the evenings we walked along the beach and watched the sunset.",
   transform: "It isn’t worth waiting for the perfect moment. | POINT → There’s no point in waiting for the perfect moment.",
   translate: "Нет смысла ждать идеального момента. → There’s no point in waiting for the perfect moment.\nСтоит попробовать. → It’s worth a try. / It’s worth trying.",
   crossword: "outcome — the result of something\nattempt — a try\nproud — feeling good about what you did\npressure — stress from work or people\nembrace — accept something gladly",
@@ -209,4 +209,7 @@ export type TaskOptions = {
   url?: string; label?: string; ns?: boolean; check?: boolean; multi?: boolean; across?: boolean; teacherOnly?: boolean;
   aipre?: boolean; ai?: boolean; aiPrompt?: string; aiGoal?: string; aiWords?: string; aiMins?: number;
   clipStart?: number; clipEnd?: number; // отрывок видео, секунды
+  markable?: boolean; // текст: ученик может выделять слова
+  help?: { vocab?: string; grammar?: string }; // Useful phrases под формулировкой: открываются по кнопке
+  fixed?: number[]; // текст по порядку: строки, закреплённые на своих местах
 };

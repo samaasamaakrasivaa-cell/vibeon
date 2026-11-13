@@ -10,7 +10,7 @@ export type Kind = "help" | "file" | "split" | "book" | "explain" | "draft" | "e
 /** Оценка письма или говорения placement test по критериям уровня задания (баллы 0–3). */
 export type PlCrit = { id: string; name: string; level: string; below: string };
 export type PlScore = { scores: Record<string, number | null>; why: Record<string, string>; summary: string };
-export type DraftTask = { type: TaskType; title: string; content: string; section?: "lesson" | "homework" | "words"; teacherOnly?: boolean; part?: string }; // part — этап урока (рубрика) при импорте готового JSON
+export type DraftTask = { type: TaskType; title: string; content: string; section?: "lesson" | "homework" | "words"; teacherOnly?: boolean; part?: string; options?: import("../tasks/import-json").ImpOpts }; // part — этап урока (рубрика) при импорте готового JSON
 export type Check = { corrected: string; notes: Note[]; summary: string; verdict?: "ok" | "partly" | "wrong" };
 export type Turn = { role: "user" | "assistant"; text: string };
 

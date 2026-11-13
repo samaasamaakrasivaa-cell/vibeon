@@ -1,4 +1,5 @@
 "use server";
+import { cleanTitle } from "../tasks/import-json";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { randomUUID } from "node:crypto";
@@ -272,6 +273,9 @@ function sanitizeOptions(o: TaskOptions): Prisma.InputJsonObject {
     aiMins: o.aiMins && o.aiMins > 0 && o.aiMins <= 60 ? Math.round(o.aiMins) : undefined,
     clipStart: o.clipStart && o.clipStart > 0 && o.clipStart < 86400 ? Math.round(o.clipStart) : undefined,
     clipEnd: o.clipEnd && o.clipEnd > (o.clipStart ?? 0) && o.clipEnd < 86400 ? Math.round(o.clipEnd) : undefined,
+    markable: !!o.markable || undefined,
+    help: o.help && (clean(o.help.vocab, 3000) || clean(o.help.grammar, 3000)) ? { vocab: clean(o.help.vocab, 3000) || undefined, grammar: clean(o.help.grammar, 3000) || undefined } : undefined,
+    fixed: Array.isArray(o.fixed) && o.fixed.length ? [...new Set(o.fixed.filter((x) => Number.isInteger(x) && x >= 0 && x < 200))].sort((a, b) => a - b) : undefined,
   }));
 }
 
@@ -281,7 +285,7 @@ export async function saveTask(lessonId: string, taskId: string | null, input: T
   if (!isType(input.type)) return { ok: false, error: "type" };
   const section = ["lesson", "homework", "words"].includes(input.section) ? input.section : "lesson";
   const data = {
-    type: input.type, title: clean(input.title, 300), content: typeof input.content === "string" ? input.content.slice(0, 50000) : "",
+    type: input.type, title: cleanTitle(String(input.title ?? "")), content: typeof input.content === "string" ? input.content.slice(0, 50000) : "",
     options: sanitizeOptions(input.options ?? {}), hidden: !!input.options?.hidden, section, rubricId: section === "lesson" ? input.rubricId ?? null : null,
   };
   if (taskId) {

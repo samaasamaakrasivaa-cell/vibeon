@@ -1,7 +1,7 @@
 "use client";
 // Задание глазами ученика: показ и проверка для всех типов конструктора.
 // Используется в превью конструктора («Ученик увидит»), в «Поделиться», а на этапах 5–6 — в уроке и кабинете ученика.
-import { useEffect, useMemo, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useT } from "@/lib/i18n/client";
 import { numbered, type TaskOptions, type TaskType } from "@/lib/tasks/catalog";
 import { buildCrossword, dictationGrade, fmtTime, parse, same, series, shuffle, videoEmbed, type Seg } from "@/lib/tasks/parse";
@@ -178,38 +178,55 @@ function Errors({ task }: { task: TaskData }) {
 }
 
 // ───────── Выдели слова в тексте ─────────
-// Ученик нажимает на слова — они выделяются плашкой. Слова в [скобках] нужно найти (тогда есть проверка); без скобок — свободное выделение.
-function MarkWords({ task }: { task: TaskData }) {
+// Инструмент работы с текстом: ученик нажимает на слова — они выделяются для него, повторное нажатие снимает. Правильных ответов нет.
+// На уроке (MarkCtx): учитель видит выделения ученика, может выделить своё и «Показать ученику» — ученик увидит их другим цветом.
+export type MarkLayer = { teacher: boolean; student: string; mine: Record<string, number[]>; shown: string[]; setMine: (taskId: string, ids: number[]) => void; toggleShown: (taskId: string) => void };
+export const MarkCtx = createContext<MarkLayer | null>(null);
+function MarkWords({ task, content }: { task: TaskData; content?: string }) {
   const { t } = useT();
-  const o = task.options;
-  const p = useMemo(() => parse("mark", task.content), [task.content]);
-  const ck = useChecker(o, task.id);
+  const p = useMemo(() => parse("mark", content ?? task.content), [content, task.content]);
   const [sel, setSel] = useSlot<Record<number, boolean>>(task.id, "sel", {});
+  const ctx = useContext(MarkCtx);
+  const role = useTaskRole();
+  const teacher = !!ctx?.teacher && role === "teacher";
+  const [view, setView] = useState<"student" | "mine">("student"); // учитель: смотрит выделения ученика или выделяет своё
   if (p.kind !== "mark") return null;
-  const check = p.targets > 0;
-  const words = p.lines.flat().filter((x): x is Extract<typeof x, { t: "w" }> => x.t === "w");
-  const missed = words.filter((w) => w.target && !sel[w.i]).length, wrong = words.filter((w) => !w.target && sel[w.i]).length;
-  const errors = Math.min(p.targets, missed + wrong);
-  const cls = (w: (typeof words)[number]) => {
-    const on = !!sel[w.i];
-    if (!check || !ck.checked) return on ? "on" : "";
-    return on ? (w.target ? "on ok" : "on bad") : w.target && ck.reveal("all") ? "miss" : "";
+  const mine = new Set(ctx?.mine[task.id] ?? []);
+  const shown = !!ctx?.shown.includes(task.id);
+  const editMine = teacher && view === "mine";
+  const tap = (i: number) => {
+    if (editMine) { const n = new Set(mine); if (n.has(i)) n.delete(i); else n.add(i); ctx!.setMine(task.id, [...n]); return; }
+    if (teacher) return; // выделения ученика учитель только смотрит
+    setSel((x) => ({ ...x, [i]: !x[i] }));
+  };
+  const cls = (i: number) => {
+    const st = !!sel[i], tc = mine.has(i);
+    if (editMine) return tc ? "tch" : "";
+    if (teacher) return st ? "on" : "";
+    return `${st ? "on" : ""} ${shown && tc ? "tch" : ""}`;
   };
   return (
     <div className="flex flex-col gap-3">
-      <p className="hint m-0">{check ? t("tk.markHint", { n: p.targets }) : t("tk.markFree")}</p>
-      <div className="tk-marktext">
+      {teacher ? (
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="seg" role="group" aria-label={t("tk.markView")}>
+            <button type="button" aria-pressed={view === "student"} onClick={() => setView("student")}>{t("tk.markStudent", { name: ctx!.student })}</button>
+            <button type="button" aria-pressed={view === "mine"} onClick={() => setView("mine")}>{t("tk.markMine")}</button>
+          </div>
+          {view === "mine" && <button type="button" className={`btn sm ${shown ? "primary" : "secondary"}`} disabled={!mine.size && !shown} onClick={() => ctx!.toggleShown(task.id)}><Icon name={shown ? "eye" : "eyeoff"} size="sm" />{shown ? t("tk.markShown") : t("tk.markShow")}</button>}
+        </div>
+      ) : <p className="hint m-0">{t("tk.markFree")}{shown && mine.size ? ` ${t("tk.markTeacherOn")}` : ""}</p>}
+      <div className={`tk-marktext ${teacher && view === "student" ? "ro" : ""}`}>
         {p.lines.map((line, li) => (
           <p key={li} className="m-0">
             {line.length === 0 ? "\u00a0" : line.map((x, k) => x.t === "x" ? <span key={k}>{x.v}</span> : (
-              <span key={k} role="button" tabIndex={0} aria-pressed={!!sel[x.i]} data-ans={x.target ? "1" : undefined} className={`tk-mk ${cls(x)}`}
-                onClick={() => { setSel((s) => ({ ...s, [x.i]: !s[x.i] })); if (ck.instant) ck.bump("all"); }}
-                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSel((s) => ({ ...s, [x.i]: !s[x.i] })); } }}>{x.v}</span>
+              <span key={k} role="button" tabIndex={0} aria-pressed={cls(x.i).includes("on") || cls(x.i).includes("tch")} className={`tk-mk ${cls(x.i)}`}
+                onClick={() => tap(x.i)} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); tap(x.i); } }}>{x.v}</span>
             ))}
           </p>
         ))}
       </div>
-      {check && <CheckBar ck={ck} errors={errors} total={p.targets} onReset={() => setSel((s) => Object.fromEntries(Object.entries(s).filter(([k, v]) => v && words.find((w) => w.i === Number(k))?.target)))} onCheck={() => ck.bump("all")} />}
+      {!teacher && Object.values(sel).some(Boolean) && <button type="button" className="btn plain sm self-start" onClick={() => setSel({})}>{t("tk.markClear")}</button>}
     </div>
   );
 }
@@ -422,28 +439,47 @@ function Build({ task, letters }: { task: TaskData; letters?: boolean }) {
 }
 
 // ───────── Текст по порядку ─────────
+// Закреплённые строки (options.fixed) стоят на своих местах и не перемешиваются; ученик двигает только остальные.
+// В ответе хранится порядок свободных строк; старые ответы (все строки) приводятся к нему.
 function Order({ task }: { task: TaskData }) {
   const { t } = useT();
   const o = task.options;
   const p = useMemo(() => parse("textorder", task.content), [task.content]);
   const items = p.kind === "lines" ? p.items : [];
-  const [ord, setOrd] = useSlot<number[]>(task.id, "ord", () => shuffle(items.map((_, i) => i), task.id));
+  const fixed = new Set((o.fixed ?? []).filter((i) => i < items.length));
+  const free = items.map((_, i) => i).filter((i) => !fixed.has(i));
+  const [saved, setOrd] = useSlot<number[]>(task.id, "ord", () => shuffle(free, task.id));
+  const freeOrd = [...saved.filter((v, k) => free.includes(v) && saved.indexOf(v) === k), ...free.filter((v) => !saved.includes(v))];
+  let k = 0;
+  const ord = items.map((_, i) => (fixed.has(i) ? i : freeOrd[k++]));
   const ck = useChecker(o, task.id);
   const [drag, setDrag] = useState<number | null>(null);
-  const move = (from: number, to: number) => setOrd((x) => { const y = [...x]; const [v] = y.splice(from, 1); y.splice(to, 0, v); return y; });
-  const errors = ord.filter((v, i) => v !== i).length;
+  // позиции — места в списке; двигаем только между свободными местами
+  const move = (from: number, to: number) => {
+    const a = free.indexOf(from), b = free.indexOf(to);
+    if (a < 0 || b < 0 || a === b) return;
+    const y = [...freeOrd]; const [v] = y.splice(a, 1); y.splice(b, 0, v); setOrd(y);
+  };
+  const near = (i: number, d: -1 | 1) => { const fi = free.indexOf(i) + d; return fi >= 0 && fi < free.length ? free[fi] : null; };
+  const errors = free.filter((i) => ord[i] !== i).length;
   return (
     <div className="flex flex-col gap-2">
-      {ord.map((v, i) => (
+      {ord.map((v, i) => fixed.has(i) ? (
+        <div key={`f${v}`} className="tk-row pinned" title={t("tk.fixedRow")}>
+          <Icon name="pin" size="sm" className="text-text3" />
+          <span className="grow">{items[v]}</span>
+          <span className="small text-text3">{t("tk.fixedRow")}</span>
+        </div>
+      ) : (
         <div key={v} className={`tk-row ${ck.checked ? (v === i ? "ok" : "bad") : ""}`} draggable onDragStart={() => setDrag(i)} onDragOver={(e) => e.preventDefault()} onDrop={() => { if (drag !== null) move(drag, i); setDrag(null); }}>
           <Icon name="move" size="sm" className="text-text3" />
           <span className="grow">{items[v]}</span>
-          <button type="button" className="iconbtn" aria-label="up" disabled={i === 0} onClick={() => move(i, i - 1)}>↑</button>
-          <button type="button" className="iconbtn" aria-label="down" disabled={i === ord.length - 1} onClick={() => move(i, i + 1)}>↓</button>
+          <button type="button" className="iconbtn" aria-label="up" disabled={near(i, -1) === null} onClick={() => move(i, near(i, -1)!)}>↑</button>
+          <button type="button" className="iconbtn" aria-label="down" disabled={near(i, 1) === null} onClick={() => move(i, near(i, 1)!)}>↓</button>
         </div>
       ))}
       <p className="hint m-0">{t("tk.orderHint")}</p>
-      <CheckBar ck={ck} errors={errors} total={ord.length} onReset={() => {}} />
+      <CheckBar ck={ck} errors={errors} total={free.length} onReset={() => {}} />
     </div>
   );
 }
@@ -697,7 +733,7 @@ export function TaskBody({ task }: { task: TaskData }) {
     }
     case "audio":
       return <div>{o.src ? <audio controls src={o.src} className="w-full" /> : <div className="tk-empty"><Icon name="sound" />{t("tk.noAudio")}</div>}<Script o={o} /></div>;
-    case "text": return <div>{o.images?.[0] && <img src={o.images[0].src} alt="" className="tk-img mb-3" />}<Rich text={task.content} /></div>;
+    case "text": return <div>{o.images?.[0] && <img src={o.images[0].src} alt="" className="tk-img mb-3" />}{o.markable ? <MarkWords task={task} /> : <Rich text={task.content} />}</div>;
     case "note": return <div className="tk-note"><Rich text={task.content} /></div>;
     case "vocab": return p.kind === "lines" ? <div className="tk-vocab-items">{p.items.map((w, i) => <span key={i} className="tk-vocab-w"><Inl text={w} /></span>)}</div> : null;
     case "link": return o.url ? <a href={o.url} target="_blank" rel="noreferrer" className="btn tinted"><Icon name="link" size="sm" />{o.label || o.url}</a> : <div className="tk-empty"><Icon name="link" />{t("tk.noLink")}</div>;
@@ -759,6 +795,33 @@ function Essay({ task }: { task: TaskData }) {
   );
 }
 
+/** Формулировка: строки — отдельными строками, пустая строка — отступ между абзацами. */
+export function TitleText({ text }: { text: string }) {
+  if (!text.includes("\n")) return <Inl text={text} />;
+  return <>{text.split("\n").map((l, i) => (l.trim() ? <span key={i} className="tk-tl"><Inl text={l} /></span> : <span key={i} className="tk-tgap" aria-hidden />))}</>;
+}
+
+/** Useful phrases под формулировкой: свёрнуты, ученик открывает, когда нужна помощь. */
+function HelpPhrases({ task }: { task: TaskData }) {
+  const { t } = useT();
+  const [open, setOpen] = useState(false);
+  const h = task.options.help;
+  const list = (x?: string) => (x ?? "").split("\n").map((l) => l.trim()).filter(Boolean);
+  const vocab = list(h?.vocab), grammar = list(h?.grammar);
+  if (!vocab.length && !grammar.length) return null;
+  return (
+    <div className="tk-help">
+      <button type="button" className="tk-help-btn" aria-expanded={open} onClick={() => setOpen((x) => !x)}><Icon name={open ? "eyeoff" : "eye"} size="sm" />{t("tk.help")}</button>
+      {open && (
+        <div className="tk-help-box">
+          {vocab.length > 0 && <div><b>{t("tk.helpVocab")}</b><ul className="tk-help-v">{vocab.map((x, i) => <li key={i}><Inl text={x} /></li>)}</ul></div>}
+          {grammar.length > 0 && <div><b>{t("tk.helpGrammar")}</b><ul className="tk-help-g">{grammar.map((x, i) => <li key={i}><Inl text={x} /></li>)}</ul></div>}
+        </div>
+      )}
+    </div>
+  );
+}
+
 /** Карточка задания: номер + формулировка + содержимое. */
 export function TaskCard({ task, index, actions }: { task: TaskData; index: number; actions?: React.ReactNode }) {
   if (task.type === "divider") return <hr className="tk-hr" />;
@@ -775,9 +838,10 @@ export function TaskCard({ task, index, actions }: { task: TaskData; index: numb
     <article className="tk">
       {head && <header className="tk-head">
         {index >= 0 && numbered(task) && <span className="tk-num">{index + 1}</span>}
-        <h3 className="tk-title"><Inl text={task.title} /></h3>
+        <h3 className="tk-title"><TitleText text={task.title} /></h3>
         {actions}
       </header>}
+      <HelpPhrases task={task} />
       <TaskBody task={task} />
     </article>
   );

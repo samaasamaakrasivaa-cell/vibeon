@@ -8,7 +8,7 @@ import { Dialog } from "../Dialog";
 import { Icon } from "../Icon";
 import { LangSwitch } from "../LangSwitch";
 import { LogoMark } from "../Logo";
-import { TaskCard, type TaskData } from "../tasks/TaskView";
+import { MarkCtx, TaskCard, type MarkLayer, type TaskData } from "../tasks/TaskView";
 import { AnswerProvider, type Answers } from "../tasks/store";
 import { Catalog } from "../builder/Catalog";
 import { TaskEditor } from "../builder/TaskEditor";
@@ -106,6 +106,14 @@ export function ClassRoom({ d }: { d: ClassData }) {
 
   const patchLive = (p: LiveState) => { setLive((l) => ({ ...l, ...p })); send("live", { patch: p }); };
   const hidden = new Set(live.hidden ?? []);
+  // «Выдели слова»: выделения учителя живут в состоянии урока; ученику показываются, только если учитель нажал «Показать ученику»
+  const marks: MarkLayer = useMemo(() => ({
+    teacher, student: d.student?.name ?? "",
+    mine: live.marks ?? {}, shown: live.marksShown ?? [],
+    setMine: (taskId, ids) => patchLive({ marks: { ...(live.marks ?? {}), [taskId]: ids } }),
+    toggleShown: (taskId) => { const s = live.marksShown ?? []; patchLive({ marksShown: s.includes(taskId) ? s.filter((x) => x !== taskId) : [...s, taskId] }); },
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), [teacher, d.student?.name, live.marks, live.marksShown]);
   const lessonTasks = d.tasks.filter((x) => x.section === "lesson" && !x.hidden && (teacher || !hidden.has(x.id)));
   const ri = Math.max(0, d.rubrics.findIndex((r) => r.id === rubric));
   const cur = d.rubrics[ri];
@@ -157,6 +165,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
 
   return (
     <AnswerProvider answers={answers} onSet={setAnswer} role={d.role}>
+     <MarkCtx.Provider value={marks}>
       <div className={`cls ${teacher ? "as-teacher" : "as-student"}`}>
         <header className="cls-top">
           <Link href={d.homeHref} className="cls-logo" aria-label="VibeOn"><LogoMark size={36} /><small>Vibe<span>On</span></small></Link>
@@ -282,6 +291,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
           </Dialog>
         )}
       </div>
+     </MarkCtx.Provider>
     </AnswerProvider>
   );
 }

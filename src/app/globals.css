@@ -1519,6 +1519,33 @@ select.iedit, select.iedit:hover, select.iedit:focus { background-position: righ
 .tk-mk { cursor: pointer; border-radius: 6px; padding: 1px 2px; margin: 0 -1px; transition: background .12s; } /* плашка шире слова, но текст не раздвигается */
 .tk-mk:hover { background: var(--fill); }
 .tk-mk.on { background: #ffe58a; color: #3a2f00; box-shadow: 0 0 0 1px #f2c94c inset; }
-.tk-mk.ok { background: var(--ok-bg); color: var(--ok-text); box-shadow: 0 0 0 1.5px var(--ok) inset; }
-.tk-mk.bad { background: var(--bad-bg); color: var(--bad-text); box-shadow: 0 0 0 1.5px var(--bad) inset; }
-.tk-mk.miss { box-shadow: 0 0 0 1.5px var(--ok) inset; border-bottom: 2px dashed var(--ok); }
+
+/* формулировка в несколько строк */
+.tk-tl { display: block; }
+.tk-tgap { display: block; height: .55em; }
+/* Useful phrases под формулировкой */
+.tk-help { margin: -4px 0 12px; }
+.tk-help-btn { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--violet); background: var(--violet-bg); border: 0; border-radius: 999px; padding: 4px 12px; cursor: pointer; }
+.tk-help-btn[aria-expanded="true"] { filter: brightness(.97); }
+.tk-help-box { margin-top: 8px; padding: 10px 14px; border-radius: 12px; border: 1px dashed color-mix(in srgb, var(--violet) 40%, transparent); background: color-mix(in srgb, var(--violet-bg) 50%, var(--surface)); font-size: 14px; color: var(--text2); display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+.tk-help-box b { display: block; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--violet); margin-bottom: 4px; }
+.tk-help-box ul { margin: 0; padding-left: 18px; }
+.tk-help-box li { margin: 2px 0; }
+.tk-help-v li::marker { color: var(--violet); }
+/* текст по порядку: закреплённая строка */
+.tk-row.pinned { background: var(--fill); border: 1.5px dashed var(--sep); cursor: default; min-height: 50px; padding-right: 14px; }
+/* выделения учителя и режим «только смотреть» */
+.tk-mk.tch { background: color-mix(in srgb, var(--accent) 22%, transparent); box-shadow: inset 0 -2px 0 var(--accent); border-radius: 4px; }
+.tk-mk.on.tch { background: #ffe58a; color: #3a2f00; box-shadow: inset 0 -2.5px 0 var(--accent); }
+.tk-marktext.ro .tk-mk { cursor: default; }
+
+/* редактор: формулировка в несколько строк, закрепление строк, Useful phrases */
+.ted-title { resize: vertical; min-height: 42px; line-height: 1.4; white-space: pre-wrap; font-family: inherit; }
+.ted-pin { display: flex; align-items: center; gap: 10px; text-align: left; padding: 7px 10px; border-radius: 10px; border: 1.5px dashed var(--sep); background: var(--surface); color: var(--text2); font: inherit; font-size: 14px; cursor: pointer; }
+.ted-pin svg { opacity: .35; }
+.ted-pin.on { border-style: solid; border-color: var(--accent); background: var(--accent-bg); color: var(--text); }
+.ted-pin.on svg { opacity: 1; color: var(--accent); }
+.ted-pin-n { font-size: 12px; color: var(--text3); min-width: 16px; }
+.ted-help { border: 1px solid var(--sep); border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; }
+.ted-help summary { cursor: pointer; font-weight: 600; font-size: 14px; color: var(--violet); display: flex; align-items: center; gap: 6px; }
+.ted-help[open] summary { margin-bottom: 4px; }

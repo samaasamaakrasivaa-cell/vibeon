@@ -14,4 +14,5 @@ export async function classAccess(lessonId: string, user: User) {
 export type LiveState = {
   rubricId?: string | null; spotlight?: { taskId: string; at: number } | null; hidden?: string[]; follow?: boolean;
   lockBoard?: boolean; page?: number; timer?: { endsAt: number } | null; tab?: string; scriptOpen?: string[];
+  marks?: Record<string, number[]>; marksShown?: string[]; // «Выдели слова»: выделения учителя и задания, где они показаны ученику
 };

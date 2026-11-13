@@ -71,9 +71,13 @@ export function PrintTask({ task, n, keys }: { task: TaskData; n: number; keys: 
       break;
     case "lines":
       if (task.type === "textorder") {
-        const ord = shuffle(p.items.map((_, i) => i), task.id);
+        // закреплённые строки стоят на своих местах, остальные перемешаны
+        const fx = new Set(o.fixed ?? []);
+        const free = shuffle(p.items.map((_, i) => i).filter((i) => !fx.has(i)), task.id);
+        let j = 0;
+        const ord = p.items.map((_, i) => (fx.has(i) ? i : free[j++]));
         ord.forEach((v, k) => (answers[v] = `${String.fromCharCode(97 + k)}`));
-        body = <ol type="a">{ord.map((v) => <li key={v}>{p.items[v]} &nbsp; ___</li>)}</ol>;
+        body = <ol type="a">{ord.map((v, k) => <li key={v}>{p.items[v]} &nbsp; {fx.has(k) ? <b>({k + 1})</b> : "___"}</li>)}</ol>;
       } else if (task.type === "dictation") {
         p.items.forEach((s, i) => answers.push(`${i + 1}. ${s}`));
         body = <ol>{p.items.map((_, i) => <li key={i}>{line(50)}</li>)}</ol>;
@@ -95,7 +99,8 @@ export function PrintTask({ task, n, keys }: { task: TaskData; n: number; keys: 
   }
   return (
     <section className="ptask">
-      <h3>{n}. {task.title}</h3>
+      <h3 style={{ whiteSpace: "pre-line" }}>{n}. {task.title.replace(/\*\*|__|==|\{\/?\w*\}/g, "")}</h3>
+      {(o.help?.vocab || o.help?.grammar) && <p className="small"><b>Useful phrases:</b> {[o.help.vocab, o.help.grammar].filter(Boolean).join("\n").split("\n").filter((x) => x.trim()).join(" · ")}</p>}
       {body}
       {keys && answers.filter(Boolean).length > 0 && <div className="pkey"><b>Key:</b> {answers.filter(Boolean).join("; ")}</div>}
     </section>

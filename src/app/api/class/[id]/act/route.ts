@@ -53,8 +53,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     case "live": {
       if (!teacher) return bad("teacher only");
       const patch = (body.patch ?? {}) as LiveState;
-      const allowed: (keyof LiveState)[] = ["rubricId", "spotlight", "hidden", "follow", "lockBoard", "page", "timer", "tab", "scriptOpen"];
+      const allowed: (keyof LiveState)[] = ["rubricId", "spotlight", "hidden", "follow", "lockBoard", "page", "timer", "tab", "scriptOpen", "marks", "marksShown"];
       const clean = Object.fromEntries(Object.entries(patch).filter(([k]) => allowed.includes(k as keyof LiveState)));
+      if (JSON.stringify(clean).length > 60000) return bad("big");
       await withLock(`live:${id}`, async () => {
         const fresh = await db.lessonInstance.findUnique({ where: { id }, select: { live: true } });
         const live = { ...((fresh?.live as object) ?? {}), ...clean };

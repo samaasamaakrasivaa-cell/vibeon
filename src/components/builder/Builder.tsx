@@ -137,7 +137,7 @@ export function Builder({ d }: { d: BuilderData }) {
                     <span className="bld-acts">
                       {task.hidden && <span className="pill grey">{t("bld.hidden")}</span>}
                       {task.options?.teacherOnly && <span className="pill violet">{t("bld.notSeen")}</span>}
-                      <button className="iconbtn" title={t("prof.edit")} aria-label={t("prof.edit")} onClick={() => setEditing({ task })}><Icon name="pencil" size="sm" /></button>
+                      <button className="iconbtn" title={t("bld.editTask")} aria-label={t("bld.editTask")} onClick={() => setEditing({ task })}><Icon name="pencil" size="sm" /></button>
                       {/* глазик: открыт — ученик видит, закрыт — только учитель */}
                       {(() => { const sees = !task.hidden && !task.options?.teacherOnly; return <button className={`iconbtn ${sees ? "" : "text-violet"}`} title={sees ? t("bld.eyeOn") : t("bld.eyeOff")} aria-label={sees ? t("bld.eyeOn") : t("bld.eyeOff")} aria-pressed={!sees} onClick={() => go(() => toggleStudentSees(task.id))}><Icon name={sees ? "eye" : "eyeoff"} size="sm" /></button>; })()}
                       <button className="iconbtn" disabled={i === 0} aria-label="up" onClick={() => move(i, -1)}>↑</button>

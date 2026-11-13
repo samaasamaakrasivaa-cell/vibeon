@@ -24,7 +24,9 @@ const FAMILIES: TaskType[][] = [
   ["letters", "crossword", "picture"],
 ];
 const famOf = (x: TaskType) => FAMILIES.findIndex((f) => f.includes(x));
-const KEEP_OPTS = ["nonum", "teacherOnly", "hidden"] as const;
+const KEEP_OPTS = ["nonum", "teacherOnly", "hidden", "help"] as const;
+/** Useful phrases — у заданий, где ученик работает с текстом, пишет или говорит (не у медиа, заметок и разделителей). */
+const HELP_TYPES = (x: TaskType) => !["divider", "vocab", "note", "image", "audio", "video", "link", "wordset", "picture"].includes(x);
 
 export function TaskEditor({ lessonId, initial, onSave, onClose, pending, error }: {
   lessonId: string; initial: TaskData; onSave: (t: TaskData) => void; onClose: () => void; pending: boolean; error: string | null;
@@ -135,10 +137,11 @@ export function TaskEditor({ lessonId, initial, onSave, onClose, pending, error 
             <div className="field">
               <span className="flabel">{t("bld.instruction")}</span>
               {own || !PRESET[type]?.length ? (
-                <input className="input" value={task.title} onChange={(e) => setTask({ ...task, title: e.target.value })} placeholder={PRESET[type]?.[0]} autoFocus />
+                <textarea className="input ted-title" rows={Math.min(8, Math.max(1, task.title.split("\n").length))} value={task.title} onChange={(e) => setTask({ ...task, title: e.target.value })} placeholder={PRESET[type]?.[0]} autoFocus aria-label={t("bld.instruction")} />
               ) : (
-                <div className="input font-semibold">{task.title}</div>
+                <div className="input font-semibold ted-title">{task.title}</div>
               )}
+              {(own || !PRESET[type]?.length) && <span className="hint">{t("bld.titleHint")}</span>}
               <div className="flex flex-wrap gap-1.5">
                 {PRESET[type]?.filter(Boolean).map((p) => (
                   <button key={p} type="button" className={`pchip ${task.title === p && !own ? "on" : ""}`} onClick={() => { setOwn(false); setTask({ ...task, title: p }); }}>{p}</button>
@@ -154,7 +157,7 @@ export function TaskEditor({ lessonId, initial, onSave, onClose, pending, error 
               <div className="tedbox">
                 <textarea ref={ta} className="tedta" value={task.content} onChange={(e) => setTask({ ...task, content: e.target.value })} spellCheck={false} aria-label={t("bld.content")} />
                 <div className="flex flex-wrap items-center gap-2 px-2 pb-2">
-                  {(isGap || type === "dropdown" || type === "errors" || type === "mark") && <button type="button" className="pchip" onClick={() => wrap("gap")} title={type === "mark" ? t("bld.mkFind") : t("bld.mkGap")}>[ ]</button>}
+                  {(isGap || type === "dropdown" || type === "errors") && <button type="button" className="pchip" onClick={() => wrap("gap")} title={t("bld.mkGap")}>[ ]</button>}
                   {(type === "dropdown" || type === "test" || type === "errors") && <button type="button" className="pchip" onClick={() => wrap("star")} title={t("bld.mkRight")}>✓</button>}
                   <button type="button" className="pchip" onClick={() => wrap("num")} title={t("bld.mkNum")}>1.</button>
                   {FMT_TYPES.includes(type) && (
@@ -234,6 +237,38 @@ export function TaskEditor({ lessonId, initial, onSave, onClose, pending, error 
                 </div>
               ))}
             </div>
+          )}
+          {type === "text" && (
+            <label className="mt-4 flex items-center gap-2"><input type="checkbox" checked={!!o.markable} onChange={(e) => setO({ markable: e.target.checked || undefined })} /><span className="small font-semibold">{t("bld.optMarkable")}</span></label>
+          )}
+          {type === "textorder" && (() => {
+            const rows = task.content.split("\n").map((l) => l.trim()).filter(Boolean);
+            const fx = new Set(o.fixed ?? []);
+            if (!rows.length) return null;
+            return (
+              <div className="field mt-4">
+                <span className="flabel">{t("bld.fixed")}</span>
+                <div className="flex flex-col gap-1.5">
+                  {rows.map((r, i) => (
+                    <button key={i} type="button" className={`ted-pin ${fx.has(i) ? "on" : ""}`} aria-pressed={fx.has(i)}
+                      onClick={() => { const n = new Set(fx); if (n.has(i)) n.delete(i); else n.add(i); setO({ fixed: n.size ? [...n].sort((a, b) => a - b) : undefined }); }}>
+                      <span className="ted-pin-n">{i + 1}</span><span className="grow">{r}</span><Icon name="pin" size="sm" />
+                    </button>
+                  ))}
+                </div>
+                <span className="hint">{t("bld.fixedHint")}</span>
+              </div>
+            );
+          })()}
+          {HELP_TYPES(type) && (
+            <details className="ted-help mt-4" open={!!(o.help?.vocab || o.help?.grammar)}>
+              <summary><Icon name="eye" size="sm" /> {t("bld.help")}</summary>
+              <span className="hint">{t("bld.helpHint")}</span>
+              <label className="flabel mt-2" htmlFor="te-hv">{t("bld.helpVocab")}</label>
+              <textarea id="te-hv" className="textarea" rows={3} value={o.help?.vocab ?? ""} onChange={(e) => setO({ help: { ...o.help, vocab: e.target.value } })} placeholder={"to be keen on\nas far as I know"} />
+              <label className="flabel mt-2" htmlFor="te-hg">{t("bld.helpGrammar")}</label>
+              <textarea id="te-hg" className="textarea" rows={3} value={o.help?.grammar ?? ""} onChange={(e) => setO({ help: { ...o.help, grammar: e.target.value } })} placeholder={"I'd rather + infinitive\nIf I were you, I'd…"} />
+            </details>
           )}
           {upErr && <div className="alert mt-2">{t("bld.uploadErr")}: {upErr}</div>}
 

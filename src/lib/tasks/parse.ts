@@ -122,7 +122,8 @@ export function parse(type: TaskType, content: string): Parsed {
       };
     case "mark": {
       let i = 0, targets = 0;
-      const out = c.split(/\r?\n/).map((line) => {
+      const plain = c.replace(/\*\*|__|==|\{\/?\w*\}/g, "").replace(/(^|\s)\*(\S)/g, "$1$2").replace(/(\S)\*(?=\s|$|[.,!?;:])/g, "$1");
+      const out = plain.split(/\r?\n/).map((line) => {
         const toks: MarkTok[] = [];
         for (const part of line.split(/(\[[^\]]+\])/)) {
           if (!part) continue;
