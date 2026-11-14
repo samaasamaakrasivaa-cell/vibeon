@@ -8,8 +8,17 @@ type P = Record<string, unknown>;
 const rec = <T,>(x: unknown) => ((x && typeof x === "object" ? x : {}) as Record<string, T>);
 const filled = (v: unknown) => typeof v === "string" ? !!v.trim() : v != null;
 
-/** null — у задания нет ответа ученика (текст, картинка, видео, рамка…). */
+/** Ученик уже проверил ответ (кнопка «Проверить» или режим «проверять сразу») — только тогда показываем верно/ошибка. */
+export const isFinal = (task: { options: TaskOptions }, a: P | undefined) => task.options.checkMode === "instant" || !!a?.checked;
+
+/** null — у задания нет ответа ученика. До проверки ответы — «сделано», без верно/ошибка: ученик ещё может передумать. */
 export function progressOf(task: { id: string; type: TaskType; content: string; options: TaskOptions }, a: P | undefined): Step[] | null {
+  const st = rawProgress(task, a);
+  if (!st || isFinal(task, a)) return st;
+  return st.map((x) => (x === "ok" || x === "bad" ? "done" : x));
+}
+
+function rawProgress(task: { id: string; type: TaskType; content: string; options: TaskOptions }, a: P | undefined): Step[] | null {
   const p = parse(task.type, task.content);
   const ans = a ?? {};
   switch (task.type) {

@@ -1758,7 +1758,47 @@ button.grp-row:hover { background: var(--fill); }
 .tk-opt.tk-right { box-shadow: inset 0 0 0 1.5px var(--ok); }
 .tk-opt.tk-right::after { content: "✓"; margin-left: auto; color: var(--ok); font-weight: 700; }
 .seg button.tk-right:not([aria-pressed="true"]) { box-shadow: inset 0 0 0 1.5px var(--ok); color: var(--ok-text); }
-.tk-key-err { text-decoration: underline wavy var(--bad); text-underline-offset: 3px; }
+.tk-key-err { text-decoration: underline dotted var(--ok); text-decoration-thickness: 2px; text-underline-offset: 4px; }
 .tk-card .tk-key-hint { margin-left: 8px; }
 .tk-chip .tk-key-hint { margin: 0 0 0 6px; line-height: 16px; font-size: 11px; }
 .tk-cw-key { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--ok); opacity: .45; pointer-events: none; text-transform: uppercase; }
+
+/* подсказка ответа учителю у пропуска: значок «⋮», ответ всплывает зелёной плашкой при наведении или нажатии (как в Progress Me) */
+.tk-key-dot { position: relative; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; width: 12px; height: 26px; margin: 0 2px 0 3px; vertical-align: middle; cursor: help; outline: none; }
+.tk-key-dot > i { width: 4px; height: 4px; border-radius: 50%; background: color-mix(in srgb, var(--ok) 55%, var(--sep)); }
+.tk-key-dot:hover > i, .tk-key-dot:focus > i { background: var(--ok); }
+.tk-key-pop { position: absolute; left: 50%; bottom: calc(100% + 6px); transform: translateX(-50%); z-index: 30; display: none; padding: 5px 12px; border-radius: 10px; background: var(--ok-bg); color: var(--ok-text); font-size: 14px; font-weight: 600; white-space: nowrap; box-shadow: 0 6px 20px rgba(0,0,0,.12); pointer-events: none; }
+.tk-key-dot:hover .tk-key-pop, .tk-key-dot:focus .tk-key-pop { display: block; }
+/* длинный ответ — зелёной строкой под полем */
+.tk-key-line { display: block; margin-top: 6px; padding: 6px 10px; border-radius: 10px; background: var(--ok-bg); color: var(--ok-text); font-size: 14px; font-weight: 500; line-height: 1.45; }
+/* свой выпадающий список пропуска */
+.tk-dd { position: relative; display: inline-block; vertical-align: middle; }
+.tk-dd > .tk-sel { display: inline-flex; align-items: center; gap: 6px; min-width: 96px; max-width: 320px; text-align: left; cursor: pointer; }
+.tk-dd > .tk-sel .grow { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tk-dd > .tk-sel svg { color: var(--text3); flex: none; }
+.tk-dd-pop { position: absolute; left: 0; top: calc(100% + 6px); z-index: 40; min-width: 100%; max-height: 260px; overflow-y: auto; padding: 6px; border-radius: 14px; background: var(--surface); box-shadow: 0 12px 32px rgba(0,0,0,.16), 0 0 0 .5px var(--sep); display: flex; flex-direction: column; gap: 2px; }
+.tk-dd-opt { display: block; width: 100%; text-align: left; white-space: nowrap; border: 0; border-radius: 9px; padding: 9px 14px; background: transparent; font: inherit; font-size: 16px; color: var(--text); cursor: pointer; }
+.tk-dd-opt:hover { background: var(--fill); }
+.tk-dd-opt.on { font-weight: 600; color: var(--accent); }
+.tk-dd-opt.right { background: var(--ok-bg); color: var(--ok-text); }
+
+/* «Выдели слова»: 4 цвета; заливка — свои выделения, подчёркивание — выделения учителя, показанные ученикам */
+.tk-mk.on, .tk-mk-gap.on { box-shadow: none; }
+.tk-mk.on.c0, .tk-mk-gap.on.c0 { background: #FFE58A; color: #3a2f00; }
+.tk-mk.on.c1, .tk-mk-gap.on.c1 { background: #C6F1D0; color: #0d4d21; }
+.tk-mk.on.c2, .tk-mk-gap.on.c2 { background: #CFE3FF; color: #0b3a75; }
+.tk-mk.on.c3, .tk-mk-gap.on.c3 { background: #FFD3D8; color: #78101f; }
+.tk-mk.tch, .tk-mk-gap.tch { background-color: transparent; border-radius: 0; }
+.tk-mk.tch.t0, .tk-mk-gap.tch.t0 { box-shadow: inset 0 -3px 0 #E6B800; }
+.tk-mk.tch.t1, .tk-mk-gap.tch.t1 { box-shadow: inset 0 -3px 0 #22A447; }
+.tk-mk.tch.t2, .tk-mk-gap.tch.t2 { box-shadow: inset 0 -3px 0 #0A84FF; }
+.tk-mk.tch.t3, .tk-mk-gap.tch.t3 { box-shadow: inset 0 -3px 0 #E5334B; }
+.tk-mk.on.tch, .tk-mk-gap.on.tch { border-radius: 4px; }
+.tk-mkbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.tk-mkcolors { display: inline-flex; align-items: center; gap: 6px; padding: 4px 8px; border-radius: 999px; background: var(--fill); }
+.tk-mkc { width: 22px; height: 22px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; padding: 0; }
+.tk-mkc.c0 { background: #FFD43B; } .tk-mkc.c1 { background: #34C759; } .tk-mkc.c2 { background: #0A84FF; } .tk-mkc.c3 { background: #FF3B30; }
+.tk-mkc.on { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--text); }
+/* заметки урока ученика в боковой панели */
+.cls-snote { display: flex; flex-direction: column; gap: 8px; padding: 12px; border-radius: 14px; background: var(--warn-bg); }
+.cls-snote textarea { background: var(--surface); min-height: 110px; }

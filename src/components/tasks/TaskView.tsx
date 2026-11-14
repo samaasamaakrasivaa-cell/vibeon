@@ -3,6 +3,7 @@
 // Используется в превью конструктора («Ученик увидит»), в «Поделиться», а на этапах 5–6 — в уроке и кабинете ученика.
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useT } from "@/lib/i18n/client";
+import type { DictKey } from "@/lib/i18n/dict";
 import { numbered, type TaskOptions, type TaskType } from "@/lib/tasks/catalog";
 import { buildCrossword, dictationGrade, fmtTime, parse, same, series, shuffle, videoEmbed, type Seg } from "@/lib/tasks/parse";
 import { Icon } from "../Icon";
@@ -52,9 +53,40 @@ const Num = ({ i, o }: { i: number; o: TaskOptions }) => (o.nonum ? null : <span
 /** Режим «ответы» у учителя (урок, конструктор, редактор): правильный ответ виден заранее. Ученику — никогда. */
 export const KeyCtx = createContext(false);
 function useKey() { const on = useContext(KeyCtx); const role = useTaskRole(); return on && role !== "student"; }
-function Key({ text, pre = "✓" }: { text: string; pre?: string }) {
+function Key({ text, pre = "✓", mode = "inline" }: { text: string; pre?: string; mode?: "inline" | "pop" | "block" }) {
   const on = useKey();
-  return on && text ? <span className="tk-key-hint">{pre} {text}</span> : null;
+  if (!on || !text) return null;
+  if (mode === "pop") return <span className="tk-key-dot" tabIndex={0} aria-label={`${pre} ${text}`}><i /><i /><i /><span className="tk-key-pop">{text}</span></span>;
+  if (mode === "block") return <span className="tk-key-line">✓ {text}</span>;
+  return <span className="tk-key-hint">{pre} {text}</span>;
+}
+
+/** Выпадающий список пропуска — свой, а не системный: у учителя правильный вариант подсвечен зелёным прямо в списке. */
+function Drop({ value, options, answers, onChange, mark, label }: { value: string; options: string[]; answers: string[]; onChange: (v: string) => void; mark?: string; label: string }) {
+  const [open, setOpen] = useState(false);
+  const box = useRef<HTMLSpanElement>(null);
+  const key = useKey();
+  useEffect(() => {
+    if (!open) return;
+    const h = (e: MouseEvent) => { if (box.current && !box.current.contains(e.target as Node)) setOpen(false); };
+    const k = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
+    document.addEventListener("mousedown", h); document.addEventListener("keydown", k);
+    return () => { document.removeEventListener("mousedown", h); document.removeEventListener("keydown", k); };
+  }, [open]);
+  return (
+    <span className="tk-dd" ref={box}>
+      <button type="button" className={`tk-sel ${mark ?? ""} ${value ? "full" : ""}`} aria-haspopup="listbox" aria-expanded={open} aria-label={label} data-ans={answers.join(" / ")} onClick={() => setOpen((x) => !x)}>
+        <span className="grow">{value || "…"}</span><Icon name="chevd" size="sm" />
+      </button>
+      {open && (
+        <span className="tk-dd-pop" role="listbox">
+          {options.map((x) => (
+            <button key={x} type="button" role="option" aria-selected={value === x} className={`tk-dd-opt ${value === x ? "on" : ""} ${key && answers.includes(x) ? "right" : ""}`} onClick={() => { onChange(x); setOpen(false); }}>{x}</button>
+          ))}
+        </span>
+      )}
+    </span>
+  );
 }
 
 // ───────── Пропуски / выбор из списка ─────────
@@ -66,7 +98,6 @@ function Gaps({ task, kind }: { task: TaskData; kind: "gap" | "dropdown" }) {
   const ck = useChecker(o, task.id);
   const [val, setVal] = useSlot<Record<string, string>>(task.id, "val", {});
   const [pick, setPick] = useState<string | null>(null);
-  const key = useKey();
   if (p.kind !== "gaps") return null;
   const groups = series(p.lines.map((l, i) => ({ l, i })), o.split ? (o.seriesSize ?? 5) : undefined);
   const gapKeys: { k: string; s: Extract<Seg, { t: "gap" }> }[] = [];
@@ -108,11 +139,8 @@ function Gaps({ task, kind }: { task: TaskData; kind: "gap" | "dropdown" }) {
                       if (kind === "dropdown")
                         return (
                           <span key={si} className="tk-gapw">
-                          <select data-ans={s.answers.join(" / ")} className={`tk-sel ${m ?? ""}`} value={val[k] ?? ""} onChange={(e) => set(k, e.target.value)} aria-label={`gap ${i + 1}`}>
-                            <option value="">…</option>
-                            {s.options!.map((x) => <option key={x} value={x}>{key && s.answers.includes(x) ? `✓ ${x}` : x}</option>)}
-                          </select>
-                          <Key text={s.answers.join(" / ")} />
+                            <Drop value={val[k] ?? ""} options={s.options!} answers={s.answers} onChange={(v) => set(k, v)} mark={m} label={`gap ${i + 1}`} />
+                            <Key text={s.answers.join(" / ")} mode="pop" />
                           </span>
                         );
                       if (drag)
@@ -123,7 +151,7 @@ function Gaps({ task, kind }: { task: TaskData; kind: "gap" | "dropdown" }) {
                             onDragOver={(e) => e.preventDefault()} onDrop={(e) => { e.preventDefault(); set(k, e.dataTransfer.getData("text/plain")); }}>
                             {val[k] || " "}
                           </button>
-                          <Key text={s.answers.join(" / ")} />
+                          <Key text={s.answers.join(" / ")} mode="pop" />
                           </span>
                         );
                       return (
@@ -132,7 +160,7 @@ function Gaps({ task, kind }: { task: TaskData; kind: "gap" | "dropdown" }) {
                             onChange={(e) => setVal((x) => ({ ...x, [k]: e.target.value }))} onBlur={(e) => ck.instant && e.target.value && ck.bump(k)}
                             aria-label={`gap ${i + 1}`} />
                           {s.hint && <span className="tk-hint">({s.hint})</span>}
-                          {shown ? <span className="tk-ans">{s.answers[0]}</span> : <Key text={s.answers.join(" / ")} />}
+                          {shown ? <span className="tk-ans">{s.answers[0]}</span> : <Key text={s.answers.join(" / ")} mode="pop" />}
                         </span>
                       );
                     })}
@@ -174,13 +202,13 @@ function Errors({ task }: { task: TaskData }) {
                     <span key={`${si}-${wi}`} className={`tk-word ${miss[`${i}:${si}:${wi}`] ? "bad" : ""}`} onClick={() => !found[i] && setMiss((m) => ({ ...m, [`${i}:${si}:${wi}`]: true }))}>{w}</span>
                   )));
                 const wrong = s.options!.find((x) => !s.answers.includes(x)) ?? s.options![0];
-                if (!found[i]) return <span key={si} className="tk-gapw"><span className={`tk-word ${keyE ? "tk-key-err" : ""}`} onClick={() => setFound((f) => ({ ...f, [i]: true }))}>{wrong}</span><Key text={s.answers[0]} pre="→" /></span>;
+                if (!found[i]) return <span key={si} className="tk-gapw"><span className={`tk-word ${keyE ? "tk-key-err" : ""}`} onClick={() => setFound((f) => ({ ...f, [i]: true }))}>{wrong}</span><Key text={s.answers[0]} pre="→" mode="pop" /></span>;
                 const m: Mark = ck.checked && fix[i] ? (same(fix[i], s.answers) ? "ok" : "bad") : undefined;
                 return (
                   <span key={si} className="tk-gapw">
                     <s className="text-bad">{wrong}</s>{" "}
                     <input autoFocus className={`tk-gap ${m ?? ""}`} value={fix[i] ?? ""} size={Math.max(4, (s.answers[0] ?? "").length + 1)} onChange={(e) => setFix((x) => ({ ...x, [i]: e.target.value }))} onBlur={(e) => ck.instant && e.target.value && ck.bump(String(i))} aria-label="fix" />
-                    {ck.reveal(String(i)) && m === "bad" ? <span className="tk-ans">{s.answers[0]}</span> : <Key text={s.answers[0]} />}
+                    {ck.reveal(String(i)) && m === "bad" ? <span className="tk-ans">{s.answers[0]}</span> : <Key text={s.answers[0]} mode="pop" />}
                   </span>
                 );
               })}
@@ -195,36 +223,58 @@ function Errors({ task }: { task: TaskData }) {
 
 // ───────── Выдели слова в тексте ─────────
 // Инструмент работы с текстом: ученик нажимает на слова — они выделяются для него, повторное нажатие снимает. Правильных ответов нет.
-// На уроке (MarkCtx): учитель видит выделения ученика, может выделить своё и «Показать ученику» — ученик увидит их другим цветом.
-export type MarkLayer = { teacher: boolean; student: string; mine: Record<string, number[]>; shown: string[]; setMine: (taskId: string, ids: number[]) => void; toggleShown: (taskId: string) => void };
+// На уроке (MarkCtx): учитель по умолчанию работает со своими выделениями; выделения ученика смотрит по выбору
+// (в группе — имя ученика у задания, на индивидуальном уроке — «Мои / Ученик»). «Показать ученикам» — ученики видят
+// выделения учителя подчёркиванием его цвета, поверх своих. Цвета: 4 — у учителя и у ученика.
+export type MarkMap = Record<string, number>; // слово → цвет
+export type MarkLayer = {
+  teacher: boolean; group: boolean; student: string; // student — чьи выделения смотрим (в группе — выбранный ученик, иначе пусто)
+  mine: Record<string, MarkMap>; shown: string[]; setMine: (taskId: string, m: MarkMap) => void; toggleShown: (taskId: string) => void;
+  view: Record<string, "mine" | "student">; setView: (taskId: string, v: "mine" | "student") => void; // индивидуальный урок: что смотрит учитель (не сбрасывается при смене секции)
+};
 export const MarkCtx = createContext<MarkLayer | null>(null);
+export const MARK_COLORS = ["yellow", "green", "blue", "red"] as const;
+let LAST_COLOR = 0; // выбранный цвет помним между заданиями и секциями
+/** Старые выделения: список слов → всё жёлтым (0). */
+export const markMap = (x: unknown): MarkMap => (Array.isArray(x) ? Object.fromEntries(x.map((i) => [String(i), 0])) : x && typeof x === "object" ? (x as MarkMap) : {});
+
 function MarkWords({ task, content }: { task: TaskData; content?: string }) {
   const { t } = useT();
   const p = useMemo(() => parse("mark", content ?? task.content), [content, task.content]);
-  const [sel, setSel] = useSlot<Record<number, boolean>>(task.id, "sel", {});
+  const [sel, setSel] = useSlot<Record<number, boolean | number>>(task.id, "sel", {});
   const ctx = useContext(MarkCtx);
   const role = useTaskRole();
   const teacher = !!ctx?.teacher && role === "teacher";
-  const [view, setView] = useState<"student" | "mine">("student"); // учитель: смотрит выделения ученика или выделяет своё
+  const view: "own" | "mine" | "student" = !teacher ? "own" : ctx!.group ? (ctx!.student ? "student" : "mine") : ctx!.view[task.id] ?? "mine";
+  const [color, setColorS] = useState(LAST_COLOR);
+  const setColor = (c: number) => { LAST_COLOR = c; setColorS(c); };
   const [drag, setDrag] = useState<{ from: number; to: number } | null>(null);
   const dragRef = useRef(drag); dragRef.current = drag;
-  const mine = useMemo(() => new Set(ctx?.mine[task.id] ?? []), [ctx?.mine, task.id]);
-  const own = useMemo(() => new Set(Object.entries(sel).filter(([, v]) => v).map(([k]) => +k)), [sel]);
+  const mine = useMemo(() => markMap(ctx?.mine[task.id]), [ctx?.mine, task.id]);
+  // ученик: true из старых ответов — жёлтый; число — 1 + номер цвета
+  const own = useMemo(() => Object.fromEntries(Object.entries(sel).filter(([, v]) => v).map(([k, v]) => [k, typeof v === "number" ? v - 1 : 0])) as MarkMap, [sel]);
   const shown = !!ctx?.shown.includes(task.id);
-  const editMine = teacher && view === "mine";
-  const canEdit = editMine || !teacher; // выделения ученика учитель только смотрит
-  // выделение — набор слов; соседние выделенные слова — один фрагмент
-  const put = (n: Set<number>) => { if (editMine) ctx!.setMine(task.id, [...n].sort((x, y) => x - y)); else setSel(Object.fromEntries([...n].map((k) => [k, true]))); };
-  const cur = editMine ? mine : own;
-  const run = (i: number, S: Set<number>) => { const r = [i]; for (let k = i - 1; S.has(k); k--) r.push(k); for (let k = i + 1; S.has(k); k++) r.push(k); return r; };
-  // нажатие: на выделенном — снять весь фрагмент, на обычном — выделить слово
-  const tap = (i: number) => { if (!canEdit) return; const n = new Set(cur); if (n.has(i)) run(i, n).forEach((k) => n.delete(k)); else n.add(i); put(n); };
-  // протянули от слова до слова — выделить фрагмент целиком (или снять, если он уже весь выделен)
+  const canEdit = view === "own" || view === "mine";
+  const cur: MarkMap = view === "mine" ? mine : own;
+  const put = (n: MarkMap) => {
+    if (view === "mine") ctx!.setMine(task.id, n);
+    else setSel(Object.fromEntries(Object.entries(n).map(([k, c]) => [k, c + 1])));
+  };
+  // фрагмент — соседние слова одного цвета
+  const run = (i: number, M: MarkMap) => { const c = M[i]; const r = [i]; for (let k = i - 1; M[k] === c; k--) r.push(k); for (let k = i + 1; M[k] === c; k++) r.push(k); return r; };
+  const tap = (i: number) => {
+    if (!canEdit) return;
+    const n = { ...cur };
+    if (n[i] !== undefined && n[i] === color) run(i, n).forEach((k) => delete n[k]); // нажали на фрагмент этого цвета — снять
+    else if (n[i] !== undefined) run(i, n).forEach((k) => { n[k] = color; }); // другого цвета — перекрасить
+    else n[i] = color;
+    put(n);
+  };
   const range = (a: number, b: number) => {
     if (!canEdit) return;
-    const lo = Math.min(a, b), hi = Math.max(a, b), n = new Set(cur);
+    const lo = Math.min(a, b), hi = Math.max(a, b), n = { ...cur };
     const all = Array.from({ length: hi - lo + 1 }, (_, k) => lo + k);
-    if (all.every((k) => n.has(k))) all.forEach((k) => n.delete(k)); else all.forEach((k) => n.add(k));
+    if (all.every((k) => n[k] === color)) all.forEach((k) => delete n[k]); else all.forEach((k) => { n[k] = color; });
     put(n);
   };
   useEffect(() => {
@@ -237,30 +287,39 @@ function MarkWords({ task, content }: { task: TaskData; content?: string }) {
   }, [drag !== null]);
   if (p.kind !== "mark") return null;
   const inDrag = (i: number) => !!drag && i >= Math.min(drag.from, drag.to) && i <= Math.max(drag.from, drag.to);
-  const layers = (i: number) => {
-    const st = own.has(i), tc = mine.has(i);
-    if (editMine) return { on: false, tch: tc };
-    if (teacher) return { on: st, tch: false };
-    return { on: st, tch: shown && tc };
+  // заливка — свои выделения (ученика или учителя); подчёркивание — выделения учителя, показанные ученику
+  const layers = (i: number): { fill?: number; line?: number } => {
+    if (view === "mine") return { fill: mine[i] };
+    if (view === "student") return { fill: own[i], line: shown ? mine[i] : undefined };
+    return { fill: own[i], line: shown ? mine[i] : undefined };
   };
-  const cls = (i: number) => { const l = layers(i); return `${l.on ? "on" : ""} ${l.tch ? "tch" : ""} ${inDrag(i) ? "drag" : ""}`; };
+  const cls = (l: { fill?: number; line?: number }) => `${l.fill !== undefined ? `on c${l.fill}` : ""} ${l.line !== undefined ? `tch t${l.line}` : ""}`;
   const onMove = (e: React.PointerEvent) => {
     if (!drag) return;
     const el = (document.elementFromPoint(e.clientX, e.clientY) as HTMLElement | null)?.closest("[data-w]");
     const w = el ? Number(el.getAttribute("data-w")) : NaN;
     if (Number.isFinite(w) && w !== drag.to) setDrag({ ...drag, to: w });
   };
+  const has = Object.keys(cur).length > 0;
   return (
     <div className="flex flex-col gap-3">
-      {teacher ? (
-        <div className="flex flex-wrap items-center gap-2">
+      <div className="tk-mkbar">
+        {teacher && !ctx!.group && (
           <div className="seg" role="group" aria-label={t("tk.markView")}>
-            <button type="button" aria-pressed={view === "student"} onClick={() => setView("student")}>{t("tk.markStudent", { name: ctx!.student })}</button>
-            <button type="button" aria-pressed={view === "mine"} onClick={() => setView("mine")}>{t("tk.markMine")}</button>
+            <button type="button" aria-pressed={view === "mine"} onClick={() => ctx!.setView(task.id, "mine")}>{t("tk.markMine")}</button>
+            <button type="button" aria-pressed={view === "student"} onClick={() => ctx!.setView(task.id, "student")}>{t("tk.markStudent", { name: ctx!.student })}</button>
           </div>
-          {view === "mine" && <button type="button" className={`btn sm ${shown ? "primary" : "secondary"}`} disabled={!mine.size && !shown} onClick={() => ctx!.toggleShown(task.id)}><Icon name={shown ? "eye" : "eyeoff"} size="sm" />{shown ? t("tk.markShown") : t("tk.markShow")}</button>}
-        </div>
-      ) : <p className="hint m-0">{t("tk.markFree")}{shown && mine.size ? ` ${t("tk.markTeacherOn")}` : ""}</p>}
+        )}
+        {teacher && ctx!.group && <span className="small muted">{view === "student" ? t("tk.markOf", { name: ctx!.student }) : t("tk.markMineHint")}</span>}
+        {canEdit && (
+          <span className="tk-mkcolors" role="radiogroup" aria-label={t("tk.markColor")}>
+            {MARK_COLORS.map((c, ci) => <button key={c} type="button" role="radio" aria-checked={color === ci} aria-label={t(`tk.mc.${c}` as DictKey)} title={t(`tk.mc.${c}` as DictKey)} className={`tk-mkc c${ci} ${color === ci ? "on" : ""}`} onClick={() => setColor(ci)} />)}
+          </span>
+        )}
+        {view === "mine" && <button type="button" className={`btn sm ${shown ? "primary" : "secondary"}`} disabled={!has && !shown} onClick={() => ctx!.toggleShown(task.id)}><Icon name={shown ? "eye" : "eyeoff"} size="sm" />{shown ? t(ctx!.group ? "tk.markShownAll" : "tk.markShown") : t(ctx!.group ? "tk.markShowAll" : "tk.markShow")}</button>}
+        {canEdit && has && <button type="button" className="btn plain sm" onClick={() => put({})}>{view === "mine" ? t("tk.markClearMine") : t("tk.markClear")}</button>}
+      </div>
+      {!teacher && <p className="hint m-0">{t("tk.markFree")}{shown && Object.keys(mine).length ? ` ${t("tk.markTeacherOn")}` : ""}</p>}
       <div className={`tk-marktext ${canEdit ? "" : "ro"}`} onPointerMove={onMove}>
         {p.lines.map((line, li) => (
           <p key={li} className="m-0">
@@ -270,12 +329,13 @@ function MarkWords({ task, content }: { task: TaskData; content?: string }) {
                 const a = line[k - 1], b = line[k + 1];
                 if (a?.t !== "w" || b?.t !== "w") return <span key={k}>{x.v}</span>;
                 const la = layers(a.i), lb = layers(b.i);
-                const c = `${la.on && lb.on ? "on" : ""} ${la.tch && lb.tch ? "tch" : ""} ${inDrag(a.i) && inDrag(b.i) ? "drag" : ""}`.trim();
+                const g = { fill: la.fill !== undefined && la.fill === lb.fill ? la.fill : undefined, line: la.line !== undefined && la.line === lb.line ? la.line : undefined };
+                const c = `${cls(g)} ${inDrag(a.i) && inDrag(b.i) ? "drag" : ""}`.trim();
                 return <span key={k} className={c ? `tk-mk-gap ${c}` : undefined}>{x.v}</span>;
               }
               const l = layers(x.i);
               return (
-                <span key={k} data-w={x.i} role="button" tabIndex={0} aria-pressed={l.on || l.tch} className={`tk-mk ${cls(x.i)}`}
+                <span key={k} data-w={x.i} role="button" tabIndex={0} aria-pressed={l.fill !== undefined || l.line !== undefined} className={`tk-mk ${cls(l)} ${inDrag(x.i) ? "drag" : ""}`}
                   onPointerDown={(e) => { if (!canEdit || e.button > 0) return; e.preventDefault(); setDrag({ from: x.i, to: x.i }); }}
                   onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); tap(x.i); } }}>{x.v}</span>
               );
@@ -283,7 +343,6 @@ function MarkWords({ task, content }: { task: TaskData; content?: string }) {
           </p>
         ))}
       </div>
-      {!teacher && own.size > 0 && <button type="button" className="btn plain sm self-start" onClick={() => setSel({})}>{t("tk.markClear")}</button>}
     </div>
   );
 }
@@ -357,7 +416,7 @@ function TF({ task }: { task: TaskData }) {
 }
 
 // ───────── Соедини пары ─────────
-const LINK_COLORS = ["#0A84FF", "#A55CF5", "#FF9500", "#34C759", "#FF2D55", "#5AC8FA", "#FFCC00", "#AF52DE"];
+const LINK_COLORS = ["#0A84FF", "#A55CF5", "#34C759", "#5AC8FA", "#5856D6", "#30B0C7", "#AF52DE", "#64D2FF"]; // без красного и оранжевого — их принимают за ошибку
 function Pairs({ task }: { task: TaskData }) {
   const { t } = useT();
   const o = task.options;
@@ -488,7 +547,7 @@ function Build({ task, letters }: { task: TaskData; letters?: boolean }) {
                     onClick={() => { const nb = [...b, k]; setBuilt((x) => ({ ...x, [i]: nb })); if (ck.instant && nb.length === it.toks.length) ck.bump(String(i)); }}>{it.toks[k]}</button>
                 ))}
               </div>
-              {ck.reveal(String(i)) && m === "bad" ? <span className="tk-ans self-start">{it.toks.join(letters ? "" : " ")}</span> : <span className="self-start"><Key text={it.toks.join(letters ? "" : " ")} /></span>}
+              {ck.reveal(String(i)) && m === "bad" ? <span className="tk-ans self-start">{it.toks.join(letters ? "" : " ")}</span> : <Key text={it.toks.join(letters ? "" : " ")} mode="block" />}
             </div>
           </div>
         );
@@ -562,7 +621,7 @@ function Arrow({ task }: { task: TaskData }) {
             <div className="mb-1.5"><Num i={i} o={o} /> {it.q} {it.key && <b className="tk-key">{it.key}</b>}</div>
             <input className={`input tk-line ${m ?? ""}`} value={val[i] ?? ""} onChange={(e) => setVal((x) => ({ ...x, [i]: e.target.value }))} onBlur={(e) => ck.instant && e.target.value && ck.bump(String(i))} aria-label={`answer ${i + 1}`} />
             {m === "bad" && <span className="small text-text2">{t("tk.teacherWillSee")}</span>}
-            {ck.reveal(String(i)) && m === "bad" ? <span className="tk-ans">{it.answers[0]}</span> : <Key text={it.answers.join(" / ")} />}
+            {ck.reveal(String(i)) && m === "bad" ? <span className="tk-ans">{it.answers[0]}</span> : <Key text={it.answers.join(" / ")} mode="block" />}
           </div>
         );
       })}
@@ -598,7 +657,7 @@ function Dictation({ task }: { task: TaskData }) {
             <div className="grow">
               <input className={`input tk-line ${g === "exact" ? "ok" : g === "spelling" ? "spell" : g === "wrong" ? "bad" : ""}`} value={val[i] ?? ""} onChange={(e) => setVal((x) => ({ ...x, [i]: e.target.value }))} onBlur={(e) => ck.instant && e.target.value && ck.bump(String(i))} aria-label={`sentence ${i + 1}`} />
               {g === "spelling" && <span className="small text-warn">{t("tk.spelling")}: {s}</span>}
-              {g === "wrong" && ck.reveal(String(i)) ? <span className="tk-ans">{s}</span> : <Key text={s} />}
+              {g === "wrong" && ck.reveal(String(i)) ? <span className="tk-ans">{s}</span> : <Key text={s} mode="block" />}
             </div>
           </div>
         );
@@ -733,6 +792,7 @@ function Images({ o }: { o: TaskOptions }) {
   const { t } = useT();
   const imgs = o.images ?? [];
   const [i, setI] = useState(0);
+  useEffect(() => { for (const im of o.images ?? []) { const x = new Image(); x.src = im.src; } }, [o.images]);
   if (!imgs.length) return <div className="tk-empty"><Icon name="image" />{t("tk.noImages")}</div>;
   if (o.layout === "stack" || imgs.length === 1)
     return <div className="flex flex-col gap-3">{imgs.map((im, k) => <figure key={k} className="m-0"><Pic im={im} />{im.caption && <figcaption className="small muted mt-1">{im.caption}</figcaption>}</figure>)}</div>;
@@ -740,7 +800,7 @@ function Images({ o }: { o: TaskOptions }) {
   return (
     <figure className="m-0">
       <div className="relative">
-        <Pic im={im} />
+        <Pic key={`${i}-${im.src}`} im={im} />
         <button type="button" className="tk-nav l" onClick={() => setI((i - 1 + imgs.length) % imgs.length)} aria-label="prev"><Icon name="chevl" /></button>
         <button type="button" className="tk-nav r" onClick={() => setI((i + 1) % imgs.length)} aria-label="next"><Icon name="right" /></button>
       </div>

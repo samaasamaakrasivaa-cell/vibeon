@@ -52,6 +52,14 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       return NextResponse.json({ ok: true });
       });
     }
+    // ── общие заметки урока ученика: пишут и ученик, и учитель; у каждого ученика группы — свои
+    case "snote": {
+      if (!tg?.studentId) return bad("student");
+      const text = str(body.text, 6000);
+      await db.lessonInstance.update({ where: { id: tg.id }, data: { studentNote: text || null } });
+      publish(ch, "snote", { sid: tg.studentId, text, by });
+      return NextResponse.json({ ok: true });
+    }
     // ── «Сбросить ответы» задания: одному ученику (studentId) или всем ученикам занятия
     case "reset": {
       if (!teacher) return bad("teacher only");

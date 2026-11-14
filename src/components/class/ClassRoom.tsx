@@ -8,8 +8,8 @@ import { Dialog } from "../Dialog";
 import { Icon } from "../Icon";
 import { LangSwitch } from "../LangSwitch";
 import { LogoMark } from "../Logo";
-import { KeyCtx, MarkCtx, TaskCard, type MarkLayer, type TaskData } from "../tasks/TaskView";
-import { progressOf, summary, type Step } from "@/lib/tasks/progress";
+import { KeyCtx, MarkCtx, markMap, TaskCard, type MarkLayer, type TaskData } from "../tasks/TaskView";
+import { isFinal, progressOf, summary, type Step } from "@/lib/tasks/progress";
 import { AnswerProvider, type Answers } from "../tasks/store";
 import { Catalog } from "../builder/Catalog";
 import { TaskEditor } from "../builder/TaskEditor";
@@ -39,7 +39,7 @@ export type ClassData = {
   /** Групповое занятие: у каждого ученика свой урок (instanceId), класс общий. Учитель переключается между учениками. */
   group?: { title: string; members: { sid: string; instanceId: string; userId: string | null; name: string }[] };
   chatNames?: Record<string, string>; // чат группового урока: userId → имя
-  byStudent?: Record<string, { answers: Answers; statuses: Record<string, string>; reviews: Record<string, Review>; aiDrafts: Record<string, AiCheck>; words: Word[] }>;
+  byStudent?: Record<string, { answers: Answers; statuses: Record<string, string>; reviews: Record<string, Review>; aiDrafts: Record<string, AiCheck>; words: Word[]; note?: string }>;
 };
 
 export function ClassRoom({ d }: { d: ClassData }) {
@@ -78,7 +78,10 @@ export function ClassRoom({ d }: { d: ClassData }) {
   // подсказки правильных ответов у учителя (запоминаем выбор на этом устройстве)
   const [showKeys, setShowKeys] = useState(true);
   useEffect(() => { try { if (localStorage.getItem("vibeon.keys") === "0") setShowKeys(false); } catch { /* приватный режим */ } }, []);
-  const [notes, setNotes] = useState({ teacher: d.note ?? "", student: d.studentNote ?? "" });
+  const [notes, setNotes] = useState({ teacher: d.note ?? "" });
+  // общие заметки урока: у каждого ученика свои; пишут и он, и учитель
+  const [snotes, setSnotes] = useState<Record<string, string>>(() => (d.group && teacher ? Object.fromEntries(Object.entries(d.byStudent ?? {}).map(([k, v]) => [k, v.note ?? ""])) : { [d.student?.id ?? "_"]: d.studentNote ?? "" }));
+  const [noteSid, setNoteSid] = useState<string>(d.group && teacher ? d.group.members[0]?.sid ?? "_" : d.student?.id ?? "_");
   const [now, setNow] = useState(Date.now());
   useEffect(() => { const i = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(i); }, []);
   const pending = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
@@ -140,7 +143,8 @@ export function ClassRoom({ d }: { d: ClassData }) {
         return n;
       });
     } else if (ev === "chat") { setMsgs((m) => (m.some((y) => y.id === x.id) ? m : [...m, x as unknown as Msg])); if (x.by !== d.me.id) setUnread((u) => u + 1); }
-    else if (ev === "note") setNotes((n) => ({ ...n, [x.who as string]: x.text as string }));
+    else if (ev === "note") { if (x.who === "teacher") setNotes((n) => ({ ...n, teacher: x.text as string })); }
+    else if (ev === "snote") { if (x.by !== d.me.id && (teacher || x.sid === own)) setSnotes((n) => ({ ...n, [x.sid as string]: x.text as string })); }
     else if (ev === "reset") {
       // учитель сбросил ответы задания: одному ученику (sid) или всем
       const taskId = x.taskId as string, who = x.sid as string | null;
@@ -196,13 +200,16 @@ export function ClassRoom({ d }: { d: ClassData }) {
   const patchLive = (p: LiveState) => { setLive((l) => ({ ...l, ...p })); send("live", { patch: p }); };
   const hidden = new Set(live.hidden ?? []);
   // «Выдели слова»: выделения учителя живут в состоянии урока; ученику показываются, только если учитель нажал «Показать ученику»
+  // что смотрит учитель в «Выдели слова» на индивидуальном уроке (свои / ученика) — не сбрасывается при смене секции
+  const [markView, setMarkView] = useState<Record<string, "mine" | "student">>({});
   const marks: MarkLayer = useMemo(() => ({
-    teacher, student: viewMember?.name ?? d.student?.name ?? "",
-    mine: live.marks ?? {}, shown: live.marksShown ?? [],
-    setMine: (taskId, ids) => patchLive({ marks: { ...(live.marks ?? {}), [taskId]: ids } }),
+    teacher, group: !!d.group, student: d.group ? "" : d.student?.name ?? "",
+    mine: Object.fromEntries(Object.entries(live.marks ?? {}).map(([k, v]) => [k, markMap(v)])), shown: live.marksShown ?? [],
+    setMine: (taskId, m) => patchLive({ marks: { ...(live.marks ?? {}), [taskId]: m } }),
     toggleShown: (taskId) => { const s = live.marksShown ?? []; patchLive({ marksShown: s.includes(taskId) ? s.filter((x) => x !== taskId) : [...s, taskId] }); },
+    view: markView, setView: (taskId, v) => setMarkView((x) => ({ ...x, [taskId]: v })),
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }), [teacher, d.student?.name, viewMember?.name, live.marks, live.marksShown]);
+  }), [teacher, d.group, d.student?.name, live.marks, live.marksShown, markView]);
   const lessonTasks = d.tasks.filter((x) => x.section === "lesson" && !x.hidden && (teacher || !hidden.has(x.id)));
   const ri = Math.max(0, d.rubrics.findIndex((r) => r.id === rubric));
   const cur = d.rubrics[ri];
@@ -415,7 +422,15 @@ export function ClassRoom({ d }: { d: ClassData }) {
                 <div className="flex gap-2"><button type="button" className="btn primary sm" disabled={!secName.trim()} onClick={() => void addSection(secName)}>{t("bld.secAdd")}</button><button type="button" className="btn plain sm" onClick={() => setAddSec(false)}>{t("common.cancel")}</button></div>
               </div>
             ) : <button type="button" className="bld-sec cls-addsec mt-1" onClick={() => setAddSec(true)}><Icon name="plus" size="sm" /><span className="grow">{t("bld.addRubric")}</span></button>)}
-            <NoteBox key="note" title={teacher ? t("cls.teacherNote") : t("cls.myNotes")} value={teacher ? notes.teacher : notes.student} onSave={(v) => send("note", { text: v })} />
+            {/* заметки урока ученика: общие для ученика и учителя, всегда на виду рядом с секциями */}
+            <SharedNotes
+              key={noteSid}
+              value={snotes[noteSid] ?? ""}
+              onChange={(v) => { setSnotes((n) => ({ ...n, [noteSid]: v })); return rawSend("snote", { text: v, ...(gTeacher ? { studentId: noteSid } : {}) }); }}
+              who={gTeacher ? <div className="flex flex-wrap gap-1">{d.group!.members.map((m) => <button key={m.sid} type="button" className={`pchip ${noteSid === m.sid ? "on" : ""}`} aria-pressed={noteSid === m.sid} onClick={() => setNoteSid(m.sid)}>{m.name.split(" ")[0]}</button>)}</div> : null}
+              hint={teacher ? (d.group ? t("cls.snoteHintGroup") : t("cls.snoteHintTeacher", { name: d.student?.name ?? "" })) : t("cls.snoteHint")}
+            />
+            {teacher && <NoteBox key="note" title={t("cls.teacherNote")} value={notes.teacher} onSave={(v) => send("note", { text: v })} />}
             {!teacher && notes.teacher && <div className="alert mt-3" style={{ background: "var(--warn-bg)", color: "var(--warn-text)" }}><b className="block small">{t("cls.fromTeacher")}</b>{notes.teacher}</div>}
             {teacher && (
               <div className="mt-4 flex flex-col gap-2">
@@ -694,6 +709,37 @@ function Timer({ onStart, running }: { onStart: (sec: number) => void; running: 
   );
 }
 
+/** Заметки урока ученика: пишут и ученик, и учитель, сохраняется на ходу и сразу видно у другого. */
+function SharedNotes({ value, onChange, who, hint }: { value: string; onChange: (v: string) => Promise<unknown>; who: React.ReactNode; hint: string }) {
+  const { t } = useT();
+  const [v, setV] = useState(value);
+  const [state, setState] = useState<"" | "saving" | "saved">("");
+  const typedAt = useRef(0);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // пришло с другой стороны — показываем сразу, если сами не печатаем прямо сейчас
+  useEffect(() => {
+    if (Date.now() - typedAt.current > 1500) { setV(value); return; }
+    const h = setTimeout(() => setV(value), 1600 - (Date.now() - typedAt.current));
+    return () => clearTimeout(h);
+  }, [value]);
+  useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
+  const change = (x: string) => {
+    typedAt.current = Date.now();
+    setV(x); setState("saving");
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(() => { void onChange(x).then(() => setState("saved")); }, 500);
+  };
+  return (
+    <div className="cls-snote mt-4">
+      <div className="flex items-center justify-between gap-2"><b className="small">{t("cls.snote")}</b><span className="small muted">{state === "saving" ? "…" : state === "saved" ? "✓" : ""}</span></div>
+      {who}
+      <textarea className="textarea" rows={5} value={v} placeholder={t("cls.snotePh")} aria-label={t("cls.snote")}
+        onChange={(e) => change(e.target.value)} />
+      <span className="small muted">{hint}</span>
+    </div>
+  );
+}
+
 function NoteBox({ title, value, onSave }: { title: string; value: string; onSave: (v: string) => void }) {
   const [v, setV] = useState(value);
   useEffect(() => { setV(value); }, [value]);
@@ -780,7 +826,7 @@ function StudentChips({ task, members, ansBy, sel, online, onPick }: { task: CTa
         return (
           <button key={m.sid} type="button" className={`schip ${sel === m.sid ? "on" : ""}`} aria-pressed={sel === m.sid} onClick={() => onPick(m.sid)}
             title={`${m.name}${m.userId && online.includes(m.userId) ? ` · ${t("grp.inClass")}` : ""}: ${t("grp.trackTip", { ok: st.ok, bad: st.bad, total: st.total })}${sel === m.sid ? ` · ${t("grp.unpick")}` : ` · ${t("grp.pickHint")}`}`}>
-            <span className="schip-n">{m.name.split(" ")[0]}{st.done && st.bad === 0 ? " ✓" : ""}</span>
+            <span className="schip-n">{m.name.split(" ")[0]}{st.done && st.bad === 0 && isFinal(task, ansBy[m.sid]?.[task.id] as Record<string, unknown> | undefined) ? " ✓" : ""}</span>
             <span className="schip-bar">{(steps ?? []).map((x: Step, i) => <i key={i} className={x} />)}</span>
           </button>
         );

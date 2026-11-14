@@ -46,6 +46,7 @@ export default async function ClassPage({ params, searchParams }: { params: Prom
       reviews: Object.fromEntries(rows.filter((a) => a.teacherReview).map((a) => [a.taskId, a.teacherReview as Review])),
       aiDrafts: role === "teacher" ? Object.fromEntries(rows.filter((a) => a.aiDraft).map((a) => [a.taskId, a.aiDraft as AiCheck])) : {},
       words: allWords.filter((w) => w.studentId === sid).map((w) => ({ id: w.id, word: w.word, translation: w.translation, example: w.example, level: w.level })),
+      note: slot.find((x) => x.studentId === sid)?.studentNote ?? "",
     };
   };
   const members = slot.filter((x) => x.student).map((x) => ({ sid: x.student!.id, instanceId: x.id, userId: x.student!.userId, name: [x.student!.name, x.student!.lastName].filter(Boolean).join(" ") }));
