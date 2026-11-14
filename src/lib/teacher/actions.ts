@@ -8,6 +8,7 @@ import { requireUser } from "../auth/session";
 import { fromZoned, parseIsoDay } from "../time";
 import { getT } from "../i18n/server";
 import { notify, notifyPayer } from "../notify";
+import { repriceLessons } from "../billing/engine";
 
 export type Result = { ok: true; id?: string } | { ok: false; error: string };
 
@@ -278,8 +279,8 @@ export async function savePayment(
       payerContact: p.payerOn ? clean(p.payerContact, 200) : null,
     },
   });
-  // Будущие запланированные уроки получают новую цену
-  if (price) await db.lessonInstance.updateMany({ where: { studentId: id, status: "PLANNED", startsAt: { gt: new Date() }, isTrial: false }, data: { price } });
+  // Новая цена — во все ещё не оплаченные уроки: будущие, проведённые без счёта и в неоплаченных счетах (их суммы пересчитываются)
+  if (price) await repriceLessons(id);
   refresh(id);
   return { ok: true };
 }

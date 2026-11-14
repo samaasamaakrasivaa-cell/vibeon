@@ -30,6 +30,34 @@ export function amountsIn(text: string): number[] {
     .filter((n) => n >= 100);
 }
 
+// ───────── Цена уроков ─────────
+
+/** Цена из анкеты (или цена группы) — во все ещё не оплаченные уроки ученика: будущие, проведённые без счёта и в счетах,
+ *  которые ещё ждут оплаты; суммы таких счетов пересчитываются. Оплаченные и списанные из абонемента уроки не меняются. */
+export async function repriceLessons(studentId: string) {
+  const s = await db.student.findUnique({ where: { id: studentId } });
+  if (!s) return;
+  const open = await db.invoice.findMany({ where: { studentId, kind: "lessons", status: "SENT" } });
+  const openIds = open.flatMap((i) => i.lessonIds);
+  const lessons = await db.lessonInstance.findMany({
+    where: { studentId, isTrial: false, deductedAt: null, status: { not: "CANCELLED" }, OR: [{ billedAt: null }, { id: { in: openIds } }] },
+    select: { id: true, price: true, groupId: true, group: { select: { price: true } } },
+  });
+  const byPrice = new Map<number, string[]>();
+  for (const l of lessons) {
+    const target = (l.groupId ? l.group?.price : null) ?? s.price; // групповое занятие — по цене группы, если она задана
+    if (target == null || l.price === target) continue;
+    byPrice.set(target, [...(byPrice.get(target) ?? []), l.id]);
+  }
+  for (const [price, ids] of byPrice) await db.lessonInstance.updateMany({ where: { id: { in: ids } }, data: { price } });
+  for (const inv of open) {
+    if (!inv.lessonIds.length) continue;
+    const ls = await db.lessonInstance.findMany({ where: { id: { in: inv.lessonIds } }, select: { price: true } });
+    const amount = ls.reduce((a, l) => a + (l.price ?? s.price ?? 0), 0);
+    if (amount > 0 && amount !== inv.amount) await db.invoice.update({ where: { id: inv.id }, data: { amount } });
+  }
+}
+
 // ───────── Счета ─────────
 
 const RULE_DELAY_MIN: Record<string, number> = { after_5: 5, after_15: 15, after_30: 30, after_60: 60, next_day: 24 * 60 };
@@ -142,10 +170,12 @@ async function deductPacks() {
 
 /** Счета за новый абонемент: когда осталось 1 или 2 урока или абонемент закончился. */
 async function billPacks() {
-  const students = await db.student.findMany({ where: { payType: "PACK", status: "ACTIVE", billRule: { in: ["pack_left_1", "pack_left_2", "pack_end"] } }, include: { packs: { orderBy: { startsAt: "desc" } } } });
+  // правило не сохранено — действует то, что показано в анкете по умолчанию: счёт, когда остался 1 урок
+  const students = await db.student.findMany({ where: { payType: "PACK", status: "ACTIVE", OR: [{ billRule: { in: ["pack_left_1", "pack_left_2", "pack_end"] } }, { billRule: null }, { billRule: "" }] }, include: { packs: { orderBy: { startsAt: "desc" } } } });
   for (const s of students) {
     const left = s.packs.reduce((a, p) => a + p.lessonsLeft, 0);
-    const threshold = s.billRule === "pack_left_2" ? 2 : s.billRule === "pack_left_1" ? 1 : 0;
+    const rule = s.billRule || "pack_left_1";
+    const threshold = rule === "pack_left_2" ? 2 : rule === "pack_left_1" ? 1 : 0;
     if (!s.packs.length || left > threshold) continue;
     const open = await db.invoice.count({ where: { studentId: s.id, kind: "pack", status: { in: ["SENT", "PROOF_SENT"] } } });
     if (open) continue; // счёт за абонемент уже выставлен и ждёт оплаты
@@ -158,16 +188,21 @@ async function billPacks() {
 
 /** Постоплата: счёт после урока (через 5/15/30/60 мин или на следующий день) или раз в 4 недели. */
 async function billPostpaid(now: Date) {
-  const students = await db.student.findMany({ where: { payType: "POSTPAID", status: "ACTIVE", billRule: { in: [...Object.keys(RULE_DELAY_MIN), "every_4_weeks"] } } });
+  // правило не сохранено — действует то, что показано в анкете по умолчанию: счёт через 15 минут после урока
+  // (для таких учеников — только уроки последней недели, чтобы не выставить разом старые)
+  const students = await db.student.findMany({ where: { payType: "POSTPAID", status: "ACTIVE", OR: [{ billRule: { in: [...Object.keys(RULE_DELAY_MIN), "every_4_weeks"] } }, { billRule: null }, { billRule: "" }] } });
   for (const s of students) {
-    const unbilled = await db.lessonInstance.findMany({
+    const rule = s.billRule || "after_15";
+    let unbilled = await db.lessonInstance.findMany({
       where: { studentId: s.id, billedAt: null, NOT: { isTrial: true, OR: [{ price: null }, { price: { lte: 0 } }] }, // платный пробный — в счёт; бесплатный — нет
        OR: [{ status: "DONE" }, { status: "MISSED", charged: true }] },
       orderBy: { startsAt: "asc" },
+      include: { group: { select: { title: true } } },
     });
+    if (!s.billRule) unbilled = unbilled.filter((l) => l.startsAt.getTime() > now.getTime() - 7 * 864e5);
     if (!unbilled.length) continue;
     let due = unbilled;
-    if (s.billRule === "every_4_weeks") {
+    if (rule === "every_4_weeks") {
       const first = await db.lessonInstance.findFirst({ where: { studentId: s.id, isTrial: false, OR: [{ status: "DONE" }, { status: "MISSED", charged: true }] }, orderBy: { startsAt: "asc" } });
       if (!first) continue;
       const periods = Math.floor((now.getTime() - first.startsAt.getTime()) / (28 * 864e5));
@@ -175,7 +210,7 @@ async function billPostpaid(now: Date) {
       const boundary = new Date(first.startsAt.getTime() + periods * 28 * 864e5);
       due = unbilled.filter((l) => l.startsAt < boundary);
     } else {
-      const delay = RULE_DELAY_MIN[s.billRule!] * 60000;
+      const delay = RULE_DELAY_MIN[rule] * 60000;
       due = unbilled.filter((l) => l.startsAt.getTime() + l.durationMin * 60000 + delay <= now.getTime());
     }
     if (!due.length) continue;
@@ -184,7 +219,7 @@ async function billPostpaid(now: Date) {
     const fmt = (d: Date) => d.toLocaleString("ru-RU", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: s.timezone });
     await createInvoice(s, {
       amount, kind: "lessons", lessonIds: due.map((l) => l.id),
-      title: due.length === 1 ? `Урок ${fmt(due[0].startsAt)}` : `Уроки: ${due.length}`,
+      title: due.length === 1 ? (due[0].group ? `Групповое занятие «${due[0].group.title}», ${fmt(due[0].startsAt)}` : `Урок ${fmt(due[0].startsAt)}`) : `Уроки: ${due.length}`,
       period: due.length > 1 ? `${fmt(due[0].startsAt)} – ${fmt(due[due.length - 1].startsAt)}` : undefined,
     });
   }
@@ -204,12 +239,25 @@ async function remind(now: Date) {
 }
 
 let running = false;
+/** Разово для каждого учителя: неоплаченные уроки и счета получают цену из анкеты (раньше менялись только будущие уроки). */
+async function repriceOnce() {
+  const profs = await db.teacherProfile.findMany({ select: { userId: true, settings: true } });
+  for (const p of profs) {
+    const st = (p.settings ?? {}) as Record<string, unknown>;
+    if (st.repricedV1) continue;
+    const students = await db.student.findMany({ where: { teacherId: p.userId, status: { in: ["ACTIVE", "INVITED"] } }, select: { id: true } });
+    for (const s of students) await repriceLessons(s.id);
+    await db.teacherProfile.update({ where: { userId: p.userId }, data: { settings: { ...st, repricedV1: true } } });
+  }
+}
+
 export async function runBilling(now = new Date()) {
   if (running) return;
   running = true;
   try {
     // прошедшие запланированные уроки — проведены (то же, что при открытии расписания, но для всех учителей)
     await db.$executeRaw`UPDATE "LessonInstance" SET status = 'DONE' WHERE status = 'PLANNED' AND "startsAt" + ("durationMin" * interval '1 minute') < (now() at time zone 'UTC')`;
+    await repriceOnce();
     await deductPacks();
     await billPacks();
     await billPostpaid(now);

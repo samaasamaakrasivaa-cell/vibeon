@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import { db } from "../db";
 import { requireUser } from "../auth/session";
 import { getT } from "../i18n/server";
+import { repriceLessons } from "../billing/engine";
 
 // Группы учеников. Групповое занятие — это урок у каждого ученика группы с общим slotId:
 // оплата, абонементы, домашка и кабинет ученика работают как с обычными уроками, а в расписании и в классе это одно занятие.
@@ -92,6 +93,8 @@ export async function updateGroup(id: string, input: Input): Promise<R> {
         await tx.lessonInstance.updateMany({ where: { groupId: id, studentId: s.id, status: "PLANNED", startsAt: { gt: now } }, data: { price: price ?? s.price ?? null } });
     }
   });
+  // цена группы поменялась — и в проведённых, но ещё не оплаченных групповых занятиях, и в неоплаченных счетах
+  if (price !== g.price) for (const sid of next) await repriceLessons(sid);
   refresh();
   return { ok: true, id };
 }
