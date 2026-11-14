@@ -4,7 +4,7 @@ import { Catalog } from "./Catalog";
 import { VideoClip } from "./VideoClip";
 import { Dialog } from "../Dialog";
 import { Icon } from "../Icon";
-import { TaskCard, type TaskData } from "../tasks/TaskView";
+import { KeyCtx, TaskCard, type TaskData } from "../tasks/TaskView";
 import { upload } from "../courses/CourseView";
 import { useT } from "@/lib/i18n/client";
 import { HELP, HOWTO, PRESET, TYPES, type TaskOptions, type TaskType } from "@/lib/tasks/catalog";
@@ -419,7 +419,7 @@ export function TaskEditor({ lessonId, initial, onSave, onClose, pending, error 
 
         <div className="ted-r">
           <div className="small mb-2 font-bold tracking-wide text-text3">{t("bld.studentSees").toUpperCase()}</div>
-          <div className="ted-prev"><TaskCard task={task} index={0} /></div>
+          <div className="ted-prev"><KeyCtx.Provider value={true}><TaskCard task={task} index={0} /></KeyCtx.Provider></div>
         </div>
       </div>
       {error && <div className="alert mt-3">{error}</div>}

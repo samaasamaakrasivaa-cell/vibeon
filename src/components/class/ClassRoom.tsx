@@ -8,7 +8,7 @@ import { Dialog } from "../Dialog";
 import { Icon } from "../Icon";
 import { LangSwitch } from "../LangSwitch";
 import { LogoMark } from "../Logo";
-import { MarkCtx, TaskCard, type MarkLayer, type TaskData } from "../tasks/TaskView";
+import { KeyCtx, MarkCtx, TaskCard, type MarkLayer, type TaskData } from "../tasks/TaskView";
 import { progressOf, summary, type Step } from "@/lib/tasks/progress";
 import { AnswerProvider, type Answers } from "../tasks/store";
 import { Catalog } from "../builder/Catalog";
@@ -75,6 +75,9 @@ export function ClassRoom({ d }: { d: ClassData }) {
   const [finished, setFinished] = useState(false);
   const [rubric, setRubric] = useState<string | null>(d.live?.rubricId ?? d.rubrics[0]?.id ?? null);
   const [flash, setFlash] = useState<string | null>(null);
+  // подсказки правильных ответов у учителя (запоминаем выбор на этом устройстве)
+  const [showKeys, setShowKeys] = useState(true);
+  useEffect(() => { try { if (localStorage.getItem("vibeon.keys") === "0") setShowKeys(false); } catch { /* приватный режим */ } }, []);
   const [notes, setNotes] = useState({ teacher: d.note ?? "", student: d.studentNote ?? "" });
   const [now, setNow] = useState(Date.now());
   useEffect(() => { const i = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(i); }, []);
@@ -300,6 +303,8 @@ export function ClassRoom({ d }: { d: ClassData }) {
           </nav>
           <div className="atr">
             {d.callLink && <a href={d.callLink} target="_blank" rel="noreferrer" className="btn sm cls-call cls-call-top" aria-label={t("cls.joinCall")}><Icon name="phone" size="sm" /></a>}
+            {/* ответы видит только учитель; выключить — например, на время демонстрации экрана */}
+            {teacher && <button type="button" className={`btn sm ${showKeys ? "tinted" : "secondary"}`} aria-pressed={showKeys} title={showKeys ? t("cls.keysHide") : t("cls.keysShow")} onClick={() => setShowKeys((v) => { try { localStorage.setItem("vibeon.keys", v ? "0" : "1"); } catch { /* приватный режим */ } return !v; })}><Icon name={showKeys ? "eye" : "eyeoff"} size="sm" />{t("cls.keys")}</button>}
             {teacher && <button className="btn secondary sm" onClick={() => setDlg("about")}><Icon name="info" size="sm" />{t("cls.about")}</button>}
             <LangSwitch lang={lang} label={t("common.language")} />
             <span className={`dot`} title={connected ? t("cls.online") : t("cls.offline")} style={{ background: connected ? "var(--ok)" : "var(--warn)" }} />
@@ -333,6 +338,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
           )}
 
           <main className="cls-main">
+           <KeyCtx.Provider value={teacher && showKeys}>
             {gTeacher && tab === "words" && (
               <div className="cls-who" role="group" aria-label={t("grp.answersOf")}>
                 <span className="cls-who-l"><Icon name="group" size="sm" />{d.group!.title}</span>
@@ -379,6 +385,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
               <Board pages={board} setPages={setBoard} page={page} setPage={setPage} role={d.role} me={d.me.id} locked={!!live.lockBoard} follow={!!live.follow}
                 send={(type, data) => send(type, data)} onLive={(p) => patchLive(p as LiveState)} />
             )}
+           </KeyCtx.Provider>
           </main>
 
           <aside className="cls-side">

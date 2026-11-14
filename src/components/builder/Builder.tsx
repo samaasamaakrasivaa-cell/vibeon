@@ -7,7 +7,7 @@ import { Dialog } from "../Dialog";
 import { Icon } from "../Icon";
 import { LangSwitch } from "../LangSwitch";
 import { Brand, LogoMark } from "../Logo";
-import { TaskCard, type TaskData } from "../tasks/TaskView";
+import { KeyCtx, TaskCard, type TaskData } from "../tasks/TaskView";
 import { useRun } from "../courses/useRun";
 import { TaskEditor } from "./TaskEditor";
 import { Catalog } from "./Catalog";
@@ -134,7 +134,7 @@ export function Builder({ d }: { d: BuilderData }) {
           {visible.map((task, i) => (
             <div key={task.id}>
               <div className={task.hidden || task.options?.teacherOnly ? "tk-teacheronly" : ""}>
-                <TaskCard
+                <KeyCtx.Provider value={!studentView}><TaskCard
                   task={task}
                   index={visible.filter((x, j) => j <= i && numbered(x)).length - 1}
                   actions={!studentView && (
@@ -160,7 +160,7 @@ export function Builder({ d }: { d: BuilderData }) {
                       <button className="iconbtn" title={t("common.delete")} aria-label={t("common.delete")} onClick={() => confirm(t("bld.delTaskQ")) && go(() => deleteTask(task.id))}><Icon name="close" size="sm" /></button>
                     </span>
                   )}
-                />
+                /></KeyCtx.Provider>
               </div>
               {plus(i + 1)}
             </div>

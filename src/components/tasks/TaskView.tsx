@@ -49,6 +49,14 @@ function CheckBar({ ck, errors, total, onReset, onCheck }: { ck: ReturnType<type
 
 const Num = ({ i, o }: { i: number; o: TaskOptions }) => (o.nonum ? null : <span className="tk-n">{i + 1}.</span>);
 
+/** Режим «ответы» у учителя (урок, конструктор, редактор): правильный ответ виден заранее. Ученику — никогда. */
+export const KeyCtx = createContext(false);
+function useKey() { const on = useContext(KeyCtx); const role = useTaskRole(); return on && role !== "student"; }
+function Key({ text, pre = "✓" }: { text: string; pre?: string }) {
+  const on = useKey();
+  return on && text ? <span className="tk-key-hint">{pre} {text}</span> : null;
+}
+
 // ───────── Пропуски / выбор из списка ─────────
 function Gaps({ task, kind }: { task: TaskData; kind: "gap" | "dropdown" }) {
   const { t } = useT();
@@ -58,6 +66,7 @@ function Gaps({ task, kind }: { task: TaskData; kind: "gap" | "dropdown" }) {
   const ck = useChecker(o, task.id);
   const [val, setVal] = useSlot<Record<string, string>>(task.id, "val", {});
   const [pick, setPick] = useState<string | null>(null);
+  const key = useKey();
   if (p.kind !== "gaps") return null;
   const groups = series(p.lines.map((l, i) => ({ l, i })), o.split ? (o.seriesSize ?? 5) : undefined);
   const gapKeys: { k: string; s: Extract<Seg, { t: "gap" }> }[] = [];
@@ -98,18 +107,24 @@ function Gaps({ task, kind }: { task: TaskData; kind: "gap" | "dropdown" }) {
                       const shown = ck.reveal(k) && m === "bad";
                       if (kind === "dropdown")
                         return (
-                          <select key={si} data-ans={s.answers.join(" / ")} className={`tk-sel ${m ?? ""}`} value={val[k] ?? ""} onChange={(e) => set(k, e.target.value)} aria-label={`gap ${i + 1}`}>
+                          <span key={si} className="tk-gapw">
+                          <select data-ans={s.answers.join(" / ")} className={`tk-sel ${m ?? ""}`} value={val[k] ?? ""} onChange={(e) => set(k, e.target.value)} aria-label={`gap ${i + 1}`}>
                             <option value="">…</option>
-                            {s.options!.map((x) => <option key={x}>{x}</option>)}
+                            {s.options!.map((x) => <option key={x} value={x}>{key && s.answers.includes(x) ? `✓ ${x}` : x}</option>)}
                           </select>
+                          <Key text={s.answers.join(" / ")} />
+                          </span>
                         );
                       if (drag)
                         return (
-                          <button key={si} type="button" data-ans={s.answers.join(" / ")} className={`tk-slot ${m ?? ""} ${val[k] ? "full" : ""}`}
+                          <span key={si} className="tk-gapw">
+                          <button type="button" data-ans={s.answers.join(" / ")} className={`tk-slot ${m ?? ""} ${val[k] ? "full" : ""}`}
                             onClick={() => { if (pick) { set(k, pick); setPick(null); } else set(k, ""); }}
                             onDragOver={(e) => e.preventDefault()} onDrop={(e) => { e.preventDefault(); set(k, e.dataTransfer.getData("text/plain")); }}>
                             {val[k] || " "}
                           </button>
+                          <Key text={s.answers.join(" / ")} />
+                          </span>
                         );
                       return (
                         <span key={si} className="tk-gapw" data-ans={s.answers.join(" / ")}>
@@ -117,7 +132,7 @@ function Gaps({ task, kind }: { task: TaskData; kind: "gap" | "dropdown" }) {
                             onChange={(e) => setVal((x) => ({ ...x, [k]: e.target.value }))} onBlur={(e) => ck.instant && e.target.value && ck.bump(k)}
                             aria-label={`gap ${i + 1}`} />
                           {s.hint && <span className="tk-hint">({s.hint})</span>}
-                          {shown && <span className="tk-ans">{s.answers[0]}</span>}
+                          {shown ? <span className="tk-ans">{s.answers[0]}</span> : <Key text={s.answers.join(" / ")} />}
                         </span>
                       );
                     })}
@@ -142,6 +157,7 @@ function Errors({ task }: { task: TaskData }) {
   const [found, setFound] = useSlot<Record<number, boolean>>(task.id, "found", {});
   const [miss, setMiss] = useSlot<Record<string, boolean>>(task.id, "miss", {});
   const [fix, setFix] = useSlot<Record<number, string>>(task.id, "fix", {});
+  const keyE = useKey();
   if (p.kind !== "gaps") return null;
   const errors = p.lines.filter((l, i) => { const g = l.find((s) => s.t === "gap") as Extract<Seg, { t: "gap" }> | undefined; return !g || !found[i] || !same(fix[i] ?? "", g.answers); }).length;
   return (
@@ -158,13 +174,13 @@ function Errors({ task }: { task: TaskData }) {
                     <span key={`${si}-${wi}`} className={`tk-word ${miss[`${i}:${si}:${wi}`] ? "bad" : ""}`} onClick={() => !found[i] && setMiss((m) => ({ ...m, [`${i}:${si}:${wi}`]: true }))}>{w}</span>
                   )));
                 const wrong = s.options!.find((x) => !s.answers.includes(x)) ?? s.options![0];
-                if (!found[i]) return <span key={si} className="tk-word" onClick={() => setFound((f) => ({ ...f, [i]: true }))}>{wrong}</span>;
+                if (!found[i]) return <span key={si} className="tk-gapw"><span className={`tk-word ${keyE ? "tk-key-err" : ""}`} onClick={() => setFound((f) => ({ ...f, [i]: true }))}>{wrong}</span><Key text={s.answers[0]} pre="→" /></span>;
                 const m: Mark = ck.checked && fix[i] ? (same(fix[i], s.answers) ? "ok" : "bad") : undefined;
                 return (
                   <span key={si} className="tk-gapw">
                     <s className="text-bad">{wrong}</s>{" "}
                     <input autoFocus className={`tk-gap ${m ?? ""}`} value={fix[i] ?? ""} size={Math.max(4, (s.answers[0] ?? "").length + 1)} onChange={(e) => setFix((x) => ({ ...x, [i]: e.target.value }))} onBlur={(e) => ck.instant && e.target.value && ck.bump(String(i))} aria-label="fix" />
-                    {ck.reveal(String(i)) && m === "bad" && <span className="tk-ans">{s.answers[0]}</span>}
+                    {ck.reveal(String(i)) && m === "bad" ? <span className="tk-ans">{s.answers[0]}</span> : <Key text={s.answers[0]} />}
                   </span>
                 );
               })}
@@ -278,6 +294,7 @@ function Test({ task }: { task: TaskData }) {
   const p = useMemo(() => parse("test", task.content), [task.content]);
   const ck = useChecker(o, task.id);
   const [ans, setAns] = useSlot<Record<number, number[]>>(task.id, "ans", {});
+  const keyT = useKey();
   if (p.kind !== "test") return null;
   const ok = (qi: number) => { const a = [...(ans[qi] ?? [])].sort().join(); return a === [...p.qs[qi].correct].sort().join(); };
   const errors = p.qs.filter((_, i) => !ok(i)).length;
@@ -293,7 +310,7 @@ function Test({ task }: { task: TaskData }) {
                 const sel = (ans[qi] ?? []).includes(oi);
                 const m: Mark = ck.checked && sel ? (q.correct.includes(oi) ? "ok" : "bad") : undefined;
                 return (
-                  <label key={oi} data-right={q.correct.includes(oi) ? "1" : undefined} className={`tk-opt ${sel ? "sel" : ""} ${m ?? ""}`}>
+                  <label key={oi} data-right={q.correct.includes(oi) ? "1" : undefined} className={`tk-opt ${sel ? "sel" : ""} ${m ?? ""} ${keyT && q.correct.includes(oi) ? "tk-right" : ""}`}>
                     <input type={multi ? "checkbox" : "radio"} name={`${task.id}-${qi}`} checked={sel}
                       onChange={() => { setAns((a) => ({ ...a, [qi]: multi ? (sel ? (a[qi] ?? []).filter((x) => x !== oi) : [...(a[qi] ?? []), oi]) : [oi] })); if (ck.instant) ck.bump(String(qi)); }} />
                     <span>{String.fromCharCode(65 + oi)}. {op}</span>
@@ -316,6 +333,7 @@ function TF({ task }: { task: TaskData }) {
   const p = useMemo(() => parse("tf", task.content), [task.content]);
   const ck = useChecker(o, task.id);
   const [ans, setAns] = useSlot<Record<number, string>>(task.id, "ans", {});
+  const keyF = useKey();
   if (p.kind !== "tf") return null;
   const opts: ["T" | "F" | "NS", string][] = [["T", t("tk.true")], ["F", t("tk.false")], ...(p.ns || o.ns ? [["NS", t("tk.ns")] as ["NS", string]] : [])];
   const errors = p.items.filter((it, i) => ans[i] !== it.a).length;
@@ -328,7 +346,7 @@ function TF({ task }: { task: TaskData }) {
             {opts.map(([v, l]) => {
               const sel = ans[i] === v;
               const m: Mark = ck.checked && sel ? (v === it.a ? "ok" : "bad") : undefined;
-              return <button key={v} type="button" aria-pressed={sel} className={m ? `tk-${m}` : ""} onClick={() => { setAns((a) => ({ ...a, [i]: v })); if (ck.instant) ck.bump(String(i)); }}>{l}</button>;
+              return <button key={v} type="button" aria-pressed={sel} className={`${m ? `tk-${m}` : ""} ${keyF && v === it.a ? "tk-right" : ""}`} onClick={() => { setAns((a) => ({ ...a, [i]: v })); if (ck.instant) ck.bump(String(i)); }}>{l}</button>;
             })}
           </div>
         </div>
@@ -360,7 +378,7 @@ function Pairs({ task }: { task: TaskData }) {
           {p.pairs.map((pr, i) => done.includes(i) ? null : (
             <button key={i} type="button" className={`tk-card ${sel === i ? "on" : ""} ${ck.checked && link[i] !== undefined && !okPair(i) ? "bad" : ""}`}
               style={link[i] !== undefined ? { boxShadow: `inset 4px 0 0 ${LINK_COLORS[i % 8]}` } : undefined}
-              onClick={() => setSel(sel === i ? null : i)}>{pr[0]}</button>
+              onClick={() => setSel(sel === i ? null : i)}>{pr[0]}<Key text={pr[1]} pre="→" /></button>
           ))}
         </div>
         <div className="flex flex-col gap-2">
@@ -404,7 +422,7 @@ function Sort({ task, pictures }: { task: TaskData; pictures?: boolean }) {
       <div className="tk-bank">
         {all.filter((w) => place[w] === undefined).map((w) => (
           <button key={w} type="button" className={`tk-chip ${pick === w ? "on" : ""}`} onClick={() => setPick(pick === w ? null : w)}
-            draggable onDragStart={(e) => e.dataTransfer.setData("text/plain", w)}>{w}</button>
+            draggable onDragStart={(e) => e.dataTransfer.setData("text/plain", w)}>{w}{!pictures && <Key text={buckets[truth(w)]?.name ?? ""} pre="→" />}</button>
         ))}
         {all.every((w) => place[w] !== undefined) && <span className="hint">{t("tk.allPlaced")}</span>}
       </div>
@@ -415,6 +433,7 @@ function Sort({ task, pictures }: { task: TaskData; pictures?: boolean }) {
           return (
             <div key={bi} className="tk-col" onClick={() => pick && drop(pick)} onDragOver={(e) => e.preventDefault()} onDrop={(e) => { e.preventDefault(); drop(e.dataTransfer.getData("text/plain")); }}>
               {pictures ? (b.pic ? <img src={b.pic} alt="" className="tk-pic" /> : <div className="tk-pic empty"><Icon name="image" /></div>) : <div className="tk-colh">{b.name}</div>}
+              {pictures && <Key text={b.name} />}
               <div className="flex min-h-[38px] flex-wrap gap-1.5">
                 {here.map((w) => (
                   <button key={w} type="button" className={`tk-chip ${ck.checked ? (truth(w) === bi ? "ok" : "bad") : ""}`} onClick={(e) => { e.stopPropagation(); setPlace((x) => { const y = { ...x }; delete y[w]; return y; }); }}>{w}</button>
@@ -469,7 +488,7 @@ function Build({ task, letters }: { task: TaskData; letters?: boolean }) {
                     onClick={() => { const nb = [...b, k]; setBuilt((x) => ({ ...x, [i]: nb })); if (ck.instant && nb.length === it.toks.length) ck.bump(String(i)); }}>{it.toks[k]}</button>
                 ))}
               </div>
-              {ck.reveal(String(i)) && m === "bad" && <span className="tk-ans self-start">{it.toks.join(letters ? "" : " ")}</span>}
+              {ck.reveal(String(i)) && m === "bad" ? <span className="tk-ans self-start">{it.toks.join(letters ? "" : " ")}</span> : <span className="self-start"><Key text={it.toks.join(letters ? "" : " ")} /></span>}
             </div>
           </div>
         );
@@ -514,7 +533,7 @@ function Order({ task }: { task: TaskData }) {
       ) : (
         <div key={v} className={`tk-row ${ck.checked ? (v === i ? "ok" : "bad") : ""}`} draggable onDragStart={() => setDrag(i)} onDragOver={(e) => e.preventDefault()} onDrop={() => { if (drag !== null) move(drag, i); setDrag(null); }}>
           <Icon name="move" size="sm" className="text-text3" />
-          <span className="grow">{items[v]}</span>
+          <span className="grow">{items[v]}</span><Key text={String(v + 1)} pre="№" />
           <button type="button" className="iconbtn" aria-label="up" disabled={near(i, -1) === null} onClick={() => move(i, near(i, -1)!)}>↑</button>
           <button type="button" className="iconbtn" aria-label="down" disabled={near(i, 1) === null} onClick={() => move(i, near(i, 1)!)}>↓</button>
         </div>
@@ -543,7 +562,7 @@ function Arrow({ task }: { task: TaskData }) {
             <div className="mb-1.5"><Num i={i} o={o} /> {it.q} {it.key && <b className="tk-key">{it.key}</b>}</div>
             <input className={`input tk-line ${m ?? ""}`} value={val[i] ?? ""} onChange={(e) => setVal((x) => ({ ...x, [i]: e.target.value }))} onBlur={(e) => ck.instant && e.target.value && ck.bump(String(i))} aria-label={`answer ${i + 1}`} />
             {m === "bad" && <span className="small text-text2">{t("tk.teacherWillSee")}</span>}
-            {ck.reveal(String(i)) && m === "bad" && <span className="tk-ans">{it.answers[0]}</span>}
+            {ck.reveal(String(i)) && m === "bad" ? <span className="tk-ans">{it.answers[0]}</span> : <Key text={it.answers.join(" / ")} />}
           </div>
         );
       })}
@@ -579,7 +598,7 @@ function Dictation({ task }: { task: TaskData }) {
             <div className="grow">
               <input className={`input tk-line ${g === "exact" ? "ok" : g === "spelling" ? "spell" : g === "wrong" ? "bad" : ""}`} value={val[i] ?? ""} onChange={(e) => setVal((x) => ({ ...x, [i]: e.target.value }))} onBlur={(e) => ck.instant && e.target.value && ck.bump(String(i))} aria-label={`sentence ${i + 1}`} />
               {g === "spelling" && <span className="small text-warn">{t("tk.spelling")}: {s}</span>}
-              {g === "wrong" && ck.reveal(String(i)) && <span className="tk-ans">{s}</span>}
+              {g === "wrong" && ck.reveal(String(i)) ? <span className="tk-ans">{s}</span> : <Key text={s} />}
             </div>
           </div>
         );
@@ -602,6 +621,7 @@ function CrosswordView({ task }: { task: TaskData }) {
   const [at, setAt] = useState<string | null>(null);
   const dirRef = useRef(dir); dirRef.current = dir;
   const backRef = useRef<(k: string) => void>(() => {});
+  const keyC = useKey();
   if (!cw) return <p className="hint">{t("tk.empty")}</p>;
   const nums = new Map(cw.words.map((w) => [`${w.row},${w.col}`, w.n]));
   const cellsOf = (w: (typeof cw.words)[number]) => w.word.split("").map((_, i) => `${w.across ? w.row : w.row + i},${w.across ? w.col + i : w.col}`);
@@ -645,6 +665,7 @@ function CrosswordView({ task }: { task: TaskData }) {
           return (
             <div key={k} className={`tk-cell ${inWord.has(k) ? "inword" : ""}`}>
               {nums.has(k) && <span className="tk-cn">{nums.get(k)}</span>}
+              {keyC && !cell[k] && <span className="tk-cw-key" aria-hidden>{ch}</span>}
               <input ref={(el) => {
                   refs.current[k] = el;
                   // телефон: Backspace в пустой клетке приходит только как beforeinput

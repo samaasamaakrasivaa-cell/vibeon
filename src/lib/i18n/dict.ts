@@ -2052,6 +2052,9 @@ const ru = {
   "bld.coverAdd": "Картинка урока",
   "bld.coverChange": "Сменить",
   "bld.coverDel": "Убрать картинку урока",
+  "cls.keys": "Ответы",
+  "cls.keysShow": "Показывать мне правильные ответы (ученик их не видит)",
+  "cls.keysHide": "Скрыть правильные ответы — например, на время демонстрации экрана",
 } as const;
 
 export type DictKey = keyof typeof ru;
@@ -4106,6 +4109,9 @@ const en: Record<DictKey, string> = {
   "bld.coverAdd": "Lesson picture",
   "bld.coverChange": "Change",
   "bld.coverDel": "Remove the lesson picture",
+  "cls.keys": "Answers",
+  "cls.keysShow": "Show me the correct answers (the student doesn't see them)",
+  "cls.keysHide": "Hide the correct answers — e.g. while sharing your screen",
 };
 
 export const dictionaries: Record<LangCode, Record<DictKey, string>> = { ru, en };
