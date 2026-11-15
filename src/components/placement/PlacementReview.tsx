@@ -272,6 +272,7 @@ export function PlacementReview(p: ReviewProps) {
           <span className="small muted">{t("pl.anchors")}:</span>
           {sm.anchors.map((x) => <span key={x.level} className={`pill ${x.pass ? "green" : x.pass === false ? "orange" : "grey"}`}>{x.level} {x.pass ? "✓" : x.pass === false ? "✗" : ""} {x.c}/{x.n}</span>)}
           {sm.diag && <><Icon name="right" size="sm" /><span className="small muted">{t("pl.diagAt")}</span><span className="pill">{sm.diag}</span></>}
+          {sm.bd && <span className="pill blue" title={t("pl.borderHint")}>{t("pl.border")}</span>}
         </div>
         <div className="plsteps">
           <div><span>{t("pl.part.core")}</span><b>{STEPS[p.sm.coreStep]}</b></div>
