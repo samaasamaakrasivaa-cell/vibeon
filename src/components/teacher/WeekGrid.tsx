@@ -6,7 +6,7 @@ import { Dialog } from "../Dialog";
 import { Icon } from "../Icon";
 import { useT } from "@/lib/i18n/client";
 import {
-  createLesson, deleteLesson, makeWeekly, moveLesson, saveLessonNote, setLessonStatus, type Result,
+  createLesson, deleteLesson, makeWeekly, moveLesson, saveLessonNote, setLessonPrice, setLessonStatus, type Result,
 } from "@/lib/teacher/actions";
 
 export type GridLesson = {
@@ -15,9 +15,10 @@ export type GridLesson = {
   weekly: boolean; past: boolean; studentId: string | null; charged: boolean; moved: boolean; price: number;
   group?: { id: string; members: string[] } | null; // групповое занятие: состав
   hw: "review" | "notdone" | "checked" | null;
+  prices?: { id: string; name: string; price: number; locked: boolean; counts: boolean }[]; // цена урока; у группового — по ученикам
 };
 export type GridStudent = { id: string; name: string; initials: string };
-type Day = { iso: string; dow: string; num: number; today: boolean; past: boolean; earned: string | null };
+type Day = { iso: string; dow: string; num: number; today: boolean; past: boolean; earned: string | null; tip?: string };
 
 const PX = 44; // высота часа, px
 
@@ -107,7 +108,7 @@ export function WeekGrid(props: {
             </div>
           ))}
           <div className="earned" style={{ textAlign: "left", fontSize: 11 }}>{t("sch.earned")}</div>
-          {days.map((d) => <div key={d.iso} className={`earned ${d.earned ? "has" : ""}`}>{d.earned ?? "—"}</div>)}
+          {days.map((d) => <div key={d.iso} className={`earned ${d.earned ? "has" : ""}`} title={d.tip || undefined}>{d.earned ?? "—"}</div>)}
         </div>
       </div>
       <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
@@ -305,6 +306,41 @@ export function LessonQuick({ l }: { l: GridLesson }) {
   );
 }
 
+/** Стоимость урока: у группового — по каждому ученику и сумма. Цену можно поправить, пока урок не оплачен. */
+function Prices({ l }: { l: GridLesson }) {
+  const { t, lang } = useT();
+  const { pending, error, run } = useRun();
+  const [edit, setEdit] = useState<string | null>(null);
+  const [val, setVal] = useState("");
+  const fmt = (n: number) => new Intl.NumberFormat(lang === "ru" ? "ru-RU" : "en-GB").format(n).replace(/,/g, " ") + " ₽";
+  const ps = l.prices ?? [];
+  const total = ps.filter((p) => p.counts).reduce((a, p) => a + p.price, 0);
+  return (
+    <div className="lprices mt-4">
+      <span className="flabel">{t("sch.price")}{ps.length > 1 && total > 0 ? ` · ${t("sch.priceTotal", { sum: fmt(total) })}` : ""}</span>
+      {ps.map((p) => (
+        <div key={p.id} className="lprice">
+          {ps.length > 1 && <span className="grow truncate">{p.name}</span>}
+          {edit === p.id ? (
+            <>
+              <input className="input" style={{ width: 110 }} inputMode="numeric" value={val} autoFocus aria-label={t("sch.price")} onChange={(e) => setVal(e.target.value.replace(/\D/g, "").slice(0, 6))} onKeyDown={(e) => { if (e.key === "Enter") run(() => setLessonPrice(p.id, Number(val)), () => setEdit(null)); }} />
+              <button type="button" className="btn primary sm" disabled={pending || !val} onClick={() => run(() => setLessonPrice(p.id, Number(val)), () => setEdit(null))}>{t("common.save")}</button>
+              <button type="button" className="btn plain sm" onClick={() => setEdit(null)}>{t("common.cancel")}</button>
+            </>
+          ) : (
+            <>
+              <b className={p.counts ? "" : "text-text3"}>{fmt(p.price)}</b>
+              {p.locked ? <span className="small muted">{t("sch.pricePaidShort")}</span>
+                : <button type="button" className="iconbtn" aria-label={t("sch.priceEdit")} title={t("sch.priceEdit")} onClick={() => { setEdit(p.id); setVal(String(p.price || "")); }}><Icon name="pencil" size="sm" /></button>}
+            </>
+          )}
+        </div>
+      ))}
+      {error && <div className="alert mt-2">{error}</div>}
+    </div>
+  );
+}
+
 function LessonDialog({ l, onClose, initial = "main" }: { l: GridLesson; onClose: () => void; initial?: "main" | "move" | "cancel" }) {
   const { t } = useT();
   const { pending, error, run } = useRun();
@@ -396,6 +432,7 @@ function LessonDialog({ l, onClose, initial = "main" }: { l: GridLesson; onClose
         {l.moved && <span className="pill violet">{t("sch.moved")}</span>}
         {l.hw ? <Link href={`/class/${l.id}?tab=homework`} className={`pill ${{ review: "orange", notdone: "red", checked: "green" }[l.hw]}`}>{t("nav.homework")}: {t(({ review: "hwT.review", notdone: "hwT.notdone", checked: "hwT.checked" } as const)[l.hw])}</Link> : l.status === "DONE" && <span className="pill grey">{t("today.noHw")}</span>}
       </div>
+      {!!l.prices?.length && !l.isTrial && <Prices l={l} />}
       <div className="field mt-4">
         <label htmlFor="ln">{t("sch.note")}</label>
         <textarea id="ln" className="textarea" value={note} onChange={(e) => { setNote(e.target.value); setSaved(false); }} placeholder={t("sch.notePh")} />

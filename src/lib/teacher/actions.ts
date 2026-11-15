@@ -125,6 +125,26 @@ export async function saveLessonNote(id: string, note: string): Promise<Result> 
   return { ok: true };
 }
 
+/** Цена одного урока (у группового занятия — урока одного ученика). Урок в оплаченном счёте не меняется;
+ *  в счёте, который ещё ждёт оплаты, сумма пересчитывается. */
+export async function setLessonPrice(id: string, price: number): Promise<Result> {
+  const { t } = await getT();
+  const teacher = await me();
+  const l = await ownLesson(id, teacher.id);
+  const p = Math.round(Number(price));
+  if (!Number.isFinite(p) || p < 0 || p >= 1_000_000) return { ok: false, error: t("sch.priceBad") };
+  const inv = await db.invoice.findFirst({ where: { lessonIds: { has: id }, status: { not: "CANCELLED" } }, orderBy: { createdAt: "desc" } });
+  if (inv && inv.status !== "SENT") return { ok: false, error: t("sch.pricePaid") };
+  await db.lessonInstance.update({ where: { id }, data: { price: p } });
+  if (inv) {
+    const ls = await db.lessonInstance.findMany({ where: { id: { in: inv.lessonIds } }, select: { price: true } });
+    const amount = ls.reduce((a, x) => a + (x.price ?? 0), 0);
+    if (amount > 0) await db.invoice.update({ where: { id: inv.id }, data: { amount } });
+  }
+  refresh(l.studentId);
+  return { ok: true };
+}
+
 export async function setLessonStatus(id: string, status: LessonStatus, charged = true): Promise<Result> {
   const teacher = await me();
   const l = await ownLesson(id, teacher.id);

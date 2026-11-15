@@ -33,14 +33,15 @@ export function amountsIn(text: string): number[] {
 // ───────── Цена уроков ─────────
 
 /** Цена из анкеты (или цена группы) — во все ещё не оплаченные уроки ученика: будущие, проведённые без счёта и в счетах,
- *  которые ещё ждут оплаты; суммы таких счетов пересчитываются. Оплаченные и списанные из абонемента уроки не меняются. */
+ *  которые ещё ждут оплаты; суммы таких счетов пересчитываются. Уроки из абонемента — тоже (деньги за них — в абонементе). Оплаченные по счёту уроки не меняются. */
 export async function repriceLessons(studentId: string) {
   const s = await db.student.findUnique({ where: { id: studentId } });
   if (!s) return;
   const open = await db.invoice.findMany({ where: { studentId, kind: "lessons", status: "SENT" } });
   const openIds = open.flatMap((i) => i.lessonIds);
   const lessons = await db.lessonInstance.findMany({
-    where: { studentId, isTrial: false, deductedAt: null, status: { not: "CANCELLED" }, OR: [{ billedAt: null }, { id: { in: openIds } }] },
+    // урок из абонемента: деньги — за абонемент, цена урока лишь показывает, сколько он стоит, — тоже по анкете
+    where: { studentId, isTrial: false, status: { not: "CANCELLED" }, OR: [{ billedAt: null }, { id: { in: openIds } }] },
     select: { id: true, price: true, groupId: true, group: { select: { price: true } } },
   });
   const byPrice = new Map<number, string[]>();
@@ -244,10 +245,10 @@ async function repriceOnce() {
   const profs = await db.teacherProfile.findMany({ select: { userId: true, settings: true } });
   for (const p of profs) {
     const st = (p.settings ?? {}) as Record<string, unknown>;
-    if (st.repricedV1) continue;
+    if (st.repricedV2) continue; // V2: и уроки, списанные из абонемента
     const students = await db.student.findMany({ where: { teacherId: p.userId, status: { in: ["ACTIVE", "INVITED"] } }, select: { id: true } });
     for (const s of students) await repriceLessons(s.id);
-    await db.teacherProfile.update({ where: { userId: p.userId }, data: { settings: { ...st, repricedV1: true } } });
+    await db.teacherProfile.update({ where: { userId: p.userId }, data: { settings: { ...st, repricedV1: true, repricedV2: true } } });
   }
 }
 

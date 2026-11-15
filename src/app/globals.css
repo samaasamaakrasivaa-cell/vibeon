@@ -372,6 +372,9 @@ details.how[open] summary { margin-bottom: 6px; }
 .nowline::before { content: ""; position: absolute; left: -4px; top: -4px; width: 10px; height: 10px; border-radius: 50%; background: var(--bad); }
 .earned { text-align: center; font-size: 13px; color: var(--text3); padding-top: 10px; font-variant-numeric: tabular-nums; }
 .earned.has { color: var(--ok-text); font-weight: 700; }
+.lprices { display: flex; flex-direction: column; gap: 6px; }
+.lprice { display: flex; align-items: center; gap: 10px; min-height: 32px; padding: 4px 10px; border-radius: 10px; background: var(--surface2); }
+.earned.has[title] { cursor: help; }
 .legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 13px; color: var(--text2); align-items: center; }
 .legend span { display: inline-flex; align-items: center; gap: 6px; }
 .legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }

@@ -96,7 +96,7 @@ const CORE_MAX = 60;
 const CORE_MAX_TEEN = 40; // Teens короче: весь тест ~25–40 минут
 const PER_GROUP = 3; // заданий из каждой группы на подробной проверке
 const FALLBACK_AFTER = 9, FALLBACK_BELOW = 0.4; // после 9 заданий меньше 40% — уровень ниже
-const SLICE_FROM = 0.8, SLICE_GROUPS = 4, SLICE_PER = 2, UP_FROM = 0.7, EDGE_FROM = 0.55, EXTRA = 4, REPEATS = 6, REPEAT_GAP = 3, COVER_MAX = 16, COVER_PER = 3, COVER_MIN = 3, FAM_ENOUGH = 7;
+const SLICE_FROM = 0.8, SLICE_GROUPS = 4, SLICE_PER = 2, UP_FROM = 0.7, EDGE_FROM = 0.55, EXTRA = 4, REPEATS = 6, REPEAT_GAP = 3, COVER_MAX = 16, COVER_PER = 3, COVER_MIN = 3;
 // уровень сделан на 80%+ — срез уровня выше (8 заданий); срез 70%+ — уровень выше целиком; 55–70% — ещё 4 задания уровня выше и решение по сумме
 // шаг вверх: раздел уровня сделан без ошибок (3/3, 4/4) — 1–2 сложных задания этого раздела уровнем выше (второе — если первое верно)
 const STEP_PER = 2, STEP_MAX = 4, STEP_FROM = 3;
@@ -162,7 +162,7 @@ const lastOf = (st: PState) => { const x = st.core[st.core.length - 1]; const it
 const notLast = <T extends { id: string }>(st: PState, gs: T[]) => { const g = lastOf(st).group; return [...gs.filter((x) => x.id !== g), ...gs.filter((x) => x.id === g)]; };
 
 /** pref: easy — простые задания уровня (band 1, сам уровень X), hard — сложные (band 2–3, X+). */
-function pickFrom(st: PState, bank: Bank, gid: string, rnd: () => number, pref?: "easy" | "hard", topicRe?: RegExp): CoreItem | null {
+function pickFrom(st: PState, bank: Bank, gid: string, rnd: () => number, pref?: "easy" | "hard", topicRe?: RegExp, rank?: (it: CoreItem) => number): CoreItem | null {
   const used = new Set(st.core.map((x) => x.id));
   const topics = new Set(st.core.map((x) => (st.items[x.id] as CoreItem | undefined)?.topic_id));
   let pool = bank.core.filter((x) => x.group === gid && !used.has(x.id));
@@ -175,6 +175,7 @@ function pickFrom(st: PState, bank: Bank, gid: string, rnd: () => number, pref?:
   if (fresh.length) pool = fresh;
   else { const last = lastOf(st).topic; const other = pool.filter((x) => x.topic_id !== last); if (other.length) pool = other; } // не та же тема, что только что
   if (topicRe) { const t = pool.filter((x) => topicRe.test(x.topic_id)); if (t.length) pool = t; }
+  if (rank && pool.length > 1) { const m = Math.min(...pool.map(rank)); pool = pool.filter((x) => rank(x) === m); }
   return pool[Math.floor(rnd() * pool.length)];
 }
 
@@ -184,7 +185,8 @@ const levelAcc = (st: PState, li: number) => stat(st, (it, x) => it.level === PL
 export function nextCore(st: PState, bank: Bank, rnd: () => number = Math.random): { item: CoreItem; ph: Ph } | null {
   const cap = (st.track === "teen" ? CORE_MAX_TEEN : CORE_MAX) + (st.bd ? BORDER_MORE + (st.up ? BORDER_UP_MORE : 0) : 0);
   // лимит длины — для основной проверки; добор по разделам с малым числом ответов идёт и после него (не больше COVER_MAX)
-  if (st.core.length >= cap) return st.diag !== undefined && st.core.length < cap + COVER_MAX ? cover(st, bank, st.diag, rnd) : null;
+  // каждая группа уровня получает свои 3 задания и после лимита (не больше COVER_MAX сверх него)
+  if (st.core.length >= cap) return st.diag !== undefined && st.core.length < cap + COVER_MAX ? detailPick(st, bank, st.diag, rnd) ?? cover(st, bank, st.diag, rnd) : null;
   const warm = st.warm ?? 0;
   if (st.core.length < warm) {
     // два задания разминки одного уровня подряд — второе из другой группы, чтобы тема не повторялась
@@ -211,22 +213,11 @@ export function nextCore(st: PState, bank: Bank, rnd: () => number = Math.random
   // провал на подробной проверке — спускаемся на уровень; если и там провал — ещё ниже (угаданные опорные задания не должны «застрять» наверху)
   if (!st.up && D > 0 && dAcc.n >= FALLBACK_AFTER && dAcc.c / dAcc.n < FALLBACK_BELOW) { st.fb = true; st.bd = undefined; st.diag = D - 1; return nextCore(st, bank, rnd); } // провал — не пограничный
   void dItems;
-  const gs = notLast(st, groupsOf(bank, D));
-  // большой раздел уже проверен вдоль и поперёк (7+ ответов, почти всё верно) — третье, сложное задание группы не добавляем
-  const famOf = new Map((bank.families ?? []).flatMap((f) => f.topics.map((t) => [t, f] as const)));
-  const famFull = (g: Group) => {
-    const f = famOf.get(g.topics[0]); if (!f) return false;
-    const s2 = stat(st, (it, x) => it.skill === "grammar" && !x.ph?.startsWith("v") && f.topics.includes(it.topic_id));
-    return s2.n >= FAM_ENOUGH && s2.n - s2.c <= 1;
-  };
-  // по кругу: сначала из каждой группы простое задание, потом два сложных
-  for (let round = 1; round <= PER_GROUP; round++) {
-    for (const g of notLast(st, shuffle(gs, rnd))) { // группы вперемешку
-      if (inGroup(st, g.id) >= round) continue;
-      if (round === PER_GROUP && famFull(g)) continue;
-      const it = pickFrom(st, bank, g.id, rnd, round === 1 ? "easy" : "hard");
-      if (it) return { item: it, ph: "d" };
-    }
+  {
+    // добор разделов — не в конце пачкой, а вперемешку с проверкой: после первого круга — через задание
+    const roundOne = groupsOf(bank, D).every((g) => inGroup(st, g.id) >= 1);
+    if (roundOne && st.core[st.core.length - 1]?.ph === "d") { const f = cover(st, bank, D, rnd, true); if (f) return f; }
+    const d = detailPick(st, bank, D, rnd); if (d) return d;
   }
   // шаг вверх по разделам: раздел сделан без ошибок — проверяем его же уровнем выше
   if (D < 4 && !st.fb && !st.up && !st.bd) { const u = stepUp(st, bank, D, rnd); if (u) return u; }
@@ -270,13 +261,39 @@ export function nextCore(st: PState, bank: Bank, rnd: () => number = Math.random
   if (st.bd && !st.up && D < 4) {
     const lastB = st.core[st.core.length - 1]?.ph === "b";
     if (!lastB) { const b = border(st, bank, D, rnd, true); if (b) return b; }
-    const o = repeat(st, bank, D, rnd) ?? cover(st, bank, D, rnd); if (o) return o;
-    const b = border(st, bank, D, rnd, false); if (b) return b;
+    const o = tail(st, bank, D, rnd); if (o) return o;
+    const b = border(st, bank, D, rnd, false) ?? border(st, bank, D, rnd, false, false); if (b) return b;
     const u = upperStat(st, D);
     if (u.n >= 4 && u.c / u.n >= UP_FROM) { st.up = true; st.diag = D + 1; return nextCore(st, bank, rnd); }
     return null;
   }
-  return repeat(st, bank, D, rnd) ?? cover(st, bank, D, rnd);
+  return tail(st, bank, D, rnd);
+}
+
+/** Подробная проверка уровня: каждая группа тем — минимум 3 задания (1 простое, потом 2 сложных), по кругу и вперемешку:
+ *  подряд не идут задания одной группы. Внутри группы — тема того раздела (времена, условные…), где ответов на уровне пока меньше всего,
+ *  чтобы и в «Грамматике по разделам» у каждого раздела набралось 3 ответа без добора в конце. */
+function detailPick(st: PState, bank: Bank, D: number, rnd: () => number): { item: CoreItem; ph: Ph } | null {
+  const gs = groupsOf(bank, D);
+  const fams = bank.families ?? [];
+  const famOf = new Map(fams.flatMap((f) => f.topics.map((t) => [t, f] as const)));
+  const famN = new Map<string, number>();
+  for (const x of st.core) { const it = st.items[x.id] as CoreItem | undefined; if (!it || it.level !== PL_LEVELS[D] || x.ph?.startsWith("v")) continue; const f = famOf.get(it.topic_id); if (f) famN.set(f.id, (famN.get(f.id) ?? 0) + 1); }
+  const rank = (it: CoreItem) => { const f = famOf.get(it.topic_id); return f ? Math.min(famN.get(f.id) ?? 0, COVER_MIN) : COVER_MIN; };
+  for (let round = 1; round <= PER_GROUP; round++) {
+    for (const g of notLast(st, shuffle(gs, rnd))) { // группы вперемешку, не та же, что только что
+      if (inGroup(st, g.id) >= round) continue;
+      const it = pickFrom(st, bank, g.id, rnd, round === 1 ? "easy" : "hard", undefined, rank);
+      if (it) return { item: it, ph: "d" };
+    }
+  }
+  return null;
+}
+
+/** Конец проверки: повторы после ошибок и добор разделов — через одно, чтобы не шли подряд. */
+function tail(st: PState, bank: Bank, D: number, rnd: () => number) {
+  const last = st.core[st.core.length - 1]?.ph;
+  return last === "f" ? repeat(st, bank, D, rnd) ?? cover(st, bank, D, rnd) : cover(st, bank, D, rnd) ?? repeat(st, bank, D, rnd);
 }
 
 /** Повтор после ошибки: на тему, где ученик ошибся, — ещё одно задание (проверить, случайность или пробел). */
@@ -314,7 +331,7 @@ const hasUpper = (bank: Bank, D: number) => {
 /** Пограничный ученик: в каждом разделе, где есть темы уровня выше, — задания уровня выше. Сколько — по разделу на уровне проверки:
  *  без ошибок — 2; есть ошибка, но 60%+ — 1, и если оно верно — ещё 1; ниже — 0 (сначала база). ready — только разделы, где на уровне
  *  проверки уже есть 3 ответа (чтобы задания выше шли вперемешку с проверкой, а не после неё). */
-function border(st: PState, bank: Bank, D: number, rnd: () => number, ready: boolean): { item: CoreItem; ph: Ph } | null {
+function border(st: PState, bank: Bank, D: number, rnd: () => number, ready: boolean, strict = true): { item: CoreItem; ph: Ph } | null {
   const fams = bank.families ?? [];
   const topicLv = new Map(bank.core.filter((x) => x.skill === "grammar").map((x) => [x.topic_id, PL_LEVELS.indexOf(x.level)] as const));
   const used = new Set(st.core.map((x) => x.id));
@@ -340,6 +357,7 @@ function border(st: PState, bank: Bank, D: number, rnd: () => number, ready: boo
     const unseen = st.seen?.length ? pool.filter((x) => !st.seen!.includes(x.id)) : []; if (unseen.length) pool = unseen;
     const band = pool.filter((x) => (c.mine.length ? x.band > 1 : x.band === 1)); if (band.length) pool = band; // первое — простое уровня выше, второе — сложнее
     const fresh = pool.filter((x) => !c.mine.some((m) => topicOf(m.id) === x.topic_id)); if (fresh.length) pool = fresh; // другая тема раздела
+    const og = pool.filter((x) => x.group !== lastOf(st).group); if (og.length) pool = og; else if (strict) continue; // не та же группа тем
     if (!pool.length) continue;
     return { item: pool[Math.floor(rnd() * pool.length)], ph: "b" };
   }
@@ -369,6 +387,7 @@ function stepUp(st: PState, bank: Bank, D: number, rnd: () => number): { item: C
     const unseen = st.seen?.length ? pool.filter((x) => !st.seen!.includes(x.id)) : []; if (unseen.length) pool = unseen;
     const fresh = pool.filter((x) => !mine.some((m) => (st.items[m.id] as CoreItem)?.topic_id === x.topic_id)); if (fresh.length) pool = fresh; // второе — по другой теме раздела, если есть
     const other = pool.filter((x) => x.topic_id !== lastTopic); if (other.length) pool = other;
+    pool = pool.filter((x) => x.group !== lastOf(st).group); // не та же группа тем, что только что (раздел подождёт)
     if (!pool.length) continue;
     return { item: pool[Math.floor(rnd() * pool.length)], ph: "u" };
   }
@@ -377,7 +396,7 @@ function stepUp(st: PState, bank: Bank, D: number, rnd: () => number): { item: C
 
 /** Добор в конце грамматики: в каждом большом разделе (времена, условные, глагольные модели…) должно быть хотя бы 3 ответа
  *  на уровне проверки (или уровнем ниже, если на этом уровне у раздела нет тем); 1 из 2 — спорно, даём ещё одно. */
-function cover(st: PState, bank: Bank, D: number, rnd: () => number): { item: CoreItem; ph: Ph } | null {
+function cover(st: PState, bank: Bank, D: number, rnd: () => number, strict = false): { item: CoreItem; ph: Ph } | null {
   const fams = bank.families ?? [];
   const done = st.core.filter((x) => x.ph === "f");
   if (!fams.length || done.length >= COVER_MAX) return null;
@@ -406,6 +425,7 @@ function cover(st: PState, bank: Bank, D: number, rnd: () => number): { item: Co
     const least = Math.min(...pool.map((x) => asked(x.topic_id)));
     pool = pool.filter((x) => asked(x.topic_id) === least); // сначала темы раздела, по которым вопросов ещё не было
     const other = pool.filter((x) => x.topic_id !== lastOf(st).topic); if (other.length) pool = other;
+    const og = pool.filter((x) => x.group !== lastOf(st).group); if (og.length) pool = og; else if (strict) continue; // и не та же группа тем
     return { item: pool[Math.floor(rnd() * pool.length)], ph: "f" };
   }
   return null;

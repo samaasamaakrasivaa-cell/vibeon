@@ -30,6 +30,9 @@ export default async function Schedule({ searchParams }: { searchParams: Promise
     db.group.findMany({ where: { teacherId: me.id }, include: { members: { include: { student: { select: { name: true, lastName: true } } } } }, orderBy: { title: "asc" } }),
   ]);
   const groupOf = new Map(groups.map((g) => [g.id, g]));
+  // уроки в счетах, которые уже оплачены или ждут подтверждения оплаты, — цену не меняем
+  const locked = new Set((await db.invoice.findMany({ where: { lessonIds: { hasSome: rows.map((l) => l.id) }, status: { in: ["PROOF_SENT", "PAID"] } }, select: { lessonIds: true } })).flatMap((i) => i.lessonIds));
+  const priceRow = (l: (typeof rows)[number]) => ({ id: l.id, name: l.student ? [l.student.name, l.student.lastName].filter(Boolean).join(" ") : (l.trialName ?? "—"), price: l.price ?? 0, locked: locked.has(l.id), counts: earnedOf(l) > 0 });
   // групповое занятие — одним блоком; у кого из группы урок — по урокам этого занятия
   const slotMembers = new Map<string, string[]>();
   for (const l of rows) if (l.slotId && l.student) slotMembers.set(l.slotId, [...(slotMembers.get(l.slotId) ?? []), l.student.name]);
@@ -45,6 +48,7 @@ export default async function Schedule({ searchParams }: { searchParams: Promise
       isTrial: l.isTrial, isGroup: !!l.group, note: l.note, date: isoDay(l.startsAt, tz), start: hhmm(l.startsAt, tz), end: hhmm(end, tz),
       weekly: !!l.seriesId, past: end <= now, studentId: l.studentId, charged: l.charged, moved: !!l.movedFrom, price: l.price ?? 0,
       hw: hwOf.get(l.id) ?? null,
+      prices: (l.slotId ? rows.filter((x) => x.slotId === l.slotId) : [l]).map(priceRow),
       group: l.slotId && l.groupId ? { id: l.groupId, members: slotMembers.get(l.slotId) ?? [] } : null,
       ...(l.slotId ? { who: groupOf.get(l.groupId ?? "")?.title ?? (slotMembers.get(l.slotId) ?? []).join(", "), isGroup: true, studentId: null, price: rows.filter((x) => x.slotId === l.slotId).reduce((a, x) => a + (x.price ?? 0), 0) } : {}),
     };
@@ -61,9 +65,18 @@ export default async function Schedule({ searchParams }: { searchParams: Promise
   const days = Array.from({ length: 7 }, (_, i) => {
     const iso = addDaysIso(monday, i);
     const d = dayStart(iso, tz);
-    const earned = rows.filter((l) => isoDay(l.startsAt, tz) === iso).reduce((s, l) => s + earnedOf(l), 0);
+    const dayRows = rows.filter((l) => isoDay(l.startsAt, tz) === iso);
+    const earned = dayRows.reduce((s, l) => s + earnedOf(l), 0);
+    // из чего сложилась сумма дня: по занятиям, у группового — сумма по ученикам
+    const tip = oneSlot(dayRows).map((l) => {
+      const part = l.slotId ? dayRows.filter((x) => x.slotId === l.slotId) : [l];
+      const sum = part.reduce((s, x) => s + earnedOf(x), 0);
+      if (!sum) return null;
+      const who = l.slotId ? `${groupOf.get(l.groupId ?? "")?.title ?? lessonWho(l)} (${part.filter((x) => earnedOf(x) > 0).map((x) => rub(earnedOf(x), lang)).join(" + ")})` : lessonWho(l);
+      return `${hhmm(l.startsAt, tz)} ${who} — ${rub(sum, lang)}`;
+    }).filter(Boolean).join("\n");
     return {
-      iso, num: parseIsoDay(iso)!.d, today: iso === todayIso, past: iso < todayIso, earned: earned ? rub(earned, lang) : null,
+      iso, num: parseIsoDay(iso)!.d, today: iso === todayIso, past: iso < todayIso, earned: earned ? rub(earned, lang) : null, tip,
       dow: new Date(d.getTime() + 12 * 3600e3).toLocaleDateString(loc, { weekday: "short", timeZone: tz }).replace(".", ""),
     };
   });
