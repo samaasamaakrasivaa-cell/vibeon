@@ -7,16 +7,17 @@ import { tgEnabled, tgSend } from "./telegram";
 
 // Единая точка уведомлений: колокольчик в кабинете + Telegram и почта по настройкам пользователя.
 
-export type Notice = { userId: string; kind: string; title: string; action?: string | null; link?: string | null; dedupe?: string };
+export type Notice = { userId: string; kind: string; title: string; action?: string | null; link?: string | null; dedupe?: string; /** свои тихие часы поверх настроек ученика (статусы: 22–9) */ quiet?: [number, number] };
 
 /** Начало тихих часов → когда можно отправить (по времени пользователя). */
 function notBefore(now: Date, tz: string, quiet: [number, number] | null) {
   if (!quiet || quiet[0] === quiet[1]) return now;
-  const h = Number(new Intl.DateTimeFormat("en-GB", { hour: "2-digit", hour12: false, timeZone: tz }).format(now)) % 24;
+  const [hs, ms] = new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: tz }).format(now).split(":");
+  const h = Number(hs) % 24;
   const [a, b] = quiet;
   const inQuiet = a < b ? h >= a && h < b : h >= a || h < b;
   if (!inQuiet) return now;
-  const wait = ((b - h + 24) % 24) * 3600e3 - (now.getUTCMinutes() * 60e3);
+  const wait = ((b - h + 24) % 24) * 3600e3 - Number(ms) * 60e3 - now.getUTCSeconds() * 1e3;
   return new Date(now.getTime() + Math.max(0, wait));
 }
 
@@ -29,7 +30,8 @@ export async function notify(n: Notice) {
   const st = settingsOf(user.role, user.notify);
   const cat = catOf(n.kind);
   const url = n.link ? `${env.appUrl}${n.link}` : `${env.appUrl}/${user.role === "TEACHER" ? "teacher" : "student"}`;
-  const when = notBefore(new Date(), user.timezone, st.quiet);
+  const now = new Date();
+  const when = new Date(Math.max(notBefore(now, user.timezone, st.quiet).getTime(), notBefore(now, user.timezone, n.quiet ?? null).getTime()));
   const rows: { channel: string; to: string }[] = [];
   if (st.tg[cat] && user.telegramChatId && tgEnabled()) rows.push({ channel: "telegram", to: user.telegramChatId });
   if (st.email[cat] && user.email) rows.push({ channel: "email", to: user.email });

@@ -52,7 +52,7 @@ export async function giveAward(studentId: string, x: GiveInput): Promise<R> {
   if (s.userId) {
     const title = kind === "title" ? `Новый титул от преподавателя: «${name}»` : `Поощрение от преподавателя: «${name}»`;
     // в Telegram — по галочке учителя; в «Что нового» — всегда
-    if (x.tg) await notify({ userId: s.userId, kind: "award", title, link: "/student/progress#awards" });
+    if (x.tg) await notify({ userId: s.userId, kind: "award", title, link: "/student/progress#awards", quiet: [22, 9] });
     else await db.notification.create({ data: { userId: s.userId, kind: "award", title, link: "/student/progress#awards" } });
   }
   refresh(studentId);

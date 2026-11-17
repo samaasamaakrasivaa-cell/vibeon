@@ -117,7 +117,16 @@ export function nameFor(it: CatalogItem, lang: "ru" | "en", gender: string | nul
   if (lang === "en") return it.name.en;
   const n = it.name.ru;
   if (typeof n === "string") return n;
-  return gender === "m" ? n.m : gender === "f" ? n.f : `${n.f} / ${n.m}`;
+  return gender === "m" ? n.m : gender === "f" ? n.f : bothForms(n.f, n.m);
+}
+
+/** «Королева языковой догадки» + «Король языковой догадки» → «Королева / Король языковой догадки». */
+function bothForms(f: string, m: string) {
+  const a = f.split(" "), b = m.split(" ");
+  let k = 0;
+  while (k < a.length - 1 && k < b.length - 1 && a[a.length - 1 - k] === b[b.length - 1 - k]) k++;
+  const tail = a.slice(a.length - k).join(" ");
+  return `${a.slice(0, a.length - k).join(" ")} / ${b.slice(0, b.length - k).join(" ")}${tail ? ` ${tail}` : ""}`;
 }
 
 /** Срок титула по умолчанию → дата окончания. */

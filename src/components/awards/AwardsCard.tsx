@@ -164,7 +164,7 @@ function GiveDialog({ studentId, studentName, gender: g0, linked, onClose }: { s
             </>
           )}
           <label className="setting">
-            <span><span>{t("aw.tg")}</span>{!linked && <><br /><span className="small muted">{t("aw.tgOff")}</span></>}</span>
+            <span><span>{t("aw.tg")}</span><br /><span className="small muted">{linked ? t("aw.tgNight") : t("aw.tgOff")}</span></span>
             <span className="switch"><input type="checkbox" checked={tg} onChange={(e) => setTg(e.target.checked)} /><span /></span>
           </label>
           {error && <div className="alert">{t("aw.err")}</div>}
