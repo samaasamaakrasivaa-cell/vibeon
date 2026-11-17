@@ -99,6 +99,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
   // «Показать ученику» (указка): ученика переносит туда, где задание, — вкладка, секция, прокрутка; задание мигает зелёным 3 раза
   const flashTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [pointBy, setPointBy] = useState<{ name: string; at: number } | null>(null); // ученик указал на задание
+  const [noteFlash, setNoteFlash] = useState(false); // учитель показал на заметки урока
   const spotlight = useCallback((taskId: string, where?: string) => {
     const task = d.tasks.find((x) => x.id === taskId);
     if (!task) return;
@@ -146,6 +147,13 @@ export function ClassRoom({ d }: { d: ClassData }) {
         if (x.op === "clear") n[pg] = [];
         return n;
       });
+    } else if (ev === "notepoint") {
+      // заметки урока: учитель указал всем или именно мне
+      if (!teacher && (!x.sid || x.sid === d.student?.id)) {
+        setNoteFlash(false); requestAnimationFrame(() => setNoteFlash(true));
+        document.getElementById("cls-snote")?.scrollIntoView({ behavior: "smooth", block: "center" });
+        setTimeout(() => setNoteFlash(false), 3600);
+      }
     } else if (ev === "point") {
       if (teacher && x.by !== d.me.id) { spotlight(x.taskId as string, x.where as string | undefined); setPointBy({ name: String(x.name ?? ""), at: Date.now() }); setTimeout(() => setPointBy(null), 5000); }
     } else if (ev === "chat") {
@@ -441,6 +449,12 @@ export function ClassRoom({ d }: { d: ClassData }) {
                 {d.group!.members.map((m) => <button key={m.sid} type="button" className={`pchip ${noteSid === m.sid ? "on" : ""}`} aria-pressed={noteSid === m.sid} onClick={() => setNoteSid(m.sid)}>{m.name.split(" ")[0]}</button>)}</div> : null}
               all={gTeacher && noteSid === "*" ? d.group!.members.map((m) => ({ sid: m.sid, name: m.name, text: snotes[m.sid] ?? "" })) : undefined}
               onPick={(sid) => setNoteSid(sid)}
+              flash={noteFlash}
+              point={teacher ? {
+                // в группе: выбран ученик — показываем только ему, «Все» — всем; на индивидуальном — ученику
+                label: gTeacher && noteSid !== "*" ? t("cls.snotePointOne", { name: d.group!.members.find((m) => m.sid === noteSid)?.name.split(" ")[0] ?? "" }) : gTeacher ? t("cls.snotePointAll") : t("cls.snotePoint"),
+                go: () => { void rawSend("notepoint", gTeacher && noteSid !== "*" ? { studentId: noteSid } : {}); },
+              } : undefined}
               hint={teacher ? (d.group ? t("cls.snoteHintGroup") : t("cls.snoteHintTeacher", { name: d.student?.name ?? "" })) : t("cls.snoteHint")}
             />
             {/* курс и урок — подписью над секциями */}
@@ -931,7 +945,8 @@ function Timer({ left, paused, task, onSet, onClearTask }: { left: number; pause
 }
 
 /** Заметки урока ученика: пишут и ученик, и учитель, сохраняется на ходу и сразу видно у другого. */
-function SharedNotes({ value, onChange, who, hint, all, onPick }: { value: string; onChange: (v: string) => Promise<unknown>; who: React.ReactNode; hint: string; all?: { sid: string; name: string; text: string }[]; onPick?: (sid: string) => void }) {
+function SharedNotes({ value, onChange, who, hint, all, onPick, flash, point }: { value: string; onChange: (v: string) => Promise<unknown>; who: React.ReactNode; hint: string; all?: { sid: string; name: string; text: string }[]; onPick?: (sid: string) => void; flash?: boolean; point?: { label: string; go: () => void } }) {
+  const [sent, setSent] = useState(false);
   const { t } = useT();
   const [v, setV] = useState(value);
   const [state, setState] = useState<"" | "saving" | "saved">("");
@@ -951,8 +966,10 @@ function SharedNotes({ value, onChange, who, hint, all, onPick }: { value: strin
     timer.current = setTimeout(() => { void onChange(x).then(() => setState("saved")); }, 500);
   };
   return (
-    <div className="cls-snote mt-4">
-      <div className="flex items-center justify-between gap-2"><b className="small">{t("cls.snote")}</b><span className="small muted">{state === "saving" ? "…" : state === "saved" ? "✓" : ""}</span></div>
+    <div id="cls-snote" className={`cls-snote mt-4 ${flash ? "cls-flash" : ""}`}>
+      <div className="flex items-center justify-between gap-2"><b className="small">{t("cls.snote")}</b>
+        <span className="flex items-center gap-1.5"><span className="small muted">{state === "saving" ? "…" : state === "saved" ? "✓" : ""}</span>
+          {point && <button type="button" className={`iconbtn ${sent ? "bd-on" : ""}`} title={point.label} aria-label={point.label} onClick={() => { point.go(); setSent(true); setTimeout(() => setSent(false), 1500); }}><Icon name="pointer" size="sm" /></button>}</span></div>
       {who}
       {all ? (
         <div className="snall">

@@ -43,6 +43,20 @@ export default async function StudentProfile({ params, searchParams }: { params:
   if (!s || s.teacherId !== me.id) notFound();
   // подключён ли Telegram-бот: у ученика — после входа на платформу и нажатия «Подключить Telegram», у плательщика — по ссылке из оплаты
   const tgUser = s.userId ? await db.user.findUnique({ where: { id: s.userId }, select: { telegramChatId: true, lastSeenAt: true, timezone: true } }) : null;
+  // «был(а) в сети»: последнее действие ученика — учёт активности, а до него (и для давних визитов) — вход, ответы в заданиях,
+  // сообщения, тест, прочитанные уведомления
+  const lastSeen = s.userId ? await (async () => {
+    const uid = s.userId!;
+    const [ses, ans, msg, pl, nt] = await Promise.all([
+      db.session.findFirst({ where: { userId: uid }, orderBy: { createdAt: "desc" }, select: { createdAt: true } }),
+      db.answer.findFirst({ where: { studentId: s.id }, orderBy: { updatedAt: "desc" }, select: { updatedAt: true } }),
+      db.message.findFirst({ where: { senderId: uid }, orderBy: { createdAt: "desc" }, select: { createdAt: true } }),
+      db.placementAttempt.findFirst({ where: { studentId: s.id, status: { not: "new" } }, orderBy: { updatedAt: "desc" }, select: { updatedAt: true } }),
+      db.notification.findFirst({ where: { userId: uid, readAt: { not: null } }, orderBy: { readAt: "desc" }, select: { readAt: true } }),
+    ]);
+    const all = [tgUser?.lastSeenAt, ses?.createdAt, ans?.updatedAt, msg?.createdAt, pl?.updatedAt, nt?.readAt].filter(Boolean) as Date[];
+    return all.length ? new Date(Math.max(...all.map((d) => d.getTime()))) : null;
+  })() : null;
   // активность ученика: «был(а) в сети…» и активные минуты за последние 7 дней (только действия, не фоновая вкладка)
   const days7 = Array.from({ length: 7 }, (_, i) => addDaysIso(isoDay(new Date(), me.timezone), i - 6));
   const act = s.userId ? await db.activityDay.findMany({ where: { userId: s.userId, day: { in: days7 } } }) : [];
@@ -108,7 +122,7 @@ export default async function StudentProfile({ params, searchParams }: { params:
             {s.status === "ARCHIVED" && <span className="pill grey">{t("stu.archived")}</span>}
             {/* статус: приглашён и ещё не заходил / был в сети — как в мессенджерах */}
             {!s.userId ? <span className="pill orange" title={t("prof.invitedHint")}>{s.invites[0] ? t("prof.invitedOn", { d: dateFmt(s.invites[0].createdAt, { day: "numeric", month: "short" }) }) : t("prof.notOnPlatform")}</span>
-              : <span className={`pill ${tgUser?.lastSeenAt && Date.now() - tgUser.lastSeenAt.getTime() < 3 * 60000 ? "green" : "grey"}`}>{tgUser?.lastSeenAt ? seenAgo(tgUser.lastSeenAt) : t("prof.registered")}</span>}
+              : <span className={`pill ${lastSeen && Date.now() - lastSeen.getTime() < 3 * 60000 ? "green" : "grey"}`}>{lastSeen ? seenAgo(lastSeen) : t("prof.registered")}</span>}
             {tgUser?.telegramChatId || !s.userId ? <span className={`pill ${tgUser?.telegramChatId ? "green" : "grey"}`} title={t("prof.tgHint")}><Icon name="telegram" size="sm" />{t(tgUser?.telegramChatId ? "prof.tgOn" : "prof.tgOff")}</span> : <TgAsk id={s.id} />}
             {lastTest && <Link href={`/teacher/placement/${lastTest.id}`} className={`pill ${lastTest.status === "submitted" ? "orange" : "violet"}`}><Icon name="target" size="sm" />{lastTest.status === "submitted" ? t("prof.testToReview") : `${t("prof.testResult")}${lastTest.level ? ` · ${lastTest.level}` : ""}`}</Link>}
             {(s.payerName || s.payerChatId) && <span className={`pill ${s.payerChatId ? "green" : "grey"}`}><Icon name="telegram" size="sm" />{t(s.payerChatId ? "prof.payerTgOn" : "prof.payerTgOff")}</span>}
@@ -186,7 +200,7 @@ export default async function StudentProfile({ params, searchParams }: { params:
             />
             {s.userId && (
               <section className="card sm">
-                <div className="mb-2 flex items-center justify-between"><p className="cardtitle m-0">{t("prof.activity")}</p><span className="small muted">{tgUser?.lastSeenAt ? seenAgo(tgUser.lastSeenAt) : ""}</span></div>
+                <div className="mb-2 flex items-center justify-between"><p className="cardtitle m-0">{t("prof.activity")}</p><span className="small muted">{lastSeen ? seenAgo(lastSeen) : ""}</span></div>
                 <div className="flex items-baseline gap-2"><b className="text-[22px]">{fmtMin(act.reduce((a, x) => a + x.minutes, 0))}</b><span className="small muted">{t("prof.act7")}</span></div>
                 <div className="actbars" aria-label={t("prof.activity")}>
                   {days7.map((d) => {
