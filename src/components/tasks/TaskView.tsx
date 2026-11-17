@@ -18,7 +18,8 @@ type Mark = "ok" | "bad" | "spell" | undefined;
 
 type Try = { v: string; ok: boolean };
 
-/** Попытки ученика у поля — только в самом уроке, у учителя (в конструкторе их нет: там ещё нечего показывать).
+/** Попытки ученика у поля — в самом уроке, у учителя и у ученика (в конструкторе их нет: там ещё нечего показывать).
+ *  Ученик видит свои попытки и комментарий учителя, но не правильный ответ и не поле комментария.
  *  Три точки вертикально рядом с ответом: серые — попыток нет, красная — неверная, зелёная — верная.
  *  Нажать — какие варианты ученик вводил по очереди и комментарий учителя к этому ответу (его видит ученик). */
 function Tries({ hist = [], answer, tid, k }: { hist?: Try[]; answer: string; tid: string; k: string }) {
@@ -51,15 +52,11 @@ function Tries({ hist = [], answer, tid, k }: { hist?: Try[]; answer: string; ti
     return () => document.removeEventListener("mousedown", off);
   }, [open]);
   const save = () => { const v = draft.trim(); if (v !== note) setNotes((n) => { const x = { ...n }; if (v) x[k] = v; else delete x[k]; return x; }); };
-  // ученик видит только комментарий учителя — значком рядом с полем
-  if (role === "student") return note ? (
-    <span ref={box} className="tk-gnote">
-      <button type="button" className="tk-gnote-btn" aria-expanded={open} aria-label={t("tk.noteFromTeacher")} title={t("tk.noteFromTeacher")} onClick={() => setOpen(!open)}><Icon name="msg" size="sm" /></button>
-      {open && <span className="tk-tries-pop on" style={popStyle}><b className="small">{t("tk.noteFromTeacher")}</b><span className="tk-gnote-txt">{note}</span></span>}
-    </span>
-  ) : null;
   // конструктор: вместо точек — сам правильный ответ зелёной плашкой (если включено «Учитель увидит»)
-  if (role !== "teacher") return key && answer ? <span className="tk-key-hint">✓ {answer}</span> : null;
+  if (role === "guest") return key && answer ? <span className="tk-key-hint">✓ {answer}</span> : null;
+  const student = role === "student";
+  // ученик видит свои точки, если уже отвечал или учитель оставил комментарий
+  if (student && !hist.length && !note) return null;
   const dots = hist.length <= 3 ? hist : [hist[0], hist[1], hist[hist.length - 1]];
   return (
     <span ref={box} className="tk-tries">
@@ -68,11 +65,14 @@ function Tries({ hist = [], answer, tid, k }: { hist?: Try[]; answer: string; ti
       </button>
       {open && (
         <span className="tk-tries-pop on" style={popStyle}>
-          {key && <span className="tk-tries-ans">✓ {answer}</span>}
+          {key && !student && <span className="tk-tries-ans">✓ {answer}</span>}
+          {student && hist.length > 0 && <b className="small">{t("tk.myTries")}</b>}
           {hist.length ? hist.map((h, i) => <span key={i} className={h.ok ? "ok" : "bad"}>{t("tk.tryN", { n: i + 1 })}: {h.v} {h.ok ? "✓" : "✗"}</span>) : <span className="muted">{t("tk.noTries")}</span>}
-          <textarea className="tk-tries-note" rows={2} value={draft} placeholder={t("tk.notePh")} aria-label={t("tk.notePh")}
-            onChange={(e) => setDraft(e.target.value)} onBlur={save} onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); save(); setOpen(false); } }} />
-          <span className="small muted">{t("tk.noteHint")}</span>
+          {student ? note && <span className="tk-gnote-box"><b className="small">{t("tk.noteFromTeacher")}</b><span className="tk-gnote-txt">{note}</span></span> : <>
+            <textarea className="tk-tries-note" rows={2} value={draft} placeholder={t("tk.notePh")} aria-label={t("tk.notePh")}
+              onChange={(e) => setDraft(e.target.value)} onBlur={save} onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); save(); setOpen(false); } }} />
+            <span className="small muted">{t("tk.noteHint")}</span>
+          </>}
         </span>
       )}
     </span>
