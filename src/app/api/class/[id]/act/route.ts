@@ -143,23 +143,34 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       });
     }
     // ── чат урока (это переписка учителя и ученика)
-    case "chat": {
-      // групповой урок — общий чат группы (учитель и все ученики)
-      if (group) {
-        const gid = host.groupId ?? lesson.groupId;
-        if (!gid) return bad("no group");
+    case "chat": case "chatEdit": case "chatDel": {
+      // групповой урок — общий чат группы (учитель и все ученики); иначе — переписка учителя и ученика.
+      // Ответ на сообщение (replyTo), правка и удаление — только своих сообщений.
+      const gid = group ? host.groupId ?? lesson.groupId : null;
+      if (group && !gid) return bad("no group");
+      if (!group && !lesson.studentId) return bad("no student");
+      const out = (m: { id: string; text: string; senderId: string; createdAt: Date; replyTo: string | null; editedAt: Date | null; deletedAt: Date | null }) => {
+        const x = { id: m.id, text: m.deletedAt ? "" : m.text, by: m.senderId, at: m.createdAt, replyTo: m.replyTo, edited: !!m.editedAt, deleted: !!m.deletedAt };
+        publish(ch, "chat", x);
+        if (!group) publish(`chat:${lesson.studentId}`, "chat", x);
+      };
+      if (body.type === "chat") {
         const text = str(body.text, 4000).trim();
         if (!text) return bad();
-        const m = await db.groupMessage.create({ data: { groupId: gid, senderId: user.id, text } });
-        publish(ch, "chat", { id: m.id, text, by, at: m.createdAt });
+        const rid = str(body.replyTo, 40);
+        const reply = rid && (group ? await db.groupMessage.findFirst({ where: { id: rid, groupId: gid! } }) : await db.message.findFirst({ where: { id: rid, studentId: lesson.studentId! } })) ? rid : null;
+        const m = group ? await db.groupMessage.create({ data: { groupId: gid!, senderId: user.id, text, replyTo: reply } }) : await db.message.create({ data: { studentId: lesson.studentId!, senderId: user.id, text, replyTo: reply } });
+        out(m);
         return NextResponse.json({ ok: true });
       }
-      if (!lesson.studentId) return bad("no student");
+      const id = str(body.id, 40);
+      const own = group ? await db.groupMessage.findFirst({ where: { id, groupId: gid!, senderId: user.id } }) : await db.message.findFirst({ where: { id, studentId: lesson.studentId!, senderId: user.id } });
+      if (!own) return bad("not yours");
       const text = str(body.text, 4000).trim();
-      if (!text) return bad();
-      const m = await db.message.create({ data: { studentId: lesson.studentId, senderId: user.id, text } });
-      publish(ch, "chat", { id: m.id, text, by, at: m.createdAt });
-      publish(`chat:${lesson.studentId}`, "chat", { id: m.id, text, by, at: m.createdAt });
+      if (body.type === "chatEdit" && !text) return bad();
+      const data = body.type === "chatEdit" ? { text, editedAt: new Date() } : { deletedAt: new Date() };
+      const m = group ? await db.groupMessage.update({ where: { id }, data }) : await db.message.update({ where: { id }, data });
+      out(m);
       return NextResponse.json({ ok: true });
     }
     case "note": {

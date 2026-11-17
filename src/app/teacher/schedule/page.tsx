@@ -49,6 +49,7 @@ export default async function Schedule({ searchParams }: { searchParams: Promise
       weekly: !!l.seriesId, past: end <= now, studentId: l.studentId, charged: l.charged, moved: !!l.movedFrom, price: l.price ?? 0,
       hw: hwOf.get(l.id) ?? null,
       prices: (l.slotId ? rows.filter((x) => x.slotId === l.slotId) : [l]).map(priceRow),
+      callLink: (l.groupId ? l.group?.callLink : l.student?.callLink) || l.callLink || null,
       group: l.slotId && l.groupId ? { id: l.groupId, members: slotMembers.get(l.slotId) ?? [] } : null,
       ...(l.slotId ? { who: groupOf.get(l.groupId ?? "")?.title ?? (slotMembers.get(l.slotId) ?? []).join(", "), isGroup: true, studentId: null, price: rows.filter((x) => x.slotId === l.slotId).reduce((a, x) => a + (x.price ?? 0), 0) } : {}),
     };

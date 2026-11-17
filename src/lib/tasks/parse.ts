@@ -144,10 +144,34 @@ export function parse(type: TaskType, content: string): Parsed {
 
 // ───────── Проверка ─────────
 
+/** Без регистра и знаков препинания: «It's raining.» = «it's raining»; дефис — как пробел. Апостроф в словах остаётся. */
 export const norm = (s: string) =>
-  s.toLowerCase().replace(/[’‘`´]/g, "'").replace(/[“”«»]/g, '"').replace(/\s+/g, " ").replace(/^[\s"']+|[\s.,!?;:"']+$/g, "").trim();
+  s.toLowerCase().replace(/[’‘`´]/g, "'").replace(/[-‐–—]/g, " ").replace(/[^\p{L}\p{N}'\s]/gu, " ")
+    .replace(/(^|\s)'+|'+(?=\s|$)/g, "$1").replace(/\s+/g, " ").trim();
 
-export const same = (a: string, answers: string[]) => answers.some((x) => norm(x) === norm(a));
+// краткие и полные формы — одно и то же: can't = cannot = can not, I'm = I am, they've = they have…
+const SHORT: [RegExp, string][] = [
+  [/\bcan't\b/g, "cannot"], [/\bwon't\b/g, "will not"], [/\bshan't\b/g, "shall not"], [/\bain't\b/g, "is not"],
+  [/n't\b/g, " not"], [/'m\b/g, " am"], [/'re\b/g, " are"], [/'ve\b/g, " have"], [/'ll\b/g, " will"], [/\bcan not\b/g, "cannot"],
+];
+/** Все прочтения ответа: 's — is / has (или притяжательное), 'd — would / had. */
+function forms(s: string) {
+  let x = norm(s);
+  for (const [re, to] of SHORT) x = x.replace(re, to);
+  let acc = [""];
+  for (const w of x.replace(/\s+/g, " ").trim().split(" ")) {
+    const m = /^(.+)'([sd])$/.exec(w);
+    const vs = m ? [w, ...(m[2] === "s" ? [`${m[1]} is`, `${m[1]} has`] : [`${m[1]} would`, `${m[1]} had`])] : [w];
+    acc = acc.flatMap((a) => vs.map((v) => (a ? `${a} ${v}` : v))).slice(0, 64);
+  }
+  return acc;
+}
+
+/** Ответ верный, если совпадает с одним из вариантов (через «/» в задании) — без учёта регистра, знаков препинания и кратких форм. */
+export const same = (a: string, answers: string[]) => {
+  const fa = new Set(forms(a));
+  return answers.some((x) => forms(x).some((f) => fa.has(f)));
+};
 
 /** Расстояние Левенштейна — для диктанта («орфография»). */
 export function lev(a: string, b: string) {

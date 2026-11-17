@@ -17,6 +17,7 @@ import { Board, type BObj } from "./Board";
 import { useLive } from "./useLive";
 import { AiCheckView, type AiCheck } from "../ai/AiCheckView";
 import { askAi, checkAnswer } from "@/lib/ai/actions";
+import { setCallLink } from "@/lib/teacher/actions";
 import { useT } from "@/lib/i18n/client";
 import { numbered, PRESET, RUBRICS, SAMPLE, TYPES, type Rubric, type TaskType } from "@/lib/tasks/catalog";
 import { saveTask, setRubrics } from "@/lib/teacher/courses";
@@ -24,7 +25,7 @@ import type { LiveState } from "@/lib/live/access";
 
 type CTask = TaskData & { section: "lesson" | "homework" | "words"; rubricId: string | null; hidden: boolean };
 type Word = { id: string; word: string; translation: string | null; example: string | null; level: number };
-type Msg = { id: string; text: string; by: string; at: string };
+type Msg = { id: string; text: string; by: string; at: string; replyTo?: string | null; edited?: boolean; deleted?: boolean };
 export type Review = { ok: boolean; comment: string | null; ai?: AiCheck };
 export type { AiCheck };
 export type ClassData = {
@@ -34,7 +35,7 @@ export type ClassData = {
   answers: Answers; statuses: Record<string, string>; reviews: Record<string, Review>; aiDrafts: Record<string, AiCheck>; live: LiveState;
   board: BObj[][]; homework: { extraTaskIds: string[]; wordTraining: string[]; teacherComment: string | null };
   lessonWords: { word: string; tr: string; ex: string }[]; words: Word[]; messages: Msg[];
-  note: string | null; studentNote: string | null; callLink: string | null; when: string; durationMin: number; status: string; goal: string | null;
+  note: string | null; studentNote: string | null; callLink: string | null; callOwn?: boolean; when: string; durationMin: number; status: string; goal: string | null;
   templates: { id: string; label: string }[]; homeHref: string; initialTab?: "lesson" | "homework" | "words" | "board"; addHw?: boolean;
   /** Групповое занятие: у каждого ученика свой урок (instanceId), класс общий. Учитель переключается между учениками. */
   group?: { title: string; members: { sid: string; instanceId: string; userId: string | null; name: string }[] };
@@ -65,6 +66,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
   const [board, setBoard] = useState<BObj[][]>(d.board.length ? d.board : [[]]);
   const [page, setPage] = useState(d.live?.page ?? 0);
   const [msgs, setMsgs] = useState<Msg[]>(d.messages);
+  const msgsRef = useRef(msgs); msgsRef.current = msgs;
   const [wordsBy, setWordsBy] = useState<Record<string, Word[]>>(() => (gTeacher ? Object.fromEntries(Object.entries(d.byStudent ?? {}).map(([k, v]) => [k, v.words])) : { [own]: d.words }));
   const words = wordsBy[viewSid] ?? [];
   const [revBy, setRevBy] = useState<Record<string, Record<string, Review>>>(() => (gTeacher ? Object.fromEntries(Object.entries(d.byStudent ?? {}).map(([k, v]) => [k, v.reviews])) : { [own]: d.reviews }));
@@ -88,7 +90,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
   // таймер, чат, словарь: клик в любом месте урока вне панели — панель закрывается
   useEffect(() => {
     if (!panel) return;
-    const h = (e: MouseEvent) => { const el = e.target as HTMLElement; if (!el.closest(".cls-panel") && !el.closest(".cls-rail") && !el.closest("dialog")) setPanel(null); };
+    const h = (e: MouseEvent) => { const el = e.target as HTMLElement; if (!el.closest(".cls-panel") && !el.closest(".cls-rail") && !el.closest("dialog") && !el.closest("[data-keep-panel]")) setPanel(null); };
     document.addEventListener("mousedown", h);
     return () => document.removeEventListener("mousedown", h);
   }, [panel]);
@@ -142,7 +144,12 @@ export function ClassRoom({ d }: { d: ClassData }) {
         if (x.op === "clear") n[pg] = [];
         return n;
       });
-    } else if (ev === "chat") { setMsgs((m) => (m.some((y) => y.id === x.id) ? m : [...m, x as unknown as Msg])); if (x.by !== d.me.id) setUnread((u) => u + 1); }
+    } else if (ev === "chat") {
+      // правка и удаление приходят тем же событием — заменяем сообщение по id
+      const isNew = !msgsRef.current.some((y) => y.id === x.id);
+      setMsgs((m) => (m.some((y) => y.id === x.id) ? m.map((y) => (y.id === x.id ? (x as unknown as Msg) : y)) : [...m, x as unknown as Msg]));
+      if (isNew && x.by !== d.me.id) setUnread((u) => u + 1);
+    }
     else if (ev === "note") { if (x.who === "teacher") setNotes((n) => ({ ...n, teacher: x.text as string })); }
     else if (ev === "snote") { if (x.by !== d.me.id && (teacher || x.sid === own)) setSnotes((n) => ({ ...n, [x.sid as string]: x.text as string })); }
     else if (ev === "reset") {
@@ -226,7 +233,10 @@ export function ClassRoom({ d }: { d: ClassData }) {
       ? (teacher ? d.group.members.filter((m) => m.userId).map((m) => ({ id: m.userId!, name: m.name })) : Object.entries(d.chatNames ?? {}).map(([id, name]) => ({ id, name })))
       : d.student?.userId ? [{ id: d.student.userId, name: d.student.name }] : []),
   ];
-  const timerLeft = live.timer ? Math.max(0, Math.round((live.timer.endsAt - now) / 1000)) : 0;
+  const timerLeft = live.timer ? Math.max(0, live.timer.left ?? Math.round((live.timer.endsAt - now) / 1000)) : 0;
+  const timerPaused = live.timer?.left !== undefined;
+  const fmtT = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+  const [timerTask, setTimerTask] = useState<string | null>(null); // таймер к заданию: панель открыта для него
   const [catalog, setCatalog] = useState<{ index: number } | null>(null);
   const [editing, setEditing] = useState<{ task: CTask; index: number } | null>(null);
   const [saving, setSaving] = useState(false);
@@ -253,6 +263,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
         {/* групповой урок: чьи ответы смотреть — компактно, рядом с инструментами; повторное нажатие — снять выбор */}
         {gTeacher && <StudentChips task={task} members={d.group!.members} ansBy={ansBy} sel={sid} online={online} onPick={(x) => setTaskView((v) => ({ ...v, [task.id]: v[task.id] === x ? "" : x }))} />}
         {inHw && <span className={`pill ${statuses[task.id] === "NEEDS_REVIEW" && !reviews[task.id] ? "orange" : "grey"}`}>{statusLabel(statuses[task.id], !!reviews[task.id], t)}</span>}
+        <button data-keep-panel className={`iconbtn ${live.timer?.taskId === task.id && timerLeft > 0 ? "bd-on" : ""}`} title={t("cls.taskTimer")} aria-label={t("cls.taskTimer")} onClick={() => { setTimerTask(task.id); setPanel("timer"); }}><Icon name="clock" size="sm" /></button>
         <button className={`iconbtn ${live.spotlight?.taskId === task.id ? "bd-on" : ""}`} title={t("cls.show")} aria-label={t("cls.show")} onClick={() => { patchLive({ spotlight: { taskId: task.id, at: Date.now() }, ...(inHw ? { tab: "homework" } : { rubricId: cur?.id ?? null, tab: "lesson" }) }); setFlash(null); requestAnimationFrame(() => setFlash(task.id)); setTimeout(() => setFlash(null), 3600); }}><Icon name="pointer" size="sm" /></button>
         {!inHw && <button className={`iconbtn ${isHw ? "bd-on" : ""}`} title={isHw ? t("cls.fromHw") : t("bld.toHw")} aria-label={t("bld.toHw")} onClick={() => { const on = !isHw; setHw((h) => ({ ...h, extraTaskIds: on ? [...h.extraTaskIds, task.id] : h.extraTaskIds.filter((x) => x !== task.id) })); send("hw", { taskId: task.id, on }); }}><Icon name="home" size="sm" /></button>}
         {isHidden && <span className="pill violet">{t("bld.notSeen")}</span>}
@@ -276,11 +287,12 @@ export function ClassRoom({ d }: { d: ClassData }) {
         const m = sid ? d.group?.members.find((x) => x.sid === sid) : undefined;
         const sendFor = (type: string, x: Record<string, unknown> = {}) => rawSend(type, { ...x, studentId: sid });
         return (
-        <div key={task.id} id={`task-${task.id}`} className={`${flash === task.id ? "cls-flash" : ""} ${teacher && hidden.has(task.id) ? "tk-teacheronly" : ""} ${gTeacher && sid ? "tk-viewing" : ""}`}>
+        <div key={task.id} id={`task-${task.id}`} className={`${live.timer?.taskId === task.id && timerLeft > 0 ? "tk-timed" : ""} ${flash === task.id ? "cls-flash" : ""} ${teacher && hidden.has(task.id) ? "tk-teacheronly" : ""} ${gTeacher && sid ? "tk-viewing" : ""}`}>
+          {live.timer?.taskId === task.id && timerLeft > 0 && <div className={`tk-timer ${timerPaused ? "paused" : ""}`} aria-live="polite"><Icon name="clock" size="sm" />{fmtT(timerLeft)}{timerPaused ? ` · ${t("cls.tPaused")}` : ""}</div>}
           {gTeacher ? (
             <AnswerProvider key={`${sid ?? "me"}-${resetTick[task.id] ?? 0}`} answers={sid ? ansBy[sid] ?? {} : sandbox}
               onSet={(tid, k, v) => { if (!sid) setSandbox((sb) => ({ ...sb, [tid]: { ...(sb[tid] ?? {}), [k]: v } })); }} role="teacher">
-              <MarkCtx.Provider value={{ ...marks, student: m?.name ?? "" }}>{card}</MarkCtx.Provider>
+              <MarkCtx.Provider value={{ ...marks, student: m?.name ?? "", members: d.group!.members, sid: sid ?? "", pick: (taskId, x) => setTaskView((v) => ({ ...v, [taskId]: x })) }}>{card}</MarkCtx.Provider>
             </AnswerProvider>
           ) : card}
           {gTeacher && sid && <div className="tk-viewing-note small muted">{t("grp.viewing", { name: m?.name ?? "" })}</div>}
@@ -332,7 +344,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
             <button aria-pressed={panel === "chat"} onClick={() => { setPanel(panel === "chat" ? null : "chat"); setUnread(0); }}><Icon name="msg" /><span>{d.group ? t("grp.chat") : t("nav.chat")}</span>{unread > 0 && <i className="count">{unread}</i>}</button>
             <button aria-pressed={panel === "dict"} onClick={() => setPanel(panel === "dict" ? null : "dict")}><Icon name="book" /><span>{t("cls.dict")}</span></button>
             {teacher && <button aria-pressed={panel === "timer"} onClick={() => setPanel(panel === "timer" ? null : "timer")}><Icon name="clock" /><span>{t("cls.timer")}</span></button>}
-            {live.timer && timerLeft > 0 && <div className="cls-timer">{Math.floor(timerLeft / 60)}:{String(timerLeft % 60).padStart(2, "0")}</div>}
+            {live.timer && timerLeft > 0 && <div className={`cls-timer ${timerPaused ? "paused" : ""}`}>{fmtT(timerLeft)}</div>}
           </nav>
 
           {panel && (
@@ -340,7 +352,9 @@ export function ClassRoom({ d }: { d: ClassData }) {
               <button className="iconbtn dlgx" onClick={() => setPanel(null)} aria-label="close"><Icon name="close" size="sm" /></button>
               {panel === "chat" && <Chat msgs={msgs} me={d.me.id} send={send} names={{ [d.teacher.id]: d.teacher.name, ...(d.chatNames ?? {}), ...(d.student?.userId ? { [d.student.userId]: d.student.name } : {}) }} />}
               {panel === "dict" && <Dict send={send} />}
-              {panel === "timer" && <Timer onStart={(sec) => patchLive({ timer: sec ? { endsAt: Date.now() + sec * 1000 } : null })} running={timerLeft > 0} />}
+              {panel === "timer" && <Timer left={live.timer ? timerLeft : 0} paused={timerPaused} task={timerTask ? lessonTasks.concat(hwTasks).find((x) => x.id === timerTask)?.title || t("cls.thisTask") : null}
+                onClearTask={() => setTimerTask(null)}
+                onSet={(x) => patchLive({ timer: x === null ? null : x.paused ? { endsAt: 0, left: x.sec, ...(timerTask ? { taskId: timerTask } : {}) } : { endsAt: Date.now() + x.sec * 1000, ...(timerTask ? { taskId: timerTask } : {}) } })} />}
             </aside>
           )}
 
@@ -399,13 +413,25 @@ export function ClassRoom({ d }: { d: ClassData }) {
             {d.callLink ? (
               <a href={d.callLink} target="_blank" rel="noreferrer" className="btn w-full cls-call"><Icon name="phone" size="sm" />{t("cls.joinCall")}</a>
             ) : <span className="btn w-full cls-call off" title={t("cls.noCallHint")}><Icon name="phone" size="sm" />{t("cls.noCall")}</span>}
+            {teacher && <CallLinkEdit lessonId={d.id} value={d.callOwn ? d.callLink ?? "" : ""} group={!!d.group} />}
             <div className="mt-2 flex items-center justify-center gap-2 small muted">
               <span className="relative"><span className="avatar" style={{ width: 22, height: 22, fontSize: 9 }}>{gTeacher ? <Icon name="group" size="sm" /> : (teacher ? d.student?.name : d.teacher.name)?.[0] ?? "?"}</span><i className="dot" style={{ position: "absolute", right: -2, bottom: -2, background: other ? "var(--ok)" : "var(--grey)" }} /></span>
               {gTeacher ? t("grp.online", { n: d.group!.members.filter((m) => m.userId && online.includes(m.userId)).length, total: d.group!.members.length })
                 : other ? (teacher ? t("cls.studentIn", { name: d.student?.name ?? "" }) : t("cls.teacherIn")) : (teacher ? t("cls.studentOut", { name: d.student?.name ?? t("cls.student") }) : t("cls.teacherOut"))}
             </div>
-            <div className="bld-cover mt-3" style={d.course?.cover ? { background: `center / cover url(${d.course.cover})` } : undefined}>{!d.course?.cover && <><Icon name="book" size="lg" /><b>{d.course?.title ?? "VibeOn"}</b></>}</div>
-            <h2 className="mt-3">{d.title ?? t("cls.lesson")}</h2>
+            {/* заметки урока: общие для ученика и учителя — наверху, сразу на виду (на месте прежней картинки курса) */}
+            <SharedNotes
+              key={noteSid}
+              value={snotes[noteSid] ?? ""}
+              onChange={(v) => { setSnotes((n) => ({ ...n, [noteSid]: v })); return rawSend("snote", { text: v, ...(gTeacher ? { studentId: noteSid } : {}) }); }}
+              who={gTeacher ? <div className="flex flex-wrap gap-1">{d.group!.members.map((m) => <button key={m.sid} type="button" className={`pchip ${noteSid === m.sid ? "on" : ""}`} aria-pressed={noteSid === m.sid} onClick={() => setNoteSid(m.sid)}>{m.name.split(" ")[0]}</button>)}</div> : null}
+              hint={teacher ? (d.group ? t("cls.snoteHintGroup") : t("cls.snoteHintTeacher", { name: d.student?.name ?? "" })) : t("cls.snoteHint")}
+            />
+            {/* курс и урок — подписью над секциями */}
+            <div className="cls-what mt-4">
+              {d.course?.title && <small>{t("cls.courseOf", { c: d.course.title })}</small>}
+              <b>{d.title ?? t("cls.lesson")}</b>
+            </div>
             <div className="mt-3 flex flex-col gap-1">
               {d.rubrics.map((r, i) => (
                 <button key={r.id} className={`bld-sec ${tab === "lesson" && r.id === cur?.id ? "on" : ""}`} onClick={() => { setTab("lesson"); go(r.id); }}>
@@ -422,14 +448,6 @@ export function ClassRoom({ d }: { d: ClassData }) {
                 <div className="flex gap-2"><button type="button" className="btn primary sm" disabled={!secName.trim()} onClick={() => void addSection(secName)}>{t("bld.secAdd")}</button><button type="button" className="btn plain sm" onClick={() => setAddSec(false)}>{t("common.cancel")}</button></div>
               </div>
             ) : <button type="button" className="bld-sec cls-addsec mt-1" onClick={() => setAddSec(true)}><Icon name="plus" size="sm" /><span className="grow">{t("bld.addRubric")}</span></button>)}
-            {/* заметки урока ученика: общие для ученика и учителя, всегда на виду рядом с секциями */}
-            <SharedNotes
-              key={noteSid}
-              value={snotes[noteSid] ?? ""}
-              onChange={(v) => { setSnotes((n) => ({ ...n, [noteSid]: v })); return rawSend("snote", { text: v, ...(gTeacher ? { studentId: noteSid } : {}) }); }}
-              who={gTeacher ? <div className="flex flex-wrap gap-1">{d.group!.members.map((m) => <button key={m.sid} type="button" className={`pchip ${noteSid === m.sid ? "on" : ""}`} aria-pressed={noteSid === m.sid} onClick={() => setNoteSid(m.sid)}>{m.name.split(" ")[0]}</button>)}</div> : null}
-              hint={teacher ? (d.group ? t("cls.snoteHintGroup") : t("cls.snoteHintTeacher", { name: d.student?.name ?? "" })) : t("cls.snoteHint")}
-            />
             {teacher && <NoteBox key="note" title={t("cls.teacherNote")} value={notes.teacher} onSave={(v) => send("note", { text: v })} />}
             {!teacher && notes.teacher && <div className="alert mt-3" style={{ background: "var(--warn-bg)", color: "var(--warn-text)" }}><b className="block small">{t("cls.fromTeacher")}</b>{notes.teacher}</div>}
             {teacher && (
@@ -643,22 +661,82 @@ function Words({ teacher, lessonWords, words, training, send, setHw }: {
   );
 }
 
+/** Ссылка на созвон из урока: сохраняется в анкету ученика (или в настройки группы) — и сразу действует во всех его уроках. */
+function CallLinkEdit({ lessonId, value, group }: { lessonId: string; value: string; group: boolean }) {
+  const { t } = useT();
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const [v, setV] = useState(value);
+  const [err, setErr] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const save = async () => {
+    setBusy(true); setErr(null);
+    const r = await setCallLink(lessonId, v).catch(() => ({ ok: false as const, error: "Error" }));
+    setBusy(false);
+    if (!r.ok) { setErr(r.error); return; }
+    setOpen(false); router.refresh();
+  };
+  if (!open) return <button type="button" className="btn plain sm mt-1 w-full" onClick={() => { setV(value); setOpen(true); }}><Icon name="link" size="sm" />{value ? t("cls.linkEdit") : t("cls.linkAdd")}</button>;
+  return (
+    <div className="mt-2 flex flex-col gap-2">
+      <input className="input" autoFocus inputMode="url" value={v} placeholder="https://telemost.yandex.ru/…" aria-label={t("prof.callLink")} onChange={(e) => setV(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") void save(); if (e.key === "Escape") setOpen(false); }} />
+      <span className="hint">{group ? t("cls.linkHintGroup") : t("cls.linkHint")}</span>
+      {err && <div className="alert">{err}</div>}
+      <div className="flex gap-2"><button type="button" className="btn primary sm" disabled={busy} onClick={() => void save()}>{t("common.save")}</button><button type="button" className="btn plain sm" onClick={() => setOpen(false)}>{t("common.cancel")}</button></div>
+    </div>
+  );
+}
+
+/** Чат урока / группы: подписи кто пишет; у сообщения — «Ответить» (с цитатой), свои — «Изменить» и «Удалить». */
 function Chat({ msgs, me, send, names }: { msgs: Msg[]; me: string; send: (type: string, d: Record<string, unknown>) => Promise<unknown>; names: Record<string, string> }) {
   const { t } = useT();
   const [v, setV] = useState("");
+  const [reply, setReply] = useState<Msg | null>(null);
+  const [editing, setEditing] = useState<Msg | null>(null);
+  const [menu, setMenu] = useState<string | null>(null);
   const end = useRef<HTMLDivElement>(null);
+  const input = useRef<HTMLInputElement>(null);
   useEffect(() => { end.current?.scrollIntoView({ block: "end" }); }, [msgs.length]);
+  const byId = new Map(msgs.map((m) => [m.id, m]));
+  const submit = () => {
+    const text = v.trim();
+    if (!text) return;
+    if (editing) void send("chatEdit", { id: editing.id, text });
+    else void send("chat", { text, ...(reply ? { replyTo: reply.id } : {}) });
+    setV(""); setReply(null); setEditing(null);
+  };
+  const quote = (id: string) => { const q = byId.get(id); return q ? (q.deleted ? t("cls.msgDeleted") : q.text) : ""; };
   return (
     <div className="flex h-full flex-col">
       <h3 className="mb-2">{t("nav.chat")}</h3>
       <div className="cls-chat">
         {msgs.length === 0 && <p className="hint">{t("cls.chatEmpty")}</p>}
-        {msgs.map((m) => <div key={m.id} className={`bubble ${m.by === me ? "me" : ""}`}><small>{names[m.by] ?? ""}</small>{m.text}</div>)}
+        {msgs.map((m) => (
+          <div key={m.id} className={`bubble ${m.by === me ? "me" : ""} ${m.deleted ? "del" : ""}`} onClick={() => !m.deleted && setMenu(menu === m.id ? null : m.id)}>
+            <small>{names[m.by] ?? ""}</small>
+            {m.replyTo && <span className="bq"><b>{names[byId.get(m.replyTo)?.by ?? ""] ?? ""}</b>{quote(m.replyTo)}</span>}
+            {m.deleted ? <i>{t("cls.msgDeleted")}</i> : m.text}
+            {m.edited && !m.deleted && <span className="edited">{t("cls.msgEdited")}</span>}
+            {menu === m.id && (
+              <span className="bmenu" onClick={(e) => e.stopPropagation()}>
+                <button type="button" onClick={() => { setReply(m); setEditing(null); setMenu(null); input.current?.focus(); }}>{t("cls.msgReply")}</button>
+                {m.by === me && <button type="button" onClick={() => { setEditing(m); setReply(null); setV(m.text); setMenu(null); input.current?.focus(); }}>{t("cls.msgEdit")}</button>}
+                {m.by === me && <button type="button" className="bad" onClick={() => { if (confirm(t("cls.msgDelQ"))) void send("chatDel", { id: m.id }); setMenu(null); }}>{t("common.delete")}</button>}
+              </span>
+            )}
+          </div>
+        ))}
         <div ref={end} />
       </div>
-      <form className="mt-2 flex gap-2" onSubmit={(e) => { e.preventDefault(); if (v.trim()) send("chat", { text: v }); setV(""); }}>
-        <input className="input" value={v} onChange={(e) => setV(e.target.value)} placeholder={t("cls.message")} aria-label={t("cls.message")} />
-        <button className="btn primary sm" disabled={!v.trim()} aria-label={t("cls.send")}><Icon name="send" size="sm" /></button>
+      {(reply || editing) && (
+        <div className="chat-ctx">
+          <span className="grow truncate"><b>{editing ? t("cls.msgEditing") : t("cls.msgReplyTo", { name: names[reply!.by] ?? "" })}</b> {(editing ?? reply)!.text}</span>
+          <button type="button" className="iconbtn" aria-label={t("common.cancel")} onClick={() => { setReply(null); if (editing) setV(""); setEditing(null); }}><Icon name="close" size="sm" /></button>
+        </div>
+      )}
+      <form className="mt-2 flex gap-2" onSubmit={(e) => { e.preventDefault(); submit(); }}>
+        <input ref={input} className="input" value={v} onChange={(e) => setV(e.target.value)} onKeyDown={(e) => { if (e.key === "Escape") { setReply(null); setEditing(null); } }} placeholder={t("cls.message")} aria-label={t("cls.message")} />
+        <button className="btn primary sm" disabled={!v.trim()} aria-label={editing ? t("common.save") : t("cls.send")}><Icon name={editing ? "check" : "send"} size="sm" /></button>
       </form>
     </div>
   );
@@ -686,25 +764,44 @@ function Dict({ send }: { send: (type: string, d: Record<string, unknown>) => Pr
   );
 }
 
-function Timer({ onStart, running }: { onStart: (sec: number) => void; running: boolean }) {
+/** Таймер: время выставляется заранее (пресеты, +15 с, +1 мин), запускается отдельно; пауза, продолжить, сбросить.
+ *  task — таймер к конкретному заданию: ученики видят отсчёт прямо у задания. */
+function Timer({ left, paused, task, onSet, onClearTask }: { left: number; paused: boolean; task: string | null; onSet: (x: { sec: number; paused?: boolean } | null) => void; onClearTask: () => void }) {
   const { t } = useT();
-  const [min, setMin] = useState(5);
+  const [min, setMin] = useState(1);
   const [sec, setSec] = useState(0);
   const num = (v: string, max: number) => Math.max(0, Math.min(max, Number(v.replace(/\D/g, "")) || 0));
+  const set = left > 0; // таймер уже идёт или стоит на паузе
+  const total = min * 60 + sec;
+  const add = (d: number) => { if (set) onSet({ sec: left + d, paused }); else { const v = Math.min(99 * 60, total + d); setMin(Math.floor(v / 60)); setSec(v % 60); } };
   return (
     <div className="ctimer">
       <h3 className="mb-2">{t("cls.timer")}</h3>
-      <div className="ctimer-big" aria-live="polite">
-        <input inputMode="numeric" value={String(min).padStart(2, "0")} onChange={(e) => setMin(num(e.target.value.slice(-2), 60))} aria-label={t("cls.tMin")} />
-        <span>:</span>
-        <input inputMode="numeric" value={String(sec).padStart(2, "0")} onChange={(e) => setSec(num(e.target.value.slice(-2), 59))} aria-label={t("cls.tSec")} />
+      {task && <div className="ctimer-task"><Icon name="clock" size="sm" /><span className="grow truncate">{t("cls.timerFor", { task })}</span><button type="button" className="iconbtn" aria-label={t("common.cancel")} onClick={onClearTask}><Icon name="close" size="sm" /></button></div>}
+      <div className={`ctimer-big ${set ? "on" : ""}`} aria-live="polite">
+        {set ? <span>{Math.floor(left / 60)}:{String(left % 60).padStart(2, "0")}</span> : (
+          <>
+            <input inputMode="numeric" value={String(min).padStart(2, "0")} onChange={(e) => setMin(num(e.target.value.slice(-2), 99))} aria-label={t("cls.tMin")} />
+            <span>:</span>
+            <input inputMode="numeric" value={String(sec).padStart(2, "0")} onChange={(e) => setSec(num(e.target.value.slice(-2), 59))} aria-label={t("cls.tSec")} />
+          </>
+        )}
       </div>
-      <label className="ctimer-row"><span>{t("cls.tMin")}</span><input type="range" min={0} max={60} value={min} onChange={(e) => setMin(+e.target.value)} /><b>{min}</b></label>
-      <label className="ctimer-row"><span>{t("cls.tSec")}</span><input type="range" min={0} max={55} step={5} value={sec} onChange={(e) => setSec(+e.target.value)} /><b>{sec}</b></label>
-      <button className="btn primary w-full mt-2" disabled={min * 60 + sec <= 0} onClick={() => onStart(min * 60 + sec)}>{t("cls.tStart")}</button>
-      <div className="ctimer-presets">{[1, 3, 5, 10, 15].map((m) => <button key={m} className="pchip" onClick={() => { setMin(m); setSec(0); onStart(m * 60); }}>{m} {t("dash.min")}</button>)}</div>
-      {running && <button className="btn danger sm mt-3 w-full" onClick={() => onStart(0)}>{t("cls.stopTimer")}</button>}
-      <p className="hint mt-3 mb-0">{t("cls.timerHint")}</p>
+      {!set && <div className="ctimer-presets">{[1, 2, 3, 5, 10, 15].map((m) => <button key={m} type="button" className={`pchip ${total === m * 60 ? "on" : ""}`} onClick={() => { setMin(m); setSec(0); }}>{m} {t("dash.min")}</button>)}</div>}
+      <div className="ctimer-add">
+        <button type="button" className="btn secondary sm" onClick={() => add(15)}>+15 {t("cls.tSecShort")}</button>
+        <button type="button" className="btn secondary sm" onClick={() => add(60)}>+1 {t("dash.min")}</button>
+        {!set && total > 0 && <button type="button" className="btn plain sm" onClick={() => { setMin(0); setSec(0); }}>{t("cls.tZero")}</button>}
+      </div>
+      {!set ? (
+        <button className="btn primary w-full mt-3" disabled={total <= 0} onClick={() => onSet({ sec: total })}>{t("cls.tStart")}</button>
+      ) : (
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          {paused ? <button className="btn primary" onClick={() => onSet({ sec: left })}>{t("cls.tResume")}</button> : <button className="btn secondary" onClick={() => onSet({ sec: left, paused: true })}>{t("cls.tPause")}</button>}
+          <button className="btn secondary" onClick={() => onSet(null)}>{t("cls.tReset")}</button>
+        </div>
+      )}
+      <p className="hint mt-3 mb-0">{task ? t("cls.timerTaskHint") : t("cls.timerHint")}</p>
     </div>
   );
 }

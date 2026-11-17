@@ -16,6 +16,27 @@ import { fixSpeech } from "@/lib/ai/actions";
 export type TaskData = { id: string; type: TaskType; title: string; content: string; options: TaskOptions };
 type Mark = "ok" | "bad" | "spell" | undefined;
 
+type Try = { v: string; ok: boolean };
+
+/** Попытки ученика у поля (как в Progress Me): три точки — серые, пока ответа нет; неверная попытка — красная, верная — зелёная.
+ *  Нажать — история: что ученик отвечал по очереди (и правильный ответ, если включены ответы). Только учителю. */
+function Tries({ hist = [], answer }: { hist?: Try[]; answer: string }) {
+  const { t } = useT();
+  const role = useTaskRole();
+  const key = useKey();
+  if (role === "student" || (!key && !hist.length)) return null; // конструктор (guest) — тоже, когда включены ответы
+  const dots = hist.length <= 3 ? hist : [hist[0], hist[1], hist[hist.length - 1]];
+  return (
+    <span className="tk-tries" tabIndex={0} aria-label={t("tk.tries")}>
+      {[0, 1, 2].map((i) => <i key={i} className={dots[i] ? (dots[i].ok ? "ok" : "bad") : ""} />)}
+      <span className="tk-tries-pop">
+        {key && <span className="tk-tries-ans">✓ {answer}</span>}
+        {hist.length ? hist.map((h, i) => <span key={i} className={h.ok ? "ok" : "bad"}>{t("tk.tryN", { n: i + 1 })}: {h.v} {h.ok ? "✓" : "✗"}</span>) : <span className="muted">{t("tk.noTries")}</span>}
+      </span>
+    </span>
+  );
+}
+
 /** Общая логика проверки: «сразу» (до 3 попыток) или кнопкой «Проверить». */
 function useChecker(o: TaskOptions, id: string) {
   const instant = (o.checkMode ?? "button") === "instant";
@@ -23,7 +44,13 @@ function useChecker(o: TaskOptions, id: string) {
   const [tries, setTries] = useSlot<Record<string, number>>(id, "tries", {});
   const bump = (k: string) => setTries((t) => ({ ...t, [k]: (t[k] ?? 0) + 1 }));
   const reveal = (k: string) => !o.noreveal && (tries[k] ?? 0) >= 3;
-  return { instant, checked: instant || checked, setChecked, tries, bump, reveal, reset: () => { setChecked(false); setTries({}); } };
+  // история попыток по каждому полю: что ученик отвечал и верно ли (учитель видит её по точкам у поля)
+  const [hist, setHist] = useSlot<Record<string, Try[]>>(id, "hist", {});
+  const record = (k: string, v: string, ok: boolean) => {
+    if (!v.trim()) return;
+    setHist((h) => { const a = h[k] ?? []; if (a.length && a[a.length - 1].v === v) return h; return { ...h, [k]: [...a, { v, ok }].slice(-10) }; });
+  };
+  return { instant, checked: instant || checked, setChecked, tries, bump, reveal, hist, record, reset: () => { setChecked(false); setTries({}); setHist({}); } };
 }
 
 function CheckBar({ ck, errors, total, onReset, onCheck }: { ck: ReturnType<typeof useChecker>; errors: number; total: number; onReset: () => void; onCheck?: () => void }) {
@@ -108,7 +135,9 @@ function Gaps({ task, kind }: { task: TaskData; kind: "gap" | "dropdown" }) {
     return same(v, s.answers) ? "ok" : "bad";
   };
   const errors = gapKeys.filter(({ k, s }) => !same(val[k] ?? "", s.answers)).length;
-  const set = (k: string, v: string) => { setVal((x) => ({ ...x, [k]: v })); if (ck.instant && v) ck.bump(k); };
+  const ansOf = (k: string) => gapKeys.find((x) => x.k === k)?.s.answers ?? [];
+  const set = (k: string, v: string) => { setVal((x) => ({ ...x, [k]: v })); if (ck.instant && v) { ck.bump(k); ck.record(k, v, same(v, ansOf(k))); } };
+  const recordAll = () => gapKeys.forEach(({ k, s }) => val[k] && ck.record(k, val[k], same(val[k], s.answers)));
 
   return (
     <div className="flex flex-col gap-4">
@@ -140,7 +169,7 @@ function Gaps({ task, kind }: { task: TaskData; kind: "gap" | "dropdown" }) {
                         return (
                           <span key={si} className="tk-gapw">
                             <Drop value={val[k] ?? ""} options={s.options!} answers={s.answers} onChange={(v) => set(k, v)} mark={m} label={`gap ${i + 1}`} />
-                            <Key text={s.answers.join(" / ")} mode="pop" />
+                            <Tries hist={ck.hist[k]} answer={s.answers.join(" / ")} />
                           </span>
                         );
                       if (drag)
@@ -151,16 +180,17 @@ function Gaps({ task, kind }: { task: TaskData; kind: "gap" | "dropdown" }) {
                             onDragOver={(e) => e.preventDefault()} onDrop={(e) => { e.preventDefault(); set(k, e.dataTransfer.getData("text/plain")); }}>
                             {val[k] || " "}
                           </button>
-                          <Key text={s.answers.join(" / ")} mode="pop" />
+                          <Tries hist={ck.hist[k]} answer={s.answers.join(" / ")} />
                           </span>
                         );
                       return (
                         <span key={si} className="tk-gapw" data-ans={s.answers.join(" / ")}>
-                          <input className={`tk-gap ${m ?? ""}`} value={val[k] ?? ""} size={Math.max(4, (s.answers[0] ?? "").length + 1)}
-                            onChange={(e) => setVal((x) => ({ ...x, [k]: e.target.value }))} onBlur={(e) => ck.instant && e.target.value && ck.bump(k)}
+                          <input className={`tk-gap ${m ?? ""}`} value={val[k] ?? ""} size={Math.max(4, Math.max((s.answers[0] ?? "").length, (val[k] ?? "").length) + 1)}
+                            onChange={(e) => setVal((x) => ({ ...x, [k]: e.target.value }))} onBlur={(e) => { if (ck.instant && e.target.value) { ck.bump(k); ck.record(k, e.target.value, same(e.target.value, s.answers)); } }}
                             aria-label={`gap ${i + 1}`} />
                           {s.hint && <span className="tk-hint">({s.hint})</span>}
-                          {shown ? <span className="tk-ans">{s.answers[0]}</span> : <Key text={s.answers.join(" / ")} mode="pop" />}
+                          {shown && <span className="tk-ans">{s.answers[0]}</span>}
+                          <Tries hist={ck.hist[k]} answer={s.answers.join(" / ")} />
                         </span>
                       );
                     })}
@@ -171,7 +201,7 @@ function Gaps({ task, kind }: { task: TaskData; kind: "gap" | "dropdown" }) {
           </div>
         );
       })}
-      <CheckBar ck={ck} errors={errors} total={gapKeys.length} onReset={() => setVal((v) => Object.fromEntries(Object.entries(v).filter(([k]) => { const g = gapKeys.find((x) => x.k === k); return g && same(v[k], g.s.answers); })))} />
+      <CheckBar ck={ck} errors={errors} total={gapKeys.length} onCheck={recordAll} onReset={() => setVal((v) => Object.fromEntries(Object.entries(v).filter(([k]) => { const g = gapKeys.find((x) => x.k === k); return g && same(v[k], g.s.answers); })))} />
     </div>
   );
 }
@@ -231,6 +261,7 @@ export type MarkLayer = {
   teacher: boolean; group: boolean; student: string; // student — чьи выделения смотрим (в группе — выбранный ученик, иначе пусто)
   mine: Record<string, MarkMap>; shown: string[]; setMine: (taskId: string, m: MarkMap) => void; toggleShown: (taskId: string) => void;
   view: Record<string, "mine" | "student">; setView: (taskId: string, v: "mine" | "student") => void; // индивидуальный урок: что смотрит учитель (не сбрасывается при смене секции)
+  members?: { sid: string; name: string }[]; sid?: string; pick?: (taskId: string, sid: string) => void; // группа: переключатель «Мои / ученики» прямо у задания
 };
 export const MarkCtx = createContext<MarkLayer | null>(null);
 export const MARK_COLORS = ["yellow", "green", "blue", "red"] as const;
@@ -310,7 +341,12 @@ function MarkWords({ task, content }: { task: TaskData; content?: string }) {
             <button type="button" aria-pressed={view === "student"} onClick={() => ctx!.setView(task.id, "student")}>{t("tk.markStudent", { name: ctx!.student })}</button>
           </div>
         )}
-        {teacher && ctx!.group && <span className="small muted">{view === "student" ? t("tk.markOf", { name: ctx!.student }) : t("tk.markMineHint")}</span>}
+        {teacher && ctx!.group && ctx!.members?.length && ctx!.pick ? (
+          <div className="seg" role="group" aria-label={t("tk.markView")}>
+            <button type="button" aria-pressed={view === "mine"} onClick={() => ctx!.pick!(task.id, "")}>{t("tk.markMine")}</button>
+            {ctx!.members.map((m) => <button key={m.sid} type="button" aria-pressed={ctx!.sid === m.sid} onClick={() => ctx!.pick!(task.id, m.sid)}>{m.name.split(" ")[0]}</button>)}
+          </div>
+        ) : teacher && ctx!.group && <span className="small muted">{view === "student" ? t("tk.markOf", { name: ctx!.student }) : t("tk.markMineHint")}</span>}
         {canEdit && (
           <span className="tk-mkcolors" role="radiogroup" aria-label={t("tk.markColor")}>
             {MARK_COLORS.map((c, ci) => <button key={c} type="button" role="radio" aria-checked={color === ci} aria-label={t(`tk.mc.${c}` as DictKey)} title={t(`tk.mc.${c}` as DictKey)} className={`tk-mkc c${ci} ${color === ci ? "on" : ""}`} onClick={() => setColor(ci)} />)}
@@ -472,6 +508,8 @@ function Sort({ task, pictures }: { task: TaskData; pictures?: boolean }) {
   const ck = useChecker(o, task.id);
   const [place, setPlace] = useSlot<Record<string, number>>(task.id, "place", {});
   const [pick, setPick] = useState<string | null>(null);
+  const [hover, setHover] = useState<string | null>(null);
+  const key = useKey(); // учителю: нажать или навести на слово — нужная колонка подсвечивается зелёным
   const buckets: { name: string; words: string[]; pic?: string }[] = p.kind === "columns" ? p.cols.map((c) => ({ name: c.name, words: c.words })) : p.kind === "words" ? p.items.map((x, i) => ({ name: x.word, words: [x.word], pic: o.pics?.[i] })) : [];
   const all = shuffle(buckets.flatMap((b) => b.words), task.id);
   const truth = (w: string) => buckets.findIndex((b) => b.words.includes(w));
@@ -481,7 +519,8 @@ function Sort({ task, pictures }: { task: TaskData; pictures?: boolean }) {
       <div className="tk-bank">
         {all.filter((w) => place[w] === undefined).map((w) => (
           <button key={w} type="button" className={`tk-chip ${pick === w ? "on" : ""}`} onClick={() => setPick(pick === w ? null : w)}
-            draggable onDragStart={(e) => e.dataTransfer.setData("text/plain", w)}>{w}{!pictures && <Key text={buckets[truth(w)]?.name ?? ""} pre="→" />}</button>
+            onMouseEnter={() => setHover(w)} onMouseLeave={() => setHover(null)}
+            draggable onDragStart={(e) => e.dataTransfer.setData("text/plain", w)}>{w}</button>
         ))}
         {all.every((w) => place[w] !== undefined) && <span className="hint">{t("tk.allPlaced")}</span>}
       </div>
@@ -490,12 +529,12 @@ function Sort({ task, pictures }: { task: TaskData; pictures?: boolean }) {
           const here = all.filter((w) => place[w] === bi);
           const drop = (w: string) => { setPlace((x) => ({ ...x, [w]: bi })); setPick(null); if (ck.instant) ck.bump(w); };
           return (
-            <div key={bi} className="tk-col" onClick={() => pick && drop(pick)} onDragOver={(e) => e.preventDefault()} onDrop={(e) => { e.preventDefault(); drop(e.dataTransfer.getData("text/plain")); }}>
+            <div key={bi} className={`tk-col ${key && (hover ?? pick) !== null && truth((hover ?? pick)!) === bi ? "keyhit" : ""}`} onClick={() => pick && drop(pick)} onDragOver={(e) => e.preventDefault()} onDrop={(e) => { e.preventDefault(); drop(e.dataTransfer.getData("text/plain")); }}>
               {pictures ? (b.pic ? <img src={b.pic} alt="" className="tk-pic" /> : <div className="tk-pic empty"><Icon name="image" /></div>) : <div className="tk-colh">{b.name}</div>}
               {pictures && <Key text={b.name} />}
               <div className="flex min-h-[38px] flex-wrap gap-1.5">
                 {here.map((w) => (
-                  <button key={w} type="button" className={`tk-chip ${ck.checked ? (truth(w) === bi ? "ok" : "bad") : ""}`} onClick={(e) => { e.stopPropagation(); setPlace((x) => { const y = { ...x }; delete y[w]; return y; }); }}>{w}</button>
+                  <button key={w} type="button" className={`tk-chip ${ck.checked ? (truth(w) === bi ? "ok" : "bad") : ""}`} onMouseEnter={() => setHover(w)} onMouseLeave={() => setHover(null)} onClick={(e) => { e.stopPropagation(); setPlace((x) => { const y = { ...x }; delete y[w]; return y; }); }}>{w}</button>
                 ))}
               </div>
             </div>
@@ -619,13 +658,14 @@ function Arrow({ task }: { task: TaskData }) {
         return (
           <div key={i}>
             <div className="mb-1.5"><Num i={i} o={o} /> {it.q} {it.key && <b className="tk-key">{it.key}</b>}</div>
-            <input className={`input tk-line ${m ?? ""}`} value={val[i] ?? ""} onChange={(e) => setVal((x) => ({ ...x, [i]: e.target.value }))} onBlur={(e) => ck.instant && e.target.value && ck.bump(String(i))} aria-label={`answer ${i + 1}`} />
+            <span className="flex items-center gap-2"><input className={`input tk-line ${m ?? ""}`} value={val[i] ?? ""} onChange={(e) => setVal((x) => ({ ...x, [i]: e.target.value }))} onBlur={(e) => { if (ck.instant && e.target.value) { ck.bump(String(i)); ck.record(String(i), e.target.value, same(e.target.value, it.answers)); } }} aria-label={`answer ${i + 1}`} />
+            {it.answers.length > 0 && <Tries hist={ck.hist[String(i)]} answer={it.answers.join(" / ")} />}</span>
             {m === "bad" && <span className="small text-text2">{t("tk.teacherWillSee")}</span>}
             {ck.reveal(String(i)) && m === "bad" ? <span className="tk-ans">{it.answers[0]}</span> : <Key text={it.answers.join(" / ")} mode="block" />}
           </div>
         );
       })}
-      <CheckBar ck={ck} errors={errors} total={p.items.filter((x) => x.answers.length).length} onReset={() => setVal((x) => Object.fromEntries(Object.entries(x).filter(([k, v]) => same(v, p.items[+k].answers))))} />
+      <CheckBar ck={ck} errors={errors} total={p.items.filter((x) => x.answers.length).length} onCheck={() => p.items.forEach((it, i) => it.answers.length && val[i] && ck.record(String(i), val[i], same(val[i], it.answers)))} onReset={() => setVal((x) => Object.fromEntries(Object.entries(x).filter(([k, v]) => same(v, p.items[+k].answers))))} />
     </div>
   );
 }

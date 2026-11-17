@@ -144,6 +144,28 @@ export async function setLessonPrice(id: string, price: number): Promise<Result>
   return { ok: true };
 }
 
+/** Ссылка на созвон — одна на ученика (у группы — на группу): из урока, расписания или анкеты сохраняется в анкету / настройки группы,
+ *  и все уроки этого ученика (группы) берут её оттуда. Пусто — убрать ссылку. */
+export async function setCallLink(lessonId: string, link: string): Promise<Result> {
+  const { t } = await getT();
+  const teacher = await me();
+  const l = await ownLesson(lessonId, teacher.id);
+  const v = (link ?? "").trim().slice(0, 500);
+  if (v && !/^https?:\/\/\S+$/i.test(v)) return { ok: false, error: t("tp.err.link") };
+  if (l.groupId) {
+    await db.group.update({ where: { id: l.groupId }, data: { callLink: v || null } });
+    await db.lessonInstance.updateMany({ where: { groupId: l.groupId }, data: { callLink: null } });
+  } else if (l.studentId) {
+    await db.student.update({ where: { id: l.studentId }, data: { callLink: v || null } });
+    await db.lessonInstance.updateMany({ where: { studentId: l.studentId, groupId: null }, data: { callLink: null } });
+  } else {
+    await db.lessonInstance.update({ where: { id: l.id }, data: { callLink: v || null } }); // пробный урок без ученика
+  }
+  refresh(l.studentId);
+  revalidatePath(`/class/${lessonId}`);
+  return { ok: true };
+}
+
 export async function setLessonStatus(id: string, status: LessonStatus, charged = true): Promise<Result> {
   const teacher = await me();
   const l = await ownLesson(id, teacher.id);

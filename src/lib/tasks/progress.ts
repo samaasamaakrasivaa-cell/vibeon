@@ -107,6 +107,7 @@ function rawProgress(task: { id: string; type: TaskType; content: string; option
     case "essay": return [filled(ans.text) ? "done" : "todo"];
     case "record": case "speak": return [ans.rec ? "done" : "todo"];
     case "mark": return [Object.values(rec<boolean>(ans.sel)).some(Boolean) ? "done" : "todo"];
+    case "text": return task.options.markable ? [Object.values(rec<boolean>(ans.sel)).some(Boolean) ? "done" : "todo"] : null; // текст с выделением слов
     default: return null;
   }
 }

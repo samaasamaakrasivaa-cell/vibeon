@@ -6,7 +6,7 @@ import { Dialog } from "../Dialog";
 import { Icon } from "../Icon";
 import { useT } from "@/lib/i18n/client";
 import {
-  createLesson, deleteLesson, makeWeekly, moveLesson, saveLessonNote, setLessonPrice, setLessonStatus, type Result,
+  createLesson, deleteLesson, makeWeekly, moveLesson, saveLessonNote, setCallLink, setLessonPrice, setLessonStatus, type Result,
 } from "@/lib/teacher/actions";
 
 export type GridLesson = {
@@ -16,6 +16,7 @@ export type GridLesson = {
   group?: { id: string; members: string[] } | null; // групповое занятие: состав
   hw: "review" | "notdone" | "checked" | null;
   prices?: { id: string; name: string; price: number; locked: boolean; counts: boolean }[]; // цена урока; у группового — по ученикам
+  callLink?: string | null; // ссылка на созвон (одна на ученика / группу)
 };
 export type GridStudent = { id: string; name: string; initials: string };
 type Day = { iso: string; dow: string; num: number; today: boolean; past: boolean; earned: string | null; tip?: string };
@@ -306,6 +307,32 @@ export function LessonQuick({ l }: { l: GridLesson }) {
   );
 }
 
+/** Ссылка на созвон в карточке урока: правка сохраняется в анкету ученика (или группы) — и действует во всех его уроках. */
+function CallRow({ l }: { l: GridLesson }) {
+  const { t } = useT();
+  const { pending, error, run } = useRun();
+  const [edit, setEdit] = useState(false);
+  const [v, setV] = useState(l.callLink ?? "");
+  return (
+    <div className="lprices mt-3">
+      <span className="flabel">{t("sch.callLink")}</span>
+      {edit ? (
+        <div className="lprice">
+          <input className="input grow" inputMode="url" autoFocus value={v} placeholder="https://telemost.yandex.ru/…" aria-label={t("sch.callLink")} onChange={(e) => setV(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") run(() => setCallLink(l.id, v), () => setEdit(false)); }} />
+          <button type="button" className="btn primary sm" disabled={pending} onClick={() => run(() => setCallLink(l.id, v), () => setEdit(false))}>{t("common.save")}</button>
+        </div>
+      ) : (
+        <div className="lprice">
+          {l.callLink ? <a href={l.callLink} target="_blank" rel="noreferrer" className="alink grow truncate">{l.callLink}</a> : <span className="grow muted">{t("sch.callNone")}</span>}
+          <button type="button" className="iconbtn" aria-label={t("cls.linkEdit")} title={t("cls.linkEdit")} onClick={() => { setV(l.callLink ?? ""); setEdit(true); }}><Icon name="pencil" size="sm" /></button>
+        </div>
+      )}
+      {edit && <span className="hint">{l.isGroup ? t("cls.linkHintGroup") : t("cls.linkHint")}</span>}
+      {error && <div className="alert mt-2">{error}</div>}
+    </div>
+  );
+}
+
 /** Стоимость урока: у группового — по каждому ученику и сумма. Цену можно поправить, пока урок не оплачен. */
 function Prices({ l }: { l: GridLesson }) {
   const { t, lang } = useT();
@@ -433,6 +460,7 @@ function LessonDialog({ l, onClose, initial = "main" }: { l: GridLesson; onClose
         {l.hw ? <Link href={`/class/${l.id}?tab=homework`} className={`pill ${{ review: "orange", notdone: "red", checked: "green" }[l.hw]}`}>{t("nav.homework")}: {t(({ review: "hwT.review", notdone: "hwT.notdone", checked: "hwT.checked" } as const)[l.hw])}</Link> : l.status === "DONE" && <span className="pill grey">{t("today.noHw")}</span>}
       </div>
       {!!l.prices?.length && !l.isTrial && <Prices l={l} />}
+      {l.callLink !== undefined && <CallRow l={l} />}
       <div className="field mt-4">
         <label htmlFor="ln">{t("sch.note")}</label>
         <textarea id="ln" className="textarea" value={note} onChange={(e) => { setNote(e.target.value); setSaved(false); }} placeholder={t("sch.notePh")} />

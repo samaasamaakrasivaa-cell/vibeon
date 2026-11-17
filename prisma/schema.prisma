@@ -200,6 +200,9 @@ model GroupMessage {
   groupId   String
   senderId  String
   text      String
+  replyTo   String? // ответ на сообщение (id)
+  editedAt  DateTime?
+  deletedAt DateTime? // удалено автором — в чате «сообщение удалено»
   createdAt DateTime @default(now())
   group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
 
@@ -591,6 +594,9 @@ model Message {
   text       String
   attachment String?
   readAt     DateTime?
+  replyTo    String? // ответ на сообщение (id)
+  editedAt   DateTime?
+  deletedAt  DateTime? // удалено автором
   createdAt  DateTime  @default(now())
   student    Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
   sender     User      @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
