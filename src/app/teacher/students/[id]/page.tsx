@@ -106,7 +106,7 @@ export default async function StudentProfile({ params, searchParams }: { params:
   const courses = await db.course.findMany({ where: { teacherId: me.id }, orderBy: { order: "asc" }, select: { id: true, title: true } });
   const ymd = (d: Date | null | undefined) => (d ? d.toISOString().slice(0, 10) : "");
   const inline: InlineData = {
-    id: s.id, email: s.email ?? "", phone: form.phone ?? "", telegram: s.telegram ?? "", vk: (form as { vk?: string }).vk ?? "", timezone: s.timezone, callLink: s.callLink ?? "",
+    id: s.id, email: s.email ?? "", phone: form.phone ?? "", telegram: s.telegram ?? "", vk: (form as { vk?: string }).vk ?? "", socials: (form as { socials?: string[] }).socials ?? ((form as { vk?: string }).vk ? [(form as { vk?: string }).vk!] : []), timezone: s.timezone, callLink: s.callLink ?? "",
     courseId: s.courseId ?? courses.find((c) => c.title.trim().toLowerCase() === (s.course ?? "").trim().toLowerCase())?.id ?? "", courseText: s.course ?? "", level: s.level ?? "", interests: s.interests ?? "",
     birthday: ymd(s.birthday) || (form.birthday ?? ""), examGoal: s.examGoal ?? "", startedAt: ymd(s.startedAt ?? s.createdAt), source: s.source ?? "",
   };
@@ -187,7 +187,7 @@ export default async function StudentProfile({ params, searchParams }: { params:
                 </dl>
               </section>
             )}
-            <PrivateNote id={s.id} initial={s.privateNote ?? ""} />
+            <PrivateNote id={s.id} initial={s.privateNote ?? ""} notes={(s.privateNotes as Record<string, string>) ?? {}} />
           </div>
           <div>
             <PaymentCard
@@ -201,7 +201,7 @@ export default async function StudentProfile({ params, searchParams }: { params:
                   ends: await packEndsAt(s.id, s.packs[0].lessonsLeft, s.packs[0].frozenUntil).then((d) => (d ? dateFmt(d, { day: "numeric", month: "short" }) : null)),
                   // списанные уроки этого абонемента — последние по дате
                   used: s.lessons.filter((l) => l.deductedAt && l.deductedAt.getTime() >= s.packs[0].startsAt.getTime() - 60000).slice(0, Math.max(0, s.packs[0].lessonsTotal - s.packs[0].lessonsLeft))
-                    .map((l) => ({ id: l.id, date: dateFmt(l.startsAt, { day: "numeric", month: "short", weekday: "short" }), missed: l.status === "MISSED" })),
+                    .map((l) => ({ id: l.id, date: `${dateFmt(l.startsAt, { day: "numeric", month: "short" }).replace(".", "")} (${dateFmt(l.startsAt, { weekday: "short" }).replace(".", "")}, ${hhmm(l.startsAt, tz)})`, missed: l.status === "MISSED" })),
                 } : null,
                 today: isoDay(now, tz),
                 payerLinked: !!s.payerChatId, studentName: s.name, teacherName: meName,
@@ -213,8 +213,8 @@ export default async function StudentProfile({ params, searchParams }: { params:
                   <p className="cardtitle m-0">{t("prof.activity")}</p>
                   {/* как считаем — в подсказке по наведению, а не текстом под графиком */}
                   <span className="infotip" tabIndex={0} aria-label={t("prof.actHint")}><Icon name="info" size="sm" /><span className="infotip-pop" role="tooltip">{t("prof.actHint")}</span></span>
+                  {lastSeen && <span className="actseen">{seenAgo(lastSeen)}</span>}
                 </div>
-                {lastSeen && <div className="actseen">{seenAgo(lastSeen)}</div>}
                 <div className="flex items-baseline gap-2"><b className="text-[22px]">{fmtMin(act.reduce((a, x) => a + x.minutes, 0))}</b><span className="small muted">{t("prof.act7")}</span></div>
                 <div className="actbars" aria-label={t("prof.activity")}>
                   {days7.map((d) => {

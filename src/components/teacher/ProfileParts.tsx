@@ -11,7 +11,7 @@ import { useT } from "@/lib/i18n/client";
 import { TIMEZONES } from "@/lib/time";
 import { billNow, requestPackPayment } from "@/lib/billing/actions";
 import {
-  addPack, archiveStudent, packReturn, requestTgConnect, deleteStudent, savePayment, savePrivateNote, updateStudentProfile, type Result,
+  addPack, archiveStudent, packReturn, savePrivateNoteKey, requestTgConnect, deleteStudent, savePayment, savePrivateNote, updateStudentProfile, type Result,
 } from "@/lib/teacher/actions";
 
 function useRun() {
@@ -88,30 +88,40 @@ export function ProfileActions({ p }: { p: ProfileData }) {
 }
 
 /** Личные заметки учителя: сохраняются сами через секунду после ввода. */
-export function PrivateNote({ id, initial }: { id: string; initial: string }) {
+/** Категории личных заметок — то, что учителя обычно держат в голове об ученике. Открываются по вкладке. */
+const NOTE_CATS = ["general", "interests", "work", "motivation", "learning", "behavior", "works", "mistakes", "personal", "agreements"] as const;
+
+/** Личные заметки (видит только учитель): «Общее» и вкладки-категории с подсказкой, что туда писать. */
+export function PrivateNote({ id, initial, notes = {} }: { id: string; initial: string; notes?: Record<string, string> }) {
   const { t } = useT();
-  const [v, setV] = useState(initial);
+  const [cat, setCat] = useState<(typeof NOTE_CATS)[number]>("general");
+  const [vals, setVals] = useState<Record<string, string>>({ ...notes, general: initial });
   const [state, setState] = useState<"" | "saving" | "saved">("");
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
+  const timers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+  useEffect(() => () => { Object.values(timers.current).forEach(clearTimeout); }, []);
+  const change = (k: string, v: string) => {
+    setVals((x) => ({ ...x, [k]: v }));
+    setState("saving");
+    clearTimeout(timers.current[k]);
+    timers.current[k] = setTimeout(() => (k === "general" ? savePrivateNote(id, v) : savePrivateNoteKey(id, k, v)).then(() => setState("saved")), 900);
+  };
+  const filled = (k: string) => !!vals[k]?.trim();
   return (
     <section className="card sm notecard">
       <div className="flex items-center justify-between">
         <p className="cardtitle">{t("prof.privateNote")}</p>
         <span className="small text-text3">{state === "saving" ? t("common.saving") : state === "saved" ? `✓ ${t("common.saved")}` : ""}</span>
       </div>
-      <textarea
-        className="textarea"
-        value={v}
-        placeholder={t("prof.privatePh")}
-        onChange={(e) => {
-          setV(e.target.value);
-          setState("saving");
-          if (timer.current) clearTimeout(timer.current);
-          const val = e.target.value;
-          timer.current = setTimeout(() => savePrivateNote(id, val).then(() => setState("saved")), 900);
-        }}
-      />
+      <div className="ncats" role="tablist" aria-label={t("prof.privateNote")}>
+        {NOTE_CATS.map((k) => (
+          <button key={k} type="button" role="tab" aria-selected={cat === k} className={`ncat ${cat === k ? "on" : ""} ${filled(k) ? "has" : ""}`} onClick={() => setCat(k)}>
+            {t(`nt.${k}` as "nt.general")}{filled(k) && k !== cat && <i aria-hidden="true" />}
+          </button>
+        ))}
+      </div>
+      {cat !== "general" && <p className="nhint">{t(`nt.${cat}Hint` as "nt.interestsHint")}</p>}
+      <textarea key={cat} className="textarea" value={vals[cat] ?? ""} aria-label={t(`nt.${cat}` as "nt.general")}
+        placeholder={cat === "general" ? t("prof.privatePh") : t(`nt.${cat}Ph` as "nt.interestsPh")} onChange={(e) => change(cat, e.target.value)} />
     </section>
   );
 }
@@ -178,7 +188,7 @@ export function PaymentCard({ p, earnedMonth }: { p: PaymentData; earnedMonth: s
 
       {payType === "PACK" && (p.pack ? (
         <>
-          <PackTicket studentId={p.id} today={p.today ?? ""} pack={{ left: p.pack.left, total: p.pack.total, since: p.pack.since, ends: p.pack.ends ?? null, frozen: p.pack.frozen ?? null }} />
+          <PackTicket studentId={p.id} today={p.today ?? ""} pack={{ left: p.pack.left, total: p.pack.total, since: p.pack.since, ends: p.pack.ends ?? null, frozen: p.pack.frozen ?? null, used: used.slice(0, 3).map((u) => u.date) }} />
           <div className="mt-3 flex flex-wrap gap-2">
             <button className={`btn ${p.pack.left <= 1 ? "primary" : "secondary"} sm`} onClick={openNew}><Icon name="plus" size="sm" />{t("prof.newPack")}</button>
             <button className="btn plain sm" disabled={pending} onClick={() => run(() => requestPackPayment(p.id))}><Icon name="msg" size="sm" />{t("prof.requestPay")}</button>

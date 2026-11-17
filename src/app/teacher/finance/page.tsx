@@ -75,7 +75,7 @@ export default async function Finance({ searchParams }: { searchParams: Promise<
 
       {tab === "income" && (
         <section className="card">
-          <h2 className="mb-1">{t("fin.byMonth")}</h2>
+          <h2 className="mb-1">{range === "week" ? t("fin.byDay") : range === "month" ? t("fin.byWeek") : t("fin.byMonth")}</h2>
           <div className="legend mb-4"><span><i style={{ background: "var(--ok)" }} />{t("fin.earnedShort")}</span><span><i style={{ background: "var(--accent)" }} />{t("fin.receivedShort")}</span></div>
           <div className="bars">
             {d.months.map((m) => (
@@ -85,7 +85,11 @@ export default async function Finance({ searchParams }: { searchParams: Promise<
                   <i style={{ height: `${(m.received / maxM) * 100}%`, background: "var(--accent)" }} title={R(m.received)} />
                 </div>
                 <b className="small">{R(m.earned)}</b>
-                <span className="small muted">{m.start.toLocaleDateString(loc, { month: "short", timeZone: me.timezone }).replace(".", "")}</span>
+                <span className="small muted">{m.kind === "day"
+                  ? m.start.toLocaleDateString(loc, { weekday: "short", day: "numeric", timeZone: me.timezone }).replace(".", "")
+                  : m.kind === "week"
+                    ? `${m.key === m.endIso ? "" : `${m.start.toLocaleDateString(loc, { day: "numeric", timeZone: me.timezone })}–`}${new Date(`${m.endIso}T12:00:00Z`).toLocaleDateString(loc, { day: "numeric", month: "short", timeZone: "UTC" }).replace(".", "")}`
+                    : m.start.toLocaleDateString(loc, { month: "short", ...(m.start.getUTCMonth() === 0 || m.key === d.months[0].key ? { year: "2-digit" } : {}), timeZone: me.timezone }).replace(".", "")}</span>
               </div>
             ))}
           </div>

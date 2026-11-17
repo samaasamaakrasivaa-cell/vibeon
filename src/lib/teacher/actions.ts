@@ -295,6 +295,19 @@ export async function savePrivateNote(id: string, text: string): Promise<Result>
   return { ok: true };
 }
 
+const NOTE_KEYS = ["interests", "work", "motivation", "learning", "behavior", "works", "mistakes", "personal", "agreements"] as const;
+/** Личные заметки по категориям: каждая — отдельное поле; пустое — убираем. */
+export async function savePrivateNoteKey(id: string, key: string, text: string): Promise<Result> {
+  const teacher = await me();
+  const s = await ownStudent(id, teacher.id);
+  if (!(NOTE_KEYS as readonly string[]).includes(key)) return { ok: false, error: "key" };
+  const cur = { ...((s.privateNotes as Record<string, string>) ?? {}) };
+  const v = text.slice(0, 3000);
+  if (v.trim()) cur[key] = v; else delete cur[key];
+  await db.student.update({ where: { id }, data: { privateNotes: cur } });
+  return { ok: true };
+}
+
 export async function savePayment(
   id: string,
   p: { payType: PayType; billRule: string; remindEveryDays: number | null; price: number | null; packPrices: { n: number; price: number; main?: boolean }[]; payerOn: boolean; payerName: string; payerContact: string },
@@ -530,6 +543,14 @@ export async function setStudentField(id: string, key: string, value: string): P
     }
     case "phone": data = form({ phone: v.slice(0, 40) || null }); break;
     case "vk": data = form({ vk: v.slice(0, 120) || null }); break;
+    // другие соцсети — список ссылок (ВКонтакте, Instagram, что угодно); старое поле «ВКонтакте» переезжает сюда
+    case "socials": {
+      let list: unknown = [];
+      try { list = JSON.parse(v || "[]"); } catch { return { ok: false, error: "field" }; }
+      const xs = (Array.isArray(list) ? list : []).filter((x): x is string => typeof x === "string").map((x) => x.trim().slice(0, 160)).filter(Boolean).slice(0, 8);
+      data = form({ socials: xs, vk: null });
+      break;
+    }
     default: return { ok: false, error: "field" };
   }
   await db.student.update({ where: { id }, data });

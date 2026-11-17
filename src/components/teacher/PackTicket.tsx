@@ -23,19 +23,25 @@ export function PackTicket({ studentId, pack, today, compact = false }: { studen
           <small className="pt-k">{t("pt.title", { n: pack.total })}</small>
           <b className="pt-big">{t("pt.left", { n: pack.left, total: pack.total })}</b>
         </div>
-        {pack.frozen ? <span className="pt-auto">❄︎ {t("pt.frozenUntil", { d: pack.frozen })}</span> : <span className="pt-auto" title={t("pt.autoHint")}><Icon name="check" size="sm" />{t("pt.auto")}</span>}
+        {pack.frozen && <span className="pt-auto">❄︎ {t("pt.frozenUntil", { d: pack.frozen })}</span>}
       </div>
       <div className="pt-dots" aria-label={t("pt.left", { n: pack.left, total: pack.total })}>
         {Array.from({ length: pack.total }, (_, i) => <i key={i} className={i < used ? "used" : ""} />)}
       </div>
-      {!!pack.used?.length && <div className="pt-used">{t("pt.usedOn", { d: pack.used.join(" · ") })}</div>}
+      {/* что уже списано: «за урок 12 нояб (ср, 18:00)» — проведённые уроки списываются сами */}
+      {!!pack.used?.length && (
+        <div className="pt-used" title={t("pt.autoHint")}>
+          <b><Icon name="check" size="sm" />{t("pt.usedTitle")}</b>
+          {pack.used.map((u, i) => <span key={i}>{t("pay.lastFor", { d: u })}</span>)}
+        </div>
+      )}
       <div className="pt-dates">
         {pack.since && <span>{t("pt.bought", { d: pack.since })}</span>}
         <span>{pack.left === 0 ? t("pt.over") : pack.ends ? t("pt.ends", { d: pack.ends }) : t("pt.endsUnknown")}</span>
       </div>
       {/* обычно не нужно: проведённые по расписанию уроки списываются сами; вручную — если урока не было в расписании */}
       <div className="flex flex-wrap gap-x-4 gap-y-1">
-        {pack.left > 0 && <button type="button" className="pt-manual" disabled={pending} onClick={() => setAsk({ date: today, start: "" })}>{t("pt.deductManual")}</button>}
+        {pack.left > 0 && !compact && <button type="button" className="pt-manual" disabled={pending} onClick={() => setAsk({ date: today, start: "" })}>{t("pt.deductManual")}</button>}
         {!compact && (pack.frozen ? <button type="button" className="pt-manual" disabled={pending} onClick={() => run(() => packFreeze(studentId, null))}>{t("pt.unfreeze")}</button>
           : pack.left > 0 && <button type="button" className="pt-manual" disabled={pending} onClick={() => setFreeze(today)}>{t("pt.freeze")}</button>)}
       </div>

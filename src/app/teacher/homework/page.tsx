@@ -71,9 +71,9 @@ export default async function ToReview({ searchParams }: { searchParams: Promise
       {/* три раздела — крупные карточки, как в «Финансах»: что внутри и сколько ждёт */}
       <div className="rv-sections" role="tablist">
         {sections.map(([k, ic, title, sub]) => (
-          <Link key={k} href={href(k)} role="tab" aria-selected={kind === k} className={`rv-sec ${kind === k ? "on" : ""}`}>
+          <Link key={k} href={href(k)} role="tab" aria-selected={kind === k} className={`rv-sec ${kind === k ? "on" : ""}`} title={`${title} — ${sub}`}>
             <span className={`rv-ico ${k}`}><Icon name={ic} /></span>
-            <span className="grow min-w-0"><b className="block">{title}</b><small className="block truncate">{sub}</small></span>
+            <span className="grow min-w-0"><b className="block">{title}</b><small className="block truncate" title={sub}>{sub}</small></span>
             {waiting[k] > 0 ? <span className="rv-badge">{waiting[k]}</span> : <span className="rv-zero"><Icon name="check" size="sm" /></span>}
           </Link>
         ))}
@@ -83,7 +83,7 @@ export default async function ToReview({ searchParams }: { searchParams: Promise
       <div className="rv-bar">
         <nav className="seg" aria-label={sections.find((s) => s[0] === kind)![2]}>
           {filters[kind].map(([k, label, n]) => (
-            <Link key={k} href={`?${new URLSearchParams({ kind, tab: k, ...(q ? { q } : {}) }).toString()}`} aria-current={tab === k ? "page" : undefined}>{label}<span className="rv-n">{n}</span></Link>
+            <Link key={k} href={`?${new URLSearchParams({ kind, tab: k, ...(q ? { q } : {}) }).toString()}`} aria-current={tab === k ? "page" : undefined} title={`${label} · ${n}`}>{label}<span className="rv-n">{n}</span></Link>
           ))}
         </nav>
         <StudentsSearch placeholder={t("rv.search")} />

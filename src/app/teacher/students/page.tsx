@@ -11,7 +11,7 @@ import { rub } from "@/lib/teacher/data";
 import { roadmapView } from "@/lib/roadmap/progress";
 import { PackTicket } from "@/components/teacher/PackTicket";
 import { packEndsAt } from "@/lib/teacher/pack";
-import { isoDay } from "@/lib/time";
+import { hhmm, isoDay } from "@/lib/time";
 import { levelLine, levelsOf } from "@/lib/teacher/levels";
 
 export const metadata = { title: "Ученики" };
@@ -44,6 +44,8 @@ export default async function Students({ searchParams }: { searchParams: Promise
   const active = all.filter((s) => s.status === "ACTIVE");
   // «Оплата»: последний счёт каждого ученика (за какие уроки, оплачен ли) и когда закончится абонемент
   const dfmt = (d: Date) => d.toLocaleDateString(lang === "ru" ? "ru-RU" : "en-GB", { day: "numeric", month: "short", timeZone: me.timezone });
+  // урок: «12 нояб (ср, 18:00)»
+  const lfmt = (d: Date) => `${dfmt(d).replace(".", "")} (${d.toLocaleDateString(lang === "ru" ? "ru-RU" : "en-GB", { weekday: "short", timeZone: me.timezone }).replace(".", "")}, ${hhmm(d, me.timezone)})`;
   const lastInv = new Map<string, { id: string; amount: number; status: string; title: string; createdAt: Date; lessonDates: Date[] }>();
   const packEnds = new Map<string, Date | null>();
   const packUsed = new Map<string, string[]>();
@@ -56,7 +58,7 @@ export default async function Students({ searchParams }: { searchParams: Promise
     for (const s of active) if (s.payType === "PACK" && s.packs[0]) {
       packEnds.set(s.id, await packEndsAt(s.id, s.packs[0].lessonsLeft, s.packs[0].frozenUntil));
       const n = Math.min(4, s.packs[0].lessonsTotal - s.packs[0].lessonsLeft);
-      packUsed.set(s.id, n > 0 ? (await db.lessonInstance.findMany({ where: { studentId: s.id, deductedAt: { gte: new Date(s.packs[0].startsAt.getTime() - 60000) } }, orderBy: { startsAt: "desc" }, take: n, select: { startsAt: true } })).reverse().map((l) => dfmt(l.startsAt)) : []);
+      packUsed.set(s.id, n > 0 ? (await db.lessonInstance.findMany({ where: { studentId: s.id, deductedAt: { gte: new Date(s.packs[0].startsAt.getTime() - 60000) } }, orderBy: { startsAt: "desc" }, take: n, select: { startsAt: true } })).reverse().map((l) => lfmt(l.startsAt)) : []);
     }
   }
   const invited = all.filter((s) => s.status === "INVITED");
@@ -149,7 +151,7 @@ export default async function Students({ searchParams }: { searchParams: Promise
                     <div className="payinv">
                       <div className="grow min-w-0">
                         <b className="block">{rub(inv.amount, lang)}</b>
-                        <span className="small muted">{inv.lessonDates.length ? t("pay.lastFor", { d: inv.lessonDates.map(dfmt).join(", ") }) : t("pay.lastInv", { t: inv.title, d: dfmt(inv.createdAt) })}</span>
+                        <span className="small muted">{inv.lessonDates.length ? t("pay.lastFor", { d: inv.lessonDates.map(lfmt).join(", ") }) : t("pay.lastInv", { t: inv.title, d: dfmt(inv.createdAt) })}</span>
                       </div>
                       {inv.status === "PAID" ? <span className="pill green">✓ {t("pay.paidPill")}</span>
                         : <Link href={`/teacher/finance?tab=check&c=${inv.status === "PROOF_SENT" ? "toCheck" : "waiting"}&hl=${inv.id}#inv-${inv.id}`} className="btn primary sm">{t("pay.confirm")}</Link>}

@@ -7,7 +7,7 @@ import { LEVELS } from "@/lib/roadmap/cefr";
 import { TIMEZONES } from "@/lib/time";
 
 export type InlineData = {
-  id: string; email: string; phone: string; telegram: string; vk: string; timezone: string; callLink: string;
+  id: string; email: string; phone: string; telegram: string; vk: string; socials?: string[]; timezone: string; callLink: string;
   courseId: string; courseText: string; level: string; interests: string; birthday: string; examGoal: string; startedAt: string; source: string;
 };
 
@@ -75,6 +75,51 @@ function Choice({ id, k, init, options, own }: { id: string; k: string; init: st
   );
 }
 
+/** Название сети по адресу — подписью у ссылки. */
+const NETS: [RegExp, string][] = [[/vk\.(com|ru)|vkontakte/i, "VK"], [/instagram|instagr\.am/i, "Instagram"], [/facebook|fb\.com/i, "Facebook"], [/t\.me|telegram/i, "Telegram"], [/max\.ru/i, "Max"], [/linkedin/i, "LinkedIn"], [/tiktok/i, "TikTok"], [/youtube|youtu\.be/i, "YouTube"], [/ok\.ru/i, "OK"], [/(x|twitter)\.com/i, "X"], [/wa\.me|whatsapp/i, "WhatsApp"]];
+const netOf = (u: string) => NETS.find(([r]) => r.test(u))?.[1] ?? null;
+const hrefOf = (u: string) => (/^https?:\/\//i.test(u) ? u : /^[\w.-]+\.[a-z]{2,}\//i.test(u) ? `https://${u}` : null);
+
+/** Другие соцсети: несколько ссылок, каждая — своей строкой; «+ Добавить соцсеть». */
+function Socials({ id, init }: { id: string; init: string[] }) {
+  const { t } = useT();
+  const router = useRouter();
+  const [list, setList] = useState<string[]>(init.length ? init : [""]);
+  const [saved, setSaved] = useState(init.join("\n"));
+  const [ok, setOk] = useState(false);
+  const [pending, start] = useTransition();
+  useEffect(() => { setList(init.length ? init : [""]); setSaved(init.join("\n")); }, [init.join("\n")]); // eslint-disable-line react-hooks/exhaustive-deps
+  const save = (next: string[]) => {
+    const clean = next.map((x) => x.trim()).filter(Boolean);
+    if (clean.join("\n") === saved) return;
+    start(async () => {
+      const r = await setStudentField(id, "socials", JSON.stringify(clean));
+      if (r.ok) { setSaved(clean.join("\n")); setOk(true); setTimeout(() => setOk(false), 1500); setTimeout(() => router.refresh(), 0); }
+    });
+  };
+  return (
+    <div className="icell socials">
+      {list.map((u, i) => {
+        const net = netOf(u), href = hrefOf(u.trim());
+        return (
+          <div key={i} className="social-row">
+            {net && <span className="social-net">{net}</span>}
+            <input className="iedit" value={u} placeholder={t("prof.socialPh")} aria-label={`${t("prof.socials")} ${i + 1}`}
+              onChange={(e) => setList(list.map((x, j) => (j === i ? e.target.value : x)))} onBlur={() => save(list)}
+              onKeyDown={(e) => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); }} />
+            {href && <a className="small alink" href={href} target="_blank" rel="noreferrer" aria-label="↗">↗</a>}
+            {(list.length > 1 || u) && <button type="button" className="iconbtn sm" title={t("prof.socialDel")} aria-label={t("prof.socialDel")} onClick={() => { const n = list.filter((_, j) => j !== i); setList(n.length ? n : [""]); save(n); }}>×</button>}
+          </div>
+        );
+      })}
+      <div className="flex items-center gap-2">
+        {list.every((x) => x.trim()) && list.length < 8 && <button type="button" className="social-add" onClick={() => setList([...list, ""])}>+ {t("prof.socialAdd")}</button>}
+        {pending ? <span className="small text-text3">…</span> : ok ? <span className="small text-ok">✓</span> : null}
+      </div>
+    </div>
+  );
+}
+
 export function InlineContacts({ d }: { d: InlineData }) {
   const { t } = useT();
   return (
@@ -84,7 +129,7 @@ export function InlineContacts({ d }: { d: InlineData }) {
         <dt>{t("auth.email")}</dt><dd><Cell id={d.id} k="email" init={d.email} type="email" placeholder="name@mail.ru" /></dd>
         <dt>{t("ob.phone")}</dt><dd><Cell id={d.id} k="phone" init={d.phone} type="tel" placeholder="+7 900 000-00-00" /></dd>
         <dt>Telegram</dt><dd><Cell id={d.id} k="telegram" init={d.telegram} placeholder="nick" prefix="@" /></dd>
-        <dt>{t("prof.vk")}</dt><dd><Cell id={d.id} k="vk" init={d.vk} placeholder="vk.com/…" /></dd>
+        <dt>{t("prof.socials")}</dt><dd><Socials id={d.id} init={d.socials ?? (d.vk ? [d.vk] : [])} /></dd>
         <dt>{t("prof.tz")}</dt><dd><Choice id={d.id} k="timezone" init={d.timezone} options={TIMEZONES} /></dd>
         <dt>{t("prof.callLink")}</dt><dd><Cell id={d.id} k="callLink" init={d.callLink} placeholder="https://telemost.yandex.ru/…" link /></dd>
       </dl>

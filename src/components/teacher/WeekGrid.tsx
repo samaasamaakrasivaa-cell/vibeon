@@ -17,6 +17,7 @@ export type GridLesson = {
   hw: "review" | "notdone" | "checked" | null;
   prices?: { id: string; name: string; price: number; locked: boolean; counts: boolean }[]; // цена урока; у группового — по ученикам
   callLink?: string | null; // ссылка на созвон (одна на ученика / группу)
+  short?: string; // имя в сетке: «Анна», а если Ань несколько — «Анна К.»
 };
 export type GridStudent = { id: string; name: string; initials: string };
 /** Нерабочее время учителя (выходной, свои дела): закрашенный блок в сетке. */
@@ -151,7 +152,7 @@ export function WeekGrid(props: {
                     <span className="nm">
                       <span className={`sdot ${cls}`} />
                       {l.isGroup && <Icon name="group" size="sm" />}
-                      {l.who.split(" ")[0]}
+                      {l.short ?? l.who.split(" ")[0]}
                     </span>
                     {h > 34 && <span className="tm">{l.start}</span>}
                   </button>

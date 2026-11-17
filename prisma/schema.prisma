@@ -166,6 +166,7 @@ model Student {
   birthday        DateTime?
   startedAt       DateTime?
   privateNote     String? // заметки учителя, видит только он
+  privateNotes    Json    @default("{}") // заметки учителя по категориям: интересы, поведение на уроке, что работает…
   courseId        String? // ведущий курс ученика
   wordGoal        Int           @default(15) // слов в день
   wordDays        Int[]         @default([0, 1, 2, 3, 4]) // дни тренировок: 0 = Пн … 6 = Вс

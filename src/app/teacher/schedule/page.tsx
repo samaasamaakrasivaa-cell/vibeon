@@ -56,6 +56,14 @@ export default async function Schedule({ searchParams }: { searchParams: Promise
 
   const loc = lang === "ru" ? "ru-RU" : "en-GB";
   const now = new Date();
+  // одинаковые имена у разных учеников — в сетке добавляем первую букву фамилии
+  const firstCount = new Map<string, number>();
+  for (const s of students) firstCount.set(s.name.trim().toLowerCase(), (firstCount.get(s.name.trim().toLowerCase()) ?? 0) + 1);
+  const shortOf = (l: (typeof rows)[number]) => {
+    if (!l.student) return undefined;
+    const n = l.student.name.trim();
+    return (firstCount.get(n.toLowerCase()) ?? 0) > 1 && l.student.lastName ? `${n} ${l.student.lastName.trim().charAt(0).toUpperCase()}.` : n;
+  };
   const lessons: GridLesson[] = oneSlot(rows).map((l) => {
     const end = new Date(l.startsAt.getTime() + l.durationMin * 60000);
     const day = Math.round((dayStart(isoDay(l.startsAt, tz), tz).getTime() - from.getTime()) / 864e5);
@@ -64,6 +72,7 @@ export default async function Schedule({ searchParams }: { searchParams: Promise
       isTrial: l.isTrial, isGroup: !!l.group, note: l.note, date: isoDay(l.startsAt, tz), start: hhmm(l.startsAt, tz), end: hhmm(end, tz),
       weekly: !!l.seriesId, past: end <= now, studentId: l.studentId, charged: l.charged, moved: !!l.movedFrom, price: l.price ?? 0,
       hw: hwOf.get(l.id) ?? null,
+      short: l.slotId ? undefined : shortOf(l),
       prices: (l.slotId ? rows.filter((x) => x.slotId === l.slotId) : [l]).map(priceRow),
       callLink: (l.groupId ? l.group?.callLink : l.student?.callLink) || l.callLink || null,
       group: l.slotId && l.groupId ? { id: l.groupId, members: slotMembers.get(l.slotId) ?? [] } : null,

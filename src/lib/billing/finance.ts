@@ -9,42 +9,66 @@ export async function financeData(teacherId: string, tz: string, range: Range) {
   const now = new Date();
   const today = isoDay(now, tz);
   const [y, m] = today.split("-").map(Number);
-  const from = range === "week" ? dayStart(mondayOf(today), tz) : range === "month" ? dayStart(`${y}-${String(m).padStart(2, "0")}-01`, tz) : new Date(0);
-  const six = dayStart(`${m > 5 ? y : y - 1}-${String(((m - 6 + 12) % 12) + 1).padStart(2, "0")}-01`, tz);
+  const monthKey = (yy: number, mm: number) => `${yy}-${String(mm).padStart(2, "0")}`;
+  const nextMonth = (yy: number, mm: number) => (mm === 12 ? [yy + 1, 1] : [yy, mm + 1]);
+  const from = range === "week" ? dayStart(mondayOf(today), tz) : range === "month" ? dayStart(`${monthKey(y, m)}-01`, tz) : new Date(0);
+  // конец периода: неделя / месяц целиком (переносы и отмены на будущие дни этого периода тоже считаем)
+  const periodEnd = range === "week" ? dayStart(addDaysIso(mondayOf(today), 7), tz) : range === "month" ? dayStart(`${monthKey(...(nextMonth(y, m) as [number, number]))}-01`, tz) : new Date(now.getTime() + 366 * 864e5);
+  const twelve = dayStart(`${monthKey(m === 12 ? y : y - 1, (m % 12) + 1)}-01`, tz); // 12 месяцев назад — для графика «всё время»
 
   const [lessons, invoices, students] = await Promise.all([
-    db.lessonInstance.findMany({ where: { teacherId, startsAt: { gte: range === "all" ? new Date(0) : six < from ? six : from, lte: now } }, select: { status: true, charged: true, isTrial: true, price: true, startsAt: true, movedFrom: true, studentId: true } }),
+    db.lessonInstance.findMany({ where: { teacherId, OR: [{ startsAt: { gte: range === "all" ? new Date(0) : from < twelve ? from : twelve, lt: periodEnd } }, { movedFrom: { gte: from, lt: periodEnd } }] }, select: { status: true, charged: true, isTrial: true, price: true, startsAt: true, movedFrom: true, studentId: true } }),
     db.invoice.findMany({ where: { student: { teacherId } }, include: { student: true }, orderBy: { createdAt: "desc" } }),
     db.student.findMany({ where: { teacherId, status: "ACTIVE" }, include: { packs: { where: { lessonsLeft: { gt: 0 } } } }, orderBy: { name: "asc" } }),
   ]);
 
-  const inRange = lessons.filter((l) => l.startsAt >= from && (!l.isTrial || (l.price ?? 0) > 0)); // платный пробный — в финансах
+  const paidOk = (l: (typeof lessons)[number]) => !l.isTrial || (l.price ?? 0) > 0; // платный пробный — в финансах
+  const inRange = lessons.filter((l) => l.startsAt >= from && l.startsAt <= now && paidOk(l)); // заработано — только прошедшие
+  // уроки периода целиком — для отмен и переносов (перенос считаем по дате, с которой перенесли)
+  const inPeriod = lessons.filter((l) => paidOk(l) && ((l.startsAt >= from && l.startsAt < periodEnd) || (l.movedFrom && l.movedFrom >= from && l.movedFrom < periodEnd)));
   const earned = inRange.reduce((a, l) => a + earnedOf(l), 0);
   const received = invoices.filter((i) => i.status === "PAID" && i.paidAt && i.paidAt >= from).reduce((a, i) => a + i.amount, 0);
   const waiting = invoices.filter((i) => i.status === "SENT" || i.status === "PROOF_SENT").reduce((a, i) => a + i.amount, 0);
   const prepaid = students.reduce((a, s) => a + s.packs.reduce((b, p) => b + Math.round((p.price / Math.max(1, p.lessonsTotal)) * p.lessonsLeft), 0), 0);
-  const total = inRange.length;
-  const cancelled = inRange.filter((l) => l.status === "CANCELLED").length;
-  const moved = inRange.filter((l) => l.movedFrom).length;
+  const total = inPeriod.length;
+  const cancelled = inPeriod.filter((l) => l.status === "CANCELLED").length;
+  const moved = inPeriod.filter((l) => l.movedFrom).length;
 
-  // по месяцам: последние 6
-  const months = Array.from({ length: 6 }, (_, i) => {
-    const mm = ((m - 6 + i + 12) % 12) + 1, yy = m - 6 + i < 0 ? y - 1 : y;
-    const key = `${yy}-${String(mm).padStart(2, "0")}`;
-    const start = dayStart(`${key}-01`, tz), end = dayStart(addDaysIso(`${mm === 12 ? yy + 1 : yy}-${String((mm % 12) + 1).padStart(2, "0")}-01`, 0), tz);
-    return {
-      key, start,
-      earned: lessons.filter((l) => l.startsAt >= start && l.startsAt < end).reduce((a, l) => a + earnedOf(l), 0),
-      received: invoices.filter((x) => x.status === "PAID" && x.paidAt && x.paidAt >= start && x.paidAt < end).reduce((a, x) => a + x.amount, 0),
-    };
-  });
+  // график доходов — по выбранному периоду: неделя — по дням, месяц — по неделям, всё время — по месяцам (12)
+  type Bucket = { key: string; start: Date; end: Date; kind: "day" | "week" | "month" };
+  const buckets: Bucket[] = range === "week"
+    ? Array.from({ length: 7 }, (_, i) => { const iso = addDaysIso(mondayOf(today), i); return { key: iso, start: dayStart(iso, tz), end: dayStart(addDaysIso(iso, 1), tz), kind: "day" as const }; })
+    : range === "month"
+      ? (() => {
+          const first = `${monthKey(y, m)}-01`, out: Bucket[] = [];
+          for (let s = first; s < isoDay(periodEnd, tz) || out.length === 0; ) {
+            const e = addDaysIso(mondayOf(s), 7) < isoDay(periodEnd, tz) ? addDaysIso(mondayOf(s), 7) : isoDay(periodEnd, tz);
+            out.push({ key: s, start: dayStart(s, tz), end: dayStart(e, tz), kind: "week" });
+            if (e <= s) break;
+            s = e;
+          }
+          return out;
+        })()
+      : Array.from({ length: 12 }, (_, i) => {
+          let yy = y, mm = m - 11 + i;
+          while (mm < 1) { mm += 12; yy -= 1; }
+          const [ny, nm] = nextMonth(yy, mm);
+          return { key: monthKey(yy, mm), start: dayStart(`${monthKey(yy, mm)}-01`, tz), end: dayStart(`${monthKey(ny, nm)}-01`, tz), kind: "month" as const };
+        });
+  const months = buckets.map((b) => ({
+    ...b,
+    endIso: addDaysIso(isoDay(b.end, tz), -1),
+    earned: lessons.filter((l) => l.startsAt >= b.start && l.startsAt < b.end && l.startsAt <= now && paidOk(l)).reduce((a, l) => a + earnedOf(l), 0),
+    received: invoices.filter((x) => x.status === "PAID" && x.paidAt && x.paidAt >= b.start && x.paidAt < b.end).reduce((a, x) => a + x.amount, 0),
+  }));
 
   const perStudent = students.map((s) => {
     const ls = inRange.filter((l) => l.studentId === s.id);
+    const lp = inPeriod.filter((l) => l.studentId === s.id);
     return {
       s, earned: ls.reduce((a, l) => a + earnedOf(l), 0), lessons: ls.filter((l) => earnedOf(l) > 0).length,
-      cancelRate: ls.length ? ls.filter((l) => l.status === "CANCELLED").length / ls.length : 0,
-      moveRate: ls.length ? ls.filter((l) => l.movedFrom).length / ls.length : 0,
+      cancelRate: lp.length ? lp.filter((l) => l.status === "CANCELLED").length / lp.length : 0,
+      moveRate: lp.length ? lp.filter((l) => l.movedFrom).length / lp.length : 0,
       debt: invoices.filter((i) => i.studentId === s.id && (i.status === "SENT" || i.status === "PROOF_SENT")).reduce((a, i) => a + i.amount, 0),
       left: s.payType === "PACK" ? s.packs.reduce((a, p) => a + p.lessonsLeft, 0) : null,
     };
