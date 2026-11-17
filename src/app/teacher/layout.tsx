@@ -42,7 +42,7 @@ export default async function TeacherLayout({ children }: { children: React.Reac
       { href: "/teacher/chat", label: t("nav.chat"), icon: "msg" as const, count: chat },
     ],
     [
-      { href: "/teacher/homework", label: t("nav.homework"), icon: "inbox" as const, count: hwReview },
+      { href: "/teacher/homework", label: t("nav.toReview"), icon: "inbox" as const, count: hwReview },
       { href: "/teacher/questions", label: t("nav.questions"), icon: "qmark" as const, count: questions },
     ],
     [{ href: "/teacher/courses", label: t("nav.courses"), icon: "book" as const }],

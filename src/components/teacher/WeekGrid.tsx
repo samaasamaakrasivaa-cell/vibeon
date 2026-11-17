@@ -459,8 +459,6 @@ function LessonDialog({ l, onClose, initial = "main" }: { l: GridLesson; onClose
         {l.moved && <span className="pill violet">{t("sch.moved")}</span>}
         {l.hw ? <Link href={`/class/${l.id}?tab=homework`} className={`pill ${{ review: "orange", notdone: "red", checked: "green" }[l.hw]}`}>{t("nav.homework")}: {t(({ review: "hwT.review", notdone: "hwT.notdone", checked: "hwT.checked" } as const)[l.hw])}</Link> : l.status === "DONE" && <span className="pill grey">{t("today.noHw")}</span>}
       </div>
-      {!!l.prices?.length && !l.isTrial && <Prices l={l} />}
-      {l.callLink !== undefined && <CallRow l={l} />}
       <div className="field mt-4">
         <label htmlFor="ln">{t("sch.note")}</label>
         <textarea id="ln" className="textarea" value={note} onChange={(e) => { setNote(e.target.value); setSaved(false); }} placeholder={t("sch.notePh")} />
@@ -498,6 +496,13 @@ function LessonDialog({ l, onClose, initial = "main" }: { l: GridLesson; onClose
         </div>
         <Link href={`/class/${l.id}`} className="btn primary sm"><Icon name="class" size="sm" />{t("dash.openClass")}</Link>
       </div>
+      {/* стоимость и ссылка на созвон — не главное, внизу карточки */}
+      {(!!l.prices?.length && !l.isTrial) || l.callLink !== undefined ? (
+        <div className="lmore mt-4">
+          {!!l.prices?.length && !l.isTrial && <Prices l={l} />}
+          {l.callLink !== undefined && <CallRow l={l} />}
+        </div>
+      ) : null}
       {l.group ? <p className="small muted mt-3 mb-0 flex flex-wrap items-center gap-1.5"><Icon name="group" size="sm" />{l.group.members.join(", ")} · <Link href="/teacher/students#groups" className="alink">{t("grp.edit")}</Link></p>
         : l.studentId && <Link href={`/teacher/students/${l.studentId}`} className="alink mt-3 inline-block text-[14px]">{t("sch.openProfile")}</Link>}
     </Dialog>

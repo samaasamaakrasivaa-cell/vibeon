@@ -42,6 +42,8 @@ export default async function StudentProfile({ params, searchParams }: { params:
   if (!s || s.teacherId !== me.id) notFound();
   // подключён ли Telegram-бот: у ученика — после входа на платформу и нажатия «Подключить Telegram», у плательщика — по ссылке из оплаты
   const tgUser = s.userId ? await db.user.findUnique({ where: { id: s.userId }, select: { telegramChatId: true } }) : null;
+  // последний пройденный тест — кнопкой в шапке анкеты, чтобы не искать в «Курсах»
+  const lastTest = await db.placementAttempt.findFirst({ where: { studentId: s.id, status: { in: ["submitted", "reviewed"] } }, orderBy: { submittedAt: "desc" }, select: { id: true, status: true, level: true } });
 
   const tz = me.timezone;
   const loc = lang === "ru" ? "ru-RU" : "en-GB";
@@ -92,6 +94,7 @@ export default async function StudentProfile({ params, searchParams }: { params:
             {s.status === "ARCHIVED" && <span className="pill grey">{t("stu.archived")}</span>}
             <span className={`pill ${s.userId ? "green" : "grey"}`} title={t("prof.platformHint")}>{s.userId ? "✓ " : ""}{t(s.userId ? "prof.onPlatform" : "prof.notOnPlatform")}</span>
             {tgUser?.telegramChatId || !s.userId ? <span className={`pill ${tgUser?.telegramChatId ? "green" : "grey"}`} title={t("prof.tgHint")}><Icon name="telegram" size="sm" />{t(tgUser?.telegramChatId ? "prof.tgOn" : "prof.tgOff")}</span> : <TgAsk id={s.id} />}
+            {lastTest && <Link href={`/teacher/placement/${lastTest.id}`} className={`pill ${lastTest.status === "submitted" ? "orange" : "violet"}`}><Icon name="target" size="sm" />{lastTest.status === "submitted" ? t("prof.testToReview") : `${t("prof.testResult")}${lastTest.level ? ` · ${lastTest.level}` : ""}`}</Link>}
             {(s.payerName || s.payerChatId) && <span className={`pill ${s.payerChatId ? "green" : "grey"}`}><Icon name="telegram" size="sm" />{t(s.payerChatId ? "prof.payerTgOn" : "prof.payerTgOff")}</span>}
           </div>
         </div>

@@ -141,7 +141,13 @@ export function Builder({ d }: { d: BuilderData }) {
                 <KeyCtx.Provider value={!studentView}><TaskCard
                   task={task}
                   index={visible.filter((x, j) => j <= i && numbered(x)).length - 1}
-                  actions={!studentView && (
+                  actions={studentView ? (
+                    // как у ученика: «указать учителю» и «Мне непонятно» (в превью не нажимаются)
+                    <span className="bld-acts gap-1.5" title={t("bld.studentBtns")}>
+                      <span className="iconbtn" aria-hidden="true"><Icon name="pointer" size="sm" /></span>
+                      <span className="btn secondary sm" aria-disabled="true"><Icon name="qmark" size="sm" />{t("cls.unclear")}</span>
+                    </span>
+                  ) : (
                     <span className="bld-acts">
                       {task.hidden && <span className="pill grey">{t("bld.hidden")}</span>}
                       {task.options?.teacherOnly && <span className="pill violet">{t("bld.notSeen")}</span>}

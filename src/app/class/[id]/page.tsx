@@ -24,7 +24,18 @@ export default async function ClassPage({ params, searchParams }: { params: Prom
   const { lesson, role, host, slot, group } = acc;
   const teacherUser = await db.user.findUnique({ where: { id: lesson.teacherId ?? "" }, include: { teacherProfile: true } });
   if (!teacherUser) notFound();
-  const data = host.templateId ? await loadLesson(host.templateId) : null;
+  // урок не выбран — остаётся закреплённый в прошлый раз у этого ученика (у группы — у группы); учитель сменит его кнопкой «Другой урок»
+  let templateId = host.templateId;
+  if (!templateId && (host.groupId || host.studentId)) {
+    const who = host.groupId ? { groupId: host.groupId } : { studentId: host.studentId, groupId: null };
+    const prev = (await db.lessonInstance.findFirst({ where: { ...who, templateId: { not: null }, startsAt: { lte: host.startsAt } }, orderBy: { startsAt: "desc" }, select: { templateId: true } }))
+      ?? (await db.lessonInstance.findFirst({ where: { ...who, templateId: { not: null } }, orderBy: { startsAt: "desc" }, select: { templateId: true } }));
+    if (prev?.templateId) {
+      templateId = prev.templateId;
+      await db.lessonInstance.updateMany({ where: { id: { in: slot.map((x) => x.id) } }, data: { templateId } });
+    }
+  }
+  const data = templateId ? await loadLesson(templateId) : null;
   // групповое занятие: учитель видит уроки всех учеников, ученик — только свой
   const ids = role === "teacher" ? slot.map((x) => x.id) : [lesson.id];
   const [allRows, hw, allWords, messages, templates, grp] = await Promise.all([
@@ -65,7 +76,7 @@ export default async function ClassPage({ params, searchParams }: { params: Prom
   return (
     <ClassRoom
       d={{
-        id, templateId: host.templateId, role, me: { id: user.id, name: user.name },
+        id, templateId: templateId, role, me: { id: user.id, name: user.name },
         ...(group ? { group: { title: grp?.title ?? members.map((m) => m.name.split(" ")[0]).join(", "), members: role === "teacher" ? members : members.filter((m) => m.instanceId === lesson.id) } } : {}),
         ...(group && role === "teacher" ? { byStudent: Object.fromEntries(members.map((m) => [m.sid, pack(m.sid)])) } : {}),
         teacher: { id: teacherUser.id, name: teacherUser.name, lastName: teacherUser.lastName },
@@ -87,6 +98,17 @@ export default async function ClassPage({ params, searchParams }: { params: Prom
         when: `${host.startsAt.toLocaleDateString(loc, { weekday: "short", day: "numeric", month: "long", timeZone: tz })}, ${hhmm(host.startsAt, tz)}`,
         durationMin: host.durationMin, status: host.status, goal: roadmap?.goal ?? null,
         templates: templates.map((x) => ({ id: x.id, label: `${x.unit.course.title} · ${x.unit.title} · ${x.title}` })),
+        // «Другой урок»: курсы учителя по разделам; курсы, по которым уже занимались с этим учеником (группой), — первыми
+        picker: role === "teacher" ? {
+          courses: [...new Map(templates.map((x) => [x.unit.course.id, x.unit.course])).values()].map((c) => ({
+            id: c.id, title: c.title, cover: c.cover ?? null,
+            units: [...new Map(templates.filter((x) => x.unit.courseId === c.id).map((x) => [x.unit.id, x.unit])).values()].map((u) => ({
+              id: u.id, title: u.title,
+              lessons: templates.filter((x) => x.unitId === u.id).map((x) => ({ id: x.id, title: x.title, sub: x.subtitle ?? null, cover: x.cover ?? c.cover ?? null })),
+            })),
+          })),
+          used: [...new Set((await db.lessonInstance.findMany({ where: { ...(host.groupId ? { groupId: host.groupId } : { studentId: host.studentId ?? "-", groupId: null }), templateId: { not: null } }, orderBy: { startsAt: "desc" }, select: { template: { select: { unit: { select: { courseId: true } } } } }, take: 200 })).map((x) => x.template!.unit.courseId))],
+        } : null,
         homeHref: role === "teacher" ? "/teacher" : "/student",
         addHw: (await searchParams).addhw === "1",
         initialTab: ((t) => (t === "homework" || t === "words" || t === "board" ? t : "lesson"))((await searchParams).tab),

@@ -1874,3 +1874,20 @@ button.grp-row:hover { background: var(--fill); }
 .tgbanner { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; }
 .tgbanner .tgico { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: var(--accent-bg); color: #229ED9; flex: none; }
 .tgbanner .tgbtn { min-width: 220px; } .tgbanner .tgbtn .btn.lg { padding: 10px 16px; font-size: 15px; }
+
+/* «Другой урок»: курсы и уроки */
+.lp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+.lp-course { display: flex; flex-direction: column; gap: 6px; padding: 0; border: 0; background: transparent; text-align: left; font: inherit; color: var(--text); cursor: pointer; }
+.lp-course small { color: var(--text3); }
+.lp-cover { display: grid; place-items: center; aspect-ratio: 3 / 4; border-radius: 14px; background: var(--accent-bg) center / cover; color: var(--accent); font-size: 44px; font-weight: 700; transition: transform .15s; }
+.lp-course:hover .lp-cover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,.12); }
+.lp-unit { margin: 10px 0 6px; font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--text3); }
+.lp-list { max-height: min(60vh, 560px); overflow-y: auto; }
+.lp-row { display: flex; align-items: center; gap: 12px; padding: 8px 10px; border-radius: 12px; cursor: pointer; }
+.lp-row:hover, .lp-row.on { background: var(--surface2); }
+.lp-thumb { display: grid; place-items: center; width: 44px; height: 44px; flex: none; border-radius: 10px; background: var(--accent-bg) center / cover; color: var(--accent); }
+.seg a, .seg button { gap: 6px; }
+.cls-toast { position: fixed; top: 76px; left: 50%; transform: translateX(-50%); z-index: 80; display: flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 999px; background: var(--accent); color: #fff; font-weight: 600; box-shadow: 0 10px 28px rgba(0,0,0,.18); }
+.lmore { padding-top: 12px; border-top: .5px solid var(--sep); }
+.lmore .lprices.mt-4 { margin-top: 0; }
+.apptop, .cls-top { background: var(--surface); backdrop-filter: none; -webkit-backdrop-filter: none; } /* шапка без прозрачности — текст под ней не просвечивает */

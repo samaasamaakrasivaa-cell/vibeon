@@ -181,6 +181,13 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       return NextResponse.json({ ok: true });
     }
     // ── «Мне непонятно» → вопрос учителю
+    // ученик указывает учителю на задание («посмотрите сюда»): у учителя задание мигает, сверху — кто указал
+    case "point": {
+      const taskId = str(body.taskId, 60);
+      if (!taskId) return bad();
+      publish(ch, "point", { taskId, by, name: user.name, where: str(body.where, 20) });
+      return NextResponse.json({ ok: true });
+    }
     case "question": {
       if (teacher || !lesson.studentId) return bad();
       const text = str(body.text, 2000).trim();

@@ -36,7 +36,8 @@ export type ClassData = {
   board: BObj[][]; homework: { extraTaskIds: string[]; wordTraining: string[]; teacherComment: string | null };
   lessonWords: { word: string; tr: string; ex: string }[]; words: Word[]; messages: Msg[];
   note: string | null; studentNote: string | null; callLink: string | null; callOwn?: boolean; when: string; durationMin: number; status: string; goal: string | null;
-  templates: { id: string; label: string }[]; homeHref: string; initialTab?: "lesson" | "homework" | "words" | "board"; addHw?: boolean;
+  templates: { id: string; label: string }[]; homeHref: string;
+  picker?: { courses: { id: string; title: string; cover: string | null; units: { id: string; title: string; lessons: { id: string; title: string; sub: string | null; cover: string | null }[] }[] }[]; used: string[] } | null; initialTab?: "lesson" | "homework" | "words" | "board"; addHw?: boolean;
   /** Групповое занятие: у каждого ученика свой урок (instanceId), класс общий. Учитель переключается между учениками. */
   group?: { title: string; members: { sid: string; instanceId: string; userId: string | null; name: string }[] };
   chatNames?: Record<string, string>; // чат группового урока: userId → имя
@@ -97,6 +98,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
 
   // «Показать ученику» (указка): ученика переносит туда, где задание, — вкладка, секция, прокрутка; задание мигает зелёным 3 раза
   const flashTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [pointBy, setPointBy] = useState<{ name: string; at: number } | null>(null); // ученик указал на задание
   const spotlight = useCallback((taskId: string, where?: string) => {
     const task = d.tasks.find((x) => x.id === taskId);
     if (!task) return;
@@ -144,6 +146,8 @@ export function ClassRoom({ d }: { d: ClassData }) {
         if (x.op === "clear") n[pg] = [];
         return n;
       });
+    } else if (ev === "point") {
+      if (teacher && x.by !== d.me.id) { spotlight(x.taskId as string, x.where as string | undefined); setPointBy({ name: String(x.name ?? ""), at: Date.now() }); setTimeout(() => setPointBy(null), 5000); }
     } else if (ev === "chat") {
       // правка и удаление приходят тем же событием — заменяем сообщение по id
       const isNew = !msgsRef.current.some((y) => y.id === x.id);
@@ -244,7 +248,12 @@ export function ClassRoom({ d }: { d: ClassData }) {
   const templateId = !!d.templateId;
 
   const taskActions = (task: CTask, inHw: boolean) => {
-    if (!teacher) return <AskButton task={task} send={send} context={`${d.crumbs ?? ""} · ${cur?.title ?? ""}`} />;
+    if (!teacher) return (
+      <span className="bld-acts gap-1.5">
+        <button type="button" className="iconbtn" title={t("cls.pointT")} aria-label={t("cls.pointT")} onClick={() => { void send("point", { taskId: task.id, where: inHw ? "homework" : "lesson" }); setFlash(null); requestAnimationFrame(() => setFlash(task.id)); setTimeout(() => setFlash(null), 1800); }}><Icon name="pointer" size="sm" /></button>
+        <AskButton task={task} send={send} context={`${d.crumbs ?? ""} · ${cur?.title ?? ""}`} />
+      </span>
+    );
     const sid = sidFor(task.id);
     const statuses = gTeacher ? (sid ? d.byStudent?.[sid]?.statuses ?? {} : {}) : statusesAll;
     const reviews = sid ? revBy[sid] ?? {} : {};
@@ -310,6 +319,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
     <AnswerProvider answers={answers} onSet={setAnswer} role={d.role}>
      <MarkCtx.Provider value={marks}>
       <div className={`cls ${teacher ? "as-teacher" : "as-student"}`}>
+        {teacher && pointBy && <div className="cls-toast" role="status"><Icon name="pointer" size="sm" />{t("cls.pointedBy", { name: pointBy.name })}</div>}
         <header className="cls-top">
           <Link href={d.homeHref} className="cls-logo" aria-label="VibeOn"><LogoMark size={36} /><small>Vibe<span>On</span></small></Link>
           <div className="cls-crumb"><small>{d.crumbs ?? t("cls.lesson")}</small><b>{d.title ?? t("cls.noTemplate")}</b></div>
@@ -431,6 +441,8 @@ export function ClassRoom({ d }: { d: ClassData }) {
             <div className="cls-what mt-4">
               {d.course?.title && <small>{t("cls.courseOf", { c: d.course.title })}</small>}
               <b>{d.title ?? t("cls.lesson")}</b>
+              {teacher ? <button type="button" className="btn tinted sm mt-1 self-start" onClick={() => setDlg("pick")}><Icon name="book" size="sm" />{t("cls.lpOther2")}</button>
+                : <Link href="/student/lessons" className="alink small mt-1">{t("cls.lpMine")}</Link>}
             </div>
             <div className="mt-3 flex flex-col gap-1">
               {d.rubrics.map((r, i) => (
@@ -708,6 +720,66 @@ function Words({ teacher, lessonWords, words, training, send, setHw }: {
 }
 
 /** Ссылка на созвон из урока: сохраняется в анкету ученика (или в настройки группы) — и сразу действует во всех его уроках. */
+/** «Другой урок»: сначала уроки курса, по которому идём (по разделам, с картинками); «← Курсы» — курсы этого ученика (группы)
+ *  и все остальные. Выбрали урок — «Закрепить»: урок становится текущим и останется на следующих занятиях, пока не закрепите другой. */
+function LessonPicker({ d, send, close }: { d: ClassData; send: (type: string, x?: Record<string, unknown>) => Promise<unknown>; close: () => void }) {
+  const { t } = useT();
+  const courses = d.picker?.courses ?? [];
+  const curCourse = courses.find((c) => c.units.some((u) => u.lessons.some((l) => l.id === d.templateId)))?.id ?? d.picker?.used[0] ?? null;
+  const [cid, setCid] = useState<string | null>(curCourse);
+  const [q, setQ] = useState("");
+  const [sel, setSel] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const course = courses.find((c) => c.id === cid);
+  const used = (d.picker?.used ?? []).map((id) => courses.find((c) => c.id === id)).filter(Boolean) as typeof courses;
+  const others = courses.filter((c) => !used.includes(c));
+  const pin = async (id: string) => { setBusy(true); await send("template", { templateId: id }); setBusy(false); close(); };
+  const card = (c: (typeof courses)[number]) => (
+    <button key={c.id} type="button" className="lp-course" onClick={() => { setCid(c.id); setQ(""); }}>
+      <span className="lp-cover" style={c.cover ? { backgroundImage: `url(${c.cover})` } : undefined}>{!c.cover && c.title[0]}</span>
+      <b>{c.title}</b><small>{t("cls.lpLessons", { n: c.units.reduce((a, u) => a + u.lessons.length, 0) })}</small>
+    </button>
+  );
+  return (
+    <Dialog open onClose={close} title={course ? course.title : t("cls.lpCourses")} wide>
+      {course ? (
+        <>
+          <div className="mb-3 flex flex-wrap items-center gap-2">
+            <button type="button" className="btn secondary sm" onClick={() => { setCid(null); setSel(null); }}><Icon name="chevl" size="sm" />{t("cls.lpAllCourses")}</button>
+            <input className="input grow" value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("cls.lpSearch")} aria-label={t("cls.lpSearch")} style={{ minWidth: 180 }} />
+          </div>
+          <div className="lp-list">
+            {course.units.map((u) => {
+              const ls = u.lessons.filter((l) => !q.trim() || l.title.toLowerCase().includes(q.trim().toLowerCase()));
+              return ls.length ? (
+                <div key={u.id}>
+                  <div className="lp-unit">{u.title}</div>
+                  {ls.map((l) => (
+                    <div key={l.id} className={`lp-row ${sel === l.id ? "on" : ""}`} onClick={() => setSel(l.id)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter") setSel(l.id); }}>
+                      <span className="lp-thumb" style={l.cover ? { backgroundImage: `url(${l.cover})` } : undefined}>{!l.cover && <Icon name="book" size="sm" />}</span>
+                      <span className="grow min-w-0"><b className="block truncate">{l.title}</b>{l.sub && <small className="muted">{l.sub}</small>}</span>
+                      {l.id === d.templateId && <span className="pill green"><Icon name="pin" size="sm" />{t("cls.lpPinned")}</span>}
+                      {sel === l.id && l.id !== d.templateId && <button type="button" className="btn primary sm" disabled={busy} onClick={(e) => { e.stopPropagation(); void pin(l.id); }}><Icon name="pin" size="sm" />{t("cls.lpPin")}</button>}
+                    </div>
+                  ))}
+                </div>
+              ) : null;
+            })}
+          </div>
+          <p className="hint mb-0">{t("cls.lpHint")}</p>
+        </>
+      ) : (
+        <>
+          {used.length > 0 && <><div className="lp-unit">{d.group ? t("cls.lpUsedGroup") : t("cls.lpUsed")}</div><div className="lp-grid">{used.map(card)}</div></>}
+          {others.length > 0 && <><div className="lp-unit mt-4">{used.length ? t("cls.lpOther") : t("cls.lpCourses")}</div><div className="lp-grid">{others.map(card)}</div></>}
+          {courses.length === 0 && <p className="hint">{t("crs.empty")}</p>}
+          <div className="actions"><Link href="/teacher/courses" className="btn secondary sm" target="_blank"><Icon name="book" size="sm" />{t("cls.lpCatalog")}</Link></div>
+        </>
+      )}
+    </Dialog>
+  );
+}
+
 function CallLinkEdit({ lessonId, value, group }: { lessonId: string; value: string; group: boolean }) {
   const { t } = useT();
   const router = useRouter();
@@ -918,15 +990,7 @@ function ClassDialogs({ which, close, d, hwComment, send, onFinished }: { which:
         {s && <div className="actions"><Link className="btn secondary" href={`/teacher/students/${s.id}`} target="_blank">{t("sch.openProfile")}</Link></div>}
       </Dialog>
     );
-  if (which === "pick")
-    return (
-      <Dialog open onClose={close} title={t("cls.pick")}>
-        <div className="pick" style={{ maxHeight: 380 }}>
-          {d.templates.map((x) => <button key={x.id} onClick={async () => { await send("template", { templateId: x.id }); close(); }}>{x.label}</button>)}
-          {d.templates.length === 0 && <p className="hint p-2">{t("crs.empty")}</p>}
-        </div>
-      </Dialog>
-    );
+  if (which === "pick") return <LessonPicker d={d} send={send} close={close} />;
   if (which === "finish")
     return (
       <Dialog open onClose={close} title={t("cls.finishQ")}>

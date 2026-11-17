@@ -10,11 +10,12 @@ import { initials } from "@/lib/invite";
 export const metadata = { title: "Домашка" };
 export const dynamic = "force-dynamic";
 
-export default async function TeacherHomework({ searchParams }: { searchParams: Promise<{ tab?: string; q?: string }> }) {
+export default async function TeacherHomework({ searchParams }: { searchParams: Promise<{ tab?: string; q?: string; kind?: string }> }) {
   const { t, lang } = await getT();
   const me = await requireUser("TEACHER");
   const sp = await searchParams;
   const tab = sp.tab ?? "review";
+  const kind = sp.kind === "tests" ? "tests" : "hw"; // «На проверку»: домашка или тесты
   const q = (sp.q ?? "").toLowerCase();
   const items = await homeworkFor({ teacherId: me.id });
   // у каждого ученика — последняя домашка; ученики без домашки после последнего урока — отдельно
@@ -31,23 +32,31 @@ export default async function TeacherHomework({ searchParams }: { searchParams: 
   const tests = await db.placementAttempt.findMany({ where: { teacherId: me.id, mode: "student", studentId: { not: null }, student: { status: "ACTIVE" } }, include: { student: true }, orderBy: { createdAt: "desc" }, take: 60 });
   const tState = (s: string) => (s === "submitted" ? "review" : s === "reviewed" ? "checked" : "notdone");
   const tBy = { review: tests.filter((x) => tState(x.status) === "review"), notdone: tests.filter((x) => tState(x.status) === "notdone"), checked: tests.filter((x) => tState(x.status) === "checked").slice(0, 12) };
-  const tShown = (tab === "none" ? [] : tBy[tab as keyof typeof tBy] ?? tBy.review).filter((x) => !q || `${x.student?.name} ${x.student?.lastName}`.toLowerCase().includes(q));
-  const shown = (tab === "none" ? [] : by[tab as keyof typeof by] ?? by.review).filter((h) => !q || `${h.lesson.student?.name} ${h.lesson.student?.lastName}`.toLowerCase().includes(q));
+  const tShown = kind !== "tests" ? [] : (tBy[tab as keyof typeof tBy] ?? tBy.review).filter((x) => !q || `${x.student?.name} ${x.student?.lastName}`.toLowerCase().includes(q));
+  const hwReviewN = by.review.length;
+  const tReviewN = tBy.review.length;
+  const qs = (x: Record<string, string>) => `?${new URLSearchParams({ kind, tab, ...(q ? { q } : {}), ...x }).toString()}`;
+  const shown = (kind !== "hw" || tab === "none" ? [] : by[tab as keyof typeof by] ?? by.review).filter((h) => !q || `${h.lesson.student?.name} ${h.lesson.student?.lastName}`.toLowerCase().includes(q));
   const loc = lang === "ru" ? "ru-RU" : "en-GB";
   const when = (d: Date | null) => (d ? d.toLocaleString(loc, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: me.timezone }) : "—");
   return (
     <div className="page">
       <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
-        <div><h1>{t("nav.homework")}</h1><p className="muted mt-1 mb-0">{t("hwT.toReview", { n: by.review.length + tBy.review.length })}</p></div>
+        <div><h1>{t("nav.toReview")}</h1><p className="muted mt-1 mb-0">{t("hwT.toReview", { n: hwReviewN + tReviewN })}</p></div>
         <StudentsSearch placeholder={t("stu.search")} />
       </div>
+      {/* два раздела: домашка и тесты — всё, что ждёт взгляда учителя */}
+      <div className="seg mb-4" role="tablist">
+        <Link href={qs({ kind: "hw", tab: "review" })} role="tab" aria-selected={kind === "hw"} aria-pressed={kind === "hw"}><Icon name="inbox" size="sm" />{t("nav.homework")}{hwReviewN > 0 && <span className="count-pill ml-1">{hwReviewN}</span>}</Link>
+        <Link href={qs({ kind: "tests", tab: "review" })} role="tab" aria-selected={kind === "tests"} aria-pressed={kind === "tests"}><Icon name="target" size="sm" />{t("hwT.tests")}{tReviewN > 0 && <span className="count-pill ml-1">{tReviewN}</span>}</Link>
+      </div>
       <nav className="tabsbar fit mb-5">
-        <Link href="?tab=review" aria-current={tab === "review" ? "page" : undefined}>{t("hwT.review")} {by.review.length + tBy.review.length > 0 && <span className="count-pill ml-1">{by.review.length + tBy.review.length}</span>}</Link>
-        <Link href="?tab=notdone" aria-current={tab === "notdone" ? "page" : undefined}>{t("hwT.notdone")} · {by.notdone.length + tBy.notdone.length}</Link>
-        <Link href="?tab=checked" aria-current={tab === "checked" ? "page" : undefined}>{t("hwT.checked")} · {by.checked.length + tBy.checked.length}</Link>
-        <Link href="?tab=none" aria-current={tab === "none" ? "page" : undefined}>{t("hwT.none")} · {noHw.length}</Link>
+        <Link href={qs({ tab: "review" })} aria-current={tab === "review" ? "page" : undefined}>{t("hwT.review")} {(kind === "hw" ? hwReviewN : tReviewN) > 0 && <span className="count-pill ml-1">{kind === "hw" ? hwReviewN : tReviewN}</span>}</Link>
+        <Link href={qs({ tab: "notdone" })} aria-current={tab === "notdone" ? "page" : undefined}>{kind === "hw" ? t("hwT.notdone") : t("hwT.tNotDone")} · {kind === "hw" ? by.notdone.length : tBy.notdone.length}</Link>
+        <Link href={qs({ tab: "checked" })} aria-current={tab === "checked" ? "page" : undefined}>{t("hwT.checked")} · {kind === "hw" ? by.checked.length : tBy.checked.length}</Link>
+        {kind === "hw" && <Link href={qs({ tab: "none" })} aria-current={tab === "none" ? "page" : undefined}>{t("hwT.none")} · {noHw.length}</Link>}
       </nav>
-      {tab === "none" ? (
+      {kind === "hw" && tab === "none" ? (
         <div className="grid-3">
           {noHw.map((s) => {
             const last = lastDone.get(s.id);
