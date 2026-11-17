@@ -1,3 +1,4 @@
+import { InvoiceEdit } from "@/components/finance/FinanceParts";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Icon } from "@/components/Icon";
@@ -39,6 +40,8 @@ export default async function StudentProfile({ params, searchParams }: { params:
     },
   });
   if (!s || s.teacherId !== me.id) notFound();
+  // подключён ли Telegram-бот: у ученика — после входа на платформу и нажатия «Подключить Telegram», у плательщика — по ссылке из оплаты
+  const tgUser = s.userId ? await db.user.findUnique({ where: { id: s.userId }, select: { telegramChatId: true } }) : null;
 
   const tz = me.timezone;
   const loc = lang === "ru" ? "ru-RU" : "en-GB";
@@ -87,6 +90,9 @@ export default async function StudentProfile({ params, searchParams }: { params:
             {s.course && <span>{s.course}</span>}
             {s.status === "INVITED" && <span className="pill orange">{t("prof.invited")}</span>}
             {s.status === "ARCHIVED" && <span className="pill grey">{t("stu.archived")}</span>}
+            <span className={`pill ${s.userId ? "green" : "grey"}`} title={t("prof.platformHint")}>{s.userId ? "✓ " : ""}{t(s.userId ? "prof.onPlatform" : "prof.notOnPlatform")}</span>
+            <span className={`pill ${tgUser?.telegramChatId ? "green" : "grey"}`} title={t("prof.tgHint")}><Icon name="telegram" size="sm" />{t(tgUser?.telegramChatId ? "prof.tgOn" : "prof.tgOff")}</span>
+            {(s.payerName || s.payerChatId) && <span className={`pill ${s.payerChatId ? "green" : "grey"}`}><Icon name="telegram" size="sm" />{t(s.payerChatId ? "prof.payerTgOn" : "prof.payerTgOff")}</span>}
           </div>
         </div>
         <ProfileActions
@@ -148,7 +154,13 @@ export default async function StudentProfile({ params, searchParams }: { params:
               p={{
                 id: s.id, payType: s.payType, billRule: s.billRule ?? "", remindEveryDays: s.remindEveryDays, price: s.price,
                 packPrices: (s.packPrices as { n: number; price: number }[]) ?? [], payerName: s.payerName ?? "", payerContact: s.payerContact ?? "",
-                pack: s.packs[0] ? { left: s.packs[0].lessonsLeft, total: s.packs[0].lessonsTotal, price: s.packs[0].price } : null,
+                pack: s.packs[0] ? {
+                  left: s.packs[0].lessonsLeft, total: s.packs[0].lessonsTotal, price: s.packs[0].price, since: dateFmt(s.packs[0].startsAt, { day: "numeric", month: "long" }),
+                  // списанные уроки этого абонемента — последние по дате
+                  used: s.lessons.filter((l) => l.deductedAt).slice(0, Math.max(0, s.packs[0].lessonsTotal - s.packs[0].lessonsLeft))
+                    .map((l) => ({ id: l.id, date: dateFmt(l.startsAt, { day: "numeric", month: "short", weekday: "short" }), missed: l.status === "MISSED" })),
+                } : null,
+                today: isoDay(now, tz),
                 payerLinked: !!s.payerChatId, studentName: s.name, teacherName: meName,
               }}
             />
@@ -216,6 +228,7 @@ export default async function StudentProfile({ params, searchParams }: { params:
                   <span className="grow">{iv.period ?? ""}</span>
                   <b>{rub(iv.amount, lang)}</b>
                   <span className={`pill ${iv.status === "PAID" ? "green" : iv.status === "CANCELLED" ? "grey" : "orange"}`}>{t(`inv.${iv.status}` as "inv.PAID")}</span>
+                  {iv.status !== "CANCELLED" && <InvoiceEdit id={iv.id} />}
                 </div>
               ))}
             </section>

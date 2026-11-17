@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Icon } from "@/components/Icon";
-import { CheckActions, PayDetails, ReceiptButton, ResendLink } from "@/components/finance/FinanceParts";
+import { CheckActions, InvoiceEdit, PayDetails, ReceiptButton, ResendLink } from "@/components/finance/FinanceParts";
 import { requireUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { getT } from "@/lib/i18n/server";
@@ -141,6 +141,7 @@ export default async function Finance({ searchParams }: { searchParams: Promise<
                     )}
                   </div>
                   <span className="amt">{R(i.amount)}</span>
+                  <InvoiceEdit id={i.id} />
                   <CheckActions id={i.id} kind={checkTab as "waiting" | "toCheck" | "auto"} />
                 </div>
               );
@@ -165,6 +166,7 @@ async function RecentPaid({ teacherId, R, loc, tz, t }: { teacherId: string; R: 
           <span className="pill green">✓</span>
           <div className="grow"><b className="block">{i.student.name} {i.student.lastName}</b><span className="small muted">{i.title} · {i.paidAt?.toLocaleDateString(loc, { day: "numeric", month: "short", timeZone: tz })}</span></div>
           <b>{R(i.amount)}</b>
+          <InvoiceEdit id={i.id} />
           {i.receiptFile && <a className="pill blue" href={i.receiptFile} target="_blank" rel="noreferrer">{t("pay.receipt" as never)}</a>}
           <ReceiptButton id={i.id} has={!!i.receiptFile} />
         </div>

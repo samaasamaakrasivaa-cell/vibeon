@@ -22,7 +22,7 @@ export default async function Students({ searchParams }: { searchParams: Promise
 
   const all = await db.student.findMany({
     where: { teacherId: me.id },
-    include: { invites: { orderBy: { createdAt: "desc" }, take: 1 }, packs: { orderBy: { startsAt: "desc" }, take: 1 } },
+    include: { invites: { orderBy: { createdAt: "desc" }, take: 1 }, packs: { orderBy: { startsAt: "desc" }, take: 1 }, user: { select: { telegramChatId: true } } },
     orderBy: [{ name: "asc" }],
   });
   const groups = await db.group.findMany({ where: { teacherId: me.id }, include: { members: true }, orderBy: { createdAt: "asc" } });
@@ -42,7 +42,7 @@ export default async function Students({ searchParams }: { searchParams: Promise
   const archived = all.filter((s) => s.status === "ARCHIVED");
   const full = (s: { name: string; lastName: string | null }) => [s.name, s.lastName].filter(Boolean).join(" ");
   const card = (s: (typeof all)[number], i: number, sub: string, badge?: string): Card => ({
-    id: s.id, name: full(s), initials: initials(s.name, s.lastName), color: i, sub, href: `/teacher/students/${s.id}`, badge,
+    id: s.id, name: full(s), initials: initials(s.name, s.lastName), color: i, sub, href: `/teacher/students/${s.id}`, badge, tg: !!s.user?.telegramChatId,
   });
   const loc = lang === "ru" ? "ru-RU" : "en-GB";
 

@@ -330,8 +330,8 @@ function Prices({ l }: { l: GridLesson }) {
           ) : (
             <>
               <b className={p.counts ? "" : "text-text3"}>{fmt(p.price)}</b>
-              {p.locked ? <span className="small muted">{t("sch.pricePaidShort")}</span>
-                : <button type="button" className="iconbtn" aria-label={t("sch.priceEdit")} title={t("sch.priceEdit")} onClick={() => { setEdit(p.id); setVal(String(p.price || "")); }}><Icon name="pencil" size="sm" /></button>}
+              {p.locked && <span className="small muted">{t("sch.pricePaidShort")}</span>}
+              <button type="button" className="iconbtn" aria-label={t("sch.priceEdit")} title={t("sch.priceEdit")} onClick={() => { if (p.locked && !confirm(t("sch.pricePaidQ"))) return; setEdit(p.id); setVal(String(p.price || "")); }}><Icon name="pencil" size="sm" /></button>
             </>
           )}
         </div>

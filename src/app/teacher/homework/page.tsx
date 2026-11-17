@@ -27,19 +27,24 @@ export default async function TeacherHomework({ searchParams }: { searchParams: 
     .reverse().map((l) => [l.studentId!, l]));
   const list = [...latest.values()];
   const by = { review: list.filter((h) => h.state === "review"), notdone: list.filter((h) => h.state === "notdone"), checked: list.filter((h) => h.state === "checked") };
+  // placement test ученика — тоже работа на проверку: пройден — «На проверку», назначен — «Не сделано», проверен — «Проверено»
+  const tests = await db.placementAttempt.findMany({ where: { teacherId: me.id, mode: "student", studentId: { not: null }, student: { status: "ACTIVE" } }, include: { student: true }, orderBy: { createdAt: "desc" }, take: 60 });
+  const tState = (s: string) => (s === "submitted" ? "review" : s === "reviewed" ? "checked" : "notdone");
+  const tBy = { review: tests.filter((x) => tState(x.status) === "review"), notdone: tests.filter((x) => tState(x.status) === "notdone"), checked: tests.filter((x) => tState(x.status) === "checked").slice(0, 12) };
+  const tShown = (tab === "none" ? [] : tBy[tab as keyof typeof tBy] ?? tBy.review).filter((x) => !q || `${x.student?.name} ${x.student?.lastName}`.toLowerCase().includes(q));
   const shown = (tab === "none" ? [] : by[tab as keyof typeof by] ?? by.review).filter((h) => !q || `${h.lesson.student?.name} ${h.lesson.student?.lastName}`.toLowerCase().includes(q));
   const loc = lang === "ru" ? "ru-RU" : "en-GB";
   const when = (d: Date | null) => (d ? d.toLocaleString(loc, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: me.timezone }) : "—");
   return (
     <div className="page">
       <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
-        <div><h1>{t("nav.homework")}</h1><p className="muted mt-1 mb-0">{t("hwT.toReview", { n: by.review.length })}</p></div>
+        <div><h1>{t("nav.homework")}</h1><p className="muted mt-1 mb-0">{t("hwT.toReview", { n: by.review.length + tBy.review.length })}</p></div>
         <StudentsSearch placeholder={t("stu.search")} />
       </div>
       <nav className="tabsbar fit mb-5">
-        <Link href="?tab=review" aria-current={tab === "review" ? "page" : undefined}>{t("hwT.review")} {by.review.length > 0 && <span className="count-pill ml-1">{by.review.length}</span>}</Link>
-        <Link href="?tab=notdone" aria-current={tab === "notdone" ? "page" : undefined}>{t("hwT.notdone")} · {by.notdone.length}</Link>
-        <Link href="?tab=checked" aria-current={tab === "checked" ? "page" : undefined}>{t("hwT.checked")} · {by.checked.length}</Link>
+        <Link href="?tab=review" aria-current={tab === "review" ? "page" : undefined}>{t("hwT.review")} {by.review.length + tBy.review.length > 0 && <span className="count-pill ml-1">{by.review.length + tBy.review.length}</span>}</Link>
+        <Link href="?tab=notdone" aria-current={tab === "notdone" ? "page" : undefined}>{t("hwT.notdone")} · {by.notdone.length + tBy.notdone.length}</Link>
+        <Link href="?tab=checked" aria-current={tab === "checked" ? "page" : undefined}>{t("hwT.checked")} · {by.checked.length + tBy.checked.length}</Link>
         <Link href="?tab=none" aria-current={tab === "none" ? "page" : undefined}>{t("hwT.none")} · {noHw.length}</Link>
       </nav>
       {tab === "none" ? (
@@ -56,8 +61,21 @@ export default async function TeacherHomework({ searchParams }: { searchParams: 
           })}
           {noHw.length === 0 && <p className="hint">{t("hwT.empty")}</p>}
         </div>
-      ) : shown.length === 0 ? <div className="card"><p className="hint m-0">{t("hwT.empty")}</p></div> : (
+      ) : shown.length + tShown.length === 0 ? <div className="card"><p className="hint m-0">{t("hwT.empty")}</p></div> : (
         <div className="grid-3">
+          {tShown.map((x) => (
+            <div key={x.id} className="hwcard">
+              <div className="flex gap-3">
+                <span className="avatar lg">{initials(x.student?.name, x.student?.lastName)}</span>
+                <div className="min-w-0"><b className="block">{[x.student?.name, x.student?.lastName].filter(Boolean).join(" ")}</b><span className="small muted">{x.track === "teen" ? "Placement test Teens" : "Placement test"} · {x.submittedAt ? t("hwT.sent", { d: when(x.submittedAt) }) : t("hwT.testGiven", { d: when(x.createdAt) })}</span></div>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="pill violet"><Icon name="target" size="sm" />{t("hwT.test")}</span>
+                <span className="grow small muted">{x.status === "reviewed" ? (x.level ?? "") : x.status === "submitted" ? t("hwT.testDone") : x.status === "active" ? t("hwT.testActive") : t("hwT.testNew")}</span>
+                <Link href={x.status === "new" || x.status === "active" ? `/teacher/students/${x.studentId}?tab=roadmap` : `/teacher/placement/${x.id}`} className={`btn sm ${x.status === "submitted" ? "primary" : "secondary"}`}>{x.status === "submitted" ? t("hwT.check") : t("prof.open")}</Link>
+              </div>
+            </div>
+          ))}
           {shown.map((h) => (
             <div key={h.lesson.id} className="hwcard">
               <div className="flex gap-3">

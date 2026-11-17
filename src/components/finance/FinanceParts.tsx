@@ -5,7 +5,7 @@ import { Icon } from "../Icon";
 import { Dialog } from "../Dialog";
 import { upload } from "../courses/CourseView";
 import { useT } from "@/lib/i18n/client";
-import { attachReceipt, cancelInvoice, closeInvoice, markPaid, rejectProof, resendInvoice, savePayDetails, undoAuto } from "@/lib/billing/actions";
+import { attachReceipt, cancelInvoice, closeInvoice, invoiceDetails, markPaid, updateInvoice, rejectProof, resendInvoice, savePayDetails, undoAuto } from "@/lib/billing/actions";
 
 type Res = { ok: boolean; error?: string };
 function useAct() {
@@ -14,6 +14,51 @@ function useAct() {
   const [err, setErr] = useState<string | null>(null);
   const act = (fn: () => Promise<Res>) => start(async () => { setErr(null); const r = await fn(); if (!r.ok) setErr(r.error ?? "Error"); setTimeout(() => router.refresh(), 0); });
   return { pending, err, act };
+}
+
+/** Исправить счёт: цены уроков в нём (сумма считается сама) или сумму целиком — и у оплаченного. */
+export function InvoiceEdit({ id }: { id: string }) {
+  const { t, lang } = useT();
+  const { pending, err, act } = useAct();
+  const [d, setD] = useState<Awaited<ReturnType<typeof invoiceDetails>> | null>(null);
+  const [amount, setAmount] = useState("");
+  const [prices, setPrices] = useState<Record<string, string>>({});
+  const open = async () => {
+    const x = await invoiceDetails(id);
+    setD(x); setAmount(String(x.amount)); setPrices(Object.fromEntries(x.lessons.map((l) => [l.id, String(l.price)])));
+  };
+  const sum = d?.lessons.length ? d.lessons.reduce((a, l) => a + (Number(prices[l.id]) || 0), 0) : Number(amount) || 0;
+  const fmt = (n: number) => new Intl.NumberFormat(lang === "ru" ? "ru-RU" : "en-GB").format(n) + " ₽";
+  const day = (iso: string) => new Date(iso).toLocaleDateString(lang === "ru" ? "ru-RU" : "en-GB", { day: "numeric", month: "short", weekday: "short" });
+  return (
+    <>
+      <button type="button" className="iconbtn" title={t("pay.editInvoice")} aria-label={t("pay.editInvoice")} onClick={open}><Icon name="pencil" size="sm" /></button>
+      {d && (
+        <Dialog open onClose={() => setD(null)} title={t("pay.editInvoice")}>
+          <p className="small muted mt-0">{d.title}{d.status === "PAID" ? ` · ${t("inv.PAID")}` : ""}</p>
+          {d.lessons.length ? (
+            <div className="lprices">
+              {d.lessons.map((l) => (
+                <label key={l.id} className="lprice">
+                  <span className="grow">{day(l.at)}</span>
+                  <input className="input" style={{ width: 110 }} inputMode="numeric" value={prices[l.id] ?? ""} aria-label={day(l.at)} onChange={(e) => setPrices({ ...prices, [l.id]: e.target.value.replace(/\D/g, "").slice(0, 7) })} /> ₽
+                </label>
+              ))}
+              <div className="flex justify-between px-2.5"><b>{t("pay.total")}</b><b>{fmt(sum)}</b></div>
+            </div>
+          ) : (
+            <label className="field"><span className="flabel">{t("pay.amount")}</span><input className="input" inputMode="numeric" value={amount} onChange={(e) => setAmount(e.target.value.replace(/\D/g, "").slice(0, 8))} /></label>
+          )}
+          {d.status === "PAID" && <p className="hint">{t("pay.editPaidHint")}</p>}
+          {err && <div className="alert mt-2">{err}</div>}
+          <div className="actions">
+            <button className="btn secondary" onClick={() => setD(null)}>{t("common.cancel")}</button>
+            <button className="btn primary" disabled={pending || sum <= 0} onClick={() => act(async () => { const r = await updateInvoice(id, d.lessons.length ? { lessons: d.lessons.map((l) => ({ id: l.id, price: Number(prices[l.id]) || 0 })) } : { amount: Number(amount) }); if (r.ok) setD(null); return r; })}>{t("common.save")}</button>
+          </div>
+        </Dialog>
+      )}
+    </>
+  );
 }
 
 export function CheckActions({ id, kind }: { id: string; kind: "waiting" | "toCheck" | "auto" }) {

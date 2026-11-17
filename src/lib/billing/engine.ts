@@ -97,7 +97,8 @@ export async function acceptInvoice(inv: Invoice, auto: boolean) {
     if (inv.kind === "pack" && inv.packLessons && !(await tx.pack.findUnique({ where: { invoiceId: inv.id } }))) {
       await tx.pack.create({ data: { studentId: inv.studentId, lessonsTotal: inv.packLessons, lessonsLeft: inv.packLessons, price: inv.amount, invoiceId: inv.id } });
       // уроки, проведённые «в долг» после окончания прошлого абонемента, списываются из нового
-      const owed = await tx.lessonInstance.findMany({ where: { studentId: inv.studentId, deductedAt: null, isTrial: false, OR: [{ status: "DONE" }, { status: "MISSED", charged: true }] }, orderBy: { startsAt: "asc" }, take: inv.packLessons });
+      // урок, который учитель «вернул» в абонемент (charged = false), повторно не списывается
+      const owed = await tx.lessonInstance.findMany({ where: { studentId: inv.studentId, deductedAt: null, isTrial: false, charged: true, status: { in: ["DONE", "MISSED"] } }, orderBy: { startsAt: "asc" }, take: inv.packLessons });
       if (owed.length) {
         const p = await tx.pack.findUnique({ where: { invoiceId: inv.id } });
         await tx.pack.update({ where: { id: p!.id }, data: { lessonsLeft: { decrement: owed.length } } });
@@ -155,7 +156,7 @@ export async function submitProof(inv: Invoice, proof: { text?: string; file?: s
 /** Списание уроков из абонемента: проведённые и оплачиваемые пропуски. */
 async function deductPacks() {
   const lessons = await db.lessonInstance.findMany({
-    where: { deductedAt: null, isTrial: false, student: { payType: "PACK" }, OR: [{ status: "DONE" }, { status: "MISSED", charged: true }] },
+    where: { deductedAt: null, isTrial: false, student: { payType: "PACK" }, charged: true, status: { in: ["DONE", "MISSED"] } },
     orderBy: { startsAt: "asc" },
     take: 500,
   });

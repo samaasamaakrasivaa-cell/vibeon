@@ -27,7 +27,12 @@ export async function Dashboard({ user, role, day }: { user: User; role: "TEACHE
   const where = role === "TEACHER" ? { teacherId: user.id } : { student: { userId: user.id } };
   const [lessonsAll, notifications, hws] = await Promise.all([
     db.lessonInstance.findMany({ where: { ...where, startsAt: { gte: from, lt: to }, status: { not: "CANCELLED" } }, include: lessonInclude, orderBy: { startsAt: "asc" } }),
-    db.notification.findMany({ where: { userId: user.id }, orderBy: { createdAt: "desc" }, take: 15 }),
+    // сделанные (галочка) уходят из списка через сутки; непрочитанные висят, пока их не откроют;
+    // прочитанные без действия (просто новость) — тоже через сутки после прочтения; с действием — пока не отмечены сделанными
+    db.notification.findMany({
+      where: { userId: user.id, OR: [{ doneAt: { gt: new Date(Date.now() - 864e5) } }, { doneAt: null, OR: [{ readAt: null }, { action: { not: null } }, { readAt: { gt: new Date(Date.now() - 864e5) } }] }] },
+      orderBy: { createdAt: "desc" }, take: 15,
+    }),
     role === "TEACHER" ? homeworkFor({ teacherId: user.id }) : Promise.resolve([]),
   ]);
   const lessons = role === "TEACHER" ? oneSlot(lessonsAll) : lessonsAll; // групповое занятие у учителя — одной строкой

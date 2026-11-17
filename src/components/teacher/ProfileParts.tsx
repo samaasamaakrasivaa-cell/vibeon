@@ -10,7 +10,7 @@ import { useT } from "@/lib/i18n/client";
 import { TIMEZONES } from "@/lib/time";
 import { billNow, requestPackPayment } from "@/lib/billing/actions";
 import {
-  addPack, archiveStudent, deleteStudent, savePayment, savePrivateNote, updateStudentProfile, type Result,
+  addPack, archiveStudent, packDeduct, packReturn, deleteStudent, savePayment, savePrivateNote, updateStudentProfile, type Result,
 } from "@/lib/teacher/actions";
 
 function useRun() {
@@ -118,7 +118,8 @@ export function PrivateNote({ id, initial }: { id: string; initial: string }) {
 export type PaymentData = {
   id: string; payType: "PACK" | "POSTPAID"; billRule: string; remindEveryDays: number | null; price: number | null;
   packPrices: { n: number; price: number; main?: boolean }[]; payerName: string; payerContact: string;
-  pack: { left: number; total: number; price: number } | null;
+  pack: { left: number; total: number; price: number; since?: string; used?: { id: string; date: string; missed: boolean }[] } | null;
+  today?: string;
   payerLinked?: boolean; studentName?: string; teacherName?: string;
 };
 
@@ -144,6 +145,7 @@ export function PaymentCard({ p, earnedMonth }: { p: PaymentData; earnedMonth: s
   const [payerContact, setPayerContact] = useState(p.payerContact);
   const [saved, setSaved] = useState(false);
   const [newPack, setNewPack] = useState(false);
+  const [deduct, setDeduct] = useState<{ date: string; start: string } | null>(null);
   const [np, setNp] = useState({ n: 8, price: 0 });
   // «Вручную» больше не предлагаем; у тех, у кого оно уже стоит, — оставляем видимым
   const rules = payType === "PACK" ? PACK_RULES : rule === "manual" ? [...POST_RULES, "manual"] : POST_RULES;
@@ -231,9 +233,27 @@ export function PaymentCard({ p, earnedMonth }: { p: PaymentData; earnedMonth: s
                 <text x="55" y="58" textAnchor="middle" fontSize="28" fontWeight="700" fill="var(--text)">{p.pack.left}</text>
                 <text x="55" y="76" textAnchor="middle" fontSize="11" fill="var(--text2)">{t("prof.leftShort")}</text>
               </svg>
-              <div><b className="text-[18px]">{t("prof.left", { n: p.pack.left, total: p.pack.total })}</b><div className="small muted">{t("prof.packAuto")}</div></div>
+              <div className="grow">
+                <span className="pill green">{t("prof.packCurrent")}</span>
+                <b className="mt-1 block text-[18px]">{t("prof.left", { n: p.pack.left, total: p.pack.total })}</b>
+                <div className="small muted">{p.pack.since ? `${t("prof.packSince", { d: p.pack.since })} · ` : ""}{t("prof.packAuto")}</div>
+              </div>
             </div>
           ) : <p className="hint m-0">{t("prof.noPack")}</p>}
+          {p.pack && (
+            <div className="packused mt-3">
+              <div className="flex items-center justify-between gap-2">
+                <span className="flabel m-0">{t("prof.packUsed")}</span>
+                <button type="button" className="btn tinted sm" disabled={!p.pack.left} onClick={() => setDeduct({ date: p.today ?? "", start: "" })}><Icon name="check" size="sm" />{t("prof.packDeduct")}</button>
+              </div>
+              {(p.pack.used ?? []).length === 0 ? <p className="hint m-0 mt-1">{t("prof.packNoUsed")}</p> : (p.pack.used ?? []).map((u) => (
+                <div key={u.id} className="lprice">
+                  <span className="grow">{u.date}{u.missed ? ` · ${t("sch.st.missed")}` : ""}</span>
+                  <button type="button" className="btn plain sm" disabled={pending} onClick={() => confirm(t("prof.packReturnQ", { d: u.date })) && run(() => packReturn(u.id))}>{t("prof.packReturn")}</button>
+                </div>
+              ))}
+            </div>
+          )}
           <div className="mt-4 flex flex-wrap gap-2">
             <button className="btn primary sm" disabled={pending} onClick={() => run(() => requestPackPayment(p.id), () => setSaved(false))}><Icon name="msg" size="sm" />{t("prof.requestPay")}</button>
             <button className="btn secondary sm" onClick={() => { setNp({ n: mainN, price: packs.find((x) => x.n === mainN)?.price || (Number(price) || 0) * mainN }); setNewPack(true); }}><Icon name="plus" size="sm" />{t("prof.newPack")}</button>
@@ -248,6 +268,22 @@ export function PaymentCard({ p, earnedMonth }: { p: PaymentData; earnedMonth: s
       )}
       <div className="mt-5 border-t border-sep pt-4">{t("prof.thisMonth")} <b className="text-[20px]">{earnedMonth}</b> {t("prof.earnedWord")}</div>
 
+      <Dialog open={!!deduct} onClose={() => setDeduct(null)} title={t("prof.packDeduct")}>
+        {deduct && (
+          <>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="field"><label htmlFor="pd-d">{t("prof.packDeductDate")}</label><input id="pd-d" type="date" className="input" value={deduct.date} max={p.today} onChange={(e) => setDeduct({ ...deduct, date: e.target.value })} /></div>
+              <div className="field"><label htmlFor="pd-t">{t("prof.packDeductTime")}</label><input id="pd-t" type="time" className="input" value={deduct.start} onChange={(e) => setDeduct({ ...deduct, start: e.target.value })} /></div>
+            </div>
+            <p className="hint mt-3 mb-0">{t("prof.packDeductHint")}</p>
+            {error && <div className="alert mt-2">{error}</div>}
+            <div className="actions">
+              <button className="btn secondary" onClick={() => setDeduct(null)}>{t("common.cancel")}</button>
+              <button className="btn primary" disabled={pending || !deduct.date} onClick={() => run(() => packDeduct(p.id, deduct.date, deduct.start), () => setDeduct(null))}>{t("prof.packDeductBtn")}</button>
+            </div>
+          </>
+        )}
+      </Dialog>
       <Dialog open={newPack} onClose={() => setNewPack(false)} title={t("prof.newPack")}>
         <div className="grid grid-cols-2 gap-3">
           <div className="field"><label htmlFor="np-n">{t("prof.packLessons")}</label><input id="np-n" className="input" inputMode="numeric" value={np.n || ""} onChange={(e) => setNp({ ...np, n: Number(e.target.value.replace(/\D/g, "")) || 0 })} /></div>

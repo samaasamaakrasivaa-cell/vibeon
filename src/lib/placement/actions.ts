@@ -309,6 +309,9 @@ export async function assignPlacement(studentId: string, expected?: string | nul
   const seen = await seenBy({ studentId, track });
   await db.placementAttempt.create({ data: { teacherId: me.id, studentId, checkpointId: c.id, mode: "student", track, token: randomToken(24), state: json(withSeen(emptyState(expectOf(expected), track), seen)) } });
   if (s.userId) await notify({ userId: s.userId, kind: "test", title: track === "teen" ? "Учитель назначил тебе Placement test Teens — нажми, чтобы начать" : "Преподаватель назначил вам placement test — можно начинать", action: "take", link: `/student/test/${c.id}` });
+  // и в «Обновления» учителя — что тест назначен (сразу отмечено сделанным: уйдёт из списка через сутки)
+  const mine = await notify({ userId: me.id, kind: "test", title: `${[s.name, s.lastName].filter(Boolean).join(" ")}: назначен ${track === "teen" ? "Placement test Teens" : "placement test"}${s.userId ? "" : " (ученик ещё не вошёл на платформу — увидит после входа)"}`, link: `/teacher/students/${studentId}?tab=roadmap` });
+  if (mine) await db.notification.update({ where: { id: mine.id }, data: { readAt: new Date(), doneAt: new Date() } });
   refreshT(studentId);
   return { ok: true, id: c.id };
 }

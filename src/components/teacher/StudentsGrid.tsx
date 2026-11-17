@@ -8,7 +8,7 @@ import { Dialog } from "../Dialog";
 import { InviteForm } from "./InviteForm";
 import { useT } from "@/lib/i18n/client";
 
-export type Card = { id: string; name: string; sub: string; initials: string; color: number; href: string; badge?: string };
+export type Card = { id: string; name: string; sub: string; initials: string; color: number; href: string; badge?: string; tg?: boolean };
 const COLORS = [
   ["var(--accent-bg)", "var(--accent-text)"], ["var(--ok-bg)", "var(--ok-text)"], ["var(--bad-bg)", "var(--bad-text)"],
   ["var(--warn-bg)", "var(--warn-text)"], ["var(--violet-bg)", "var(--violet)"], ["#E0F7F8", "#0B7480"],
@@ -59,6 +59,7 @@ export function StudentsGrid({ cards, empty, title }: { cards: Card[]; empty: st
               <span className="avatar lg" style={avatarStyle(c.color)}>{c.initials}</span>
               <span className="grow"><b>{c.name}</b><span>{c.sub}</span></span>
               {c.badge && <span className="pill grey">{c.badge}</span>}
+              {c.tg !== undefined && <span className={`tgdot ${c.tg ? "on" : ""}`} title={t(c.tg ? "prof.tgOn" : "prof.tgOff")} aria-label={t(c.tg ? "prof.tgOn" : "prof.tgOff")}><Icon name="telegram" size="sm" /></span>}
               <Icon name="right" size="sm" className="text-text3" />
             </Link>
           ))}

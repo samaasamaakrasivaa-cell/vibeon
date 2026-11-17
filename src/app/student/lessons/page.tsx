@@ -21,6 +21,8 @@ export default async function MyLessons({ searchParams }: { searchParams: Promis
     orderBy: { startsAt: "desc" },
   });
   const hw = new Map((await homeworkFor({ studentId: s.id })).map((h) => [h.lesson.id, h]));
+  // назначенный тест — тоже домашняя работа
+  const tests = await db.placementAttempt.findMany({ where: { studentId: s.id, mode: "student", checkpointId: { not: null }, status: { in: ["new", "active", "submitted"] } }, orderBy: { createdAt: "desc" }, take: 3 });
   const courses = [...new Map(lessons.map((l) => [l.template!.unit.course.id, l.template!.unit.course])).values()];
   const cid = (await searchParams).c ?? s.courseId ?? courses[0]?.id;
   const inCourse = lessons.filter((l) => l.template!.unit.courseId === cid);
@@ -41,6 +43,18 @@ export default async function MyLessons({ searchParams }: { searchParams: Promis
   return (
     <div className="page">
       <h1 className="mb-5">{t("nav.lessons")}</h1>
+      {tests.length > 0 && (
+        <section className="card mb-6">
+          <p className="cardtitle">{t("stl.tests")}</p>
+          {tests.map((x) => (
+            <Link key={x.id} href={`/student/test/${x.checkpointId}`} className="row hover:bg-surface2">
+              <span className="pill violet"><Icon name="target" size="sm" /></span>
+              <div className="grow"><div className="t">{x.track === "teen" ? "Placement test Teens" : "Placement test"}</div><div className="s">{x.status === "submitted" ? t("stl.testSent") : x.status === "active" ? t("stl.testGoOn") : t("stl.testStart")}</div></div>
+              <span className={`pill ${x.status === "submitted" ? "orange" : "red"}`}>{x.status === "submitted" ? t("stl.hwSent") : t("stl.hwTodo")}</span>
+            </Link>
+          ))}
+        </section>
+      )}
       {courses.length === 0 ? <div className="card"><p className="hint m-0">{t("stl.none")}</p></div> : (
         <>
           <nav className="tabsbar fit mb-6">

@@ -55,6 +55,34 @@ export async function markPaid(id: string): Promise<R> {
   return { ok: true };
 }
 
+/** Счёт для правки: сумма и уроки в нём (дата, цена). */
+export async function invoiceDetails(id: string) {
+  const inv = await teacherInvoice(id);
+  const ls = inv.lessonIds.length ? await db.lessonInstance.findMany({ where: { id: { in: inv.lessonIds } }, select: { id: true, startsAt: true, price: true }, orderBy: { startsAt: "asc" } }) : [];
+  return { amount: inv.amount, status: inv.status, title: inv.title, lessons: ls.map((l) => ({ id: l.id, at: l.startsAt.toISOString(), price: l.price ?? inv.student.price ?? 0 })) };
+}
+
+/** Исправить счёт (и оплаченный — если при отметке оплаты не заметили, что сумма неверная): цены уроков в нём
+ *  или сумму целиком. Уроки получают новую цену — расписание и «заработано» считаются по ней. */
+export async function updateInvoice(id: string, input: { amount?: number; lessons?: { id: string; price: number }[] }): Promise<R> {
+  const { t } = await getT();
+  const inv = await teacherInvoice(id);
+  if (inv.status === "CANCELLED") return { ok: false, error: t("pay.editCancelled") };
+  const ok = (n: unknown) => Number.isFinite(Number(n)) && Number(n) >= 0 && Number(n) < 10_000_000;
+  let amount = Math.round(Number(input.amount ?? inv.amount));
+  if (input.lessons?.length) {
+    const ls = input.lessons.filter((l) => inv.lessonIds.includes(l.id));
+    if (ls.some((l) => !ok(l.price))) return { ok: false, error: t("sch.priceBad") };
+    for (const l of ls) await db.lessonInstance.update({ where: { id: l.id }, data: { price: Math.round(Number(l.price)) } });
+    const all = await db.lessonInstance.findMany({ where: { id: { in: inv.lessonIds } }, select: { price: true } });
+    amount = all.reduce((a, l) => a + (l.price ?? 0), 0);
+  }
+  if (!ok(amount) || amount <= 0) return { ok: false, error: t("sch.priceBad") };
+  await db.invoice.update({ where: { id }, data: { amount } });
+  refresh();
+  return { ok: true };
+}
+
 /** «ОК» у автоматически принятой оплаты — строка закрывается. */
 export async function closeInvoice(id: string): Promise<R> {
   await teacherInvoice(id);

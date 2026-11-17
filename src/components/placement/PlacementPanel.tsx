@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useT } from "@/lib/i18n/client";
 import type { DictKey } from "@/lib/i18n/dict";
-import { assignPlacement, closePlacementLink, createPlacementLink, selfPlacement, setLinkShowResult } from "@/lib/placement/actions";
+import { assignPlacement, closePlacementLink, deletePlacement, createPlacementLink, selfPlacement, setLinkShowResult } from "@/lib/placement/actions";
 import { useRun } from "../courses/useRun";
 import { Dialog } from "../Dialog";
 import { Icon } from "../Icon";
@@ -71,12 +71,15 @@ export function PlacementPanel({ students, rows, links, origin, owner, teen, age
         {rows.length === 0 ? <p className="hint m-0">{t("pl.noResults")}</p> : (
           <div className="flex flex-col">
             {rows.map((r) => (
-              <Link key={r.id} href={r.mode === "self" && (r.status === "new" || r.status === "active") ? `/placement/${r.id}` : `/teacher/placement/${r.id}`} className="plrow">
-                <span className="grow min-w-0"><b className="truncate block">{r.who}{r.track === "teen" && <span className="pill ml-2">Teens</span>}</b><span className="small muted">{t(`pl.mode.${r.mode}` as "pl.mode.self")} · {r.when}</span></span>
-                {r.level && <span className="lvlsm">{r.level}</span>}
-                <span className={`pill ${r.status === "reviewed" ? "green" : r.status === "submitted" ? "orange" : "grey"}`}>{t(`pl.st.${r.status}` as "pl.st.new")}</span>
-                <Icon name="right" size="sm" />
-              </Link>
+              <div key={r.id} className="plrow">
+                <Link href={r.mode === "self" && (r.status === "new" || r.status === "active") ? `/placement/${r.id}` : `/teacher/placement/${r.id}`} className="pllink">
+                  <span className="grow min-w-0"><b className="truncate block">{r.who}{r.track === "teen" && <span className="pill ml-2">Teens</span>}</b><span className="small muted">{t(`pl.mode.${r.mode}` as "pl.mode.self")} · {r.when}</span></span>
+                  {r.level && <span className="lvlsm">{r.level}</span>}
+                  <span className={`pill ${r.status === "reviewed" ? "green" : r.status === "submitted" ? "orange" : "grey"}`}>{t(`pl.st.${r.status}` as "pl.st.new")}</span>
+                  <Icon name="right" size="sm" />
+                </Link>
+                <button type="button" className="iconbtn" title={t("pl.delete")} aria-label={`${t("pl.delete")}: ${r.who}`} disabled={pending} onClick={() => confirm(t("pl.delConfirm")) && run(() => deletePlacement(r.id))}><Icon name="close" size="sm" /></button>
+              </div>
             ))}
           </div>
         )}
