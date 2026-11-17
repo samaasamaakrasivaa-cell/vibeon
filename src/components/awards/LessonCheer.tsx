@@ -1,7 +1,8 @@
 "use client";
 import { useMemo, useState } from "react";
 import { useT } from "@/lib/i18n/client";
-import { CATALOG, METALS, nameFor, type CatalogItem } from "@/lib/awards/catalog";
+import { CATALOG, METALS, nameFor, whyFor, type CatalogItem } from "@/lib/awards/catalog";
+import { PhraseLangSwitch, usePhraseLang, type PL } from "./PhraseLang";
 import { giveAward } from "@/lib/awards/actions";
 import { setStudentField } from "@/lib/teacher/actions";
 import { Dialog } from "../Dialog";
@@ -11,8 +12,8 @@ export type CheerTo = { sid: string; name: string; gender: string | null; inClas
 
 /** Урок → «Подарить приятность»: тёплое поощрение ученику; если он в классе — праздничное окно появится у него сразу. */
 export function LessonCheer({ to, onClose, onGiven }: { to: CheerTo[]; onClose: () => void; onGiven: (awardId: string) => Promise<unknown> }) {
-  const { t, lang } = useT();
-  const L = lang === "en" ? "en" : "ru";
+  const { t } = useT();
+  const [L, setL] = usePhraseLang(); // язык фразы: по-русски или по-английски
   const [sid, setSid] = useState<string | null>(to.length === 1 ? to[0].sid : null);
   const who = to.find((x) => x.sid === sid) ?? null;
   const [genders, setGenders] = useState<Record<string, string | null>>(() => Object.fromEntries(to.map((x) => [x.sid, x.gender])));
@@ -29,12 +30,13 @@ export function LessonCheer({ to, onClose, onGiven }: { to: CheerTo[]; onClose: 
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState(false);
   const [done, setDone] = useState<string | null>(null);
-  const choose = (c: CatalogItem) => { setPick(c); setName(nameFor(c, L, gender)); setWhy(c.why[L]); };
-  const gendered = pick && typeof pick.name.ru !== "string" && L === "ru";
+  const choose = (c: CatalogItem) => { setPick(c); setName(nameFor(c, L, gender)); setWhy(whyFor(c, L, gender)); };
+  const switchLang = (v: PL) => { setL(v); if (pick) { setName(nameFor(pick, v, gender)); setWhy(whyFor(pick, v, gender)); } };
+  const gendered = pick && L === "ru" && (typeof pick.name.ru !== "string" || /\(а\)/.test(pick.name.ru + pick.why.ru));
   const setG = (v: "f" | "m") => {
     if (!sid) return;
     setGenders((g) => ({ ...g, [sid]: v }));
-    if (pick) setName(nameFor(pick, L, v));
+    if (pick) { setName(nameFor(pick, L, v)); setWhy(whyFor(pick, L, v)); }
     void setStudentField(sid, "gender", v);
   };
   const give = async () => {
@@ -58,9 +60,10 @@ export function LessonCheer({ to, onClose, onGiven }: { to: CheerTo[]; onClose: 
       ) : (
         <>
           <p className="muted mt-0">{t("chr.hint")}</p>
+          <PhraseLangSwitch value={L} onChange={switchLang} />
           {to.length > 1 && (
             <div className="field mb-3"><span className="flabel">{t("grp.fbTo")}</span>
-              <div className="flex flex-wrap gap-1.5">{to.map((m) => <button key={m.sid} type="button" className={`pchip ${sid === m.sid ? "on" : ""}`} aria-pressed={sid === m.sid} onClick={() => { setSid(m.sid); if (pick) setName(nameFor(pick, L, genders[m.sid])); }}>{m.name}</button>)}</div>
+              <div className="flex flex-wrap gap-1.5">{to.map((m) => <button key={m.sid} type="button" className={`pchip ${sid === m.sid ? "on" : ""}`} aria-pressed={sid === m.sid} onClick={() => { setSid(m.sid); if (pick) { setName(nameFor(pick, L, genders[m.sid])); setWhy(whyFor(pick, L, genders[m.sid])); } }}>{m.name}</button>)}</div>
             </div>
           )}
           <div className="awgrid chrgrid">

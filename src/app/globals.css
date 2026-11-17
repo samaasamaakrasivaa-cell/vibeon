@@ -2163,3 +2163,8 @@ button.grp-row:hover { background: var(--fill); }
 .chrnudge > span[aria-hidden] { font-size: 22px; }
 .chrnudge:hover { background: linear-gradient(180deg, rgba(255,107,154,.16), rgba(255,201,60,.18)); }
 .chrform .input, .chrform .textarea { background: var(--surface); }
+.awlang { display: flex; align-items: center; gap: 10px; }
+.awlang .seg button { min-width: 56px; }
+.chrform + .alert, .awlang + .awgrid { margin-top: 0; }
+.dlg .awlang { margin-bottom: 10px; }
+.awgive .awlang { margin-bottom: 0; }

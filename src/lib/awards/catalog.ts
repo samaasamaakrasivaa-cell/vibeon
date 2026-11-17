@@ -118,6 +118,11 @@ export const CATALOG: CatalogItem[] = [
   // тёплые — после урока, просто чтобы стало приятно
   c("beauty", "nice", { f: "Ты сегодня красотка!", m: "Ты сегодня красавчик!" }, "Looking great today!", "Не могу не сказать — и урок был таким же классным.", "Couldn't help saying it — and the lesson was just as great.", "gem", "rose"),
   c("stunning", "nice", { f: "Ты сегодня выглядела потрясающе", m: "Ты сегодня выглядел потрясающе" }, "You looked amazing today", "И настроение у урока было под стать.", "And the lesson's mood matched.", "flower", "rose"),
+  c("work_with", "nice", "Было приятно поработать с тобой сегодня", "It was a pleasure working with you today", "Спасибо за урок — до встречи!", "Thanks for the lesson — see you soon!", "smile", "gold"),
+  c("day_start", "nice", "Было приятно начать рабочий день с нашего урока", "Our lesson was a lovely start to my working day", "Ты задал(а) тон всему дню.", "You set the tone for my whole day.", "sun", "gold"),
+  c("day_end", "nice", "Было приятно закончить рабочий день нашим уроком", "Our lesson was a lovely end to my working day", "Лучшее завершение дня.", "The best way to end the day.", "cup", "amethyst"),
+  c("dont_worry", "nice", "Не волнуйся, у тебя всё получится", "Don't worry — you've got this", "Ты готов(а) лучше, чем думаешь.", "You're better prepared than you think.", "heart", "sapphire"),
+  c("better", "nice", "Знай: ты становишься всё лучше и лучше", "You're getting better and better", "Я вижу это на каждом уроке.", "I see it every lesson.", "up", "emerald"),
   c("cool_day", "nice", "Не грусти — сегодня будет крутой день", "Cheer up — today's going to be great", "Ты со всем справишься, а я в тебя верю.", "You'll handle everything — I believe in you.", "sun", "gold"),
   c("smile", "nice", "Спасибо за улыбку", "Thanks for the smile", "С тобой урок проходит тепло и легко.", "Lessons with you feel warm and easy.", "smile", "gold"),
   c("proud", "nice", "Я тобой горжусь", "I'm proud of you", "Сегодня ты сделал(а) больше, чем тебе кажется.", "You did more today than you think.", "heart", "rose"),
@@ -144,8 +149,19 @@ export const CATALOG: CatalogItem[] = [
 export function nameFor(it: CatalogItem, lang: "ru" | "en", gender: string | null | undefined) {
   if (lang === "en") return it.name.en;
   const n = it.name.ru;
-  if (typeof n === "string") return n;
+  if (typeof n === "string") return byGender(n, gender);
   return gender === "m" ? n.m : gender === "f" ? n.f : bothForms(n.f, n.m);
+}
+
+/** «Ты сделал(а)» → «Ты сделала» / «Ты сделал» по полу ученика; пол не указан — как есть. */
+export function byGender(s: string, gender: string | null | undefined) {
+  if (gender !== "f" && gender !== "m") return s;
+  return s.replace(/(\p{L}+)\(а\)/gu, (_, w: string) => (gender === "f" ? `${w}а` : w));
+}
+
+/** «За что» из каталога на нужном языке и с окончаниями по полу. */
+export function whyFor(it: CatalogItem, lang: "ru" | "en", gender: string | null | undefined) {
+  return lang === "en" ? it.why.en : byGender(it.why.ru, gender);
 }
 
 /** «Королева языковой догадки» + «Король языковой догадки» → «Королева / Король языковой догадки». */

@@ -1,7 +1,8 @@
 "use client";
 import { useMemo, useState } from "react";
 import { useT } from "@/lib/i18n/client";
-import { CATALOG, GROUPS, ICON_KEYS, METAL_KEYS, METALS, nameFor, type AwardKind, type CatalogItem } from "@/lib/awards/catalog";
+import { CATALOG, GROUPS, ICON_KEYS, METAL_KEYS, METALS, nameFor, whyFor, type AwardKind, type CatalogItem } from "@/lib/awards/catalog";
+import { PhraseLangSwitch, usePhraseLang, type PL } from "./PhraseLang";
 import { deleteAward, giveAward, pinAward, setAwardMain } from "@/lib/awards/actions";
 import { setStudentField } from "@/lib/teacher/actions";
 import { useRun } from "../courses/useRun";
@@ -75,16 +76,18 @@ function GiveDialog({ studentId, studentName, gender: g0, linked, onClose }: { s
   const [until, setUntil] = useState("");
   const [onMain, setOnMain] = useState(true);
   const [tg, setTg] = useState(true);
-  const L = lang === "en" ? "en" : "ru";
+  const L = lang === "en" ? "en" : "ru"; // язык интерфейса — для групп
+  const [pl, setPl] = usePhraseLang(); // язык самой фразы — выбирает учитель
   const list = useMemo(() => CATALOG.filter((c) => c.kind === kind && (group === "all" || c.group === group)), [kind, group]);
   const choose = (c: CatalogItem | null) => {
     setPick(c);
     if (!c) { setName(""); setWhy(""); return; }
-    setName(nameFor(c, L, gender)); setWhy(c.why[L]); setIcon(c.icon); setColor(c.color); setTerm(c.term);
+    setName(nameFor(c, pl, gender)); setWhy(whyFor(c, pl, gender)); setIcon(c.icon); setColor(c.color); setTerm(c.term);
   };
+  const switchLang = (v: PL) => { setPl(v); if (pick) { setName(nameFor(pick, v, gender)); setWhy(whyFor(pick, v, gender)); } };
   // пол не указан, а у статуса две формы — выбираем здесь и запоминаем в анкете
-  const gendered = pick && typeof pick.name.ru !== "string" && L === "ru";
-  const setG = (v: "f" | "m") => { setGender(v); if (pick) setName(nameFor(pick, L, v)); void setStudentField(studentId, "gender", v); };
+  const gendered = pick && pl === "ru" && (typeof pick.name.ru !== "string" || /\(а\)/.test(pick.name.ru + pick.why.ru));
+  const setG = (v: "f" | "m") => { setGender(v); if (pick) { setName(nameFor(pick, pl, v)); setWhy(whyFor(pick, pl, v)); } void setStudentField(studentId, "gender", v); };
   const submit = () => run(() => giveAward(studentId, { kind, key: pick?.key ?? null, name, why, icon, color, term, until, onMain: kind === "title" && onMain, tg }), onClose);
   return (
     <Dialog open onClose={onClose} title={t("aw.giveTo", { n: studentName })} wide>
@@ -95,6 +98,7 @@ function GiveDialog({ studentId, studentName, gender: g0, linked, onClose }: { s
             <button type="button" className="flex-1" aria-pressed={kind === "cheer"} onClick={() => { setKind("cheer"); setGroup("all"); choose(null); }}>{t("aw.kindCheer")}</button>
           </div>
           <p className="hint m-0">{kind === "title" ? t("aw.kindTitleHint") : t("aw.kindCheerHint")}</p>
+          <PhraseLangSwitch value={pl} onChange={switchLang} />
           <div className="chips">
             {[{ key: "all", ru: "Все", en: "All" }, ...GROUPS.filter((x) => x.kind === kind)].map((x) => (
               <label key={x.key} className="chip"><input type="radio" name="aw-g" checked={group === x.key} onChange={() => setGroup(x.key)} /><span>{x[L]}</span></label>
@@ -104,7 +108,7 @@ function GiveDialog({ studentId, studentName, gender: g0, linked, onClose }: { s
             {list.map((c) => (
               <button key={c.key} type="button" className={`awcard ${pick?.key === c.key ? "on" : ""}`} onClick={() => choose(c)}>
                 <Medal icon={c.icon} color={c.color} size={36} shape={kind === "title" ? "hex" : "circle"} />
-                <b>{nameFor(c, L, gender)}</b>
+                <b>{nameFor(c, pl, gender)}</b>
               </button>
             ))}
             <button type="button" className={`awcard own ${!pick ? "on" : ""}`} onClick={() => choose(null)}>
