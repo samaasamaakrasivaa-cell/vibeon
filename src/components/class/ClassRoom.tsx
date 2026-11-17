@@ -409,7 +409,8 @@ export function ClassRoom({ d }: { d: ClassData }) {
               )
             )}
             {tab === "homework" && (
-              <Homework teacher={teacher} tasks={hwTasks} statuses={statuses} reviews={reviews} training={hw.wordTraining} comment={hw.teacherComment} render={renderTasks} />
+              <Homework teacher={teacher} tasks={hwTasks} statuses={statuses} reviews={reviews} training={hw.wordTraining} comment={hw.teacherComment} render={renderTasks}
+                cards={[...d.lessonWords.map((w) => ({ word: w.word, tr: w.tr, ex: w.ex })), ...words.filter((w) => !d.lessonWords.some((l) => l.word.toLowerCase() === w.word.toLowerCase())).map((w) => ({ word: w.word, tr: w.translation ?? "", ex: w.example ?? "" }))].filter((w) => w.tr || w.ex)} />
             )}
             {tab === "words" && <Words key={viewSid} teacher={teacher} lessonWords={d.lessonWords} words={words} training={hw.wordTraining} send={send} setHw={setHw} />}
             {tab === "board" && (
@@ -434,7 +435,12 @@ export function ClassRoom({ d }: { d: ClassData }) {
               key={noteSid}
               value={snotes[noteSid] ?? ""}
               onChange={(v) => { setSnotes((n) => ({ ...n, [noteSid]: v })); return rawSend("snote", { text: v, ...(gTeacher ? { studentId: noteSid } : {}) }); }}
-              who={gTeacher ? <div className="flex flex-wrap gap-1">{d.group!.members.map((m) => <button key={m.sid} type="button" className={`pchip ${noteSid === m.sid ? "on" : ""}`} aria-pressed={noteSid === m.sid} onClick={() => setNoteSid(m.sid)}>{m.name.split(" ")[0]}</button>)}</div> : null}
+              who={gTeacher ? <div className="flex flex-wrap gap-1">
+                {/* «Все» — заметки всех учеников друг под другом; имя — заметка одного ученика, её можно править */}
+                <button type="button" className={`pchip ${noteSid === "*" ? "on" : ""}`} aria-pressed={noteSid === "*"} onClick={() => setNoteSid("*")}>{t("cls.snoteAll")}</button>
+                {d.group!.members.map((m) => <button key={m.sid} type="button" className={`pchip ${noteSid === m.sid ? "on" : ""}`} aria-pressed={noteSid === m.sid} onClick={() => setNoteSid(m.sid)}>{m.name.split(" ")[0]}</button>)}</div> : null}
+              all={gTeacher && noteSid === "*" ? d.group!.members.map((m) => ({ sid: m.sid, name: m.name, text: snotes[m.sid] ?? "" })) : undefined}
+              onPick={(sid) => setNoteSid(sid)}
               hint={teacher ? (d.group ? t("cls.snoteHintGroup") : t("cls.snoteHintTeacher", { name: d.student?.name ?? "" })) : t("cls.snoteHint")}
             />
             {/* курс и урок — подписью над секциями */}
@@ -593,11 +599,13 @@ function ReviewBox({ lessonId, task, review, draft, answered, send }: { lessonId
   );
 }
 
-function Homework({ teacher, tasks, statuses, reviews, training, comment, render }: {
+function Homework({ teacher, tasks, statuses, reviews, training, comment, render, cards }: {
   teacher: boolean; tasks: (TaskData & { section: string })[]; statuses: Record<string, string>; reviews: Record<string, Review>; training: string[]; comment: string | null;
-  render: (list: never[], inHw?: boolean) => React.ReactNode;
+  render: (list: never[], inHw?: boolean) => React.ReactNode; cards: { word: string; tr: string; ex: string }[];
 }) {
   const { t } = useT();
+  const [train, setTrain] = useState(false);
+  const say = (w: string) => { const u = new SpeechSynthesisUtterance(w); u.lang = "en-GB"; u.rate = 0.9; speechSynthesis.cancel(); speechSynthesis.speak(u); };
   const [f, setF] = useState<"all" | "auto" | "needs">("all");
   const auto = tasks.filter((x) => statuses[x.id] === "AUTO_CHECKED");
   const needs = tasks.filter((x) => statuses[x.id] === "NEEDS_REVIEW" && !reviews[x.id]);
@@ -613,17 +621,15 @@ function Homework({ teacher, tasks, statuses, reviews, training, comment, render
         </div>
       )}
       {!teacher && comment && <div className="alert mb-4" style={{ background: "var(--accent-bg)", color: "var(--accent-text)" }}>{comment}</div>}
+      {/* слова этого урока — одна тренировка, запускается прямо здесь (и у учителя, и у ученика) */}
       {training.length > 0 && f === "all" && (
-        <div className="grid-2 mb-4">
-          {training.map((k) => (
-            <div key={k} className="tk flex items-center gap-3">
-              <span className="si statt" style={{ background: "var(--accent-bg)", padding: 10 }}><Icon name="cards" /></span>
-              <div className="grow"><b className="block">{k === "new" ? t("cls.trainNew") : t("cls.trainAll")}</b><span className="small muted">{t("cls.trainSoon")}</span></div>
-              <Link href="/student/words" className="btn primary sm">{t("cls.start")}</Link>
-            </div>
-          ))}
+        <div className="tk mb-4 flex items-center gap-3">
+          <span className="si statt" style={{ background: "var(--accent-bg)", padding: 10 }}><Icon name="cards" /></span>
+          <div className="grow"><b className="block">{t("cls.trainLesson")}</b><span className="small muted">{cards.length ? t("cls.trainLessonSub", { n: cards.length }) : t("cls.noWords")}</span></div>
+          <button type="button" className="btn primary sm" disabled={!cards.length} onClick={() => setTrain(true)}>{t("cls.start")}</button>
         </div>
       )}
+      {train && <WordTrainer cards={cards} say={say} onClose={() => setTrain(false)} />}
       {render(list as never[], true)}
     </>
   );
@@ -925,7 +931,7 @@ function Timer({ left, paused, task, onSet, onClearTask }: { left: number; pause
 }
 
 /** Заметки урока ученика: пишут и ученик, и учитель, сохраняется на ходу и сразу видно у другого. */
-function SharedNotes({ value, onChange, who, hint }: { value: string; onChange: (v: string) => Promise<unknown>; who: React.ReactNode; hint: string }) {
+function SharedNotes({ value, onChange, who, hint, all, onPick }: { value: string; onChange: (v: string) => Promise<unknown>; who: React.ReactNode; hint: string; all?: { sid: string; name: string; text: string }[]; onPick?: (sid: string) => void }) {
   const { t } = useT();
   const [v, setV] = useState(value);
   const [state, setState] = useState<"" | "saving" | "saved">("");
@@ -948,8 +954,18 @@ function SharedNotes({ value, onChange, who, hint }: { value: string; onChange: 
     <div className="cls-snote mt-4">
       <div className="flex items-center justify-between gap-2"><b className="small">{t("cls.snote")}</b><span className="small muted">{state === "saving" ? "…" : state === "saved" ? "✓" : ""}</span></div>
       {who}
-      <textarea className="textarea" rows={5} value={v} placeholder={t("cls.snotePh")} aria-label={t("cls.snote")}
-        onChange={(e) => change(e.target.value)} />
+      {all ? (
+        <div className="snall">
+          {all.map((x) => (
+            <button key={x.sid} type="button" className="snall-item" title={t("cls.snoteEdit")} onClick={() => onPick?.(x.sid)}>
+              <b>{x.name}</b><span className={x.text.trim() ? "" : "muted"}>{x.text.trim() || t("cls.snoteEmpty")}</span>
+            </button>
+          ))}
+        </div>
+      ) : (
+        <textarea className="textarea" rows={5} value={v} placeholder={t("cls.snotePh")} aria-label={t("cls.snote")}
+          onChange={(e) => change(e.target.value)} />
+      )}
       <span className="small muted">{hint}</span>
     </div>
   );

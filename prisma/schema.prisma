@@ -37,6 +37,7 @@ model User {
   notify          Json      @default("{}") // настройки уведомлений: каналы по темам, напоминание об уроке, тихие часы
   phone           String?
   consentAt       DateTime? // согласие на обработку ПД (152-ФЗ)
+  lastSeenAt      DateTime? // последнее активное действие на платформе («был(а) в сети…»)
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
@@ -48,6 +49,19 @@ model User {
   notifications  Notification[]
   sentMessages   Message[]       @relation("MessageSender")
   notes          Note[]
+  activity       ActivityDay[]
+}
+
+/// Активное время на платформе по дням (в часовом поясе пользователя): минуты, в которые были клики, ввод, переходы.
+model ActivityDay {
+  userId       String
+  day          String // YYYY-MM-DD
+  minutes      Int      @default(0)
+  classMinutes Int      @default(0) // из них — в классе (урок, домашка)
+  lastAt       DateTime @default(now())
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, day])
 }
 
 model Session {

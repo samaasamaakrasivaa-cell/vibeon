@@ -1,4 +1,5 @@
 import { AppHeader } from "@/components/AppHeader";
+import { ActivityPing } from "@/components/ActivityPing";
 import { Sidebar } from "@/components/Sidebar";
 import { getT } from "@/lib/i18n/server";
 import { requireUser } from "@/lib/auth/session";
@@ -37,6 +38,7 @@ export default async function StudentLayout({ children }: { children: React.Reac
   ];
   return (
     <>
+      <ActivityPing />
       <AppHeader subtitle={t("ws.student")} user={user} homeHref="/student" profileHref="/student/profile" />
       <div className="shell">
         <Sidebar groups={groups} ariaLabel={t("ws.student")} />

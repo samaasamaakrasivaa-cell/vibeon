@@ -1,3 +1,4 @@
+import { ActivityPing } from "@/components/ActivityPing";
 import { notFound } from "next/navigation";
 import type { TInfo } from "@/lib/tasks/teacher-info";
 import { ClassRoom, type AiCheck, type Review } from "@/components/class/ClassRoom";
@@ -74,6 +75,8 @@ export default async function ClassPage({ params, searchParams }: { params: Prom
   const roadmap = lesson.studentId && !group ? await db.roadmap.findFirst({ where: { studentId: lesson.studentId, approvedAt: { not: null } }, orderBy: { createdAt: "desc" } }) : null;
   const board = (host.board as { pages?: BObj[][] })?.pages ?? [[]];
   return (
+    <>
+    {role === "student" && <ActivityPing cls />}
     <ClassRoom
       d={{
         id, templateId: templateId, role, me: { id: user.id, name: user.name },
@@ -114,5 +117,6 @@ export default async function ClassPage({ params, searchParams }: { params: Prom
         initialTab: ((t) => (t === "homework" || t === "words" || t === "board" ? t : "lesson"))((await searchParams).tab),
       }}
     />
+    </>
   );
 }

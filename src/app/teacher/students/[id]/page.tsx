@@ -12,7 +12,7 @@ import { getT } from "@/lib/i18n/server";
 import { buildMessage, initials, inviteUrl } from "@/lib/invite";
 import { GOALS, SINCE, SKILLS } from "@/lib/onboarding";
 import { earnedOf, rub, syncSchedule } from "@/lib/teacher/data";
-import { hhmm, isoDay, TIMEZONES } from "@/lib/time";
+import { addDaysIso, hhmm, isoDay, TIMEZONES } from "@/lib/time";
 import { RoadmapEditor, SkillBars } from "@/components/roadmap/RoadmapEditor";
 import { editorData, progressData } from "@/lib/roadmap/progress";
 import { SKILL_COLOR, SKILL_NAME, SKILLS as RM_SKILLS, txt } from "@/lib/roadmap/cefr";
@@ -41,7 +41,20 @@ export default async function StudentProfile({ params, searchParams }: { params:
   });
   if (!s || s.teacherId !== me.id) notFound();
   // подключён ли Telegram-бот: у ученика — после входа на платформу и нажатия «Подключить Telegram», у плательщика — по ссылке из оплаты
-  const tgUser = s.userId ? await db.user.findUnique({ where: { id: s.userId }, select: { telegramChatId: true } }) : null;
+  const tgUser = s.userId ? await db.user.findUnique({ where: { id: s.userId }, select: { telegramChatId: true, lastSeenAt: true, timezone: true } }) : null;
+  // активность ученика: «был(а) в сети…» и активные минуты за последние 7 дней (только действия, не фоновая вкладка)
+  const days7 = Array.from({ length: 7 }, (_, i) => addDaysIso(isoDay(new Date(), me.timezone), i - 6));
+  const act = s.userId ? await db.activityDay.findMany({ where: { userId: s.userId, day: { in: days7 } } }) : [];
+  const actBy = new Map(act.map((a) => [a.day, a]));
+  const seenAgo = (d: Date) => {
+    const m = Math.round((Date.now() - d.getTime()) / 60000);
+    if (m < 3) return t("prof.seenNow");
+    if (m < 60) return t("prof.seenMin", { n: m });
+    if (m < 24 * 60 && isoDay(d, me.timezone) === isoDay(new Date(), me.timezone)) return t("prof.seenH", { n: Math.round(m / 60) });
+    if (isoDay(d, me.timezone) === addDaysIso(isoDay(new Date(), me.timezone), -1)) return t("prof.seenYesterday", { t: hhmm(d, me.timezone) });
+    return t("prof.seenDate", { d: d.toLocaleDateString(lang === "ru" ? "ru-RU" : "en-GB", { day: "numeric", month: "short", timeZone: me.timezone }) });
+  };
+  const fmtMin = (n: number) => (n >= 60 ? t("prof.hMin", { h: Math.floor(n / 60), m: n % 60 }) : t("prof.min", { n }));
   // последний пройденный тест — кнопкой в шапке анкеты, чтобы не искать в «Курсах»
   const lastTest = await db.placementAttempt.findFirst({ where: { studentId: s.id, status: { in: ["submitted", "reviewed"] } }, orderBy: { submittedAt: "desc" }, select: { id: true, status: true, level: true } });
 
@@ -92,7 +105,9 @@ export default async function StudentProfile({ params, searchParams }: { params:
             {s.course && <span>{s.course}</span>}
             {s.status === "INVITED" && <span className="pill orange">{t("prof.invited")}</span>}
             {s.status === "ARCHIVED" && <span className="pill grey">{t("stu.archived")}</span>}
-            <span className={`pill ${s.userId ? "green" : "grey"}`} title={t("prof.platformHint")}>{s.userId ? "✓ " : ""}{t(s.userId ? "prof.onPlatform" : "prof.notOnPlatform")}</span>
+            {/* статус: приглашён и ещё не заходил / был в сети — как в мессенджерах */}
+            {!s.userId ? <span className="pill orange" title={t("prof.invitedHint")}>{s.invites[0] ? t("prof.invitedOn", { d: dateFmt(s.invites[0].createdAt, { day: "numeric", month: "short" }) }) : t("prof.notOnPlatform")}</span>
+              : <span className={`pill ${tgUser?.lastSeenAt && Date.now() - tgUser.lastSeenAt.getTime() < 3 * 60000 ? "green" : "grey"}`}>{tgUser?.lastSeenAt ? seenAgo(tgUser.lastSeenAt) : t("prof.registered")}</span>}
             {tgUser?.telegramChatId || !s.userId ? <span className={`pill ${tgUser?.telegramChatId ? "green" : "grey"}`} title={t("prof.tgHint")}><Icon name="telegram" size="sm" />{t(tgUser?.telegramChatId ? "prof.tgOn" : "prof.tgOff")}</span> : <TgAsk id={s.id} />}
             {lastTest && <Link href={`/teacher/placement/${lastTest.id}`} className={`pill ${lastTest.status === "submitted" ? "orange" : "violet"}`}><Icon name="target" size="sm" />{lastTest.status === "submitted" ? t("prof.testToReview") : `${t("prof.testResult")}${lastTest.level ? ` · ${lastTest.level}` : ""}`}</Link>}
             {(s.payerName || s.payerChatId) && <span className={`pill ${s.payerChatId ? "green" : "grey"}`}><Icon name="telegram" size="sm" />{t(s.payerChatId ? "prof.payerTgOn" : "prof.payerTgOff")}</span>}
@@ -167,6 +182,25 @@ export default async function StudentProfile({ params, searchParams }: { params:
                 payerLinked: !!s.payerChatId, studentName: s.name, teacherName: meName,
               }}
             />
+            {s.userId && (
+              <section className="card sm">
+                <div className="mb-2 flex items-center justify-between"><p className="cardtitle m-0">{t("prof.activity")}</p><span className="small muted">{tgUser?.lastSeenAt ? seenAgo(tgUser.lastSeenAt) : ""}</span></div>
+                <div className="flex items-baseline gap-2"><b className="text-[22px]">{fmtMin(act.reduce((a, x) => a + x.minutes, 0))}</b><span className="small muted">{t("prof.act7")}</span></div>
+                <div className="actbars" aria-label={t("prof.activity")}>
+                  {days7.map((d) => {
+                    const a = actBy.get(d), max = Math.max(30, ...act.map((x) => x.minutes));
+                    const dow = new Date(`${d}T12:00:00Z`).toLocaleDateString(lang === "ru" ? "ru-RU" : "en-GB", { weekday: "short", timeZone: "UTC" });
+                    return (
+                      <div key={d} className="actday" title={a ? `${fmtMin(a.minutes)}${a.classMinutes ? ` · ${t("prof.actClass", { m: fmtMin(a.classMinutes) })}` : ""}` : t("prof.actNone")}>
+                        <span className="actbar"><i style={{ height: `${a ? Math.max(6, (a.minutes / max) * 100) : 0}%` }} /><i className="cls" style={{ height: `${a ? (a.classMinutes / max) * 100 : 0}%` }} /></span>
+                        <small>{dow.replace(".", "")}</small>
+                      </div>
+                    );
+                  })}
+                </div>
+                <p className="hint mb-0 mt-2">{t("prof.actHint")}</p>
+              </section>
+            )}
             <section className="card sm">
               <p className="cardtitle">{t("prof.nextLesson")}</p>
               {next ? (
