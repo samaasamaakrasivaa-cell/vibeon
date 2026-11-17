@@ -8,7 +8,7 @@ import { TIMEZONES } from "@/lib/time";
 
 export type InlineData = {
   id: string; email: string; phone: string; telegram: string; vk: string; socials?: string[]; timezone: string; callLink: string;
-  courseId: string; courseText: string; level: string; interests: string; birthday: string; examGoal: string; startedAt: string; source: string;
+  courseId: string; courseText: string; level: string; interests: string; birthday: string; examGoal: string; startedAt: string; source: string; gender?: string;
 };
 
 const SOURCES: [string, string][] = [
@@ -147,6 +147,7 @@ export function InlineAbout({ d, courses }: { d: InlineData; courses: { id: stri
         <dd>
           {courses.length ? <Choice id={d.id} k="course" init={d.courseId} options={courses.map((c) => [c.id, c.title])} /> : <span className="small muted">{d.courseText || t("prof.noCoursesYet")}</span>}
         </dd>
+        <dt>{t("prof.gender")}</dt><dd><Choice id={d.id} k="gender" init={d.gender ?? ""} options={[["f", t("prof.genderF")], ["m", t("prof.genderM")]]} /></dd>
         <dt>{t("prof.level")}</dt><dd><Choice id={d.id} k="level" init={d.level} options={LEVELS.map((l) => [l, l])} own /></dd>
         <dt>{t("prof.interests")}</dt><dd><Cell id={d.id} k="interests" init={d.interests} placeholder={t("prof.interestsPh")} /></dd>
         <dt>{t("prof.birthday")}</dt><dd><Cell id={d.id} k="birthday" init={d.birthday} type="date" /></dd>

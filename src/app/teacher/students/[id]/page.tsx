@@ -2,6 +2,8 @@ import { levelsOf } from "@/lib/teacher/levels";
 import { packEndsAt } from "@/lib/teacher/pack";
 import { InvoiceEdit } from "@/components/finance/FinanceParts";
 import Link from "next/link";
+import { AwardsCard } from "@/components/awards/AwardsCard";
+import { Medal, StudentAvatar } from "@/components/awards/Medal";
 import { notFound } from "next/navigation";
 import { Icon } from "@/components/Icon";
 import { DeleteStudent, FeedbackForm, PaymentCard, PrivateNote, ProfileActions, TgAsk } from "@/components/teacher/ProfileParts";
@@ -37,6 +39,8 @@ export default async function StudentProfile({ params, searchParams }: { params:
     include: {
       packs: { orderBy: { startsAt: "desc" }, take: 1 },
       invoices: { orderBy: { createdAt: "desc" } },
+      awards: { orderBy: { createdAt: "desc" } },
+      user: { select: { telegramChatId: true } },
       invites: { orderBy: { createdAt: "desc" }, take: 1 },
       lessons: { orderBy: { startsAt: "desc" } },
     },
@@ -80,6 +84,8 @@ export default async function StudentProfile({ params, searchParams }: { params:
   const form = (s.form ?? {}) as Form;
   const fullName = [s.name, s.lastName].filter(Boolean).join(" ");
   const now = new Date();
+  // главный титул (действующий) — плашкой у имени и короной на аватарке
+  const pinnedTitle = s.awards.find((a) => a.kind === "title" && a.pinned && a.onMain && (!a.until || a.until > new Date())) ?? null;
   const dateFmt = (d: Date, o: Intl.DateTimeFormatOptions = { day: "numeric", month: "long", year: "numeric" }) => d.toLocaleDateString(loc, { ...o, timeZone: tz });
   const tr = (list: [string, string][], v: string) => (lang === "en" ? (list.find((x) => x[0] === v)?.[1] ?? v) : v);
 
@@ -108,18 +114,19 @@ export default async function StudentProfile({ params, searchParams }: { params:
   const inline: InlineData = {
     id: s.id, email: s.email ?? "", phone: form.phone ?? "", telegram: s.telegram ?? "", vk: (form as { vk?: string }).vk ?? "", socials: (form as { socials?: string[] }).socials ?? ((form as { vk?: string }).vk ? [(form as { vk?: string }).vk!] : []), timezone: s.timezone, callLink: s.callLink ?? "",
     courseId: s.courseId ?? courses.find((c) => c.title.trim().toLowerCase() === (s.course ?? "").trim().toLowerCase())?.id ?? "", courseText: s.course ?? "", level: s.level ?? "", interests: s.interests ?? "",
-    birthday: ymd(s.birthday) || (form.birthday ?? ""), examGoal: s.examGoal ?? "", startedAt: ymd(s.startedAt ?? s.createdAt), source: s.source ?? "",
+    birthday: ymd(s.birthday) || (form.birthday ?? ""), examGoal: s.examGoal ?? "", startedAt: ymd(s.startedAt ?? s.createdAt), source: s.source ?? "", gender: s.gender ?? "",
   };
 
   return (
     <div className="page">
       <Link href="/teacher/students" className="mb-4 inline-flex items-center gap-1 text-[14px] font-semibold text-accent"><Icon name="chevl" size="sm" />{t("nav.students")}</Link>
       <div className="mb-5 flex flex-wrap items-center gap-4">
-        <span className="avatar" style={{ width: 64, height: 64, fontSize: 22 }}>{initials(s.name, s.lastName)}</span>
+        <StudentAvatar id={s.id} avatar={s.avatar} size={64} crown={!!pinnedTitle} />
         <div className="grow min-w-[200px] flex-1">
           <h1>{fullName}</h1>
           <div className="mt-1 flex flex-wrap items-center gap-2 text-text2">
             {/* уровни: по анкете, сейчас (тест / срез), цель; курс */}
+            {pinnedTitle && <span className="pill awpill" title={pinnedTitle.why ?? undefined}><Medal icon={pinnedTitle.icon} color={pinnedTitle.color} size={18} />{pinnedTitle.name}</span>}
             {(() => { const L = lvMap.get(s.id); return L ? (<>
               {L.course && <span className="pill grey"><Icon name="book" size="sm" />{L.course}</span>}
               {L.quest && <span className="pill grey">{t("prof.lvQuest", { l: L.quest })}</span>}
@@ -207,6 +214,9 @@ export default async function StudentProfile({ params, searchParams }: { params:
                 payerLinked: !!s.payerChatId, studentName: s.name, teacherName: meName,
               }}
             />
+            <AwardsCard studentId={s.id} studentName={s.name} gender={s.gender} linked={!!s.user?.telegramChatId}
+              rows={s.awards.map((a) => ({ id: a.id, kind: a.kind, name: a.name, why: a.why, icon: a.icon, color: a.color, onMain: a.onMain, pinned: a.pinned,
+                until: a.until ? dateFmt(a.until, { day: "numeric", month: "short" }) : null, expired: !!a.until && a.until < now, date: dateFmt(a.createdAt, { day: "numeric", month: "short" }) }))} />
             {s.userId && (
               <section className="card sm">
                 <div className="acthead">

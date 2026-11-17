@@ -10,11 +10,12 @@ export const dynamic = "force-dynamic";
 export default async function StudentLayout({ children }: { children: React.ReactNode }) {
   const { t } = await getT();
   const user = await requireUser("STUDENT");
-  const [unread, msgs, answers, bills] = await Promise.all([
+  const [unread, msgs, answers, bills, me] = await Promise.all([
     db.notification.count({ where: { userId: user.id, readAt: null } }),
     db.message.count({ where: { student: { userId: user.id }, senderId: { not: user.id }, readAt: null } }),
     db.notification.count({ where: { userId: user.id, kind: "answer", readAt: null } }),
     db.invoice.count({ where: { student: { userId: user.id }, status: "SENT" } }),
+    db.student.findUnique({ where: { userId: user.id }, select: { id: true, avatar: true, awards: { where: { kind: "title", pinned: true, onMain: true, OR: [{ until: null }, { until: { gt: new Date() } }] }, select: { id: true }, take: 1 } } }),
   ]);
   const groups = [
     [
@@ -27,7 +28,7 @@ export default async function StudentLayout({ children }: { children: React.Reac
     ],
     [
       { href: "/student/route", label: t("nav.route"), icon: "route" as const },
-      { href: "/student/progress", label: t("nav.progress"), icon: "chart" as const },
+      { href: "/student/progress", label: t("nav.progressAwards"), icon: "chart" as const },
     ],
     [
       { href: "/student/questions", label: t("nav.questions"), icon: "qmark" as const, count: answers },
@@ -39,7 +40,7 @@ export default async function StudentLayout({ children }: { children: React.Reac
   return (
     <>
       <ActivityPing />
-      <AppHeader subtitle={t("ws.student")} user={user} homeHref="/student" profileHref="/student/profile" />
+      <AppHeader subtitle={t("ws.student")} user={{ ...user, avatar: me ? { id: me.id, avatar: me.avatar, crown: me.awards.length > 0 } : undefined }} homeHref="/student" profileHref="/student/profile" />
       <div className="shell">
         <Sidebar groups={groups} ariaLabel={t("ws.student")} />
         <main className="main">{children}</main>

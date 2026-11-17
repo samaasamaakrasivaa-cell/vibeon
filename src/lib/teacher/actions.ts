@@ -542,6 +542,7 @@ export async function setStudentField(id: string, key: string, value: string): P
       break;
     }
     case "phone": data = form({ phone: v.slice(0, 40) || null }); break;
+    case "gender": data = { gender: v === "f" || v === "m" ? v : null }; break;
     case "vk": data = form({ vk: v.slice(0, 120) || null }); break;
     // другие соцсети — список ссылок (ВКонтакте, Instagram, что угодно); старое поле «ВКонтакте» переезжает сюда
     case "socials": {

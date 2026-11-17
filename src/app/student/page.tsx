@@ -9,6 +9,8 @@ import { getT } from "@/lib/i18n/server";
 import { greetingKey, hourIn } from "@/lib/greeting";
 import { homeworkFor } from "@/lib/homework";
 import { hhmm, isoDay } from "@/lib/time";
+import { Medal, StudentAvatar } from "@/components/awards/Medal";
+import { AvatarNotice, CelebrateAwards } from "@/components/awards/StudentAwards";
 
 export const dynamic = "force-dynamic";
 
@@ -31,6 +33,13 @@ export default async function StudentHome() {
   // вводный тест: назначен / начат — карточка «Пройти», готов и показан учителем — «Посмотреть результат»
   const pa = s ? await db.placementAttempt.findFirst({ where: { studentId: s.id, OR: [{ status: { in: ["new", "active"] } }, { status: "reviewed", showResult: true, reviewedAt: { gt: new Date(now.getTime() - 14 * 864e5) } }] }, orderBy: { createdAt: "desc" } }) : null;
   const loc = lang === "ru" ? "ru-RU" : "en-GB";
+  // статусы: титулы, выведенные учителем на главный экран (главный — под именем, корона на аватарке); новые — праздничным окном
+  const [mains, fresh] = s ? await Promise.all([
+    db.award.findMany({ where: { studentId: s.id, kind: "title", onMain: true, OR: [{ until: null }, { until: { gt: now } }] }, orderBy: [{ pinned: "desc" }, { createdAt: "desc" }] }),
+    db.award.findMany({ where: { studentId: s.id, seenAt: null, createdAt: { gt: new Date(now.getTime() - 30 * 864e5) } }, orderBy: { createdAt: "asc" } }),
+  ]) : [[], []];
+  const pinned = mains.find((a) => a.pinned) ?? null;
+  const others = mains.filter((a) => a !== pinned);
   const hw = hws.find((h) => h.done < h.total);
   const goal = s?.wordGoal ?? 15;
   const done = Math.min(goal, practice?.count ?? 0);
@@ -43,10 +52,31 @@ export default async function StudentHome() {
   return (
     <div className="page">
       <section className="card">
+        {s?.avatarNotice && <AvatarNotice id={s.id} avatar={s.avatar} />}
         <div className="flex flex-wrap items-center justify-between gap-6 border-b border-sep pb-6">
-          <div>
-            <div className="text-[19px] text-text2">{t(greetingKey(hourIn(tz)))}</div>
-            <div className="gname">{me.name}</div>
+          <div className={mains.length && s ? "stgreet" : undefined}>
+            {mains.length > 0 && s && <Link href="/student/profile#avatar" className="stgreet-av" aria-label={t("av.title")}><StudentAvatar id={s.id} avatar={s.avatar} size={104} crown={!!pinned} /></Link>}
+            <div className="min-w-0">
+              <div className="text-[19px] text-text2">{t(greetingKey(hourIn(tz)))}</div>
+              <div className="gname">{me.name}</div>
+              {pinned && (
+                <span className="awmainline" tabIndex={0}>
+                  <Medal icon={pinned.icon} color={pinned.color} size={34} />
+                  <b>{pinned.name}</b>
+                  <span className="awtip" role="tooltip">{pinned.why && <span>{pinned.why}</span>}<Link href="/student/progress#awards">{t("aw.allMine")} →</Link></span>
+                </span>
+              )}
+              {others.length > 0 && (
+                <div className="awothers">
+                  {others.map((a) => (
+                    <span key={a.id} className="awchip" tabIndex={0}>
+                      <Medal icon={a.icon} color={a.color} size={22} />{a.name}
+                      <span className="awtip" role="tooltip">{a.why && <span>{a.why}</span>}<Link href="/student/progress#awards">{t("aw.allMine")} →</Link></span>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
           <Clock lang={lang} tz={tz} />
         </div>
@@ -112,6 +142,7 @@ export default async function StudentHome() {
         </div>
       </section>
 
+      {fresh.length > 0 && <CelebrateAwards items={fresh.map((a) => ({ id: a.id, kind: a.kind, name: a.name, why: a.why, icon: a.icon, color: a.color, until: a.until ? a.until.toLocaleDateString(loc, { day: "numeric", month: "long", timeZone: tz }) : null }))} />}
       <section className="card">
         <NotificationList items={notifications.map((n) => ({ id: n.id, title: n.title, when: ago(n.createdAt), unread: !n.readAt, done: !!n.doneAt, link: n.link, action: n.action }))} />
       </section>

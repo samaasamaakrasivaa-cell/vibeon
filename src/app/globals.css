@@ -2072,3 +2072,84 @@ button.grp-row:hover { background: var(--fill); }
 
 /* заголовок карточки в строке с чем-то ещё (дата, «был в сети», кнопка) — без нижнего отступа, всё по центру */
 .cardtitle.m-0 { margin: 0; }
+
+/* ── Статусы: медали, аватарки, приветствие ── */
+.medal { display: inline-flex; flex: none; align-items: center; justify-content: center; }
+.stavatar { position: relative; display: inline-block; flex: none; }
+.stavatar-in { display: block; border-radius: 50%; overflow: hidden; background: var(--surface2); }
+.stavatar-in img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.stavatar-in > svg { display: block; }
+.stavatar-crown { position: absolute; transform: rotate(-22deg); transform-origin: 60% 80%; pointer-events: none; }
+.awpill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px 3px 4px; border-radius: 999px; background: linear-gradient(180deg, #FFF8E1, #FCEBC0); color: #7A5200; font-size: 13px; font-weight: 600; }
+.stgreet { display: flex; align-items: center; gap: 22px; min-width: 0; }
+.stgreet-av { display: block; border-radius: 50%; margin-top: 14px; }
+.stgreet-av:focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; }
+.awmainline { position: relative; display: inline-flex; align-items: center; gap: 9px; margin-top: 8px; padding: 4px 14px 4px 6px; border-radius: 999px; background: linear-gradient(180deg, rgba(255,233,170,.45), rgba(246,195,67,.18)); border: 1px solid rgba(201,138,18,.25); cursor: default; outline: none; }
+.awmainline b { font-size: 17px; font-weight: 700; color: #8A5A00; letter-spacing: -.01em; }
+.awothers { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.awchip { position: relative; display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px 3px 4px; border-radius: 999px; background: var(--surface2); font-size: 13px; font-weight: 600; outline: none; }
+.awchip > button { border: 0; background: none; color: var(--text3); font-size: 16px; line-height: 1; padding: 0 0 0 2px; cursor: pointer; }
+.awchip > button:hover { color: var(--bad); }
+.awtip { position: absolute; z-index: 40; left: 0; top: calc(100% + 8px); width: max-content; max-width: 300px; display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; border-radius: 14px; background: var(--surface); color: var(--text); box-shadow: 0 10px 34px rgba(0,0,0,.16), 0 0 0 1px var(--sep); font-size: 14px; font-weight: 400; line-height: 1.4; opacity: 0; visibility: hidden; transform: translateY(-4px); transition: opacity .15s, transform .15s, visibility .15s; }
+.awtip::before { content: ""; position: absolute; left: 0; right: 0; top: -10px; height: 10px; }
+.awtip a { color: var(--accent); font-weight: 600; font-size: 13px; }
+.awmainline:hover .awtip, .awmainline:focus-within .awtip, .awchip:hover .awtip, .awchip:focus-within .awtip { opacity: 1; visibility: visible; transform: none; }
+@media (max-width: 760px) { .stgreet { position: relative; gap: 14px; } .stgreet-av { zoom: .66; margin-top: 20px; } .awmainline b { font-size: 15px; line-height: 1.25; } .awmainline, .awothers .awchip { position: static; } .stgreet .awtip { left: 0; right: 0; width: auto; max-width: none; } }
+
+/* анкета: карточка статусов */
+.awrow { display: flex; align-items: center; gap: 12px; padding: 8px 10px; border-radius: 14px; background: var(--surface2); }
+.awrow.pinned { background: linear-gradient(180deg, rgba(255,233,170,.4), rgba(246,195,67,.14)); box-shadow: inset 0 0 0 1px rgba(201,138,18,.25); }
+.awmain { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
+.awchips { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 12px; }
+@media (max-width: 560px) { .awrow { flex-wrap: wrap; } .awrow .grow { flex-basis: calc(100% - 60px); } }
+
+/* окно «Выдать статус» */
+.awgive { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 24px; }
+@media (max-width: 860px) { .awgive { grid-template-columns: minmax(0, 1fr); } }
+.awgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; max-height: 420px; overflow: auto; padding: 2px; }
+.awcard { display: flex; align-items: center; gap: 10px; min-height: 58px; padding: 8px 10px; border-radius: 14px; border: 1.5px solid var(--sep); background: var(--surface); text-align: left; font-size: 13px; line-height: 1.25; cursor: pointer; }
+.awcard b { font-weight: 600; min-width: 0; hyphens: auto; overflow-wrap: break-word; }
+.awcard:hover { border-color: var(--text3); }
+.awcard.on { border-color: var(--accent); background: var(--accent-bg); }
+.awcard.own { border-style: dashed; }
+.awplus { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; background: var(--surface2); color: var(--accent); flex: none; }
+.awpreview { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 18px 12px; border-radius: 18px; background: radial-gradient(circle at 50% 30%, var(--surface), var(--surface2)); text-align: center; }
+.awpreview b { font-size: 18px; letter-spacing: -.01em; }
+.awicons { display: flex; flex-wrap: wrap; gap: 4px; }
+.awicons button { padding: 3px; border: 0; border-radius: 10px; background: none; cursor: pointer; }
+.awicons button[aria-pressed="true"] { background: var(--accent-bg); box-shadow: inset 0 0 0 2px var(--accent); }
+.awmetal { width: 34px; height: 34px; border-radius: 50%; border: 0; cursor: pointer; box-shadow: inset 0 1px 2px rgba(255,255,255,.7), 0 1px 3px rgba(0,0,0,.2); }
+.awmetal.on { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+/* праздничное окно */
+.awcele { position: relative; display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 8px 4px 0; text-align: center; overflow: hidden; }
+.awcele h2 { margin: 4px 0 0; font-size: 26px; letter-spacing: -.02em; }
+.awcele-k { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--text2); }
+.awcele-why { margin: 0; max-width: 380px; color: var(--text2); }
+.awcele .medal { animation: awpop .6s cubic-bezier(.2,1.6,.4,1) both; }
+@keyframes awpop { from { transform: scale(.3) rotate(-20deg); opacity: 0; } to { transform: none; opacity: 1; } }
+.awconf { position: absolute; inset: 0; pointer-events: none; }
+.awconf i { position: absolute; top: -10px; width: 7px; height: 12px; border-radius: 2px; animation: awfall 2.2s ease-in both; }
+@keyframes awfall { from { transform: translateY(0) rotate(0); opacity: 1; } to { transform: translateY(340px) rotate(540deg); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .awcele .medal, .awconf i { animation: none; } .awconf { display: none; } }
+
+/* аватарка: уведомление и выбор */
+.avnotice { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 18px; padding: 10px 14px; border-radius: 16px; background: var(--accent-bg); }
+.avpick { display: flex; gap: 24px; align-items: flex-start; }
+.avpick-prev { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 140px; flex: none; text-align: center; }
+@media (max-width: 640px) { .avpick { flex-direction: column; align-items: stretch; } .avpick-prev { width: auto; } }
+.avchars { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 8px; }
+.avchar { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 4px; border-radius: 14px; border: 1.5px solid transparent; background: var(--surface2); cursor: pointer; }
+.avchar:hover { border-color: var(--sep); }
+.avchar.on { border-color: var(--accent); background: var(--accent-bg); }
+.avchar-img { display: block; border-radius: 50%; overflow: hidden; }
+
+/* прогресс: полка наград */
+.awshelf { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 12px; }
+.awitem { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 18px 12px 14px; border-radius: 18px; background: var(--surface2); text-align: center; }
+.awitem b { font-size: 15px; line-height: 1.25; }
+.awitem.pinned { background: linear-gradient(180deg, rgba(255,233,170,.5), rgba(246,195,67,.14)); box-shadow: inset 0 0 0 1px rgba(201,138,18,.3); }
+.awitem-why { font-size: 13px; color: var(--text2); line-height: 1.35; }
+:root[data-theme="dark"] .awmainline b, :root[data-theme="dark"] .awpill { color: #F6C343; }
+:root[data-theme="dark"] .awpill { background: rgba(246,195,67,.16); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .awmainline b, :root:not([data-theme="light"]) .awpill { color: #F6C343; } :root:not([data-theme="light"]) .awpill { background: rgba(246,195,67,.16); } }

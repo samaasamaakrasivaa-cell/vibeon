@@ -1,6 +1,7 @@
 import "server-only";
 import { db } from "../db";
 import { env } from "../env";
+import { takeTgAvatar } from "../awards/avatar";
 import { tgDeleteWebhook, tgEnabled, tgGetUpdates, tgMock, tgSend, tgSetWebhook, tgUsername, type Update } from "./telegram";
 
 /** Команды бота: /start <код> — привязать аккаунт, /stop — отвязать, /help. */
@@ -23,6 +24,11 @@ export async function handleUpdate(u: Update) {
     await db.user.update({ where: { id: user.id }, data: { telegramChatId: chatId, tgLinkToken: null } });
     // ученик подключил бота — его @ник сразу попадает в анкету (если поле ещё пустое)
     if (user.role === "STUDENT" && m.from?.username) await fillTelegram(user.id, m.from.username);
+    // и фото профиля — на аватарку, если ученик ещё сам ничего не выбрал (спросим «оставить или заменить»)
+    if (user.role === "STUDENT") {
+      const st = await db.student.findUnique({ where: { userId: user.id }, select: { id: true } });
+      if (st) await takeTgAvatar(st.id).catch((e) => console.error("[tg-avatar]", (e as Error).message));
+    }
     return tgSend(chatId, `Готово, ${user.name}! Теперь уведомления VibeOn будут приходить сюда: уроки, сообщения, оплаты${user.role === "STUDENT" ? ", слова" : ""}. Настроить, что присылать: ${env.appUrl}/${user.role === "TEACHER" ? "teacher" : "student"}/profile`);
   }
   if (cmd === "/stop") {
@@ -65,4 +71,7 @@ export async function backfillTelegram() {
     if (u && x.userId) await fillTelegram(x.userId, u);
     await db.student.update({ where: { id: x.id }, data: { tgChecked: true } }); // ника нет (скрыт) — больше не спрашиваем
   }
+  // фото профиля для аватарки — у подключивших бота раньше; один раз на ученика
+  const ph = await db.student.findMany({ where: { tgPhotoChecked: false, avatar: null, user: { telegramChatId: { not: null } } }, select: { id: true }, take: 5 });
+  for (const x of ph) await takeTgAvatar(x.id).catch(() => db.student.update({ where: { id: x.id }, data: { tgPhotoChecked: true } }));
 }

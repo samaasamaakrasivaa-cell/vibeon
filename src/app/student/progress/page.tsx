@@ -2,6 +2,7 @@ import Link from "next/link";
 import { requireUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { getT } from "@/lib/i18n/server";
+import { Medal } from "@/components/awards/Medal";
 
 export const metadata = { title: "Прогресс" };
 
@@ -10,15 +11,37 @@ export default async function Progress() {
   const me = await requireUser("STUDENT");
   const s = await db.student.findUnique({ where: { userId: me.id } });
   if (!s) return null;
-  const [done, feedback] = await Promise.all([
+  const [done, feedback, awards] = await Promise.all([
     db.lessonInstance.findMany({ where: { studentId: s.id, status: "DONE", templateId: { not: null } }, include: { template: { include: { unit: true } } }, orderBy: { startsAt: "desc" } }),
     db.feedback.findMany({ where: { studentId: s.id }, orderBy: { createdAt: "desc" } }),
+    db.award.findMany({ where: { studentId: s.id }, orderBy: { createdAt: "desc" } }),
   ]);
+  const now = new Date();
   const topics = [...new Map(done.map((l) => [l.template!.id, l.template!])).values()];
   const loc = lang === "ru" ? "ru-RU" : "en-GB";
   return (
     <div className="page">
-      <h1 className="mb-5">{t("nav.progress")}</h1>
+      <h1 className="mb-5">{t("nav.progressAwards")}</h1>
+      <section className="card" id="awards">
+        <h2 className="mb-1">{t("aw.mine")}</h2>
+        <p className="small muted mt-0 mb-4">{t("aw.mineHint")}</p>
+        {awards.length === 0 ? <p className="hint m-0">{t("aw.mineNone")}</p> : (
+          <div className="awshelf">
+            {awards.map((a) => {
+              const off = a.kind === "title" && !!a.until && a.until < now;
+              const fmt = (d: Date) => d.toLocaleDateString(loc, { day: "numeric", month: "long", timeZone: me.timezone });
+              return (
+                <div key={a.id} className={`awitem ${a.kind === "title" && a.pinned && !off ? "pinned" : ""}`}>
+                  <Medal icon={a.icon} color={a.color} size={72} shape={a.kind === "title" ? "hex" : "circle"} muted={off} />
+                  <b>{a.name}</b>
+                  <span className="small muted">{a.kind === "cheer" ? fmt(a.createdAt) : off ? t("aw.wasUntil", { d: fmt(a.until!) }) : a.until ? t("aw.until", { d: fmt(a.until) }) : t("aw.forever")}</span>
+                  {a.why && <span className="awitem-why">{a.why}</span>}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </section>
       <section className="card">
         <h2 className="mb-3">{t("pg.topics")}</h2>
         {topics.length === 0 ? <p className="hint m-0">{t("pg.noTopics")}</p> : (

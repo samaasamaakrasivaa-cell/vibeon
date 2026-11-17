@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Icon } from "@/components/Icon";
 import { ProfileForm } from "@/components/student/ProfileForm";
+import { AvatarPicker } from "@/components/awards/StudentAwards";
 import { NotifySettings } from "@/components/NotifySettings";
 import { settingsOf } from "@/lib/notify/settings";
 import { tgEnabled } from "@/lib/notify/telegram";
@@ -17,6 +18,7 @@ export default async function StudentProfile() {
   return (
     <div className="page" style={{ maxWidth: 820 }}>
       <h1 className="mb-5">{t("common.profile")}</h1>
+      {s && <AvatarPicker id={s.id} avatar={s.avatar} tgLinked={!!me.telegramChatId} />}
       <ProfileForm hasPassword={!!me.passwordHash} init={{ name: me.name, lastName: me.lastName ?? "", phone: me.phone ?? "", telegram: s?.telegram ?? "", timezone: me.timezone, email: me.email }} />
       <NotifySettings role="STUDENT" init={settingsOf("STUDENT", me.notify)} linked={!!me.telegramChatId} enabled={tgEnabled()} email={me.email} />
       {s && (

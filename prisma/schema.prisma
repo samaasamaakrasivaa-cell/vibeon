@@ -145,6 +145,12 @@ model Student {
   email           String?
   telegram        String?
   tgChecked       Boolean @default(false) // @ник из Telegram уже пробовали подтянуть
+  gender          String? // f | m — для статусов «Король / Королева»
+  avatar          String? // аватарка ученика: «char:owl» — персонаж, «/api/files/…» — фото (своё или из Telegram)
+  avatarSrc       String? // char | upload | tg
+  avatarNotice    Boolean @default(false) // фото взято из Telegram — спросить ученика «оставить или заменить»
+  tgPhotoChecked  Boolean @default(false) // фото из Telegram уже пробовали взять
+  awards          Award[]
   status          StudentStatus @default(INVITED)
   form            Json          @default("{}") // стартовая анкета
   payType         PayType       @default(POSTPAID)
@@ -755,4 +761,25 @@ model TimeOff {
   createdAt DateTime @default(now())
 
   @@index([teacherId, startsAt])
+}
+
+/// Статусы ученика: титул (качество, может быть на главном экране) или поощрение (момент, только в «Мои награды»).
+model Award {
+  id        String    @id @default(cuid())
+  studentId String
+  teacherId String
+  kind      String // title | cheer
+  key       String? // статус из каталога (для подсказок); null — свой
+  name      String
+  why       String?
+  icon      String
+  color     String
+  onMain    Boolean   @default(false) // титул виден у приветствия ученика
+  pinned    Boolean   @default(false) // главный: под именем, корона на аватарке
+  until     DateTime? // срок титула; null — навсегда
+  seenAt    DateTime? // ученик увидел праздничное окно
+  createdAt DateTime  @default(now())
+  student   Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([studentId, createdAt])
 }

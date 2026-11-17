@@ -48,6 +48,21 @@ export async function tgSetWebhook() {
 
 export type Update = { update_id: number; message?: { chat: { id: number }; text?: string; from?: { first_name?: string; username?: string } } };
 
+/** Фото профиля пользователя (самое крупное до 640 px) — для аватарки ученика. null — фото нет или скрыто настройками приватности. */
+export async function tgProfilePhoto(userId: string): Promise<{ buf: Buffer; mime: string } | null> {
+  if (tgMock() || !env.telegramBot) return null;
+  const r = await api<{ photos: { file_id: string; width: number }[][] }>("getUserProfilePhotos", { user_id: Number(userId), limit: 1 }).catch(() => null);
+  const sizes = r?.photos?.[0];
+  if (!sizes?.length) return null;
+  const pick = [...sizes].sort((a, b) => a.width - b.width).filter((x) => x.width <= 640).pop() ?? sizes[0];
+  const f = await api<{ file_path?: string }>("getFile", { file_id: pick.file_id }).catch(() => null);
+  if (!f?.file_path) return null;
+  const res = await fetch(`https://api.telegram.org/file/bot${env.telegramBot}/${f.file_path}`, { signal: AbortSignal.timeout(20000) }).catch(() => null);
+  if (!res?.ok) return null;
+  const buf = Buffer.from(await res.arrayBuffer());
+  return buf.length ? { buf, mime: f.file_path.endsWith(".png") ? "image/png" : "image/jpeg" } : null;
+}
+
 /** @ник пользователя по чату (для тех, кто подключил бота раньше, чем мы начали его сохранять). */
 export async function tgUsername(chatId: string): Promise<string | null> {
   if (tgMock() || !env.telegramBot) return null;

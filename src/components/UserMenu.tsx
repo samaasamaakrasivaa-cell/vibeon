@@ -4,8 +4,9 @@ import { useEffect, useRef } from "react";
 import { logoutAction } from "@/lib/auth/actions";
 import { useT } from "@/lib/i18n/client";
 import { Icon } from "./Icon";
+import { StudentAvatar } from "./awards/Medal";
 
-export function UserMenu({ name, lastName, email, profileHref }: { name: string; lastName?: string | null; email: string; profileHref: string }) {
+export function UserMenu({ name, lastName, email, profileHref, avatar }: { name: string; lastName?: string | null; email: string; profileHref: string; avatar?: { id: string; avatar: string | null; crown: boolean } }) {
   const { t } = useT();
   const ref = useRef<HTMLDetailsElement>(null);
   useEffect(() => {
@@ -17,7 +18,7 @@ export function UserMenu({ name, lastName, email, profileHref }: { name: string;
   return (
     <details className="umenu" ref={ref}>
       <summary className="atuser" aria-label={t("common.profile")}>
-        <span className="avatar">{initials}</span>
+        {avatar ? <StudentAvatar id={avatar.id} avatar={avatar.avatar} size={32} crown={avatar.crown} /> : <span className="avatar">{initials}</span>}
         <span className="uname">{name}</span>
       </summary>
       <div className="pop">

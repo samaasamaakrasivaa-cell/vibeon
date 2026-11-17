@@ -11,7 +11,7 @@ export async function AppHeader({
   profileHref,
 }: {
   subtitle?: string;
-  user?: { name: string; lastName?: string | null; email: string };
+  user?: { name: string; lastName?: string | null; email: string; avatar?: { id: string; avatar: string | null; crown: boolean } };
   homeHref?: string;
   profileHref?: string;
 }) {
@@ -28,7 +28,7 @@ export async function AppHeader({
           {subtitle ? <span className="hsub">{subtitle}</span> : <span />}
           <div className="atr">
             <LangSwitch lang={lang} label={t("common.language")} />
-            {user && <UserMenu name={user.name} lastName={user.lastName} email={user.email} profileHref={profileHref ?? homeHref} />}
+            {user && <UserMenu name={user.name} lastName={user.lastName} email={user.email} profileHref={profileHref ?? homeHref} avatar={user.avatar} />}
           </div>
         </div>
       </div>
