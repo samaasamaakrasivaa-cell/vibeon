@@ -1902,3 +1902,40 @@ button.grp-row:hover { background: var(--fill); }
 .snall { display: flex; flex-direction: column; gap: 6px; max-height: 320px; overflow-y: auto; }
 .snall-item { display: flex; flex-direction: column; gap: 2px; padding: 8px 10px; border: 0; border-radius: 10px; background: var(--surface); text-align: left; font: inherit; font-size: 14px; white-space: pre-wrap; cursor: pointer; color: var(--text); }
 .snall-item b { font-size: 12px; color: var(--text2); }
+
+/* «На проверку»: три раздела карточками, статусы раздела и поиск в одной строке */
+.rv-sections { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 18px; }
+.rv-sec { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 18px; background: var(--surface); border: 2px solid transparent; color: var(--text); text-decoration: none; box-shadow: var(--shadow); transition: border-color .15s, transform .15s; }
+.rv-sec:hover { transform: translateY(-1px); }
+.rv-sec.on { border-color: var(--accent); }
+.rv-sec small { color: var(--text3); font-size: 12.5px; margin-top: 2px; }
+.rv-ico { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; color: #fff; flex: none; }
+.rv-ico.hw { background: var(--accent); } .rv-ico.tests { background: var(--violet); } .rv-ico.questions { background: var(--warn); }
+.rv-badge { min-width: 26px; height: 26px; padding: 0 8px; border-radius: 999px; background: var(--accent); color: var(--on-accent); font-weight: 700; font-size: 14px; display: inline-flex; align-items: center; justify-content: center; }
+.rv-zero { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--ok-bg); color: var(--ok-text); }
+.rv-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 16px; }
+.rv-bar .seg a { gap: 6px; }
+.rv-n { min-width: 20px; padding: 0 6px; border-radius: 999px; background: color-mix(in srgb, var(--text) 8%, transparent); font-size: 12px; font-weight: 600; text-align: center; color: var(--text2); }
+.rv-empty { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 40px 20px; border-radius: 18px; background: var(--surface); color: var(--text2); text-align: center; }
+.rv-empty span { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 50%; background: var(--ok-bg); color: var(--ok-text); }
+@media (max-width: 900px) { .rv-sections { grid-template-columns: 1fr; } .rv-bar .searchbox { width: 100%; } }
+/* абонемент «билетом» */
+.pticket { position: relative; display: flex; flex-direction: column; gap: 12px; padding: 16px 18px; border-radius: 18px; color: #fff; background: linear-gradient(135deg, #34C759 0%, #30B0C7 100%); box-shadow: 0 8px 22px rgba(48, 176, 199, .25); }
+.pticket.low { background: linear-gradient(135deg, #FF9500 0%, #FFCC00 120%); box-shadow: 0 8px 22px rgba(255, 149, 0, .25); }
+.pticket.empty { background: linear-gradient(135deg, #8E8E93 0%, #AEAEB2 100%); box-shadow: none; }
+.pticket .pt-k { display: block; font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; opacity: .85; }
+.pticket .pt-big { display: block; font-size: 22px; line-height: 1.2; margin-top: 2px; }
+.pticket .pt-btn { background: rgba(255,255,255,.22); color: #fff; border: 0; }
+.pticket .pt-btn:hover:not(:disabled) { background: rgba(255,255,255,.32); }
+.pt-dots { display: flex; flex-wrap: wrap; gap: 6px; }
+.pt-dots i { width: 16px; height: 16px; border-radius: 50%; background: #fff; box-shadow: inset 0 0 0 2px rgba(255,255,255,.9); }
+.pt-dots i.used { background: transparent; box-shadow: inset 0 0 0 2px rgba(255,255,255,.55); }
+.pt-dates { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 14px; font-size: 13px; opacity: .92; }
+.pticket.sm { padding: 12px 14px; gap: 8px; border-radius: 14px; }
+.pticket.sm .pt-big { font-size: 17px; }
+.pticket.sm .pt-dots i { width: 12px; height: 12px; }
+.paygrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; }
+.stpay { display: flex; flex-direction: column; gap: 12px; }
+.stpay > a { color: inherit; text-decoration: none; }
+.payinv { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 14px; background: var(--surface2); }
+.paygrid > .card { margin: 0 !important; }

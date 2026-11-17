@@ -1,106 +1,171 @@
 import Link from "next/link";
 import { Icon } from "@/components/Icon";
 import { StudentsSearch } from "@/components/teacher/StudentsSearch";
+import { AnswerBox } from "@/components/teacher/AnswerBox";
 import { requireUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { getT } from "@/lib/i18n/server";
 import { homeworkFor } from "@/lib/homework";
 import { initials } from "@/lib/invite";
 
-export const metadata = { title: "Домашка" };
+export const metadata = { title: "На проверку" };
 export const dynamic = "force-dynamic";
 
-export default async function TeacherHomework({ searchParams }: { searchParams: Promise<{ tab?: string; q?: string; kind?: string }> }) {
+type Kind = "hw" | "tests" | "questions";
+
+/** «На проверку»: всё, что ждёт взгляда учителя, — три раздела (домашка, тесты, вопросы учеников).
+ *  У каждого раздела свои статусы; поиск — по ученикам внутри открытого раздела. */
+export default async function ToReview({ searchParams }: { searchParams: Promise<{ tab?: string; q?: string; kind?: string }> }) {
   const { t, lang } = await getT();
   const me = await requireUser("TEACHER");
   const sp = await searchParams;
-  const tab = sp.tab ?? "review";
-  const kind = sp.kind === "tests" ? "tests" : "hw"; // «На проверку»: домашка или тесты
-  const q = (sp.q ?? "").toLowerCase();
+  const kind: Kind = sp.kind === "tests" ? "tests" : sp.kind === "questions" ? "questions" : "hw";
+  const q = (sp.q ?? "").trim().toLowerCase();
+  const loc = lang === "ru" ? "ru-RU" : "en-GB";
+  const when = (d: Date | null) => (d ? d.toLocaleString(loc, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: me.timezone }) : "—");
+  const ago = (d: Date) => { const m = Math.round((Date.now() - d.getTime()) / 60000); return m < 60 ? t("nt.minAgo", { n: Math.max(1, m) }) : m < 1440 ? t("nt.hAgo", { n: Math.round(m / 60) }) : d.toLocaleDateString(loc, { day: "numeric", month: "short" }); };
+  const nameOf = (s?: { name: string; lastName: string | null } | null) => [s?.name, s?.lastName].filter(Boolean).join(" ");
+  const match = (s?: { name: string; lastName: string | null } | null) => !q || nameOf(s).toLowerCase().includes(q);
+
+  // ── домашка: у каждого ученика — последняя
   const items = await homeworkFor({ teacherId: me.id });
-  // у каждого ученика — последняя домашка; ученики без домашки после последнего урока — отдельно
   const latest = new Map<string, (typeof items)[number]>();
   for (const h of items) if (h.lesson.studentId && !latest.has(h.lesson.studentId)) latest.set(h.lesson.studentId, h);
   const students = await db.student.findMany({ where: { teacherId: me.id, status: "ACTIVE" }, orderBy: { name: "asc" } });
   const noHw = students.filter((s) => !latest.has(s.id));
-  // последний проведённый урок — туда «+»: в классе задания отмечаются «в домашку» (материал можно выбрать там же)
   const lastDone = new Map((await db.lessonInstance.findMany({ where: { teacherId: me.id, status: "DONE", studentId: { in: noHw.map((s) => s.id) } }, orderBy: { startsAt: "desc" }, select: { id: true, studentId: true, startsAt: true, template: { select: { title: true } } } }))
     .reverse().map((l) => [l.studentId!, l]));
-  const list = [...latest.values()];
-  const by = { review: list.filter((h) => h.state === "review"), notdone: list.filter((h) => h.state === "notdone"), checked: list.filter((h) => h.state === "checked") };
-  // placement test ученика — тоже работа на проверку: пройден — «На проверку», назначен — «Не сделано», проверен — «Проверено»
-  const tests = await db.placementAttempt.findMany({ where: { teacherId: me.id, mode: "student", studentId: { not: null }, student: { status: "ACTIVE" } }, include: { student: true }, orderBy: { createdAt: "desc" }, take: 60 });
-  const tState = (s: string) => (s === "submitted" ? "review" : s === "reviewed" ? "checked" : "notdone");
-  const tBy = { review: tests.filter((x) => tState(x.status) === "review"), notdone: tests.filter((x) => tState(x.status) === "notdone"), checked: tests.filter((x) => tState(x.status) === "checked").slice(0, 12) };
-  const tShown = kind !== "tests" ? [] : (tBy[tab as keyof typeof tBy] ?? tBy.review).filter((x) => !q || `${x.student?.name} ${x.student?.lastName}`.toLowerCase().includes(q));
-  const hwReviewN = by.review.length;
-  const tReviewN = tBy.review.length;
-  const qs = (x: Record<string, string>) => `?${new URLSearchParams({ kind, tab, ...(q ? { q } : {}), ...x }).toString()}`;
-  const shown = (kind !== "hw" || tab === "none" ? [] : by[tab as keyof typeof by] ?? by.review).filter((h) => !q || `${h.lesson.student?.name} ${h.lesson.student?.lastName}`.toLowerCase().includes(q));
-  const loc = lang === "ru" ? "ru-RU" : "en-GB";
-  const when = (d: Date | null) => (d ? d.toLocaleString(loc, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: me.timezone }) : "—");
+  const hwList = [...latest.values()];
+  const hw = { review: hwList.filter((h) => h.state === "review"), notdone: hwList.filter((h) => h.state === "notdone"), checked: hwList.filter((h) => h.state === "checked") };
+  // ── тесты учеников
+  const tests = await db.placementAttempt.findMany({ where: { teacherId: me.id, mode: "student", studentId: { not: null }, student: { status: "ACTIVE" } }, include: { student: true }, orderBy: { createdAt: "desc" }, take: 80 });
+  const ts = { review: tests.filter((x) => x.status === "submitted"), assigned: tests.filter((x) => x.status === "new" || x.status === "active"), checked: tests.filter((x) => x.status === "reviewed").slice(0, 20) };
+  // ── вопросы учеников с уроков («Мне непонятно»)
+  const qs = await db.question.findMany({ where: { student: { teacherId: me.id } }, include: { student: true, task: { select: { title: true } } }, orderBy: { createdAt: "desc" }, take: 300 });
+  const qg = { new: qs.filter((x) => x.askedTeacher && !x.answeredAt), answered: qs.filter((x) => x.answeredAt), ai: qs.filter((x) => !x.askedTeacher) };
+
+  const waiting = { hw: hw.review.length, tests: ts.review.length, questions: qg.new.length };
+  const filters: Record<Kind, [string, string, number][]> = {
+    hw: [["review", t("rv.f.sent"), hw.review.length], ["notdone", t("hwT.notdone"), hw.notdone.length], ["checked", t("hwT.checked"), hw.checked.length], ["none", t("hwT.none"), noHw.length]],
+    tests: [["review", t("rv.f.passed"), ts.review.length], ["assigned", t("rv.f.assigned"), ts.assigned.length], ["checked", t("hwT.checked"), ts.checked.length]],
+    questions: [["new", t("qs.new"), qg.new.length], ["answered", t("qs.answered"), qg.answered.length], ["ai", t("qs.askedAi"), qg.ai.length]],
+  };
+  const tab = filters[kind].some(([k]) => k === sp.tab) ? sp.tab! : filters[kind][0][0];
+  const href = (k: Kind, tb?: string) => `?${new URLSearchParams({ kind: k, ...(tb ? { tab: tb } : {}), ...(q && !tb ? { q } : {}) }).toString()}`;
+  const sections: [Kind, Parameters<typeof Icon>[0]["name"], string, string][] = [
+    ["hw", "inbox", t("nav.homework"), t("rv.hwSub")],
+    ["tests", "target", t("hwT.tests"), t("rv.testsSub")],
+    ["questions", "qmark", t("nav.questions"), t("rv.qSub")],
+  ];
+  const total = waiting.hw + waiting.tests + waiting.questions;
+
+  const empty = (msg: string) => <div className="rv-empty"><span><Icon name="check" /></span><b>{msg}</b></div>;
+
   return (
     <div className="page">
-      <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
-        <div><h1>{t("nav.toReview")}</h1><p className="muted mt-1 mb-0">{t("hwT.toReview", { n: hwReviewN + tReviewN })}</p></div>
-        <StudentsSearch placeholder={t("stu.search")} />
+      <div className="mb-5">
+        <h1>{t("nav.toReview")}</h1>
+        <p className="muted mt-1 mb-0">{total ? t("rv.lead", { n: total }) : t("rv.leadDone")}</p>
       </div>
-      {/* два раздела: домашка и тесты — всё, что ждёт взгляда учителя */}
-      <div className="seg mb-4" role="tablist">
-        <Link href={qs({ kind: "hw", tab: "review" })} role="tab" aria-selected={kind === "hw"} aria-pressed={kind === "hw"}><Icon name="inbox" size="sm" />{t("nav.homework")}{hwReviewN > 0 && <span className="count-pill ml-1">{hwReviewN}</span>}</Link>
-        <Link href={qs({ kind: "tests", tab: "review" })} role="tab" aria-selected={kind === "tests"} aria-pressed={kind === "tests"}><Icon name="target" size="sm" />{t("hwT.tests")}{tReviewN > 0 && <span className="count-pill ml-1">{tReviewN}</span>}</Link>
+
+      {/* три раздела — крупные карточки, как в «Финансах»: что внутри и сколько ждёт */}
+      <div className="rv-sections" role="tablist">
+        {sections.map(([k, ic, title, sub]) => (
+          <Link key={k} href={href(k)} role="tab" aria-selected={kind === k} className={`rv-sec ${kind === k ? "on" : ""}`}>
+            <span className={`rv-ico ${k}`}><Icon name={ic} /></span>
+            <span className="grow min-w-0"><b className="block">{title}</b><small className="block truncate">{sub}</small></span>
+            {waiting[k] > 0 ? <span className="rv-badge">{waiting[k]}</span> : <span className="rv-zero"><Icon name="check" size="sm" /></span>}
+          </Link>
+        ))}
       </div>
-      <nav className="tabsbar fit mb-5">
-        <Link href={qs({ tab: "review" })} aria-current={tab === "review" ? "page" : undefined}>{t("hwT.review")} {(kind === "hw" ? hwReviewN : tReviewN) > 0 && <span className="count-pill ml-1">{kind === "hw" ? hwReviewN : tReviewN}</span>}</Link>
-        <Link href={qs({ tab: "notdone" })} aria-current={tab === "notdone" ? "page" : undefined}>{kind === "hw" ? t("hwT.notdone") : t("hwT.tNotDone")} · {kind === "hw" ? by.notdone.length : tBy.notdone.length}</Link>
-        <Link href={qs({ tab: "checked" })} aria-current={tab === "checked" ? "page" : undefined}>{t("hwT.checked")} · {kind === "hw" ? by.checked.length : tBy.checked.length}</Link>
-        {kind === "hw" && <Link href={qs({ tab: "none" })} aria-current={tab === "none" ? "page" : undefined}>{t("hwT.none")} · {noHw.length}</Link>}
-      </nav>
-      {kind === "hw" && tab === "none" ? (
-        <div className="grid-3">
-          {noHw.map((s) => {
-            const last = lastDone.get(s.id);
-            return (
-              <div key={s.id} className="scard">
-                <span className="avatar lg">{initials(s.name, s.lastName)}</span>
-                <Link href={`/teacher/students/${s.id}`} className="grow min-w-0"><b className="block truncate">{[s.name, s.lastName].filter(Boolean).join(" ")}</b><span className="block truncate">{last ? t("hwT.lastLesson", { t: last.template?.title ?? last.startsAt.toLocaleDateString(loc, { day: "numeric", month: "long", timeZone: me.timezone }) }) : t("hwT.noHwSub")}</span></Link>
-                {last && <Link href={`/class/${last.id}?addhw=1`} className="hwplus" title={t("hwT.add")} aria-label={t("hwT.add")}><Icon name="plus" size="sm" /></Link>}
-              </div>
-            );
-          })}
-          {noHw.length === 0 && <p className="hint">{t("hwT.empty")}</p>}
-        </div>
-      ) : shown.length + tShown.length === 0 ? <div className="card"><p className="hint m-0">{t("hwT.empty")}</p></div> : (
-        <div className="grid-3">
-          {tShown.map((x) => (
-            <div key={x.id} className="hwcard">
-              <div className="flex gap-3">
-                <span className="avatar lg">{initials(x.student?.name, x.student?.lastName)}</span>
-                <div className="min-w-0"><b className="block">{[x.student?.name, x.student?.lastName].filter(Boolean).join(" ")}</b><span className="small muted">{x.track === "teen" ? "Placement test Teens" : "Placement test"} · {x.submittedAt ? t("hwT.sent", { d: when(x.submittedAt) }) : t("hwT.testGiven", { d: when(x.createdAt) })}</span></div>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="pill violet"><Icon name="target" size="sm" />{t("hwT.test")}</span>
-                <span className="grow small muted">{x.status === "reviewed" ? (x.level ?? "") : x.status === "submitted" ? t("hwT.testDone") : x.status === "active" ? t("hwT.testActive") : t("hwT.testNew")}</span>
-                <Link href={x.status === "new" || x.status === "active" ? `/teacher/students/${x.studentId}?tab=roadmap` : `/teacher/placement/${x.id}`} className={`btn sm ${x.status === "submitted" ? "primary" : "secondary"}`}>{x.status === "submitted" ? t("hwT.check") : t("prof.open")}</Link>
-              </div>
-            </div>
+
+      {/* статусы — только у открытого раздела; поиск — по ученикам этого раздела */}
+      <div className="rv-bar">
+        <nav className="seg" aria-label={sections.find((s) => s[0] === kind)![2]}>
+          {filters[kind].map(([k, label, n]) => (
+            <Link key={k} href={`?${new URLSearchParams({ kind, tab: k, ...(q ? { q } : {}) }).toString()}`} aria-current={tab === k ? "page" : undefined}>{label}<span className="rv-n">{n}</span></Link>
           ))}
-          {shown.map((h) => (
-            <div key={h.lesson.id} className="hwcard">
-              <div className="flex gap-3">
-                <span className="avatar lg">{initials(h.lesson.student?.name, h.lesson.student?.lastName)}</span>
-                <div className="min-w-0"><b className="block">{[h.lesson.student?.name, h.lesson.student?.lastName].filter(Boolean).join(" ")}</b><span className="small muted">{h.title} · {h.lastAt ? t("hwT.sent", { d: when(h.lastAt) }) : t("hwT.given", { d: when(h.lesson.finishedAt) })}</span></div>
+        </nav>
+        <StudentsSearch placeholder={t("rv.search")} />
+      </div>
+
+      {kind === "hw" && (tab === "none" ? (
+        noHw.filter(match).length === 0 ? empty(t("rv.allHaveHw")) : (
+          <div className="grid-3">
+            {noHw.filter(match).map((s) => {
+              const last = lastDone.get(s.id);
+              return (
+                <div key={s.id} className="scard">
+                  <span className="avatar lg">{initials(s.name, s.lastName)}</span>
+                  <Link href={`/teacher/students/${s.id}`} className="grow min-w-0"><b className="block truncate">{nameOf(s)}</b><span className="block truncate">{last ? t("hwT.lastLesson", { t: last.template?.title ?? last.startsAt.toLocaleDateString(loc, { day: "numeric", month: "long", timeZone: me.timezone }) }) : t("hwT.noHwSub")}</span></Link>
+                  {last && <Link href={`/class/${last.id}?addhw=1`} className="hwplus" title={t("hwT.add")} aria-label={t("hwT.add")}><Icon name="plus" size="sm" /></Link>}
+                </div>
+              );
+            })}
+          </div>
+        )
+      ) : (() => {
+        const list = (hw[tab as keyof typeof hw] ?? hw.review).filter((h) => match(h.lesson.student));
+        return list.length === 0 ? empty(tab === "review" ? t("rv.hwNone") : t("hwT.empty")) : (
+          <div className="grid-3">
+            {list.map((h) => (
+              <div key={h.lesson.id} className="hwcard">
+                <div className="flex gap-3">
+                  <span className="avatar lg">{initials(h.lesson.student?.name, h.lesson.student?.lastName)}</span>
+                  <div className="min-w-0"><b className="block">{nameOf(h.lesson.student)}</b><span className="small muted">{h.title} · {h.lastAt ? t("hwT.sent", { d: when(h.lastAt) }) : t("hwT.given", { d: when(h.lesson.finishedAt) })}</span></div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="hwbar"><i style={{ width: `${h.total ? (h.done / h.total) * 100 : 0}%` }} /></span>
+                  <span className="small font-semibold">{h.done}/{h.total}</span>
+                  <Link href={`/class/${h.lesson.id}?tab=homework`} className={`btn sm ${h.state === "review" ? "primary" : "secondary"}`}>{h.state === "review" ? t("hwT.check") : t("prof.open")}</Link>
+                </div>
+                {h.needs > 0 && <span className="pill orange self-start">{t("hwT.needs", { n: h.needs })}</span>}
               </div>
-              <div className="flex items-center gap-3">
-                <span className="hwbar"><i style={{ width: `${h.total ? (h.done / h.total) * 100 : 0}%` }} /></span>
-                <span className="small font-semibold">{h.done}/{h.total}</span>
-                <Link href={`/class/${h.lesson.id}?tab=homework`} className={`btn sm ${h.state === "review" ? "primary" : "secondary"}`}>{h.state === "review" ? t("hwT.check") : t("prof.open")}</Link>
+            ))}
+          </div>
+        );
+      })())}
+
+      {kind === "tests" && (() => {
+        const list = (ts[tab as keyof typeof ts] ?? ts.review).filter((x) => match(x.student));
+        return list.length === 0 ? empty(tab === "review" ? t("rv.testsNone") : t("hwT.empty")) : (
+          <div className="grid-3">
+            {list.map((x) => (
+              <div key={x.id} className="hwcard">
+                <div className="flex gap-3">
+                  <span className="avatar lg">{initials(x.student?.name, x.student?.lastName)}</span>
+                  <div className="min-w-0"><b className="block">{nameOf(x.student)}</b><span className="small muted">{x.track === "teen" ? "Placement test Teens" : "Placement test"} · {x.submittedAt ? t("hwT.sent", { d: when(x.submittedAt) }) : t("hwT.testGiven", { d: when(x.createdAt) })}</span></div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="grow small muted">{x.status === "reviewed" ? <b className="lvlsm">{x.level ?? "—"}</b> : x.status === "submitted" ? t("hwT.testDone") : x.status === "active" ? t("hwT.testActive") : t("hwT.testNew")}</span>
+                  <Link href={x.status === "new" || x.status === "active" ? `/teacher/students/${x.studentId}?tab=roadmap` : `/teacher/placement/${x.id}`} className={`btn sm ${x.status === "submitted" ? "primary" : "secondary"}`}>{x.status === "submitted" ? t("hwT.check") : t("prof.open")}</Link>
+                </div>
               </div>
-              {h.needs > 0 && <span className="pill orange self-start">{t("hwT.needs", { n: h.needs })}</span>}
-            </div>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        );
+      })()}
+
+      {kind === "questions" && (() => {
+        const list = (qg[tab as keyof typeof qg] ?? qg.new).filter((x) => match(x.student));
+        return list.length === 0 ? empty(tab === "new" ? t("rv.qNone") : t("qs.none")) : (
+          <section className="list">
+            {list.map((x) => (
+              <div key={x.id} className="qrow">
+                <span className="avatar lg">{initials(x.student.name, x.student.lastName)}</span>
+                <div className="grow">
+                  <div className="flex flex-wrap items-baseline justify-between gap-2"><b>{nameOf(x.student)}</b><span className="small text-text3">{ago(x.createdAt)}</span></div>
+                  {(x.context || x.task) && <div className="small muted">{x.context ?? x.task?.title}</div>}
+                  <p className="mt-1 mb-0">{x.text}</p>
+                  {x.aiAnswer && <div className="aianswer mt-2"><b className="small">{t("ai.says")}</b><p className="m-0 mt-1">{x.aiAnswer}</p></div>}
+                  {x.teacherAnswer && <div className="alert ok mt-2">{x.teacherAnswer}</div>}
+                  {!x.answeredAt && <div className="mt-2"><AnswerBox id={x.id} /></div>}
+                </div>
+              </div>
+            ))}
+          </section>
+        );
+      })()}
     </div>
   );
 }

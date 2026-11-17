@@ -5,6 +5,7 @@ import { payerLinkAction } from "@/lib/billing/actions";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Dialog } from "../Dialog";
+import { PackTicket } from "./PackTicket";
 import { Icon } from "../Icon";
 import { useT } from "@/lib/i18n/client";
 import { TIMEZONES } from "@/lib/time";
@@ -118,7 +119,7 @@ export function PrivateNote({ id, initial }: { id: string; initial: string }) {
 export type PaymentData = {
   id: string; payType: "PACK" | "POSTPAID"; billRule: string; remindEveryDays: number | null; price: number | null;
   packPrices: { n: number; price: number; main?: boolean }[]; payerName: string; payerContact: string;
-  pack: { left: number; total: number; price: number; since?: string; used?: { id: string; date: string; missed: boolean }[] } | null;
+  pack: { left: number; total: number; price: number; since?: string; ends?: string | null; used?: { id: string; date: string; missed: boolean }[] } | null;
   today?: string;
   payerLinked?: boolean; studentName?: string; teacherName?: string;
 };
@@ -225,27 +226,11 @@ export function PaymentCard({ p, earnedMonth }: { p: PaymentData; earnedMonth: s
       {payType === "PACK" && (
         <div className="mt-5 border-t border-sep pt-5">
           {p.pack ? (
-            <div className="flex items-center gap-5">
-              <svg className="pring" viewBox="0 0 110 110" aria-hidden="true">
-                <circle cx="55" cy="55" r="46" fill="none" stroke="var(--fill)" strokeWidth="10" />
-                <circle cx="55" cy="55" r="46" fill="none" stroke="var(--ok)" strokeWidth="10" strokeLinecap="round"
-                  strokeDasharray={`${(circ * p.pack.left) / Math.max(1, p.pack.total)} ${circ}`} transform="rotate(-90 55 55)" />
-                <text x="55" y="58" textAnchor="middle" fontSize="28" fontWeight="700" fill="var(--text)">{p.pack.left}</text>
-                <text x="55" y="76" textAnchor="middle" fontSize="11" fill="var(--text2)">{t("prof.leftShort")}</text>
-              </svg>
-              <div className="grow">
-                <span className="pill green">{t("prof.packCurrent")}</span>
-                <b className="mt-1 block text-[18px]">{t("prof.left", { n: p.pack.left, total: p.pack.total })}</b>
-                <div className="small muted">{p.pack.since ? `${t("prof.packSince", { d: p.pack.since })} · ` : ""}{t("prof.packAuto")}</div>
-              </div>
-            </div>
+            <PackTicket studentId={p.id} today={p.today ?? ""} pack={{ left: p.pack.left, total: p.pack.total, since: p.pack.since, ends: p.pack.ends ?? null }} />
           ) : <p className="hint m-0">{t("prof.noPack")}</p>}
           {p.pack && (
             <div className="packused mt-3">
-              <div className="flex items-center justify-between gap-2">
-                <span className="flabel m-0">{t("prof.packUsed")}</span>
-                <button type="button" className="btn tinted sm" disabled={!p.pack.left} onClick={() => setDeduct({ date: p.today ?? "", start: "" })}><Icon name="check" size="sm" />{t("prof.packDeduct")}</button>
-              </div>
+              <span className="flabel m-0">{t("prof.packUsed")}</span>
               {(p.pack.used ?? []).length === 0 ? <p className="hint m-0 mt-1">{t("prof.packNoUsed")}</p> : (p.pack.used ?? []).map((u) => (
                 <div key={u.id} className="lprice">
                   <span className="grow">{u.date}{u.missed ? ` · ${t("sch.st.missed")}` : ""}</span>

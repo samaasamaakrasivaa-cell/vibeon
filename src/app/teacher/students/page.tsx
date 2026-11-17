@@ -9,6 +9,9 @@ import { getT } from "@/lib/i18n/server";
 import { initials, inviteUrl } from "@/lib/invite";
 import { rub } from "@/lib/teacher/data";
 import { roadmapView } from "@/lib/roadmap/progress";
+import { PackTicket } from "@/components/teacher/PackTicket";
+import { packEndsAt } from "@/lib/teacher/pack";
+import { isoDay } from "@/lib/time";
 
 export const metadata = { title: "Ученики" };
 
@@ -38,6 +41,18 @@ export default async function Students({ searchParams }: { searchParams: Promise
       : `${l.startsAt.toLocaleDateString(loc, { weekday: "short", day: "numeric", month: "short", timeZone: me.timezone })}, ${time}`;
   };
   const active = all.filter((s) => s.status === "ACTIVE");
+  // «Оплата»: последний счёт каждого ученика (за какие уроки, оплачен ли) и когда закончится абонемент
+  const dfmt = (d: Date) => d.toLocaleDateString(lang === "ru" ? "ru-RU" : "en-GB", { day: "numeric", month: "short", timeZone: me.timezone });
+  const lastInv = new Map<string, { id: string; amount: number; status: string; title: string; createdAt: Date; lessonDates: Date[] }>();
+  const packEnds = new Map<string, Date | null>();
+  if (tab === "payments") {
+    const invs = await db.invoice.findMany({ where: { studentId: { in: active.map((s) => s.id) }, status: { not: "CANCELLED" }, kind: { not: "pack" } }, orderBy: { createdAt: "desc" } });
+    for (const v of invs) if (!lastInv.has(v.studentId)) lastInv.set(v.studentId, { id: v.id, amount: v.amount, status: v.status, title: v.title ?? "", createdAt: v.createdAt, lessonDates: [] });
+    const lids = [...lastInv.values()].flatMap((v) => invs.find((x) => x.id === v.id)!.lessonIds);
+    const ls = new Map((await db.lessonInstance.findMany({ where: { id: { in: lids } }, select: { id: true, startsAt: true } })).map((l) => [l.id, l.startsAt]));
+    for (const v of lastInv.values()) v.lessonDates = invs.find((x) => x.id === v.id)!.lessonIds.map((id) => ls.get(id)).filter(Boolean).sort((a, b) => a!.getTime() - b!.getTime()) as Date[];
+    for (const s of active) if (s.payType === "PACK" && s.packs[0]) packEnds.set(s.id, await packEndsAt(s.id, s.packs[0].lessonsLeft));
+  }
   const invited = all.filter((s) => s.status === "INVITED");
   const archived = all.filter((s) => s.status === "ARCHIVED");
   const full = (s: { name: string; lastName: string | null }) => [s.name, s.lastName].filter(Boolean).join(" ");
@@ -108,19 +123,35 @@ export default async function Students({ searchParams }: { searchParams: Promise
       )}
 
       {tab === "payments" && (
-        <section className="card">
-          {active.length === 0 ? <p className="hint m-0">{t("inviteT.none")}</p> : (
-            <div className="list" style={{ background: "var(--surface2)" }}>
-              {active.map((s) => (
-                <Link key={s.id} href={`/teacher/students/${s.id}`} className="row wrap-phone hover:bg-fill">
-                  <span className="avatar">{initials(s.name, s.lastName)}</span>
-                  <div className="grow"><div className="t">{full(s)}</div><div className="s">{s.payType === "PACK" ? t("prof.pack") : t("prof.postpaid")}{s.price ? ` · ${rub(s.price, lang)} ${t("prof.perLesson")}` : ""}</div></div>
-                  {s.payType === "PACK" && s.packs[0] && <span className="pill blue">{t("prof.left", { n: s.packs[0].lessonsLeft, total: s.packs[0].lessonsTotal })}</span>}
-                </Link>
-              ))}
-            </div>
-          )}
-        </section>
+        active.length === 0 ? <section className="card"><p className="hint m-0">{t("inviteT.none")}</p></section> : (
+          <div className="paygrid">
+            {active.map((s) => {
+              const inv = lastInv.get(s.id);
+              const pk = s.packs[0];
+              return (
+                <section key={s.id} className="card sm stpay">
+                  <Link href={`/teacher/students/${s.id}`} className="flex items-center gap-3">
+                    <span className="avatar">{initials(s.name, s.lastName)}</span>
+                    <div className="grow min-w-0"><b className="block truncate">{full(s)}</b><span className="small muted">{s.payType === "PACK" ? t("prof.pack") : t("prof.postpaid")}{s.price ? ` · ${rub(s.price, lang)} ${t("prof.perLesson")}` : ""}</span></div>
+                  </Link>
+                  {/* абонемент — «билетом»; постоплата — последний счёт: за какой урок, оплачен ли */}
+                  {s.payType === "PACK" && pk ? (
+                    <PackTicket compact studentId={s.id} today={isoDay(new Date(), me.timezone)} pack={{ left: pk.lessonsLeft, total: pk.lessonsTotal, since: dfmt(pk.startsAt), ends: packEnds.get(s.id) ? dfmt(packEnds.get(s.id)!) : null }} />
+                  ) : inv ? (
+                    <div className="payinv">
+                      <div className="grow min-w-0">
+                        <b className="block">{rub(inv.amount, lang)}</b>
+                        <span className="small muted">{inv.lessonDates.length ? t("pay.lastFor", { d: inv.lessonDates.map(dfmt).join(", ") }) : t("pay.lastInv", { t: inv.title, d: dfmt(inv.createdAt) })}</span>
+                      </div>
+                      {inv.status === "PAID" ? <span className="pill green">✓ {t("pay.paidPill")}</span>
+                        : <Link href={`/teacher/finance?tab=check&c=${inv.status === "PROOF_SENT" ? "toCheck" : "waiting"}&hl=${inv.id}#inv-${inv.id}`} className="btn primary sm">{t("pay.confirm")}</Link>}
+                    </div>
+                  ) : <p className="hint m-0">{s.payType === "PACK" ? t("prof.noPack") : t("pay.noInv")}</p>}
+                </section>
+              );
+            })}
+          </div>
+        )
       )}
 
       {tab === "roadmaps" && (

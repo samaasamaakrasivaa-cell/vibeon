@@ -1,3 +1,4 @@
+import { packEndsAt } from "@/lib/teacher/pack";
 import { InvoiceEdit } from "@/components/finance/FinanceParts";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -173,7 +174,8 @@ export default async function StudentProfile({ params, searchParams }: { params:
                 id: s.id, payType: s.payType, billRule: s.billRule ?? "", remindEveryDays: s.remindEveryDays, price: s.price,
                 packPrices: (s.packPrices as { n: number; price: number }[]) ?? [], payerName: s.payerName ?? "", payerContact: s.payerContact ?? "",
                 pack: s.packs[0] ? {
-                  left: s.packs[0].lessonsLeft, total: s.packs[0].lessonsTotal, price: s.packs[0].price, since: dateFmt(s.packs[0].startsAt, { day: "numeric", month: "long" }),
+                  left: s.packs[0].lessonsLeft, total: s.packs[0].lessonsTotal, price: s.packs[0].price, since: dateFmt(s.packs[0].startsAt, { day: "numeric", month: "short" }),
+                  ends: await packEndsAt(s.id, s.packs[0].lessonsLeft).then((d) => (d ? dateFmt(d, { day: "numeric", month: "short" }) : null)),
                   // списанные уроки этого абонемента — последние по дате
                   used: s.lessons.filter((l) => l.deductedAt).slice(0, Math.max(0, s.packs[0].lessonsTotal - s.packs[0].lessonsLeft))
                     .map((l) => ({ id: l.id, date: dateFmt(l.startsAt, { day: "numeric", month: "short", weekday: "short" }), missed: l.status === "MISSED" })),
