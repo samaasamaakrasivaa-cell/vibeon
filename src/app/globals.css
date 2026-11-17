@@ -1939,3 +1939,4 @@ button.grp-row:hover { background: var(--fill); }
 .stpay > a { color: inherit; text-decoration: none; }
 .payinv { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 14px; background: var(--surface2); }
 .paygrid > .card { margin: 0 !important; }
+.lopen { justify-content: center; font-size: 17px; min-height: 50px; }

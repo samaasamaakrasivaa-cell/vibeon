@@ -453,6 +453,8 @@ function LessonDialog({ l, onClose, initial = "main" }: { l: GridLesson; onClose
   return (
     <Dialog open onClose={onClose}>
       {head}
+      {/* главное действие — сразу под названием, крупно */}
+      <Link href={`/class/${l.id}`} className="btn primary lg w-full mb-4 lopen"><Icon name="class" />{t("dash.openClass")}</Link>
       <div className="flex flex-wrap items-center gap-2">
         <span className={`pill ${statusPill[l.status][0]}`}>{t(statusPill[l.status][1])}</span>
         {l.status === "MISSED" && <span className="pill grey">{l.charged ? t("sch.charged") : t("sch.notCharged")}</span>}
@@ -494,7 +496,6 @@ function LessonDialog({ l, onClose, initial = "main" }: { l: GridLesson; onClose
           {!l.past && l.status === "PLANNED" && <button className="btn secondary sm" onClick={() => setMode("cancel")}><Icon name="calx" size="sm" />{t("sch.cancelLesson")}</button>}
           <button className="btn danger sm" onClick={() => setMode("del")}>{t("common.delete")}</button>
         </div>
-        <Link href={`/class/${l.id}`} className="btn primary sm"><Icon name="class" size="sm" />{t("dash.openClass")}</Link>
       </div>
       {/* стоимость и ссылка на созвон — не главное, внизу карточки */}
       {(!!l.prices?.length && !l.isTrial) || l.callLink !== undefined ? (
