@@ -1,11 +1,26 @@
+import { homeworkFor } from "@/lib/homework";
 import { AppHeader } from "@/components/AppHeader";
 import { Sidebar } from "@/components/Sidebar";
 import { getT } from "@/lib/i18n/server";
 import { requireUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
-import { Prisma } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
+
+/** Число у «Домашки» — только то, что ученики сдали на проверку: последняя домашка ученика с ответами, ждущими проверки,
+ *  или сделанная целиком, плюс пройденные placement test. Просто заданная домашка не считается. */
+async function hwToReview(teacherId: string) {
+  const items = await homeworkFor({ teacherId });
+  const seen = new Set<string>();
+  let n = 0;
+  for (const h of items) {
+    const sid = h.lesson.studentId ?? h.lesson.id;
+    if (seen.has(sid)) continue;
+    seen.add(sid);
+    if (h.state === "review" && (h.needs > 0 || (h.total > 0 && h.done >= h.total))) n++;
+  }
+  return n + (await db.placementAttempt.count({ where: { teacherId, mode: "student", status: "submitted" } }));
+}
 
 export default async function TeacherLayout({ children }: { children: React.ReactNode }) {
   const { t } = await getT();
@@ -14,7 +29,7 @@ export default async function TeacherLayout({ children }: { children: React.Reac
     db.notification.count({ where: { userId: user.id, readAt: null } }),
     db.message.count({ where: { student: { teacherId: user.id }, senderId: { not: user.id }, readAt: null } }),
     db.question.count({ where: { student: { teacherId: user.id }, askedTeacher: true, answeredAt: null } }),
-    db.answer.count({ where: { lessonInstance: { teacherId: user.id }, status: "NEEDS_REVIEW", teacherReview: { equals: Prisma.DbNull } } }),
+    hwToReview(user.id),
     db.invoice.count({ where: { student: { teacherId: user.id }, status: "PROOF_SENT" } }),
   ]);
   const groups = [

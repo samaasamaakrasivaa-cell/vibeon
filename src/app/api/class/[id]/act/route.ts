@@ -222,6 +222,10 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       if (body.op === "add") {
         const word = str(body.word, 120).trim();
         if (!word) return bad();
+        // уже в словаре ученика — второй раз не добавляем
+        // уже в словаре ученика (например, из другого урока) — не дублируем, но показываем в уроке как добавленное
+        const had = await db.word.findFirst({ where: { studentId: tg.studentId, word: { equals: word, mode: "insensitive" } } });
+        if (had) { publish(ch, "word", { op: "add", word: had, sid: tg.studentId }); return NextResponse.json({ ok: true }); }
         const w = await db.word.create({ data: { studentId: tg.studentId, word, translation: str(body.tr, 200) || null, example: str(body.ex, 400) || null, sourceLessonId: tg.id } });
         publish(ch, "word", { op: "add", word: w, sid: tg.studentId });
       } else if (body.op === "del" && teacher) {

@@ -161,7 +161,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
       setResetTick((r) => ({ ...r, [taskId]: (r[taskId] ?? 0) + 1 }));
     }
     else if (ev === "review") { if (!mineOnly) setRevBy((all) => ({ ...all, [sid]: { ...(all[sid] ?? {}), [x.taskId as string]: x.review as Review } })); }
-    else if (ev === "word") { if (!mineOnly) setWordsBy((all) => { const w = all[sid] ?? []; return { ...all, [sid]: x.op === "add" ? [...w, x.word as Word] : w.filter((y) => y.id !== x.id) }; }); }
+    else if (ev === "word") { if (!mineOnly) setWordsBy((all) => { const w = all[sid] ?? []; return { ...all, [sid]: x.op === "add" ? (w.some((y) => y.id === (x.word as Word).id) ? w : [...w, x.word as Word]) : w.filter((y) => y.id !== x.id) }; }); }
     else if (ev === "presence") setOnline(x.online as string[]);
     else if (ev === "reload") router.refresh();
     else if (ev === "finished" && !teacher) setFinished(true);
@@ -617,6 +617,37 @@ function Homework({ teacher, tasks, statuses, reviews, training, comment, render
   );
 }
 
+/** Тренировка слов урока прямо в классе: карточка — слово, нажать — перевод и пример; «Знаю» / «Ещё раз» (вернётся в конец). */
+function WordTrainer({ cards, say, onClose }: { cards: { word: string; tr: string; ex: string }[]; say: (w: string) => void; onClose: () => void }) {
+  const { t } = useT();
+  const [queue, setQueue] = useState(() => [...cards].sort(() => Math.random() - 0.5));
+  const [flip, setFlip] = useState(false);
+  const [known, setKnown] = useState(0);
+  const cur = queue[0];
+  const next = (ok: boolean) => { setFlip(false); setQueue((q) => (ok ? q.slice(1) : [...q.slice(1), q[0]])); if (ok) setKnown((k) => k + 1); };
+  return (
+    <Dialog open onClose={onClose} title={t("cls.trainNew")}>
+      {cur ? (
+        <>
+          <div className="small muted mb-2">{t("cls.trainLeft", { n: queue.length, k: known })}</div>
+          <button type="button" className="wcard" onClick={() => setFlip((f) => !f)} aria-label={t("cls.trainFlip")}>
+            <b>{cur.word}</b>
+            {flip ? <><span className="wtr">{cur.tr}</span>{cur.ex && <i className="small">{cur.ex}</i>}</> : <span className="small muted">{t("cls.trainFlip")}</span>}
+          </button>
+          <div className="mt-3 flex items-center gap-2">
+            <button type="button" className="iconbtn" style={{ background: "var(--fill)" }} onClick={() => say(cur.word)} aria-label={t("tk.listen")}><Icon name="sound" size="sm" /></button>
+            <span className="grow" />
+            <button type="button" className="btn secondary" onClick={() => next(false)}>{t("cls.trainAgain")}</button>
+            <button type="button" className="btn primary" onClick={() => next(true)}>{t("cls.trainKnow")}</button>
+          </div>
+        </>
+      ) : (
+        <div className="text-center"><p className="text-[18px]"><b>{t("cls.trainDone", { n: known })}</b></p><button type="button" className="btn primary" onClick={onClose}>{t("common.close")}</button></div>
+      )}
+    </Dialog>
+  );
+}
+
 function Words({ teacher, lessonWords, words, training, send, setHw }: {
   teacher: boolean; lessonWords: { word: string; tr: string; ex: string }[]; words: Word[]; training: string[];
   send: (type: string, d: Record<string, unknown>) => Promise<unknown>; setHw: (fn: (h: ClassData["homework"]) => ClassData["homework"]) => void;
@@ -629,15 +660,27 @@ function Words({ teacher, lessonWords, words, training, send, setHw }: {
   const byWord = new Map(words.map((w) => [w.word.toLowerCase(), w]));
   const all = [...lessonWords.map((w) => ({ key: w.word, word: w.word, tr: w.tr, ex: w.ex, saved: byWord.get(w.word.toLowerCase()) })), ...words.filter((w) => !lessonWords.some((l) => l.word.toLowerCase() === w.word.toLowerCase())).map((w) => ({ key: w.id, word: w.word, tr: w.translation ?? "", ex: w.example ?? "", saved: w }))];
   const toggle = (kind: "new" | "review") => { const on = !training.includes(kind); setHw((h) => ({ ...h, wordTraining: on ? [...h.wordTraining, kind] : h.wordTraining.filter((x) => x !== kind) })); send("training", { kind, on }); };
+  const [train, setTrain] = useState(false);
+  const cards = all.filter((w) => w.tr || w.ex);
+  const unsaved = lessonWords.filter((w) => !byWord.get(w.word.toLowerCase()));
+  const add = (w: { word: string; tr: string; ex: string }) => send("word", { op: "add", word: w.word, tr: w.tr, ex: w.ex });
   const bold = (ex: string, w: string) => ex.split(new RegExp(`(${w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`, "i")).map((p, i) => (p.toLowerCase() === w.toLowerCase() ? <b key={i}>{p}</b> : p));
   return (
     <>
       <div className="mb-3 flex flex-wrap items-center gap-2">
         <h1 className="grow">{teacher ? t("bld.newWords") : t("cls.myWords")}</h1>
         <div className="seg"><button aria-pressed={accent === "en-GB"} onClick={() => setAccent("en-GB")}>British</button><button aria-pressed={accent === "en-US"} onClick={() => setAccent("en-US")}>American</button></div>
-        {teacher && <button className={`btn sm ${training.includes("new") ? "primary" : "tinted"}`} onClick={() => toggle("new")}><Icon name="inbox" size="sm" />{t("cls.trainNew")}</button>}
-        {teacher && <button className={`btn sm ${training.includes("review") ? "primary" : "tinted"}`} onClick={() => toggle("review")}><Icon name="inbox" size="sm" />{t("cls.trainAll")}</button>}
+        {/* тренировка — сразу здесь, у учителя и у ученика; «в домашку» — отдельной кнопкой */}
+        <button className="btn sm primary" disabled={!cards.length} onClick={() => setTrain(true)}><Icon name="cards" size="sm" />{t("cls.trainNew")}</button>
+        {teacher && <button className={`btn sm ${training.includes("new") ? "tinted" : "secondary"}`} aria-pressed={training.includes("new")} title={t("cls.trainToHw")} onClick={() => toggle("new")}><Icon name="home" size="sm" />{training.includes("new") ? t("cls.trainInHw") : t("cls.trainToHw")}</button>}
       </div>
+      {unsaved.length > 0 && (
+        <div className="wadd mb-3">
+          <span className="grow small">{teacher ? t("cls.wordsAddHintT") : t("cls.wordsAddHint")}</span>
+          <button type="button" className="btn tinted sm" onClick={() => unsaved.forEach(add)}><Icon name="plus" size="sm" />{t("cls.wordsAddAll", { n: unsaved.length })}</button>
+        </div>
+      )}
+      {train && <WordTrainer cards={cards.map((w) => ({ word: w.word, tr: w.tr, ex: w.ex }))} say={say} onClose={() => setTrain(false)} />}
       <p className="muted mt-0">{teacher ? t("cls.wordsLead") : t("cls.wordsLeadS")}</p>
       <form className="mb-4 flex gap-2" onSubmit={(e) => { e.preventDefault(); const [w, tr = "", ex = ""] = q.split(/\s+[—–-]\s+/); if (w.trim()) send("word", { op: "add", word: w.trim(), tr, ex }); setQ(""); }}>
         <input className="input" value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("cls.addWordPh")} aria-label={t("cls.addWordPh")} />
@@ -653,6 +696,9 @@ function Words({ teacher, lessonWords, words, training, send, setHw }: {
               <div className="flex justify-end gap-1">{[0, 1, 2, 3].map((i) => <i key={i} className="lvl" style={{ background: (w.saved?.level ?? 0) > i ? "var(--accent)" : "var(--fill)" }} />)}</div>
               <span className="small muted">{levels[w.saved?.level ?? 0]}</span>
             </div>
+            {/* «+» — в личный словарь ученика (там он их тренирует); ✓ — уже там */}
+            {!w.saved ? <button className="iconbtn wplus" aria-label={t("cls.wordToDict", { w: w.word })} title={t("cls.wordToDict", { w: w.word })} onClick={() => add(w)}><Icon name="plus" size="sm" /></button>
+              : <span className="iconbtn wsaved" title={t("cls.wordInDict")} aria-label={t("cls.wordInDict")}><Icon name="check" size="sm" /></span>}
             {teacher && w.saved && <button className="iconbtn" aria-label={t("common.delete")} onClick={() => send("word", { op: "del", wid: w.saved!.id })}>✕</button>}
           </div>
         ))}

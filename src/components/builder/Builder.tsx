@@ -97,7 +97,11 @@ export function Builder({ d }: { d: BuilderData }) {
           <button className="btn plain sm" title={t("bld.import")} aria-label={t("bld.import")} onClick={() => setImp("file")}><Icon name="down" size="sm" /><span className="hide-md">{t("bld.import")}</span></button>
           <button className="btn plain sm" title={t("bld.coursebook")} aria-label={t("bld.coursebook")} onClick={() => setImp("book")}><Icon name="book" size="sm" /><span className="hide-md">{t("bld.coursebook")}</span></button>
           <span className="small hide-md" style={{ color: saved ? "var(--ok)" : "var(--text3)" }}>{saved ? `✓ ${t("common.saved")}` : t("common.saving")}</span>
-          <label className="flex items-center gap-2 small"><Icon name="user" size="sm" /><span className="hide-md">{t("bld.studentView")}</span><span className="switch"><input type="checkbox" checked={studentView} onChange={(e) => setStudentView(e.target.checked)} /><span /></span></label>
+          {/* превью урока глазами учителя (с ответами и заметками) или ученика */}
+          <div className="seg" role="group" aria-label={t("bld.previewAs")}>
+            <button type="button" aria-pressed={!studentView} onClick={() => setStudentView(false)}>{t("bld.teacherSees")}</button>
+            <button type="button" aria-pressed={studentView} onClick={() => setStudentView(true)}>{t("bld.studentSees")}</button>
+          </div>
           <LangSwitch lang={lang} label={t("common.language")} />
           <button className="btn plain sm" onClick={() => setShareOpen(true)}><Icon name="link" size="sm" /><span className="hide-md">{t("bld.share")}</span></button>
           <button className="btn primary sm" onClick={() => setStartOpen(true)}><Icon name="flagI" size="sm" />{t("bld.start")}</button>

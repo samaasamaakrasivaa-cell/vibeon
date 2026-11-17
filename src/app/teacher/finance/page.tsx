@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 
 const TABS = ["updates", "income", "students", "check"] as const;
 
-export default async function Finance({ searchParams }: { searchParams: Promise<{ tab?: string; r?: string; c?: string }> }) {
+export default async function Finance({ searchParams }: { searchParams: Promise<{ tab?: string; r?: string; c?: string; hl?: string }> }) {
   const { t, lang } = await getT();
   const me = await requireUser("TEACHER");
   const sp = await searchParams;
@@ -123,7 +123,7 @@ export default async function Finance({ searchParams }: { searchParams: Promise<
             {rows.map((i) => {
               const ai = i.aiRead as { amounts?: number[]; matches?: boolean; source?: string } | null;
               return (
-                <div key={i.id} className={`chkrow ${checkTab === "auto" ? "auto" : ""}`}>
+                <div key={i.id} id={`inv-${i.id}`} className={`chkrow ${checkTab === "auto" ? "auto" : ""} ${sp.hl === i.id ? "hl" : ""}`}>
                   <span className="avatar lg">{initials(i.student.name, i.student.lastName)}</span>
                   <div className="w-56 min-w-0"><b className="block truncate">{i.student.name} {i.student.lastName}</b><span className="small">{i.title}</span>{i.payerName && <span className="small muted block">{t("fin.payer", { name: i.payerName })}</span>}</div>
                   <div className="grow min-w-[200px] flex-1">

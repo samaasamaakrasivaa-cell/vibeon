@@ -2,7 +2,7 @@ import { InvoiceEdit } from "@/components/finance/FinanceParts";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Icon } from "@/components/Icon";
-import { DeleteStudent, FeedbackForm, PaymentCard, PrivateNote, ProfileActions } from "@/components/teacher/ProfileParts";
+import { DeleteStudent, FeedbackForm, PaymentCard, PrivateNote, ProfileActions, TgAsk } from "@/components/teacher/ProfileParts";
 import { InlineAbout, InlineContacts, type InlineData } from "@/components/teacher/InlineProfile";
 import { LinkMaker, ShareLink } from "@/components/teacher/InviteForm";
 import { accessLinkAction, renewInviteAction } from "@/lib/auth/actions";
@@ -91,7 +91,7 @@ export default async function StudentProfile({ params, searchParams }: { params:
             {s.status === "INVITED" && <span className="pill orange">{t("prof.invited")}</span>}
             {s.status === "ARCHIVED" && <span className="pill grey">{t("stu.archived")}</span>}
             <span className={`pill ${s.userId ? "green" : "grey"}`} title={t("prof.platformHint")}>{s.userId ? "✓ " : ""}{t(s.userId ? "prof.onPlatform" : "prof.notOnPlatform")}</span>
-            <span className={`pill ${tgUser?.telegramChatId ? "green" : "grey"}`} title={t("prof.tgHint")}><Icon name="telegram" size="sm" />{t(tgUser?.telegramChatId ? "prof.tgOn" : "prof.tgOff")}</span>
+            {tgUser?.telegramChatId || !s.userId ? <span className={`pill ${tgUser?.telegramChatId ? "green" : "grey"}`} title={t("prof.tgHint")}><Icon name="telegram" size="sm" />{t(tgUser?.telegramChatId ? "prof.tgOn" : "prof.tgOff")}</span> : <TgAsk id={s.id} />}
             {(s.payerName || s.payerChatId) && <span className={`pill ${s.payerChatId ? "green" : "grey"}`}><Icon name="telegram" size="sm" />{t(s.payerChatId ? "prof.payerTgOn" : "prof.payerTgOff")}</span>}
           </div>
         </div>

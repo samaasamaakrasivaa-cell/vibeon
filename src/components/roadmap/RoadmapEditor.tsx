@@ -75,7 +75,7 @@ function Checkpoints({ d }: { d: EditorData }) {
         </>
       ) : <p className="hint mt-0">{t("rm.noTest")}</p>}
       {open && (
-        <div className="alert mt-3 flex flex-wrap items-center gap-2"><Icon name="hourglass" size="sm" />
+        <div className="alert calm mt-3 flex flex-wrap items-center gap-2"><Icon name="hourglass" size="sm" />
           <span className="grow">{open.status === "review" ? t("pl.toReview") : open.pstatus === "active" ? t("pl.studentTaking") : open.kind === "entry" ? t("rm.entryAssigned") : t("rm.sliceAssigned")}</span>
           {open.placement && open.status === "review" && <a className="btn primary sm" href={`/teacher/placement/${open.placement}`}>{t("pl.review")}</a>}
         </div>

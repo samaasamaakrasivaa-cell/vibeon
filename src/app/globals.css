@@ -1846,3 +1846,31 @@ button.grp-row:hover { background: var(--fill); }
 .bmenu button { border: 0; border-radius: 8px; padding: 3px 9px; background: var(--surface); color: var(--text); font: inherit; font-size: 12.5px; cursor: pointer; box-shadow: 0 0 0 .5px var(--sep); }
 .bmenu button.bad { color: var(--bad-text); }
 .chat-ctx { display: flex; align-items: center; gap: 6px; margin-top: 6px; padding: 5px 8px; border-left: 3px solid var(--accent); border-radius: 6px; background: var(--accent-bg); font-size: 13px; }
+@media (min-width: 1201px) { .navb[data-tip]::after { display: none; } } /* меню с подписями — подсказка не нужна */
+.chkrow.hl { box-shadow: 0 0 0 2px var(--accent); border-radius: 14px; scroll-margin-top: 90px; }
+.alert.calm { background: var(--accent-bg); color: var(--accent-text); } /* ожидание — не ошибка: без красного */
+
+/* новые слова в уроке: «в словарь», тренировка карточками */
+.wadd { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; background: var(--accent-bg); color: var(--accent-text); }
+.wplus { background: var(--accent-bg); color: var(--accent); }
+.wsaved { color: var(--ok); cursor: default; }
+.wcard { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 180px; padding: 20px; border: 0; border-radius: 18px; background: var(--surface2); font: inherit; color: var(--text); cursor: pointer; text-align: center; }
+.wcard b { font-size: 28px; }
+.wcard .wtr { font-size: 19px; color: var(--accent-text); font-weight: 600; }
+
+/* доска: печать прямо на доске, заголовок колонки, панель таблицы, подсказки инструментов */
+.bd-edit { position: absolute; z-index: 5; resize: none; border: 2px solid #0A84FF; border-radius: 8px; padding: 2px 6px; background: rgba(255,255,255,.96); font-family: -apple-system, system-ui, sans-serif; line-height: 1.3; outline: none; box-shadow: 0 6px 18px rgba(0,0,0,.12); }
+.bd-head { display: block; font-size: 30px; margin-bottom: 8px; }
+.bd-tbar { position: absolute; z-index: 4; display: flex; gap: 4px; padding: 4px; border-radius: 10px; background: var(--surface); box-shadow: 0 6px 18px rgba(0,0,0,.14); }
+.bd-tbar button { border: 0; border-radius: 7px; padding: 4px 9px; background: var(--surface2); font: inherit; font-size: 13px; color: var(--text); cursor: pointer; }
+.bd-tbar button:disabled { opacity: .4; }
+.bd-ask { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 14px; background: var(--accent-bg); }
+.bd-ask input { width: 56px; margin-left: 4px; border: 1px solid var(--sep); border-radius: 8px; padding: 3px 6px; font: inherit; }
+.bd-tools [data-tip]::after { left: calc(100% + 10px); bottom: auto; top: 50%; transform: translate(4px, -50%); white-space: nowrap; max-width: none; }
+.bd-tools [data-tip]:hover::after { transform: translate(0, -50%); }
+.bd-top [data-tip]::after { bottom: auto; top: calc(100% + 8px); white-space: nowrap; max-width: none; }
+.bd-top .grow ~ [data-tip]::after { left: auto; right: 0; }
+.bd-sticky { white-space: pre-wrap; }
+.tgbanner { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; }
+.tgbanner .tgico { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: var(--accent-bg); color: #229ED9; flex: none; }
+.tgbanner .tgbtn { min-width: 220px; } .tgbanner .tgbtn .btn.lg { padding: 10px 16px; font-size: 15px; }

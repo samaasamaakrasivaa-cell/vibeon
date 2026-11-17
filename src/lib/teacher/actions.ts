@@ -367,6 +367,18 @@ export async function packReturn(lessonId: string): Promise<Result> {
   return { ok: true };
 }
 
+/** «Попросить подключить» Telegram-бот: ученику — сообщение в чате и напоминание в кабинете (раз в сутки, не чаще). */
+export async function requestTgConnect(studentId: string): Promise<Result> {
+  const { t } = await getT();
+  const teacher = await me();
+  const s = await ownStudent(studentId, teacher.id);
+  if (!s.userId) return { ok: false, error: t("prof.tgNoUser") };
+  const day = new Date().toISOString().slice(0, 10);
+  const n = await notify({ userId: s.userId, kind: "message", title: "Подключите Telegram-бот VibeOn: туда придут напоминания об уроках и оплатах и результаты тестов", action: "open", link: "/student/welcome", dedupe: `tgask:${s.id}:${day}` });
+  if (n) await db.message.create({ data: { studentId: s.id, senderId: teacher.id, text: "Пожалуйста, подключите Telegram-бот VibeOn — туда будут приходить напоминания об уроках и оплатах, домашка и результаты ваших тестов. Кнопка «Подключить Telegram» — на главной странице кабинета." } });
+  return { ok: true };
+}
+
 export async function archiveStudent(id: string, archive: boolean): Promise<Result> {
   const teacher = await me();
   await ownStudent(id, teacher.id);

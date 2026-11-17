@@ -3,6 +3,8 @@ import { Clock } from "./Clock";
 import { Icon } from "./Icon";
 import { NotificationList } from "./NotificationList";
 import { HideSteps } from "./teacher/HideSteps";
+import { TgConnect } from "./TgConnect";
+import { tgEnabled } from "@/lib/notify/telegram";
 import { LessonQuick } from "./teacher/WeekGrid";
 import { nextBirthday } from "@/lib/birthdays";
 import { getT } from "@/lib/i18n/server";
@@ -51,7 +53,7 @@ export async function Dashboard({ user, role, day }: { user: User; role: "TEACHE
     select: {
       id: true, movedFrom: true,
       template: { select: { title: true, subtitle: true, unit: { select: { title: true, course: { select: { title: true } } } } } },
-      student: { select: { payType: true, birthday: true, packs: { orderBy: { startsAt: "desc" }, take: 1, select: { lessonsLeft: true, lessonsTotal: true } }, invoices: { where: { status: { in: ["SENT", "PROOF_SENT"] } }, select: { amount: true } }, _count: { select: { lessons: { where: { status: "DONE" } } } } } },
+      student: { select: { payType: true, birthday: true, packs: { orderBy: { startsAt: "desc" }, take: 1, select: { lessonsLeft: true, lessonsTotal: true } }, invoices: { where: { status: { in: ["SENT", "PROOF_SENT"] } }, select: { id: true, amount: true, status: true } }, _count: { select: { lessons: { where: { status: "DONE" } } } } } },
     },
   })).map((x) => [x.id, x]));
   const selTitle = isToday ? t("dash.today") : ((x) => x.charAt(0).toUpperCase() + x.slice(1))(new Date(dayStart(sel, tz).getTime() + 12 * 3600e3).toLocaleDateString(loc, { weekday: "long", day: "numeric", month: "long", timeZone: tz }));
@@ -99,6 +101,14 @@ export async function Dashboard({ user, role, day }: { user: User; role: "TEACHE
 
   return (
     <div className="page">
+      {/* ученику без Telegram-бота — напоминание подключить (пропадает, когда подключил) */}
+      {role === "STUDENT" && !user.telegramChatId && tgEnabled() && (
+        <section className="card tgbanner">
+          <span className="tgico"><Icon name="telegram" /></span>
+          <div className="grow"><b className="block">{t("tgb.title")}</b><span className="small muted">{t("tgb.text")}</span></div>
+          <div className="tgbtn"><TgConnect /></div>
+        </section>
+      )}
       {steps.length > 0 && (
         <section className="card fscard">
           <div className="flex items-start justify-between gap-3"><div className="flex items-center gap-3"><span className="fsicon">🚀</span><h2 className="m-0">{t("fs.title")}</h2></div><HideSteps /></div>
@@ -168,7 +178,10 @@ export async function Dashboard({ user, role, day }: { user: User; role: "TEACHE
                       <div className="tl-tags">
                         {hw && <Link href={`/class/${hw.lesson.id}?tab=homework`} className={`pill ${hwPill[hw.state][0]}`} title={`${hw.title} · ${hw.done}/${hw.total}`}>{t("nav.homework")}: {t(hwPill[hw.state][1]).toLowerCase()}</Link>}
                         {pack && <span className={`pill ${pack.lessonsLeft <= 1 ? "orange" : "grey"}`}>{t("prof.left", { n: pack.lessonsLeft, total: pack.lessonsTotal })}</span>}
-                        {debt > 0 && <span className="pill red">{t("today.debt", { sum: new Intl.NumberFormat(loc).format(debt) + " ₽" })}</span>}
+                        {debt > 0 && role === "TEACHER" ? (
+                          // долг — сразу к подтверждению оплаты в «Финансах» (чек прислан — во вкладку «Проверить»)
+                          <Link href={((iv) => `/teacher/finance?tab=check&c=${iv.status === "PROOF_SENT" ? "toCheck" : "waiting"}&hl=${iv.id}#inv-${iv.id}`)(st!.invoices.find((i) => i.status === "PROOF_SENT") ?? st!.invoices[0])} className="pill red" title={t("today.debtGo")}>{t("today.debt", { sum: new Intl.NumberFormat(loc).format(debt) + " ₽" })} →</Link>
+                        ) : debt > 0 && <span className="pill red">{t("today.debt", { sum: new Intl.NumberFormat(loc).format(debt) + " ₽" })}</span>}
                         {x?.movedFrom && <span className="pill grey">{t("sch.moved")}</span>}
                       </div>
                     )}

@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { useT } from "@/lib/i18n/client";
-import { addSpeakingToLesson, aiScore, assignExtraWS, deletePlacement, finalizePlacement, saveReview, setShowResult } from "@/lib/placement/actions";
+import { addSpeakingToLesson, aiScore, assignExtraWS, deletePlacement, finalizePlacement, saveReview, sendResultTelegram, setShowResult } from "@/lib/placement/actions";
 import { transcribe } from "../ai/audio";
 import type { PlScore } from "@/lib/ai/tasks";
 import { BASE, finalHint, PL_LEVELS, scoreStep, STEPS, type PLevel, type Summary } from "@/lib/placement/engine";
@@ -14,7 +14,7 @@ import type { DictKey } from "@/lib/i18n/dict";
 
 type Marks = Record<string, number>;
 export type ReviewProps = {
-  id: string; mode: string; status: string; level: string | null; showResult: boolean; teen?: boolean;
+  id: string; mode: string; status: string; level: string | null; showResult: boolean; teen?: boolean; tgSent?: string | null;
   sm: Summary; d: ReviewData; review: { writing?: Record<string, unknown>; speaking?: Record<string, unknown>; points?: boolean[]; comment?: string; lesson?: { level: string; marks: Record<string, unknown> } | null; ai?: Partial<Record<"writing" | "speaking", PlScore & { level?: string; transcripts?: string[] }>> };
   lessonQs: { level: string; questions: string[] }[]; // говорение на уроке: вопросы уровнем выше и ниже
   rubrics: { writing: Rubric[]; speaking: Rubric[] }; howTo: string; sublevels: string; total: string;
@@ -414,6 +414,12 @@ export function PlacementReview(p: ReviewProps) {
           {p.mode === "student" && (
             <label className="setting"><span>{t("pl.showToStudent")}<span className="small muted block">{p.level ? t("pl.showHint") : t("pl.showNeedLevel")}</span></span>
               <span className="switch"><input type="checkbox" checked={p.showResult} disabled={pending || !p.level} onChange={(e) => run(() => setShowResult(p.id, e.target.checked))} /><span /></span></label>
+          )}
+          {p.mode === "student" && p.level && (
+            <div className="flex flex-wrap items-center gap-2">
+              <button type="button" className="btn tinted sm" disabled={pending} onClick={() => run(() => sendResultTelegram(p.id))}><Icon name="telegram" size="sm" />{t("pl.sendTg")}</button>
+              <span className="small muted">{p.tgSent ? t("pl.tgSentAt", { d: p.tgSent }) : t("pl.sendTgHint")}</span>
+            </div>
           )}
           {error && <div className="alert">{error}</div>}
         </section>

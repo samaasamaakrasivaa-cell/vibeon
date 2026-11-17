@@ -10,7 +10,7 @@ import { useT } from "@/lib/i18n/client";
 import { TIMEZONES } from "@/lib/time";
 import { billNow, requestPackPayment } from "@/lib/billing/actions";
 import {
-  addPack, archiveStudent, packDeduct, packReturn, deleteStudent, savePayment, savePrivateNote, updateStudentProfile, type Result,
+  addPack, archiveStudent, packDeduct, packReturn, requestTgConnect, deleteStudent, savePayment, savePrivateNote, updateStudentProfile, type Result,
 } from "@/lib/teacher/actions";
 
 function useRun() {
@@ -338,5 +338,20 @@ export function FeedbackForm({ studentId }: { studentId: string }) {
         {done ? <span className="small text-ok">✓ {t("fb.sent")}</span> : <span className="hint">{t("fb.hint")}</span>}
       </div>
     </section>
+  );
+}
+
+/** Значок «бот не подключён» в анкете: нажать — попросить ученика подключить Telegram-бот. */
+export function TgAsk({ id }: { id: string }) {
+  const { t } = useT();
+  const { pending, error, run } = useRun();
+  const [sent, setSent] = useState(false);
+  return (
+    <span className="inline-flex items-center gap-1.5">
+      <button type="button" className="pill grey" title={t("prof.tgAskHint")} disabled={pending || sent} onClick={() => run(() => requestTgConnect(id), () => setSent(true))}>
+        <Icon name="telegram" size="sm" />{t("prof.tgOff")} · {sent ? t("prof.tgAsked") : t("prof.tgAsk")}
+      </button>
+      {error && <span className="small text-bad">{error}</span>}
+    </span>
   );
 }

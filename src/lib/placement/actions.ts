@@ -4,7 +4,8 @@ import { cookies } from "next/headers";
 import { db } from "../db";
 import { requireUser } from "../auth/session";
 import { randomToken, shortCode } from "../auth/crypto";
-import { secureCookies } from "../env";
+import { env, secureCookies } from "../env";
+import { tgEnabled, tgSend } from "../notify/telegram";
 import { notify } from "../notify";
 import { rateLimit } from "../rate-limit";
 import { getLang } from "../i18n/server";
@@ -381,6 +382,25 @@ export async function finalizePlacement(id: string, level: string): Promise<R> {
       await db.student.update({ where: { id: a.studentId }, data: { level } });
     }
     refreshT(a.studentId);
+    revalidatePath(`/teacher/placement/${id}`);
+    return { ok: true };
+  });
+}
+
+/** «Отправить ученику в Telegram»: итог теста (уровень и комментарий) — в бот VibeOn, со ссылкой на подробный результат.
+ *  Результат заодно открывается ученику в кабинете. */
+export async function sendResultTelegram(id: string): Promise<R> {
+  return wrap(async () => {
+    const { a } = await teacherAttempt(id);
+    if (!a.level) return { ok: false, error: "Сначала выставьте итоговый уровень" };
+    const u = a.student?.userId ? await db.user.findUnique({ where: { id: a.student.userId }, select: { telegramChatId: true } }) : null;
+    if (!u?.telegramChatId || !tgEnabled()) return { ok: false, error: "Ученик ещё не подключил Telegram-бот — попросите его подключить (в анкете, у значка бота)" };
+    if (!a.showResult) await setShowResult(id, true);
+    const comment = String(((a.review ?? {}) as { comment?: string }).comment ?? "").trim();
+    const name = a.student?.name ?? "";
+    const text = `${name ? name + ", " : ""}${a.track === "teen" ? "результат твоего Placement test" : "результат вашего placement test"}: уровень ${a.level}.${comment ? `\n\n${comment.slice(0, 1500)}` : ""}`;
+    await tgSend(u.telegramChatId, text, `${env.appUrl}/student/test/${a.checkpointId}`, "Подробный результат");
+    await db.placementAttempt.update({ where: { id }, data: { review: json({ ...((a.review ?? {}) as object), tgSentAt: new Date().toISOString() }) } });
     revalidatePath(`/teacher/placement/${id}`);
     return { ok: true };
   });

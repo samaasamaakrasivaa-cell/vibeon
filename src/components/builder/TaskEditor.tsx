@@ -35,6 +35,7 @@ export function TaskEditor({ lessonId, initial, onSave, onClose, pending, error 
 }) {
   const { t, lang } = useT();
   const L = (x?: [string, string]) => (x ? (lang === "en" ? x[0] : x[1]) : "");
+  const [asTeacher, setAsTeacher] = useState(true); // превью: как учитель (с ответами) или как ученик
   const [task, setTask] = useState<TaskData>(initial);
   const o = task.options;
   const setO = (p: Partial<TaskOptions>) => setTask((x) => ({ ...x, options: { ...x.options, ...p } }));
@@ -418,8 +419,12 @@ export function TaskEditor({ lessonId, initial, onSave, onClose, pending, error 
         </div>
 
         <div className="ted-r">
-          <div className="small mb-2 font-bold tracking-wide text-text3">{t("bld.studentSees").toUpperCase()}</div>
-          <div className="ted-prev"><KeyCtx.Provider value={true}><TaskCard task={task} index={0} /></KeyCtx.Provider></div>
+          {/* как увидит ученик (без ответов) и как учитель (с подсказками правильных ответов) */}
+          <div className="seg mb-2" role="group" aria-label={t("bld.previewAs")}>
+            <button type="button" aria-pressed={!asTeacher} onClick={() => setAsTeacher(false)}>{t("bld.studentSees")}</button>
+            <button type="button" aria-pressed={asTeacher} onClick={() => setAsTeacher(true)}>{t("bld.teacherSees")}</button>
+          </div>
+          <div className="ted-prev"><KeyCtx.Provider value={asTeacher}><TaskCard key={asTeacher ? "t" : "s"} task={task} index={0} /></KeyCtx.Provider></div>
         </div>
       </div>
       {error && <div className="alert mt-3">{error}</div>}
