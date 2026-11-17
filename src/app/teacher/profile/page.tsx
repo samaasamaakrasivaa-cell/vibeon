@@ -1,4 +1,5 @@
 import { NotifySettings } from "@/components/NotifySettings";
+import { LinkCabinet } from "@/components/admin/LinkCabinet";
 import { ProfileForm } from "@/components/student/ProfileForm";
 import { requireUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
@@ -17,6 +18,7 @@ export default async function TeacherProfilePage() {
       <h1 className="mb-5">{t("common.profile")}</h1>
       <ProfileForm teacher hasPassword={!!me.passwordHash} init={{ name: me.name, lastName: me.lastName ?? "", phone: me.phone ?? "", telegram: "", timezone: me.timezone, email: me.email, callLink: prof?.callLink ?? "" }} />
       <NotifySettings role="TEACHER" init={settingsOf("TEACHER", me.notify)} linked={!!me.telegramChatId} enabled={tgEnabled()} email={me.email} />
+      <LinkCabinet linked={me.linkedUserId ? await db.user.findUnique({ where: { id: me.linkedUserId }, select: { role: true, email: true } }) : null} />
     </div>
   );
 }

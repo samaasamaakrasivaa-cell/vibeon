@@ -38,6 +38,8 @@ model User {
   phone           String?
   consentAt       DateTime? // согласие на обработку ПД (152-ФЗ)
   lastSeenAt      DateTime? // последнее активное действие на платформе («был(а) в сети…»)
+  isAdmin         Boolean   @default(false) // администратор платформы (кроме владельцев из OWNER_EMAIL)
+  linkedUserId    String? // второй кабинет того же человека (учитель ↔ ученик): привязан по паролю от обоих
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
@@ -115,7 +117,14 @@ model TeacherProfile {
   trialUntil DateTime?
   callLink   String? // внешняя ссылка на звонок (Телемост / Zoom / Meet)
   settings   Json      @default("{}")
+  planId     String? // тариф из «Тарифов» администратора (tariff — его уровень для ограничений)
+  paidUntil  DateTime? // оплачено до (после пробного)
+  blockedAt  DateTime? // доступ закрыт администратором
+  adminNote  String? // заметка администратора об учителе
+  source     String? // откуда пришёл: сам зарегистрировался / добавлен администратором
   user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan       Plan?     @relation(fields: [planId], references: [id], onDelete: SetNull)
+  payments   TeacherPayment[]
 
   students Student[]
   invites  Invite[]
@@ -782,4 +791,54 @@ model Award {
   student   Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@index([studentId, createdAt])
+}
+
+// ───────────── Кабинет администратора платформы ─────────────
+
+/// Тариф для учителей: цена, ограничения и что входит. tier — уровень для ограничений в коде (START без ИИ-функций PRO).
+model Plan {
+  id          String   @id @default(cuid())
+  name        String
+  nameEn      String?
+  tier        Tariff   @default(START)
+  priceMonth  Int // ₽ в месяц
+  priceYear   Int? // ₽ за год (со скидкой), если есть
+  maxStudents Int? // null — без ограничения
+  aiPerMonth  Int? // ИИ-проверок в месяц; null — без ограничения, 0 — без ИИ
+  features    Json     @default("[]") // ключи возможностей платформы (FEATURES)
+  blurb       String? // короткое описание для кого
+  active      Boolean  @default(true)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  teachers    TeacherProfile[]
+  payments    TeacherPayment[]
+}
+
+/// Оплата учителя платформе — для «Финансов» администратора; продлевает доступ на months месяцев.
+model TeacherPayment {
+  id        String         @id @default(cuid())
+  teacherId String
+  planId    String?
+  amount    Int // ₽
+  months    Int            @default(1)
+  paidAt    DateTime       @default(now())
+  note      String?
+  createdAt DateTime       @default(now())
+  teacher   TeacherProfile @relation(fields: [teacherId], references: [userId], onDelete: Cascade)
+  plan      Plan?          @relation(fields: [planId], references: [id], onDelete: SetNull)
+
+  @@index([paidAt])
+}
+
+/// База знаний: инструкции, дайджест и новости платформы для учителей и учеников.
+model Article {
+  id        String   @id @default(cuid())
+  title     String
+  body      String
+  kind      String   @default("guide") // guide | digest | news
+  audience  String   @default("teacher") // teacher | student | all
+  published Boolean  @default(false)
+  pinned    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

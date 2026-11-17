@@ -81,6 +81,15 @@ export async function mailReset(to: string, url: string, lang: L) {
   return soft(to, lang === "en" ? "Password reset — VibeOn" : "Сброс пароля — VibeOn", m.html, m.text);
 }
 
+/** Администратор добавил учителя: ссылка, чтобы задать пароль и войти (действует 7 дней). */
+export async function mailTeacherInvite(to: string, name: string, url: string, days: number, lang: L) {
+  const m =
+    lang === "en"
+      ? layout(`Welcome to VibeOn, ${name}!`, `Your teacher workspace is ready. You have ${days} days of free access — set a password and start.`, { label: "Set a password", url }, "The link is valid for 7 days and works once.")
+      : layout(`${name}, добро пожаловать в VibeOn!`, `Ваш кабинет преподавателя готов. Доступ бесплатный на ${days} дн. — задайте пароль и начинайте.`, { label: "Задать пароль", url }, "Ссылка действует 7 дней и срабатывает один раз.");
+  return soft(to, lang === "en" ? "Your VibeOn workspace" : "Ваш кабинет в VibeOn", m.html, m.text);
+}
+
 export async function mailInvite(to: string, studentName: string, teacherName: string, url: string, lang: L) {
   const m =
     lang === "en"

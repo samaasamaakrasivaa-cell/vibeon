@@ -5,8 +5,10 @@ import { logoutAction } from "@/lib/auth/actions";
 import { useT } from "@/lib/i18n/client";
 import { Icon } from "./Icon";
 import { StudentAvatar } from "./awards/Medal";
+import type { Cabinet } from "./CabinetSwitch";
+import { switchCabinet } from "@/lib/admin/actions";
 
-export function UserMenu({ name, lastName, email, profileHref, avatar }: { name: string; lastName?: string | null; email: string; profileHref: string; avatar?: { id: string; avatar: string | null; crown: boolean } }) {
+export function UserMenu({ name, lastName, email, profileHref, avatar, cabinets, linked }: { name: string; lastName?: string | null; email: string; profileHref: string; avatar?: { id: string; avatar: string | null; crown: boolean }; cabinets?: Cabinet[]; linked?: { label: string; email: string } | null }) {
   const { t } = useT();
   const ref = useRef<HTMLDetailsElement>(null);
   useEffect(() => {
@@ -27,6 +29,11 @@ export function UserMenu({ name, lastName, email, profileHref, avatar }: { name:
           <b>{[name, lastName].filter(Boolean).join(" ")}</b>
           {email}
         </div>
+        {/* переключение кабинетов — здесь же, чтобы было и на телефоне */}
+        {cabinets?.filter((c) => !c.current).map((c) => (
+          <Link key={c.href} href={c.href} className="umcab" onClick={() => ref.current?.removeAttribute("open")}><Icon name="shift" />{c.label}</Link>
+        ))}
+        {linked && <button type="button" className="umcab" onClick={async () => { const r = await switchCabinet(); if (r.ok) window.location.href = r.href; }}><Icon name="shift" />{linked.label}</button>}
         <Link href={profileHref} onClick={() => ref.current?.removeAttribute("open")}>
           <Icon name="user" />
           {t("common.profile")}

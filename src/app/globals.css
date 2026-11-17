@@ -2168,3 +2168,74 @@ button.grp-row:hover { background: var(--fill); }
 .chrform + .alert, .awlang + .awgrid { margin-top: 0; }
 .dlg .awlang { margin-bottom: 10px; }
 .awgive .awlang { margin-bottom: 0; }
+
+/* ── Переключатель кабинетов (шапка и меню) ── */
+.cabsw { position: relative; min-width: 0; }
+.cabsw > summary { list-style: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+.cabsw > summary::-webkit-details-marker { display: none; }
+.cabsw > summary svg { color: #7B5CF5; flex: none; transition: transform .15s; }
+.cabsw[open] > summary svg { transform: rotate(180deg); }
+.cabsw .pop { position: absolute; left: 0; top: calc(100% + 10px); min-width: 260px; background: var(--surface); border-radius: 14px; box-shadow: 0 12px 40px rgba(0,0,0,.16); padding: 6px; z-index: 70; display: flex; flex-direction: column; }
+.cabsw .pop a, .cabsw .pop button { display: flex; align-items: center; gap: 10px; width: 100%; border: 0; background: none; padding: 10px 12px; border-radius: 10px; font-size: 15px; text-align: left; color: var(--text); cursor: pointer; }
+.cabsw .pop a:hover, .cabsw .pop button:hover { background: var(--surface2); }
+.cabsw .pop a[aria-current="page"] { color: var(--accent); font-weight: 600; }
+.cabsw-h { padding: 6px 12px 4px; }
+.umenu .pop .umcab { color: var(--accent); font-weight: 600; }
+@media (min-width: 761px) { .umenu .pop .umcab { display: none; } }
+
+/* доступ учителя */
+.alert.trialbar { margin-bottom: 18px; background: var(--warn-bg); color: var(--warn-text); }
+.alert.trialbar.bad { background: var(--bad-bg); color: var(--bad-text); }
+
+/* ── Кабинет администратора ── */
+.admfeed { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.admfeed li { display: flex; align-items: center; gap: 12px; padding: 10px 4px; border-bottom: .5px solid var(--sep); }
+.admfeed li:last-child { border-bottom: 0; }
+.admfeed li a { color: var(--text); }
+.admfeed li a:hover b { color: var(--accent); }
+.admfeed-dot { width: 10px; height: 10px; border-radius: 50%; flex: none; background: var(--text3); }
+.admfeed-signup .admfeed-dot, .admfeed-firstStudent .admfeed-dot, .admfeed-firstLesson .admfeed-dot { background: var(--accent); }
+.admfeed-payment .admfeed-dot { background: var(--ok); }
+.admfeed-trialSoon .admfeed-dot { background: var(--warn); }
+.admfeed-trialEnded .admfeed-dot, .admfeed-inactive .admfeed-dot { background: var(--bad); }
+.admtbl { width: 100%; border-collapse: collapse; font-size: 14px; }
+.admtbl th { text-align: left; font-size: 12px; font-weight: 600; color: var(--text2); padding: 12px 14px; border-bottom: .5px solid var(--sep); white-space: nowrap; }
+.admtbl td { padding: 12px 14px; border-bottom: .5px solid var(--sep); vertical-align: top; }
+.admtbl tr:last-child td { border-bottom: 0; }
+.admtbl .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.admname { display: flex; flex-direction: column; color: var(--text); }
+.admname:hover b { color: var(--accent); }
+.admcols { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 0 20px; align-items: start; }
+@media (max-width: 1000px) { .admcols { grid-template-columns: minmax(0, 1fr); } }
+.admlink { display: flex; gap: 8px; }
+.admlink .input { min-width: 0; flex: 1; font-size: 13px; }
+.admplans { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; align-items: stretch; }
+.admplan { display: flex; flex-direction: column; margin: 0; }
+.admplan.off { opacity: .6; }
+.admprice { margin: 14px 0 8px; }
+.admprice b { font-size: 28px; letter-spacing: -.02em; }
+.admlimits, .admfeats { list-style: none; margin: 0; padding: 0; font-size: 14px; }
+.admlimits { padding-bottom: 10px; margin-bottom: 10px; border-bottom: .5px solid var(--sep); font-weight: 600; }
+.admlimits li { padding: 2px 0; }
+.admfeats li { display: flex; gap: 8px; padding: 3px 0; }
+.admfeats li span { width: 14px; flex: none; text-align: center; }
+.admfeats li.on span { color: var(--ok); font-weight: 700; }
+.admfeats li.no { color: var(--text3); }
+.admfeat { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 4px 12px; }
+.admfeat-i { display: flex; align-items: center; gap: 8px; font-size: 14px; padding: 4px 0; cursor: pointer; }
+.admfeat-i input { width: 18px; height: 18px; accent-color: var(--accent); }
+.admbars { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 8px; height: 200px; align-items: end; }
+.admbar { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 4px; height: 100%; }
+.admbar i { display: block; width: 100%; max-width: 40px; border-radius: 6px 6px 2px 2px; background: linear-gradient(180deg, #7B5CF5, #3D8BFF); }
+.admbar span { white-space: nowrap; }
+@media (max-width: 560px) { .admbars { gap: 3px; } .admbar span.small:first-child { font-size: 10px; } }
+
+/* база знаний и «Помощь» */
+.artcard > summary { list-style: none; cursor: pointer; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.artcard > summary::-webkit-details-marker { display: none; }
+.artcard[open] > summary { margin-bottom: 14px; }
+.artbody { line-height: 1.55; }
+.artbody p { margin: 0 0 10px; }
+.artbody h3 { margin: 16px 0 8px; }
+.artbody ul, .artbody ol { margin: 0 0 10px; padding-left: 22px; }
+.artbody li { margin: 3px 0; }
