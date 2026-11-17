@@ -315,7 +315,6 @@ function CallRow({ l }: { l: GridLesson }) {
   const [v, setV] = useState(l.callLink ?? "");
   return (
     <div className="lprices mt-3">
-      <span className="flabel">{t("sch.callLink")}</span>
       {edit ? (
         <div className="lprice">
           <input className="input grow" inputMode="url" autoFocus value={v} placeholder="https://telemost.yandex.ru/…" aria-label={t("sch.callLink")} onChange={(e) => setV(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") run(() => setCallLink(l.id, v), () => setEdit(false)); }} />
@@ -323,7 +322,7 @@ function CallRow({ l }: { l: GridLesson }) {
         </div>
       ) : (
         <div className="lprice">
-          {l.callLink ? <a href={l.callLink} target="_blank" rel="noreferrer" className="alink grow truncate">{l.callLink}</a> : <span className="grow muted">{t("sch.callNone")}</span>}
+          {l.callLink ? <a href={l.callLink} target="_blank" rel="noreferrer" className="btn sm lcall grow"><Icon name="phone" size="sm" /><span className="truncate">{t("cls.joinCall")}</span></a> : <span className="grow muted">{t("sch.callNone")}</span>}
           <button type="button" className="iconbtn" aria-label={t("cls.linkEdit")} title={t("cls.linkEdit")} onClick={() => { setV(l.callLink ?? ""); setEdit(true); }}><Icon name="pencil" size="sm" /></button>
         </div>
       )}
@@ -456,29 +455,21 @@ function LessonDialog({ l, onClose, initial = "main" }: { l: GridLesson; onClose
   return (
     <Dialog open onClose={onClose}>
       {head}
-      {/* главное действие — сразу под названием, крупно */}
-      <Link href={`/class/${l.id}`} className="btn primary lg w-full mb-4 lopen"><Icon name="class" />{t("dash.openClass")}</Link>
-      <div className="flex flex-wrap items-center gap-2">
+      {/* порядок: войти в класс → действия с уроком → ссылка на созвон → что произошло → заметка → стоимость */}
+      <Link href={`/class/${l.id}`} className="btn primary lg w-full lopen"><Icon name="class" />{t("dash.openClass")}</Link>
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        {(l.status === "PLANNED" || l.past) && <button className="btn secondary sm" onClick={() => { setFix(l.past); setMode("move"); }}><Icon name="move" size="sm" />{l.past ? t("sch.editTime") : t("sch.move")}</button>}
+        {!l.past && l.status === "PLANNED" && <button className="btn secondary sm" onClick={() => setMode("cancel")}><Icon name="calx" size="sm" />{t("sch.cancelLesson")}</button>}
+        <button className="btn danger sm" onClick={() => setMode("del")}>{t("common.delete")}</button>
+        {!l.weekly && !l.isTrial && !l.past && <button className="btn plain sm" disabled={pending} onClick={() => run(() => makeWeekly(l.id))}>{t("sch.makeWeekly")}</button>}
+      </div>
+      {l.callLink !== undefined && <CallRow l={l} />}
+      <div className="mt-4 flex flex-wrap items-center gap-2">
         <span className={`pill ${statusPill[l.status][0]}`}>{t(statusPill[l.status][1])}</span>
         {l.status === "MISSED" && <span className="pill grey">{l.charged ? t("sch.charged") : t("sch.notCharged")}</span>}
         {l.moved && <span className="pill violet">{t("sch.moved")}</span>}
         {l.hw ? <Link href={`/class/${l.id}?tab=homework`} className={`pill ${{ review: "orange", notdone: "red", checked: "green" }[l.hw]}`}>{t("nav.homework")}: {t(({ review: "hwT.review", notdone: "hwT.notdone", checked: "hwT.checked" } as const)[l.hw])}</Link> : l.status === "DONE" && <span className="pill grey">{t("today.noHw")}</span>}
       </div>
-      <div className="field mt-4">
-        <label htmlFor="ln">{t("sch.note")}</label>
-        <textarea id="ln" className="textarea" value={note} onChange={(e) => { setNote(e.target.value); setSaved(false); }} placeholder={t("sch.notePh")} />
-        <div className="flex items-center gap-3">
-          <button className="btn secondary sm" disabled={pending} onClick={() => run(() => saveLessonNote(l.id, note), () => setSaved(true))}>{t("sch.saveNote")}</button>
-          {saved && <span className="small text-ok">✓ {t("common.saved")}</span>}
-        </div>
-        <span className="hint">{t("sch.noteHint")}</span>
-      </div>
-      {!l.weekly && !l.isTrial && !l.past && (
-        <div className="setting mt-2">
-          <span className="muted">{t("sch.oneOff")}</span>
-          <button className="btn plain sm" disabled={pending} onClick={() => run(() => makeWeekly(l.id))}>{t("sch.makeWeekly")}</button>
-        </div>
-      )}
       {l.past && l.status !== "CANCELLED" && (
         <div className="mt-3">
           <span className="flabel">{t("sch.whatHappened")}</span>
@@ -493,20 +484,18 @@ function LessonDialog({ l, onClose, initial = "main" }: { l: GridLesson; onClose
         <button className="btn plain sm mt-3" disabled={pending} onClick={() => setStatus(l.past ? "DONE" : "PLANNED")}>{t("sch.restore")}</button>
       )}
       {error && <div className="alert mt-3">{error}</div>}
-      <div className="actions" style={{ justifyContent: "space-between" }}>
-        <div className="flex flex-wrap gap-2">
-          {(l.status === "PLANNED" || l.past) && <button className="btn secondary sm" onClick={() => { setFix(l.past); setMode("move"); }}><Icon name="move" size="sm" />{l.past ? t("sch.editTime") : t("sch.move")}</button>}
-          {!l.past && l.status === "PLANNED" && <button className="btn secondary sm" onClick={() => setMode("cancel")}><Icon name="calx" size="sm" />{t("sch.cancelLesson")}</button>}
-          <button className="btn danger sm" onClick={() => setMode("del")}>{t("common.delete")}</button>
+      <div className="lmore mt-4">
+        <div className="field">
+          <label htmlFor="ln">{t("sch.note")}</label>
+          <textarea id="ln" className="textarea" rows={2} value={note} onChange={(e) => { setNote(e.target.value); setSaved(false); }} placeholder={t("sch.notePh")} />
+          <div className="flex items-center gap-3">
+            <button className="btn secondary sm" disabled={pending} onClick={() => run(() => saveLessonNote(l.id, note), () => setSaved(true))}>{t("sch.saveNote")}</button>
+            {saved && <span className="small text-ok">✓ {t("common.saved")}</span>}
+            <span className="hint grow text-right">{t("sch.noteHint")}</span>
+          </div>
         </div>
+        {!!l.prices?.length && !l.isTrial && <Prices l={l} />}
       </div>
-      {/* стоимость и ссылка на созвон — не главное, внизу карточки */}
-      {(!!l.prices?.length && !l.isTrial) || l.callLink !== undefined ? (
-        <div className="lmore mt-4">
-          {!!l.prices?.length && !l.isTrial && <Prices l={l} />}
-          {l.callLink !== undefined && <CallRow l={l} />}
-        </div>
-      ) : null}
       {l.group && <p className="small muted mt-3 mb-0 flex flex-wrap items-center gap-1.5"><Icon name="group" size="sm" />{l.group.members.join(", ")}</p>}
     </Dialog>
   );

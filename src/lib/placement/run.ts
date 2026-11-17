@@ -2,6 +2,7 @@ import "server-only";
 import type { Prisma } from "@prisma/client";
 import { instruction, instructionRu, trackOf } from "./bank";
 import {
+  SECTIONS, type Section,
   checkCore, coreProgress, coreResult, firstText, levelOfStep, wsStep, nextCore, nextText, nextVocab, pickTask, PL_LEVELS, stepOf, textLevel, vocabProgress, vocabResult,
   type AnyItem, type Bank, type CoreItem, type ListenItem, type PState, type ReadItem, type SpeakItem, type WriteItem,
 } from "./engine";
@@ -46,45 +47,74 @@ export function goTo(st: PState, to: PState["section"]) {
 /** Закрыть раздел; true — открытых не осталось (тест можно отправлять). */
 export function closeSection(st: PState, sec: Later, bank: Bank) {
   st.closed = [...new Set([...closedOf(st), sec])];
+  mark(st, sec);
   const next = availOf(st)[0];
   if (!next) { leave(st, st.section); return true; }
   ensureTasks(st, bank);
   goTo(st, next);
   return false;
 }
+/** Разделы теста: учитель выбирает при назначении (нет списка — все шесть). */
+export const partsOf = (st: PState): Section[] => st.parts ?? [...SECTIONS];
+const inParts = (st: PState, s: Section) => partsOf(st).includes(s);
+/** Пройденные разделы — с датой окончания. Старые прохождения без дат: всё пройдено, когда тест отправлен. */
+export const doneOf = (st: PState): Section[] => (st.sdates ? (Object.keys(st.sdates) as Section[]) : st.section === "done" ? [...SECTIONS] : []);
+const mark = (st: PState, s: Section) => { st.sdates = { ...(st.sdates ?? {}), [s]: Date.now() }; };
+
+/** Начать (или продолжить после «Добавить разделы»): первый незаконченный раздел. true — делать больше нечего. */
+export function begin(st: PState, bank: Bank): boolean {
+  const todo = partsOf(st).filter((x) => !st.sdates?.[x]);
+  if (todo.includes("core")) { goTo(st, "core"); return advance(st, bank); }
+  if (st.step === undefined && st.base !== undefined) st.step = st.base; // грамматику не проверяем — уровень от учителя или прошлого теста
+  if (todo.includes("vocab")) { goTo(st, "vocab"); return advance(st, bank); }
+  return toLater(st, bank);
+}
+
+/** После грамматики и лексики: уровень текстов и разделы, которые остались. true — разделов не осталось. */
+function toLater(st: PState, bank: Bank): boolean {
+  st.level = PL_LEVELS[textLevel(st.step ?? st.base ?? 0, st.vstep)];
+  const want = LATER.filter((x) => inParts(st, x) && !st.sdates?.[x]);
+  st.closed = LATER.filter((x) => !want.includes(x));
+  if (!want.length) { if (st.section !== "intro") leave(st, st.section); return true; }
+  ensureTasks(st, bank);
+  goTo(st, availOf(st)[0]);
+  return false;
+}
+
 /** Задания всех разделов после ядра выбираются сразу — чтобы ученик мог переключаться между ними. */
 export function ensureTasks(st: PState, bank: Bank) {
   const snap = (x: AnyItem) => { st.items[x.id] = x; return x.id; };
   const plus = (st.step ?? 0) % 2 === 1 || st.step === 8;
   const L = st.level ?? "A1";
-  if (!st.reading.length) { const x = firstText(bank.reading, L, plus); if (x) st.reading = [snap(x)]; }
-  if (!st.listening.length) { const x = firstText(bank.listening, L, plus); if (x) st.listening = [snap(x)]; }
+  if (!st.reading.length && inParts(st, "reading")) { const x = firstText(bank.reading, L, plus); if (x) st.reading = [snap(x)]; }
+  if (!st.listening.length && inParts(st, "listening")) { const x = firstText(bank.listening, L, plus); if (x) st.listening = [snap(x)]; }
   // письмо и говорение — только когда закончены чтение и аудирование: уровень = средний из трёх навыков
   if (lockedOf(st).length) return;
   const at = (kind: "writing" | "speaking") => { const m = wsStep(st, kind) ?? st.step ?? 0; return { lv: levelOfStep(m), plus: m % 2 === 1 || m === 8 }; };
-  if (!st.writing) { const a = at("writing"); const w = pickTask(bank.writing, a.lv, a.plus, Math.random, st.seen ?? []); if (w) st.writing = { id: snap(w), text: "" }; }
-  if (!st.speaking) { const a = at("speaking"); const sp = pickTask(bank.speaking, a.lv, a.plus, Math.random, st.seen ?? []); if (sp) st.speaking = { id: snap(sp), rec: {} }; }
+  if (!st.writing && inParts(st, "writing")) { const a = at("writing"); const w = pickTask(bank.writing, a.lv, a.plus, Math.random, st.seen ?? []); if (w) st.writing = { id: snap(w), text: "" }; }
+  if (!st.speaking && inParts(st, "speaking")) { const a = at("speaking"); const sp = pickTask(bank.speaking, a.lv, a.plus, Math.random, st.seen ?? []); if (sp) st.speaking = { id: snap(sp), rec: {} }; }
 }
 
-/** Выдать следующее задание грамматики или лексики; когда лексика закончена — открыть остальные разделы. */
-export function advance(st: PState, bank: Bank) {
+/** Выдать следующее задание грамматики или лексики; когда они закончены — открыть остальные разделы теста.
+ *  true — в тесте больше нет разделов (его можно отправлять учителю). */
+export function advance(st: PState, bank: Bank): boolean {
   const snap = (x: AnyItem) => { st.items[x.id] = x; return x.id; };
-  if (st.section !== "core" && st.section !== "vocab") { ensureTasks(st, bank); return; }
+  if (st.section !== "core" && st.section !== "vocab") { ensureTasks(st, bank); return false; }
   const last = st.core[st.core.length - 1];
-  if (last && !st.answers[last.id]) return;
+  if (last && !st.answers[last.id]) return false;
   if (st.section === "core") {
     const nx = nextCore(st, bank);
-    if (nx) { snap(nx.item); st.core.push({ id: nx.item.id, step: stepOf(nx.item.level, nx.item.band), ph: nx.ph }); return; }
+    if (nx) { snap(nx.item); st.core.push({ id: nx.item.id, step: stepOf(nx.item.level, nx.item.band), ph: nx.ph }); return false; }
     st.step = coreResult(st, bank);
+    mark(st, "core");
+    if (!inParts(st, "vocab") || st.sdates?.vocab) return toLater(st, bank);
     goTo(st, "vocab");
   }
   const nv = nextVocab(st, bank);
-  if (nv) { snap(nv.item); st.core.push({ id: nv.item.id, step: stepOf(nv.item.level, nv.item.band), ph: nv.ph }); return; }
+  if (nv) { snap(nv.item); st.core.push({ id: nv.item.id, step: stepOf(nv.item.level, nv.item.band), ph: nv.ph }); return false; }
   st.vstep = vocabResult(st);
-  st.level = PL_LEVELS[textLevel(st.step ?? 0, st.vstep)];
-  st.closed = [];
-  ensureTasks(st, bank);
-  goTo(st, "reading");
+  mark(st, "vocab");
+  return toLater(st, bank);
 }
 
 /** Чтение или аудирование: следующий текст по результату предыдущего. false — раздел закончен. */
@@ -102,7 +132,9 @@ export function publicView(st: PState, lang: "ru" | "en", bank?: Bank) {
   const track = trackOf(st.track);
   const ins = (k: string, lv?: string) => instruction(k, lv, track);
   const insRu = (k: string, lv?: string) => instructionRu(k, lv, track); // Teens A1–A2: перевод инструкции
-  const base = { teen: track === "teen", section: st.section, level: st.level ?? null, open: st.section === "core" || st.section === "vocab" || st.section === "intro" ? [] : (openOf(st) as string[]), locked: lockedOf(st) as string[] };
+  // разделы этого теста (учитель мог выбрать не все) и уже пройденные — при «Добавить разделы»
+  const todo = partsOf(st).filter((x) => !doneOf(st).includes(x));
+  const base = { teen: track === "teen", parts: partsOf(st) as string[], todo: todo as string[], section: st.section, level: st.level ?? null, open: st.section === "core" || st.section === "vocab" || st.section === "intro" ? [] : (openOf(st) as string[]), locked: lockedOf(st) as string[] };
   if (st.section === "core" || st.section === "vocab") {
     const sec = st.section;
     const last = st.core[st.core.length - 1];

@@ -1,3 +1,4 @@
+import { levelsOf } from "@/lib/teacher/levels";
 import { packEndsAt } from "@/lib/teacher/pack";
 import { InvoiceEdit } from "@/components/finance/FinanceParts";
 import Link from "next/link";
@@ -42,6 +43,7 @@ export default async function StudentProfile({ params, searchParams }: { params:
   });
   if (!s || s.teacherId !== me.id) notFound();
   // подключён ли Telegram-бот: у ученика — после входа на платформу и нажатия «Подключить Telegram», у плательщика — по ссылке из оплаты
+  const lvMap = await levelsOf([s]);
   const tgUser = s.userId ? await db.user.findUnique({ where: { id: s.userId }, select: { telegramChatId: true, lastSeenAt: true, timezone: true } }) : null;
   // «был(а) в сети»: последнее действие ученика — учёт активности, а до него (и для давних визитов) — вход, ответы в заданиях,
   // сообщения, тест, прочитанные уведомления
@@ -117,7 +119,13 @@ export default async function StudentProfile({ params, searchParams }: { params:
         <div className="grow min-w-[200px] flex-1">
           <h1>{fullName}</h1>
           <div className="mt-1 flex flex-wrap items-center gap-2 text-text2">
-            {s.course && <span>{s.course}</span>}
+            {/* уровни: по анкете, сейчас (тест / срез), цель; курс */}
+            {(() => { const L = lvMap.get(s.id); return L ? (<>
+              {L.course && <span className="pill grey"><Icon name="book" size="sm" />{L.course}</span>}
+              {L.quest && <span className="pill grey">{t("prof.lvQuest", { l: L.quest })}</span>}
+              {L.now && <span className="pill blue">{t("prof.lvNow", { l: L.now })}</span>}
+              {L.goal && <span className="pill violet">{t("prof.lvGoal", { l: L.goal })}</span>}
+            </>) : null; })()}
             {s.status === "INVITED" && <span className="pill orange">{t("prof.invited")}</span>}
             {s.status === "ARCHIVED" && <span className="pill grey">{t("stu.archived")}</span>}
             {/* статус: приглашён и ещё не заходил / был в сети — как в мессенджерах */}
@@ -189,7 +197,8 @@ export default async function StudentProfile({ params, searchParams }: { params:
                 packPrices: (s.packPrices as { n: number; price: number }[]) ?? [], payerName: s.payerName ?? "", payerContact: s.payerContact ?? "",
                 pack: s.packs[0] ? {
                   left: s.packs[0].lessonsLeft, total: s.packs[0].lessonsTotal, price: s.packs[0].price, since: dateFmt(s.packs[0].startsAt, { day: "numeric", month: "short" }),
-                  ends: await packEndsAt(s.id, s.packs[0].lessonsLeft).then((d) => (d ? dateFmt(d, { day: "numeric", month: "short" }) : null)),
+                  frozen: s.packs[0].frozenUntil && s.packs[0].frozenUntil > now ? dateFmt(s.packs[0].frozenUntil, { day: "numeric", month: "short" }) : null,
+                  ends: await packEndsAt(s.id, s.packs[0].lessonsLeft, s.packs[0].frozenUntil).then((d) => (d ? dateFmt(d, { day: "numeric", month: "short" }) : null)),
                   // списанные уроки этого абонемента — последние по дате
                   used: s.lessons.filter((l) => l.deductedAt && l.deductedAt.getTime() >= s.packs[0].startsAt.getTime() - 60000).slice(0, Math.max(0, s.packs[0].lessonsTotal - s.packs[0].lessonsLeft))
                     .map((l) => ({ id: l.id, date: dateFmt(l.startsAt, { day: "numeric", month: "short", weekday: "short" }), missed: l.status === "MISSED" })),

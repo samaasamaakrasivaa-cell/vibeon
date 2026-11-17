@@ -1,7 +1,7 @@
 "use client";
 import { useRef, useState } from "react";
 import { useT } from "@/lib/i18n/client";
-import { assignPlacement } from "@/lib/placement/actions";
+import { useAssignParts } from "../placement/AssignParts";
 import { ExpectField, Steps, TrackField, trackForAge, type PlTrack } from "../placement/PlacementPanel";
 import { approveRoadmap, assignTest, buildRoadmap, deleteCheckpoint, editStage, manualResults, type RoadmapForm } from "@/lib/roadmap/actions";
 import { LEVELS, ROUTE_TYPES, SKILL_COLOR, SKILL_NAME, SKILLS, txt, type Skill } from "@/lib/roadmap/cefr";
@@ -50,6 +50,7 @@ function Checkpoints({ d }: { d: EditorData }) {
   const [i, setI] = useState(doneList.length - 1);
   const [manual, setManual] = useState(false);
   const [asg, setAsg] = useState(false);
+  const ap = useAssignParts(asg ? d.studentId : null);
   const [exp, setExp] = useState("");
   const [track, setTrack] = useState<PlTrack>(d.teenAvail ? trackForAge(d.age) : "adult");
   const [m, setM] = useState<{ level: string; skills: Record<string, string> }>({ level: d.level ?? "B1", skills: {} });
@@ -82,18 +83,20 @@ function Checkpoints({ d }: { d: EditorData }) {
       )}
       {c?.placement && <a className="small alink mt-2 inline-block" href={`/teacher/placement/${c.placement}`}>{t("pl.openResult")}</a>}
       <div className="mt-4 flex flex-wrap gap-2">
-        {!doneList.length ? <button className="btn primary sm" disabled={pending} onClick={() => setAsg(true)}>{t("rm.assignEntry")}</button>
-          : <button className="btn secondary sm" disabled={pending} onClick={() => run(() => assignTest(d.studentId, "slice", d.roadmap?.ci ?? 0))}>{t("rm.assignSlice")}</button>}
+        {/* placement test можно назначить и после первого — по разделам: добавить новые или повторить для сравнения */}
+        <button className={`btn ${doneList.length ? "secondary" : "primary"} sm`} disabled={pending} onClick={() => setAsg(true)}>{t("rm.assignEntry")}</button>
+        {doneList.length > 0 && <button className="btn secondary sm" disabled={pending} onClick={() => run(() => assignTest(d.studentId, "slice", d.roadmap?.ci ?? 0))}>{t("rm.assignSlice")}</button>}
         <button className="btn plain sm" onClick={() => setManual(true)}>{t("rm.enterManual")}</button>
         {c && <button className="btn plain sm" onClick={() => { if (confirm(t("rm.delTest"))) run(() => deleteCheckpoint(c.id)); }}>{t("common.delete")}</button>}
       </div>
       <p className="hint mb-0 mt-3">{t("rm.testHint")}</p>
       <Dialog open={asg} onClose={() => setAsg(false)} title={t("rm.assignEntry")}>
-        {d.teenAvail && <TrackField value={track} onChange={setTrack} age={d.age} />}
-        <ExpectField value={exp} onChange={setExp} teen={track === "teen"} />
+        {ap.ui}
+        {d.teenAvail && !ap.useInto && <TrackField value={track} onChange={setTrack} age={d.age} />}
+        {!ap.useInto && <ExpectField value={exp} onChange={setExp} teen={track === "teen"} need={ap.needLevel} />}
         <Steps keys={["pl.assignS2", "pl.assignS3", "pl.assignS4"]} tip="pl.assignTip" />
         <div className="actions"><button className="btn secondary" onClick={() => setAsg(false)}>{t("common.cancel")}</button>
-          <button className="btn primary" disabled={pending} onClick={() => run(() => assignPlacement(d.studentId, exp || null, track), () => setAsg(false))}>{t("pl.assignDo")}</button></div>
+          <button className="btn primary" disabled={pending || ap.blocked(exp)} onClick={() => run(() => ap.submit(exp, track), () => { setAsg(false); ap.reset(); })}>{ap.useInto ? t("pl.partsAddDo") : t("pl.assignDo")}</button></div>
       </Dialog>
       <Dialog open={manual} onClose={() => setManual(false)} title={t("rm.enterManual")}>
         <div className="field"><label htmlFor="mr-l">{t("prof.level")}</label><select id="mr-l" className="select" value={m.level} onChange={(e) => setM({ ...m, level: e.target.value })}>{LEVELS.map((l) => <option key={l}>{l}</option>)}</select></div>

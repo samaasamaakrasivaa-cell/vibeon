@@ -29,7 +29,7 @@ type Msg = { id: string; text: string; by: string; at: string; replyTo?: string 
 export type Review = { ok: boolean; comment: string | null; ai?: AiCheck };
 export type { AiCheck };
 export type ClassData = {
-  id: string; templateId: string | null; role: "teacher" | "student"; me: { id: string; name: string };
+  id: string; templateId: string | null; role: "teacher" | "student"; me: { id: string; name: string }; preview?: boolean;
   teacher: { id: string; name: string; lastName: string | null }; student: { id: string; userId: string | null; name: string; lastName: string | null; level: string | null; course: string | null } | null;
   title: string | null; crumbs: string | null; course: { title: string; cover: string | null } | null; rubrics: Rubric[]; tasks: CTask[]; teacherInfo?: TInfo;
   answers: Answers; statuses: Record<string, string>; reviews: Record<string, Review>; aiDrafts: Record<string, AiCheck>; live: LiveState;
@@ -178,7 +178,10 @@ export function ClassRoom({ d }: { d: ClassData }) {
     else if (ev === "reload") router.refresh();
     else if (ev === "finished" && !teacher) setFinished(true);
   }, [d.me.id, teacher, router, own, spotlight]);
-  const { connected, send: rawSend } = useLive(d.id, onEvent);
+  const { connected, send: liveSend } = useLive(d.id, onEvent);
+  // просмотр «как видит ученик»: ничего не отправляем — только смотрим, живые изменения приходят
+  const rawSend = useMemo(() => (d.preview ? (async () => ({ ok: true })) as typeof liveSend : liveSend), [d.preview, liveSend]);
+  const [studentView, setStudentView] = useState(false);
   // учитель в группе действует за выбранного ученика: ответы, проверка, слова, отзыв
   const send = useCallback((type: string, data: Record<string, unknown> = {}) => rawSend(type, gTeacher ? { studentId: viewRef.current, ...data } : data), [rawSend, gTeacher]);
   // групповой урок: над каждым заданием — чьи ответы смотрим (по умолчанию первый ученик)
@@ -292,6 +295,11 @@ export function ClassRoom({ d }: { d: ClassData }) {
     );
   };
 
+  // задание сделано — мягкий зелёный фон: видно, с чем уже поработали. В группе — когда сделали все ученики
+  const doneBy = (task: CTask, a: Record<string, unknown> | undefined) => { const st = progressOf(task, a); return !!st && st.length > 0 && summary(st).done; };
+  const isDone = (task: CTask) => gTeacher
+    ? d.group!.members.length > 0 && d.group!.members.every((m) => doneBy(task, ansBy[m.sid]?.[task.id] as Record<string, unknown> | undefined))
+    : doneBy(task, answers[task.id] as Record<string, unknown> | undefined);
   const renderTasks = (list: CTask[], inHw = false) => (
     <>
       {teacher && !inHw && <Plus onClick={() => setCatalog({ index: 0 })} />}
@@ -304,7 +312,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
         const m = sid ? d.group?.members.find((x) => x.sid === sid) : undefined;
         const sendFor = (type: string, x: Record<string, unknown> = {}) => rawSend(type, { ...x, studentId: sid });
         return (
-        <div key={task.id} id={`task-${task.id}`} className={`${live.timer?.taskId === task.id && timerLeft > 0 ? "tk-timed" : ""} ${flash === task.id ? "cls-flash" : ""} ${teacher && hidden.has(task.id) ? "tk-teacheronly" : ""} ${gTeacher && sid ? "tk-viewing" : ""}`}>
+        <div key={task.id} id={`task-${task.id}`} className={`${isDone(task) ? "tk-donebg" : ""} ${live.timer?.taskId === task.id && timerLeft > 0 ? "tk-timed" : ""} ${flash === task.id ? "cls-flash" : ""} ${teacher && hidden.has(task.id) ? "tk-teacheronly" : ""} ${gTeacher && sid ? "tk-viewing" : ""}`}>
           {live.timer?.taskId === task.id && timerLeft > 0 && <div className={`tk-timer ${timerPaused ? "paused" : ""}`} aria-live="polite"><Icon name="clock" size="sm" />{fmtT(timerLeft)}{timerPaused ? ` · ${t("cls.tPaused")}` : ""}</div>}
           {gTeacher ? (
             <AnswerProvider key={`${sid ?? "me"}-${resetTick[task.id] ?? 0}`} answers={sid ? ansBy[sid] ?? {} : sandbox}
@@ -328,6 +336,14 @@ export function ClassRoom({ d }: { d: ClassData }) {
      <MarkCtx.Provider value={marks}>
       <div className={`cls ${teacher ? "as-teacher" : "as-student"}`}>
         {teacher && pointBy && <div className="cls-toast" role="status"><Icon name="pointer" size="sm" />{t("cls.pointedBy", { name: pointBy.name })}</div>}
+        {d.preview && <div className="cls-previewbar"><Icon name="eye" size="sm" />{t("cls.previewBar")}</div>}
+        {teacher && studentView && (
+          <div className="cls-preview" role="dialog" aria-label={t("cls.asStudent")}>
+            <div className="cls-preview-top"><b>{t("cls.asStudent")}</b><span className="small muted grow">{t("cls.asStudentOf", { name: (d.group ? d.group.members.find((m) => m.sid === viewSid)?.name ?? d.group.members[0]?.name : d.student?.name) ?? "" })}</span>
+              <button type="button" className="btn secondary sm" onClick={() => setStudentView(false)}><Icon name="close" size="sm" />{t("common.close")}</button></div>
+            <iframe title={t("cls.asStudent")} src={`/class/${d.group ? d.group.members.find((m) => m.sid === viewSid)?.instanceId ?? d.group.members[0]?.instanceId : d.id}?preview=student`} />
+          </div>
+        )}
         <header className="cls-top">
           <Link href={d.homeHref} className="cls-logo" aria-label="VibeOn"><LogoMark size={36} /><small>Vibe<span>On</span></small></Link>
           <div className="cls-crumb"><small>{d.crumbs ?? t("cls.lesson")}</small><b>{d.title ?? t("cls.noTemplate")}</b></div>
@@ -342,6 +358,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
             {d.callLink && <a href={d.callLink} target="_blank" rel="noreferrer" className="btn sm cls-call cls-call-top" aria-label={t("cls.joinCall")}><Icon name="phone" size="sm" /></a>}
             {/* ответы видит только учитель; выключить — например, на время демонстрации экрана */}
             {teacher && <button type="button" className={`btn sm ${showKeys ? "tinted" : "secondary"}`} aria-pressed={showKeys} title={showKeys ? t("cls.keysHide") : t("cls.keysShow")} onClick={() => setShowKeys((v) => { try { localStorage.setItem("vibeon.keys", v ? "0" : "1"); } catch { /* приватный режим */ } return !v; })}><Icon name={showKeys ? "eye" : "eyeoff"} size="sm" />{t("cls.keys")}</button>}
+            {teacher && <button className="btn secondary sm" onClick={() => setStudentView(true)} title={t("cls.asStudentHint")}><Icon name="eye" size="sm" />{t("cls.asStudent")}</button>}
             {teacher && <button className="btn secondary sm" onClick={() => setDlg("about")}><Icon name="info" size="sm" />{t("cls.about")}</button>}
             <LangSwitch lang={lang} label={t("common.language")} />
             <span className={`dot`} title={connected ? t("cls.online") : t("cls.offline")} style={{ background: connected ? "var(--ok)" : "var(--warn)" }} />

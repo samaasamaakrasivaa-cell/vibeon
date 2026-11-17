@@ -326,13 +326,28 @@ export async function savePayment(
   return { ok: true };
 }
 
-export async function addPack(id: string, lessons: number, price: number): Promise<Result> {
+export async function addPack(id: string, lessons: number, price: number, start?: string): Promise<Result> {
   const { t } = await getT();
   const teacher = await me();
   await ownStudent(id, teacher.id);
   if (!(lessons > 0 && lessons <= 100) || !(price >= 0)) return { ok: false, error: t("prof.err.pack") };
-  await db.pack.create({ data: { studentId: id, lessonsTotal: lessons, lessonsLeft: lessons, price: Math.round(price) } });
+  const startsAt = start ? parseWhen(start, "00:00", teacher.timezone) ?? new Date() : new Date();
+  await db.pack.create({ data: { studentId: id, lessonsTotal: lessons, lessonsLeft: lessons, price: Math.round(price), startsAt } });
   refresh(id);
+  return { ok: true };
+}
+
+/** Заморозить абонемент до даты (уроки до неё из этого абонемента не списываются); пусто — разморозить. */
+export async function packFreeze(studentId: string, until: string | null): Promise<Result> {
+  const { t } = await getT();
+  const teacher = await me();
+  await ownStudent(studentId, teacher.id);
+  const pack = await db.pack.findFirst({ where: { studentId }, orderBy: { startsAt: "desc" } });
+  if (!pack) return { ok: false, error: t("prof.noPack") };
+  const d = until ? parseWhen(until, "23:59", teacher.timezone) : null;
+  if (until && !d) return { ok: false, error: t("sch.err.time") };
+  await db.pack.update({ where: { id: pack.id }, data: { frozenUntil: d } });
+  refresh(studentId);
   return { ok: true };
 }
 

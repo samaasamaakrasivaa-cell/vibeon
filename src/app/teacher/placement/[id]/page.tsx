@@ -6,9 +6,10 @@ import { requireUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { getT } from "@/lib/i18n/server";
 import { getBank, RUBRICS, trackOf } from "@/lib/placement/bank";
-import { PL_LEVELS, summarize } from "@/lib/placement/engine";
+import { PL_LEVELS, STEPS, summarize } from "@/lib/placement/engine";
 import { reviewData } from "@/lib/placement/review";
-import { stateOf } from "@/lib/placement/run";
+import { doneOf, partsOf, stateOf } from "@/lib/placement/run";
+import { PlacementParts } from "@/components/placement/AssignParts";
 
 export const metadata = { title: "Placement test — проверка" };
 
@@ -32,6 +33,10 @@ export default async function PlacementReviewPage({ params }: { params: Promise<
   const who = a.mode === "student" ? `${a.student?.name ?? ""} ${a.student?.lastName ?? ""}`.trim() : a.mode === "self" ? t("pl.you") : a.guestName ?? "";
   const loc = lang === "ru" ? "ru-RU" : "en-GB";
   const when = a.submittedAt ?? a.startedAt ?? a.createdAt;
+  // разделы теста и даты: когда пройден каждый (тест можно дополнять разделами)
+  const dfmt = (ms: number) => new Date(ms).toLocaleDateString(loc, { day: "numeric", month: "short", timeZone: me.timezone });
+  const dates = Object.fromEntries(Object.entries(st.sdates ?? {}).map(([k, v]) => [k, dfmt(v as number)]));
+  const base = st.base !== undefined && !partsOf(st).includes("core") ? { sub: STEPS[st.base], from: st.baseFrom ?? "teacher" } : null;
   return (
     <div className="page" style={{ maxWidth: 980 }}>
       <Link href="/teacher/courses?tab=tests" className="small muted">← {t("pl.backTests")}</Link>
@@ -45,8 +50,10 @@ export default async function PlacementReviewPage({ params }: { params: Promise<
         {a.mode === "link" && a.guestContact ? ` · ${t("pl.contact")}: ${a.guestContact}` : ""}
         {a.mode === "student" && a.studentId ? <> · <Link className="alink" href={`/teacher/students/${a.studentId}?tab=roadmap`}>{t("pl.toProfile")}</Link></> : null}
       </p>
+      {(st.parts || st.sdates) && <div className="mb-5"><PlacementParts id={id} parts={partsOf(st)} done={doneOf(st)} dates={dates} canAdd={a.mode === "student" && (a.status === "submitted" || a.status === "reviewed")} /></div>}
       <div className="flex flex-col gap-6">
         <PlacementReview
+          parts={partsOf(st)} dates={dates} base={base}
           id={id} teen={st.track === "teen"} lessonQs={lessonQs} mode={a.mode} status={a.status} level={a.level} showResult={a.showResult} tgSent={((a.review ?? {}) as { tgSentAt?: string }).tgSentAt ? new Date(((a.review ?? {}) as { tgSentAt: string }).tgSentAt).toLocaleString("ru-RU", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: me.timezone }) : null} sm={sm} d={d}
           review={(a.review ?? {}) as never} rubrics={{ writing: RUBRICS.writing.criteria, speaking: RUBRICS.speaking.criteria }}
           howTo={RUBRICS.how_to_decide_ru} sublevels={RUBRICS.sublevels_ru} total={RUBRICS.total_ru}

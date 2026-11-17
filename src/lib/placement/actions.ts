@@ -11,8 +11,8 @@ import { rateLimit } from "../rate-limit";
 import { getLang } from "../i18n/server";
 import { attemptFor, ptCookie } from "./access";
 import { getBank, isOwner, RUBRICS, TEEN_READY, trackOf, type Track } from "./bank";
-import { checkCore, emptyState, EXPECT, pickTask, PL_LEVELS, stepIdx, summarize, words, type CoreItem, type Expect, type ListenItem, type ReadItem, type SpeakItem, type WriteItem } from "./engine";
-import { addNextText, advance, closeSection, ensureTasks, enter, goTo, json, LATER, availOf, openOf, publicView, stateOf, touch, type Later, type PView } from "./run";
+import { checkCore, emptyState, EXPECT, pickTask, PL_LEVELS, SECTIONS, STEPS, stepIdx, type Section, summarize, words, type CoreItem, type Expect, type ListenItem, type ReadItem, type SpeakItem, type WriteItem } from "./engine";
+import { addNextText, advance, begin, closeSection, doneOf, ensureTasks, enter, goTo, json, LATER, availOf, openOf, partsOf, publicView, stateOf, touch, type Later, type PView } from "./run";
 import { revealedScripts } from "./review";
 import { R_BLOCKS, type RCfg, type RSaved, type RVariant } from "./report";
 import { run } from "../ai/gateway";
@@ -50,9 +50,10 @@ export async function startPlacement(id: string): Promise<R> {
     const { a, st } = await load(id);
     const { bank } = await getBank(trackOf(st.track));
     if (!st.core) Object.assign(st, emptyState());
-    if (st.section === "intro") { st.section = "core"; enter(st, "core"); }
-    advance(st, bank);
-    if (a.checkpointId) await db.checkpoint.update({ where: { id: a.checkpointId }, data: { status: "assigned" } }).catch(() => null);
+    const fin = st.section === "intro" ? begin(st, bank) : advance(st, bank);
+    if (fin) return submit(await load(id), st);
+    // добавленные разделы: точка А с уровнем остаётся в маршруте
+    if (a.checkpointId && !st.added) await db.checkpoint.update({ where: { id: a.checkpointId }, data: { status: "assigned" } }).catch(() => null);
     return save(id, st, { status: "active", startedAt: a.startedAt ?? new Date() });
   });
 }
@@ -76,7 +77,7 @@ export async function answerCore(id: string, itemId: string, v: string | number 
     const val = dk ? null : typeof v === "number" ? v : str(v, 120);
     const tr = trail(tried, it.options?.length ?? 0, val);
     st.answers[itemId] = { v: val, ok: dk ? false : checkCore(it, val), ms: Math.max(0, Math.min(3600e3, Math.round(ms) || 0)), ...(dk ? { dk: true } : {}), ...(hinted ? { h: true } : {}), ...(tr.length ? { tr } : {}) };
-    advance(st, (await getBank(trackOf(st.track))).bank);
+    if (advance(st, (await getBank(trackOf(st.track))).bank)) return submit(await load(id).then((l) => ({ ...l, st })), st);
     return save(id, st);
   });
 }
@@ -190,16 +191,24 @@ type Loaded = Awaited<ReturnType<typeof load>>;
 async function closeAndGo(l: Loaded, st: Loaded["st"], sec: Later): Promise<R> {
   const { bank } = await getBank(trackOf(st.track));
   if (!closeSection(st, sec, bank)) return save(l.a.id, st);
+  return submit(l, st, sec);
+}
+
+/** Разделов больше нет — тест уходит учителю. */
+async function submit(l: Loaded, st: Loaded["st"], sec?: Later): Promise<R> {
   const { a } = l;
   st.section = "done";
   const extra = sec === "writing" || sec === "speaking" ? st.wsExtra?.[sec] : undefined; // ответ на дополнительное задание
   const r = await save(a.id, st, { status: "submitted", submittedAt: new Date() });
   // точка А, уже выставленная по первому заданию, остаётся в маршруте — учитель при желании уточнит итог
   const cp = a.checkpointId ? await db.checkpoint.findUnique({ where: { id: a.checkpointId }, select: { status: true } }) : null;
-  if (a.checkpointId && !(extra && cp?.status === "done")) await db.checkpoint.update({ where: { id: a.checkpointId }, data: { status: "review", takenAt: new Date() } }).catch(() => null);
+  if (a.checkpointId && !((extra || st.added) && cp?.status === "done")) await db.checkpoint.update({ where: { id: a.checkpointId }, data: { status: "review", takenAt: new Date() } }).catch(() => null);
   if (a.mode !== "self") {
     const who = a.mode === "student" ? `${a.student?.name ?? ""} ${a.student?.lastName ?? ""}`.trim() : a.guestName ?? "";
-    const title = extra ? `${who}: дополнительное задание по ${sec === "writing" ? "письму" : "говорению"} выполнено — проверьте` : `${who}: placement test пройден — проверьте письмо и говорение`;
+    const parts = partsOf(st);
+    const title = extra ? `${who}: дополнительное задание по ${sec === "writing" ? "письму" : "говорению"} выполнено — проверьте`
+      : st.added ? `${who}: добавленные разделы placement test пройдены — проверьте`
+      : parts.includes("writing") || parts.includes("speaking") ? `${who}: placement test пройден — проверьте письмо и говорение` : `${who}: placement test пройден — посмотрите результат`;
     await notify({ userId: a.teacherId, kind: "test", title, action: "review", link: `/teacher/placement/${a.id}` });
   }
   revalidatePath("/teacher/courses");
@@ -295,11 +304,60 @@ const withSeen = (st: ReturnType<typeof emptyState>, seen: string[]) => (seen.le
 const teenOk = (t: Track | undefined, email?: string | null): Track => (t === "teen" && (TEEN_READY || isOwner(email)) ? "teen" : "adult");
 const expectOf = (e?: string | null) => (e && e in EXPECT ? (e as Expect) : null);
 
-export async function assignPlacement(studentId: string, expected?: string | null, trackIn?: Track): Promise<R> {
+/** Ступень грамматики из последнего пройденного теста ученика, где была грамматика. */
+async function lastGrammar(studentId: string) {
+  const xs = await db.placementAttempt.findMany({ where: { studentId, status: { in: ["submitted", "reviewed"] } }, orderBy: { createdAt: "desc" }, select: { id: true, state: true, submittedAt: true, createdAt: true, track: true, status: true } });
+  for (const x of xs) {
+    const st = stateOf(x.state);
+    if (typeof st.step === "number" && partsOf(st).includes("core") && doneOf(st).includes("core"))
+      return { step: st.step, sub: STEPS[Math.max(0, Math.min(8, st.step))], at: new Date(st.sdates?.core ?? (x.submittedAt ?? x.createdAt).getTime()) };
+  }
+  return null;
+}
+
+export type PlInfo = {
+  grammar: { sub: string; when: string } | null;
+  last: { id: string; when: string; status: string; done: string[]; parts: string[]; dates: Record<string, string> } | null; // последний тест ученика — в него можно добавить разделы
+};
+/** Для окна «Назначить тест»: уровень грамматики из прошлого теста и последний тест (добавить в него разделы). */
+export async function placementInfo(studentId: string): Promise<PlInfo> {
+  const me = await requireUser("TEACHER");
+  const s = await db.student.findUnique({ where: { id: studentId }, select: { teacherId: true } });
+  if (!s || s.teacherId !== me.id) return { grammar: null, last: null };
+  const loc = (await getLang()) === "en" ? "en-GB" : "ru-RU";
+  const fmt = (d: Date) => d.toLocaleDateString(loc, { day: "numeric", month: "short", timeZone: me.timezone ?? "Europe/Moscow" });
+  const g = await lastGrammar(studentId);
+  const la = await db.placementAttempt.findFirst({ where: { studentId, mode: "student" }, orderBy: { createdAt: "desc" }, select: { id: true, state: true, status: true, createdAt: true } });
+  const st = la ? stateOf(la.state) : null;
+  return {
+    grammar: g ? { sub: g.sub, when: fmt(g.at) } : null,
+    last: la && st ? { id: la.id, when: fmt(la.createdAt), status: la.status, done: doneOf(st), parts: partsOf(st), dates: Object.fromEntries(Object.entries(st.sdates ?? {}).map(([k, v]) => [k, fmt(new Date(v as number))])) } : null,
+  };
+}
+
+const partsIn = (xs?: string[] | null): Section[] | undefined => {
+  const p = SECTIONS.filter((x) => (xs ?? []).includes(x));
+  return xs && p.length && p.length < SECTIONS.length ? p : undefined;
+};
+/** Ступень по выбору учителя «начинающий / средний / высокий» — когда грамматику не проверяем и прошлого теста нет. */
+const stepOfExpect = (e: Expect, track: Track) => (track === "teen" ? ({ A1: 0, B1: 2, B2: 6 } as const)[e] : EXPECT[e] * 2);
+
+export async function assignPlacement(studentId: string, expected?: string | null, trackIn?: Track, partsRaw?: string[] | null): Promise<R> {
   const me = await requireUser("TEACHER");
   const track = teenOk(trackIn, me.email);
   const s = await db.student.findUnique({ where: { id: studentId } });
   if (!s || s.teacherId !== me.id) return { ok: false, error: "not found" };
+  const parts = partsIn(partsRaw);
+  if (partsRaw && !parts && !SECTIONS.every((x) => partsRaw.includes(x))) return { ok: false, error: "parts" };
+  // без грамматики: уровень — по грамматике прошлого теста, иначе по выбору учителя
+  let base: { base: number; baseFrom: "test" | "teacher" } | null = null;
+  if (parts && !parts.includes("core")) {
+    const g = await lastGrammar(studentId);
+    const e = expectOf(expected);
+    if (g) base = { base: g.step, baseFrom: "test" };
+    else if (e) base = { base: stepOfExpect(e, track), baseFrom: "teacher" };
+    else return { ok: false, error: "level" };
+  }
   const old = await db.checkpoint.findMany({ where: { studentId, kind: "entry", status: "assigned" }, select: { id: true } });
   if (old.length) {
     await db.placementAttempt.deleteMany({ where: { checkpointId: { in: old.map((x) => x.id) }, status: { in: ["new", "active"] } } });
@@ -308,7 +366,7 @@ export async function assignPlacement(studentId: string, expected?: string | nul
   const r = await db.roadmap.findFirst({ where: { studentId }, orderBy: { createdAt: "desc" } });
   const c = await db.checkpoint.create({ data: { studentId, roadmapId: r?.id ?? null, kind: "entry", source: "placement" } });
   const seen = await seenBy({ studentId, track });
-  await db.placementAttempt.create({ data: { teacherId: me.id, studentId, checkpointId: c.id, mode: "student", track, token: randomToken(24), state: json(withSeen(emptyState(expectOf(expected), track), seen)) } });
+  await db.placementAttempt.create({ data: { teacherId: me.id, studentId, checkpointId: c.id, mode: "student", track, token: randomToken(24), state: json({ ...withSeen(emptyState(expectOf(expected), track), seen), ...(parts ? { parts } : {}), ...(base ?? {}) }) } });
   if (s.userId) await notify({ userId: s.userId, kind: "test", title: track === "teen" ? "Учитель назначил тебе Placement test Teens — нажми, чтобы начать" : "Преподаватель назначил вам placement test — можно начинать", action: "take", link: `/student/test/${c.id}` });
   // и в «Обновления» учителя — что тест назначен (сразу отмечено сделанным: уйдёт из списка через сутки)
   const mine = await notify({ userId: me.id, kind: "test", title: `${[s.name, s.lastName].filter(Boolean).join(" ")}: назначен ${track === "teen" ? "Placement test Teens" : "placement test"}${s.userId ? "" : " (ученик ещё не вошёл на платформу — увидит после входа)"}`, link: `/teacher/students/${studentId}?tab=roadmap` });
@@ -481,6 +539,31 @@ export async function assignExtraWS(id: string, kind: "writing" | "speaking", di
     await db.placementAttempt.update({ where: { id }, data: { state: json(st), review: json(nextReview), status: "active" } });
     if (a.mode === "student" && a.student?.userId)
       await notify({ userId: a.student.userId, kind: "test", title: kind === "writing" ? "Преподаватель дал дополнительное задание по письму" : "Преподаватель дал дополнительное задание по говорению", action: "decide", link: a.checkpointId ? `/student/test/${a.checkpointId}` : `/placement/${id}` });
+    refreshT(a.studentId);
+    revalidatePath(`/teacher/placement/${id}`);
+    return { ok: true };
+  });
+}
+
+/** «Добавить разделы» в пройденный тест: новые разделы идут в тот же тест, ученик их проходит, результат — там же.
+ *  Уже пройденный раздел так не повторить — для сравнения прогресса назначается новый тест. */
+export async function addSections(id: string, partsRaw: string[]): Promise<R> {
+  return wrap(async () => {
+    const acc = await attemptFor(id);
+    if (!acc || acc.who !== "teacher") return { ok: false, error: "not found" };
+    const { a } = acc;
+    if (a.mode !== "student" || (a.status !== "submitted" && a.status !== "reviewed")) return { ok: false, error: "status" };
+    const st = stateOf(a.state);
+    const done = doneOf(st);
+    const add = SECTIONS.filter((x) => partsRaw.includes(x) && !done.includes(x));
+    // грамматику нельзя добавить после лексики: лексика уже шла от уровня, выбранного без неё
+    if (!add.length || (add.includes("core") && done.includes("vocab"))) return { ok: false, error: "parts" };
+    st.parts = [...new Set([...partsOf(st).filter((x) => done.includes(x)), ...add])].sort((x, y) => SECTIONS.indexOf(x) - SECTIONS.indexOf(y));
+    st.added = Date.now();
+    st.section = "intro";
+    await db.placementAttempt.update({ where: { id }, data: { state: json(st), status: "active" } });
+    if (a.student?.userId)
+      await notify({ userId: a.student.userId, kind: "test", title: "Преподаватель добавил разделы в ваш placement test — можно продолжать", action: "take", link: a.checkpointId ? `/student/test/${a.checkpointId}` : `/placement/${id}` });
     refreshT(a.studentId);
     revalidatePath(`/teacher/placement/${id}`);
     return { ok: true };

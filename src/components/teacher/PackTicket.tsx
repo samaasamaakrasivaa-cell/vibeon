@@ -3,10 +3,10 @@ import { useState } from "react";
 import { Dialog } from "../Dialog";
 import { Icon } from "../Icon";
 import { useT } from "@/lib/i18n/client";
-import { packDeduct } from "@/lib/teacher/actions";
+import { packDeduct, packFreeze } from "@/lib/teacher/actions";
 import { useRun } from "../courses/useRun";
 
-export type PackInfo = { left: number; total: number; since?: string; ends?: string | null; used?: string[] }; // used — даты списанных уроков, последние
+export type PackInfo = { left: number; total: number; since?: string; ends?: string | null; used?: string[]; frozen?: string | null }; // used — даты списанных уроков; frozen — заморожен до
 
 /** Абонемент карточкой-«билетом»: сколько занятий из скольких осталось (кружки), когда куплен, когда примерно закончится
  *  по расписанию; «Списать занятие» — вручную по дате (например, абонемент оформили позже урока). */
@@ -14,6 +14,7 @@ export function PackTicket({ studentId, pack, today, compact = false }: { studen
   const { t } = useT();
   const { pending, error, run } = useRun();
   const [ask, setAsk] = useState<{ date: string; start: string } | null>(null);
+  const [freeze, setFreeze] = useState<string | null>(null);
   const used = pack.total - pack.left;
   return (
     <div className={`pticket ${compact ? "sm" : ""} ${pack.left === 0 ? "empty" : pack.left <= 1 ? "low" : ""}`}>
@@ -22,7 +23,7 @@ export function PackTicket({ studentId, pack, today, compact = false }: { studen
           <small className="pt-k">{t("pt.title", { n: pack.total })}</small>
           <b className="pt-big">{t("pt.left", { n: pack.left, total: pack.total })}</b>
         </div>
-        <span className="pt-auto" title={t("pt.autoHint")}><Icon name="check" size="sm" />{t("pt.auto")}</span>
+        {pack.frozen ? <span className="pt-auto">❄︎ {t("pt.frozenUntil", { d: pack.frozen })}</span> : <span className="pt-auto" title={t("pt.autoHint")}><Icon name="check" size="sm" />{t("pt.auto")}</span>}
       </div>
       <div className="pt-dots" aria-label={t("pt.left", { n: pack.left, total: pack.total })}>
         {Array.from({ length: pack.total }, (_, i) => <i key={i} className={i < used ? "used" : ""} />)}
@@ -33,7 +34,24 @@ export function PackTicket({ studentId, pack, today, compact = false }: { studen
         <span>{pack.left === 0 ? t("pt.over") : pack.ends ? t("pt.ends", { d: pack.ends }) : t("pt.endsUnknown")}</span>
       </div>
       {/* обычно не нужно: проведённые по расписанию уроки списываются сами; вручную — если урока не было в расписании */}
-      {pack.left > 0 && <button type="button" className="pt-manual" disabled={pending} onClick={() => setAsk({ date: today, start: "" })}>{t("pt.deductManual")}</button>}
+      <div className="flex flex-wrap gap-x-4 gap-y-1">
+        {pack.left > 0 && <button type="button" className="pt-manual" disabled={pending} onClick={() => setAsk({ date: today, start: "" })}>{t("pt.deductManual")}</button>}
+        {!compact && (pack.frozen ? <button type="button" className="pt-manual" disabled={pending} onClick={() => run(() => packFreeze(studentId, null))}>{t("pt.unfreeze")}</button>
+          : pack.left > 0 && <button type="button" className="pt-manual" disabled={pending} onClick={() => setFreeze(today)}>{t("pt.freeze")}</button>)}
+      </div>
+      <Dialog open={freeze !== null} onClose={() => setFreeze(null)} title={t("pt.freeze")}>
+        {freeze !== null && (
+          <>
+            <div className="field"><label htmlFor={`pf-${studentId}`}>{t("pt.freezeUntil")}</label><input id={`pf-${studentId}`} type="date" className="input" value={freeze} min={today} onChange={(e) => setFreeze(e.target.value)} /></div>
+            <p className="hint mt-3 mb-0">{t("pt.freezeHint")}</p>
+            {error && <div className="alert mt-2">{error}</div>}
+            <div className="actions">
+              <button className="btn secondary" onClick={() => setFreeze(null)}>{t("common.cancel")}</button>
+              <button className="btn primary" disabled={pending || !freeze} onClick={() => run(() => packFreeze(studentId, freeze), () => setFreeze(null))}>{t("pt.freezeBtn")}</button>
+            </div>
+          </>
+        )}
+      </Dialog>
       <Dialog open={!!ask} onClose={() => setAsk(null)} title={t("prof.packDeduct")}>
         {ask && (
           <>

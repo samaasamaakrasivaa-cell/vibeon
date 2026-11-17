@@ -18,6 +18,8 @@ export type ReviewProps = {
   sm: Summary; d: ReviewData; review: { writing?: Record<string, unknown>; speaking?: Record<string, unknown>; points?: boolean[]; comment?: string; lesson?: { level: string; marks: Record<string, unknown> } | null; ai?: Partial<Record<"writing" | "speaking", PlScore & { level?: string; transcripts?: string[] }>> };
   lessonQs: { level: string; questions: string[] }[]; // говорение на уроке: вопросы уровнем выше и ниже
   rubrics: { writing: Rubric[]; speaking: Rubric[] }; howTo: string; sublevels: string; total: string;
+  parts?: string[]; dates?: Record<string, string>; // разделы теста и даты, когда каждый пройден
+  base?: { sub: string; from: "test" | "teacher" } | null; // грамматику не проверяли: от какого уровня шли остальные разделы
 };
 const nums = (m?: Record<string, unknown>): Marks => Object.fromEntries(Object.entries(m ?? {}).filter(([, v]) => typeof v === "number")) as Marks;
 const prevLevel = (l: string) => PL_LEVELS[Math.max(0, PL_LEVELS.indexOf(l as PLevel) - 1)];
@@ -79,7 +81,8 @@ export function PlacementReview(p: ReviewProps) {
   // оценка говорения на уроке (вопросы уровнем выше/ниже) — самая свежая, поэтому идёт в итог, если заполнена полностью
   const sLesson = lesson ? scoreStep(p.rubrics.speaking.map((c) => lesson.marks[c.id]), lesson.level as PLevel) : null;
   const sHint = sLesson ?? sTask;
-  const hint = finalHint([p.sm.coreStep, p.sm.vstep, p.sm.readStep, p.sm.listenStep, wHint, sHint]);
+  const has = (s: string) => !p.parts || p.parts.includes(s);
+  const hint = finalHint([has("core") ? p.sm.coreStep : null, p.sm.vstep, p.sm.readStep, p.sm.listenStep, wHint, sHint]);
   const [lvl, setLvl] = useState(p.level ?? (hint !== null ? STEPS[hint] : ""));
   const L = ["A1", "A2", "B1", "B2", "C1"].filter((l) => p.sm.core[l] || p.sm.reading[l] || p.sm.listening[l]);
   const waiting = p.status === "new" || p.status === "active";
@@ -92,7 +95,7 @@ export function PlacementReview(p: ReviewProps) {
   };
   const sm = p.sm;
   const lines = [
-    sm.diag ? t("pl.exDiag", { l: sm.diag, e: `${sm.easy[0]}/${sm.easy[1]}`, ep: pc(sm.easy), h: `${sm.hard[0]}/${sm.hard[1]}`, hp: pc(sm.hard), r: STEPS[sm.coreStep] }) : t("pl.exLow"),
+    !has("core") ? (p.base ? t(p.base.from === "test" ? "pl.exBaseTest" : "pl.exBaseTeacher", { l: p.base.sub }) : null) : sm.diag ? t("pl.exDiag", { l: sm.diag, e: `${sm.easy[0]}/${sm.easy[1]}`, ep: pc(sm.easy), h: `${sm.hard[0]}/${sm.hard[1]}`, hp: pc(sm.hard), r: STEPS[sm.coreStep] }) : t("pl.exLow"),
     sm.fb && sm.diag ? t("pl.exFb", { l: PL_LEVELS[PL_LEVELS.indexOf(sm.diag) + 1] ?? "", d: sm.diag }) : null,
     sm.up && sm.diag ? t("pl.exUp", { l: prevLevel(sm.diag), d: sm.diag }) : null,
     !sm.up && sm.above[1] ? t("pl.exAbove", { l: PL_LEVELS[PL_LEVELS.indexOf(sm.diag ?? "A1") + 1] ?? "", c: sm.above[0], n: sm.above[1] }) : null,
@@ -275,12 +278,13 @@ export function PlacementReview(p: ReviewProps) {
           {sm.bd && <span className="pill blue" title={t("pl.borderHint")}>{t("pl.border")}</span>}
         </div>
         <div className="plsteps">
-          <div><span>{t("pl.part.core")}</span><b>{STEPS[p.sm.coreStep]}</b></div>
-          <div><span>{t("pl.part.vocab")}</span><b>{p.sm.vstep !== null ? STEPS[p.sm.vstep] : "—"}</b></div>
-          <div><span>{t("pl.part.reading")}</span><b>{p.sm.readStep !== null ? STEPS[p.sm.readStep] : "—"}</b></div>
-          <div><span>{t("pl.part.listening")}</span><b>{p.sm.listenStep !== null ? STEPS[p.sm.listenStep] : "—"}</b></div>
-          <div><span>{t("pl.part.writing")}</span><b>{wHint !== null ? STEPS[wHint] : "—"}</b></div>
-          <div><span>{t("pl.part.speaking")}</span><b>{sHint !== null ? STEPS[sHint] : "—"}</b></div>
+          {([["core", has("core") ? p.sm.coreStep : null], ["vocab", p.sm.vstep], ["reading", p.sm.readStep], ["listening", p.sm.listenStep], ["writing", wHint], ["speaking", sHint]] as [string, number | null][]).map(([k, v]) => (
+            <div key={k} className={has(k) ? undefined : "plsteps-off"}>
+              <span>{t(`pl.part.${k}` as "pl.part.core")}</span>
+              <b>{!has(k) ? t("pl.notInTest") : v !== null ? STEPS[v] : "—"}</b>
+              {p.dates?.[k] && <small className="muted">{p.dates[k]}</small>}
+            </div>
+          ))}
         </div>
         <div className="plexplain">
           <div className="flex items-center gap-2"><Icon name="spark" size="sm" /><b>{t("pl.exTitle")}</b></div>

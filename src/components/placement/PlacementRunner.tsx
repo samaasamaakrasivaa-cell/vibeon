@@ -94,6 +94,8 @@ export function PlacementRunner({ id, initial, sample, done, home, canFlag = fal
     setPast(null); setBack(0); shownAt.current = Date.now();
   });
   const open = v.open ?? [];
+  const vp = v as { parts?: string[]; todo?: string[] };
+  const parts = PARTS.filter((p) => (vp.parts ?? PARTS).includes(p));
 
   if (v.section === "done") return <>{done}</>;
   if (paused) return <Paused home={home} onBack={() => setPaused(false)} />;
@@ -104,7 +106,7 @@ export function PlacementRunner({ id, initial, sample, done, home, canFlag = fal
       {v.section !== "intro" && (
         <div className="flex flex-col gap-2">
           <div className="plprog" aria-label={t("pl.progress")}>
-            {PARTS.map((p) => {
+            {parts.map((p) => {
               const isDone = p === "core" ? v.section !== "core" : p === "vocab" ? !block : !block && !open.includes(p);
               const locked = !block && (v.locked ?? []).includes(p);
               const can = !between && !pending && open.includes(p) && !locked && p !== v.section;
@@ -122,7 +124,7 @@ export function PlacementRunner({ id, initial, sample, done, home, canFlag = fal
         </div>
       )}
       {between ? <Between from={between.from} to={between.to} onGo={() => { setBetween(null); shownAt.current = Date.now(); }} /> : <>
-        {v.section === "intro" && <Intro sample={sample} pending={pending} onStart={() => step(() => startPlacement(id))} />}
+        {v.section === "intro" && <Intro sample={sample} pending={pending} parts={PARTS.filter((p) => (vp.todo ?? vp.parts ?? PARTS).includes(p))} onStart={() => step(() => startPlacement(id))} />}
         {block && (past && back > 0
           ? <CoreStep key={`past-${past.item.id}`} item={past.item} n={curIdx - back - from + 1} initial={past.dk ? "" : past.given ?? ""} initialDk={past.dk} past pending={pending} onBack={curIdx - back > from ? () => openPast(back + 1) : undefined} onAnswer={revise} />
           : (v as Core).item && <CoreStep key={(v as Core).item!.id} item={(v as Core).item!} n={curIdx - from + 1} pending={pending} onBack={curIdx > from ? () => openPast(1) : undefined} onAnswer={(val, dk, h, tr) => step(() => answerCore(id, (v as Core).item!.id, val, ms(), dk, h, tr))} />)}
@@ -180,7 +182,7 @@ function Between({ from, to, onGo }: { from: Part; to: Part; onGo: () => void })
 
 // ───────── Вводный экран ─────────
 
-function Intro({ sample, pending, onStart }: { sample: string; pending: boolean; onStart: () => void }) {
+function Intro({ sample, pending, onStart, parts = [...PARTS] }: { sample: string; pending: boolean; onStart: () => void; parts?: (typeof PARTS)[number][] }) {
   const { t } = useT();
   const [snd, setSnd] = useState<"idle" | "play" | "ok">("idle");
   const [mic, setMic] = useState<"idle" | "rec" | "ok" | "err">("idle");
@@ -214,7 +216,7 @@ function Intro({ sample, pending, onStart }: { sample: string; pending: boolean;
         </div>
       </div>
       <div className="plpartgrid">
-        {PARTS.map((p, i) => (
+        {parts.map((p, i) => (
           <div key={p} className="plpart">
             <span className="plico sm"><Icon name={PART_ICON[p]} /></span>
             <div><b>{i + 1}. {t(`pl.part.${p}` as DictKey)}</b><div className="small muted">{t(`pl.partHint.${p}` as DictKey)}</div><div className="small plpart-t">{t(`pl.partTime.${p}` as DictKey)}</div></div>

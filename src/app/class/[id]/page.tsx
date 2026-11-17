@@ -16,13 +16,16 @@ export const metadata = { title: "Урок" };
 export const dynamic = "force-dynamic";
 
 /** Класс: урок в реальном времени для учителя и ученика. */
-export default async function ClassPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ tab?: string; addhw?: string }> }) {
+export default async function ClassPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ tab?: string; addhw?: string; preview?: string }> }) {
   const { lang } = await getT();
   const user = await requireUser();
   const { id } = await params;
   const acc = await classAccess(id, user);
   if (!acc) notFound();
-  const { lesson, role, host, slot, group } = acc;
+  // «Как видит ученик»: учитель открывает урок глазами ученика — только просмотр, без отправки действий
+  const preview = acc.role === "teacher" && (await searchParams).preview === "student";
+  const { lesson, host, slot, group } = acc;
+  const role: "teacher" | "student" = preview ? "student" : acc.role;
   const teacherUser = await db.user.findUnique({ where: { id: lesson.teacherId ?? "" }, include: { teacherProfile: true } });
   if (!teacherUser) notFound();
   // урок не выбран — остаётся закреплённый в прошлый раз у этого ученика (у группы — у группы); учитель сменит его кнопкой «Другой урок»
@@ -76,10 +79,10 @@ export default async function ClassPage({ params, searchParams }: { params: Prom
   const board = (host.board as { pages?: BObj[][] })?.pages ?? [[]];
   return (
     <>
-    {role === "student" && <ActivityPing cls />}
+    {role === "student" && !preview && <ActivityPing cls />}
     <ClassRoom
       d={{
-        id, templateId: templateId, role, me: { id: user.id, name: user.name },
+        id, templateId: templateId, role, me: { id: user.id, name: user.name }, ...(preview ? { preview: true } : {}),
         ...(group ? { group: { title: grp?.title ?? members.map((m) => m.name.split(" ")[0]).join(", "), members: role === "teacher" ? members : members.filter((m) => m.instanceId === lesson.id) } } : {}),
         ...(group && role === "teacher" ? { byStudent: Object.fromEntries(members.map((m) => [m.sid, pack(m.sid)])) } : {}),
         teacher: { id: teacherUser.id, name: teacherUser.name, lastName: teacherUser.lastName },

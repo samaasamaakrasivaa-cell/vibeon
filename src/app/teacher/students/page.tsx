@@ -12,6 +12,7 @@ import { roadmapView } from "@/lib/roadmap/progress";
 import { PackTicket } from "@/components/teacher/PackTicket";
 import { packEndsAt } from "@/lib/teacher/pack";
 import { isoDay } from "@/lib/time";
+import { levelLine, levelsOf } from "@/lib/teacher/levels";
 
 export const metadata = { title: "Ученики" };
 
@@ -53,7 +54,7 @@ export default async function Students({ searchParams }: { searchParams: Promise
     const ls = new Map((await db.lessonInstance.findMany({ where: { id: { in: lids } }, select: { id: true, startsAt: true } })).map((l) => [l.id, l.startsAt]));
     for (const v of lastInv.values()) v.lessonDates = invs.find((x) => x.id === v.id)!.lessonIds.map((id) => ls.get(id)).filter(Boolean).sort((a, b) => a!.getTime() - b!.getTime()) as Date[];
     for (const s of active) if (s.payType === "PACK" && s.packs[0]) {
-      packEnds.set(s.id, await packEndsAt(s.id, s.packs[0].lessonsLeft));
+      packEnds.set(s.id, await packEndsAt(s.id, s.packs[0].lessonsLeft, s.packs[0].frozenUntil));
       const n = Math.min(4, s.packs[0].lessonsTotal - s.packs[0].lessonsLeft);
       packUsed.set(s.id, n > 0 ? (await db.lessonInstance.findMany({ where: { studentId: s.id, deductedAt: { gte: new Date(s.packs[0].startsAt.getTime() - 60000) } }, orderBy: { startsAt: "desc" }, take: n, select: { startsAt: true } })).reverse().map((l) => dfmt(l.startsAt)) : []);
     }
@@ -61,6 +62,8 @@ export default async function Students({ searchParams }: { searchParams: Promise
   const invited = all.filter((s) => s.status === "INVITED");
   const archived = all.filter((s) => s.status === "ARCHIVED");
   const full = (s: { name: string; lastName: string | null }) => [s.name, s.lastName].filter(Boolean).join(" ");
+  // подпись карточки: уровень сейчас → цель · курс (а не почта)
+  const lv = await levelsOf(all);
   const card = (s: (typeof all)[number], i: number, sub: string, badge?: string): Card => ({
     id: s.id, name: full(s), initials: initials(s.name, s.lastName), color: i, sub, href: `/teacher/students/${s.id}`, badge, tg: !!s.user?.telegramChatId,
   });
@@ -91,7 +94,7 @@ export default async function Students({ searchParams }: { searchParams: Promise
 
       {tab === "profiles" && (
         <>
-          <StudentsGrid title={t("stu.registered")} cards={active.map((s, i) => card(s, i, s.course ?? s.level ?? s.email ?? ""))} empty={t("inviteT.none")} />
+          <StudentsGrid title={t("stu.registered")} cards={active.map((s, i) => card(s, i, levelLine(lv.get(s.id)) || t("stu.noLevel")))} empty={t("inviteT.none")} />
           {/* группы: выбрать учеников галочками — и ставить группу в расписание одним занятием */}
           <Groups
             groups={groups.map((g, i) => ({ id: g.id, title: g.title, price: g.price, members: g.members.map((m) => m.studentId), level: g.level, callLink: g.callLink, info: g.info, when: whenOf(i) }))}
@@ -186,7 +189,7 @@ export default async function Students({ searchParams }: { searchParams: Promise
       {tab === "archive" && (
         <>
           <p className="hint mt-0 mb-4">{t("stu.archiveHint")}</p>
-          <StudentsGrid title={t("stu.archive")} cards={archived.map((s, i) => card(s, i, s.course ?? s.email ?? "", t("stu.archived")))} empty={t("stu.archiveEmpty")} />
+          <StudentsGrid title={t("stu.archive")} cards={archived.map((s, i) => card(s, i, levelLine(lv.get(s.id)), t("stu.archived")))} empty={t("stu.archiveEmpty")} />
         </>
       )}
     </div>

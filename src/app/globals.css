@@ -1947,3 +1947,33 @@ button.grp-row:hover { background: var(--fill); }
 .lwho { color: inherit; text-decoration: none; display: inline-flex; align-items: baseline; flex-wrap: wrap; gap: 10px; }
 .lwho:hover { color: var(--accent); }
 .lwho-go { font-size: 13px; font-weight: 600; color: var(--accent); background: var(--accent-bg); padding: 3px 10px; border-radius: 999px; white-space: nowrap; }
+.lcall { justify-content: flex-start; background: var(--ok-bg); color: var(--ok-text); min-width: 0; }
+.lcall:hover { filter: brightness(.97); }
+
+/* «Как видит ученик» — урок глазами ученика поверх класса */
+.cls-preview { position: fixed; inset: 16px; z-index: 120; display: flex; flex-direction: column; border-radius: 20px; overflow: hidden; background: var(--surface); box-shadow: 0 30px 80px rgba(0,0,0,.35), 0 0 0 .5px var(--sep); }
+.cls-preview-top { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-bottom: .5px solid var(--sep); }
+.cls-preview iframe { flex: 1; width: 100%; border: 0; background: var(--bg); }
+.cls-previewbar { position: sticky; top: 0; z-index: 60; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 6px 12px; background: var(--violet-bg); color: var(--violet); font-size: 13px; font-weight: 600; }
+.tk-donebg > article.tk, .tk-donebg article.tk { background: color-mix(in srgb, var(--ok) 7%, var(--surface)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ok) 30%, transparent); transition: background .3s; }
+
+/* Оплата в анкете: компактно — тип, абонемент, остальное раскрывается */
+.paybox-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+.payempty { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; padding: 14px; border-radius: 14px; background: var(--surface2); }
+.paymore { border-top: 1px solid var(--sep); margin-top: 14px; padding-top: 12px; }
+.paymore > summary { display: flex; align-items: center; gap: 8px; cursor: pointer; list-style: none; font-weight: 600; font-size: 14px; min-height: 32px; }
+.paymore > summary > span:first-child { flex: 1; }
+.paymore > summary::-webkit-details-marker { display: none; }
+.paymore > summary .i { color: var(--text3); transition: transform .2s; }
+.paymore[open] > summary .i { transform: rotate(180deg); }
+.paymore[open] > summary { margin-bottom: 8px; }
+.paymonth { border-top: 1px solid var(--sep); margin-top: 12px; padding-top: 10px; }
+.paymonth b { color: var(--text); font-size: 15px; }
+
+.plsteps > div small { display: block; font-size: 11px; margin-top: 2px; }
+.plsteps > div.plsteps-off { opacity: .55; }
+.plsteps > div.plsteps-off b { font-size: 13px; font-weight: 500; }
+/* разделы теста: даты и «Добавить разделы» */
+.plparts { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.plparts .pill small { opacity: .75; margin-left: 4px; }
+.pill.outline { background: transparent; border: 1px dashed var(--sep); color: var(--text3); }

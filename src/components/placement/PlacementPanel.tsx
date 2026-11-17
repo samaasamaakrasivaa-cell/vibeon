@@ -4,12 +4,13 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useT } from "@/lib/i18n/client";
 import type { DictKey } from "@/lib/i18n/dict";
-import { assignPlacement, closePlacementLink, deletePlacement, createPlacementLink, selfPlacement, setLinkShowResult } from "@/lib/placement/actions";
+import { closePlacementLink, deletePlacement, createPlacementLink, selfPlacement, setLinkShowResult } from "@/lib/placement/actions";
 import { useRun } from "../courses/useRun";
 import { Dialog } from "../Dialog";
 import { Icon } from "../Icon";
 import { StudentPicker, type GridStudent } from "../teacher/WeekGrid";
 import { PlacementAbout } from "./PlacementAbout";
+import { useAssignParts } from "./AssignParts";
 
 export type PlRow = { id: string; who: string; mode: string; status: string; level: string | null; when: string; track?: string };
 export type PlTrack = "adult" | "teen";
@@ -25,6 +26,7 @@ export function PlacementPanel({ students, rows, links, origin, owner, teen, age
   const [assign, setAssign] = useState(false);
   const [sid, setSid] = useState<string | null>(null);
   const [exp, setExp] = useState("");
+  const ap = useAssignParts(assign ? sid : null);
   const [linkOpen, setLinkOpen] = useState(false);
   const [track, setTrack] = useState<PlTrack>("adult"); // назначение
   const [linkTrack, setLinkTrack] = useState<PlTrack>("adult");
@@ -100,11 +102,12 @@ export function PlacementPanel({ students, rows, links, origin, owner, teen, age
 
       <Dialog open={assign} onClose={() => setAssign(false)} title={t("pl.assign")}>
         {students.length === 0 ? <p className="hint m-0">{t("sch.noStudents")}</p> : <StudentPicker students={students} value={sid} onChange={(v) => { setSid(v); if (teen && v) setTrack(trackForAge(ages[v])); }} />}
-        {teen && <TrackField value={track} onChange={setTrack} age={sid ? ages[sid] : null} />}
-        <ExpectField value={exp} onChange={setExp} teen={track === "teen"} />
+        {sid && ap.ui}
+        {teen && !ap.useInto && <TrackField value={track} onChange={setTrack} age={sid ? ages[sid] : null} />}
+        {!ap.useInto && <ExpectField value={exp} onChange={setExp} teen={track === "teen"} need={ap.needLevel} />}
         <Steps keys={["pl.assignS1", "pl.assignS2", "pl.assignS3", "pl.assignS4"]} tip="pl.assignTip" />
         <div className="actions"><button className="btn secondary" onClick={() => setAssign(false)}>{t("common.cancel")}</button>
-          <button className="btn primary" disabled={pending || !sid} onClick={() => run(() => assignPlacement(sid!, exp || null, track), () => { setAssign(false); setSid(null); setExp(""); setTrack("adult"); })}>{t("pl.assignDo")}</button></div>
+          <button className="btn primary" disabled={pending || !sid || ap.blocked(exp)} onClick={() => run(() => ap.submit(exp, track), () => { setAssign(false); setSid(null); setExp(""); setTrack("adult"); ap.reset(); })}>{ap.useInto ? t("pl.partsAddDo") : t("pl.assignDo")}</button></div>
       </Dialog>
 
       <Dialog open={linkOpen} onClose={() => setLinkOpen(false)} title={t("pl.linkNew")}>
@@ -153,15 +156,15 @@ export function TrackField({ value, onChange, age }: { value: PlTrack; onChange:
 }
 
 /** Ожидаемый уровень ученика: тест начнёт с него и пропустит разминку. */
-export function ExpectField({ value, onChange, teen = false }: { value: string; onChange: (v: string) => void; teen?: boolean }) {
+export function ExpectField({ value, onChange, teen = false, need = false }: { value: string; onChange: (v: string) => void; teen?: boolean; need?: boolean }) {
   const { t } = useT();
   return (
     <div className="field mt-3">
-      <label htmlFor="pl-exp">{t("pl.expect")}</label>
+      <label htmlFor="pl-exp">{need ? t("pl.partsLevelNeed") : t("pl.expect")}</label>
       <select id="pl-exp" className="select" value={value} onChange={(e) => onChange(e.target.value)}>
-        <option value="">{t("pl.expNone")}</option><option value="A1">{t(teen ? "plt.expA1" : "pl.expA1")}</option><option value="B1">{t(teen ? "plt.expB1" : "pl.expB1")}</option><option value="B2">{t(teen ? "plt.expB2" : "pl.expB2")}</option>
+        <option value="">{need ? "—" : t("pl.expNone")}</option><option value="A1">{t(teen ? "plt.expA1" : "pl.expA1")}</option><option value="B1">{t(teen ? "plt.expB1" : "pl.expB1")}</option><option value="B2">{t(teen ? "plt.expB2" : "pl.expB2")}</option>
       </select>
-      <span className="small muted">{t("pl.expectHint")}</span>
+      {!need && <span className="small muted">{t("pl.expectHint")}</span>}
     </div>
   );
 }
