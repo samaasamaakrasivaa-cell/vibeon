@@ -209,7 +209,12 @@ export default async function StudentProfile({ params, searchParams }: { params:
             />
             {s.userId && (
               <section className="card sm">
-                <div className="mb-2 flex items-center justify-between"><p className="cardtitle m-0">{t("prof.activity")}</p><span className="small muted">{lastSeen ? seenAgo(lastSeen) : ""}</span></div>
+                <div className="acthead">
+                  <p className="cardtitle m-0">{t("prof.activity")}</p>
+                  {/* как считаем — в подсказке по наведению, а не текстом под графиком */}
+                  <span className="infotip" tabIndex={0} aria-label={t("prof.actHint")}><Icon name="info" size="sm" /><span className="infotip-pop" role="tooltip">{t("prof.actHint")}</span></span>
+                </div>
+                {lastSeen && <div className="actseen">{seenAgo(lastSeen)}</div>}
                 <div className="flex items-baseline gap-2"><b className="text-[22px]">{fmtMin(act.reduce((a, x) => a + x.minutes, 0))}</b><span className="small muted">{t("prof.act7")}</span></div>
                 <div className="actbars" aria-label={t("prof.activity")}>
                   {days7.map((d) => {
@@ -223,7 +228,6 @@ export default async function StudentProfile({ params, searchParams }: { params:
                     );
                   })}
                 </div>
-                <p className="hint mb-0 mt-2">{t("prof.actHint")}</p>
               </section>
             )}
             <section className="card sm">

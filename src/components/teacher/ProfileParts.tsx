@@ -165,12 +165,15 @@ export function PaymentCard({ p, earnedMonth }: { p: PaymentData; earnedMonth: s
 
   return (
     <section className="card sm paybox">
-      <div className="paybox-head">
-        <p className="cardtitle m-0">{t("prof.payment")}</p>
-        <div className="seg" role="group" aria-label={t("prof.payType")}>
-          <button type="button" aria-pressed={payType === "PACK"} disabled={pending} onClick={() => switchType("PACK")}>{t("prof.pack")}</button>
-          <button type="button" aria-pressed={payType === "POSTPAID"} disabled={pending} onClick={() => switchType("POSTPAID")}>{t("prof.postpaid")}</button>
-        </div>
+      <p className="cardtitle">{t("prof.payment")}</p>
+      {/* тип оплаты — две заметные карточки на своей строке */}
+      <div className="paytype" role="radiogroup" aria-label={t("prof.payType")}>
+        {([["PACK", "cards", t("prof.pack"), t("pay.typePackSub")], ["POSTPAID", "coin", t("prof.postpaid"), t("pay.typePostSub")]] as const).map(([k, ic, name, sub]) => (
+          <button key={k} type="button" role="radio" aria-checked={payType === k} aria-pressed={payType === k} disabled={pending} onClick={() => switchType(k)}>
+            <span className="paytype-ic"><Icon name={ic} size="sm" /></span>
+            <span className="paytype-tx"><b>{name}</b><small>{sub}</small></span>
+          </button>
+        ))}
       </div>
 
       {payType === "PACK" && (p.pack ? (

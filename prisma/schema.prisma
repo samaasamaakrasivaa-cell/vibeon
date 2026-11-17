@@ -144,6 +144,7 @@ model Student {
   lastName        String?
   email           String?
   telegram        String?
+  tgChecked       Boolean @default(false) // @ник из Telegram уже пробовали подтянуть
   status          StudentStatus @default(INVITED)
   form            Json          @default("{}") // стартовая анкета
   payType         PayType       @default(POSTPAID)
@@ -740,4 +741,17 @@ model AiCache {
   key       String   @id
   value     Json
   createdAt DateTime @default(now())
+}
+
+/// Нерабочее время учителя в расписании: выходной, свои дела. Уроки туда не ставим, слоты не предлагаем.
+model TimeOff {
+  id        String   @id @default(cuid())
+  teacherId String
+  startsAt  DateTime
+  endsAt    DateTime
+  weekly    Boolean  @default(false) // повторять каждую неделю в тот же день и время
+  note      String?
+  createdAt DateTime @default(now())
+
+  @@index([teacherId, startsAt])
 }

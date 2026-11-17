@@ -536,3 +536,45 @@ export async function setStudentField(id: string, key: string, value: string): P
   refresh(id);
   return { ok: true };
 }
+
+// ───────── Нерабочее время ─────────
+
+export type TimeOffInput = { date: string; start: string; end: string; weekly: boolean; note?: string };
+
+function timeOffRange(x: TimeOffInput, tz: string) {
+  const s = parseWhen(x.date, x.start, tz);
+  // «до 24:00» — конец дня
+  const e = x.end === "24:00" ? (() => { const d = parseWhen(x.date, "00:00", tz); return d ? new Date(d.getTime() + 864e5) : null; })() : parseWhen(x.date, x.end, tz);
+  return s && e && e > s ? { startsAt: s, endsAt: e } : null;
+}
+
+/** Отметить время нерабочим (выходной, свои дела): в расписании его видно, уроки туда лучше не ставить. */
+export async function createTimeOff(x: TimeOffInput): Promise<Result> {
+  const { t } = await getT();
+  const teacher = await me();
+  const r = timeOffRange(x, teacher.timezone);
+  if (!r) return { ok: false, error: t("off.err") };
+  await db.timeOff.create({ data: { teacherId: teacher.id, ...r, weekly: !!x.weekly, note: x.note?.trim().slice(0, 120) || null } });
+  revalidatePath("/teacher/schedule");
+  return { ok: true };
+}
+
+export async function updateTimeOff(id: string, x: TimeOffInput): Promise<Result> {
+  const { t } = await getT();
+  const teacher = await me();
+  const cur = await db.timeOff.findUnique({ where: { id } });
+  if (!cur || cur.teacherId !== teacher.id) return { ok: false, error: t("off.err") };
+  const r = timeOffRange(x, teacher.timezone);
+  if (!r) return { ok: false, error: t("off.err") };
+  // у повторяющегося меняем время и день недели, а начало серии оставляем прежним, если новая дата позже
+  await db.timeOff.update({ where: { id }, data: { ...r, weekly: !!x.weekly, note: x.note?.trim().slice(0, 120) || null } });
+  revalidatePath("/teacher/schedule");
+  return { ok: true };
+}
+
+export async function deleteTimeOff(id: string): Promise<Result> {
+  const teacher = await me();
+  await db.timeOff.deleteMany({ where: { id, teacherId: teacher.id } });
+  revalidatePath("/teacher/schedule");
+  return { ok: true };
+}

@@ -46,7 +46,14 @@ export async function tgSetWebhook() {
   return true;
 }
 
-export type Update = { update_id: number; message?: { chat: { id: number }; text?: string; from?: { first_name?: string } } };
+export type Update = { update_id: number; message?: { chat: { id: number }; text?: string; from?: { first_name?: string; username?: string } } };
+
+/** @ник пользователя по чату (для тех, кто подключил бота раньше, чем мы начали его сохранять). */
+export async function tgUsername(chatId: string): Promise<string | null> {
+  if (tgMock() || !env.telegramBot) return null;
+  const c = await api<{ username?: string }>("getChat", { chat_id: chatId }).catch(() => null);
+  return c?.username ?? null;
+}
 export async function tgGetUpdates(offset: number) {
   return api<Update[]>("getUpdates", { offset, timeout: 25, allowed_updates: ["message"] });
 }

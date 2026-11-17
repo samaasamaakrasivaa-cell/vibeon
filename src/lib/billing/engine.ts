@@ -1,4 +1,5 @@
 import "server-only";
+import { backfillTelegram } from "../notify/bot";
 import type { Invoice, Student } from "@prisma/client";
 import { db } from "../db";
 import { mailInvoice } from "../mail";
@@ -265,6 +266,7 @@ export async function runBilling(now = new Date()) {
     await billPostpaid(now);
     await remind(now);
     await weeklyReports(now);
+    await backfillTelegram().catch((e) => console.error("[tg-username]", e));
   } catch (e) {
     console.error("[billing]", e);
   } finally {

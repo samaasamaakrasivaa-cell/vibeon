@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Icon } from "@/components/Icon";
-import { WeekGrid, type GridLesson } from "@/components/teacher/WeekGrid";
+import { WeekGrid, type GridLesson, type GridOff } from "@/components/teacher/WeekGrid";
 import { requireUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { getT } from "@/lib/i18n/server";
@@ -23,12 +23,28 @@ export default async function Schedule({ searchParams }: { searchParams: Promise
   const from = dayStart(monday, tz);
   const to = dayStart(addDaysIso(monday, 7), tz);
 
-  const [rows, students, hws, groups] = await Promise.all([
+  const [rows, students, hws, groups, offRows] = await Promise.all([
     db.lessonInstance.findMany({ where: { teacherId: me.id, startsAt: { gte: from, lt: to } }, include: lessonInclude, orderBy: { startsAt: "asc" } }),
     db.student.findMany({ where: { teacherId: me.id, status: { in: ["ACTIVE", "INVITED"] } }, orderBy: [{ status: "asc" }, { name: "asc" }] }),
     homeworkFor({ teacherId: me.id }),
     db.group.findMany({ where: { teacherId: me.id }, include: { members: { include: { student: { select: { name: true, lastName: true } } } } }, orderBy: { title: "asc" } }),
+    // нерабочее время: разовое в эту неделю и повторяющееся, начатое не позже конца недели
+    db.timeOff.findMany({ where: { teacherId: me.id, OR: [{ weekly: false, startsAt: { lt: to }, endsAt: { gt: from } }, { weekly: true, startsAt: { lt: to } }] } }),
   ]);
+  // повторяющееся — в тот же день недели этой недели (если серия уже началась)
+  const offs: GridOff[] = offRows.flatMap((o) => {
+    const dur = Math.round((o.endsAt.getTime() - o.startsAt.getTime()) / 60000);
+    const firstIso = isoDay(o.startsAt, tz);
+    const dows = (iso: string) => (new Date(`${iso}T12:00:00Z`).getUTCDay() + 6) % 7;
+    const dayIso = o.weekly ? addDaysIso(monday, dows(firstIso)) : firstIso;
+    if (o.weekly && dayIso < firstIso) return [];
+    const day = Math.round((dayStart(dayIso, tz).getTime() - from.getTime()) / 864e5);
+    if (day < 0 || day > 6) return [];
+    const startMin = minutesOfDay(o.startsAt, tz);
+    const endMin = Math.min(24 * 60, startMin + dur);
+    const fmt = (m: number) => `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
+    return [{ id: o.id, day, date: dayIso, startMin, endMin, start: fmt(startMin), end: fmt(endMin), weekly: o.weekly, note: o.note }];
+  });
   const groupOf = new Map(groups.map((g) => [g.id, g]));
   // уроки в счетах, которые уже оплачены или ждут подтверждения оплаты, — цену не меняем
   const locked = new Set((await db.invoice.findMany({ where: { lessonIds: { hasSome: rows.map((l) => l.id) }, status: { in: ["PROOF_SENT", "PAID"] } }, select: { lessonIds: true } })).flatMap((i) => i.lessonIds));
@@ -100,6 +116,7 @@ export default async function Schedule({ searchParams }: { searchParams: Promise
         <WeekGrid
           days={days}
           lessons={lessons}
+          offs={offs}
           hourFrom={hourFrom}
           hourTo={hourTo}
           nowDay={nowDay}

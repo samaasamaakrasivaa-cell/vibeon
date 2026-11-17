@@ -6,7 +6,7 @@ import { Dialog } from "../Dialog";
 import { Icon } from "../Icon";
 import { useT } from "@/lib/i18n/client";
 import {
-  createLesson, deleteLesson, makeWeekly, moveLesson, saveLessonNote, setCallLink, setLessonPrice, setLessonStatus, type Result,
+  createLesson, createTimeOff, deleteLesson, deleteTimeOff, makeWeekly, moveLesson, saveLessonNote, setCallLink, setLessonPrice, setLessonStatus, updateTimeOff, type Result,
 } from "@/lib/teacher/actions";
 
 export type GridLesson = {
@@ -19,12 +19,17 @@ export type GridLesson = {
   callLink?: string | null; // ссылка на созвон (одна на ученика / группу)
 };
 export type GridStudent = { id: string; name: string; initials: string };
+/** Нерабочее время учителя (выходной, свои дела): закрашенный блок в сетке. */
+export type GridOff = { id: string; day: number; date: string; startMin: number; endMin: number; start: string; end: string; weekly: boolean; note: string | null };
+type OffDraft = { id?: string; date: string; start: string; end: string; weekly: boolean; note: string };
+const hm = (m: number) => `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
+const toMin = (s: string) => { const [h, m] = s.split(":").map(Number); return h * 60 + (m || 0); };
 type Day = { iso: string; dow: string; num: number; today: boolean; past: boolean; earned: string | null; tip?: string };
 
 const PX = 44; // высота часа, px
 
 export function WeekGrid(props: {
-  days: Day[]; lessons: GridLesson[]; hourFrom: number; hourTo: number; nowDay: number; nowMin: number; todayIso: string;
+  days: Day[]; lessons: GridLesson[]; offs?: GridOff[]; hourFrom: number; hourTo: number; nowDay: number; nowMin: number; todayIso: string;
   students: GridStudent[]; groups?: GridStudent[]; weekTotal: string; legend: boolean; preset?: { studentId?: string; groupId?: string; trial?: boolean; date?: string };
 }) {
   const { t } = useT();
@@ -60,8 +65,40 @@ export function WeekGrid(props: {
 
   const hours = Array.from({ length: hourTo - hourFrom + 1 }, (_, i) => hourFrom + i);
   const height = (hourTo - hourFrom) * PX;
+  const offs = props.offs ?? [];
+  const [off, setOff] = useState<OffDraft | null>(null); // окно «Нерабочее время»
+  // выделение мышью: нажали на пустом месте и протянули — «Отметить как нерабочее время» или урок в это время
+  const [sel, setSel] = useState<{ day: number; a: number; b: number } | null>(null);
+  const [picked, setPicked] = useState<{ day: number; from: number; to: number } | null>(null);
+  const drag = useRef<{ day: number; y0: number; moved: boolean } | null>(null);
+  const justDragged = useRef(false);
+  const snap = (y: number) => Math.max(hourFrom * 60, Math.min(hourTo * 60, hourFrom * 60 + Math.round(((y / PX) * 60) / 15) * 15));
+  const onDown = (e: React.PointerEvent<HTMLDivElement>, di: number) => {
+    if (e.pointerType !== "mouse" || e.button !== 0 || (e.target as HTMLElement).closest(".lesson, .offblk")) return;
+    const y = e.clientY - e.currentTarget.getBoundingClientRect().top;
+    drag.current = { day: di, y0: y, moved: false };
+  };
+  const onMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const d = drag.current;
+    if (!d) return;
+    const y = e.clientY - e.currentTarget.getBoundingClientRect().top;
+    if (!d.moved && Math.abs(y - d.y0) < 8) return;
+    if (!d.moved) { d.moved = true; e.currentTarget.setPointerCapture(e.pointerId); }
+    const a = snap(Math.min(d.y0, y)), b = snap(Math.max(d.y0, y));
+    setSel({ day: d.day, a, b: Math.max(b, a + 15) });
+  };
+  const onUp = () => {
+    const d = drag.current;
+    drag.current = null;
+    if (!d?.moved) return;
+    justDragged.current = true; // клик после протягивания — не «новый урок»
+    setTimeout(() => { justDragged.current = false; }, 0);
+    if (sel) setPicked({ day: sel.day, from: sel.a, to: sel.b });
+    setSel(null);
+  };
   const pickTime = (e: React.MouseEvent<HTMLDivElement>, day: Day) => {
-    if ((e.target as HTMLElement).closest(".lesson")) return;
+    if (justDragged.current) return;
+    if ((e.target as HTMLElement).closest(".lesson, .offblk")) return;
     const y = e.clientY - e.currentTarget.getBoundingClientRect().top;
     const min = Math.max(0, Math.floor(y / PX) * 60) + hourFrom * 60; // нажали между 18 и 19 — урок в 18:00
     const h = Math.min(23, Math.floor(min / 60));
@@ -82,8 +119,22 @@ export function WeekGrid(props: {
             ))}
           </div>
           {days.map((d, di) => (
-            <div key={d.iso} className={`daycol ${d.past ? "past" : ""}`} style={{ height }} onClick={(e) => pickTime(e, d)} title={t("sch.clickToAdd")}>
+            <div key={d.iso} className={`daycol ${d.past ? "past" : ""}`} style={{ height }} onClick={(e) => pickTime(e, d)} title={`${t("sch.clickToAdd")}\n${t("off.dragHint")}`}
+              onPointerDown={(e) => onDown(e, di)} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={() => { drag.current = null; setSel(null); }}>
               {hours.slice(1).map((h) => <div key={h} className="hl" style={{ top: (h - hourFrom) * PX }} />)}
+              {/* нерабочее время — под уроками, закрашено штриховкой */}
+              {offs.filter((o) => o.day === di && o.endMin > hourFrom * 60 && o.startMin < hourTo * 60).map((o) => {
+                const a = Math.max(o.startMin, hourFrom * 60), b = Math.min(o.endMin, hourTo * 60);
+                return (
+                  <button key={o.id} type="button" data-off={o.id} className="offblk" style={{ top: ((a - hourFrom * 60) / 60) * PX, height: Math.max(14, ((b - a) / 60) * PX) }}
+                    title={`${t("off.title")} ${o.start}–${o.end}${o.note ? ` · ${o.note}` : ""}`}
+                    onClick={(e) => { e.stopPropagation(); setOff({ id: o.id, date: o.date, start: o.start, end: o.end, weekly: o.weekly, note: o.note ?? "" }); }}>
+                    {(b - a) >= 40 && <span className="offblk-t">{o.weekly && <span aria-hidden="true">↻</span>}{o.note || t("off.label")}</span>}
+                    {(b - a) >= 70 && <small>{o.start}–{o.end}</small>}
+                  </button>
+                );
+              })}
+              {sel?.day === di && <div className="selblk" style={{ top: ((sel.a - hourFrom * 60) / 60) * PX, height: ((sel.b - sel.a) / 60) * PX }}><span>{hm(sel.a)}–{hm(sel.b)}</span></div>}
               {props.nowDay === di && props.nowMin >= hourFrom * 60 && props.nowMin <= hourTo * 60 && (
                 <div className="nowline" style={{ top: ((props.nowMin - hourFrom * 60) / 60) * PX }} />
               )}
@@ -126,8 +177,18 @@ export function WeekGrid(props: {
       </div>
 
       {newAt && (
-        <NewLessonDialog now={{ iso: props.todayIso, min: props.nowMin }} at={newAt} students={props.students} groups={props.groups ?? []} preset={props.preset} onClose={() => setNewAt(null)} />
+        <NewLessonDialog now={{ iso: props.todayIso, min: props.nowMin }} at={newAt} students={props.students} groups={props.groups ?? []} preset={props.preset} offs={offs} onClose={() => setNewAt(null)}
+          onMarkOff={(x) => { setNewAt(null); setOff({ date: x.date, start: x.start, end: hm(Math.min(24 * 60, toMin(x.start) + x.dur)), weekly: false, note: "" }); }} />
       )}
+      {picked && (
+        <Dialog open onClose={() => setPicked(null)} title={t("off.selected", { day: `${days[picked.day].dow} ${days[picked.day].num}`, from: hm(picked.from), to: hm(picked.to) })}>
+          <div className="flex flex-col gap-2">
+            <button type="button" className="btn primary w-full" onClick={() => { setOff({ date: days[picked.day].iso, start: hm(picked.from), end: hm(picked.to), weekly: false, note: "" }); setPicked(null); }}><Icon name="lockI" size="sm" />{t("off.mark")}</button>
+            <button type="button" className="btn secondary w-full" onClick={() => { setNewAt({ date: days[picked.day].iso, start: hm(picked.from) }); setPicked(null); }}><Icon name="plus" size="sm" />{t("off.newLesson")}</button>
+          </div>
+        </Dialog>
+      )}
+      {off && <TimeOffDialog x={off} onClose={() => setOff(null)} />}
       {open && <LessonDialog l={open} onClose={() => setOpenId(null)} />}
     </>
   );
@@ -198,7 +259,39 @@ export function StudentPicker({ students, value, onChange, placeholder }: { stud
   );
 }
 
-function NewLessonDialog({ at, students, groups, preset, onClose, now }: { at: { date: string; start: string }; students: GridStudent[]; groups: GridStudent[]; preset?: { studentId?: string; groupId?: string; trial?: boolean; date?: string }; onClose: () => void; now: { iso: string; min: number } }) {
+/** Нерабочее время: день, с … до, каждую неделю, что это. */
+function TimeOffDialog({ x, onClose }: { x: OffDraft; onClose: () => void }) {
+  const { t, lang } = useT();
+  const { pending, error, run } = useRun();
+  const [v, setV] = useState(x);
+  const dow = new Date(`${v.date}T12:00:00Z`).toLocaleDateString(lang === "en" ? "en-GB" : "ru-RU", { weekday: "long", timeZone: "UTC" });
+  const save = () => run(() => (x.id ? updateTimeOff(x.id, v) : createTimeOff(v)), onClose);
+  return (
+    <Dialog open onClose={onClose} title={t("off.title")}>
+      <div className="flex flex-col gap-4">
+        <div className="field"><label htmlFor="off-d">{t("sch.date")}</label><input id="off-d" type="date" className="input" value={v.date} onChange={(e) => setV({ ...v, date: e.target.value })} /></div>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="field"><label htmlFor="off-a">{t("off.from")}</label><input id="off-a" type="time" step={900} className="input" value={v.start} onChange={(e) => setV({ ...v, start: e.target.value })} /></div>
+          <div className="field"><label htmlFor="off-b">{t("off.to")}</label><input id="off-b" type="time" step={900} className="input" value={v.end === "24:00" ? "23:59" : v.end} onChange={(e) => setV({ ...v, end: e.target.value })} /></div>
+        </div>
+        <label className="setting">
+          <span><span>{t("off.weekly", { dow })}</span><br /><span className="small muted">{t("off.weeklyHint")}</span></span>
+          <span className="switch"><input type="checkbox" checked={v.weekly} onChange={(e) => setV({ ...v, weekly: e.target.checked })} /><span /></span>
+        </label>
+        <div className="field"><label htmlFor="off-n">{t("off.note")}</label><input id="off-n" className="input" value={v.note} maxLength={120} placeholder={t("off.notePh")} onChange={(e) => setV({ ...v, note: e.target.value })} /></div>
+        <p className="hint m-0">{t("off.hint")}</p>
+        {error && <div className="alert">{error}</div>}
+      </div>
+      <div className="actions">
+        {x.id && <button type="button" className="btn plain bad mr-auto" disabled={pending} onClick={() => run(() => deleteTimeOff(x.id!), onClose)}>{x.weekly ? t("off.deleteSeries") : t("off.delete")}</button>}
+        <button type="button" className="btn secondary" onClick={onClose}>{t("common.cancel")}</button>
+        <button type="button" className="btn primary" disabled={pending || !v.date || !v.start || !v.end} onClick={save}>{t("off.save")}</button>
+      </div>
+    </Dialog>
+  );
+}
+
+function NewLessonDialog({ at, students, groups, preset, onClose, now, offs = [], onMarkOff }: { at: { date: string; start: string }; students: GridStudent[]; groups: GridStudent[]; preset?: { studentId?: string; groupId?: string; trial?: boolean; date?: string }; onClose: () => void; now: { iso: string; min: number }; offs?: GridOff[]; onMarkOff?: (x: { date: string; start: string; dur: number }) => void }) {
   const { t } = useT();
   const { pending, error, run } = useRun();
   const [studentId, setStudentId] = useState<string | null>(preset?.studentId ?? null);
@@ -217,6 +310,8 @@ function NewLessonDialog({ at, students, groups, preset, onClose, now }: { at: {
   // прошло ли выбранное время — по часам учителя
   const [hh, mm] = (start || "00:00").split(":").map(Number);
   const inPast = date < now.iso || (date === now.iso && hh * 60 + mm < now.min);
+  // попали на нерабочее время — предупреждаем (не запрещаем)
+  const clash = offs.find((o) => o.date === date && hh * 60 + mm < o.endMin && hh * 60 + mm + dur > o.startMin);
   return (
     <Dialog open onClose={onClose} title={t("sch.new")}>
       <div className="flex flex-col gap-4">
@@ -263,6 +358,7 @@ function NewLessonDialog({ at, students, groups, preset, onClose, now }: { at: {
           <div className="field"><label htmlFor="ns">{t("sch.start")}</label><input id="ns" type="time" step={300} className="input" value={start} onChange={(e) => setStart(e.target.value)} /></div>
         </div>
         {inPast && <div className="alert -mt-1 m-0" role="alert">{t("sch.pastWarn")}</div>}
+        {clash && <div className="alert calm -mt-1 m-0" role="alert">{t("off.clash", { note: clash.note || `${clash.start}–${clash.end}` })}</div>}
         <div className="field">
           <span className="flabel">{t("sch.length")}</span>
           <div className="seg">
@@ -279,6 +375,8 @@ function NewLessonDialog({ at, students, groups, preset, onClose, now }: { at: {
         )}
         {error && <div className="alert">{error}</div>}
       </div>
+      {/* слот можно не занимать уроком, а отметить нерабочим */}
+      {onMarkOff && <button type="button" className="btn plain sm offmark" onClick={() => onMarkOff({ date, start, dur })}><Icon name="lockI" size="sm" />{t("off.mark")}</button>}
       <div className="actions">
         <button type="button" className="btn secondary" onClick={onClose}>{t("common.cancel")}</button>
         <button
