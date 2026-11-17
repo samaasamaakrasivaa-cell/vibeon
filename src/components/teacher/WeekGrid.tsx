@@ -108,7 +108,7 @@ export function WeekGrid(props: {
               })}
             </div>
           ))}
-          <div className="earned" style={{ textAlign: "left", fontSize: 11 }}>{t("sch.earned")}</div>
+          <div className="earned earned-lbl" title={t("sch.earned")}>{t("sch.earnedShort")}</div>
           {days.map((d) => <div key={d.iso} className={`earned ${d.earned ? "has" : ""}`} title={d.tip || undefined}>{d.earned ?? "—"}</div>)}
         </div>
       </div>

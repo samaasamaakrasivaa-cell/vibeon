@@ -63,7 +63,7 @@ export function NotifySettings({ init, linked, enabled, email, role }: { init: S
         </div>
         <div className="field">
           <span className="flabel">{t("nf.quiet")}</span>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <label className="switch"><input type="checkbox" aria-label={t("nf.quiet")} checked={!!s.quiet} onChange={(e) => save({ ...s, quiet: e.target.checked ? [22, 8] : null })} /><span /></label>
             {s.quiet && <>
               <select className="select" style={{ width: 96 }} aria-label={t("nf.from")} value={s.quiet[0]} onChange={(e) => save({ ...s, quiet: [Number(e.target.value), s.quiet![1]] })}>{hours.map((h) => <option key={h} value={h}>{String(h).padStart(2, "0")}:00</option>)}</select>

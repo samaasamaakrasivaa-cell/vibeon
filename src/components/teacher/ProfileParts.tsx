@@ -342,7 +342,7 @@ export function TgAsk({ id }: { id: string }) {
   const [sent, setSent] = useState(false);
   return (
     <span className="inline-flex items-center gap-1.5">
-      <button type="button" className="pill grey" title={t("prof.tgAskHint")} disabled={pending || sent} onClick={() => run(() => requestTgConnect(id), () => setSent(true))}>
+      <button type="button" className="pill grey pill-wrap" title={t("prof.tgAskHint")} disabled={pending || sent} onClick={() => run(() => requestTgConnect(id), () => setSent(true))}>
         <Icon name="telegram" size="sm" />{t("prof.tgOff")} · {sent ? t("prof.tgAsked") : t("prof.tgAsk")}
       </button>
       {error && <span className="small text-bad">{error}</span>}

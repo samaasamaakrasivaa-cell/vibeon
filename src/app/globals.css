@@ -348,7 +348,7 @@ details.how[open] summary { margin-bottom: 6px; }
 
 /* Неделя в стиле Apple Calendar */
 .weekwrap { overflow-x: auto; margin: 0 -8px; padding: 0 8px 10px; }
-.week { --px: 44px; display: grid; grid-template-columns: 48px repeat(7, minmax(96px, 1fr)); gap: 0 8px; min-width: 760px; }
+.week { --px: 44px; display: grid; grid-template-columns: 48px repeat(7, minmax(74px, 1fr)); gap: 0 6px; min-width: 620px; }
 .week .dh { text-align: center; padding: 6px 0 12px; font-size: 13px; color: var(--text2); }
 .week .dh b { color: var(--text); margin-left: 4px; }
 .week .dh.today span { display: inline-block; background: var(--accent-bg); color: var(--accent); border-radius: 999px; padding: 4px 12px; font-weight: 600; }
@@ -623,10 +623,11 @@ details.how[open] summary { margin-bottom: 6px; }
 .optbtn { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--sep); background: var(--surface); border-radius: 10px; padding: 6px 10px; font-size: 13px; color: var(--text2); }
 .optbtn.on { background: var(--accent-bg); border-color: var(--accent); color: var(--accent-text); font-weight: 600; }
 .upl { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 1.5px dashed var(--accent); border-radius: 12px; padding: 12px; color: var(--accent); font-weight: 600; cursor: pointer; font-size: 14px; }
-@media (max-width: 1200px) { .bld-grid { grid-template-columns: 68px minmax(0, 1fr); } .bld-side { grid-column: 1 / -1; position: static; max-height: none; } .hide-md { display: none; } }
+@media (max-width: 1200px) { .bld-grid { grid-template-columns: 68px minmax(0, 1fr); } .bld-side { grid-column: 2; position: static; max-height: none; } .hide-md { display: none; } }
 @media (max-width: 900px) { .ted { grid-template-columns: 1fr; } .ted-r { position: static; } }
 @media (max-width: 760px) {
   .bld-grid { grid-template-columns: 1fr; padding: 12px; gap: 12px; }
+  .bld-side { grid-column: auto; }
   .bld-rail { position: static; flex-direction: row; }
   .bld-rail button { flex: 1; }
   .bld-main { padding: 18px 14px; }
@@ -691,12 +692,13 @@ details.how[open] summary { margin-bottom: 6px; }
 .bubble.me { align-self: flex-end; background: var(--accent); color: #fff; border-radius: 14px 14px 4px 14px; }
 .bubble.me small { color: rgba(255, 255, 255, .7); }
 .lvl { width: 16px; height: 4px; border-radius: 2px; display: inline-block; }
-@media (max-width: 1200px) { .cls-grid { grid-template-columns: 64px minmax(0, 1fr); } .cls-side { grid-column: 1 / -1; position: static; max-height: none; } .cls-crumb { display: none; } }
+@media (max-width: 1200px) { .cls-grid { grid-template-columns: 64px minmax(0, 1fr); } .cls-side { grid-column: 2; position: static; max-height: none; } .cls-crumb { display: none; } }
 @media (max-width: 760px) {
   .cls-top { flex-wrap: wrap; padding: 8px 10px; gap: 8px; }
   .cls-tabs { order: 3; flex-basis: 100%; }
   .cls-tabs button { padding: 7px 8px; font-size: 13px; }
   .cls-grid { grid-template-columns: 1fr; padding: 10px; gap: 10px; }
+  .cls-side { grid-column: auto; }
   .cls-rail { position: static; flex-direction: row; justify-content: space-around; }
   .cls-panel { left: 10px; right: 10px; width: auto; top: 70px; }
   .cls-main { padding: 18px 14px; }
@@ -1977,3 +1979,24 @@ button.grp-row:hover { background: var(--fill); }
 .plparts { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .plparts .pill small { opacity: .75; margin-left: 4px; }
 .pill.outline { background: transparent; border: 1px dashed var(--sep); color: var(--text3); }
+
+/* ───────── Узкие экраны: ничего не наезжает и не вылезает за край ───────── */
+.earned-lbl { text-align: left; font-size: 11px; position: sticky; left: 0; z-index: 4; background: linear-gradient(transparent 9px, var(--surface) 9px); }
+.pill.pill-wrap { white-space: normal; text-align: left; }
+.profgrid > *, .grid-2 > *, .grid-3 > * { min-width: 0; }
+.hist .row { flex-wrap: wrap; row-gap: 4px; }
+.plans .grow { min-width: 0; overflow-wrap: anywhere; }
+.rpt-skills { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)) !important; }
+.rpt-skills div > span { min-width: 0; overflow-wrap: anywhere; }
+@media (max-width: 600px) { .plflag-t { display: none; } }
+@media (max-width: 760px) {
+  /* конструктор: шапка в две строки, кнопки переносятся */
+  .bld .apptop { height: auto; min-height: var(--top-h); flex-wrap: wrap; row-gap: 8px; padding: 8px 12px; }
+  .bld .apptop .atr { flex-wrap: wrap; justify-content: flex-end; gap: 6px; min-width: 0; }
+  .bld .apptop .seg button { padding: 5px 8px; font-size: 12.5px; }
+  /* класс: кнопки справа переносятся, а не уезжают за экран */
+  .cls-top .atr { flex-wrap: wrap; justify-content: flex-end; gap: 6px; min-width: 0; flex: 1; }
+}
+/* колонка часов при прокрутке недели вбок закрывает и полоску слева — без обрезков соседнего дня */
+.hours { box-shadow: -10px 0 0 var(--surface); }
+.earned-lbl { box-shadow: -10px 0 0 var(--surface); }

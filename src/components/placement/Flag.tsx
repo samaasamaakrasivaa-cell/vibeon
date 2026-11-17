@@ -15,7 +15,7 @@ export function Flag({ itemId, qid, attempt, small }: { itemId: string; qid?: st
   const send = async () => { setBusy(true); const r = await flagItem(itemId, note, qid || null, attempt).catch(() => null); setBusy(false); if (r?.ok) { setSent(true); setOpen(false); } };
   return (
     <div className="plflagwrap">
-      <button type="button" className={`plflag ${small ? "sm" : ""}`} aria-expanded={open} title={t("pl.flag")} aria-label={t("pl.flag")} onClick={() => setOpen(!open)}><Icon name="flagI" size="sm" />{!small && t("pl.flag")}</button>
+      <button type="button" className={`plflag ${small ? "sm" : ""}`} aria-expanded={open} title={t("pl.flag")} aria-label={t("pl.flag")} onClick={() => setOpen(!open)}><Icon name="flagI" size="sm" />{!small && <span className="plflag-t">{t("pl.flag")}</span>}</button>
       {open && (
         <div className="plflagbox">
           <textarea className="input" rows={2} value={note} onChange={(e) => setNote(e.target.value)} placeholder={t("pl.flagPh")} />
