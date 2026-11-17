@@ -6,7 +6,7 @@ import { useT } from "@/lib/i18n/client";
 import { packDeduct } from "@/lib/teacher/actions";
 import { useRun } from "../courses/useRun";
 
-export type PackInfo = { left: number; total: number; since?: string; ends?: string | null };
+export type PackInfo = { left: number; total: number; since?: string; ends?: string | null; used?: string[] }; // used — даты списанных уроков, последние
 
 /** Абонемент карточкой-«билетом»: сколько занятий из скольких осталось (кружки), когда куплен, когда примерно закончится
  *  по расписанию; «Списать занятие» — вручную по дате (например, абонемент оформили позже урока). */
@@ -22,15 +22,18 @@ export function PackTicket({ studentId, pack, today, compact = false }: { studen
           <small className="pt-k">{t("pt.title", { n: pack.total })}</small>
           <b className="pt-big">{t("pt.left", { n: pack.left, total: pack.total })}</b>
         </div>
-        <button type="button" className="btn sm pt-btn" disabled={!pack.left || pending} onClick={() => setAsk({ date: today, start: "" })}><Icon name="check" size="sm" />{t("pt.deduct")}</button>
+        <span className="pt-auto" title={t("pt.autoHint")}><Icon name="check" size="sm" />{t("pt.auto")}</span>
       </div>
       <div className="pt-dots" aria-label={t("pt.left", { n: pack.left, total: pack.total })}>
         {Array.from({ length: pack.total }, (_, i) => <i key={i} className={i < used ? "used" : ""} />)}
       </div>
+      {!!pack.used?.length && <div className="pt-used">{t("pt.usedOn", { d: pack.used.join(" · ") })}</div>}
       <div className="pt-dates">
         {pack.since && <span>{t("pt.bought", { d: pack.since })}</span>}
         <span>{pack.left === 0 ? t("pt.over") : pack.ends ? t("pt.ends", { d: pack.ends }) : t("pt.endsUnknown")}</span>
       </div>
+      {/* обычно не нужно: проведённые по расписанию уроки списываются сами; вручную — если урока не было в расписании */}
+      {pack.left > 0 && <button type="button" className="pt-manual" disabled={pending} onClick={() => setAsk({ date: today, start: "" })}>{t("pt.deductManual")}</button>}
       <Dialog open={!!ask} onClose={() => setAsk(null)} title={t("prof.packDeduct")}>
         {ask && (
           <>

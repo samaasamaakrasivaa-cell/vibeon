@@ -45,13 +45,18 @@ export default async function Students({ searchParams }: { searchParams: Promise
   const dfmt = (d: Date) => d.toLocaleDateString(lang === "ru" ? "ru-RU" : "en-GB", { day: "numeric", month: "short", timeZone: me.timezone });
   const lastInv = new Map<string, { id: string; amount: number; status: string; title: string; createdAt: Date; lessonDates: Date[] }>();
   const packEnds = new Map<string, Date | null>();
+  const packUsed = new Map<string, string[]>();
   if (tab === "payments") {
     const invs = await db.invoice.findMany({ where: { studentId: { in: active.map((s) => s.id) }, status: { not: "CANCELLED" }, kind: { not: "pack" } }, orderBy: { createdAt: "desc" } });
     for (const v of invs) if (!lastInv.has(v.studentId)) lastInv.set(v.studentId, { id: v.id, amount: v.amount, status: v.status, title: v.title ?? "", createdAt: v.createdAt, lessonDates: [] });
     const lids = [...lastInv.values()].flatMap((v) => invs.find((x) => x.id === v.id)!.lessonIds);
     const ls = new Map((await db.lessonInstance.findMany({ where: { id: { in: lids } }, select: { id: true, startsAt: true } })).map((l) => [l.id, l.startsAt]));
     for (const v of lastInv.values()) v.lessonDates = invs.find((x) => x.id === v.id)!.lessonIds.map((id) => ls.get(id)).filter(Boolean).sort((a, b) => a!.getTime() - b!.getTime()) as Date[];
-    for (const s of active) if (s.payType === "PACK" && s.packs[0]) packEnds.set(s.id, await packEndsAt(s.id, s.packs[0].lessonsLeft));
+    for (const s of active) if (s.payType === "PACK" && s.packs[0]) {
+      packEnds.set(s.id, await packEndsAt(s.id, s.packs[0].lessonsLeft));
+      const n = Math.min(4, s.packs[0].lessonsTotal - s.packs[0].lessonsLeft);
+      packUsed.set(s.id, n > 0 ? (await db.lessonInstance.findMany({ where: { studentId: s.id, deductedAt: { gte: new Date(s.packs[0].startsAt.getTime() - 60000) } }, orderBy: { startsAt: "desc" }, take: n, select: { startsAt: true } })).reverse().map((l) => dfmt(l.startsAt)) : []);
+    }
   }
   const invited = all.filter((s) => s.status === "INVITED");
   const archived = all.filter((s) => s.status === "ARCHIVED");
@@ -136,7 +141,7 @@ export default async function Students({ searchParams }: { searchParams: Promise
                   </Link>
                   {/* абонемент — «билетом»; постоплата — последний счёт: за какой урок, оплачен ли */}
                   {s.payType === "PACK" && pk ? (
-                    <PackTicket compact studentId={s.id} today={isoDay(new Date(), me.timezone)} pack={{ left: pk.lessonsLeft, total: pk.lessonsTotal, since: dfmt(pk.startsAt), ends: packEnds.get(s.id) ? dfmt(packEnds.get(s.id)!) : null }} />
+                    <PackTicket compact studentId={s.id} today={isoDay(new Date(), me.timezone)} pack={{ left: pk.lessonsLeft, total: pk.lessonsTotal, since: dfmt(pk.startsAt), ends: packEnds.get(s.id) ? dfmt(packEnds.get(s.id)!) : null, used: packUsed.get(s.id) }} />
                   ) : inv ? (
                     <div className="payinv">
                       <div className="grow min-w-0">

@@ -385,7 +385,10 @@ function LessonDialog({ l, onClose, initial = "main" }: { l: GridLesson; onClose
   const [start, setStart] = useState(l.start);
   const head = (
     <div className="mb-4">
-      <h2 className="pr-10">{l.who}</h2>
+      {/* имя — ссылка на анкету (у группы — на настройки групп) */}
+      {l.studentId || l.group ? (
+        <h2 className="pr-10"><Link href={l.studentId ? `/teacher/students/${l.studentId}` : "/teacher/students#groups"} className="lwho" title={l.studentId ? t("sch.openProfile") : t("grp.edit")}>{l.who}<span className="lwho-go">{l.studentId ? t("sch.profileShort") : t("sch.groupShort")} →</span></Link></h2>
+      ) : <h2 className="pr-10">{l.who}</h2>}
       <p className="m-0 mt-1 text-text2">{l.date.split("-").reverse().join(".")}, {l.start}–{l.end}{l.weekly ? ` · ${t("sch.everyWeek")}` : ""}{l.isTrial ? ` · ${t("sch.trial")}` : ""}</p>
     </div>
   );
@@ -504,8 +507,7 @@ function LessonDialog({ l, onClose, initial = "main" }: { l: GridLesson; onClose
           {l.callLink !== undefined && <CallRow l={l} />}
         </div>
       ) : null}
-      {l.group ? <p className="small muted mt-3 mb-0 flex flex-wrap items-center gap-1.5"><Icon name="group" size="sm" />{l.group.members.join(", ")} · <Link href="/teacher/students#groups" className="alink">{t("grp.edit")}</Link></p>
-        : l.studentId && <Link href={`/teacher/students/${l.studentId}`} className="alink mt-3 inline-block text-[14px]">{t("sch.openProfile")}</Link>}
+      {l.group && <p className="small muted mt-3 mb-0 flex flex-wrap items-center gap-1.5"><Icon name="group" size="sm" />{l.group.members.join(", ")}</p>}
     </Dialog>
   );
 }
