@@ -18,21 +18,63 @@ type Mark = "ok" | "bad" | "spell" | undefined;
 
 type Try = { v: string; ok: boolean };
 
-/** Попытки ученика у поля (как в Progress Me): три точки — серые, пока ответа нет; неверная попытка — красная, верная — зелёная.
- *  Нажать — история: что ученик отвечал по очереди (и правильный ответ, если включены ответы). Только учителю. */
-function Tries({ hist = [], answer }: { hist?: Try[]; answer: string }) {
+/** Попытки ученика у поля — только в самом уроке, у учителя (в конструкторе их нет: там ещё нечего показывать).
+ *  Три точки вертикально рядом с ответом: серые — попыток нет, красная — неверная, зелёная — верная.
+ *  Нажать — какие варианты ученик вводил по очереди и комментарий учителя к этому ответу (его видит ученик). */
+function Tries({ hist = [], answer, tid, k }: { hist?: Try[]; answer: string; tid: string; k: string }) {
   const { t } = useT();
   const role = useTaskRole();
   const key = useKey();
-  if (role === "student" || (!key && !hist.length)) return null; // конструктор (guest) — тоже, когда включены ответы
+  const [notes, setNotes] = useSlot<Record<string, string>>(tid, "gnotes", {});
+  const note = notes[k] ?? "";
+  const [open, setOpenRaw] = useState(false);
+  const [draft, setDraft] = useState(note);
+  const box = useRef<HTMLSpanElement>(null);
+  // окно — поверх страницы (карточка задания обрезает всё, что выходит за её край)
+  const [at, setAt] = useState<{ left: number; top: number } | null>(null);
+  const setOpen = (v: boolean) => {
+    if (v && box.current) { const r = box.current.getBoundingClientRect(); setAt({ left: Math.max(8, Math.min(r.left, window.innerWidth - 296)), top: r.bottom + 6 }); }
+    setOpenRaw(v);
+  };
+  useEffect(() => {
+    if (!open) return;
+    const close = () => setOpenRaw(false);
+    window.addEventListener("scroll", close, true); window.addEventListener("resize", close);
+    return () => { window.removeEventListener("scroll", close, true); window.removeEventListener("resize", close); };
+  }, [open]);
+  const popStyle = at ? { position: "fixed" as const, left: at.left, top: at.top } : undefined;
+  useEffect(() => { if (!open) setDraft(note); }, [note, open]);
+  useEffect(() => {
+    if (!open) return;
+    const off = (e: MouseEvent) => { if (box.current && !box.current.contains(e.target as Node)) setOpen(false); };
+    document.addEventListener("mousedown", off);
+    return () => document.removeEventListener("mousedown", off);
+  }, [open]);
+  const save = () => { const v = draft.trim(); if (v !== note) setNotes((n) => { const x = { ...n }; if (v) x[k] = v; else delete x[k]; return x; }); };
+  // ученик видит только комментарий учителя — значком рядом с полем
+  if (role === "student") return note ? (
+    <span ref={box} className="tk-gnote">
+      <button type="button" className="tk-gnote-btn" aria-expanded={open} aria-label={t("tk.noteFromTeacher")} title={t("tk.noteFromTeacher")} onClick={() => setOpen(!open)}><Icon name="msg" size="sm" /></button>
+      {open && <span className="tk-tries-pop on" style={popStyle}><b className="small">{t("tk.noteFromTeacher")}</b><span className="tk-gnote-txt">{note}</span></span>}
+    </span>
+  ) : null;
+  // конструктор: вместо точек — сам правильный ответ зелёной плашкой (если включено «Учитель увидит»)
+  if (role !== "teacher") return key && answer ? <span className="tk-key-hint">✓ {answer}</span> : null;
   const dots = hist.length <= 3 ? hist : [hist[0], hist[1], hist[hist.length - 1]];
   return (
-    <span className="tk-tries" tabIndex={0} aria-label={t("tk.tries")}>
-      {[0, 1, 2].map((i) => <i key={i} className={dots[i] ? (dots[i].ok ? "ok" : "bad") : ""} />)}
-      <span className="tk-tries-pop">
-        {key && <span className="tk-tries-ans">✓ {answer}</span>}
-        {hist.length ? hist.map((h, i) => <span key={i} className={h.ok ? "ok" : "bad"}>{t("tk.tryN", { n: i + 1 })}: {h.v} {h.ok ? "✓" : "✗"}</span>) : <span className="muted">{t("tk.noTries")}</span>}
-      </span>
+    <span ref={box} className="tk-tries">
+      <button type="button" className={`tk-tries-dots ${note ? "noted" : ""}`} aria-expanded={open} aria-label={t("tk.tries")} title={t("tk.tries")} onClick={() => setOpen(!open)}>
+        {[0, 1, 2].map((i) => <i key={i} className={dots[i] ? (dots[i].ok ? "ok" : "bad") : ""} />)}
+      </button>
+      {open && (
+        <span className="tk-tries-pop on" style={popStyle}>
+          {key && <span className="tk-tries-ans">✓ {answer}</span>}
+          {hist.length ? hist.map((h, i) => <span key={i} className={h.ok ? "ok" : "bad"}>{t("tk.tryN", { n: i + 1 })}: {h.v} {h.ok ? "✓" : "✗"}</span>) : <span className="muted">{t("tk.noTries")}</span>}
+          <textarea className="tk-tries-note" rows={2} value={draft} placeholder={t("tk.notePh")} aria-label={t("tk.notePh")}
+            onChange={(e) => setDraft(e.target.value)} onBlur={save} onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); save(); setOpen(false); } }} />
+          <span className="small muted">{t("tk.noteHint")}</span>
+        </span>
+      )}
     </span>
   );
 }
@@ -169,7 +211,7 @@ function Gaps({ task, kind }: { task: TaskData; kind: "gap" | "dropdown" }) {
                         return (
                           <span key={si} className="tk-gapw">
                             <Drop value={val[k] ?? ""} options={s.options!} answers={s.answers} onChange={(v) => set(k, v)} mark={m} label={`gap ${i + 1}`} />
-                            <Tries hist={ck.hist[k]} answer={s.answers.join(" / ")} />
+                            <Tries hist={ck.hist[k]} answer={s.answers.join(" / ")} tid={task.id} k={k} />
                           </span>
                         );
                       if (drag)
@@ -180,7 +222,7 @@ function Gaps({ task, kind }: { task: TaskData; kind: "gap" | "dropdown" }) {
                             onDragOver={(e) => e.preventDefault()} onDrop={(e) => { e.preventDefault(); set(k, e.dataTransfer.getData("text/plain")); }}>
                             {val[k] || " "}
                           </button>
-                          <Tries hist={ck.hist[k]} answer={s.answers.join(" / ")} />
+                          <Tries hist={ck.hist[k]} answer={s.answers.join(" / ")} tid={task.id} k={k} />
                           </span>
                         );
                       return (
@@ -188,9 +230,9 @@ function Gaps({ task, kind }: { task: TaskData; kind: "gap" | "dropdown" }) {
                           <input className={`tk-gap ${m ?? ""}`} value={val[k] ?? ""} size={Math.max(4, Math.max((s.answers[0] ?? "").length, (val[k] ?? "").length) + 1)}
                             onChange={(e) => setVal((x) => ({ ...x, [k]: e.target.value }))} onBlur={(e) => { if (ck.instant && e.target.value) { ck.bump(k); ck.record(k, e.target.value, same(e.target.value, s.answers)); } }}
                             aria-label={`gap ${i + 1}`} />
-                          {s.hint && <span className="tk-hint">({s.hint})</span>}
+                          {s.hint && <span className="tk-hint" title={t("tk.baseWord")}>{s.hint}</span>}
                           {shown && <span className="tk-ans">{s.answers[0]}</span>}
-                          <Tries hist={ck.hist[k]} answer={s.answers.join(" / ")} />
+                          <Tries hist={ck.hist[k]} answer={s.answers.join(" / ")} tid={task.id} k={k} />
                         </span>
                       );
                     })}
@@ -659,7 +701,7 @@ function Arrow({ task }: { task: TaskData }) {
           <div key={i}>
             <div className="mb-1.5"><Num i={i} o={o} /> {it.q} {it.key && <b className="tk-key">{it.key}</b>}</div>
             <span className="flex items-center gap-2"><input className={`input tk-line ${m ?? ""}`} value={val[i] ?? ""} onChange={(e) => setVal((x) => ({ ...x, [i]: e.target.value }))} onBlur={(e) => { if (ck.instant && e.target.value) { ck.bump(String(i)); ck.record(String(i), e.target.value, same(e.target.value, it.answers)); } }} aria-label={`answer ${i + 1}`} />
-            {it.answers.length > 0 && <Tries hist={ck.hist[String(i)]} answer={it.answers.join(" / ")} />}</span>
+            {it.answers.length > 0 && <Tries hist={ck.hist[String(i)]} answer={it.answers.join(" / ")} tid={task.id} k={String(i)} />}</span>
             {m === "bad" && <span className="small text-text2">{t("tk.teacherWillSee")}</span>}
             {ck.reveal(String(i)) && m === "bad" ? <span className="tk-ans">{it.answers[0]}</span> : <Key text={it.answers.join(" / ")} mode="block" />}
           </div>

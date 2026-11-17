@@ -316,7 +316,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
           {live.timer?.taskId === task.id && timerLeft > 0 && <div className={`tk-timer ${timerPaused ? "paused" : ""}`} aria-live="polite"><Icon name="clock" size="sm" />{fmtT(timerLeft)}{timerPaused ? ` · ${t("cls.tPaused")}` : ""}</div>}
           {gTeacher ? (
             <AnswerProvider key={`${sid ?? "me"}-${resetTick[task.id] ?? 0}`} answers={sid ? ansBy[sid] ?? {} : sandbox}
-              onSet={(tid, k, v) => { if (!sid) setSandbox((sb) => ({ ...sb, [tid]: { ...(sb[tid] ?? {}), [k]: v } })); }} role="teacher">
+              onSet={(tid, k, v) => { if (!sid) setSandbox((sb) => ({ ...sb, [tid]: { ...(sb[tid] ?? {}), [k]: v } })); else if (k === "gnotes") setAnswerFor(sid, tid, k, v); }} role="teacher">
               <MarkCtx.Provider value={{ ...marks, student: m?.name ?? "", members: d.group!.members, sid: sid ?? "", pick: (taskId, x) => setTaskView((v) => ({ ...v, [taskId]: x })) }}>{card}</MarkCtx.Provider>
             </AnswerProvider>
           ) : card}

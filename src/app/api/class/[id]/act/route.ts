@@ -46,7 +46,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       const prev = await db.answer.findUnique({ where });
       const payload = { ...((prev?.payload as object) ?? {}), [key]: body.value ?? null };
       const teacherCheck = ["essay", "open", "record", "transform", "translate"].includes(task.type);
-      const status = key === "checked" && body.value ? (teacherCheck ? "NEEDS_REVIEW" : "AUTO_CHECKED") : prev?.status === "REVIEWED" ? "REVIEWED" : teacherCheck ? "NEEDS_REVIEW" : "SUBMITTED";
+      // комментарии учителя к полям (gnotes) — не ответ ученика: статус не меняется
+      const status = key === "gnotes" ? prev?.status ?? "DRAFT" : key === "checked" && body.value ? (teacherCheck ? "NEEDS_REVIEW" : "AUTO_CHECKED") : prev?.status === "REVIEWED" ? "REVIEWED" : teacherCheck ? "NEEDS_REVIEW" : "SUBMITTED";
       await db.answer.upsert({ where, create: { lessonInstanceId: tg.id, taskId, studentId: sid, payload: json(payload), status }, update: { payload: json(payload), status } });
       publish(ch, "answer", { taskId, key, value: body.value ?? null, by, sid });
       return NextResponse.json({ ok: true });

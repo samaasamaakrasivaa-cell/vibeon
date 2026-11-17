@@ -653,7 +653,7 @@ details.how[open] summary { margin-bottom: 6px; }
 /* ───────── Класс (этап 5) ───────── */
 @layer components {
 .as-teacher [data-ans] { position: relative; }
-.as-teacher [data-ans]:hover::after { content: attr(data-ans); position: absolute; left: 100%; top: 50%; transform: translate(6px, -50%); background: var(--ok-bg); color: var(--ok-text); font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 6px; white-space: nowrap; z-index: 5; line-height: 1.6; pointer-events: none; }
+.as-teacher [data-ans]:hover::after { content: attr(data-ans); position: absolute; left: 0; bottom: 100%; transform: translateY(-4px); background: var(--ok-bg); color: var(--ok-text); font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 6px; white-space: nowrap; z-index: 5; line-height: 1.6; pointer-events: none; }
 .as-teacher .tk:hover .tk-opt[data-right] { box-shadow: inset 0 0 0 1.5px var(--ok); }
 }
 
@@ -2000,3 +2000,21 @@ button.grp-row:hover { background: var(--fill); }
 /* колонка часов при прокрутке недели вбок закрывает и полоску слева — без обрезков соседнего дня */
 .hours { box-shadow: -10px 0 0 var(--surface); }
 .earned-lbl { box-shadow: -10px 0 0 var(--surface); }
+
+/* Пропуски: слово, с которым нужно работать, — мягкая плашка рядом с полем (без скобок) */
+.tk-hint { display: inline-flex; align-items: center; margin: 0 4px; padding: 1px 9px; border-radius: 8px; background: var(--violet-bg, #F3EEFF); color: var(--violet, #7C4DDB); font-size: .88em; font-weight: 600; font-style: italic; line-height: 1.6; vertical-align: baseline; white-space: nowrap; }
+/* Попытки ученика (только у учителя в уроке): три точки вертикально у ответа, по нажатию — история и комментарий */
+.tk-tries { position: relative; display: inline-flex; align-items: center; height: auto; margin: 0 2px 0 3px; vertical-align: middle; gap: 0; cursor: default; }
+.tk-tries-dots { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; width: 14px; height: 24px; padding: 0; border: 0; border-radius: 6px; background: transparent; cursor: pointer; }
+.tk-tries-dots:hover, .tk-tries-dots[aria-expanded="true"] { background: var(--fill); }
+.tk-tries-dots > i { width: 5px; height: 5px; border-radius: 50%; background: var(--grey); }
+.tk-tries-dots > i.ok { background: var(--ok); }
+.tk-tries-dots > i.bad { background: var(--bad); }
+.tk-tries-dots.noted { box-shadow: inset 0 0 0 1.5px var(--accent); }
+.tk-tries > i { display: none; }
+.tk-tries:hover .tk-tries-pop:not(.on), .tk-tries:focus .tk-tries-pop:not(.on) { display: none; }
+.tk-tries-pop.on { z-index: 300; display: flex; left: 0; transform: none; bottom: auto; top: calc(100% + 6px); min-width: 220px; max-width: 280px; white-space: normal; }
+.tk-tries-note { width: 100%; margin-top: 6px; padding: 6px 8px; border: 1px solid var(--sep); border-radius: 8px; background: var(--surface2); font: inherit; font-size: 13.5px; resize: vertical; }
+.tk-gnote { position: relative; display: inline-flex; vertical-align: middle; margin: 0 2px 0 4px; }
+.tk-gnote-btn { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border: 0; border-radius: 50%; background: var(--accent-bg); color: var(--accent); cursor: pointer; }
+.tk-gnote-txt { font-size: 14px; color: var(--text); }
