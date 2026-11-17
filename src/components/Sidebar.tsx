@@ -15,7 +15,7 @@ export function Sidebar({ groups, footer, ariaLabel }: { groups: NavItem[][]; fo
       {groups.map((g, i) => (
         <div className="navgroup" key={i}>
           {g.map((it) => (
-            <Link key={it.href} href={it.href} className="navb" data-tip={it.label} aria-current={isActive(it.href) ? "page" : undefined}>
+            <Link key={it.href} href={it.href} className="navb" aria-current={isActive(it.href) ? "page" : undefined}>
               <Icon name={it.icon} />
               <span className="label">{it.label}</span>
               {!!it.count && <span className="count">{it.count}</span>}
