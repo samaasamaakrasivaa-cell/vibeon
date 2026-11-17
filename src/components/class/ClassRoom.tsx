@@ -22,6 +22,8 @@ import { useT } from "@/lib/i18n/client";
 import { numbered, PRESET, RUBRICS, SAMPLE, TYPES, type Rubric, type TaskType } from "@/lib/tasks/catalog";
 import { saveTask, setRubrics } from "@/lib/teacher/courses";
 import type { LiveState } from "@/lib/live/access";
+import { LessonCheer } from "../awards/LessonCheer";
+import { CelebrateAwards, type NewAward } from "../awards/StudentAwards";
 
 type CTask = TaskData & { section: "lesson" | "homework" | "words"; rubricId: string | null; hidden: boolean };
 type Word = { id: string; word: string; translation: string | null; example: string | null; level: number };
@@ -30,7 +32,7 @@ export type Review = { ok: boolean; comment: string | null; ai?: AiCheck };
 export type { AiCheck };
 export type ClassData = {
   id: string; templateId: string | null; role: "teacher" | "student"; me: { id: string; name: string }; preview?: boolean;
-  teacher: { id: string; name: string; lastName: string | null }; student: { id: string; userId: string | null; name: string; lastName: string | null; level: string | null; course: string | null } | null;
+  teacher: { id: string; name: string; lastName: string | null }; student: { id: string; userId: string | null; name: string; lastName: string | null; level: string | null; course: string | null; gender?: string | null } | null;
   title: string | null; crumbs: string | null; course: { title: string; cover: string | null } | null; rubrics: Rubric[]; tasks: CTask[]; teacherInfo?: TInfo;
   answers: Answers; statuses: Record<string, string>; reviews: Record<string, Review>; aiDrafts: Record<string, AiCheck>; live: LiveState;
   board: BObj[][]; homework: { extraTaskIds: string[]; wordTraining: string[]; teacherComment: string | null };
@@ -39,7 +41,7 @@ export type ClassData = {
   templates: { id: string; label: string }[]; homeHref: string;
   picker?: { courses: { id: string; title: string; cover: string | null; units: { id: string; title: string; lessons: { id: string; title: string; sub: string | null; cover: string | null }[] }[] }[]; used: string[] } | null; initialTab?: "lesson" | "homework" | "words" | "board"; addHw?: boolean;
   /** Групповое занятие: у каждого ученика свой урок (instanceId), класс общий. Учитель переключается между учениками. */
-  group?: { title: string; members: { sid: string; instanceId: string; userId: string | null; name: string }[] };
+  group?: { title: string; members: { sid: string; instanceId: string; userId: string | null; name: string; gender?: string | null }[] };
   chatNames?: Record<string, string>; // чат группового урока: userId → имя
   byStudent?: Record<string, { answers: Answers; statuses: Record<string, string>; reviews: Record<string, Review>; aiDrafts: Record<string, AiCheck>; words: Word[]; note?: string }>;
 };
@@ -76,6 +78,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
   const [panel, setPanel] = useState<"chat" | "dict" | "timer" | null>(null);
   const [unread, setUnread] = useState(0);
   const [finished, setFinished] = useState(false);
+  const [cheers, setCheers] = useState<NewAward[]>([]); // «приятности» от учителя — праздничное окно прямо на уроке
   const [rubric, setRubric] = useState<string | null>(d.live?.rubricId ?? d.rubrics[0]?.id ?? null);
   const [flash, setFlash] = useState<string | null>(null);
   // подсказки правильных ответов у учителя (запоминаем выбор на этом устройстве)
@@ -177,6 +180,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
     else if (ev === "presence") setOnline(x.online as string[]);
     else if (ev === "reload") router.refresh();
     else if (ev === "finished" && !teacher) setFinished(true);
+    else if (ev === "cheer" && !teacher && !d.preview && x.sid === own) setCheers((c) => (c.some((y) => y.id === (x.award as NewAward).id) ? c : [...c, x.award as NewAward]));
   }, [d.me.id, teacher, router, own, spotlight]);
   const { connected, send: liveSend } = useLive(d.id, onEvent);
   // просмотр «как видит ученик»: ничего не отправляем — только смотрим, живые изменения приходят
@@ -255,7 +259,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
   const [catalog, setCatalog] = useState<{ index: number } | null>(null);
   const [editing, setEditing] = useState<{ task: CTask; index: number } | null>(null);
   const [saving, setSaving] = useState(false);
-  const [dlg, setDlg] = useState<"about" | "hwc" | "fb" | "finish" | "pick" | null>(null);
+  const [dlg, setDlg] = useState<"about" | "hwc" | "fb" | "finish" | "pick" | "cheer" | null>(null);
   const templateId = !!d.templateId;
 
   const taskActions = (task: CTask, inHw: boolean) => {
@@ -503,6 +507,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
               <div className="mt-4 flex flex-col gap-2">
                 <button className="btn secondary w-full" onClick={() => setDlg("hwc")}><Icon name="inbox" size="sm" />{t("cls.hwComment")}{hw.teacherComment ? " (1)" : ""}</button>
                 <button className="btn secondary w-full" onClick={() => setDlg("fb")}><Icon name="msg" size="sm" />{t("cls.feedback")}</button>
+                <button className="btn secondary w-full cls-cheer" onClick={() => setDlg("cheer")}><span aria-hidden="true">💛</span>{t("chr.btn")}</button>
                 <button className="btn primary w-full" onClick={() => setDlg("finish")}><Icon name="check" size="sm" />{t("cls.finish")}</button>
               </div>
             )}
@@ -526,7 +531,13 @@ export function ClassRoom({ d }: { d: ClassData }) {
               setSaving(false); setEditing(null); await send("reload"); router.refresh();
             }} />
         )}
-        <ClassDialogs which={dlg} close={() => setDlg(null)} d={d} hwComment={hw.teacherComment} send={send} onFinished={() => router.push(d.homeHref)} />
+        <ClassDialogs which={dlg === "cheer" ? null : dlg} close={() => setDlg(null)} d={d} hwComment={hw.teacherComment} send={send} onFinished={() => router.push(d.homeHref)} onCheer={() => setDlg("cheer")} />
+        {dlg === "cheer" && (
+          <LessonCheer onClose={() => setDlg(null)} onGiven={(awardId) => rawSend("cheer", { awardId })}
+            to={d.group ? d.group.members.map((m) => ({ sid: m.sid, name: m.name, gender: m.gender ?? null, inClass: !!m.userId && online.includes(m.userId) }))
+              : d.student ? [{ sid: d.student.id, name: [d.student.name, d.student.lastName].filter(Boolean).join(" "), gender: d.student.gender ?? null, inClass: !!d.student.userId && online.includes(d.student.userId) }] : []} />
+        )}
+        {cheers.length > 0 && <CelebrateAwards key={cheers.map((c) => c.id).join()} items={cheers} inClass />}
         {finished && (
           <Dialog open onClose={() => setFinished(false)} title={t("cls.over")}>
             <p className="muted mt-0">{hwTasks.length + hw.wordTraining.length > 0 ? t("cls.overHw") : t("cls.overNoHw")}</p>
@@ -1016,7 +1027,7 @@ function NoteBox({ title, value, onSave }: { title: string; value: string; onSav
   );
 }
 
-function ClassDialogs({ which, close, d, hwComment, send, onFinished }: { which: string | null; close: () => void; d: ClassData; hwComment: string | null; send: (type: string, x?: Record<string, unknown>) => Promise<{ ok: boolean }>; onFinished: () => void }) {
+function ClassDialogs({ which, close, d, hwComment, send, onFinished, onCheer }: { which: string | null; close: () => void; d: ClassData; hwComment: string | null; send: (type: string, x?: Record<string, unknown>) => Promise<{ ok: boolean }>; onFinished: () => void; onCheer: () => void }) {
   const { t } = useT();
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
@@ -1045,6 +1056,7 @@ function ClassDialogs({ which, close, d, hwComment, send, onFinished }: { which:
     return (
       <Dialog open onClose={close} title={t("cls.finishQ")}>
         <p className="muted mt-0">{t("cls.finishHint")}</p>
+        <button type="button" className="chrnudge" onClick={onCheer}><span aria-hidden="true">💛</span><span className="grow"><b>{t("chr.btn")}</b><br /><span className="small muted">{t("chr.nudge")}</span></span><Icon name="right" size="sm" /></button>
         <div className="actions"><button className="btn secondary" onClick={close}>{t("common.cancel")}</button>
           <button className="btn primary" disabled={busy} onClick={async () => { setBusy(true); await send("finish"); setBusy(false); close(); onFinished(); }}>{t("cls.finish")}</button></div>
       </Dialog>

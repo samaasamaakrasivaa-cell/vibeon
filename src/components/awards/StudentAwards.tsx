@@ -13,7 +13,7 @@ import { Medal, StudentAvatar } from "./Medal";
 export type NewAward = { id: string; kind: string; name: string; why: string | null; icon: string; color: string; until: string | null };
 
 /** Праздничное окно: новый титул или поощрение — по одному, пока ученик их не увидел. */
-export function CelebrateAwards({ items: init }: { items: NewAward[] }) {
+export function CelebrateAwards({ items: init, inClass = false }: { items: NewAward[]; inClass?: boolean }) {
   const { t } = useT();
   const router = useRouter();
   const [items] = useState(init); // снимок: после отметки «просмотрено» список с сервера сокращается — индекс не должен съезжать
@@ -21,19 +21,19 @@ export function CelebrateAwards({ items: init }: { items: NewAward[] }) {
   const [, start] = useTransition();
   const a = items[i];
   if (!a) return null;
-  const next = () => { const id = a.id; start(async () => { await markAwardSeen(id); if (i + 1 >= items.length) router.refresh(); }); setI(i + 1); };
+  const next = () => { const id = a.id; start(async () => { await markAwardSeen(id); if (i + 1 >= items.length && !inClass) router.refresh(); }); setI(i + 1); };
   const m = METALS[(a.color as Metal) in METALS ? (a.color as Metal) : "gold"];
   return (
     <Dialog open onClose={next}>
       <div className="awcele">
         <span className="awconf" aria-hidden="true">{Array.from({ length: 14 }, (_, k) => <i key={k} style={{ left: `${(k * 71) % 100}%`, animationDelay: `${(k % 7) * 0.12}s`, background: ["#FFC93C", "#A55CF5", "#3D8BFF", "#FF6B9A", "#34C759"][k % 5] }} />)}</span>
-        <span className="awcele-k">{a.kind === "title" ? t("aw.newTitle") : t("aw.newCheer")}</span>
+        <span className="awcele-k">{a.kind === "title" ? t("aw.newTitle") : inClass ? t("chr.fromTeacher") : t("aw.newCheer")}</span>
         <Medal icon={a.icon} color={a.color} size={120} shape={a.kind === "title" ? "hex" : "circle"} />
         <h2 style={{ color: m.text }}>{a.name}</h2>
         {a.why && <p className="awcele-why">{a.why}</p>}
         {a.until && <span className="small muted">{t("aw.until", { d: a.until })}</span>}
         <div className="flex w-full gap-2">
-          <Link href="/student/progress#awards" className="btn secondary grow" onClick={next}>{t("aw.allMine")}</Link>
+          {!inClass && <Link href="/student/progress#awards" className="btn secondary grow" onClick={next}>{t("aw.allMine")}</Link>}
           <button type="button" className="btn primary grow" onClick={next}>{t("aw.hooray")}</button>
         </div>
       </div>

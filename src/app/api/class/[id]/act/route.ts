@@ -259,6 +259,14 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       if (tg.student?.userId) await notify({ userId: tg.student.userId, kind: "feedback", title: `${user.name}: ${text.slice(0, 120)}`, action: "open_profile", link: "/student/progress" });
       return NextResponse.json({ ok: true });
     }
+    // ── учитель подарил «приятность» — ученик сразу видит праздничное окно в классе
+    case "cheer": {
+      if (!teacher) return bad();
+      const a = await db.award.findUnique({ where: { id: str(body.awardId, 60) } });
+      if (!a || a.teacherId !== user.id || !slot.some((x) => x.studentId === a.studentId)) return bad();
+      publish(ch, "cheer", { sid: a.studentId, award: { id: a.id, kind: a.kind, name: a.name, why: a.why, icon: a.icon, color: a.color, until: null } });
+      return NextResponse.json({ ok: true });
+    }
     // ── выбрать урок из курсов для этого занятия
     case "template": {
       if (!teacher) return bad();

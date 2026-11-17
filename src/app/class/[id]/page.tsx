@@ -64,7 +64,7 @@ export default async function ClassPage({ params, searchParams }: { params: Prom
       note: slot.find((x) => x.studentId === sid)?.studentNote ?? "",
     };
   };
-  const members = slot.filter((x) => x.student).map((x) => ({ sid: x.student!.id, instanceId: x.id, userId: x.student!.userId, name: [x.student!.name, x.student!.lastName].filter(Boolean).join(" ") }));
+  const members = slot.filter((x) => x.student).map((x) => ({ sid: x.student!.id, instanceId: x.id, userId: x.student!.userId, name: [x.student!.name, x.student!.lastName].filter(Boolean).join(" "), gender: x.student!.gender }));
   const answersRows = allRows.filter((a) => a.studentId === lesson.studentId);
   const words = allWords.filter((w) => w.studentId === lesson.studentId);
   const answers: Answers = Object.fromEntries(answersRows.map((a) => [a.taskId, a.payload as Record<string, unknown>]));
@@ -86,7 +86,7 @@ export default async function ClassPage({ params, searchParams }: { params: Prom
         ...(group ? { group: { title: grp?.title ?? members.map((m) => m.name.split(" ")[0]).join(", "), members: role === "teacher" ? members : members.filter((m) => m.instanceId === lesson.id) } } : {}),
         ...(group && role === "teacher" ? { byStudent: Object.fromEntries(members.map((m) => [m.sid, pack(m.sid)])) } : {}),
         teacher: { id: teacherUser.id, name: teacherUser.name, lastName: teacherUser.lastName },
-        student: lesson.student && !(group && role === "teacher") ? { id: lesson.student.id, userId: lesson.student.userId, name: lesson.student.name, lastName: lesson.student.lastName, level: lesson.student.level, course: lesson.student.course } : null,
+        student: lesson.student && !(group && role === "teacher") ? { id: lesson.student.id, userId: lesson.student.userId, name: lesson.student.name, lastName: lesson.student.lastName, level: lesson.student.level, course: lesson.student.course, gender: lesson.student.gender } : null,
         title: data?.l.title ?? null,
         crumbs: data ? `${data.l.unit.course.title} · Unit ${data.unitNo} · Lesson ${data.lessonNo}` : null,
         course: data ? { title: data.l.unit.course.title, cover: data.l.cover || data.l.unit.course.cover } : null,

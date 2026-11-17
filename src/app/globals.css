@@ -2154,3 +2154,12 @@ button.grp-row:hover { background: var(--fill); }
 :root[data-theme="dark"] .awmainline b, :root[data-theme="dark"] .awpill { color: #F6C343; }
 :root[data-theme="dark"] .awpill { background: rgba(246,195,67,.16); }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .awmainline b, :root:not([data-theme="light"]) .awpill { color: #F6C343; } :root:not([data-theme="light"]) .awpill { background: rgba(246,195,67,.16); } }
+/* урок: «Подарить приятность» */
+.cls-cheer span[aria-hidden] { font-size: 15px; line-height: 1; }
+.chrgrid { max-height: 300px; }
+.chrform { display: flex; align-items: flex-start; gap: 16px; margin-top: 14px; padding: 14px; border-radius: 18px; background: var(--surface2); }
+@media (max-width: 560px) { .chrform { flex-direction: column; align-items: stretch; } .chrform > .medal { align-self: center; } }
+.chrnudge { display: flex; align-items: center; gap: 12px; width: 100%; margin-bottom: 4px; padding: 12px 14px; border: 0; border-radius: 16px; background: linear-gradient(180deg, rgba(255,107,154,.1), rgba(255,201,60,.12)); text-align: left; cursor: pointer; color: var(--text); }
+.chrnudge > span[aria-hidden] { font-size: 22px; }
+.chrnudge:hover { background: linear-gradient(180deg, rgba(255,107,154,.16), rgba(255,201,60,.18)); }
+.chrform .input, .chrform .textarea { background: var(--surface); }

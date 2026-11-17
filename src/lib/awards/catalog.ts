@@ -54,6 +54,11 @@ export const ICONS = {
   screen: "M3 5h18v12H3zM8 21h8M12 17v4",
   thumb: "M7 11v9H4v-9h3zM7 11l4-8c1.5 0 2.5 1 2.5 2.5V9H19a2 2 0 0 1 2 2.3l-1.2 7A2 2 0 0 1 17.8 20H7",
   wave: "M3 12h2l2-5 3 10 3-14 3 10 2-6h3",
+  smile: "M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18zM8 14s1.5 2 4 2 4-2 4-2M9 9.5h.01M15 9.5h.01",
+  cup: "M4 9h13v4a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V9zM17 10h1.5a2.5 2.5 0 0 1 0 5H17M8 3v3M12 3v3",
+  gift: "M4 11h16v10H4zM3 7h18v4H3zM12 7v14M12 7H8.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7zM12 7h3.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z",
+  hug: "M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 10c0 5.5-7 10-7 10zM9 11.5c1 1.2 2 1.5 3 1.5s2-.3 3-1.5",
+  flower: "M12 9a3 3 0 1 0 0 6a3 3 0 1 0 0-6zM12 9V4M12 15v5M9 12H4M15 12h5M9.9 9.9L6.3 6.3M14.1 14.1l3.6 3.6M9.9 14.1l-3.6 3.6M14.1 9.9l3.6-3.6",
 } as const;
 export type IconKey = keyof typeof ICONS;
 export const ICON_KEYS = Object.keys(ICONS) as IconKey[];
@@ -110,6 +115,29 @@ export const CATALOG: CatalogItem[] = [
   c("great", "nice", "Отличная работа!", "Great job!", "За сегодняшний урок или домашку.", "For today's lesson or homework.", "thumb", "emerald"),
   c("sunny", "nice", "Солнце урока", "Sunshine of the lesson", "С тобой урок пролетел на одном дыхании.", "The lesson flew by with you.", "sun", "gold"),
   c("effort", "nice", "Спасибо за старание", "Thanks for the effort", "Видно, сколько сил ты вложил(а).", "Your effort shows.", "heart", "rose"),
+  // тёплые — после урока, просто чтобы стало приятно
+  c("beauty", "nice", { f: "Ты сегодня красотка!", m: "Ты сегодня красавчик!" }, "Looking great today!", "Не могу не сказать — и урок был таким же классным.", "Couldn't help saying it — and the lesson was just as great.", "gem", "rose"),
+  c("stunning", "nice", { f: "Ты сегодня выглядела потрясающе", m: "Ты сегодня выглядел потрясающе" }, "You looked amazing today", "И настроение у урока было под стать.", "And the lesson's mood matched.", "flower", "rose"),
+  c("cool_day", "nice", "Не грусти — сегодня будет крутой день", "Cheer up — today's going to be great", "Ты со всем справишься, а я в тебя верю.", "You'll handle everything — I believe in you.", "sun", "gold"),
+  c("smile", "nice", "Спасибо за улыбку", "Thanks for the smile", "С тобой урок проходит тепло и легко.", "Lessons with you feel warm and easy.", "smile", "gold"),
+  c("proud", "nice", "Я тобой горжусь", "I'm proud of you", "Сегодня ты сделал(а) больше, чем тебе кажется.", "You did more today than you think.", "heart", "rose"),
+  c("on_fire", "nice", "Сегодня ты в ударе!", "You're on fire today!", "Всё получалось — так держать.", "Everything clicked — keep it up.", "bolt", "gold"),
+  c("joy", "nice", "С тобой — одно удовольствие", "A joy to teach", "Спасибо за этот урок.", "Thank you for this lesson.", "hug", "amethyst"),
+  c("believe", "nice", "Я в тебя верю", "I believe in you", "Всё получится — шаг за шагом.", "You'll get there, step by step.", "star", "sapphire"),
+  c("clever", "nice", "Умница!", "Brilliant!", "Сегодня всё схватывалось на лету.", "You picked everything up on the fly today.", "bulb", "sapphire"),
+  c("star_lesson", "nice", "Звезда сегодняшнего урока", "Star of today's lesson", "Урок сиял благодаря тебе.", "The lesson shone thanks to you.", "star", "gold"),
+  c("tired", "nice", { f: "Даже уставшая — на высоте", m: "Даже уставший — на высоте" }, "Tired, but brilliant", "Спасибо, что не отменили урок, хоть день был непростой.", "Thanks for not cancelling, even on a hard day.", "mountain", "amethyst"),
+  c("treat", "nice", { f: "Ты заслужила что-то вкусное", m: "Ты заслужил что-то вкусное" }, "You've earned a treat", "Побалуй себя — сегодня есть за что.", "Treat yourself — today you've earned it.", "cup", "rose"),
+  c("rest", "nice", "Время отдохнуть", "Time to rest", "Хорошо поработали — теперь можно выдохнуть.", "Great work — now you can breathe out.", "feather", "emerald"),
+  c("hug", "nice", "Обнимаю!", "Sending a hug!", "Если день был тяжёлым — пусть станет чуточку теплее.", "If the day was hard, may it get a little warmer.", "hug", "rose"),
+  c("mood", "nice", "Заряд хорошего настроения", "A boost of good mood", "Пусть этот день будет лёгким и солнечным.", "May the day be light and sunny.", "sun", "emerald"),
+  c("sounds", "nice", "Твой английский звучит всё красивее", "Your English sounds lovelier every time", "Это слышно с каждым уроком.", "I can hear it every lesson.", "music", "amethyst"),
+  c("mistakes", "nice", "Ошибки — это рост", "Mistakes mean growth", "Каждая сегодняшняя ошибка — шаг вперёд. Не бойся их.", "Every mistake today is a step forward.", "sprout", "emerald"),
+  c("inspire", "nice", "Ты меня вдохновляешь", "You inspire me", "Твоё упорство заряжает и меня.", "Your persistence inspires me too.", "rocket", "amethyst"),
+  c("luck", "nice", "Удачи — у тебя всё получится!", "Good luck — you've got this!", "Держу за тебя кулачки.", "Fingers crossed for you.", "thumb", "sapphire"),
+  c("cozy", "nice", "Самый уютный урок", "The coziest lesson", "Спасибо за тёплую атмосферу.", "Thanks for the warm atmosphere.", "cup", "gold"),
+  c("weekend", "nice", "Хороших выходных!", "Have a great weekend!", "Отдыхай и набирайся сил.", "Rest and recharge.", "sun", "sapphire"),
+  c("birthday", "nice", "С днём рождения!", "Happy birthday!", "Пусть этот год будет самым ярким — и на английском тоже.", "May this year be your brightest — in English too.", "gift", "rose"),
 ];
 
 /** Имя статуса: по языку и полу; пол не указан — «Королева / Король». */

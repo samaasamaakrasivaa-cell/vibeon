@@ -24,7 +24,7 @@ export type GiveInput = {
 };
 
 /** Выдать статус: титул (качество; можно показать на главном экране) или поощрение (момент; только в «Мои награды»). */
-export async function giveAward(studentId: string, x: GiveInput): Promise<R> {
+export async function giveAward(studentId: string, x: GiveInput): Promise<R & { id?: string }> {
   const { me, s } = await teacherStudent(studentId);
   const name = x.name.trim().slice(0, 80);
   if (!name) return { ok: false, error: "name" };
@@ -43,7 +43,7 @@ export async function giveAward(studentId: string, x: GiveInput): Promise<R> {
   const onMain = kind === "title" && !!x.onMain;
   // первый титул на главном экране — сразу главный (корона, под именем)
   const hasPinned = onMain ? await db.award.count({ where: { studentId, pinned: true, kind: "title", OR: [{ until: null }, { until: { gt: new Date() } }] } }) : 1;
-  await db.award.create({
+  const created = await db.award.create({
     data: {
       studentId, teacherId: me.id, kind, key: x.key && CATALOG.some((c) => c.key === x.key) ? x.key : null, name,
       why: x.why.trim().slice(0, 500) || null, icon: x.icon, color: x.color, onMain, pinned: onMain && !hasPinned, until,
@@ -56,7 +56,7 @@ export async function giveAward(studentId: string, x: GiveInput): Promise<R> {
     else await db.notification.create({ data: { userId: s.userId, kind: "award", title, link: "/student/progress#awards" } });
   }
   refresh(studentId);
-  return { ok: true };
+  return { ok: true, id: created.id };
 }
 
 async function ownAward(id: string) {
