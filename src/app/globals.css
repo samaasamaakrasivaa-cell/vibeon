@@ -585,7 +585,8 @@ details.how[open] summary { margin-bottom: 6px; }
 .bld-sec.on { background: var(--accent-bg); color: var(--accent); font-weight: 600; }
 .bld-sec .ln { width: 22px; height: 22px; border-radius: 7px; background: var(--fill); font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
 .bld-sec.on .ln { background: var(--accent); color: #fff; }
-.bld-sec .grow { flex: 1; }
+.bld-sec .grow { flex: 1; min-width: 0; white-space: normal; overflow-wrap: anywhere; line-height: 1.3; }
+.bld-sec small, .bs-row .bs-count, .bs-row .ln { flex: none; }
 .bld-acts { display: inline-flex; align-items: center; gap: 0; flex-wrap: wrap; }
 .bld-acts .iconbtn { width: 30px; height: 30px; font-size: 14px; }
 .bplus { display: flex; justify-content: center; margin: 6px 0; opacity: .35; transition: opacity .15s; }
@@ -652,7 +653,6 @@ details.how[open] summary { margin-bottom: 6px; }
 
 /* ───────── Класс (этап 5) ───────── */
 @layer components {
-.as-teacher .tk:hover .tk-opt[data-right] { box-shadow: inset 0 0 0 1.5px var(--ok); }
 }
 
 @layer components {
@@ -1610,7 +1610,8 @@ select.iedit, select.iedit:hover, select.iedit:focus { background-position: righ
 .bs-row.on::before, .bs-row.on + .bs-row::before { opacity: 0; }
 .bs-row .ln { width: 22px; height: 22px; flex: none; border-radius: 7px; background: var(--fill); color: var(--text2); font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
 .bs-row.on .ln { background: var(--accent); color: #fff; }
-.bs-row .grow { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* длинное название раздела — целиком, в несколько строк */
+.bs-row .grow { flex: 1; min-width: 0; white-space: normal; overflow-wrap: anywhere; line-height: 1.3; padding: 11px 0; }
 .bs-count { font-size: 13px; color: var(--text3); font-variant-numeric: tabular-nums; }
 .bs-row.on .bs-count { color: var(--accent); }
 .bs-addrow { color: var(--accent); }
@@ -1759,9 +1760,10 @@ button.grp-row:hover { background: var(--fill); }
 
 /* учитель: правильные ответы видны заранее */
 .tk-key-hint { display: inline-flex; align-items: center; margin: 0 4px; padding: 0 7px; border-radius: 6px; background: var(--ok-bg); color: var(--ok-text); font-size: 12px; font-weight: 600; line-height: 20px; vertical-align: middle; white-space: nowrap; }
-.tk-opt.tk-right { box-shadow: inset 0 0 0 1.5px var(--ok); }
-.tk-opt.tk-right::after { content: "✓"; margin-left: auto; color: var(--ok); font-weight: 700; }
-.seg button.tk-right:not([aria-pressed="true"]) { box-shadow: inset 0 0 0 1.5px var(--ok); color: var(--ok-text); }
+/* тест и верно/неверно: правильный вариант учителю — только при наведении, бледно-зелёным */
+.tk-opt.tk-right:hover { background: var(--ok-bg); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--ok) 45%, transparent); color: var(--ok-text); }
+.tk-opt.tk-right:hover::after { content: "✓"; margin-left: auto; color: var(--ok); font-weight: 700; }
+.seg button.tk-right:not([aria-pressed="true"]):hover { background: var(--ok-bg); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--ok) 45%, transparent); color: var(--ok-text); }
 .tk-key-err { text-decoration: underline dotted var(--ok); text-decoration-thickness: 2px; text-underline-offset: 4px; }
 .tk-card .tk-key-hint { margin-left: 8px; }
 .tk-chip .tk-key-hint { margin: 0 0 0 6px; line-height: 16px; font-size: 11px; }
