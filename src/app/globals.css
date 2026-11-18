@@ -652,8 +652,6 @@ details.how[open] summary { margin-bottom: 6px; }
 
 /* ───────── Класс (этап 5) ───────── */
 @layer components {
-.as-teacher [data-ans] { position: relative; }
-.as-teacher [data-ans]:hover::after { content: attr(data-ans); position: absolute; left: 0; bottom: 100%; transform: translateY(-4px); background: var(--ok-bg); color: var(--ok-text); font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 6px; white-space: nowrap; z-index: 5; line-height: 1.6; pointer-events: none; }
 .as-teacher .tk:hover .tk-opt[data-right] { box-shadow: inset 0 0 0 1.5px var(--ok); }
 }
 
@@ -2383,3 +2381,40 @@ body.lmoving, body.lmoving * { cursor: grabbing !important; user-select: none; }
 .lp-topics { display: block; margin-top: 2px; font-size: 12px; font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--text3); }
 .unit-topics-s { font-size: 14px; font-weight: 400; color: var(--text2); margin: -6px 0 10px; }
 .bs-durrow { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+
+/* ── Пропуски плашками: тот же шрифт и размер, что у текста, ровно в строке ── */
+.tk-lines .tk-gapw { gap: 2px; vertical-align: baseline; }
+.tk-dd { vertical-align: baseline; }
+.tk-dd > .tk-sel, .tk-slot {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px; vertical-align: baseline;
+  min-width: 84px; max-width: 340px; margin: 0 1px; padding: 1px 10px; border: 1px solid var(--sep); border-radius: 9px;
+  background: var(--surface2); color: var(--text); font: inherit; line-height: 1.45; text-align: center; cursor: pointer;
+  transition: border-color .15s, background .15s, box-shadow .15s;
+}
+.tk-dd > .tk-sel:hover, .tk-slot:hover { border-color: color-mix(in srgb, var(--accent) 45%, var(--sep)); }
+.tk-dd > .tk-sel[aria-expanded="true"] { border-color: var(--accent); background: var(--surface); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 14%, transparent); }
+.tk-dd > .tk-sel:focus { outline: none; }
+.tk-dd > .tk-sel:focus-visible, .tk-slot:focus-visible, .tk-chip:focus-visible { outline: 2px solid color-mix(in srgb, var(--accent) 55%, transparent); outline-offset: 1px; }
+.tk-dd > .tk-sel svg { width: 14px; height: 14px; color: var(--text3); }
+.tk-dd > .tk-sel.full { background: var(--accent-bg); border-color: color-mix(in srgb, var(--accent) 30%, transparent); color: var(--accent-text); font-weight: 500; }
+.tk-dd > .tk-sel.full svg { color: color-mix(in srgb, var(--accent-text) 60%, transparent); }
+.tk-slot { min-width: 96px; border-style: dashed; border-color: color-mix(in srgb, var(--accent) 40%, var(--sep)); background: transparent; }
+.tk-slot.full { border-style: solid; border-color: color-mix(in srgb, var(--accent) 30%, transparent); background: var(--accent-bg); color: var(--accent-text); font-weight: 500; }
+.tk-dd > .tk-sel.ok, .tk-slot.ok { border-color: color-mix(in srgb, var(--ok) 55%, transparent); background: var(--ok-bg); color: var(--ok-text); }
+.tk-dd > .tk-sel.bad, .tk-slot.bad { border-color: color-mix(in srgb, var(--bad) 55%, transparent); background: var(--bad-bg); color: var(--bad-text); }
+.tk-dd > .tk-sel.ok svg, .tk-dd > .tk-sel.bad svg { color: currentColor; opacity: .6; }
+/* варианты — плитками под пропуском, тем же шрифтом, что и текст */
+.tk-dd-pop { flex-direction: row; flex-wrap: wrap; gap: 6px; width: max-content; min-width: 0; max-width: min(440px, 82vw); padding: 8px; border-radius: 14px; line-height: 1.45; }
+.tk-dd-opt { width: auto; padding: 3px 12px; border: 1px solid var(--sep); border-radius: 9px; background: var(--surface); font: inherit; line-height: 1.45; color: var(--text); }
+.tk-dd-opt:hover { background: var(--surface); border-color: var(--accent); color: var(--accent-text); }
+.tk-dd-opt.on { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 500; }
+.tk-dd-opt.right { background: var(--ok-bg); border-color: color-mix(in srgb, var(--ok) 45%, transparent); color: var(--ok-text); }
+.tk-dd-opt.right.on { background: var(--ok); border-color: var(--ok); color: #fff; }
+/* слова для перетаскивания — такие же плитки и того же размера, что текст */
+.tk-chip { padding: 2px 12px; border-radius: 9px; font: inherit; line-height: 1.45; }
+.tk-chip:disabled { opacity: .4; background: transparent; }
+/* учителю: правильный ответ всплывает зелёным словом при наведении на пропуск (без плашек рядом с полем) */
+[data-ans] { position: relative; }
+[data-ans]:hover::after { content: attr(data-ans); position: absolute; left: 50%; bottom: calc(100% + 6px); transform: translateX(-50%); z-index: 30; padding: 4px 12px; border-radius: 10px; background: var(--ok-bg); color: var(--ok-text); font-size: 14px; font-weight: 600; line-height: 1.4; white-space: nowrap; box-shadow: 0 6px 18px rgba(0,0,0,.10); pointer-events: none; }
+.tk-sel[aria-expanded="true"]::after { display: none; }
+.tk-dd > .tk-sel, .tk-slot { min-height: calc(1.45em + 4px); }

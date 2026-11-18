@@ -352,8 +352,8 @@ export function ClassRoom({ d }: { d: ClassData }) {
       {list.length === 0 && <div className="tk-empty"><Icon name="book" />{inHw ? t("cls.noHw") : t("bld.emptyStudent")}</div>}
       {list.map((task, i) => {
         const card = <TaskCard key={resetTick[task.id] ?? 0} task={task} index={list.filter((x, j) => j <= i && numbered(x)).length - 1} actions={taskActions(task, inHw)} />;
-        // групповой урок: выбран ученик — его ответы, только просмотр (учитель ничего не меняет у ученика);
-        // никто не выбран — учитель пробует задание сам, это никуда не сохраняется
+        // групповой урок: выбран ученик — его ответы; учитель может подставить ответ, если у ученика не получается,
+        // и ученик сразу видит это у себя. Никто не выбран — учитель пробует задание сам, это никуда не сохраняется
         const sid = sidFor(task.id);
         const m = sid ? d.group?.members.find((x) => x.sid === sid) : undefined;
         const sendFor = (type: string, x: Record<string, unknown> = {}) => rawSend(type, { ...x, studentId: sid });
@@ -372,7 +372,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
           {live.timer?.taskId === task.id && timerLeft > 0 && <div className={`tk-timer ${timerPaused ? "paused" : ""}`} aria-live="polite"><Icon name="clock" size="sm" />{fmtT(timerLeft)}{timerPaused ? ` · ${t("cls.tPaused")}` : ""}</div>}
           {gTeacher ? (
             <AnswerProvider key={`${sid ?? "me"}-${resetTick[task.id] ?? 0}`} answers={sid ? ansBy[sid] ?? {} : sandbox}
-              onSet={(tid, k, v) => { if (!sid) setSandbox((sb) => ({ ...sb, [tid]: { ...(sb[tid] ?? {}), [k]: v } })); else if (k === "gnotes") setAnswerFor(sid, tid, k, v); }} role="teacher">
+              onSet={(tid, k, v) => { if (!sid) setSandbox((sb) => ({ ...sb, [tid]: { ...(sb[tid] ?? {}), [k]: v } })); else setAnswerFor(sid, tid, k, v); }} role="teacher">
               <MarkCtx.Provider value={{ ...marks, student: m?.name ?? "", members: d.group!.members, sid: sid ?? "", pick: (taskId, x) => setTaskView((v) => ({ ...v, [taskId]: x })) }}>{card}</MarkCtx.Provider>
             </AnswerProvider>
           ) : card}

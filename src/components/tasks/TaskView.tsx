@@ -22,7 +22,7 @@ type Try = { v: string; ok: boolean };
  *  Ученик видит свои попытки и комментарий учителя, но не правильный ответ и не поле комментария.
  *  Три точки вертикально рядом с ответом: серые — попыток нет, красная — неверная, зелёная — верная.
  *  Нажать — какие варианты ученик вводил по очереди и комментарий учителя к этому ответу (его видит ученик). */
-function Tries({ hist = [], answer, tid, k, noKey = false }: { hist?: Try[]; answer: string; tid: string; k: string; noKey?: boolean }) {
+function Tries({ hist = [], answer, tid, k }: { hist?: Try[]; answer: string; tid: string; k: string; noKey?: boolean }) {
   const { t } = useT();
   const role = useTaskRole();
   const key = useKey();
@@ -52,9 +52,9 @@ function Tries({ hist = [], answer, tid, k, noKey = false }: { hist?: Try[]; ans
     return () => document.removeEventListener("mousedown", off);
   }, [open]);
   const save = () => { const v = draft.trim(); if (v !== note) setNotes((n) => { const x = { ...n }; if (v) x[k] = v; else delete x[k]; return x; }); };
-  // конструктор: вместо точек — сам правильный ответ зелёной плашкой (если включено «Учитель увидит»)
-  // noKey — ответ уже показан строкой под заданием (перефраз): рядом с полем не дублируем
-  if (role === "guest") return key && answer && !noKey ? <span className="tk-key-hint">✓ {answer}</span> : null;
+  // конструктор: точек нет; правильный ответ всплывает зелёным словом при наведении на сам пропуск (data-ans),
+  // а у перефраза он показан строкой под заданием — рядом с полем ничего не дублируем
+  if (role === "guest") return null;
   const student = role === "student";
   // ученик видит свои точки, если уже отвечал или учитель оставил комментарий
   if (student && !hist.length && !note) return null;
@@ -83,14 +83,16 @@ function Tries({ hist = [], answer, tid, k, noKey = false }: { hist?: Try[]; ans
 /** Общая логика проверки: «сразу» (до 3 попыток) или кнопкой «Проверить». */
 function useChecker(o: TaskOptions, id: string) {
   const instant = (o.checkMode ?? "button") === "instant";
+  // учитель подставил ответ за ученика — это не попытка ученика: в точки и счётчик попыток не идёт
+  const byTeacher = useTaskRole() === "teacher";
   const [checked, setChecked] = useSlot(id, "checked", false);
   const [tries, setTries] = useSlot<Record<string, number>>(id, "tries", {});
-  const bump = (k: string) => setTries((t) => ({ ...t, [k]: (t[k] ?? 0) + 1 }));
+  const bump = (k: string) => !byTeacher && setTries((t) => ({ ...t, [k]: (t[k] ?? 0) + 1 }));
   const reveal = (k: string) => !o.noreveal && (tries[k] ?? 0) >= 3;
   // история попыток по каждому полю: что ученик отвечал и верно ли (учитель видит её по точкам у поля)
   const [hist, setHist] = useSlot<Record<string, Try[]>>(id, "hist", {});
   const record = (k: string, v: string, ok: boolean) => {
-    if (!v.trim()) return;
+    if (!v.trim() || byTeacher) return;
     setHist((h) => { const a = h[k] ?? []; if (a.length && a[a.length - 1].v === v) return h; return { ...h, [k]: [...a, { v, ok }].slice(-10) }; });
   };
   return { instant, checked: instant || checked, setChecked, tries, bump, reveal, hist, record, reset: () => { setChecked(false); setTries({}); setHist({}); } };
@@ -145,8 +147,8 @@ function Drop({ value, options, answers, onChange, mark, label }: { value: strin
   }, [open]);
   return (
     <span className="tk-dd" ref={box}>
-      <button type="button" className={`tk-sel ${mark ?? ""} ${value ? "full" : ""}`} aria-haspopup="listbox" aria-expanded={open} aria-label={label} data-ans={answers.join(" / ")} onClick={() => setOpen((x) => !x)}>
-        <span className="grow">{value || "…"}</span><Icon name="chevd" size="sm" />
+      <button type="button" className={`tk-sel ${mark ?? ""} ${value ? "full" : ""}`} aria-haspopup="listbox" aria-expanded={open} aria-label={label} data-ans={key ? answers.join(" / ") : undefined} onClick={() => setOpen((x) => !x)}>
+        {value && <span className="grow">{value}</span>}<Icon name="chevd" size="sm" />
       </button>
       {open && (
         <span className="tk-dd-pop" role="listbox">
@@ -168,6 +170,7 @@ function Gaps({ task, kind }: { task: TaskData; kind: "gap" | "dropdown" }) {
   const ck = useChecker(o, task.id);
   const [val, setVal] = useSlot<Record<string, string>>(task.id, "val", {});
   const [pick, setPick] = useState<string | null>(null);
+  const key = useKey(); // учителю правильный ответ всплывает зелёным словом при наведении на пропуск
   if (p.kind !== "gaps") return null;
   const groups = series(p.lines.map((l, i) => ({ l, i })), o.split ? (o.seriesSize ?? 5) : undefined);
   const gapKeys: { k: string; s: Extract<Seg, { t: "gap" }> }[] = [];
@@ -218,7 +221,7 @@ function Gaps({ task, kind }: { task: TaskData; kind: "gap" | "dropdown" }) {
                       if (drag)
                         return (
                           <span key={si} className="tk-gapw">
-                          <button type="button" data-ans={s.answers.join(" / ")} className={`tk-slot ${m ?? ""} ${val[k] ? "full" : ""}`}
+                          <button type="button" data-ans={key ? s.answers.join(" / ") : undefined} className={`tk-slot ${m ?? ""} ${val[k] ? "full" : ""}`}
                             onClick={() => { if (pick) { set(k, pick); setPick(null); } else set(k, ""); }}
                             onDragOver={(e) => e.preventDefault()} onDrop={(e) => { e.preventDefault(); set(k, e.dataTransfer.getData("text/plain")); }}>
                             {val[k] || " "}
@@ -227,7 +230,7 @@ function Gaps({ task, kind }: { task: TaskData; kind: "gap" | "dropdown" }) {
                           </span>
                         );
                       return (
-                        <span key={si} className="tk-gapw" data-ans={s.answers.join(" / ")}>
+                        <span key={si} className="tk-gapw" data-ans={key ? s.answers.join(" / ") : undefined}>
                           <input className={`tk-gap ${m ?? ""}`} value={val[k] ?? ""} size={Math.max(4, Math.max((s.answers[0] ?? "").length, (val[k] ?? "").length) + 1)}
                             onChange={(e) => setVal((x) => ({ ...x, [k]: e.target.value }))} onBlur={(e) => { if (ck.instant && e.target.value) { ck.bump(k); ck.record(k, e.target.value, same(e.target.value, s.answers)); } }}
                             aria-label={`gap ${i + 1}`} />
