@@ -110,7 +110,7 @@ export default async function ClassPage({ params, searchParams }: { params: Prom
           courses: [...new Map(templates.map((x) => [x.unit.course.id, x.unit.course])).values()].map((c) => ({
             id: c.id, title: c.title, cover: c.cover ?? null,
             units: [...new Map(templates.filter((x) => x.unit.courseId === c.id).map((x) => [x.unit.id, x.unit])).values()].map((u) => ({
-              id: u.id, title: u.title,
+              id: u.id, title: u.title, topics: u.outcomes ?? [],
               lessons: templates.filter((x) => x.unitId === u.id).map((x) => ({ id: x.id, title: x.title, sub: x.subtitle ?? null, cover: x.cover ?? c.cover ?? null })),
             })),
           })),

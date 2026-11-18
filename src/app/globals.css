@@ -2377,3 +2377,8 @@ body.lmoving, body.lmoving * { cursor: grabbing !important; user-select: none; }
 .lcover:hover { border-color: var(--accent); color: var(--accent); }
 .lcover.big { width: 120px; height: 160px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
 @media (max-width: 640px) { .lrow .lcover { width: 39px; height: 52px; } }
+/* темы юнита под названием */
+.editable.unit-topics { display: block; width: 100%; margin-top: 2px; font-size: 14px; font-weight: 400; color: var(--text2); }
+.editable.unit-topics::placeholder { color: var(--text3); font-style: italic; }
+.lp-topics { display: block; margin-top: 2px; font-size: 12px; font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--text3); }
+.unit-topics-s { font-size: 14px; font-weight: 400; color: var(--text2); margin: -6px 0 10px; }

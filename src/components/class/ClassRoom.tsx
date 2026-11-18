@@ -40,7 +40,7 @@ export type ClassData = {
   lessonWords: { word: string; tr: string; ex: string }[]; words: Word[]; messages: Msg[];
   note: string | null; studentNote: string | null; callLink: string | null; callOwn?: boolean; when: string; durationMin: number; status: string; goal: string | null;
   templates: { id: string; label: string }[]; homeHref: string;
-  picker?: { courses: { id: string; title: string; cover: string | null; units: { id: string; title: string; lessons: { id: string; title: string; sub: string | null; cover: string | null }[] }[] }[]; used: string[]; progress?: Record<string, string> } | null; initialTab?: "lesson" | "homework" | "words" | "board"; addHw?: boolean;
+  picker?: { courses: { id: string; title: string; cover: string | null; units: { id: string; title: string; topics?: string[]; lessons: { id: string; title: string; sub: string | null; cover: string | null }[] }[] }[]; used: string[]; progress?: Record<string, string> } | null; initialTab?: "lesson" | "homework" | "words" | "board"; addHw?: boolean;
   /** Групповое занятие: у каждого ученика свой урок (instanceId), класс общий. Учитель переключается между учениками. */
   group?: { title: string; members: { sid: string; instanceId: string; userId: string | null; name: string; gender?: string | null }[] };
   chatNames?: Record<string, string>; // чат группового урока: userId → имя
@@ -871,7 +871,7 @@ function LessonPicker({ d, send, close }: { d: ClassData; send: (type: string, x
               const ls = u.lessons.filter((l) => !q.trim() || l.title.toLowerCase().includes(q.trim().toLowerCase()));
               return ls.length ? (
                 <div key={u.id}>
-                  <div className="lp-unit">{u.title}</div>
+                  <div className="lp-unit">{u.title}{u.topics && u.topics.length > 0 && <span className="lp-topics">{u.topics.join(" · ")}</span>}</div>
                   {ls.map((l) => (
                     <div key={l.id} className={`lp-row ${sel === l.id ? "on" : ""}`} onClick={() => setSel(l.id)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter") setSel(l.id); }}>
                       <span className="lp-thumb" style={l.cover ? { backgroundImage: `url(${l.cover})` } : undefined}>{!l.cover && <Icon name="book" size="sm" />}</span>

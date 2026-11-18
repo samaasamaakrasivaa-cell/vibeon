@@ -17,7 +17,7 @@ import { useRouter } from "next/navigation";
 import { useRun } from "./useRun";
 
 type Lesson = { id: string; title: string; subtitle: string | null; cover: string | null; durationMin: number; tasks: number; info: TInfo };
-type Unit = { id: string; title: string; collapsed: boolean; lessons: Lesson[] };
+type Unit = { id: string; title: string; topics: string[]; collapsed: boolean; lessons: Lesson[] };
 export type CourseData = { id: string; title: string; level: string | null; category: string; cover: string | null; color: number; units: Unit[]; studentsOn: number };
 export type AssignStudent = { id: string; name: string; next: string | null };
 
@@ -117,7 +117,11 @@ export function CourseView({ c, students }: { c: CourseData; students: AssignStu
             <span className="draghandle">⋮⋮</span>
             <button className="iconbtn" aria-label="collapse" onClick={() => run(() => updateUnit(u.id, { collapsed: !u.collapsed }))} style={{ transform: u.collapsed ? "rotate(-90deg)" : "none" }}>▾</button>
             <span className="unitbadge"><small>UNIT</small><b>{ui + 1}</b></span>
-            <div className="min-w-0 flex-1"><Editable className="text-[19px] font-bold" value={u.title} onSave={(v) => run(() => updateUnit(u.id, { title: v }))} /></div>
+            <div className="min-w-0 flex-1">
+              <Editable className="text-[19px] font-bold" value={u.title} onSave={(v) => run(() => updateUnit(u.id, { title: v }))} />
+              {/* основные темы юнита — через запятую; видны в выборе урока, у ученика и в маршруте к цели */}
+              <Editable className="unit-topics" value={u.topics.join(", ")} placeholder={t("crs.unitTopicsPh")} onSave={(v) => run(() => updateUnit(u.id, { outcomes: v.split(/[,;\n]/).map((x) => x.trim()).filter(Boolean) }))} />
+            </div>
             <span className="small muted whitespace-nowrap">{t("crs.lessons", { n: u.lessons.length })}</span>
             <button className="btn secondary sm" disabled={pending} onClick={() => setNewIn(u.id)}><Icon name="plus" size="sm" />{t("crs.lesson")}</button>
             <button className="iconbtn" title={t("crs.delUnit")} aria-label={t("crs.delUnit")} onClick={() => confirm(t("crs.delUnitQ", { name: u.title })) && run(() => deleteUnit(u.id))}>✕</button>
@@ -158,12 +162,6 @@ export function CourseView({ c, students }: { c: CourseData; students: AssignStu
                         <label className="field"><span className="flabel">{t("crs.duration")}</span>
                           <select className="select" value={l.durationMin} onChange={(e) => run(() => updateLessonMeta(l.id, { durationMin: +e.target.value }))}>{[30, 45, 60, 90, 120].map((m) => <option key={m} value={m}>{m} {t("dash.min")}</option>)}</select>
                         </label>
-                      </div>
-                      <div className="field mb-3"><span className="flabel">{t("crs.lessonCover")}</span>
-                        <div className="flex flex-wrap items-center gap-3"><LessonCover id={l.id} cover={l.cover} run={run} big />
-                          <span className="small muted">{t("crs.lessonCoverHint")}</span>
-                          {l.cover && <button type="button" className="btn plain sm" onClick={() => run(() => updateLessonMeta(l.id, { cover: null }))}>{t("crs.removeCover")}</button>}
-                        </div>
                       </div>
                       <TeacherInfo info={l.info} open onSave={(v) => run(() => updateTeacherInfo(l.id, v))} />
                     </div>

@@ -62,7 +62,8 @@ export default async function MyLessons({ searchParams }: { searchParams: Promis
           </nav>
           {units.map((u) => (
             <section key={u.id} className="mb-6">
-              <h2 className="mb-3 text-[19px]">{u.title}</h2>
+              <h2 className={`${u.outcomes.length ? "mb-2" : "mb-3"} text-[19px]`}>{u.title}</h2>
+              {u.outcomes.length > 0 && <p className="unit-topics-s">{u.outcomes.join(" · ")}</p>}
               <div className="list">
                 {inCourse.filter((l) => l.template!.unitId === u.id).map((l) => {
                   const [c, label] = status(l);
