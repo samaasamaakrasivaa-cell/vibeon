@@ -215,8 +215,9 @@ export default async function StudentProfile({ params, searchParams }: { params:
               }}
             />
             <AwardsCard studentId={s.id} studentName={s.name} gender={s.gender} linked={!!s.user?.telegramChatId}
+              templates={(await db.awardTemplate.findMany({ where: { teacherId: me.id }, orderBy: { updatedAt: "desc" } })).map((x) => ({ id: x.id, kind: x.kind, name: x.name, why: x.why, icon: x.icon, color: x.color, term: x.term }))}
               rows={s.awards.map((a) => ({ id: a.id, kind: a.kind, name: a.name, why: a.why, icon: a.icon, color: a.color, onMain: a.onMain, pinned: a.pinned,
-                until: a.until ? dateFmt(a.until, { day: "numeric", month: "short" }) : null, expired: !!a.until && a.until < now, date: dateFmt(a.createdAt, { day: "numeric", month: "short" }) }))} />
+                until: a.until ? dateFmt(a.until, { day: "numeric", month: "short" }) : null, untilIso: a.until ? isoDay(a.until, me.timezone) : null, expired: !!a.until && a.until < now, date: dateFmt(a.createdAt, { day: "numeric", month: "short" }) }))} />
             {s.userId && (
               <section className="card sm">
                 <div className="acthead">

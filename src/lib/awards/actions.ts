@@ -43,6 +43,11 @@ export async function giveAward(studentId: string, x: GiveInput): Promise<R & { 
   const onMain = kind === "title" && !!x.onMain;
   // первый титул на главном экране — сразу главный (корона, под именем)
   const hasPinned = onMain ? await db.award.count({ where: { studentId, pinned: true, kind: "title", OR: [{ until: null }, { until: { gt: new Date() } }] } }) : 1;
+  // свой статус (не из каталога) — сохраняем в картотеку «Мои», чтобы выдавать снова
+  if (!(x.key && CATALOG.some((c) => c.key === x.key))) {
+    const tpl = { why: x.why.trim().slice(0, 500) || null, icon: x.icon, color: x.color, term: kind === "title" ? x.term : "forever" };
+    await db.awardTemplate.upsert({ where: { teacherId_kind_name: { teacherId: me.id, kind, name } }, create: { teacherId: me.id, kind, name, ...tpl }, update: tpl });
+  }
   const created = await db.award.create({
     data: {
       studentId, teacherId: me.id, kind, key: x.key && CATALOG.some((c) => c.key === x.key) ? x.key : null, name,
@@ -85,6 +90,35 @@ export async function pinAward(id: string): Promise<R> {
     db.award.update({ where: { id }, data: { pinned: true, onMain: true } }),
   ]);
   refresh(a.studentId);
+  return { ok: true };
+}
+
+/** Изменить выданный статус: название, «за что», значок, металл; у титула — срок (yyyy-mm-dd или пусто — бессрочно). */
+export async function updateAward(id: string, x: { name: string; why: string; icon: string; color: string; until?: string | null }): Promise<R> {
+  const a = await ownAward(id);
+  const me = await requireUser("TEACHER");
+  const name = x.name.trim().slice(0, 80);
+  if (!name) return { ok: false, error: "name" };
+  if (!(x.icon in ICONS) || !(x.color in METALS)) return { ok: false, error: "style" };
+  let until: Date | null | undefined;
+  if (a.kind === "title" && x.until !== undefined) {
+    if (!x.until) until = null;
+    else {
+      const d = parseIsoDay(x.until);
+      if (!d) return { ok: false, error: "date" };
+      until = fromZoned(d.y, d.m, d.d, 23, 59, me.timezone);
+    }
+  }
+  await db.award.update({ where: { id }, data: { name, why: x.why.trim().slice(0, 500) || null, icon: x.icon, color: x.color, ...(until !== undefined ? { until } : {}) } });
+  refresh(a.studentId);
+  return { ok: true };
+}
+
+/** Убрать свой статус из картотеки «Мои» (у учеников он остаётся). */
+export async function deleteTemplate(id: string): Promise<R> {
+  const me = await requireUser("TEACHER");
+  await db.awardTemplate.deleteMany({ where: { id, teacherId: me.id } });
+  revalidatePath("/teacher/students", "layout");
   return { ok: true };
 }
 

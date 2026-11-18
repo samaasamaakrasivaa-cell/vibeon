@@ -6,6 +6,7 @@ import { getT } from "@/lib/i18n/server";
 import { requireUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { accessOf } from "@/lib/admin/features";
+import { isAdmin } from "@/lib/admin/access";
 import { TrialBanner } from "@/components/admin/TrialBanner";
 
 export const dynamic = "force-dynamic";
@@ -40,7 +41,8 @@ export default async function TeacherLayout({ children }: { children: React.Reac
   // новости платформы, которых учитель ещё не видел
   const seen = (prof?.settings as { newsSeenAt?: string } | null)?.newsSeenAt;
   const news = await db.article.count({ where: { published: true, kind: { in: ["news", "digest"] }, audience: { in: ["teacher", "all"] }, ...(seen ? { updatedAt: { gt: new Date(seen) } } : {}) } });
-  const acc = prof ? accessOf(prof) : null;
+  // владелец и администраторы платформы — без срока доступа и без плашки
+  const acc = prof && !isAdmin(user) ? accessOf(prof) : null;
   const groups = [
     [
       { href: "/teacher", label: t("nav.updates"), icon: "bell" as const, count: unread },

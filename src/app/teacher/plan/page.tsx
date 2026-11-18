@@ -4,6 +4,7 @@ import { getT } from "@/lib/i18n/server";
 import { requireUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { accessOf } from "@/lib/admin/features";
+import { isAdmin } from "@/lib/admin/access";
 
 export const metadata = { title: "Тарифы" };
 
@@ -19,6 +20,7 @@ export default async function Plan() {
     db.course.count({ where: { teacherId: me.id } }),
     db.award.count({ where: { teacherId: me.id } }),
   ]);
+  const owner = isAdmin(me);
   const acc = p ? accessOf(p) : { state: "trial" as const, until: null };
   const loc = lang === "en" ? "en-GB" : "ru-RU";
   const until = acc.until?.toLocaleDateString(loc, { day: "numeric", month: "long", ...(acc.until.getFullYear() !== new Date().getFullYear() ? { year: "numeric" } : {}) }).replace(/ г\.$/, "") ?? "";
@@ -37,10 +39,10 @@ export default async function Plan() {
     <div className="page" style={{ maxWidth: 860 }}>
       <h1 className="mb-5">{t("nav.plan")}</h1>
       <section className="card tfhero">
-        <span className="tfhero-k">{acc.state === "paid" ? (p?.plan?.name ?? t("pl2.paid")) : t("pl2.trial")}</span>
+        <span className="tfhero-k">{owner ? t("pl2.owner") : acc.state === "paid" ? (p?.plan?.name ?? t("pl2.paid")) : t("pl2.trial")}</span>
         <h2 className="m-0">{t("pl2.hello", { n: me.name })}</h2>
-        <p className="m-0">{acc.state === "paid" ? t("pl2.paidText", { d: until }) : acc.state === "trial" ? t("pl2.trialText", { d: until }) : acc.state === "blocked" ? t("acc.blocked") : t("pl2.expiredText", { d: until })}</p>
-        {acc.state === "trial" && (
+        <p className="m-0">{owner ? t("pl2.ownerText") : acc.state === "paid" ? t("pl2.paidText", { d: until }) : acc.state === "trial" ? t("pl2.trialText", { d: until }) : acc.state === "blocked" ? t("acc.blocked") : t("pl2.expiredText", { d: until })}</p>
+        {!owner && acc.state === "trial" && (
           <div className="tfbar"><span className="small">{t("pl2.daysLeft", { n: left })}</span><span className="tfprog"><i style={{ width: `${Math.min(100, Math.max(4, (left / total) * 100))}%` }} /></span></div>
         )}
       </section>

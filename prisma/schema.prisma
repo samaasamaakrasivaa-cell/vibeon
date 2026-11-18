@@ -861,3 +861,19 @@ model SupportMessage {
 
   @@index([userId, createdAt])
 }
+
+/// Свои статусы учителя («Мои» в картотеке): сохраняются, когда учитель выдаёт статус, придуманный сам, — чтобы выдавать его снова.
+model AwardTemplate {
+  id        String   @id @default(cuid())
+  teacherId String
+  kind      String // title | cheer
+  name      String
+  why       String?
+  icon      String
+  color     String
+  term      String   @default("forever") // week | month | date | forever — срок титула по умолчанию
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([teacherId, kind, name])
+}

@@ -3,20 +3,23 @@ import { useMemo, useState } from "react";
 import { useT } from "@/lib/i18n/client";
 import { CATALOG, GROUPS, ICON_KEYS, METAL_KEYS, METALS, nameFor, whyFor, type AwardKind, type CatalogItem } from "@/lib/awards/catalog";
 import { PhraseLangSwitch, usePhraseLang, type PL } from "./PhraseLang";
-import { deleteAward, giveAward, pinAward, setAwardMain } from "@/lib/awards/actions";
+import { deleteAward, deleteTemplate, giveAward, pinAward, setAwardMain, updateAward } from "@/lib/awards/actions";
 import { setStudentField } from "@/lib/teacher/actions";
 import { useRun } from "../courses/useRun";
 import { Dialog } from "../Dialog";
 import { Icon } from "../Icon";
 import { Medal } from "./Medal";
 
-export type AwardRow = { id: string; kind: string; name: string; why: string | null; icon: string; color: string; onMain: boolean; pinned: boolean; until: string | null; expired: boolean; date: string };
+export type AwardRow = { id: string; kind: string; name: string; why: string | null; icon: string; color: string; onMain: boolean; pinned: boolean; until: string | null; untilIso: string | null; expired: boolean; date: string };
+/** Свой статус учителя из картотеки «Мои». */
+export type AwardTpl = { id: string; kind: string; name: string; why: string | null; icon: string; color: string; term: string };
 
 /** Анкета → «Статусы»: титулы (на главном экране или нет, главный) и поощрения; «Выдать статус». */
-export function AwardsCard({ studentId, studentName, gender, rows, linked }: { studentId: string; studentName: string; gender: string | null; rows: AwardRow[]; linked: boolean }) {
+export function AwardsCard({ studentId, studentName, gender, rows, linked, templates }: { studentId: string; studentName: string; gender: string | null; rows: AwardRow[]; linked: boolean; templates: AwardTpl[] }) {
   const { t } = useT();
   const { pending, run } = useRun();
   const [give, setGive] = useState(false);
+  const [edit, setEdit] = useState<AwardRow | null>(null);
   const titles = rows.filter((r) => r.kind === "title" && !r.expired);
   const cheers = rows.filter((r) => r.kind === "cheer");
   const past = rows.filter((r) => r.kind === "title" && r.expired);
@@ -40,6 +43,7 @@ export function AwardsCard({ studentId, studentName, gender, rows, linked }: { s
               <span className="small">{t("aw.onMain")}</span>
               <span className="switch"><input type="checkbox" checked={a.onMain} disabled={pending} onChange={(e) => run(() => setAwardMain(a.id, e.target.checked))} /><span /></span>
             </label>
+            <button type="button" className="iconbtn" title={t("aw.edit")} aria-label={t("aw.edit")} disabled={pending} onClick={() => setEdit(a)}><Icon name="pencil" size="sm" /></button>
             <button type="button" className="iconbtn" title={t("aw.remove")} aria-label={t("aw.remove")} disabled={pending} onClick={() => confirm(t("aw.removeQ", { n: a.name })) && run(() => deleteAward(a.id))}><Icon name="close" size="sm" /></button>
           </div>
         ))}
@@ -50,24 +54,27 @@ export function AwardsCard({ studentId, studentName, gender, rows, linked }: { s
           {[...cheers, ...past].slice(0, 12).map((a) => (
             <span key={a.id} className="awchip" title={a.why ?? a.name}>
               <Medal icon={a.icon} color={a.color} size={22} shape={a.kind === "cheer" ? "circle" : "hex"} muted={a.kind === "title"} />
-              {a.name}
+              <button type="button" className="awchip-name" title={t("aw.edit")} onClick={() => setEdit(a)}>{a.name}</button>
               <button type="button" aria-label={t("aw.remove")} onClick={() => confirm(t("aw.removeQ", { n: a.name })) && run(() => deleteAward(a.id))}>×</button>
             </span>
           ))}
         </div>
       )}
-      {give && <GiveDialog studentId={studentId} studentName={studentName} gender={gender} linked={linked} onClose={() => setGive(false)} />}
+      {give && <GiveDialog studentId={studentId} studentName={studentName} gender={gender} linked={linked} templates={templates} onClose={() => setGive(false)} />}
+      {edit && <EditDialog a={edit} onClose={() => setEdit(null)} />}
     </section>
   );
 }
 
-function GiveDialog({ studentId, studentName, gender: g0, linked, onClose }: { studentId: string; studentName: string; gender: string | null; linked: boolean; onClose: () => void }) {
+function GiveDialog({ studentId, studentName, gender: g0, linked, templates, onClose }: { studentId: string; studentName: string; gender: string | null; linked: boolean; templates: AwardTpl[]; onClose: () => void }) {
   const { t, lang } = useT();
   const { pending, error, run } = useRun();
   const [kind, setKind] = useState<AwardKind>("title");
   const [group, setGroup] = useState<string>("all");
   const [gender, setGender] = useState<string | null>(g0);
   const [pick, setPick] = useState<CatalogItem | null>(null);
+  const [mineList, setMineList] = useState(templates);
+  const [tpl, setTpl] = useState<AwardTpl | null>(null);
   const [name, setName] = useState("");
   const [why, setWhy] = useState("");
   const [icon, setIcon] = useState("crown");
@@ -78,9 +85,16 @@ function GiveDialog({ studentId, studentName, gender: g0, linked, onClose }: { s
   const [tg, setTg] = useState(true);
   const L = lang === "en" ? "en" : "ru"; // язык интерфейса — для групп
   const [pl, setPl] = usePhraseLang(); // язык самой фразы — выбирает учитель
-  const list = useMemo(() => CATALOG.filter((c) => c.kind === kind && (group === "all" || c.group === group)), [kind, group]);
+  const list = useMemo(() => (group === "mine" ? [] : CATALOG.filter((c) => c.kind === kind && (group === "all" || c.group === group))), [kind, group]);
+  const mine = mineList.filter((x) => x.kind === kind && (group === "all" || group === "mine"));
+  const chooseTpl = (x: AwardTpl) => {
+    setPick(null); setTpl(x);
+    setName(x.name); setWhy(x.why ?? ""); setIcon(x.icon); setColor(x.color);
+    if (["week", "month", "date", "forever"].includes(x.term)) setTerm(x.term as "month");
+  };
+  const dropTpl = (x: AwardTpl) => { if (!confirm(t("aw.tplDelQ", { n: x.name }))) return; setMineList((l) => l.filter((y) => y.id !== x.id)); if (tpl?.id === x.id) setTpl(null); void deleteTemplate(x.id); };
   const choose = (c: CatalogItem | null) => {
-    setPick(c);
+    setPick(c); setTpl(null);
     if (!c) { setName(""); setWhy(""); return; }
     setName(nameFor(c, pl, gender)); setWhy(whyFor(c, pl, gender)); setIcon(c.icon); setColor(c.color); setTerm(c.term);
   };
@@ -97,21 +111,30 @@ function GiveDialog({ studentId, studentName, gender: g0, linked, onClose }: { s
             <button type="button" className="flex-1" aria-pressed={kind === "title"} onClick={() => { setKind("title"); setGroup("all"); choose(null); }}>{t("aw.kindTitle")}</button>
             <button type="button" className="flex-1" aria-pressed={kind === "cheer"} onClick={() => { setKind("cheer"); setGroup("all"); choose(null); }}>{t("aw.kindCheer")}</button>
           </div>
-          <p className="hint m-0">{kind === "title" ? t("aw.kindTitleHint") : t("aw.kindCheerHint")}</p>
+          <p className="hint m-0">{kind === "title" ? t("aw.kindTitleHint") : t("aw.kindCheerHint")} {t("aw.mineSaved")}</p>
           <PhraseLangSwitch value={pl} onChange={switchLang} />
           <div className="chips">
-            {[{ key: "all", ru: "Все", en: "All" }, ...GROUPS.filter((x) => x.kind === kind)].map((x) => (
+            {[{ key: "all", ru: "Все", en: "All" }, ...(mineList.some((x) => x.kind === kind) ? [{ key: "mine", ru: "Мои", en: "Mine" }] : []), ...GROUPS.filter((x) => x.kind === kind)].map((x) => (
               <label key={x.key} className="chip"><input type="radio" name="aw-g" checked={group === x.key} onChange={() => setGroup(x.key)} /><span>{x[L]}</span></label>
             ))}
           </div>
           <div className="awgrid">
+            {mine.map((x) => (
+              <div key={x.id} className={`awcard mine ${tpl?.id === x.id ? "on" : ""}`}>
+                <button type="button" className="awcard-pick" onClick={() => chooseTpl(x)}>
+                  <Medal icon={x.icon} color={x.color} size={36} shape={kind === "title" ? "hex" : "circle"} />
+                  <b>{x.name}<span className="awmine-tag">{t("aw.mineTag")}</span></b>
+                </button>
+                <button type="button" className="awcard-x" aria-label={t("aw.tplDel")} title={t("aw.tplDel")} onClick={() => dropTpl(x)}>×</button>
+              </div>
+            ))}
             {list.map((c) => (
               <button key={c.key} type="button" className={`awcard ${pick?.key === c.key ? "on" : ""}`} onClick={() => choose(c)}>
                 <Medal icon={c.icon} color={c.color} size={36} shape={kind === "title" ? "hex" : "circle"} />
                 <b>{nameFor(c, pl, gender)}</b>
               </button>
             ))}
-            <button type="button" className={`awcard own ${!pick ? "on" : ""}`} onClick={() => choose(null)}>
+            <button type="button" className={`awcard own ${!pick && !tpl ? "on" : ""}`} onClick={() => choose(null)}>
               <span className="awplus"><Icon name="plus" /></span><b>{kind === "title" ? t("aw.ownTitle") : t("aw.ownCheer")}</b>
             </button>
           </div>
@@ -177,6 +200,50 @@ function GiveDialog({ studentId, studentName, gender: g0, linked, onClose }: { s
       <div className="actions">
         <button type="button" className="btn secondary" onClick={onClose}>{t("common.cancel")}</button>
         <button type="button" className="btn primary" disabled={pending || !name.trim() || (kind === "title" && term === "date" && !until)} onClick={submit}>{t("aw.giveBtn")}</button>
+      </div>
+    </Dialog>
+  );
+}
+
+/** Изменить выданный статус: название, «за что», значок, металл; у титула — срок. */
+function EditDialog({ a, onClose }: { a: AwardRow; onClose: () => void }) {
+  const { t, lang } = useT();
+  const { pending, error, run } = useRun();
+  const L = lang === "en" ? "en" : "ru";
+  const [name, setName] = useState(a.name);
+  const [why, setWhy] = useState(a.why ?? "");
+  const [icon, setIcon] = useState(a.icon);
+  const [color, setColor] = useState(a.color);
+  const [forever, setForever] = useState(!a.untilIso);
+  const [until, setUntil] = useState(a.untilIso ?? "");
+  const title = a.kind === "title";
+  const shape = title ? "hex" : "circle";
+  return (
+    <Dialog open onClose={onClose} title={t("aw.editTitle")}>
+      <div className="awpreview mb-3">
+        <Medal icon={icon} color={color} size={68} shape={shape} />
+        <b style={{ color: METALS[color as keyof typeof METALS]?.text }}>{name || t("aw.namePh")}</b>
+      </div>
+      <div className="field"><label htmlFor="awe-name">{t("aw.name")}</label><input id="awe-name" className="input" value={name} maxLength={80} onChange={(e) => setName(e.target.value)} /></div>
+      <div className="field mt-3"><label htmlFor="awe-why">{t("aw.why")}</label><textarea id="awe-why" className="textarea" rows={3} value={why} maxLength={500} placeholder={t("aw.whyPh")} onChange={(e) => setWhy(e.target.value)} /></div>
+      <div className="field mt-3"><span className="flabel">{t("aw.icon")}</span>
+        <div className="awicons">{ICON_KEYS.map((k) => <button key={k} type="button" aria-pressed={icon === k} aria-label={k} onClick={() => setIcon(k)}><Medal icon={k} color={icon === k ? color : "silver"} size={28} shape={shape} /></button>)}</div>
+      </div>
+      <div className="field mt-3"><span className="flabel">{t("aw.color")}</span>
+        <div className="flex flex-wrap gap-2">{METAL_KEYS.map((k) => <button key={k} type="button" className={`awmetal ${color === k ? "on" : ""}`} aria-pressed={color === k} title={METALS[k][L]} aria-label={METALS[k][L]} onClick={() => setColor(k)} style={{ background: METALS[k].ring }} />)}</div>
+      </div>
+      {title && (
+        <div className="field mt-3"><span className="flabel">{t("aw.term")}</span>
+          <div className="flex flex-wrap items-center gap-3">
+            <label className="flex items-center gap-2"><span className="switch"><input type="checkbox" checked={forever} onChange={(e) => setForever(e.target.checked)} /><span /></span><span>{t("aw.term.forever")}</span></label>
+            {!forever && <input type="date" className="input" style={{ width: 180 }} value={until} onChange={(e) => setUntil(e.target.value)} aria-label={t("aw.term.date")} />}
+          </div>
+        </div>
+      )}
+      {error && <div className="alert mt-3">{t("aw.err")}</div>}
+      <div className="actions">
+        <button type="button" className="btn secondary" onClick={onClose}>{t("common.cancel")}</button>
+        <button type="button" className="btn primary" disabled={pending || !name.trim() || (title && !forever && !until)} onClick={() => run(() => updateAward(a.id, { name, why, icon, color, ...(title ? { until: forever ? null : until } : {}) }), onClose)}>{t("common.save")}</button>
       </div>
     </Dialog>
   );
