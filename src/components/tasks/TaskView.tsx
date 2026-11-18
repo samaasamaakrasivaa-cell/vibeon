@@ -22,7 +22,7 @@ type Try = { v: string; ok: boolean };
  *  Ученик видит свои попытки и комментарий учителя, но не правильный ответ и не поле комментария.
  *  Три точки вертикально рядом с ответом: серые — попыток нет, красная — неверная, зелёная — верная.
  *  Нажать — какие варианты ученик вводил по очереди и комментарий учителя к этому ответу (его видит ученик). */
-function Tries({ hist = [], answer, tid, k }: { hist?: Try[]; answer: string; tid: string; k: string }) {
+function Tries({ hist = [], answer, tid, k, noKey = false }: { hist?: Try[]; answer: string; tid: string; k: string; noKey?: boolean }) {
   const { t } = useT();
   const role = useTaskRole();
   const key = useKey();
@@ -53,7 +53,8 @@ function Tries({ hist = [], answer, tid, k }: { hist?: Try[]; answer: string; ti
   }, [open]);
   const save = () => { const v = draft.trim(); if (v !== note) setNotes((n) => { const x = { ...n }; if (v) x[k] = v; else delete x[k]; return x; }); };
   // конструктор: вместо точек — сам правильный ответ зелёной плашкой (если включено «Учитель увидит»)
-  if (role === "guest") return key && answer ? <span className="tk-key-hint">✓ {answer}</span> : null;
+  // noKey — ответ уже показан строкой под заданием (перефраз): рядом с полем не дублируем
+  if (role === "guest") return key && answer && !noKey ? <span className="tk-key-hint">✓ {answer}</span> : null;
   const student = role === "student";
   // ученик видит свои точки, если уже отвечал или учитель оставил комментарий
   if (student && !hist.length && !note) return null;
@@ -701,7 +702,7 @@ function Arrow({ task }: { task: TaskData }) {
           <div key={i}>
             <div className="mb-1.5"><Num i={i} o={o} /> {it.q} {it.key && <b className="tk-key">{it.key}</b>}</div>
             <span className="flex items-center gap-2"><input className={`input tk-line ${m ?? ""}`} value={val[i] ?? ""} onChange={(e) => setVal((x) => ({ ...x, [i]: e.target.value }))} onBlur={(e) => { if (ck.instant && e.target.value) { ck.bump(String(i)); ck.record(String(i), e.target.value, same(e.target.value, it.answers)); } }} aria-label={`answer ${i + 1}`} />
-            {it.answers.length > 0 && <Tries hist={ck.hist[String(i)]} answer={it.answers.join(" / ")} tid={task.id} k={String(i)} />}</span>
+            {it.answers.length > 0 && <Tries hist={ck.hist[String(i)]} answer={it.answers.join(" / ")} tid={task.id} k={String(i)} noKey />}</span>
             {m === "bad" && <span className="small text-text2">{t("tk.teacherWillSee")}</span>}
             {ck.reveal(String(i)) && m === "bad" ? <span className="tk-ans">{it.answers[0]}</span> : <Key text={it.answers.join(" / ")} mode="block" />}
           </div>

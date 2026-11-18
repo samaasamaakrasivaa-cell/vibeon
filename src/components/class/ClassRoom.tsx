@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { TeacherInfo } from "../lesson/TeacherInfo";
 import type { TInfo } from "@/lib/tasks/teacher-info";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Dialog } from "../Dialog";
 import { Icon } from "../Icon";
@@ -82,6 +82,23 @@ export function ClassRoom({ d }: { d: ClassData }) {
   const [finished, setFinished] = useState(false);
   const [cheers, setCheers] = useState<NewAward[]>([]); // «приятности» от учителя — праздничное окно прямо на уроке
   const [rubric, setRubric] = useState<string | null>(d.live?.rubricId ?? d.rubrics[0]?.id ?? null);
+  // прокрутка по разделам: вернулись в раздел — туда, где остановились; новый раздел — с начала
+  const scrollMem = useRef<Record<string, number>>({});
+  const scrollKey = useRef("");
+  useEffect(() => {
+    const on = () => { if (scrollKey.current) scrollMem.current[scrollKey.current] = window.scrollY; };
+    window.addEventListener("scroll", on, { passive: true });
+    return () => window.removeEventListener("scroll", on);
+  }, []);
+  // до отрисовки нового раздела перестаём записывать — иначе браузер «поджимает» прокрутку под короткий раздел и мы бы её запомнили
+  useLayoutEffect(() => {
+    const k = `${tab}:${tab === "lesson" ? rubric : ""}`;
+    if (scrollKey.current === k) return;
+    const first = !scrollKey.current;
+    scrollKey.current = ""; // пока переключаемся — не записываем
+    const y = scrollMem.current[k];
+    requestAnimationFrame(() => { if (!first) window.scrollTo({ top: y ?? 0 }); scrollKey.current = k; });
+  }, [tab, rubric]); // eslint-disable-line react-hooks/exhaustive-deps
   const [flash, setFlash] = useState<string | null>(null);
   // подсказки правильных ответов у учителя (запоминаем выбор на этом устройстве)
   const [showKeys, setShowKeys] = useState(true);

@@ -74,7 +74,7 @@ export function parse(type: TaskType, content: string): Parsed {
     }
     case "tf": {
       const items = lines(c).map((l) => {
-        const m = /^(.*?)\s*[—–-]\s*(T|F|NS|True|False|Not stated)\s*$/i.exec(l);
+        const m = /^(.*?)\s*[—–-]\s*(T|F|NS|NG|True|False|Not stated|Not given)\s*$/i.exec(l);
         const a = (m?.[2] ?? "T").toUpperCase();
         return { s: m?.[1] ?? l, a: (a.startsWith("N") ? "NS" : a.startsWith("F") ? "F" : "T") as "T" | "F" | "NS" };
       });

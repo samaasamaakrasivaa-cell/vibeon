@@ -47,6 +47,9 @@ export function Builder({ d }: { d: BuilderData }) {
     go(() => placeTasks(d.id, sec, rid, [...d.tasks.filter((x) => x.id !== task.id && inDest(x, sec, rid)).map((x) => x.id), task.id]));
   };
   useEffect(() => { if (!rubrics.some((r) => r.id === active)) setActive(rubrics[0]?.id ?? null); }, [rubrics, active]);
+  // перешли на другой раздел — показать его с начала, а не там, где был прошлый
+  const firstShow = useRef(true);
+  useEffect(() => { if (firstShow.current) { firstShow.current = false; return; } window.scrollTo({ top: 0 }); }, [active]); // eslint-disable-line react-hooks/exhaustive-deps
   const [studentView, setStudentView] = useState(false);
   const [catalog, setCatalog] = useState<{ index: number } | null>(null);
   const [editing, setEditing] = useState<{ task: BTask; index?: number } | null>(null);
@@ -204,18 +207,6 @@ export function Builder({ d }: { d: BuilderData }) {
               )}
               <input ref={coverRef} type="file" accept="image/*" hidden onChange={async (e) => { const f = e.target.files?.[0]; e.target.value = ""; if (f) { const r = await upload(f).catch(() => null); if (r) go(() => updateLessonMeta(d.id, { cover: r.url })); } }} />
             </div>
-            <div className="bs-course">Course {d.course.title}</div>
-            <h2 className="bs-title">{d.title}</h2>
-            {/* тема урока — из Lesson info блока «Для учителя» (или подзаголовок урока) */}
-            {(d.teacherInfo.info || d.subtitle) && <div className="bs-sub">{(d.teacherInfo.info || d.subtitle).split("\n")[0]}</div>}
-            <div className="bs-meta">
-              {d.teacherInfo.level && <span className="pill blue">{d.teacherInfo.level}</span>}
-              {studentView ? <span className="small muted">{d.durationMin} {t("dash.min")}</span> : (
-                <select className="bs-dur" value={d.durationMin} aria-label={t("crs.duration")} onChange={(e) => go(() => updateLessonMeta(d.id, { durationMin: +e.target.value }))}>
-                  {[30, 45, 60, 90, 120].map((m) => <option key={m} value={m}>{m} {t("dash.min")}</option>)}
-                </select>
-              )}
-            </div>
           </div>
 
           {/* секции урока: список, перетаскивание, добавление своей или готовой */}
@@ -266,6 +257,18 @@ export function Builder({ d }: { d: BuilderData }) {
           )}
 
           <Outcomes d={d} onSave={(v) => go(() => updateLessonMeta(d.id, { outcomes: v }))} readOnly={studentView} />
+
+          {/* длительность — единственное, чего нет в шапке и в блоке «Для учителя» */}
+          <section className="bs-group">
+            <div className="bs-durrow">
+              <span className="bs-label m-0"><span>{t("crs.duration")}</span></span>
+              {studentView ? <span className="small muted">{d.durationMin} {t("dash.min")}</span> : (
+                <select className="bs-dur" value={d.durationMin} aria-label={t("crs.duration")} onChange={(e) => go(() => updateLessonMeta(d.id, { durationMin: +e.target.value }))}>
+                  {[30, 45, 60, 90, 120].map((m) => <option key={m} value={m}>{m} {t("dash.min")}</option>)}
+                </select>
+              )}
+            </div>
+          </section>
 
           {/* сведения об уроке, цели и ход урока — в самом низу; ученику не показываются */}
           {!studentView && <TeacherInfo info={d.teacherInfo} open={false} onSave={(v) => go(() => updateTeacherInfo(d.id, v))} />}
