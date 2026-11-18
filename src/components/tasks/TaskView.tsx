@@ -263,6 +263,7 @@ function Errors({ task }: { task: TaskData }) {
   const [miss, setMiss] = useSlot<Record<string, boolean>>(task.id, "miss", {});
   const [fix, setFix] = useSlot<Record<number, string>>(task.id, "fix", {});
   const keyE = useKey();
+  const role = useTaskRole();
   if (p.kind !== "gaps") return null;
   const errors = p.lines.filter((l, i) => { const g = l.find((s) => s.t === "gap") as Extract<Seg, { t: "gap" }> | undefined; return !g || !found[i] || !same(fix[i] ?? "", g.answers); }).length;
   return (
@@ -279,13 +280,19 @@ function Errors({ task }: { task: TaskData }) {
                     <span key={`${si}-${wi}`} className={`tk-word ${miss[`${i}:${si}:${wi}`] ? "bad" : ""}`} onClick={() => !found[i] && setMiss((m) => ({ ...m, [`${i}:${si}:${wi}`]: true }))}>{w}</span>
                   )));
                 const wrong = s.options!.find((x) => !s.answers.includes(x)) ?? s.options![0];
-                if (!found[i]) return <span key={si} className="tk-gapw"><span className={`tk-word ${keyE ? "tk-key-err" : ""}`} onClick={() => setFound((f) => ({ ...f, [i]: true }))}>{wrong}</span><Key text={s.answers[0]} pre="→" mode="pop" /></span>;
+                // учителю: слово с ошибкой подсвечено, а как правильно — всплывает при наведении (без точек, их легко принять за попытки)
+                if (!found[i]) return <span key={si} className="tk-gapw" data-ans={keyE ? `→ ${s.answers[0]}` : undefined}><span className={`tk-word ${keyE ? "tk-key-err" : ""}`} onClick={() => setFound((f) => ({ ...f, [i]: true }))}>{wrong}</span></span>;
                 const m: Mark = ck.checked && fix[i] ? (same(fix[i], s.answers) ? "ok" : "bad") : undefined;
                 return (
                   <span key={si} className="tk-gapw">
                     <s className="text-bad">{wrong}</s>{" "}
-                    <input autoFocus className={`tk-gap ${m ?? ""}`} value={fix[i] ?? ""} size={Math.max(4, (s.answers[0] ?? "").length + 1)} onChange={(e) => setFix((x) => ({ ...x, [i]: e.target.value }))} onBlur={(e) => ck.instant && e.target.value && ck.bump(String(i))} aria-label="fix" />
-                    {ck.reveal(String(i)) && m === "bad" ? <span className="tk-ans">{s.answers[0]}</span> : <Key text={s.answers[0]} mode="pop" />}
+                    <span className="tk-gapw" data-ans={keyE ? s.answers.join(" / ") : undefined}>
+                      <input autoFocus={role === "student"} className={`tk-gap ${m ?? ""}`} value={fix[i] ?? ""} size={Math.max(4, (s.answers[0] ?? "").length + 1)} onChange={(e) => setFix((x) => ({ ...x, [i]: e.target.value }))}
+                        onBlur={(e) => { if (ck.instant && e.target.value) { ck.bump(String(i)); ck.record(String(i), e.target.value, same(e.target.value, s.answers)); } }} aria-label="fix" />
+                    </span>
+                    {ck.reveal(String(i)) && m === "bad" && <span className="tk-ans">{s.answers[0]}</span>}
+                    {/* точки попыток: сколько раз ученик исправлял и верно ли — как в остальных заданиях */}
+                    <Tries hist={ck.hist[String(i)]} answer={s.answers.join(" / ")} tid={task.id} k={String(i)} />
                   </span>
                 );
               })}
@@ -293,7 +300,8 @@ function Errors({ task }: { task: TaskData }) {
           </li>
         ))}
       </ol>
-      <CheckBar ck={ck} errors={errors} total={p.lines.length} onReset={() => { setMiss({}); }} />
+      <CheckBar ck={ck} errors={errors} total={p.lines.length} onReset={() => { setMiss({}); }}
+        onCheck={() => p.lines.forEach((l, i) => { const g = l.find((x) => x.t === "gap") as Extract<Seg, { t: "gap" }> | undefined; if (g && found[i] && fix[i]) ck.record(String(i), fix[i], same(fix[i], g.answers)); })} />
     </div>
   );
 }
