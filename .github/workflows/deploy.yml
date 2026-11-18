@@ -80,7 +80,13 @@ jobs:
             errors)  ssh srv "docker logs vibeon-app-1 --since \${ARG:-60m} 2>&1 | grep -iE -B2 -A8 'error|exception|digest' | sed -E 's/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]+/[email]/g' | tail -80" ;;
             dns)     d="${ARG:-vibeon.online}"
                      for q in "A $d" "A www.$d" "TXT $d" "TXT gokey._domainkey.$d" "CNAME _dmarc.$d" "CNAME email.$d" "CNAME dkey._domainkey.email.$d" "MX $d"; do
-                       set -- $q; echo "$1 $2: $(dig +short "$1" "$2" @8.8.8.8 | tr '\n' ' ' | cut -c1-160)"; done ;;
+                       set -- $q; echo "$1 $2: $(dig +short "$1" "$2" @8.8.8.8 | tr '\n' ' ' | cut -c1-160)"; done
+                     # IPv6 и где сервер: страна и провайдер (сам адрес не печатаем), ответ сайта снаружи
+                     echo "AAAA $d: $(dig +short AAAA "$d" @8.8.8.8 | tr '\n' ' ')"; echo "AAAA www.$d: $(dig +short AAAA "www.$d" @8.8.8.8 | tr '\n' ' ')"
+                     ip=$(dig +short A "$d" @8.8.8.8 | tail -1); [ "$ip" = "$SSH_HOST" ] && echo "A = адрес сервера из SSH_HOST: да" || echo "A = адрес сервера из SSH_HOST: НЕТ"
+                     sudo apt-get install -y -qq whois >/dev/null 2>&1 || true
+                     [ -n "$ip" ] && whois "$ip" 2>/dev/null | grep -iE '^(country|org-name|orgname|netname|descr|org):' | grep -v "$ip" | sort -u | head -8
+                     for u in "https://$d/api/health" "https://www.$d/" "http://$d/"; do echo "$u → $(curl -s -o /dev/null -m 15 -w '%{http_code} %{remote_ip}' "$u" | sed "s/$ip/[сервер]/")"; done ;;
             proxy)   sync; ssh srv "bash /opt/vibeon/deploy/attach-proxy.sh $Q" ;;
             secrets)
               n=0
