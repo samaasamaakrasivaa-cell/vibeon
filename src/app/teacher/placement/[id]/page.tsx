@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { PlacementAnswers } from "@/components/placement/PlacementAnswers";
 import { PlacementReview } from "@/components/placement/PlacementReview";
 import { requireUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
@@ -36,6 +35,17 @@ export default async function PlacementReviewPage({ params }: { params: Promise<
   // разделы теста и даты: когда пройден каждый (тест можно дополнять разделами)
   const dfmt = (ms: number) => new Date(ms).toLocaleDateString(loc, { day: "numeric", month: "short", timeZone: me.timezone });
   const dates = Object.fromEntries(Object.entries(st.sdates ?? {}).map(([k, v]) => [k, dfmt(v as number)]));
+  // даты прохождения: один день — «пройден 18 ноября»; разные — какие разделы когда и общий промежуток «18–20 ноября»
+  const sd = Object.entries(st.sdates ?? {}).filter(([, v]) => typeof v === "number") as [string, number][];
+  const dayOf = (ms: number) => new Date(ms).toLocaleDateString("en-CA", { timeZone: me.timezone });
+  const days = [...new Set(sd.map(([, v]) => dayOf(v)))].sort();
+  const longD = (ms: number, withMonth = true) => new Date(ms).toLocaleDateString(loc, { day: "numeric", ...(withMonth ? { month: "long" } : {}), timeZone: me.timezone });
+  const firstMs = sd.length ? Math.min(...sd.map(([, v]) => v)) : when.getTime(), lastMs = sd.length ? Math.max(...sd.map(([, v]) => v)) : when.getTime();
+  const sameMonth = new Date(firstMs).getMonth() === new Date(lastMs).getMonth();
+  const doneLine = days.length > 1
+    ? t("pl.doneRange", { d: sameMonth ? `${longD(firstMs, false)}–${longD(lastMs)}` : `${longD(firstMs)} – ${longD(lastMs)}` })
+    : t("pl.doneOn", { d: longD(lastMs) });
+  const byDay = days.length > 1 ? days.map((dd) => `${sd.filter(([, v]) => dayOf(v) === dd).map(([k]) => t(`pl.part.${k}` as "pl.part.core").toLowerCase()).join(", ")} — ${dfmt(sd.find(([, v]) => dayOf(v) === dd)![1])}`).join("; ") : null;
   const base = st.base !== undefined && !partsOf(st).includes("core") ? { sub: STEPS[st.base], from: st.baseFrom ?? "teacher" } : null;
   return (
     <div className="page" style={{ maxWidth: 980 }}>
@@ -46,25 +56,20 @@ export default async function PlacementReviewPage({ params }: { params: Promise<
         {(a.status === "submitted" || a.status === "reviewed") && <Link href={`/teacher/placement/${id}/report`} className="btn secondary sm ml-auto">{t("rp.open")}</Link>}
       </div>
       <p className="muted mt-0 mb-5">
-        {when.toLocaleDateString(loc, { day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" })}
+        {a.status === "submitted" || a.status === "reviewed" ? doneLine : when.toLocaleDateString(loc, { day: "numeric", month: "long", hour: "2-digit", minute: "2-digit", timeZone: me.timezone })}
+        {byDay && <span className="block small mt-1">{byDay}</span>}
         {a.mode === "link" && a.guestContact ? ` · ${t("pl.contact")}: ${a.guestContact}` : ""}
         {a.mode === "student" && a.studentId ? <> · <Link className="alink" href={`/teacher/students/${a.studentId}?tab=roadmap`}>{t("pl.toProfile")}</Link></> : null}
       </p>
-      {(st.parts || st.sdates) && <div className="mb-5"><PlacementParts id={id} parts={partsOf(st)} done={doneOf(st)} dates={dates} canAdd={a.mode === "student" && (a.status === "submitted" || a.status === "reviewed")} /></div>}
+      {/* список разделов не нужен — даты выше; остаётся только «Добавить разделы» */}
+      {a.mode === "student" && (a.status === "submitted" || a.status === "reviewed") && <div className="mb-5"><PlacementParts id={id} parts={partsOf(st)} done={doneOf(st)} dates={dates} canAdd compact /></div>}
       <div className="flex flex-col gap-6">
         <PlacementReview
-          parts={partsOf(st)} dates={dates} base={base}
+          parts={partsOf(st)} dates={dates} base={base} who={who} reveal={a.reveal}
           id={id} teen={st.track === "teen"} lessonQs={lessonQs} mode={a.mode} status={a.status} level={a.level} showResult={a.showResult} tgSent={((a.review ?? {}) as { tgSentAt?: string }).tgSentAt ? new Date(((a.review ?? {}) as { tgSentAt: string }).tgSentAt).toLocaleString("ru-RU", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: me.timezone }) : null} sm={sm} d={d}
           review={(a.review ?? {}) as never} rubrics={{ writing: RUBRICS.writing.criteria, speaking: RUBRICS.speaking.criteria }}
           howTo={RUBRICS.how_to_decide_ru} sublevels={RUBRICS.sublevels_ru} total={RUBRICS.total_ru}
         />
-        {st.core.length > 0 && (
-          <div>
-            <h2 className="mb-1">{t("pl.answers")}</h2>
-            <p className="small muted mt-0 mb-3">{a.mode === "student" ? t("pl.answersHint") : t("pl.answersHintOther")}</p>
-            <PlacementAnswers id={id} d={d} teacher reveal={a.reveal} />
-          </div>
-        )}
       </div>
     </div>
   );

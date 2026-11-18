@@ -10,6 +10,7 @@ import type { Rubric } from "@/lib/placement/bank";
 import { useRun } from "../courses/useRun";
 import { Icon } from "../Icon";
 import { fmtSec } from "./PlacementAnswers";
+import { ReviewInsights } from "./ReviewInsights";
 import type { DictKey } from "@/lib/i18n/dict";
 
 type Marks = Record<string, number>;
@@ -20,6 +21,7 @@ export type ReviewProps = {
   rubrics: { writing: Rubric[]; speaking: Rubric[] }; howTo: string; sublevels: string; total: string;
   parts?: string[]; dates?: Record<string, string>; // разделы теста и даты, когда каждый пройден
   base?: { sub: string; from: "test" | "teacher" } | null; // грамматику не проверяли: от какого уровня шли остальные разделы
+  who?: string; reveal?: string[]; // имя ученика (для PDF таблицы и списков) и скрипты, открытые ученику
 };
 const nums = (m?: Record<string, unknown>): Marks => Object.fromEntries(Object.entries(m ?? {}).filter(([, v]) => typeof v === "number")) as Marks;
 const prevLevel = (l: string) => PL_LEVELS[Math.max(0, PL_LEVELS.indexOf(l as PLevel) - 1)];
@@ -87,43 +89,7 @@ export function PlacementReview(p: ReviewProps) {
   const L = ["A1", "A2", "B1", "B2", "C1"].filter((l) => p.sm.core[l] || p.sm.reading[l] || p.sm.listening[l]);
   const waiting = p.status === "new" || p.status === "active";
 
-  // вывод системы обычными словами
-  const pc = (r: [number, number]) => (r[1] ? Math.round((r[0] / r[1]) * 100) : 0);
-  const sk = (r: Record<string, [number, number]>, s2: number | null, name: string) => {
-    const lv = Object.keys(r).sort().reverse().find((l) => r[l][1]);
-    return lv && s2 !== null ? t("pl.exSkill", { s: name, l: lv, p: pct(r[lv]) ?? 0, r: STEPS[s2] }) : null;
-  };
   const sm = p.sm;
-  const lines = [
-    !has("core") ? (p.base ? t(p.base.from === "test" ? "pl.exBaseTest" : "pl.exBaseTeacher", { l: p.base.sub }) : null) : sm.diag ? t("pl.exDiag", { l: sm.diag, e: `${sm.easy[0]}/${sm.easy[1]}`, ep: pc(sm.easy), h: `${sm.hard[0]}/${sm.hard[1]}`, hp: pc(sm.hard), r: STEPS[sm.coreStep] }) : t("pl.exLow"),
-    sm.fb && sm.diag ? t("pl.exFb", { l: PL_LEVELS[PL_LEVELS.indexOf(sm.diag) + 1] ?? "", d: sm.diag }) : null,
-    sm.up && sm.diag ? t("pl.exUp", { l: prevLevel(sm.diag), d: sm.diag }) : null,
-    sm.above[1] ? t("pl.exAbove", { l: PL_LEVELS[PL_LEVELS.indexOf(sm.diag ?? "A1") + 1] ?? "", c: sm.above[0], n: sm.above[1] }) : null,
-    sm.forms.typed[1] && sm.forms.choice[1] ? t("pl.exForms", { a: `${sm.forms.choice[0]}/${sm.forms.choice[1]}`, b: `${sm.forms.typed[0]}/${sm.forms.typed[1]}` }) : null,
-    sm.repeats.length ? t("pl.exRepeats", { n: sm.repeats.length, k: sm.repeats.filter((x) => !x.again).length, list: sm.repeats.map((x) => `${x.topic} ${x.again ? "✓" : "✗"}`).join("; ") }) : null,
-    sm.vstep !== null ? t("pl.exVocab", { r: STEPS[sm.vstep], p: sm.vprobes.map((x) => `${x.level} ${x.c}/${x.n}`).join(" → ") }) : null,
-    sk(sm.reading, sm.readStep, t("pl.part.reading")), sk(sm.listening, sm.listenStep, t("pl.part.listening")),
-    hint !== null ? t(wHint === null || sHint === null ? "pl.exNeedWS" : "pl.exFinal", { h: STEPS[hint] }) : null,
-  ].filter(Boolean) as string[];
-  const famLv = PL_LEVELS.filter((l) => sm.families.some((f) => f.by?.[l]?.[1]));
-  // лексика: где слабее всего — вид заданий с самой низкой долей верных (если заданий хотя бы 2)
-  const vAll = (sm.vlevels ?? []).flatMap((x) => x.kinds.map((k) => ({ ...k, level: x.level })));
-  const vWeak = vAll.filter((k) => k.n >= 2 && k.c / k.n < 0.6).sort((a, b) => a.c / a.n - b.c / b.n).slice(0, 3);
-  const diagGroups = sm.groups.filter((g) => g.level === sm.diag);
-  const otherGroups = sm.groups.filter((g) => g.level !== sm.diag);
-  const growth = diagGroups.filter((g) => g.n >= 3 && g.c <= 1);
-  const gState = (g: Summary["groups"][number]) => (g.n < 3 ? "few" : g.c === g.n ? "ok" : g.c >= g.n - 1 ? "mid" : "bad");
-  const gRow = (g: Summary["groups"][number]) => {
-    const k = gState(g);
-    return (
-      <div key={g.id} className={`plgrow ${k}`}>
-        <span className="plgico">{k === "ok" ? "✓" : k === "mid" ? "≈" : k === "bad" ? "✗" : "·"}</span>
-        <div className="grow min-w-0"><b>{g.name}</b>{g.what && <div className="small muted">{g.what}</div>}</div>
-        <span className="plgres">{g.c}/{g.n}{g.dk > 0 && <small className="muted"> · {t("pl.dkShort", { n: g.dk })}</small>}</span>
-        <span className="small plglab">{t(`pl.g.${k}` as DictKey)}</span>
-      </div>
-    );
-  };
   // активное время = всё время в разделе минус перерывы; перерывы показываем отдельно
   const idle: Record<string, number> = { ...(p.d.idle ?? {}) }, pauses: Record<string, number> = { ...(p.d.pauses ?? {}) };
   // старые прохождения без отметок активности: в грамматике и лексике время каждого ответа известно — по нему и считаем
@@ -133,12 +99,6 @@ export function PlacementReview(p: ReviewProps) {
     if (work && p.d.times[k] - work > 8 * 60e3) { idle[k] = p.d.times[k] - work; pauses[k] = 1; }
   }
   const tm = Object.fromEntries(Object.entries(p.d.times).map(([k, v]) => [k, Math.max(0, v - (idle[k] ?? 0))]));
-  const total = Object.values(tm).reduce((a, b) => a + b, 0);
-  const idleAll = Object.values(idle).reduce((a, b) => a + b, 0);
-  const coreMs = p.d.core.map((x) => x.ms).filter((x): x is number => x !== null);
-  const fast = coreMs.filter((x) => x < 3000).length;
-  const slow = [...p.d.core].filter((x) => x.ms !== null).sort((a, b) => b.ms! - a.ms!).slice(0, 3).filter((x) => x.ms! > 20000);
-  const dks = p.d.core.filter((x) => x.dk).length + [...p.d.reading, ...p.d.listening].reduce((a, x) => a + x.questions.filter((q) => q.dk).length, 0);
 
   const descr = (c: Rubric, level: string, v: number) =>
     v === 3 ? `${t("pl.sc3")}: ${c.levels[level] ?? ""}` : v === 2 ? t("pl.sc2") : v === 1 ? (level === "A1" ? t("pl.sc1A1") : `${t("pl.sc1", { l: prevLevel(level) })}: ${c.levels[prevLevel(level)] ?? ""}`) : t("pl.sc0");
@@ -258,112 +218,9 @@ export function PlacementReview(p: ReviewProps) {
     <div className="flex flex-col gap-4">
       {waiting && <div className="alert flex flex-wrap items-center gap-2"><Icon name="hourglass" size="sm" /> <span className="grow">{t(p.mode === "self" ? "pl.inProgressSelf" : "pl.inProgress")}</span>{p.mode === "self" && <a className="btn primary sm" href={`/placement/${p.id}`}>{t("pl.continueSelf")}</a>}</div>}
 
-      <section className="card flex flex-col gap-3">
-        <h3 className="m-0">{t("pl.table")}</h3>
-        <div className="tblwrap">
-          <table className="pltable">
-            <thead><tr><th />{L.map((l) => <th key={l}>{l}</th>)}</tr></thead>
-            <tbody>
-              <tr><th>{t("pl.grammar")}</th>{L.map((l) => <td key={l}>{cell(p.sm.core[l]?.grammar)}</td>)}</tr>
-              <tr><th>{t("pl.vocab")}</th>{L.map((l) => <td key={l}>{cell(p.sm.core[l]?.vocabulary)}</td>)}</tr>
-              <tr><th>{t("pl.part.reading")}</th>{L.map((l) => <td key={l}>{cell(p.sm.reading[l])}</td>)}</tr>
-              <tr><th>{t("pl.part.listening")}</th>{L.map((l) => <td key={l}>{cell(p.sm.listening[l])}</td>)}</tr>
-            </tbody>
-          </table>
-        </div>
-        <div className="plpath">
-          <span className="small muted">{t("pl.anchors")}:</span>
-          {sm.anchors.map((x) => <span key={x.level} className={`pill ${x.pass ? "green" : x.pass === false ? "orange" : "grey"}`}>{x.level} {x.pass ? "✓" : x.pass === false ? "✗" : ""} {x.c}/{x.n}</span>)}
-          {sm.diag && <><Icon name="right" size="sm" /><span className="small muted">{t("pl.diagAt")}</span><span className="pill">{sm.diag}</span></>}
-          {sm.bd && <span className="pill blue" title={t("pl.borderHint")}>{t("pl.border")}</span>}
-        </div>
-        <div className="plsteps">
-          {([["core", has("core") ? p.sm.coreStep : null], ["vocab", p.sm.vstep], ["reading", p.sm.readStep], ["listening", p.sm.listenStep], ["writing", wHint], ["speaking", sHint]] as [string, number | null][]).map(([k, v]) => (
-            <div key={k} className={has(k) ? undefined : "plsteps-off"}>
-              <span>{t(`pl.part.${k}` as "pl.part.core")}</span>
-              <b>{!has(k) ? t("pl.notInTest") : v !== null ? STEPS[v] : "—"}</b>
-              {p.dates?.[k] && <small className="muted">{p.dates[k]}</small>}
-            </div>
-          ))}
-        </div>
-        <div className="plexplain">
-          <div className="flex items-center gap-2"><Icon name="spark" size="sm" /><b>{t("pl.exTitle")}</b></div>
-          {lines.map((x) => <p key={x} className="m-0">{x}</p>)}
-          <details><summary className="small">{t("pl.howRead")}</summary><p className="small mt-2 mb-0">{t("pl.howReadText")}</p></details>
-        </div>
-      </section>
-
-      {sm.families.length > 0 && (
-        <section className="card flex flex-col gap-3">
-          <div className="flex flex-wrap items-center gap-2"><h3 className="m-0 grow">{t("pl.famTitle")}</h3><span className="small muted">{t("pl.famLegend")}</span></div>
-          <div className="tblwrap">
-            <table className="pltable plfam">
-              <thead><tr><th>{t("pl.famCol")}</th>{famLv.map((l) => <th key={l} className={l === sm.diag ? "plfam-diag" : undefined}>{l}{l === sm.diag && <div className="small muted">{t("pl.famDiag")}</div>}</th>)}<th>{t("pl.famAll")}</th><th /></tr></thead>
-              <tbody>
-                {sm.families.map((f) => {
-                  // как в доборе: если у раздела есть темы на уровне проверки — оцениваем по ним, иначе по всем ответам
-                  const r = sm.diag && (f.has ? f.has.includes(sm.diag) : (f.lvl[1] ?? 0) >= 2) ? f.lvl : f.all, q = r[1] ? r[0] / r[1] : 0;
-                  const k = r[1] < 3 ? "few" : q >= 0.85 ? "ok" : q >= 0.5 ? "mid" : "bad";
-                  return (
-                    <tr key={f.id} className={`plfam-${k}`}>
-                      <th><b>{f.name}</b><div className="small muted">{f.what}</div></th>
-                      {famLv.map((l) => <td key={l} className={l === sm.diag ? "plfam-diag" : undefined}>{f.by?.[l]?.[1] ? <b>{f.by[l][0]}/{f.by[l][1]}</b> : f.has && !f.has.includes(l) ? <span className="small muted">{t("pl.famNotIn")}</span> : <span className="muted">—</span>}</td>)}
-                      <td><b>{f.all[0]}/{f.all[1]}</b> <span className="muted">{pct(f.all)}%</span></td>
-                      <td className="plfam-st">{t(`pl.g.${k}` as DictKey)}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </section>
-      )}
-
-      {sm.groups.length > 0 && (
-        <section className="card flex flex-col gap-3">
-          <div className="flex flex-wrap items-center gap-2"><h3 className="m-0 grow">{t("pl.mapTitle", { l: sm.diag ?? "" })}</h3><span className="small muted">{t("pl.mapLegend")}</span></div>
-          {growth.length > 0 ? <div className="plgrowth"><b>{t("pl.growth")}:</b> {growth.map((g) => g.name).join(", ")}</div> : diagGroups.length > 0 && <div className="plgrowth ok">{t("pl.noGrowth")}</div>}
-          <div className="plgroups">{diagGroups.map(gRow)}</div>
-          {otherGroups.length > 0 && <details><summary className="small">{t("pl.mapOther")}</summary><div className="plgroups mt-2">{otherGroups.map(gRow)}</div></details>}
-          {(sm.vlevels ?? []).length > 0 && (
-            <>
-              <h3 className="mb-0 mt-2">{t("pl.vTitle")}</h3>
-              <div className="tblwrap">
-                <table className="pltable plfam">
-                  <thead><tr><th>{t("pl.vKind")}</th>{sm.vlevels.map((x) => <th key={x.level} className={x.level === sm.vlevel ? "plfam-diag" : undefined}>{x.level}<div className="small muted">{x.warm ? t("pl.vWarm") : x.level === sm.vlevel ? t("pl.vMain") : t("pl.vUp")}</div></th>)}</tr></thead>
-                  <tbody>
-                    {[...new Set(sm.vlevels.flatMap((x) => x.kinds.map((k) => k.name)))].map((name) => (
-                      <tr key={name}><th><b>{name}</b></th>{sm.vlevels.map((x) => { const k = x.kinds.find((y) => y.name === name); return <td key={x.level} className={x.level === sm.vlevel ? "plfam-diag" : undefined}>{k ? <b className={k.c === k.n ? "plc-ok" : k.c === 0 ? "plc-bad" : undefined}>{k.c}/{k.n}</b> : <span className="muted">—</span>}</td>; })}</tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              <div className={`plgrowth ${vWeak.length ? "" : "ok"}`}>
-                {vWeak.length ? <><b>{t("pl.vWeak")}:</b> {vWeak.map((k) => `${k.name} (${k.level}, ${k.c}/${k.n})`).join("; ")}</> : t("pl.vNoWeak")}
-                {sm.vweak?.length > 0 && <div className="small mt-1">{t("pl.vTopics")}: {sm.vweak.slice(0, 8).join(", ")}</div>}
-              </div>
-            </>
-          )}
-        </section>
-      )}
-
-      {total > 0 && (
-        <section className="card flex flex-col gap-3">
-          <div className="flex items-center gap-2"><h3 className="m-0 grow">{t("pl.timeTitle")}</h3><b>{fmtSec(total)}</b></div>
-          {idleAll > 0 && <p className="small muted m-0">{t("pl.timeIdleNote", { s: fmtSec(idleAll) })}</p>}
-          <div className="plsteps">
-            {["core", "vocab", "reading", "listening", "writing", "speaking"].map((k) => <div key={k}><span>{t(`pl.part.${k}` as DictKey)}</span><b className="text-[16px]">{tm[k] ? fmtSec(tm[k]) : "—"}</b>{idle[k] ? <span className="small muted">{t("pl.timeIdle", { s: fmtSec(idle[k]), n: pauses[k] ?? 1 })}</span> : null}</div>)}
-          </div>
-          <div className="small flex flex-col gap-1">
-            {coreMs.length > 0 && <span>{t("pl.timeAvg", { s: fmtSec(coreMs.reduce((a, b) => a + b, 0) / coreMs.length) })}</span>}
-            {fast > 0 && <span className="text-bad">{t("pl.timeFast", { n: fast })}</span>}
-            {dks > 0 && <span>{t("pl.dkCount", { n: dks })}</span>}
-            {slow.length > 0 && <span className="muted">{t("pl.timeSlow")}: {slow.map((x) => `«${x.q.slice(0, 40)}…» — ${fmtSec(x.ms!)}`).join("; ")}</span>}
-            {[...p.d.listening].map((x) => <span key={x.id} className="muted">{t("pl.playsOf", { title: x.title, n: x.plays ?? 0 })}</span>)}
-          </div>
-          <p className="hint m-0">{t("pl.timeNote")}</p>
-        </section>
-      )}
+      <ReviewInsights id={p.id} who={p.who ?? ""} sm={sm} d={p.d} reveal={p.reveal ?? []} has={has} hint={hint} tm={tm} idle={idle} dates={p.dates} base={p.base}
+        steps={{ core: has("core") ? sm.coreStep : null, vocab: sm.vstep, reading: sm.readStep, listening: sm.listenStep, writing: wHint, speaking: sHint }}
+        wsWaiting={{ writing: !!p.d.writing && wHint === null, speaking: !!p.d.speaking && sHint === null }} />
 
       {p.d.writing && (
         <section className="card flex flex-col gap-3">

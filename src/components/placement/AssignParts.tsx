@@ -65,7 +65,7 @@ export function useAssignParts(sid: string | null) {
 }
 
 /** Результат теста: какие разделы входили, когда пройден каждый, и «Добавить разделы» в этот же тест. */
-export function PlacementParts({ id, parts, done, dates, canAdd }: { id: string; parts: string[]; done: string[]; dates: Record<string, string>; canAdd: boolean }) {
+export function PlacementParts({ id, parts, done, dates, canAdd, compact }: { id: string; parts: string[]; done: string[]; dates: Record<string, string>; canAdd: boolean; compact?: boolean }) {
   const { t } = useT();
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -83,8 +83,8 @@ export function PlacementParts({ id, parts, done, dates, canAdd }: { id: string;
   });
   return (
     <div className="plparts">
-      <span className="small muted">{t("pl.parts")}:</span>
-      {PL_PARTS.map((k) => {
+      {!compact && <span className="small muted">{t("pl.parts")}:</span>}
+      {!compact && PL_PARTS.map((k) => {
         const inTest = parts.includes(k), ok = done.includes(k);
         return <span key={k} className={`pill ${ok ? "green" : inTest ? "grey" : "outline"}`}>{name(k)}{ok && dates[k] ? <small>{dates[k]}</small> : !inTest ? <small>—</small> : null}</span>;
       })}

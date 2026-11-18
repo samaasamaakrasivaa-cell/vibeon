@@ -2447,3 +2447,25 @@ body.lmoving, body.lmoving * { cursor: grabbing !important; user-select: none; }
 .hwprep-name:hover { background: var(--fill); }
 .hwprep-name span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .hwprep-prev { padding: 0 10px 10px; }
+/* разбор placement test: вывод системы по блокам */
+.prsum { padding: 10px 14px; border-radius: 12px; background: var(--accent-bg); color: var(--accent-text); font-weight: 600; }
+.prblock { display: flex; flex-direction: column; gap: 6px; padding: 14px 16px; border-radius: 16px; background: var(--surface2); }
+.prblock-h { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; font-size: 17px; }
+.prh { margin: 6px 0 0; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--text3); }
+.prlist { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; line-height: 1.5; }
+.prmean { margin: 4px 0 0; padding: 8px 12px; border-radius: 10px; background: var(--violet-bg); color: color-mix(in srgb, var(--violet) 70%, var(--text)); display: flex; gap: 8px; align-items: flex-start; }
+.prmean.ok { background: var(--ok-bg); color: var(--ok-text); }
+.prerr { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; padding: 12px; border-radius: 12px; background: var(--surface); }
+.prerrtbl td, .prerrtbl th { text-align: left; vertical-align: top; }
+.prdet > summary { cursor: pointer; font-size: 14px; font-weight: 600; color: var(--accent-text); padding: 4px 0; }
+.prdet .plans { background: var(--surface); }
+.printonly { display: none; }
+@media print {
+  body.print-one * { visibility: hidden !important; }
+  body.print-one [data-print-on], body.print-one [data-print-on] * { visibility: visible !important; }
+  body.print-one [data-print-on] { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none; }
+  body.print-one [data-print-on] .printonly { display: block; margin-bottom: 8px; }
+  body.print-one .noprint { display: none !important; }
+}
+.prtitle { display: flex; align-items: center; gap: 8px; }
+.prtime { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }

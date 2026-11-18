@@ -12,7 +12,8 @@ import { Flag } from "./Flag";
  */
 export const fmtSec = (ms: number) => (ms < 60000 ? `${Math.max(1, Math.round(ms / 1000))} с` : `${Math.floor(ms / 60000)} мин ${Math.round((ms % 60000) / 1000)} с`);
 
-export function PlacementAnswers({ id, d, teacher, reveal: initial }: { id: string; d: ReviewData; teacher: boolean; reveal: string[] }) {
+/** only — показать один раздел (разбор под своим блоком в выводе системы), без карточки и заголовка. */
+export function PlacementAnswers({ id, d, teacher, reveal: initial, only }: { id: string; d: ReviewData; teacher: boolean; reveal: string[]; only?: "core" | "vocab" | "reading" | "listening" }) {
   const { t } = useT();
   const [open, setOpen] = useState<Record<string, string>>({});
   const [rev, setRev] = useState<string[]>(initial);
@@ -37,9 +38,9 @@ export function PlacementAnswers({ id, d, teacher, reveal: initial }: { id: stri
   const tried = (list: (string | null)[]) => teacher && list.length > 0 && <div className="small muted"><Icon name="pencil" size="sm" /> {t("pl.tried")}: {list.map((v) => v ?? t("pl.dontKnow")).join(" → ")}</div>;
   return (
     <div className="flex flex-col gap-4">
-      {(["core", "vocab"] as const).map((part) => { const list = d.core.filter((x) => (part === "vocab") === !!x.vocab); return list.length > 0 && (
-      <section key={part} className="card">
-        <h3 className="mt-0">{t(part === "vocab" ? "pl.part.vocab" : "pl.part.core")}</h3>
+      {(["core", "vocab"] as const).filter((part) => !only || only === part).map((part) => { const list = d.core.filter((x) => (part === "vocab") === !!x.vocab); return list.length > 0 && (
+      <section key={part} className={only ? "" : "card"}>
+        {!only && <h3 className="mt-0">{t(part === "vocab" ? "pl.part.vocab" : "pl.part.core")}</h3>}
         {L.filter((l) => list.some((x) => x.level === l)).map((l) => (
           <div key={l} className="mb-3">
             <div className="plab">{l}</div>
@@ -61,7 +62,7 @@ export function PlacementAnswers({ id, d, teacher, reveal: initial }: { id: stri
         ))}
       </section>
       ); })}
-      {[...d.reading, ...d.listening].map((x) => (
+      {[...(!only || only === "reading" ? d.reading : []), ...(!only || only === "listening" ? d.listening : [])].map((x) => (
         <section key={x.id} className="card flex flex-col gap-3">
           <div className="flex flex-wrap items-center gap-2">
             <span className="pill grey">{t(x.kind === "reading" ? "pl.part.reading" : "pl.part.listening")} · {x.level}</span>

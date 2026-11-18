@@ -11,7 +11,7 @@ export function reviewData(id: string, st: PState, forTeacher: boolean) {
     const given = a?.v === null || a?.v === undefined ? "" : it.type === "mcq" ? it.options?.[Number(a.v)] ?? "" : String(a.v);
     return {
       id: it.id, level: it.level, step: x.step, skill: it.skill, topic: it.topic_ru, type: it.type, q: it.q, frame: it.frame ?? null, base: it.base ?? it.key ?? null,
-      right: it.type === "mcq" ? it.options?.[it.answer ?? 0] ?? "" : (it.accept ?? []).join(" / "), given, ok: !!a?.ok, explain: it.explain_ru, ms: a?.ms ?? null, dk: !!a?.dk, hinted: !!a?.h, vocab: !!x.ph?.startsWith("v"),
+      right: it.type === "mcq" ? it.options?.[it.answer ?? 0] ?? "" : (it.accept ?? []).join(" / "), given, ok: !!a?.ok, explain: it.explain_ru, ms: a?.ms ?? null, dk: !!a?.dk, hinted: !!a?.h, vocab: !!x.ph?.startsWith("v"), ph: x.ph ?? null,
       tried: (a?.tr ?? []).map((k) => (k === -1 ? null : it.type === "mcq" ? it.options?.[Number(k)] ?? "" : String(k))), // null — «Не знаю»
     };
   });
