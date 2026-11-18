@@ -85,8 +85,8 @@ jobs:
                      echo "AAAA $d: $(dig +short AAAA "$d" @8.8.8.8 | tr '\n' ' ')"; echo "AAAA www.$d: $(dig +short AAAA "www.$d" @8.8.8.8 | tr '\n' ' ')"
                      ip=$(dig +short A "$d" @8.8.8.8 | tail -1); [ "$ip" = "$SSH_HOST" ] && echo "A = адрес сервера из SSH_HOST: да" || echo "A = адрес сервера из SSH_HOST: НЕТ"
                      sudo apt-get install -y -qq whois >/dev/null 2>&1 || true
-                     [ -n "$ip" ] && whois "$ip" 2>/dev/null | grep -iE '^(country|org-name|orgname|netname|descr|org):' | grep -v "$ip" | sort -u | head -8
-                     for u in "https://$d/api/health" "https://www.$d/" "http://$d/"; do echo "$u → $(curl -s -o /dev/null -m 15 -w '%{http_code} %{remote_ip}' "$u" | sed "s/$ip/[сервер]/")"; done ;;
+                     { whois "$ip" 2>/dev/null | grep -iE '^(country|org-name|orgname|netname|descr|org):' | grep -v "$ip" | sort -u | head -8; } || echo "whois: нет данных"
+                     for u in "https://$d/api/health" "https://www.$d/" "http://$d/"; do echo "$u → $(curl -s -o /dev/null -m 15 -w '%{http_code} %{remote_ip}' "$u" | sed "s/$ip/[сервер]/" || true)"; done ;;
             proxy)   sync; ssh srv "bash /opt/vibeon/deploy/attach-proxy.sh $Q" ;;
             secrets)
               n=0
