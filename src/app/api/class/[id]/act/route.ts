@@ -98,11 +98,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     // ── задание урока → в домашку (и обратно)
     case "hw": {
       if (!teacher) return bad("teacher only");
-      const taskId = str(body.taskId, 60);
+      // одно задание (taskId) или несколько сразу («Задать все заготовки», ids) — в конец списка, в том порядке, как задавали
+      const list = (Array.isArray(body.ids) ? (body.ids as unknown[]).slice(0, 100).map((x) => str(x, 60)) : [str(body.taskId, 60)]).filter(Boolean);
       let extra: string[] = [];
       for (const lid of slotIds) { // групповое занятие — домашка всем ученикам
         const hw = await db.homework.upsert({ where: { lessonInstanceId: lid }, create: { lessonInstanceId: lid, taskIds: [] }, update: {} });
-        extra = body.on ? [...new Set([...hw.extraTaskIds, taskId])] : hw.extraTaskIds.filter((x) => x !== taskId);
+        extra = body.on ? [...new Set([...hw.extraTaskIds, ...list])] : hw.extraTaskIds.filter((x) => !list.includes(x));
         await db.homework.update({ where: { id: hw.id }, data: { extraTaskIds: extra } });
       }
       publish(ch, "hw", { extraTaskIds: extra });
@@ -322,12 +323,18 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     case "finish": {
       if (!teacher) return bad();
       const tpl = host.templateId ? await db.lessonTemplate.findUnique({ where: { id: host.templateId }, include: { tasks: true } }) : null;
-      const hwTasks = tpl?.tasks.filter((t) => t.section === "homework" && !t.hidden && !(t.options as { teacherOnly?: boolean } | null)?.teacherOnly).map((t) => t.id) ?? [];
+      const hwTasks = tpl?.tasks.filter((t) => t.section === "homework" && !t.hidden && !(t.options as { teacherOnly?: boolean } | null)?.teacherOnly).sort((a, b) => a.order - b.order).map((t) => t.id) ?? [];
       const items = tpl ? tpl.tasks.filter((t) => t.type === "wordset").flatMap((t) => { const p = parse(t.type as TaskType, t.content); return p.kind === "wordset" ? p.items : []; }) : [];
       let anyHw = false;
       // групповое занятие — каждому ученику: домашка, слова урока, «урок проведён», уведомления
       for (const l of slot) {
-        const hw = await db.homework.upsert({ where: { lessonInstanceId: l.id }, create: { lessonInstanceId: l.id, taskIds: hwTasks }, update: { taskIds: hwTasks } });
+        // новые домашки: заготовки раздела «Домашка» ученик получает, только если учитель их задал (или отметил «задать заготовки» при завершении)
+        const prev = await db.homework.findUnique({ where: { lessonInstanceId: l.id } });
+        const manual = prev ? prev.manual : true;
+        const hw = manual
+          ? await db.homework.upsert({ where: { lessonInstanceId: l.id }, create: { lessonInstanceId: l.id, taskIds: [], extraTaskIds: body.prepared ? hwTasks : [] },
+              update: body.prepared ? { extraTaskIds: [...new Set([...(prev?.extraTaskIds ?? []), ...hwTasks.filter((x) => !(prev?.removedTaskIds ?? []).includes(x))])] } : {} })
+          : await db.homework.upsert({ where: { lessonInstanceId: l.id }, create: { lessonInstanceId: l.id, taskIds: hwTasks }, update: { taskIds: hwTasks } });
         const hasHw = hw.taskIds.length + hw.extraTaskIds.length + hw.wordTraining.length > 0;
         anyHw ||= hasHw;
         if (l.studentId && items.length) {

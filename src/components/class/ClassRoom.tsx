@@ -36,7 +36,7 @@ export type ClassData = {
   teacher: { id: string; name: string; lastName: string | null }; student: { id: string; userId: string | null; name: string; lastName: string | null; level: string | null; course: string | null; gender?: string | null } | null;
   title: string | null; crumbs: string | null; course: { title: string; cover: string | null } | null; rubrics: Rubric[]; tasks: CTask[]; teacherInfo?: TInfo;
   answers: Answers; statuses: Record<string, string>; reviews: Record<string, Review>; aiDrafts: Record<string, AiCheck>; live: LiveState;
-  board: BObj[][]; homework: { extraTaskIds: string[]; wordTraining: string[]; teacherComment: string | null; taskOrder?: string[]; removedTaskIds?: string[] };
+  board: BObj[][]; homework: { extraTaskIds: string[]; wordTraining: string[]; teacherComment: string | null; taskOrder?: string[]; removedTaskIds?: string[]; manual?: boolean };
   lessonWords: { word: string; tr: string; ex: string }[]; words: Word[]; messages: Msg[];
   note: string | null; studentNote: string | null; callLink: string | null; callOwn?: boolean; when: string; durationMin: number; status: string; goal: string | null;
   templates: { id: string; label: string }[]; homeHref: string;
@@ -260,7 +260,15 @@ export function ClassRoom({ d }: { d: ClassData }) {
   const cur = d.rubrics[ri];
   const inRubric = lessonTasks.filter((x) => x.rubricId === cur?.id || (!x.rubricId && ri === 0) || (x.rubricId && !d.rubrics.some((r) => r.id === x.rubricId) && ri === 0));
   // домашка: задания раздела «Домашка» + отправленные с урока; порядок — как переставил учитель (новые — в конце)
-  const hwBase = [...d.tasks.filter((x) => x.section === "homework" && !x.hidden && !(hw.removedTaskIds ?? []).includes(x.id)), ...d.tasks.filter((x) => hw.extraTaskIds.includes(x.id))];
+  // новые домашки (manual): задания раздела «Домашка» — заготовки, ученик их не видит; у ученика — только заданное учителем,
+  // в том порядке, как учитель задавал (первым задал — первым в списке). Старые домашки — как раньше: раздел «Домашка» + отправленные с урока
+  const manual = hw.manual !== false;
+  const byId = new Map(d.tasks.map((x) => [x.id, x]));
+  const hwBase = manual
+    ? hw.extraTaskIds.map((id) => byId.get(id)).filter((x): x is CTask => !!x && !x.hidden)
+    : [...d.tasks.filter((x) => x.section === "homework" && !x.hidden && !(hw.removedTaskIds ?? []).includes(x.id)), ...d.tasks.filter((x) => hw.extraTaskIds.includes(x.id))];
+  const prepared = manual && teacher ? d.tasks.filter((x) => x.section === "homework" && !x.hidden && !x.options?.teacherOnly && !hw.extraTaskIds.includes(x.id)) : [];
+  const assignHw = (ids: string[]) => { if (!ids.length) return; setHw((h) => ({ ...h, extraTaskIds: [...new Set([...h.extraTaskIds, ...ids])] })); void send("hw", { ids, on: true }); };
   // крестик: убрать из домашки (по ошибке добавили)
   const removeHw = (task: CTask) => { if (!confirm(t("cls.hwRemoveQ", { n: task.title || t("cls.thisTask") }))) return; setHw((h) => ({ ...h, extraTaskIds: h.extraTaskIds.filter((x) => x !== task.id), removedTaskIds: h.extraTaskIds.includes(task.id) ? h.removedTaskIds : [...(h.removedTaskIds ?? []), task.id] })); void send("hwRemove", { taskId: task.id }); };
   const hwOrder = hw.taskOrder ?? [];
@@ -490,7 +498,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
               )
             )}
             {tab === "homework" && (
-              <Homework teacher={teacher} tasks={hwTasks} removed={teacher ? (hw.removedTaskIds ?? []).length : 0} onRestore={() => { setHw((h) => ({ ...h, removedTaskIds: [] })); void send("hwRestore", {}); }} statuses={statuses} reviews={reviews} training={hw.wordTraining} comment={hw.teacherComment} render={renderTasks}
+              <Homework teacher={teacher} tasks={hwTasks} prepared={prepared} onAssign={assignHw} removed={teacher && !manual ? (hw.removedTaskIds ?? []).length : 0} onRestore={() => { setHw((h) => ({ ...h, removedTaskIds: [] })); void send("hwRestore", {}); }} statuses={statuses} reviews={reviews} training={hw.wordTraining} comment={hw.teacherComment} render={renderTasks}
                 cards={[...d.lessonWords.map((w) => ({ word: w.word, tr: w.tr, ex: w.ex })), ...words.filter((w) => !d.lessonWords.some((l) => l.word.toLowerCase() === w.word.toLowerCase())).map((w) => ({ word: w.word, tr: w.translation ?? "", ex: w.example ?? "" }))].filter((w) => w.tr || w.ex)} />
             )}
             {tab === "words" && <Words key={viewSid} teacher={teacher} lessonWords={d.lessonWords} words={words} training={hw.wordTraining} send={send} setHw={setHw} />}
@@ -583,7 +591,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
               setSaving(false); setEditing(null); await send("reload"); router.refresh();
             }} />
         )}
-        <ClassDialogs which={dlg === "cheer" ? null : dlg} close={() => setDlg(null)} d={d} hwComment={hw.teacherComment} send={send} onFinished={() => router.push(d.homeHref)} onCheer={() => setDlg("cheer")} />
+        <ClassDialogs which={dlg === "cheer" ? null : dlg} close={() => setDlg(null)} d={d} hwComment={hw.teacherComment} hwInfo={{ given: hwTasks.length, prepared: prepared.length }} send={send} onFinished={() => router.push(d.homeHref)} onCheer={() => setDlg("cheer")} />
         {dlg === "cheer" && (
           <LessonCheer catalog={d.cheers ?? []} onClose={() => setDlg(null)} onGiven={(awardId) => rawSend("cheer", { awardId })}
             to={d.group ? d.group.members.map((m) => ({ sid: m.sid, name: m.name, gender: m.gender ?? null, inClass: !!m.userId && online.includes(m.userId) }))
@@ -693,8 +701,8 @@ function ReviewBox({ lessonId, task, review, draft, answered, send }: { lessonId
   );
 }
 
-function Homework({ teacher, tasks, statuses, reviews, training, comment, render, cards, removed = 0, onRestore }: {
-  removed?: number; onRestore?: () => void;
+function Homework({ teacher, tasks, statuses, reviews, training, comment, render, cards, removed = 0, onRestore, prepared = [], onAssign }: {
+  removed?: number; onRestore?: () => void; prepared?: (TaskData & { section: string })[]; onAssign?: (ids: string[]) => void;
   teacher: boolean; tasks: (TaskData & { section: string })[]; statuses: Record<string, string>; reviews: Record<string, Review>; training: string[]; comment: string | null;
   render: (list: never[], inHw?: boolean) => React.ReactNode; cards: { word: string; tr: string; ex: string }[];
 }) {
@@ -726,8 +734,37 @@ function Homework({ teacher, tasks, statuses, reviews, training, comment, render
       )}
       {train && <WordTrainer cards={cards} say={say} onClose={() => setTrain(false)} />}
       {render(list as never[], true)}
+      {/* заготовки раздела «Домашка»: видит только учитель; «Задать» — и задание появляется у ученика в конце его списка */}
+      {teacher && prepared.length > 0 && f === "all" && <Prepared list={prepared} onAssign={onAssign!} />}
       {removed > 0 && f === "all" && <button type="button" className="btn plain sm mt-3" onClick={onRestore}><Icon name="undo" size="sm" />{t("cls.hwRestore", { n: removed })}</button>}
     </>
+  );
+}
+
+/** Заготовки домашки из раздела «Домашка» урока: ученик их не видит, пока учитель не задаст. Можно посмотреть задание целиком. */
+function Prepared({ list, onAssign }: { list: (TaskData & { section: string })[]; onAssign: (ids: string[]) => void }) {
+  const { t } = useT();
+  const [open, setOpen] = useState<string | null>(null);
+  // предпросмотр — в своём хранилище: что учитель попробует в заготовке, не попадает в ответы ученика
+  const [local, setLocal] = useState<Answers>({});
+  return (
+    <section className="hwprep">
+      <div className="hwprep-h">
+        <div className="grow"><b className="block">{t("cls.prepTitle")}</b><span className="small muted">{t("cls.prepHint")}</span></div>
+        {list.length > 1 && <button type="button" className="btn secondary sm" onClick={() => onAssign(list.map((x) => x.id))}><Icon name="home" size="sm" />{t("cls.prepAll", { n: list.length })}</button>}
+      </div>
+      {list.map((x) => (
+        <div key={x.id} className="hwprep-row">
+          <div className="hwprep-line">
+            <button type="button" className="hwprep-name" aria-expanded={open === x.id} onClick={() => setOpen(open === x.id ? null : x.id)}>
+              <Icon name={open === x.id ? "chevd" : "right"} size="sm" /><span className="grow min-w-0">{x.title || t("cls.thisTask")}</span>
+            </button>
+            <button type="button" className="btn primary sm" onClick={() => onAssign([x.id])}><Icon name="home" size="sm" />{t("cls.prepGive")}</button>
+          </div>
+          {open === x.id && <div className="hwprep-prev"><AnswerProvider answers={local} onSet={(tid, k, v) => setLocal((a) => ({ ...a, [tid]: { ...(a[tid] ?? {}), [k]: v } }))} role="guest"><TaskCard task={x} index={-1} /></AnswerProvider></div>}
+        </div>
+      ))}
+    </section>
   );
 }
 
@@ -1117,13 +1154,14 @@ function NoteBox({ title, value, onSave }: { title: string; value: string; onSav
   );
 }
 
-function ClassDialogs({ which, close, d, hwComment, send, onFinished, onCheer }: { which: string | null; close: () => void; d: ClassData; hwComment: string | null; send: (type: string, x?: Record<string, unknown>) => Promise<{ ok: boolean }>; onFinished: () => void; onCheer: () => void }) {
+function ClassDialogs({ which, close, d, hwComment, hwInfo, send, onFinished, onCheer }: { which: string | null; close: () => void; d: ClassData; hwComment: string | null; hwInfo: { given: number; prepared: number }; send: (type: string, x?: Record<string, unknown>) => Promise<{ ok: boolean }>; onFinished: () => void; onCheer: () => void }) {
   const { t } = useT();
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
   const [fbTo, setFbTo] = useState<string | null>(null);
-  useEffect(() => { setText(which === "hwc" ? hwComment ?? "" : ""); setDone(false); setFbTo(null); }, [which, hwComment]);
+  const [givePrep, setGivePrep] = useState(false);
+  useEffect(() => { setText(which === "hwc" ? hwComment ?? "" : ""); setDone(false); setFbTo(null); setGivePrep(hwInfo.given === 0 && hwInfo.prepared > 0); }, [which, hwComment]); // eslint-disable-line react-hooks/exhaustive-deps
   const s = d.student;
   const goal = useMemo(() => d.goal, [d.goal]);
   if (!which) return null;
@@ -1146,9 +1184,17 @@ function ClassDialogs({ which, close, d, hwComment, send, onFinished, onCheer }:
     return (
       <Dialog open onClose={close} title={t("cls.finishQ")}>
         <p className="muted mt-0">{t("cls.finishHint")}</p>
+        {/* домашка: что задано — уходит ученику; заготовки — только если отметить */}
+        <p className="small mt-0 mb-3">{hwInfo.given > 0 ? t("cls.finishGiven", { n: hwInfo.given }) : t("cls.finishNone")}</p>
+        {hwInfo.prepared > 0 && (
+          <label className="setting mb-3">
+            <span><span>{t("cls.finishPrep", { n: hwInfo.prepared })}</span><br /><span className="small muted">{hwInfo.given > 0 ? t("cls.finishPrepAfter") : t("cls.finishPrepHint")}</span></span>
+            <span className="switch"><input type="checkbox" checked={givePrep} onChange={(e) => setGivePrep(e.target.checked)} /><span /></span>
+          </label>
+        )}
         <button type="button" className="chrnudge" onClick={onCheer}><span aria-hidden="true">💛</span><span className="grow"><b>{t("chr.btn")}</b><br /><span className="small muted">{t("chr.nudge")}</span></span><Icon name="right" size="sm" /></button>
         <div className="actions"><button className="btn secondary" onClick={close}>{t("common.cancel")}</button>
-          <button className="btn primary" disabled={busy} onClick={async () => { setBusy(true); await send("finish"); setBusy(false); close(); onFinished(); }}>{t("cls.finish")}</button></div>
+          <button className="btn primary" disabled={busy} onClick={async () => { setBusy(true); await send("finish", givePrep ? { prepared: true } : {}); setBusy(false); close(); onFinished(); }}>{t("cls.finish")}</button></div>
       </Dialog>
     );
   const isHw = which === "hwc";

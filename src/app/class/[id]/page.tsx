@@ -94,7 +94,7 @@ export default async function ClassPage({ params, searchParams }: { params: Prom
         rubrics: data?.rubrics ?? [], tasks: (data?.tasks ?? []).filter((x) => role === "teacher" || !x.options?.teacherOnly).map((x) => (role === "teacher" || (!x.options?.teacherKey && !x.options?.help?.hidden) ? x : { ...x, options: { ...x.options, teacherKey: undefined, help: x.options?.help?.hidden ? undefined : x.options?.help } })), /* заметки «только учителю», ответы для учителя и скрытые Useful phrases ученику не отдаём */ answers, statuses, reviews, aiDrafts,
         ...(role === "teacher" && data?.l.teacherInfo ? { teacherInfo: data.l.teacherInfo as TInfo } : {}),
         live: (host.live ?? {}) as LiveState, board,
-        homework: { extraTaskIds: hw?.extraTaskIds ?? [], wordTraining: hw?.wordTraining ?? [], teacherComment: hw?.teacherComment ?? null, taskOrder: hw?.taskOrder ?? [], removedTaskIds: hw?.removedTaskIds ?? [] },
+        homework: { extraTaskIds: hw?.extraTaskIds ?? [], wordTraining: hw?.wordTraining ?? [], teacherComment: hw?.teacherComment ?? null, taskOrder: hw?.taskOrder ?? [], removedTaskIds: hw?.removedTaskIds ?? [], manual: hw ? hw.manual : true },
         lessonWords, words: words.map((w) => ({ id: w.id, word: w.word, translation: w.translation, example: w.example, level: w.level })),
         messages: (group ? [...(grp?.messages ?? [])] : messages).reverse().map((m) => ({ id: m.id, text: m.deletedAt ? "" : m.text, by: m.senderId, at: m.createdAt.toISOString(), replyTo: m.replyTo, edited: !!m.editedAt, deleted: !!m.deletedAt })),
         ...(group ? { chatNames } : {}),
