@@ -69,6 +69,8 @@ export default async function MyLessons({ searchParams }: { searchParams: Promis
                   return (
                     <Link key={l.id} href={`/class/${l.id}${l.status === "DONE" ? "?tab=homework" : ""}`} className="row hover:bg-surface2">
                       <div className="min-w-[90px]"><b className="block">{l.startsAt.toLocaleDateString(loc, { day: "numeric", month: "short", timeZone: tz }).replace(".", "")}</b><span className="small muted">{l.startsAt.toLocaleDateString(loc, { weekday: "short", timeZone: tz })}</span></div>
+                      {/* картинка урока (или курса) — если учитель загрузил */}
+                      {(l.template!.cover || l.template!.unit.course.cover) && <span className="lcover has" style={{ backgroundImage: `url(${l.template!.cover || l.template!.unit.course.cover})`, cursor: "inherit" }} aria-hidden="true" />}
                       <div className="grow"><div className="t">{l.template!.title}</div>{l.template!.subtitle && <div className="s">{l.template!.subtitle}</div>}</div>
                       <span className={`pill ${c}`}>{label}</span>
                       <Icon name="right" size="sm" className="text-text3" />

@@ -16,7 +16,7 @@ import type { DictKey } from "@/lib/i18n/dict";
 import { useRouter } from "next/navigation";
 import { useRun } from "./useRun";
 
-type Lesson = { id: string; title: string; subtitle: string | null; durationMin: number; tasks: number; info: TInfo };
+type Lesson = { id: string; title: string; subtitle: string | null; cover: string | null; durationMin: number; tasks: number; info: TInfo };
 type Unit = { id: string; title: string; collapsed: boolean; lessons: Lesson[] };
 export type CourseData = { id: string; title: string; level: string | null; category: string; cover: string | null; color: number; units: Unit[]; studentsOn: number };
 export type AssignStudent = { id: string; name: string; next: string | null };
@@ -134,6 +134,8 @@ export function CourseView({ c, students }: { c: CourseData; students: AssignStu
                     <span className="draghandle">⋮⋮</span>
                     <input type="checkbox" className="check" checked={checked.includes(l.id)} onChange={(e) => setChecked(e.target.checked ? [...checked, l.id] : checked.filter((x) => x !== l.id))} aria-label={t("crs.select")} />
                     <span className="ln">{n}</span>
+                    {/* картинка урока: нажать — загрузить (видна в выборе урока и у ученика в «Мои уроки») */}
+                    <LessonCover id={l.id} cover={l.cover} run={run} />
                     <button type="button" className="lrow-main" onClick={() => setOpen(open === l.id ? null : l.id)} aria-expanded={open === l.id}>
                       <b>{l.title}</b>
                       <span className="lrow-meta">
@@ -156,6 +158,12 @@ export function CourseView({ c, students }: { c: CourseData; students: AssignStu
                         <label className="field"><span className="flabel">{t("crs.duration")}</span>
                           <select className="select" value={l.durationMin} onChange={(e) => run(() => updateLessonMeta(l.id, { durationMin: +e.target.value }))}>{[30, 45, 60, 90, 120].map((m) => <option key={m} value={m}>{m} {t("dash.min")}</option>)}</select>
                         </label>
+                      </div>
+                      <div className="field mb-3"><span className="flabel">{t("crs.lessonCover")}</span>
+                        <div className="flex flex-wrap items-center gap-3"><LessonCover id={l.id} cover={l.cover} run={run} big />
+                          <span className="small muted">{t("crs.lessonCoverHint")}</span>
+                          {l.cover && <button type="button" className="btn plain sm" onClick={() => run(() => updateLessonMeta(l.id, { cover: null }))}>{t("crs.removeCover")}</button>}
+                        </div>
                       </div>
                       <TeacherInfo info={l.info} open onSave={(v) => run(() => updateTeacherInfo(l.id, v))} />
                     </div>
@@ -257,5 +265,29 @@ function NewLesson({ unitId, onClose }: { unitId: string; onClose: () => void })
         <button type="button" className="btn primary" disabled={busy || !title.trim()} onClick={() => void create(true)}>{t("crs.createBuild")}</button>
       </div>
     </Dialog>
+  );
+}
+
+/** Картинка урока в списке курса: превью; нажать — выбрать и загрузить файл. */
+function LessonCover({ id, cover, run, big = false }: { id: string; cover: string | null; run: ReturnType<typeof useRun>["run"]; big?: boolean }) {
+  const { t } = useT();
+  const ref = useRef<HTMLInputElement>(null);
+  const [busy, setBusy] = useState(false);
+  return (
+    <>
+      <button type="button" className={`lcover ${big ? "big" : ""} ${cover ? "has" : ""}`} style={cover ? { backgroundImage: `url(${cover})` } : undefined}
+        title={cover ? t("crs.lessonCoverChange") : t("crs.lessonCoverAdd")} aria-label={cover ? t("crs.lessonCoverChange") : t("crs.lessonCoverAdd")} disabled={busy}
+        onClick={(e) => { e.stopPropagation(); ref.current?.click(); }}>
+        {!cover && <Icon name="image" size="sm" />}
+      </button>
+      <input ref={ref} type="file" accept="image/*" hidden onChange={async (e) => {
+        const f = e.target.files?.[0]; e.target.value = "";
+        if (!f) return;
+        setBusy(true);
+        const r = await upload(f).catch(() => null);
+        setBusy(false);
+        if (r) run(() => updateLessonMeta(id, { cover: r.url }));
+      }} />
+    </>
   );
 }
