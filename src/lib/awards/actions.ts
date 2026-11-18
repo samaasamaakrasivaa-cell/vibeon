@@ -7,9 +7,15 @@ import { fromZoned, parseIsoDay } from "../time";
 import { CHARACTER_KEYS } from "@/components/awards/Characters";
 import { ICONS, METALS } from "./catalog";
 import { getCatalog } from "./catalog-db";
+import { isRu, translateTemplates } from "./translate";
 import { takeTgAvatar } from "./avatar";
 
 type R = { ok: true } | { ok: false; error: string };
+
+/** Ученик выбрал аватарку сам: персонаж, своё фото или «оставить» фото из Telegram. */
+export async function studentChose(s: { avatarSrc: string | null; avatarNotice: boolean }) {
+  return s.avatarSrc === "char" || s.avatarSrc === "upload" || (s.avatarSrc === "tg" && !s.avatarNotice);
+}
 
 async function teacherStudent(studentId: string) {
   const me = await requireUser("TEACHER");
@@ -22,6 +28,8 @@ const refresh = (studentId: string) => { revalidatePath(`/teacher/students/${stu
 export type GiveInput = {
   kind: "title" | "cheer"; key: string | null; name: string; why: string; icon: string; color: string;
   term: "week" | "month" | "date" | "forever"; until?: string; onMain: boolean; tg: boolean;
+  /** выдаём из «Моих» — обновляем этот статус, а не создаём копию (например, на другом языке) */
+  tplId?: string | null;
 };
 
 /** Выдать статус: титул (качество; можно показать на главном экране) или поощрение (момент; только в «Мои награды»). */
@@ -48,8 +56,15 @@ export async function giveAward(studentId: string, x: GiveInput): Promise<R & { 
   const catalog = await getCatalog();
   const inCatalog = !!x.key && catalog.some((c) => c.key === x.key);
   if (!inCatalog) {
-    const tpl = { why: x.why.trim().slice(0, 500) || null, icon: x.icon, color: x.color, term: kind === "title" ? x.term : "forever" };
-    await db.awardTemplate.upsert({ where: { teacherId_kind_name: { teacherId: me.id, kind, name } }, create: { teacherId: me.id, kind, name, ...tpl }, update: tpl });
+    const why = x.why.trim().slice(0, 500) || null;
+    const ru = isRu(name);
+    const lang = ru ? { nameRu: name, whyRu: why } : { nameEn: name, whyEn: why };
+    const tpl = { icon: x.icon, color: x.color, term: kind === "title" ? x.term : "forever" };
+    const own = x.tplId ? await db.awardTemplate.findFirst({ where: { id: x.tplId, teacherId: me.id } })
+      : await db.awardTemplate.findFirst({ where: { teacherId: me.id, kind, OR: [{ name }, { nameRu: name }, { nameEn: name }] } });
+    if (own) await db.awardTemplate.update({ where: { id: own.id }, data: { ...tpl, ...lang } });
+    else await db.awardTemplate.create({ data: { teacherId: me.id, kind, name, why, ...tpl, ...lang } });
+    void translateTemplates(me.id); // второй язык — ИИ, в фоне
   }
   const created = await db.award.create({
     data: {
@@ -117,6 +132,18 @@ export async function updateAward(id: string, x: { name: string; why: string; ic
   return { ok: true };
 }
 
+/** Поправить свой статус из «Моих»: название и «за что» на русском и английском. */
+export async function updateTemplate(id: string, x: { nameRu: string; nameEn: string; whyRu: string; whyEn: string }): Promise<R> {
+  const me = await requireUser("TEACHER");
+  const t = await db.awardTemplate.findFirst({ where: { id, teacherId: me.id } });
+  if (!t) return { ok: false, error: "nf" };
+  const cut = (v: string, n: number) => v.trim().slice(0, n) || null;
+  if (!x.nameRu.trim() && !x.nameEn.trim()) return { ok: false, error: "name" };
+  await db.awardTemplate.update({ where: { id }, data: { nameRu: cut(x.nameRu, 80), nameEn: cut(x.nameEn, 80), whyRu: cut(x.whyRu, 500), whyEn: cut(x.whyEn, 500) } });
+  revalidatePath("/teacher/students", "layout");
+  return { ok: true };
+}
+
 /** Убрать свой статус из картотеки «Мои» (у учеников он остаётся). */
 export async function deleteTemplate(id: string): Promise<R> {
   const me = await requireUser("TEACHER");
@@ -129,6 +156,17 @@ export async function deleteAward(id: string): Promise<R> {
   const a = await ownAward(id);
   await db.award.delete({ where: { id } });
   refresh(a.studentId);
+  return { ok: true };
+}
+
+/** Учитель выбирает ученику персонажа — пока ученик сам не выбрал аватарку (своё фото, персонажа или оставил фото из Telegram). */
+export async function setStudentAvatar(studentId: string, v: string | null): Promise<R> {
+  const { s } = await teacherStudent(studentId);
+  if (await studentChose(s)) return { ok: false, error: "chosen" };
+  if (v !== null && !(v.startsWith("char:") && CHARACTER_KEYS.includes(v.slice(5)))) return { ok: false, error: "char" };
+  await db.student.update({ where: { id: studentId }, data: { avatar: v, avatarSrc: v ? "teacher" : null, avatarNotice: false } });
+  refresh(studentId);
+  revalidatePath("/teacher/students");
   return { ok: true };
 }
 

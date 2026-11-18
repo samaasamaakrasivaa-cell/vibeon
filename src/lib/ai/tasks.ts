@@ -6,7 +6,7 @@ import { pluralForm } from "@/lib/i18n/dict";
 
 // Описания задач ИИ: промпт → разбор ответа; для AI_PROVIDER=mock — правдоподобный ответ без сети.
 
-export type Kind = "help" | "file" | "split" | "book" | "explain" | "draft" | "essay" | "speech" | "precheck" | "partner" | "roadmap" | "plscore";
+export type Kind = "help" | "file" | "split" | "book" | "explain" | "draft" | "essay" | "speech" | "precheck" | "partner" | "roadmap" | "plscore" | "awardtr";
 /** Оценка письма или говорения placement test по критериям уровня задания (баллы 0–3). */
 export type PlCrit = { id: string; name: string; level: string; below: string };
 export type PlScore = { scores: Record<string, number | null>; why: Record<string, string>; summary: string };
@@ -292,6 +292,15 @@ ${i.kind === "speaking" ? "Это автоматическая расшифро�
       };
     },
   } as Spec<{ kind: "writing" | "speaking"; level: string; below: string; teen: boolean; task: string; text: string; criteria: PlCrit[] }, PlScore>,
+
+  // перевод своих статусов учителя: название (коротко, тепло, как награда) и «за что»
+  awardtr: {
+    json: true, maxTokens: 1500, temperature: 0.2,
+    system: (i) => `Ты переводишь короткие тексты наград для учеников (титулы и поощрения на платформе изучения английского). Переведи каждый элемент на ${i.to === "ru" ? "русский" : "английский"} язык: name — короткое тёплое название награды (как титул, без кавычек), why — «за что» одной-двумя фразами, обращаясь к ученику на «ты». Сохрани смысл и тон. Верни JSON: {"items":[{"name":"…","why":"…"}]} — столько же элементов и в том же порядке.`,
+    user: (i) => [{ role: "user", text: JSON.stringify({ items: i.items }) }],
+    parse: (t, i) => { const r = extractJson<{ items: { name: string; why: string }[] }>(t); return { items: i.items.map((x, k) => ({ name: (r.items?.[k]?.name ?? x.name).trim().slice(0, 80), why: (r.items?.[k]?.why ?? x.why).trim().slice(0, 500) })) }; },
+    mock: (i) => ({ items: i.items.map((x) => ({ name: `${x.name} (${i.to})`, why: x.why })) }),
+  } as Spec<{ to: "ru" | "en"; items: { name: string; why: string }[] }, { items: { name: string; why: string }[] }>,
 } satisfies Record<Kind, Spec<never, unknown>>;
 
 export type SpecIn<K extends Kind> = Parameters<(typeof SPECS)[K]["system"]>[0];

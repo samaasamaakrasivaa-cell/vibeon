@@ -5,6 +5,9 @@ import Link from "next/link";
 import { AwardsCard } from "@/components/awards/AwardsCard";
 import { momentsFor } from "@/lib/teacher/moments";
 import { getCatalog } from "@/lib/awards/catalog-db";
+import { TeacherAvatar } from "@/components/awards/TeacherAvatar";
+import { studentChose } from "@/lib/awards/actions";
+import { translateTemplates } from "@/lib/awards/translate";
 import { isOwner } from "@/lib/placement/bank";
 import { StudentMoments } from "@/components/teacher/StudentMoments";
 import { guessGender } from "@/lib/student/gender";
@@ -94,6 +97,9 @@ export default async function StudentProfile({ params, searchParams }: { params:
   // пол не указан — подставляем по имени (учитель может поменять в «Об ученике» → «Изменить»)
   if (!s.gender) { const g = guessGender(s.name); if (g) { await db.student.update({ where: { id: s.id }, data: { gender: g } }); s.gender = g; } }
   const myMoments = await momentsFor(me.id, me.timezone, s.id);
+  // свои статусы: у кого нет второго языка — ИИ переведёт в фоне (появится при следующем открытии)
+  const tpls = await db.awardTemplate.findMany({ where: { teacherId: me.id }, orderBy: { updatedAt: "desc" } });
+  if (tpls.some((x) => !x.nameRu || !x.nameEn)) void translateTemplates(me.id);
   const pinnedTitle = s.awards.find((a) => a.kind === "title" && a.pinned && a.onMain && (!a.until || a.until > new Date())) ?? null;
   const dateFmt = (d: Date, o: Intl.DateTimeFormatOptions = { day: "numeric", month: "long", year: "numeric" }) => d.toLocaleDateString(loc, { ...o, timeZone: tz });
   const tr = (list: [string, string][], v: string) => (lang === "en" ? (list.find((x) => x[0] === v)?.[1] ?? v) : v);
@@ -130,7 +136,7 @@ export default async function StudentProfile({ params, searchParams }: { params:
     <div className="page">
       <Link href="/teacher/students" className="mb-4 inline-flex items-center gap-1 text-[14px] font-semibold text-accent"><Icon name="chevl" size="sm" />{t("nav.students")}</Link>
       <div className="mb-5 flex flex-wrap items-center gap-4">
-        <StudentAvatar id={s.id} avatar={s.avatar} size={64} crown={!!pinnedTitle} />
+        <TeacherAvatar id={s.id} avatar={s.avatar} crown={!!pinnedTitle} locked={await studentChose(s)} />
         <div className="grow min-w-[200px] flex-1">
           <h1>{fullName}</h1>
           <div className="mt-1 flex flex-wrap items-center gap-2 text-text2">
@@ -224,7 +230,7 @@ export default async function StudentProfile({ params, searchParams }: { params:
               }}
             />
             <AwardsCard catalog={await getCatalog()} owner={isOwner(me.email)} preset={sp.give ? { key: String(sp.give), name: sp.gn ? String(sp.gn) : undefined } : null} studentId={s.id} studentName={s.name} gender={s.gender} linked={!!s.user?.telegramChatId}
-              templates={(await db.awardTemplate.findMany({ where: { teacherId: me.id }, orderBy: { updatedAt: "desc" } })).map((x) => ({ id: x.id, kind: x.kind, name: x.name, why: x.why, icon: x.icon, color: x.color, term: x.term }))}
+              templates={tpls.map((x) => ({ id: x.id, kind: x.kind, name: x.name, why: x.why, icon: x.icon, color: x.color, term: x.term, nameRu: x.nameRu, nameEn: x.nameEn, whyRu: x.whyRu, whyEn: x.whyEn }))}
               rows={s.awards.map((a) => ({ id: a.id, kind: a.kind, name: a.name, why: a.why, icon: a.icon, color: a.color, onMain: a.onMain, pinned: a.pinned,
                 until: a.until ? dateFmt(a.until, { day: "numeric", month: "short" }) : null, untilIso: a.until ? isoDay(a.until, me.timezone) : null, expired: !!a.until && a.until < now, date: dateFmt(a.createdAt, { day: "numeric", month: "short" }) }))} />
             {s.userId && (

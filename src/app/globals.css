@@ -2339,3 +2339,8 @@ button.grp-row:hover { background: var(--fill); }
 .catitem.off { opacity: .6; }
 .awchip > button.awchip-name { color: inherit; font-size: inherit; font-weight: inherit; padding: 0; line-height: inherit; }
 .awchip > button.awchip-name:hover { color: var(--accent); background: none; }
+.awcard-ed { position: absolute; bottom: 4px; right: 6px; border: 0; background: none; color: var(--text3); padding: 2px 4px; cursor: pointer; border-radius: 6px; line-height: 0; }
+.awcard-ed:hover { color: var(--accent); background: var(--accent-bg); }
+.tavatar { position: relative; border: 0; background: none; padding: 0; cursor: pointer; border-radius: 50%; }
+.tavatar-ed { position: absolute; right: -2px; bottom: -2px; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--surface); color: var(--accent); box-shadow: 0 1px 4px rgba(0,0,0,.2); opacity: .9; }
+.tavatar:hover .tavatar-ed { opacity: 1; background: var(--accent); color: #fff; }

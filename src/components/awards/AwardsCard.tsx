@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useT } from "@/lib/i18n/client";
 import { GROUPS, ICON_KEYS, METAL_KEYS, METALS, nameFor, whyFor, type AwardKind, type CatalogItem } from "@/lib/awards/catalog";
 import { PhraseLangSwitch, usePhraseLang, type PL } from "./PhraseLang";
-import { deleteAward, deleteTemplate, giveAward, pinAward, setAwardMain, updateAward } from "@/lib/awards/actions";
+import { deleteAward, deleteTemplate, giveAward, pinAward, setAwardMain, updateAward, updateTemplate } from "@/lib/awards/actions";
 import { setStudentField } from "@/lib/teacher/actions";
 import { useRun } from "../courses/useRun";
 import { Dialog } from "../Dialog";
@@ -12,7 +12,10 @@ import { Medal } from "./Medal";
 
 export type AwardRow = { id: string; kind: string; name: string; why: string | null; icon: string; color: string; onMain: boolean; pinned: boolean; until: string | null; untilIso: string | null; expired: boolean; date: string };
 /** Свой статус учителя из картотеки «Мои». */
-export type AwardTpl = { id: string; kind: string; name: string; why: string | null; icon: string; color: string; term: string };
+export type AwardTpl = { id: string; kind: string; name: string; why: string | null; icon: string; color: string; term: string; nameRu: string | null; nameEn: string | null; whyRu: string | null; whyEn: string | null };
+/** Свой статус на нужном языке фразы (если перевода ещё нет — как написан). */
+const tplName = (x: AwardTpl, pl: string) => (pl === "en" ? x.nameEn ?? x.nameRu : x.nameRu ?? x.nameEn) ?? x.name;
+const tplWhy = (x: AwardTpl, pl: string) => (pl === "en" ? x.whyEn ?? x.whyRu : x.whyRu ?? x.whyEn) ?? x.why ?? "";
 
 /** Анкета → «Статусы»: титулы (на главном экране или нет, главный) и поощрения; «Выдать статус». */
 export function AwardsCard({ studentId, studentName, gender, rows, linked, templates, preset = null, catalog, owner = false }: { studentId: string; studentName: string; gender: string | null; rows: AwardRow[]; linked: boolean; templates: AwardTpl[]; preset?: { key: string; name?: string } | null; catalog: CatalogItem[]; owner?: boolean }) {
@@ -89,7 +92,7 @@ function GiveDialog({ studentId, studentName, gender: g0, linked, templates, pre
   const mine = mineList.filter((x) => x.kind === kind && (group === "all" || group === "mine"));
   const chooseTpl = (x: AwardTpl) => {
     setPick(null); setTpl(x);
-    setName(x.name); setWhy(x.why ?? ""); setIcon(x.icon); setColor(x.color);
+    setName(tplName(x, pl)); setWhy(tplWhy(x, pl)); setIcon(x.icon); setColor(x.color);
     if (["week", "month", "date", "forever"].includes(x.term)) setTerm(x.term as "month");
   };
   const dropTpl = (x: AwardTpl) => { if (!confirm(t("aw.tplDelQ", { n: x.name }))) return; setMineList((l) => l.filter((y) => y.id !== x.id)); if (tpl?.id === x.id) setTpl(null); void deleteTemplate(x.id); };
@@ -98,7 +101,8 @@ function GiveDialog({ studentId, studentName, gender: g0, linked, templates, pre
     if (!c) { setName(""); setWhy(""); return; }
     setName(nameFor(c, pl, gender)); setWhy(whyFor(c, pl, gender)); setIcon(c.icon); setColor(c.color); setTerm(c.term);
   };
-  const switchLang = (v: PL) => { setPl(v); if (pick) { setName(nameFor(pick, v, gender)); setWhy(whyFor(pick, v, gender)); } };
+  const switchLang = (v: PL) => { setPl(v); if (pick) { setName(nameFor(pick, v, gender)); setWhy(whyFor(pick, v, gender)); } if (tpl) { setName(tplName(tpl, v)); setWhy(tplWhy(tpl, v)); } };
+  const [editTpl, setEditTpl] = useState<AwardTpl | null>(null);
   // пол не указан, а у статуса две формы — выбираем здесь и запоминаем в анкете
   const gendered = pick && pl === "ru" && (typeof pick.name.ru !== "string" || /\(а\)/.test(pick.name.ru + pick.why.ru));
   const setG = (v: "f" | "m") => { setGender(v); if (pick) { setName(nameFor(pick, pl, v)); setWhy(whyFor(pick, pl, v)); } void setStudentField(studentId, "gender", v); };
@@ -109,9 +113,10 @@ function GiveDialog({ studentId, studentName, gender: g0, linked, templates, pre
     setKind(c.kind); setGroup("all"); choose(c);
     if (preset?.name) setName(preset.name);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
-  const submit = () => run(() => giveAward(studentId, { kind, key: pick?.key ?? null, name, why, icon, color, term, until, onMain: kind === "title" && onMain, tg }), onClose);
+  const submit = () => run(() => giveAward(studentId, { kind, key: pick?.key ?? null, name, why, icon, color, term, until, onMain: kind === "title" && onMain, tg, tplId: tpl?.id ?? null }), onClose);
   return (
     <Dialog open onClose={onClose} title={t("aw.giveTo", { n: studentName })} wide>
+      {editTpl && <TplEdit x={editTpl} onClose={(u) => { if (u) { setMineList((l) => l.map((y) => (y.id === u.id ? u : y))); if (tpl?.id === u.id) { setTpl(u); setName(tplName(u, pl)); setWhy(tplWhy(u, pl)); } } setEditTpl(null); }} />}
       <div className="awgive">
         <div className="flex flex-col gap-3 min-w-0">
           <div className="seg w-full">
@@ -130,9 +135,10 @@ function GiveDialog({ studentId, studentName, gender: g0, linked, templates, pre
               <div key={x.id} className={`awcard mine ${tpl?.id === x.id ? "on" : ""}`}>
                 <button type="button" className="awcard-pick" onClick={() => chooseTpl(x)}>
                   <Medal icon={x.icon} color={x.color} size={36} shape={kind === "title" ? "hex" : "circle"} />
-                  <b>{x.name}<span className="awmine-tag">{t("aw.mineTag")}</span></b>
+                  <b>{tplName(x, pl)}<span className="awmine-tag">{t("aw.mineTag")}</span></b>
                 </button>
                 <button type="button" className="awcard-x" aria-label={t("aw.tplDel")} title={t("aw.tplDel")} onClick={() => dropTpl(x)}>×</button>
+                <button type="button" className="awcard-ed" aria-label={t("aw.tplEdit")} title={t("aw.tplEdit")} onClick={() => setEditTpl(x)}><Icon name="pencil" size="sm" /></button>
               </div>
             ))}
             {list.map((c) => (
@@ -252,6 +258,27 @@ function EditDialog({ a, onClose }: { a: AwardRow; onClose: () => void }) {
       <div className="actions">
         <button type="button" className="btn secondary" onClick={onClose}>{t("common.cancel")}</button>
         <button type="button" className="btn primary" disabled={pending || !name.trim() || (title && !forever && !until)} onClick={() => run(() => updateAward(a.id, { name, why, icon, color, ...(title ? { until: forever ? null : until } : {}) }), onClose)}>{t("common.save")}</button>
+      </div>
+    </Dialog>
+  );
+}
+
+/** Свой статус: название и «за что» на русском и английском (английский или русский перевёл ИИ — здесь можно поправить). */
+function TplEdit({ x, onClose }: { x: AwardTpl; onClose: (u?: AwardTpl) => void }) {
+  const { t } = useT();
+  const { pending, error, run } = useRun();
+  const [f, setF] = useState({ nameRu: x.nameRu ?? "", nameEn: x.nameEn ?? "", whyRu: x.whyRu ?? "", whyEn: x.whyEn ?? "" });
+  return (
+    <Dialog open onClose={() => onClose()} title={t("aw.tplEdit")}>
+      <p className="hint mt-0">{t("aw.tplEditHint")}</p>
+      <div className="field"><label htmlFor="te-nr">{t("cat.nameRu")}</label><input id="te-nr" className="input" value={f.nameRu} maxLength={80} onChange={(e) => setF({ ...f, nameRu: e.target.value })} /></div>
+      <div className="field mt-3"><label htmlFor="te-wr">{t("cat.whyRu")}</label><textarea id="te-wr" className="textarea" rows={2} value={f.whyRu} maxLength={500} onChange={(e) => setF({ ...f, whyRu: e.target.value })} /></div>
+      <div className="field mt-3"><label htmlFor="te-ne">{t("cat.nameEn")}</label><input id="te-ne" className="input" value={f.nameEn} maxLength={80} onChange={(e) => setF({ ...f, nameEn: e.target.value })} /></div>
+      <div className="field mt-3"><label htmlFor="te-we">{t("cat.whyEn")}</label><textarea id="te-we" className="textarea" rows={2} value={f.whyEn} maxLength={500} onChange={(e) => setF({ ...f, whyEn: e.target.value })} /></div>
+      {error && <div className="alert mt-2">{t("aw.err")}</div>}
+      <div className="actions">
+        <button type="button" className="btn secondary" onClick={() => onClose()}>{t("common.cancel")}</button>
+        <button type="button" className="btn primary" disabled={pending || (!f.nameRu.trim() && !f.nameEn.trim())} onClick={() => run(() => updateTemplate(x.id, f), () => onClose({ ...x, nameRu: f.nameRu.trim() || null, nameEn: f.nameEn.trim() || null, whyRu: f.whyRu.trim() || null, whyEn: f.whyEn.trim() || null }))}>{t("common.save")}</button>
       </div>
     </Dialog>
   );

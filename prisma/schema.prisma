@@ -873,6 +873,10 @@ model AwardTemplate {
   icon      String
   color     String
   term      String   @default("forever") // week | month | date | forever — срок титула по умолчанию
+  nameRu    String? // на двух языках — для «Язык фразы: Рус / Eng» (второй язык переводит ИИ, учитель может поправить)
+  nameEn    String?
+  whyRu     String?
+  whyEn     String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
