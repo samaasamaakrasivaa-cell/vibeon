@@ -2239,3 +2239,63 @@ button.grp-row:hover { background: var(--fill); }
 .artbody h3 { margin: 16px 0 8px; }
 .artbody ul, .artbody ol { margin: 0 0 10px; padding-left: 22px; }
 .artbody li { margin: 3px 0; }
+
+/* ── Низ меню учителя: о платформе, тарифы, поддержка ── */
+.navbottom { margin-top: auto; padding-top: 10px; }
+@media (max-width: 760px) { .navbottom { margin-top: 0; padding-top: 0; } }
+
+/* о платформе: новости */
+.pfnews { display: flex; flex-direction: column; }
+.pfnews-i { display: flex; gap: 18px; }
+.pfnews-i.fresh { box-shadow: inset 3px 0 0 var(--accent); }
+.pfnews-date { width: 52px; flex: none; display: flex; flex-direction: column; align-items: center; padding: 8px 0; border-radius: 14px; background: var(--surface2); height: max-content; }
+.pfnews-date b { font-size: 22px; line-height: 1; }
+.pfnews-date span { font-size: 12px; color: var(--text2); }
+@media (max-width: 560px) { .pfnews-i { flex-direction: column; gap: 8px; } .pfnews-date { flex-direction: row; gap: 6px; width: auto; padding: 4px 10px; align-self: flex-start; } }
+.pfask { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; background: linear-gradient(135deg, var(--accent-bg), var(--violet-bg)); }
+
+/* база знаний */
+.kb { display: flex; flex-direction: column; gap: 0; }
+.kbsearch { position: relative; margin-bottom: 14px; }
+.kbsearch > svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text3); pointer-events: none; }
+.kbsearch .input { padding-left: 42px; min-height: 48px; font-size: 16px; }
+.kbpop { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 14px; }
+.kbtopics { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; margin-bottom: 16px; }
+.kbtopic { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 14px; border-radius: 16px; border: 1.5px solid transparent; background: var(--surface); text-align: left; cursor: pointer; color: var(--text); }
+.kbtopic:hover { border-color: var(--sep); }
+.kbtopic.on { border-color: var(--accent); background: var(--accent-bg); }
+.kbtopic-i { width: 38px; height: 38px; border-radius: 11px; display: flex; align-items: center; justify-content: center; background: var(--accent-bg); color: var(--accent); margin-bottom: 4px; }
+.kblist { list-style: none; margin: 0; padding: 0; }
+.kblist li + li { border-top: .5px solid var(--sep); }
+.kblist a { display: flex; align-items: center; gap: 12px; padding: 14px 18px; color: var(--text); }
+.kblist a:hover { background: var(--surface2); }
+.card .kblist a { padding-left: 4px; padding-right: 4px; }
+.card.p-0 .kblist a { padding-left: 20px; padding-right: 20px; }
+.helpful { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 20px; padding-top: 16px; border-top: .5px solid var(--sep); }
+
+/* тарифы (пока пробный) */
+.tfhero { display: flex; flex-direction: column; gap: 10px; color: #fff; background: linear-gradient(135deg, #7B5CF5, #3D8BFF 60%, #5AC8FA); }
+.tfhero h2 { color: #fff; font-size: 26px; letter-spacing: -.02em; }
+.tfhero p { max-width: 620px; line-height: 1.5; opacity: .95; }
+.tfhero-k { align-self: flex-start; padding: 4px 12px; border-radius: 999px; background: rgba(255,255,255,.22); font-size: 13px; font-weight: 700; }
+.tfbar { display: flex; flex-direction: column; gap: 6px; max-width: 360px; }
+.tfprog { display: block; height: 8px; border-radius: 4px; background: rgba(255,255,255,.3); overflow: hidden; }
+.tfprog i { display: block; height: 100%; border-radius: 4px; background: #fff; }
+.tfsteps { list-style: none; margin: 0; padding: 0; }
+.tfsteps li { display: flex; align-items: center; gap: 12px; padding: 11px 2px; border-bottom: .5px solid var(--sep); }
+.tfsteps li > .grow { flex: 1 1 0; min-width: 0; }
+.tfsteps li:last-child { border-bottom: 0; }
+.tfsteps li.done .grow { color: var(--text2); text-decoration: line-through; text-decoration-color: var(--text3); }
+.tfcheck { width: 24px; height: 24px; border-radius: 50%; flex: none; display: flex; align-items: center; justify-content: center; border: 2px solid var(--sep); color: #fff; }
+.tfsteps li.done .tfcheck { background: var(--ok); border-color: var(--ok); }
+
+/* чат поддержки */
+.spchat { display: flex; flex-direction: column; gap: 12px; }
+.spmsgs { display: flex; flex-direction: column; gap: 12px; max-height: 460px; overflow-y: auto; padding: 4px; }
+.spmsg { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; max-width: 80%; }
+.spmsg.mine { align-self: flex-end; align-items: flex-end; }
+.spbubble { padding: 10px 14px; border-radius: 18px 18px 18px 6px; background: var(--surface2); white-space: pre-wrap; line-height: 1.45; overflow-wrap: anywhere; }
+.spmsg.mine .spbubble { border-radius: 18px 18px 6px 18px; background: var(--accent); color: var(--on-accent, #fff); }
+.spinput { display: flex; gap: 10px; align-items: flex-end; }
+.spinput .textarea { flex: 1; min-width: 0; }
+@media (max-width: 560px) { .spinput { flex-direction: column; align-items: stretch; } .spmsg { max-width: 92%; } }

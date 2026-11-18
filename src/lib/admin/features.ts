@@ -32,3 +32,26 @@ export function accessOf(p: { blockedAt: Date | null; paidUntil: Date | null; tr
 }
 
 export const rub = (n: number) => `${Math.round(n).toLocaleString("ru-RU")} ₽`;
+
+/** Разделы базы знаний («Как работать с платформой») — карточки с иконкой. */
+export const KB_TOPICS: { key: string; ru: string; en: string; icon: "spark" | "users" | "class" | "inbox" | "coin" | "telegram" | "starI" | "info" }[] = [
+  { key: "start", ru: "Первые шаги", en: "Getting started", icon: "spark" },
+  { key: "students", ru: "Ученики", en: "Students", icon: "users" },
+  { key: "lessons", ru: "Уроки и курсы", en: "Lessons & courses", icon: "class" },
+  { key: "homework", ru: "Домашка и проверка", en: "Homework & review", icon: "inbox" },
+  { key: "payments", ru: "Оплаты и финансы", en: "Payments & finance", icon: "coin" },
+  { key: "telegram", ru: "Telegram и уведомления", en: "Telegram & notifications", icon: "telegram" },
+  { key: "motivation", ru: "Статусы и мотивация", en: "Titles & motivation", icon: "starI" },
+  { key: "other", ru: "Другое", en: "Other", icon: "info" },
+];
+
+/** Метки новостей платформы. */
+export const NEWS_TAGS: { key: string; ru: string; en: string; color: string }[] = [
+  { key: "new", ru: "Новое", en: "New", color: "blue" },
+  { key: "improved", ru: "Улучшение", en: "Improved", color: "green" },
+  { key: "fixed", ru: "Исправление", en: "Fixed", color: "orange" },
+  { key: "event", ru: "Событие", en: "Event", color: "violet" },
+];
+
+/** Примерное время чтения статьи, мин. */
+export const readMin = (text: string) => Math.max(1, Math.round(text.split(/\s+/).length / 180));

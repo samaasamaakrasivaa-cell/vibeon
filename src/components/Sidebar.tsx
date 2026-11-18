@@ -6,7 +6,8 @@ import type { IconName } from "./icon-paths";
 
 export type NavItem = { href: string; label: string; icon: IconName; count?: number };
 
-export function Sidebar({ groups, footer, ariaLabel }: { groups: NavItem[][]; footer?: React.ReactNode; ariaLabel: string }) {
+/** bottom — разделы внизу меню (о платформе, тарифы, поддержка) — прижаты к низу. */
+export function Sidebar({ groups, footer, ariaLabel, bottom }: { groups: NavItem[][]; footer?: React.ReactNode; ariaLabel: string; bottom?: NavItem[] }) {
   const path = usePathname();
   const base = groups[0]?.[0]?.href;
   const isActive = (href: string) => (href === base ? path === href : path === href || path.startsWith(href + "/"));
@@ -23,6 +24,17 @@ export function Sidebar({ groups, footer, ariaLabel }: { groups: NavItem[][]; fo
           ))}
         </div>
       ))}
+      {bottom && bottom.length > 0 && (
+        <div className="navgroup navbottom">
+          {bottom.map((it) => (
+            <Link key={it.href} href={it.href} className="navb" aria-current={isActive(it.href) ? "page" : undefined}>
+              <Icon name={it.icon} />
+              <span className="label">{it.label}</span>
+              {!!it.count && <span className="count">{it.count}</span>}
+            </Link>
+          ))}
+        </div>
+      )}
       {footer && <div className="navfoot">{footer}</div>}
     </nav>
   );

@@ -1,5 +1,4 @@
-import { HelpPage } from "@/components/admin/HelpPage";
-import { requireUser } from "@/lib/auth/session";
+import { redirect } from "next/navigation";
 
-export const metadata = { title: "Помощь" };
-export default async function TeacherHelp() { await requireUser("TEACHER"); return <HelpPage audience="teacher" />; }
+/** Старый адрес «Помощь и новости» → «О платформе». */
+export default function OldHelp() { redirect("/teacher/platform"); }

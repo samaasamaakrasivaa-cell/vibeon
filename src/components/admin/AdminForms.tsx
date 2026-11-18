@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useT } from "@/lib/i18n/client";
 import { addPayment, blockTeacher, createTeacher, deleteArticle, extendAccess, saveArticle, savePlan, setAdminNote, setTeacherPlan, teacherLink, type ArticleInput, type PlanInput } from "@/lib/admin/actions";
-import { FEATURES } from "@/lib/admin/features";
+import { FEATURES, KB_TOPICS, NEWS_TAGS } from "@/lib/admin/features";
 import { Dialog } from "../Dialog";
 import { Icon } from "../Icon";
 
@@ -219,10 +219,11 @@ export function PlanEdit({ plan }: { plan: PlanView | null }) {
 // ───────── база знаний ─────────
 
 export function ArticleEdit({ a }: { a: (ArticleInput & { id: string }) | null }) {
-  const { t } = useT();
+  const { t, lang } = useT();
+  const L = lang === "en" ? "en" : "ru";
   const { busy, err, run } = useAct();
   const [open, setOpen] = useState(false);
-  const blank: ArticleInput = { id: null, title: "", body: "", kind: "guide", audience: "teacher", published: false, pinned: false };
+  const blank: ArticleInput = { id: null, title: "", body: "", kind: "guide", audience: "teacher", published: false, pinned: false, topic: "start", tag: null };
   const [f, setF] = useState<ArticleInput>(a ?? blank);
   return (
     <>
@@ -237,6 +238,13 @@ export function ArticleEdit({ a }: { a: (ArticleInput & { id: string }) | null }
             <div className="field"><span className="flabel">{t("adm.f.audience")}</span>
               <div className="seg">{(["teacher", "student", "all"] as const).map((k) => <button key={k} type="button" aria-pressed={f.audience === k} onClick={() => setF({ ...f, audience: k })}>{t(`adm.aud.${k}`)}</button>)}</div></div>
           </div>
+          {f.kind === "guide" ? (
+            <div className="field mt-3"><label htmlFor="ar-tp">{t("adm.f.topic")}</label>
+              <select id="ar-tp" className="select" value={f.topic ?? ""} onChange={(e) => setF({ ...f, topic: e.target.value || null })}>{KB_TOPICS.map((k) => <option key={k.key} value={k.key}>{k[L]}</option>)}</select></div>
+          ) : (
+            <div className="field mt-3"><span className="flabel">{t("adm.f.tag")}</span>
+              <div className="chips">{NEWS_TAGS.map((k) => <label key={k.key} className="chip"><input type="radio" name="ar-tag" checked={f.tag === k.key} onChange={() => setF({ ...f, tag: k.key })} /><span>{k[L]}</span></label>)}</div></div>
+          )}
           <div className="field mt-3"><label htmlFor="ar-b">{t("adm.f.body")}</label><textarea id="ar-b" className="textarea" rows={12} value={f.body} onChange={(e) => setF({ ...f, body: e.target.value })} /><span className="hint">{t("adm.bodyHint")}</span></div>
           <label className="setting"><span>{t("adm.f.published")}</span><span className="switch"><input type="checkbox" checked={f.published} onChange={(e) => setF({ ...f, published: e.target.checked })} /><span /></span></label>
           <label className="setting"><span>{t("adm.f.pinned")}</span><span className="switch"><input type="checkbox" checked={f.pinned} onChange={(e) => setF({ ...f, pinned: e.target.checked })} /><span /></span></label>

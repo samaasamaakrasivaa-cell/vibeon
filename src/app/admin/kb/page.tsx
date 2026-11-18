@@ -22,10 +22,11 @@ export default async function AdminKb() {
             <b className="grow">{a.title}</b>
             <span className="pill grey">{t(`adm.aud.${a.audience}` as "adm.aud.all")}</span>
             {a.published ? <span className="pill green">{t("adm.published")}</span> : <span className="pill outline">{t("adm.draft")}</span>}
+            {(a.helpfulYes > 0 || a.helpfulNo > 0) && <span className="small muted" title={t("adm.helpful")}>👍 {a.helpfulYes} · 👎 {a.helpfulNo}</span>}
             <span className="small muted">{a.updatedAt.toLocaleDateString(loc, { day: "numeric", month: "short" })}</span>
           </summary>
           <ArticleBody text={a.body} />
-          <div className="mt-3"><ArticleEdit a={{ id: a.id, title: a.title, body: a.body, kind: a.kind, audience: a.audience, published: a.published, pinned: a.pinned }} /></div>
+          <div className="mt-3"><ArticleEdit a={{ id: a.id, title: a.title, body: a.body, kind: a.kind, audience: a.audience, published: a.published, pinned: a.pinned, topic: a.topic, tag: a.tag }} /></div>
         </details>
       ))}
     </div>

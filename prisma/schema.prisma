@@ -52,6 +52,7 @@ model User {
   sentMessages   Message[]       @relation("MessageSender")
   notes          Note[]
   activity       ActivityDay[]
+  support        SupportMessage[]
 }
 
 /// Активное время на платформе по дням (в часовом поясе пользователя): минуты, в которые были клики, ввод, переходы.
@@ -839,6 +840,24 @@ model Article {
   audience  String   @default("teacher") // teacher | student | all
   published Boolean  @default(false)
   pinned    Boolean  @default(false)
+  topic     String? // раздел базы знаний (KB_TOPICS) — для инструкций
+  tag       String? // метка новости: new | improved | fixed | event
+  helpfulYes Int     @default(0) // «Статья помогла?» — да
+  helpfulNo  Int     @default(0) // — нет
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+/// Чат поддержки: вопрос учителя (или ученика) команде платформы и ответы администратора — одна переписка на человека.
+model SupportMessage {
+  id        String    @id @default(cuid())
+  userId    String // чья переписка
+  fromAdmin Boolean   @default(false)
+  authorId  String? // кто из администраторов ответил
+  text      String
+  readAt    DateTime? // прочитано другой стороной
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
 }

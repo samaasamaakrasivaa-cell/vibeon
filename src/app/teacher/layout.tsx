@@ -28,14 +28,18 @@ async function hwToReview(teacherId: string) {
 export default async function TeacherLayout({ children }: { children: React.ReactNode }) {
   const { t } = await getT();
   const user = await requireUser("TEACHER");
-  const [unread, chat, questions, hwReview, toCheck, prof] = await Promise.all([
+  const [unread, chat, questions, hwReview, toCheck, prof, supportNew] = await Promise.all([
     db.notification.count({ where: { userId: user.id, readAt: null } }),
     db.message.count({ where: { student: { teacherId: user.id }, senderId: { not: user.id }, readAt: null } }),
     db.question.count({ where: { student: { teacherId: user.id }, askedTeacher: true, answeredAt: null } }),
     hwToReview(user.id),
     db.invoice.count({ where: { student: { teacherId: user.id }, status: "PROOF_SENT" } }),
-    db.teacherProfile.findUnique({ where: { userId: user.id }, select: { trialUntil: true, paidUntil: true, blockedAt: true } }),
+    db.teacherProfile.findUnique({ where: { userId: user.id }, select: { trialUntil: true, paidUntil: true, blockedAt: true, settings: true } }),
+    db.supportMessage.count({ where: { userId: user.id, fromAdmin: true, readAt: null } }),
   ]);
+  // новости платформы, которых учитель ещё не видел
+  const seen = (prof?.settings as { newsSeenAt?: string } | null)?.newsSeenAt;
+  const news = await db.article.count({ where: { published: true, kind: { in: ["news", "digest"] }, audience: { in: ["teacher", "all"] }, ...(seen ? { updatedAt: { gt: new Date(seen) } } : {}) } });
   const acc = prof ? accessOf(prof) : null;
   const groups = [
     [
@@ -51,14 +55,19 @@ export default async function TeacherLayout({ children }: { children: React.Reac
     ],
     [{ href: "/teacher/courses", label: t("nav.courses"), icon: "book" as const }],
     [{ href: "/teacher/finance", label: t("nav.finance"), icon: "coin" as const, count: toCheck }],
-    [{ href: "/teacher/help", label: t("nav.help"), icon: "info" as const }],
+  ];
+  // внизу меню — о платформе: новости и база знаний, тариф, поддержка
+  const bottom = [
+    { href: "/teacher/platform", label: t("nav.platform"), icon: "spark" as const, count: news },
+    { href: "/teacher/plan", label: t("nav.plan"), icon: "card" as const },
+    { href: "/teacher/support", label: t("nav.support"), icon: "msg" as const, count: supportNew },
   ];
   return (
     <>
       <ActivityPing />
       <AppHeader subtitle={t("ws.teacher")} user={user} homeHref="/teacher" profileHref="/teacher/profile" cabinet="teacher" />
       <div className="shell">
-        <Sidebar groups={groups} ariaLabel={t("ws.teacher")} />
+        <Sidebar groups={groups} bottom={bottom} ariaLabel={t("ws.teacher")} />
         <main className="main">{acc && <TrialBanner state={acc.state} until={acc.until?.toISOString() ?? null} />}{acc?.state === "blocked" ? null : children}</main>
       </div>
     </>

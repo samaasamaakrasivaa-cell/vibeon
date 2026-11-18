@@ -2,6 +2,7 @@ import { AppHeader } from "@/components/AppHeader";
 import { Sidebar } from "@/components/Sidebar";
 import { getT } from "@/lib/i18n/server";
 import { requireAdmin } from "@/lib/admin/access";
+import { db } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Администратор" };
@@ -10,6 +11,7 @@ export const metadata = { title: "Администратор" };
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const { t } = await getT();
   const user = await requireAdmin();
+  const waiting = await db.supportMessage.groupBy({ by: ["userId"], where: { fromAdmin: false, readAt: null } }).then((x) => x.length);
   const groups = [
     [{ href: "/admin", label: t("adm.nav.overview"), icon: "chart" as const }],
     [
@@ -17,7 +19,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       { href: "/admin/plans", label: t("adm.nav.plans"), icon: "card" as const },
     ],
     [{ href: "/admin/finance", label: t("adm.nav.finance"), icon: "coin" as const }],
-    [{ href: "/admin/kb", label: t("adm.nav.kb"), icon: "book" as const }],
+    [
+      { href: "/admin/kb", label: t("adm.nav.kb"), icon: "book" as const },
+      { href: "/admin/support", label: t("nav.support"), icon: "msg" as const, count: waiting },
+    ],
   ];
   return (
     <>

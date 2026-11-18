@@ -7,7 +7,9 @@ import { issueToken } from "../auth/tokens";
 import { createSession, destroySession, getSessionUser, homeFor, requireUser } from "../auth/session";
 import { verifyPassword } from "../auth/password";
 import { mailTeacherInvite } from "../mail";
-import { FEATURE_KEYS } from "./features";
+import { FEATURE_KEYS, KB_TOPICS, NEWS_TAGS } from "./features";
+import { notify } from "../notify";
+import { isOwner } from "../placement/bank";
 import { isAdmin } from "./access";
 
 type R<T = object> = ({ ok: true } & T) | { ok: false; error: string };
@@ -142,7 +144,7 @@ export async function deletePayment(id: string): Promise<R> {
 
 // ───────── база знаний ─────────
 
-export type ArticleInput = { id: string | null; title: string; body: string; kind: string; audience: string; published: boolean; pinned: boolean };
+export type ArticleInput = { id: string | null; title: string; body: string; kind: string; audience: string; published: boolean; pinned: boolean; topic: string | null; tag: string | null };
 
 export async function saveArticle(x: ArticleInput): Promise<R> {
   await admin();
@@ -151,17 +153,18 @@ export async function saveArticle(x: ArticleInput): Promise<R> {
   const data = {
     title, body: x.body.slice(0, 20000), kind: ["guide", "digest", "news"].includes(x.kind) ? x.kind : "guide",
     audience: ["teacher", "student", "all"].includes(x.audience) ? x.audience : "teacher", published: x.published, pinned: x.pinned,
+    topic: x.topic && KB_TOPICS.some((k) => k.key === x.topic) ? x.topic : null, tag: x.tag && NEWS_TAGS.some((k) => k.key === x.tag) ? x.tag : null,
   };
   if (x.id) await db.article.update({ where: { id: x.id }, data });
   else await db.article.create({ data });
-  done("/admin/kb", "/teacher/help", "/student/help");
+  done("/admin/kb", "/teacher/platform", "/student/help");
   return { ok: true };
 }
 
 export async function deleteArticle(id: string): Promise<R> {
   await admin();
   await db.article.delete({ where: { id } }).catch(() => null);
-  done("/admin/kb", "/teacher/help", "/student/help");
+  done("/admin/kb", "/teacher/platform", "/student/help");
   return { ok: true };
 }
 
@@ -198,4 +201,48 @@ export async function switchCabinet(): Promise<R<{ href: string }>> {
   await destroySession();
   await createSession(other.id, true);
   return { ok: true, href: homeFor(other.role) };
+}
+
+/** «Статья помогла?» — да / нет (повтор с того же устройства не даёт интерфейс). */
+export async function voteArticle(id: string, yes: boolean): Promise<R> {
+  await requireUser();
+  await db.article.update({ where: { id }, data: yes ? { helpfulYes: { increment: 1 } } : { helpfulNo: { increment: 1 } } }).catch(() => null);
+  return { ok: true };
+}
+
+// ───────── поддержка ─────────
+
+/** Администраторы платформы — им приходят вопросы в поддержку. */
+async function adminIds() {
+  const owners = (process.env.OWNER_EMAIL ?? "").split(",").map((x) => x.trim().toLowerCase()).filter(Boolean);
+  const list = await db.user.findMany({ where: { OR: [{ isAdmin: true }, ...(owners.length ? [{ email: { in: owners } }] : [])] }, select: { id: true, email: true, isAdmin: true } });
+  return list.filter((u) => u.isAdmin || isOwner(u.email)).map((u) => u.id);
+}
+
+/** Вопрос в поддержку от учителя (или ученика): в переписку и уведомление администраторам. */
+export async function sendSupport(text: string): Promise<R> {
+  const me = await requireUser();
+  const body = text.trim().slice(0, 4000);
+  if (!body) return { ok: false, error: "empty" };
+  await db.supportMessage.create({ data: { userId: me.id, text: body } });
+  const who = [me.name, me.lastName].filter(Boolean).join(" ");
+  for (const id of await adminIds()) if (id !== me.id) await notify({ userId: id, kind: "message", title: `Поддержка — ${who}: ${body.slice(0, 120)}`, link: `/admin/support/${me.id}` });
+  revalidatePath("/teacher/support"); revalidatePath("/admin/support");
+  return { ok: true };
+}
+
+/** Ответ администратора: в переписку и уведомление учителю (в кабинет и Telegram по его настройкам). */
+export async function replySupport(userId: string, text: string): Promise<R> {
+  const me = await admin();
+  const body = text.trim().slice(0, 4000);
+  if (!body) return { ok: false, error: "empty" };
+  const u = await db.user.findUnique({ where: { id: userId }, select: { role: true } });
+  if (!u) return { ok: false, error: "nf" };
+  await db.$transaction([
+    db.supportMessage.create({ data: { userId, fromAdmin: true, authorId: me.id, text: body } }),
+    db.supportMessage.updateMany({ where: { userId, fromAdmin: false, readAt: null }, data: { readAt: new Date() } }),
+  ]);
+  await notify({ userId, kind: "reply", title: `Поддержка VibeOn: ${body.slice(0, 160)}`, link: u.role === "TEACHER" ? "/teacher/support" : "/student" });
+  revalidatePath(`/admin/support/${userId}`); revalidatePath("/admin/support");
+  return { ok: true };
 }
