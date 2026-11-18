@@ -26,7 +26,7 @@ export default async function Students({ searchParams }: { searchParams: Promise
 
   const all = await db.student.findMany({
     where: { teacherId: me.id },
-    include: { invites: { orderBy: { createdAt: "desc" }, take: 1 }, packs: { orderBy: { startsAt: "desc" }, take: 1 }, user: { select: { telegramChatId: true } } },
+    include: { invites: { orderBy: { createdAt: "desc" }, take: 1 }, packs: { orderBy: { startsAt: "desc" }, take: 1 }, user: { select: { telegramChatId: true } }, awards: { where: { kind: "title", pinned: true, onMain: true, OR: [{ until: null }, { until: { gt: new Date() } }] }, take: 1, select: { name: true, icon: true, color: true } } },
     orderBy: [{ name: "asc" }],
   });
   const groups = await db.group.findMany({ where: { teacherId: me.id }, include: { members: true }, orderBy: { createdAt: "asc" } });
@@ -68,6 +68,7 @@ export default async function Students({ searchParams }: { searchParams: Promise
   const lv = await levelsOf(all);
   const card = (s: (typeof all)[number], i: number, sub: string, badge?: string): Card => ({
     id: s.id, name: full(s), initials: initials(s.name, s.lastName), color: i, sub, href: `/teacher/students/${s.id}`, badge, tg: !!s.user?.telegramChatId,
+    avatar: s.avatar, title: s.awards[0] ?? null,
   });
   const loc = lang === "ru" ? "ru-RU" : "en-GB";
 

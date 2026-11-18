@@ -1,7 +1,7 @@
 "use client";
 import { useMemo, useState } from "react";
 import { useT } from "@/lib/i18n/client";
-import { CATALOG, METALS, nameFor, whyFor, type CatalogItem } from "@/lib/awards/catalog";
+import { METALS, nameFor, whyFor, type CatalogItem } from "@/lib/awards/catalog";
 import { PhraseLangSwitch, usePhraseLang, type PL } from "./PhraseLang";
 import { giveAward } from "@/lib/awards/actions";
 import { setStudentField } from "@/lib/teacher/actions";
@@ -11,7 +11,7 @@ import { Medal } from "./Medal";
 export type CheerTo = { sid: string; name: string; gender: string | null; inClass: boolean };
 
 /** Урок → «Подарить приятность»: тёплое поощрение ученику; если он в классе — праздничное окно появится у него сразу. */
-export function LessonCheer({ to, onClose, onGiven }: { to: CheerTo[]; onClose: () => void; onGiven: (awardId: string) => Promise<unknown> }) {
+export function LessonCheer({ to, onClose, onGiven, catalog: CATALOG }: { to: CheerTo[]; onClose: () => void; onGiven: (awardId: string) => Promise<unknown>; catalog: CatalogItem[] }) {
   const { t } = useT();
   const [L, setL] = usePhraseLang(); // язык фразы: по-русски или по-английски
   const [sid, setSid] = useState<string | null>(to.length === 1 ? to[0].sid : null);

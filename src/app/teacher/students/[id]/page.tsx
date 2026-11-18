@@ -3,6 +3,11 @@ import { packEndsAt } from "@/lib/teacher/pack";
 import { InvoiceEdit } from "@/components/finance/FinanceParts";
 import Link from "next/link";
 import { AwardsCard } from "@/components/awards/AwardsCard";
+import { momentsFor } from "@/lib/teacher/moments";
+import { getCatalog } from "@/lib/awards/catalog-db";
+import { isOwner } from "@/lib/placement/bank";
+import { StudentMoments } from "@/components/teacher/StudentMoments";
+import { guessGender } from "@/lib/student/gender";
 import { Medal, StudentAvatar } from "@/components/awards/Medal";
 import { notFound } from "next/navigation";
 import { Icon } from "@/components/Icon";
@@ -27,7 +32,8 @@ const TABS = ["profile", "progress", "roadmap", "feedback", "history"] as const;
 
 type Form = { phone?: string; birthday?: string | null; goals?: string[]; otherGoal?: string; about?: string; since?: string; easy?: string[]; hard?: string[]; problem?: string; filledAt?: string };
 
-export default async function StudentProfile({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ tab?: string }> }) {
+export default async function StudentProfile({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ tab?: string; give?: string; gn?: string }> }) {
+  const sp = await searchParams; // give / gn — подсказанная награда (из «Событий учеников» или блока «Вместе»)
   const { t, lang } = await getT();
   const me = await requireUser("TEACHER");
   const { id } = await params;
@@ -85,6 +91,9 @@ export default async function StudentProfile({ params, searchParams }: { params:
   const fullName = [s.name, s.lastName].filter(Boolean).join(" ");
   const now = new Date();
   // главный титул (действующий) — плашкой у имени и короной на аватарке
+  // пол не указан — подставляем по имени (учитель может поменять в «Об ученике» → «Изменить»)
+  if (!s.gender) { const g = guessGender(s.name); if (g) { await db.student.update({ where: { id: s.id }, data: { gender: g } }); s.gender = g; } }
+  const myMoments = await momentsFor(me.id, me.timezone, s.id);
   const pinnedTitle = s.awards.find((a) => a.kind === "title" && a.pinned && a.onMain && (!a.until || a.until > new Date())) ?? null;
   const dateFmt = (d: Date, o: Intl.DateTimeFormatOptions = { day: "numeric", month: "long", year: "numeric" }) => d.toLocaleDateString(loc, { ...o, timeZone: tz });
   const tr = (list: [string, string][], v: string) => (lang === "en" ? (list.find((x) => x[0] === v)?.[1] ?? v) : v);
@@ -214,7 +223,7 @@ export default async function StudentProfile({ params, searchParams }: { params:
                 payerLinked: !!s.payerChatId, studentName: s.name, teacherName: meName,
               }}
             />
-            <AwardsCard studentId={s.id} studentName={s.name} gender={s.gender} linked={!!s.user?.telegramChatId}
+            <AwardsCard catalog={await getCatalog()} owner={isOwner(me.email)} preset={sp.give ? { key: String(sp.give), name: sp.gn ? String(sp.gn) : undefined } : null} studentId={s.id} studentName={s.name} gender={s.gender} linked={!!s.user?.telegramChatId}
               templates={(await db.awardTemplate.findMany({ where: { teacherId: me.id }, orderBy: { updatedAt: "desc" } })).map((x) => ({ id: x.id, kind: x.kind, name: x.name, why: x.why, icon: x.icon, color: x.color, term: x.term }))}
               rows={s.awards.map((a) => ({ id: a.id, kind: a.kind, name: a.name, why: a.why, icon: a.icon, color: a.color, onMain: a.onMain, pinned: a.pinned,
                 until: a.until ? dateFmt(a.until, { day: "numeric", month: "short" }) : null, untilIso: a.until ? isoDay(a.until, me.timezone) : null, expired: !!a.until && a.until < now, date: dateFmt(a.createdAt, { day: "numeric", month: "short" }) }))} />
@@ -265,6 +274,7 @@ export default async function StudentProfile({ params, searchParams }: { params:
                 <div className="statt"><span className="si" style={{ background: "var(--accent)" }}><Icon name="cal" /></span><div><b>{held.length}</b><span>{t("prof.lessonsHeld")}</span></div></div>
                 <div className="statt"><span className="si" style={{ background: "#5E5CE6" }}><Icon name="clock" /></span><div><b>{months}</b><span>{t("prof.monthsTogether")}</span></div></div>
               </div>
+              {myMoments.length > 0 && <StudentMoments moments={myMoments} />}
             </section>
           </div>
         </div>

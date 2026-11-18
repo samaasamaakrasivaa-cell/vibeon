@@ -1,7 +1,7 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useT } from "@/lib/i18n/client";
-import { CATALOG, GROUPS, ICON_KEYS, METAL_KEYS, METALS, nameFor, whyFor, type AwardKind, type CatalogItem } from "@/lib/awards/catalog";
+import { GROUPS, ICON_KEYS, METAL_KEYS, METALS, nameFor, whyFor, type AwardKind, type CatalogItem } from "@/lib/awards/catalog";
 import { PhraseLangSwitch, usePhraseLang, type PL } from "./PhraseLang";
 import { deleteAward, deleteTemplate, giveAward, pinAward, setAwardMain, updateAward } from "@/lib/awards/actions";
 import { setStudentField } from "@/lib/teacher/actions";
@@ -15,16 +15,16 @@ export type AwardRow = { id: string; kind: string; name: string; why: string | n
 export type AwardTpl = { id: string; kind: string; name: string; why: string | null; icon: string; color: string; term: string };
 
 /** Анкета → «Статусы»: титулы (на главном экране или нет, главный) и поощрения; «Выдать статус». */
-export function AwardsCard({ studentId, studentName, gender, rows, linked, templates }: { studentId: string; studentName: string; gender: string | null; rows: AwardRow[]; linked: boolean; templates: AwardTpl[] }) {
+export function AwardsCard({ studentId, studentName, gender, rows, linked, templates, preset = null, catalog, owner = false }: { studentId: string; studentName: string; gender: string | null; rows: AwardRow[]; linked: boolean; templates: AwardTpl[]; preset?: { key: string; name?: string } | null; catalog: CatalogItem[]; owner?: boolean }) {
   const { t } = useT();
   const { pending, run } = useRun();
-  const [give, setGive] = useState(false);
+  const [give, setGive] = useState(!!preset); // пришли по «Выдать награду» — окно сразу открыто
   const [edit, setEdit] = useState<AwardRow | null>(null);
   const titles = rows.filter((r) => r.kind === "title" && !r.expired);
   const cheers = rows.filter((r) => r.kind === "cheer");
   const past = rows.filter((r) => r.kind === "title" && r.expired);
   return (
-    <section className="card sm">
+    <section className="card sm" id="awards">
       <div className="mb-3 flex items-center gap-2">
         <p className="cardtitle m-0">{t("aw.title")}</p>
         <button type="button" className="btn primary sm" style={{ marginLeft: "auto" }} onClick={() => setGive(true)}><Icon name="plus" size="sm" />{t("aw.give")}</button>
@@ -60,13 +60,13 @@ export function AwardsCard({ studentId, studentName, gender, rows, linked, templ
           ))}
         </div>
       )}
-      {give && <GiveDialog studentId={studentId} studentName={studentName} gender={gender} linked={linked} templates={templates} onClose={() => setGive(false)} />}
+      {give && <GiveDialog studentId={studentId} studentName={studentName} gender={gender} linked={linked} templates={templates} preset={preset} catalog={catalog} owner={owner} onClose={() => setGive(false)} />}
       {edit && <EditDialog a={edit} onClose={() => setEdit(null)} />}
     </section>
   );
 }
 
-function GiveDialog({ studentId, studentName, gender: g0, linked, templates, onClose }: { studentId: string; studentName: string; gender: string | null; linked: boolean; templates: AwardTpl[]; onClose: () => void }) {
+function GiveDialog({ studentId, studentName, gender: g0, linked, templates, preset = null, catalog: CATALOG, owner, onClose }: { studentId: string; studentName: string; gender: string | null; linked: boolean; templates: AwardTpl[]; preset?: { key: string; name?: string } | null; catalog: CatalogItem[]; owner: boolean; onClose: () => void }) {
   const { t, lang } = useT();
   const { pending, error, run } = useRun();
   const [kind, setKind] = useState<AwardKind>("title");
@@ -102,6 +102,13 @@ function GiveDialog({ studentId, studentName, gender: g0, linked, templates, onC
   // пол не указан, а у статуса две формы — выбираем здесь и запоминаем в анкете
   const gendered = pick && pl === "ru" && (typeof pick.name.ru !== "string" || /\(а\)/.test(pick.name.ru + pick.why.ru));
   const setG = (v: "f" | "m") => { setGender(v); if (pick) { setName(nameFor(pick, pl, v)); setWhy(whyFor(pick, pl, v)); } void setStudentField(studentId, "gender", v); };
+  // подсказанная награда: выбрать её в каталоге и подставить название (например, «50 уроков вместе»)
+  useEffect(() => {
+    const c = preset ? CATALOG.find((x) => x.key === preset.key) : null;
+    if (!c) return;
+    setKind(c.kind); setGroup("all"); choose(c);
+    if (preset?.name) setName(preset.name);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const submit = () => run(() => giveAward(studentId, { kind, key: pick?.key ?? null, name, why, icon, color, term, until, onMain: kind === "title" && onMain, tg }), onClose);
   return (
     <Dialog open onClose={onClose} title={t("aw.giveTo", { n: studentName })} wide>
@@ -198,6 +205,7 @@ function GiveDialog({ studentId, studentName, gender: g0, linked, templates, onC
         </div>
       </div>
       <div className="actions">
+        {owner && <a href="/teacher/awards" className="btn plain" style={{ marginRight: "auto" }}><Icon name="pencil" size="sm" />{t("cat.edit")}</a>}
         <button type="button" className="btn secondary" onClick={onClose}>{t("common.cancel")}</button>
         <button type="button" className="btn primary" disabled={pending || !name.trim() || (kind === "title" && term === "date" && !until)} onClick={submit}>{t("aw.giveBtn")}</button>
       </div>

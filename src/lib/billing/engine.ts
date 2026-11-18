@@ -1,3 +1,4 @@
+import { weeklyMoments } from "../teacher/moment-digest";
 import "server-only";
 import { backfillTelegram } from "../notify/bot";
 import type { Invoice, Student } from "@prisma/client";
@@ -266,6 +267,7 @@ export async function runBilling(now = new Date()) {
     await billPostpaid(now);
     await remind(now);
     await weeklyReports(now);
+    await weeklyMoments(now).catch((e) => console.error("[moments]", e)); // воскресенье 22:00 — события учеников на неделю
     await backfillTelegram().catch((e) => console.error("[tg-username]", e));
   } catch (e) {
     console.error("[billing]", e);

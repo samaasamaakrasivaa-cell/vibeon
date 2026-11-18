@@ -5,7 +5,8 @@ import { requireUser } from "../auth/session";
 import { notify } from "../notify";
 import { fromZoned, parseIsoDay } from "../time";
 import { CHARACTER_KEYS } from "@/components/awards/Characters";
-import { CATALOG, ICONS, METALS } from "./catalog";
+import { ICONS, METALS } from "./catalog";
+import { getCatalog } from "./catalog-db";
 import { takeTgAvatar } from "./avatar";
 
 type R = { ok: true } | { ok: false; error: string };
@@ -44,13 +45,15 @@ export async function giveAward(studentId: string, x: GiveInput): Promise<R & { 
   // первый титул на главном экране — сразу главный (корона, под именем)
   const hasPinned = onMain ? await db.award.count({ where: { studentId, pinned: true, kind: "title", OR: [{ until: null }, { until: { gt: new Date() } }] } }) : 1;
   // свой статус (не из каталога) — сохраняем в картотеку «Мои», чтобы выдавать снова
-  if (!(x.key && CATALOG.some((c) => c.key === x.key))) {
+  const catalog = await getCatalog();
+  const inCatalog = !!x.key && catalog.some((c) => c.key === x.key);
+  if (!inCatalog) {
     const tpl = { why: x.why.trim().slice(0, 500) || null, icon: x.icon, color: x.color, term: kind === "title" ? x.term : "forever" };
     await db.awardTemplate.upsert({ where: { teacherId_kind_name: { teacherId: me.id, kind, name } }, create: { teacherId: me.id, kind, name, ...tpl }, update: tpl });
   }
   const created = await db.award.create({
     data: {
-      studentId, teacherId: me.id, kind, key: x.key && CATALOG.some((c) => c.key === x.key) ? x.key : null, name,
+      studentId, teacherId: me.id, kind, key: inCatalog ? x.key : null, name,
       why: x.why.trim().slice(0, 500) || null, icon: x.icon, color: x.color, onMain, pinned: onMain && !hasPinned, until,
     },
   });

@@ -2,6 +2,8 @@ import Link from "next/link";
 import { Clock } from "./Clock";
 import { Icon } from "./Icon";
 import { NotificationList } from "./NotificationList";
+import { MomentsCard } from "./teacher/MomentsCard";
+import { momentsFor } from "@/lib/teacher/moments";
 import { HideSteps } from "./teacher/HideSteps";
 import { TgConnect } from "./TgConnect";
 import { tgEnabled } from "@/lib/notify/telegram";
@@ -92,6 +94,8 @@ export async function Dashboard({ user, role, day }: { user: User; role: "TEACHE
     if (steps.slice(0, 3).every((s) => s.done) || (prof?.settings as { firstStepsHidden?: boolean } | null)?.firstStepsHidden) steps = [];
   }
 
+  const moments = role === "TEACHER" ? await momentsFor(user.id, user.timezone) : null;
+  const momentStudents = role === "TEACHER" ? (await db.student.findMany({ where: { teacherId: user.id, status: "ACTIVE" }, select: { id: true, name: true, lastName: true }, orderBy: { name: "asc" } })).map((s) => ({ id: s.id, name: [s.name, s.lastName].filter(Boolean).join(" ") })) : [];
   // дни рождения учеников в ближайшие 30 дней (дата — из анкеты)
   const bdays = role === "TEACHER"
     ? (await db.student.findMany({ where: { teacherId: user.id, status: "ACTIVE", birthday: { not: null } }, select: { id: true, name: true, lastName: true, birthday: true } }))
@@ -218,31 +222,13 @@ export async function Dashboard({ user, role, day }: { user: User; role: "TEACHE
         </div>
       </section>
 
-      {bdays.length > 0 && (
-        <section className="card bdcard">
-          <div className="mb-3 flex items-baseline justify-between gap-3">
-            <h3 className="m-0">🎂 {t("bd.title")}</h3>
-            <span className="small muted">{t("bd.sub")}</span>
-          </div>
-          <div className="bdlist">
-            {bdays.map(({ s, b }) => (
-              <Link key={s.id} href={`/teacher/students/${s.id}`} className={`bdrow ${b.days === 0 ? "now" : b.days <= 3 ? "soon" : ""}`}>
-                <span className="avatar">{initials(s.name, s.lastName)}</span>
-                <span className="grow"><b>{[s.name, s.lastName].filter(Boolean).join(" ")}</b>
-                  <span className="small muted block">{new Date(`${b.iso}T12:00:00Z`).toLocaleDateString(loc, { day: "numeric", month: "long", weekday: "short", timeZone: "UTC" })}{b.age ? ` · ${t("bd.turns", { n: b.age })}` : ""}{b.iso.slice(0, 7) === todayIso.slice(0, 7) ? ` · ${t("bd.thisMonth")}` : ""}</span>
-                </span>
-                <span className={`pill ${b.days === 0 ? "orange" : b.days <= 3 ? "violet" : "grey"}`}>{bdWhen(b.days)}</span>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
-
       <section className="card">
         <NotificationList
           items={notifications.map((n) => ({ id: n.id, title: n.title, when: ago(n.createdAt), unread: !n.readAt, done: !!n.doneAt, link: n.link, action: n.action }))}
         />
       </section>
+      {/* под «Что нового» — события учеников: дни рождения, вехи, активность, свои события */}
+      {moments && <MomentsCard moments={moments} students={momentStudents} />}
     </div>
   );
 }

@@ -6,7 +6,7 @@ export type Term = "week" | "month" | "forever";
 export type Metal = "gold" | "silver" | "rose" | "sapphire" | "amethyst" | "emerald";
 type L = { ru: string; en: string };
 /** Имя с формами по полу: «Король / Королева языковой догадки». */
-type GName = { ru: string | { f: string; m: string }; en: string };
+export type GName = { ru: string | { f: string; m: string }; en: string };
 
 export type CatalogItem = { key: string; kind: AwardKind; group: string; name: GName; why: L; icon: IconKey; color: Metal; term: Term };
 
@@ -111,6 +111,9 @@ export const CATALOG: CatalogItem[] = [
   c("no_subs", "brave", "Без субтитров", "No subtitles", "Посмотрел(а) фильм или серию без субтитров — и понял(а).", "Watched without subtitles and understood.", "screen", "amethyst"),
   c("lessons", "milestones", "10 уроков вместе", "10 lessons together", "Юбилей наших занятий!", "A lesson anniversary!", "laurel", "silver"),
   c("year", "milestones", "Год с английским", "A year of English", "Целый год занятий — это уже привычка на всю жизнь.", "A whole year of lessons.", "laurel", "gold"),
+  c("active_week", "milestones", "Рекорд активности недели", "Most active this week", "Больше всех занимался(ась) на платформе на этой неделе.", "Spent the most time on the platform this week.", "rocket", "gold"),
+  c("streak", "milestones", "Неделя слов без пропусков", "7-day word streak", "7 дней подряд тренировал(а) слова — это уже привычка!", "Trained words 7 days in a row — that's a habit!", "bolt", "emerald"),
+  c("together", "milestones", "Вместе уже …", "Together for …", "Спасибо, что ты со мной столько времени.", "Thank you for being with me all this time.", "heart", "rose"),
   c("back", "milestones", { f: "Возвращение героини", m: "Возвращение героя" }, "The hero returns", "Здорово, что ты снова с нами после перерыва.", "Great to have you back after a break.", "back", "sapphire"),
   c("great", "nice", "Отличная работа!", "Great job!", "За сегодняшний урок или домашку.", "For today's lesson or homework.", "thumb", "emerald"),
   c("sunny", "nice", "Солнце урока", "Sunshine of the lesson", "С тобой урок пролетел на одном дыхании.", "The lesson flew by with you.", "sun", "gold"),

@@ -161,6 +161,7 @@ model Student {
   avatarNotice    Boolean @default(false) // фото взято из Telegram — спросить ученика «оставить или заменить»
   tgPhotoChecked  Boolean @default(false) // фото из Telegram уже пробовали взять
   awards          Award[]
+  events          StudentEvent[]
   status          StudentStatus @default(INVITED)
   form            Json          @default("{}") // стартовая анкета
   payType         PayType       @default(POSTPAID)
@@ -876,4 +877,36 @@ model AwardTemplate {
   updatedAt DateTime @updatedAt
 
   @@unique([teacherId, kind, name])
+}
+
+/// Своё событие ученика, которое учитель хочет не упустить: «съездила в Италию — спросить про поездку», «экзамен 12-го».
+model StudentEvent {
+  id        String    @id @default(cuid())
+  teacherId String
+  studentId String
+  day       String // YYYY-MM-DD
+  text      String
+  doneAt    DateTime? // отмечено «готово» — из блока пропадает
+  createdAt DateTime  @default(now())
+  student   Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([teacherId, day])
+}
+
+/// Каталог статусов — правки владельца платформы поверх встроенного (catalog.ts) и новые статусы. Видят все учителя.
+model AwardCatalogItem {
+  key       String   @id // ключ встроенного статуса или новый (c_…)
+  kind      String // title | cheer
+  group     String
+  nameRu    String // женская форма, если есть мужская
+  nameRuM   String? // мужская форма («Король…»)
+  nameEn    String
+  whyRu     String
+  whyEn     String
+  icon      String
+  color     String
+  term      String   @default("forever")
+  hidden    Boolean  @default(false) // убран из каталога
+  custom    Boolean  @default(false) // добавлен владельцем (не встроенный)
+  updatedAt DateTime @updatedAt
 }

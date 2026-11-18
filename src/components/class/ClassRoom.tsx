@@ -23,6 +23,7 @@ import { numbered, PRESET, RUBRICS, SAMPLE, TYPES, type Rubric, type TaskType } 
 import { saveTask, setRubrics } from "@/lib/teacher/courses";
 import type { LiveState } from "@/lib/live/access";
 import { LessonCheer } from "../awards/LessonCheer";
+import type { CatalogItem } from "@/lib/awards/catalog";
 import { CelebrateAwards, type NewAward } from "../awards/StudentAwards";
 
 type CTask = TaskData & { section: "lesson" | "homework" | "words"; rubricId: string | null; hidden: boolean };
@@ -43,6 +44,7 @@ export type ClassData = {
   /** Групповое занятие: у каждого ученика свой урок (instanceId), класс общий. Учитель переключается между учениками. */
   group?: { title: string; members: { sid: string; instanceId: string; userId: string | null; name: string; gender?: string | null }[] };
   chatNames?: Record<string, string>; // чат группового урока: userId → имя
+  cheers?: CatalogItem[]; // «Подарить приятность»: каталог приятностей (с правками владельца) — только учителю
   byStudent?: Record<string, { answers: Answers; statuses: Record<string, string>; reviews: Record<string, Review>; aiDrafts: Record<string, AiCheck>; words: Word[]; note?: string }>;
 };
 
@@ -533,7 +535,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
         )}
         <ClassDialogs which={dlg === "cheer" ? null : dlg} close={() => setDlg(null)} d={d} hwComment={hw.teacherComment} send={send} onFinished={() => router.push(d.homeHref)} onCheer={() => setDlg("cheer")} />
         {dlg === "cheer" && (
-          <LessonCheer onClose={() => setDlg(null)} onGiven={(awardId) => rawSend("cheer", { awardId })}
+          <LessonCheer catalog={d.cheers ?? []} onClose={() => setDlg(null)} onGiven={(awardId) => rawSend("cheer", { awardId })}
             to={d.group ? d.group.members.map((m) => ({ sid: m.sid, name: m.name, gender: m.gender ?? null, inClass: !!m.userId && online.includes(m.userId) }))
               : d.student ? [{ sid: d.student.id, name: [d.student.name, d.student.lastName].filter(Boolean).join(" "), gender: d.student.gender ?? null, inClass: !!d.student.userId && online.includes(d.student.userId) }] : []} />
         )}

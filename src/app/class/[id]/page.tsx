@@ -1,3 +1,4 @@
+import { getCatalog } from "@/lib/awards/catalog-db";
 import { ActivityPing } from "@/components/ActivityPing";
 import { notFound } from "next/navigation";
 import type { TInfo } from "@/lib/tasks/teacher-info";
@@ -116,6 +117,7 @@ export default async function ClassPage({ params, searchParams }: { params: Prom
           used: [...new Set((await db.lessonInstance.findMany({ where: { ...(host.groupId ? { groupId: host.groupId } : { studentId: host.studentId ?? "-", groupId: null }), templateId: { not: null } }, orderBy: { startsAt: "desc" }, select: { template: { select: { unit: { select: { courseId: true } } } } }, take: 200 })).map((x) => x.template!.unit.courseId))],
         } : null,
         homeHref: role === "teacher" ? "/teacher" : "/student",
+        ...(role === "teacher" ? { cheers: (await getCatalog()).filter((c) => c.group === "nice") } : {}),
         addHw: (await searchParams).addhw === "1",
         initialTab: ((t) => (t === "homework" || t === "words" || t === "board" ? t : "lesson"))((await searchParams).tab),
       }}

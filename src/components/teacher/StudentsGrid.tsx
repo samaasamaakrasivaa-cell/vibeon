@@ -7,8 +7,9 @@ import { Icon } from "../Icon";
 import { Dialog } from "../Dialog";
 import { InviteForm } from "./InviteForm";
 import { useT } from "@/lib/i18n/client";
+import { Medal, StudentAvatar } from "../awards/Medal";
 
-export type Card = { id: string; name: string; sub: string; initials: string; color: number; href: string; badge?: string; tg?: boolean };
+export type Card = { id: string; name: string; sub: string; initials: string; color: number; href: string; badge?: string; tg?: boolean; avatar?: string | null; title?: { name: string; icon: string; color: string } | null };
 const COLORS = [
   ["var(--accent-bg)", "var(--accent-text)"], ["var(--ok-bg)", "var(--ok-text)"], ["var(--bad-bg)", "var(--bad-text)"],
   ["var(--warn-bg)", "var(--warn-text)"], ["var(--violet-bg)", "var(--violet)"], ["#E0F7F8", "#0B7480"],
@@ -56,8 +57,9 @@ export function StudentsGrid({ cards, empty, title }: { cards: Card[]; empty: st
         <div className="grid-3">
           {list.map((c) => (
             <Link key={c.id} href={c.href} className="scard">
-              <span className="avatar lg" style={avatarStyle(c.color)}>{c.initials}</span>
-              <span className="grow"><b>{c.name}</b><span>{c.sub}</span></span>
+              {/* аватарка ученика (персонаж или фото), с короной — если есть главный титул */}
+              <span className="scard-av"><StudentAvatar id={c.id} avatar={c.avatar ?? null} size={44} crown={!!c.title} /></span>
+              <span className="grow min-w-0"><b>{c.name}</b>{c.title && <span className="scard-title"><Medal icon={c.title.icon} color={c.title.color} size={16} />{c.title.name}</span>}<span>{c.sub}</span></span>
               {c.badge && <span className="pill grey">{c.badge}</span>}
               {c.tg !== undefined && <span className={`tgdot ${c.tg ? "on" : ""}`} title={t(c.tg ? "prof.tgOn" : "prof.tgOff")} aria-label={t(c.tg ? "prof.tgOn" : "prof.tgOff")}><Icon name="telegram" size="sm" /></span>}
               <Icon name="right" size="sm" className="text-text3" />
