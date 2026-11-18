@@ -98,7 +98,7 @@ export function PlacementReview(p: ReviewProps) {
     !has("core") ? (p.base ? t(p.base.from === "test" ? "pl.exBaseTest" : "pl.exBaseTeacher", { l: p.base.sub }) : null) : sm.diag ? t("pl.exDiag", { l: sm.diag, e: `${sm.easy[0]}/${sm.easy[1]}`, ep: pc(sm.easy), h: `${sm.hard[0]}/${sm.hard[1]}`, hp: pc(sm.hard), r: STEPS[sm.coreStep] }) : t("pl.exLow"),
     sm.fb && sm.diag ? t("pl.exFb", { l: PL_LEVELS[PL_LEVELS.indexOf(sm.diag) + 1] ?? "", d: sm.diag }) : null,
     sm.up && sm.diag ? t("pl.exUp", { l: prevLevel(sm.diag), d: sm.diag }) : null,
-    !sm.up && sm.above[1] ? t("pl.exAbove", { l: PL_LEVELS[PL_LEVELS.indexOf(sm.diag ?? "A1") + 1] ?? "", c: sm.above[0], n: sm.above[1] }) : null,
+    sm.above[1] ? t("pl.exAbove", { l: PL_LEVELS[PL_LEVELS.indexOf(sm.diag ?? "A1") + 1] ?? "", c: sm.above[0], n: sm.above[1] }) : null,
     sm.forms.typed[1] && sm.forms.choice[1] ? t("pl.exForms", { a: `${sm.forms.choice[0]}/${sm.forms.choice[1]}`, b: `${sm.forms.typed[0]}/${sm.forms.typed[1]}` }) : null,
     sm.repeats.length ? t("pl.exRepeats", { n: sm.repeats.length, k: sm.repeats.filter((x) => !x.again).length, list: sm.repeats.map((x) => `${x.topic} ${x.again ? "✓" : "✗"}`).join("; ") }) : null,
     sm.vstep !== null ? t("pl.exVocab", { r: STEPS[sm.vstep], p: sm.vprobes.map((x) => `${x.level} ${x.c}/${x.n}`).join(" → ") }) : null,

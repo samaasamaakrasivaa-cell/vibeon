@@ -48,7 +48,9 @@ export type PState = {
   core: { id: string; step: number; ph?: Ph }[]; // путь: грамматика (разминка, поиск, проверка, срез выше), затем лексика (vw, vl, vc)
   diag?: number; // уровень подробной проверки (0 = A1 … 4 = C1)
   fb?: boolean; // уже переходили на уровень ниже (погорячились)
-  up?: boolean; // уже переходили на уровень выше (срез выше сдан уверенно)
+  up?: boolean; // уже переходили на уровень выше (срез выше сдан уверенно) — после этого вниз не спускаемся
+  ups?: number; // сколько раз поднимались: уровень за уровнем, пока ученик уверенно делает задания (B1 → B2 → C1)
+  bdx?: boolean; // был пограничным на одном из прошлых уровней (для длины теста и отчёта)
   sg?: string[]; // группы уровня выше, из которых берётся срез (выбраны один раз)
   bd?: "l" | "s"; // пограничный ученик (уровень проверки и уровень выше): замечен на поиске уровня (l) или на срезе (s)
   closed?: string[]; // завершённые разделы после ядра (между открытыми можно переключаться)
@@ -189,7 +191,9 @@ const levelAcc = (st: PState, li: number) => stat(st, (it, x) => it.level === PL
 
 /** Следующее задание ядра; null — ядро закончено. Отмечает в st этап проверки (diag, fb). */
 export function nextCore(st: PState, bank: Bank, rnd: () => number = Math.random): { item: CoreItem; ph: Ph } | null {
-  const cap = (st.track === "teen" ? CORE_MAX_TEEN : CORE_MAX) + (st.bd ? BORDER_MORE + (st.up ? BORDER_UP_MORE : 0) : 0);
+  // тест может быть длиннее: каждый подъём на уровень выше и пограничная проверка добавляют заданий — важнее точный итог
+  const ups = st.ups ?? (st.up ? 1 : 0);
+  const cap = (st.track === "teen" ? CORE_MAX_TEEN : CORE_MAX) + (st.bd || st.bdx ? BORDER_MORE : 0) + ups * BORDER_UP_MORE;
   // лимит длины — для основной проверки; добор по разделам с малым числом ответов идёт и после него (не больше COVER_MAX)
   // каждая группа уровня получает свои 3 задания и после лимита (не больше COVER_MAX сверх него)
   if (st.core.length >= cap) return st.diag !== undefined && st.core.length < cap + COVER_MAX ? detailPick(st, bank, st.diag, rnd) ?? cover(st, bank, st.diag, rnd) : null;
@@ -226,20 +230,25 @@ export function nextCore(st: PState, bank: Bank, rnd: () => number = Math.random
     const d = detailPick(st, bank, D, rnd); if (d) return d;
   }
   // шаг вверх по разделам: раздел сделан без ошибок — проверяем его же уровнем выше
-  if (D < 4 && !st.fb && !st.up && !st.bd) { const u = stepUp(st, bank, D, rnd); if (u) return u; }
+  // и так на каждом уровне: поднялись на B2 и делаем его уверенно — так же проверяем C1 (раньше подъём был только один раз)
+  if (D < 4 && !st.fb && !st.bd) { const u = stepUp(st, bank, D, rnd); if (u) return u; }
   // уровень сделан уверенно — короткий срез уровня выше; 70%+ — проверяем уровень выше целиком; 55–70% — уточняем ещё 4 заданиями
   // срез — из групп уровня выше, которые ещё не проверялись: опорная группа уже получила 3 задания при поиске уровня
   // и не должна занимать место среза (иначе срез обрывался на 6 заданиях и решение не принималось никогда)
   const sliceGroups = (li: number) => { const all = groupsOf(bank, li); const fresh = all.filter((g) => !g.anchor && inGroup(st, g.id) === 0); return (fresh.length >= SLICE_GROUPS ? fresh : [...fresh, ...all.filter((g) => !fresh.includes(g) && !g.anchor), ...all.filter((g) => g.anchor)]).slice(0, SLICE_GROUPS); };
-  if (D < 4 && !st.fb && !st.up && !st.bd) {
+  if (D < 4 && !st.fb && !st.bd) {
+    const atUp = (x: PState["core"][number]) => (st.items[x.id] as CoreItem | undefined)?.level === PL_LEVELS[D + 1];
     const sl = stat(st, (it, x) => (x.ph === "s" || x.ph === "x") && it.level === PL_LEVELS[D + 1]);
-    const xs = st.core.filter((x) => x.ph === "x").length;
+    const xs = st.core.filter((x) => x.ph === "x" && atUp(x)).length;
+    // группы среза — именно уровня выше текущего (после подъёма срез собирается заново)
+    const upIds = new Set(groupsOf(bank, D + 1).map((g) => g.id));
+    if (st.sg && !st.sg.every((g) => upIds.has(g))) st.sg = undefined;
     const sGroups = st.sg ?? (st.sg = sliceGroups(D + 1).map((g) => g.id));
     const sliceN = Math.min(SLICE_GROUPS, sGroups.length) * SLICE_PER;
-    const slAsked = st.core.filter((x) => x.ph === "s").length;
+    const slAsked = st.core.filter((x) => x.ph === "s" && atUp(x)).length;
     if (sl.n >= sliceN || (slAsked > 0 && !sGroups.some((gid) => st.core.filter((x) => x.ph === "s" && (st.items[x.id] as CoreItem)?.group === gid).length < SLICE_PER && pickFrom(st, bank, gid, rnd, "easy")))) {
       const p = sl.c / sl.n;
-      if (p >= UP_FROM && (xs === 0 || xs >= EXTRA)) { st.up = true; st.diag = D + 1; return nextCore(st, bank, rnd); }
+      if (p >= UP_FROM && (xs === 0 || xs >= EXTRA)) { climb(st, D); return nextCore(st, bank, rnd); }
       // 55–70% — пограничный: дальше каждый раздел и уровнем выше (старые прохождения с начатым добором доводим по-старому)
       if (xs === 0 && p >= EDGE_FROM && hasUpper(bank, D)) { st.bd = "s"; return nextCore(st, bank, rnd); }
       if (xs > 0 && xs < EXTRA) {
@@ -264,16 +273,23 @@ export function nextCore(st: PState, bank: Bank, rnd: () => number = Math.random
     }
   }
   // пограничный: задания уровнем выше по разделам вперемешку с повторами и добором уровня проверки
-  if (st.bd && !st.up && D < 4) {
+  if (st.bd && D < 4) {
     const lastB = st.core[st.core.length - 1]?.ph === "b";
     if (!lastB) { const b = border(st, bank, D, rnd, true); if (b) return b; }
     const o = tail(st, bank, D, rnd); if (o) return o;
     const b = border(st, bank, D, rnd, false) ?? border(st, bank, D, rnd, false, false); if (b) return b;
     const u = upperStat(st, D);
-    if (u.n >= 4 && u.c / u.n >= UP_FROM) { st.up = true; st.diag = D + 1; return nextCore(st, bank, rnd); }
+    if (u.n >= 4 && u.c / u.n >= UP_FROM) { climb(st, D); return nextCore(st, bank, rnd); }
     return null;
   }
   return tail(st, bank, D, rnd);
+}
+
+/** Подъём на уровень выше: подробная проверка нового уровня, и от него — снова срез, шаги вверх и пограничная проверка. */
+function climb(st: PState, D: number) {
+  st.up = true; st.ups = (st.ups ?? 0) + 1;
+  if (st.bd) st.bdx = true;
+  st.bd = undefined; st.sg = undefined; st.diag = D + 1;
 }
 
 /** Подробная проверка уровня: каждая группа тем — минимум 3 задания (1 простое, потом 2 сложных), по кругу и вперемешку:
@@ -374,7 +390,7 @@ function border(st: PState, bank: Bank, D: number, rnd: () => number, ready: boo
  *  сложное задание этого раздела уровнем выше; верно — ещё одно. Так видно, какие разделы ученик уже держит выше уровня. */
 function stepUp(st: PState, bank: Bank, D: number, rnd: () => number): { item: CoreItem; ph: Ph } | null {
   const fams = bank.families ?? [];
-  const done = st.core.filter((x) => x.ph === "u");
+  const done = st.core.filter((x) => x.ph === "u" && (st.items[x.id] as CoreItem | undefined)?.level === PL_LEVELS[D + 1]);
   if (!fams.length || done.length >= STEP_MAX) return null;
   const topicLv = new Map(bank.core.filter((x) => x.skill === "grammar").map((x) => [x.topic_id, PL_LEVELS.indexOf(x.level)] as const));
   const used = new Set(st.core.map((x) => x.id));
@@ -707,7 +723,7 @@ export function summarize(st: PState, bank: Bank): Summary {
     if (kinds.length) vlevels.push({ level: PL_LEVELS[li], warm: vf !== null && li < vf, kinds });
   }
   return {
-    coreStep, level: levelOfStep(coreStep), diag: st.diag !== undefined ? PL_LEVELS[st.diag] : null, fb: !!st.fb, up: !!st.up, bd: !!st.bd, anchors,
+    coreStep, level: levelOfStep(coreStep), diag: st.diag !== undefined ? PL_LEVELS[st.diag] : null, fb: !!st.fb, up: !!st.up, bd: !!(st.bd || st.bdx), anchors,
     ...(() => {
       if (st.diag === undefined) return { easy: [0, 0] as [number, number], hard: [0, 0] as [number, number], above: [0, 0] as [number, number] };
       const L = PL_LEVELS[st.diag], A = PL_LEVELS[st.diag + 1];
