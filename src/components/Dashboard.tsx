@@ -42,7 +42,7 @@ export async function Dashboard({ user, role, day }: { user: User; role: "TEACHE
   const lessons = role === "TEACHER" ? oneSlot(lessonsAll) : lessonsAll; // групповое занятие у учителя — одной строкой
   // домашка к уроку = домашка с предыдущего занятия этого ученика
   const hwBefore = (studentId: string | null, at: Date) => (studentId ? hws.find((h) => h.lesson.studentId === studentId && h.lesson.startsAt < at) ?? null : null);
-  const hwPill = { review: ["orange", "hwT.review"], notdone: ["red", "hwT.notdone"], checked: ["green", "hwT.checked"] } as const satisfies Record<HwState, readonly [string, string]>;
+  const hwPill = { review: ["orange", "hwT.review"], partial: ["blue", "hwT.partial"], notdone: ["red", "hwT.notdone"], checked: ["green", "hwT.checked"] } as const satisfies Record<HwState, readonly [string, string]>;
 
   const loc = lang === "ru" ? "ru-RU" : "en-GB";
   // выбранный в полосе «Эта неделя» день (по умолчанию — сегодня)

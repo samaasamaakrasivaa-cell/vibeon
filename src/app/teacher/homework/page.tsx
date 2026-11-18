@@ -36,7 +36,7 @@ export default async function ToReview({ searchParams }: { searchParams: Promise
   const lastDone = new Map((await db.lessonInstance.findMany({ where: { teacherId: me.id, status: "DONE", studentId: { in: noHw.map((s) => s.id) } }, orderBy: { startsAt: "desc" }, select: { id: true, studentId: true, startsAt: true, template: { select: { title: true } } } }))
     .reverse().map((l) => [l.studentId!, l]));
   const hwList = [...latest.values()];
-  const hw = { review: hwList.filter((h) => h.state === "review"), notdone: hwList.filter((h) => h.state === "notdone"), checked: hwList.filter((h) => h.state === "checked") };
+  const hw = { review: hwList.filter((h) => h.state === "review"), notdone: hwList.filter((h) => h.state === "notdone" || h.state === "partial"), checked: hwList.filter((h) => h.state === "checked") };
   // ── тесты учеников
   const tests = await db.placementAttempt.findMany({ where: { teacherId: me.id, mode: "student", studentId: { not: null }, student: { status: "ACTIVE" } }, include: { student: true }, orderBy: { createdAt: "desc" }, take: 80 });
   const ts = { review: tests.filter((x) => x.status === "submitted"), assigned: tests.filter((x) => x.status === "new" || x.status === "active"), checked: tests.filter((x) => x.status === "reviewed").slice(0, 20) };
@@ -112,13 +112,14 @@ export default async function ToReview({ searchParams }: { searchParams: Promise
               <div key={h.lesson.id} className="hwcard">
                 <div className="flex gap-3">
                   <span className="avatar lg">{initials(h.lesson.student?.name, h.lesson.student?.lastName)}</span>
-                  <div className="min-w-0"><b className="block">{nameOf(h.lesson.student)}</b><span className="small muted">{h.title} · {h.lastAt ? t("hwT.sent", { d: when(h.lastAt) }) : t("hwT.given", { d: when(h.lesson.finishedAt) })}</span></div>
+                  <div className="min-w-0"><b className="block">{nameOf(h.lesson.student)}</b><span className="small muted">{h.title} · {h.state === "partial" && h.lastAt ? t("hwT.lastAns", { d: when(h.lastAt) }) : h.lastAt && h.state !== "notdone" ? t("hwT.sent", { d: when(h.lastAt) }) : t("hwT.given", { d: when(h.lesson.finishedAt) })}</span></div>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="hwbar"><i style={{ width: `${h.total ? (h.done / h.total) * 100 : 0}%` }} /></span>
                   <span className="small font-semibold">{h.done}/{h.total}</span>
                   <Link href={`/class/${h.lesson.id}?tab=homework`} className={`btn sm ${h.state === "review" ? "primary" : "secondary"}`}>{h.state === "review" ? t("hwT.check") : t("prof.open")}</Link>
                 </div>
+                {h.state === "partial" && <span className="pill blue self-start">{t("hwT.partialN", { n: h.done, total: h.total })}</span>}
                 {h.needs > 0 && <span className="pill orange self-start">{t("hwT.needs", { n: h.needs })}</span>}
               </div>
             ))}
