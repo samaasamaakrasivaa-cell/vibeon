@@ -177,6 +177,8 @@ export async function Dashboard({ user, role, day }: { user: User; role: "TEACHE
                     </div>
                     <div className="tl-what">
                       {x?.template ? <><b>{x.template.title}</b>{x.template.subtitle ? ` · ${x.template.subtitle}` : ""}<span className="text-text3"> — {x.template.unit.course.title}, {x.template.unit.title}</span></> : <span className="text-text3">{t("today.noMaterial")}</span>}
+                      {/* сменить или выбрать урок занятия — откроется класс с выбором урока */}
+                      {role === "TEACHER" && <Link href={`/class/${l.id}?pick=1`} className="tl-pick">{x?.template ? t("today.changeLesson") : t("today.pickLesson")}</Link>}
                     </div>
                     {(hw || pack || debt > 0 || x?.movedFrom) && (
                       <div className="tl-tags">

@@ -114,6 +114,8 @@ export default async function ClassPage({ params, searchParams }: { params: Prom
               lessons: templates.filter((x) => x.unitId === u.id).map((x) => ({ id: x.id, title: x.title, sub: x.subtitle ?? null, cover: x.cover ?? c.cover ?? null })),
             })),
           })),
+          // пройденные и незаконченные уроки этого ученика (группы)
+          progress: Object.fromEntries((await db.lessonProgress.findMany({ where: { owner: host.groupId ? `g:${host.groupId}` : `s:${host.studentId ?? "-"}` } })).map((x) => [x.templateId, x.state])),
           used: [...new Set((await db.lessonInstance.findMany({ where: { ...(host.groupId ? { groupId: host.groupId } : { studentId: host.studentId ?? "-", groupId: null }), templateId: { not: null } }, orderBy: { startsAt: "desc" }, select: { template: { select: { unit: { select: { courseId: true } } } } }, take: 200 })).map((x) => x.template!.unit.courseId))],
         } : null,
         homeHref: role === "teacher" ? "/teacher" : "/student",

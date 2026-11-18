@@ -603,6 +603,7 @@ function LessonDialog({ l, onClose, initial = "main", moveTo }: { l: GridLesson;
       {/* порядок: войти в класс → действия с уроком → ссылка на созвон → что произошло → заметка → стоимость */}
       <Link href={`/class/${l.id}`} className="btn primary lg w-full lopen"><Icon name="class" />{t("dash.openClass")}</Link>
       <div className="mt-3 flex flex-wrap items-center gap-2">
+        {l.status === "PLANNED" && <Link href={`/class/${l.id}?pick=1`} className="btn secondary sm"><Icon name="book" size="sm" />{t("today.changeLesson")}</Link>}
         {(l.status === "PLANNED" || l.past) && <button className="btn secondary sm" onClick={() => { setFix(l.past); setMode("move"); }}><Icon name="move" size="sm" />{l.past ? t("sch.editTime") : t("sch.move")}</button>}
         {!l.past && l.status === "PLANNED" && <button className="btn secondary sm" onClick={() => setMode("cancel")}><Icon name="calx" size="sm" />{t("sch.cancelLesson")}</button>}
         <button className="btn danger sm" onClick={() => setMode("del")}>{t("common.delete")}</button>

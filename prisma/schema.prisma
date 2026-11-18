@@ -916,3 +916,14 @@ model AwardCatalogItem {
   custom    Boolean  @default(false) // добавлен владельцем (не встроенный)
   updatedAt DateTime @updatedAt
 }
+
+/// Состояние урока курса для ученика (или группы): «пройден» или «не закончен — вернёмся». Ставится, когда учитель закрепляет другой урок.
+model LessonProgress {
+  id         String   @id @default(cuid())
+  owner      String // "s:<studentId>" или "g:<groupId>"
+  templateId String
+  state      String // done | paused
+  updatedAt  DateTime @updatedAt
+
+  @@unique([owner, templateId])
+}

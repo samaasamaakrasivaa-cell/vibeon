@@ -40,7 +40,7 @@ export type ClassData = {
   lessonWords: { word: string; tr: string; ex: string }[]; words: Word[]; messages: Msg[];
   note: string | null; studentNote: string | null; callLink: string | null; callOwn?: boolean; when: string; durationMin: number; status: string; goal: string | null;
   templates: { id: string; label: string }[]; homeHref: string;
-  picker?: { courses: { id: string; title: string; cover: string | null; units: { id: string; title: string; lessons: { id: string; title: string; sub: string | null; cover: string | null }[] }[] }[]; used: string[] } | null; initialTab?: "lesson" | "homework" | "words" | "board"; addHw?: boolean;
+  picker?: { courses: { id: string; title: string; cover: string | null; units: { id: string; title: string; lessons: { id: string; title: string; sub: string | null; cover: string | null }[] }[] }[]; used: string[]; progress?: Record<string, string> } | null; initialTab?: "lesson" | "homework" | "words" | "board"; addHw?: boolean;
   /** Групповое занятие: у каждого ученика свой урок (instanceId), класс общий. Учитель переключается между учениками. */
   group?: { title: string; members: { sid: string; instanceId: string; userId: string | null; name: string; gender?: string | null }[] };
   chatNames?: Record<string, string>; // чат группового урока: userId → имя
@@ -276,6 +276,8 @@ export function ClassRoom({ d }: { d: ClassData }) {
   const [editing, setEditing] = useState<{ task: CTask; index: number } | null>(null);
   const [saving, setSaving] = useState(false);
   const [dlg, setDlg] = useState<"about" | "hwc" | "fb" | "finish" | "pick" | "cheer" | null>(null);
+  // пришли по «Сменить урок» (главная, расписание) — сразу открыть выбор урока
+  useEffect(() => { if (teacher && !d.preview && new URLSearchParams(window.location.search).get("pick") === "1") setDlg("pick"); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const templateId = !!d.templateId;
 
   const taskActions = (task: CTask, inHw: boolean) => {
@@ -816,7 +818,30 @@ function LessonPicker({ d, send, close }: { d: ClassData; send: (type: string, x
   const course = courses.find((c) => c.id === cid);
   const used = (d.picker?.used ?? []).map((id) => courses.find((c) => c.id === id)).filter(Boolean) as typeof courses;
   const others = courses.filter((c) => !used.includes(c));
-  const pin = async (id: string) => { setBusy(true); await send("template", { templateId: id }); setBusy(false); close(); };
+  const progress = d.picker?.progress ?? {};
+  // закрепляем другой урок, а текущий уже был — спросить: завершить его или вернуться к нему позже
+  const [ask, setAsk] = useState<string | null>(null);
+  const curTitle = courses.flatMap((c) => c.units.flatMap((u) => u.lessons)).find((l) => l.id === d.templateId)?.title ?? d.title ?? "";
+  const pin = async (id: string, prev?: "done" | "paused") => {
+    if (d.templateId && d.templateId !== id && !prev) { setAsk(id); return; }
+    setBusy(true); await send("template", { templateId: id, ...(prev ? { prev } : {}) }); setBusy(false); close();
+  };
+  // незаконченные уроки — вернуться в один клик (и в списке курсов, и в курсе)
+  const pausedBlock = (list: typeof paused) => list.length > 0 && (
+    <>
+      <div className="lp-unit">{t("cls.lpPausedList")}</div>
+      <div className="lp-list mb-4">
+        {list.map((l) => (
+          <div key={l.id} className="lp-row lp-paused">
+            <span className="lp-thumb" style={l.cover ? { backgroundImage: `url(${l.cover})` } : undefined}>{!l.cover && <Icon name="book" size="sm" />}</span>
+            <span className="grow min-w-0"><b className="block truncate">{l.title}</b><small className="muted">{l.course}</small></span>
+            <button type="button" className="btn primary sm" disabled={busy} onClick={() => void pin(l.id)}><Icon name="pin" size="sm" />{t("cls.lpResume")}</button>
+          </div>
+        ))}
+      </div>
+    </>
+  );
+  const paused = courses.flatMap((c) => c.units.flatMap((u) => u.lessons.map((l) => ({ ...l, course: c.title })))).filter((l) => progress[l.id] === "paused" && l.id !== d.templateId);
   const card = (c: (typeof courses)[number]) => (
     <button key={c.id} type="button" className="lp-course" onClick={() => { setCid(c.id); setQ(""); }}>
       <span className="lp-cover" style={c.cover ? { backgroundImage: `url(${c.cover})` } : undefined}>{!c.cover && c.title[0]}</span>
@@ -824,13 +849,23 @@ function LessonPicker({ d, send, close }: { d: ClassData; send: (type: string, x
     </button>
   );
   return (
-    <Dialog open onClose={close} title={course ? course.title : t("cls.lpCourses")} wide>
-      {course ? (
+    <Dialog open onClose={close} title={ask ? t("cls.lpAskTitle") : course ? course.title : t("cls.lpCourses")} wide>
+      {ask ? (
+        <>
+          <p className="mt-0">{t("cls.lpAsk", { n: curTitle })}</p>
+          <div className="lp-ask">
+            <button type="button" className="lp-ask-opt" disabled={busy} onClick={() => void pin(ask, "done")}><span className="lp-ask-i ok">✓</span><b>{t("cls.lpAskDone")}</b><small>{t("cls.lpAskDoneSub")}</small></button>
+            <button type="button" className="lp-ask-opt" disabled={busy} onClick={() => void pin(ask, "paused")}><span className="lp-ask-i wait"><Icon name="hourglass" size="sm" /></span><b>{t("cls.lpAskPaused")}</b><small>{t("cls.lpAskPausedSub")}</small></button>
+          </div>
+          <div className="actions"><button type="button" className="btn secondary" onClick={() => setAsk(null)}>{t("common.back")}</button></div>
+        </>
+      ) : course ? (
         <>
           <div className="mb-3 flex flex-wrap items-center gap-2">
             <button type="button" className="btn secondary sm" onClick={() => { setCid(null); setSel(null); }}><Icon name="chevl" size="sm" />{t("cls.lpAllCourses")}</button>
             <input className="input grow" value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("cls.lpSearch")} aria-label={t("cls.lpSearch")} style={{ minWidth: 180 }} />
           </div>
+          {!q.trim() && pausedBlock(paused)}
           <div className="lp-list">
             {course.units.map((u) => {
               const ls = u.lessons.filter((l) => !q.trim() || l.title.toLowerCase().includes(q.trim().toLowerCase()));
@@ -841,7 +876,9 @@ function LessonPicker({ d, send, close }: { d: ClassData; send: (type: string, x
                     <div key={l.id} className={`lp-row ${sel === l.id ? "on" : ""}`} onClick={() => setSel(l.id)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter") setSel(l.id); }}>
                       <span className="lp-thumb" style={l.cover ? { backgroundImage: `url(${l.cover})` } : undefined}>{!l.cover && <Icon name="book" size="sm" />}</span>
                       <span className="grow min-w-0"><b className="block truncate">{l.title}</b>{l.sub && <small className="muted">{l.sub}</small>}</span>
-                      {l.id === d.templateId && <span className="pill green"><Icon name="pin" size="sm" />{t("cls.lpPinned")}</span>}
+                      {l.id === d.templateId ? <span className="pill green"><Icon name="pin" size="sm" />{t("cls.lpPinned")}</span>
+                        : progress[l.id] === "done" ? <span className="pill grey">✓ {t("cls.lpDone")}</span>
+                        : progress[l.id] === "paused" ? <span className="pill orange"><Icon name="hourglass" size="sm" />{t("cls.lpPaused")}</span> : null}
                       {sel === l.id && l.id !== d.templateId && <button type="button" className="btn primary sm" disabled={busy} onClick={(e) => { e.stopPropagation(); void pin(l.id); }}><Icon name="pin" size="sm" />{t("cls.lpPin")}</button>}
                     </div>
                   ))}
@@ -853,6 +890,7 @@ function LessonPicker({ d, send, close }: { d: ClassData; send: (type: string, x
         </>
       ) : (
         <>
+          {pausedBlock(paused)}
           {used.length > 0 && <><div className="lp-unit">{d.group ? t("cls.lpUsedGroup") : t("cls.lpUsed")}</div><div className="lp-grid">{used.map(card)}</div></>}
           {others.length > 0 && <><div className="lp-unit mt-4">{used.length ? t("cls.lpOther") : t("cls.lpCourses")}</div><div className="lp-grid">{others.map(card)}</div></>}
           {courses.length === 0 && <p className="hint">{t("crs.empty")}</p>}

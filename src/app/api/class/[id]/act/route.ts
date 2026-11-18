@@ -296,6 +296,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       if (!teacher) return bad();
       const t = await db.lessonTemplate.findUnique({ where: { id: str(body.templateId, 60) }, include: { unit: { include: { course: true } } } });
       if (!t || t.unit.course.teacherId !== user.id) return bad();
+      // что с прежним уроком: «пройден» или «не закончен — вернёмся»; выбранный урок — снова в работе
+      const owner = host.groupId ? `g:${host.groupId}` : host.studentId ? `s:${host.studentId}` : null;
+      const prev = body.prev === "done" || body.prev === "paused" ? body.prev : null;
+      if (owner && prev && host.templateId && host.templateId !== t.id)
+        await db.lessonProgress.upsert({ where: { owner_templateId: { owner, templateId: host.templateId } }, create: { owner, templateId: host.templateId, state: prev }, update: { state: prev } });
+      if (owner) await db.lessonProgress.deleteMany({ where: { owner, templateId: t.id, state: "paused" } });
       await db.lessonInstance.updateMany({ where: { id: { in: slotIds } }, data: { templateId: t.id } });
       publish(ch, "reload", {});
       return NextResponse.json({ ok: true });
