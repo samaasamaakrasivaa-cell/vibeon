@@ -47,9 +47,16 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       const payload = { ...((prev?.payload as object) ?? {}), [key]: body.value ?? null };
       const teacherCheck = ["essay", "open", "record", "transform", "translate"].includes(task.type);
       // комментарии учителя к полям (gnotes) — не ответ ученика: статус не меняется
-      const status = key === "gnotes" ? prev?.status ?? "DRAFT" : key === "checked" && body.value ? (teacherCheck ? "NEEDS_REVIEW" : "AUTO_CHECKED") : prev?.status === "REVIEWED" ? "REVIEWED" : teacherCheck ? "NEEDS_REVIEW" : "SUBMITTED";
+      // комментарии и исправленная версия от учителя (gnotes, corr, corrSent) — не ответ ученика; ученик их не пишет
+      if (["gnotes", "corr", "corrSent"].includes(key) && !teacher) return bad("teacher only");
+      const status = ["gnotes", "corr", "corrSent"].includes(key) ? prev?.status ?? "DRAFT" : key === "checked" && body.value ? (teacherCheck ? "NEEDS_REVIEW" : "AUTO_CHECKED") : prev?.status === "REVIEWED" ? "REVIEWED" : teacherCheck ? "NEEDS_REVIEW" : "SUBMITTED";
       await db.answer.upsert({ where, create: { lessonInstanceId: tg.id, taskId, studentId: sid, payload: json(payload), status }, update: { payload: json(payload), status } });
       publish(ch, "answer", { taskId, key, value: body.value ?? null, by, sid });
+      // учитель отправил исправленную версию — ученику уведомление (один раз на задание)
+      if (key === "corrSent" && teacher && tg.student?.userId) {
+        const su = await db.user.findUnique({ where: { id: tg.student.userId }, select: { lang: true } });
+        await notify({ userId: tg.student.userId, kind: "feedback", title: su?.lang === "EN" ? "Your teacher has checked your work" : "Преподаватель проверил твою работу", action: "review", link: `/class/${tg.id}`, dedupe: `corr:${tg.id}:${taskId}` });
+      }
       return NextResponse.json({ ok: true });
       });
     }

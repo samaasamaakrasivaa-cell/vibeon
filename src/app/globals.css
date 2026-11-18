@@ -2425,3 +2425,16 @@ body.lmoving, body.lmoving * { cursor: grabbing !important; user-select: none; }
 .tk-hint.tk-kw { letter-spacing: .03em; }
 /* «Соедини пары»: пара для учителя — бледно-зелёным, как подсказка */
 .tk-card.keyhit { border-color: color-mix(in srgb, var(--ok) 45%, transparent); background: var(--ok-bg); color: var(--ok-text); transition: background .15s, border-color .15s; }
+/* «Исправленная версия»: бегунок и две колонки — текст ученика и правка преподавателя */
+.tk-fixswitch { display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-top: 8px; font-size: 14px; font-weight: 600; color: var(--accent-text); cursor: pointer; }
+.tk-fix { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 8px; }
+@media (max-width: 720px) { .tk-fix { grid-template-columns: 1fr; } }
+.tk-fixcol { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.tk-fixhead { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; padding: 7px 12px; border-radius: 10px; background: var(--surface2); font-size: 13px; color: var(--text3); }
+.tk-fixhead b { color: var(--text2); font-weight: 600; margin-right: auto; }
+.tk-fixtext { padding: 10px 12px; border: 1px solid var(--sep); border-radius: 12px; background: var(--surface); white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.6; min-height: 44px; }
+.tk-fixedit { font: inherit; line-height: 1.6; }
+.tk-fixedit + .tk-fixtext { border-style: dashed; background: var(--surface2); font-size: 14px; }
+.tk-fix-was { background: var(--warn-bg); color: var(--warn-text); text-decoration: underline wavy color-mix(in srgb, var(--warn) 70%, transparent); text-underline-offset: 3px; border-radius: 4px; padding: 0 2px; }
+.tk-fix-now { background: var(--ok-bg); color: var(--ok-text); font-weight: 600; border-radius: 4px; padding: 0 2px; }
+.tk-fixbar { display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin-top: 8px; }

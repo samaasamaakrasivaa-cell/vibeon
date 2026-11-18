@@ -12,6 +12,7 @@ import { AiTalk } from "../ai/AiTalk";
 import { AiCheckView, type AiCheck } from "../ai/AiCheckView";
 import { transcribe } from "../ai/audio";
 import { fixSpeech } from "@/lib/ai/actions";
+import { wordDiff } from "@/lib/ai/diff";
 
 export type TaskData = { id: string; type: TaskType; title: string; content: string; options: TaskOptions };
 type Mark = "ok" | "bad" | "spell" | undefined;
@@ -709,8 +710,10 @@ function Arrow({ task }: { task: TaskData }) {
         return (
           <div key={i}>
             <div className="mb-1.5"><Num i={i} o={o} /> {it.q} {it.key && <span className="tk-hint tk-kw" title={t("tk.keyWord")}>{it.key}</span>}</div>
+            <Fixable tid={task.id} k={String(i)} src={val[i] ?? ""} rows={2}>
             <span className="flex items-center gap-2"><input className={`input tk-line ${m ?? ""}`} value={val[i] ?? ""} onChange={(e) => setVal((x) => ({ ...x, [i]: e.target.value }))} onBlur={(e) => { if (ck.instant && e.target.value) { ck.bump(String(i)); ck.record(String(i), e.target.value, same(e.target.value, it.answers)); } }} aria-label={`answer ${i + 1}`} />
             {it.answers.length > 0 && <Tries hist={ck.hist[String(i)]} answer={it.answers.join(" / ")} tid={task.id} k={String(i)} noKey />}</span>
+            </Fixable>
             {m === "bad" && <span className="small text-text2">{t("tk.teacherWillSee")}</span>}
             {ck.reveal(String(i)) && m === "bad" ? <span className="tk-ans">{it.answers[0]}</span> : <Key text={it.answers.join(" / ")} mode="block" />}
           </div>
@@ -1041,7 +1044,7 @@ function Open({ task }: { task: TaskData }) {
     <div className="flex flex-col gap-4">
       {p.kind === "lines" && p.items.map((q, i) => (
         <div key={i}><div className="mb-1.5">{p.items.length > 1 && <Num i={i} o={task.options} />} <Inl text={q} /></div>
-          <textarea className="textarea" aria-label={q} value={val[i] ?? ""} onChange={(e) => setVal((x) => ({ ...x, [i]: e.target.value }))} /></div>
+          <Fixable tid={task.id} k={String(i)} src={val[i] ?? ""} rows={4}><textarea className="textarea" aria-label={q} value={val[i] ?? ""} onChange={(e) => setVal((x) => ({ ...x, [i]: e.target.value }))} /></Fixable></div>
       ))}
       <span className="hint">{t("tk.teacherChecks")}</span>
     </div>
@@ -1056,9 +1059,82 @@ function Essay({ task }: { task: TaskData }) {
   return (
     <div className="flex flex-col gap-2">
       {task.content && <Rich text={task.content} />}
-      <textarea className="textarea" style={{ minHeight: 180 }} value={v} onChange={(e) => setV(e.target.value)} placeholder={t("tk.essayPh")} aria-label={t("tk.essayPh")} />
-      <span className={`small ${lim && words > lim ? "text-bad" : "text-text3"}`}>{t("tk.words", { n: words })}{lim ? ` / ${lim}` : ""} · {t("tk.teacherChecks")}</span>
+      <Fixable tid={task.id} k="text" src={v} rows={6}>
+        <textarea className="textarea" style={{ minHeight: 180 }} value={v} onChange={(e) => setV(e.target.value)} placeholder={t("tk.essayPh")} aria-label={t("tk.essayPh")} />
+        <span className={`small ${lim && words > lim ? "text-bad" : "text-text3"}`}>{t("tk.words", { n: words })}{lim ? ` / ${lim}` : ""} · {t("tk.teacherChecks")}</span>
+      </Fixable>
     </div>
+  );
+}
+
+/** «Исправленная версия» письменного ответа (эссе, открытый ответ, перефраз, перевод).
+ *  Учитель включает бегунок: слева текст ученика, справа — его копия, которую учитель правит или дописывает комментарии;
+ *  «Отправить ученику» — и только тогда у ученика появляется такой же бегунок с двумя колонками.
+ *  Что учитель поменял, подсвечено: у ученика в его тексте — что исправлено, справа — как стало. */
+const countOf = (x: string) => ({ c: x.length, w: x.trim() ? x.trim().split(/\s+/).length : 0 });
+function FixMarks({ a, b, side }: { a: string; b: string; side: "src" | "fix" }) {
+  const parts = wordDiff(a, b);
+  return (
+    <div className="tk-fixtext">
+      {parts.map((p, i) => p.k === "same" ? <span key={i}>{p.t}</span>
+        : side === "src" ? (p.k === "del" ? <mark key={i} className="tk-fix-was">{p.t}</mark> : null)
+        : (p.k === "add" ? <mark key={i} className="tk-fix-now">{p.t}</mark> : null))}
+    </div>
+  );
+}
+function FixCol({ title, text, children }: { title: string; text: string; children: React.ReactNode }) {
+  const { t } = useT();
+  const n = countOf(text);
+  return (
+    <div className="tk-fixcol">
+      <div className="tk-fixhead"><b>{title}</b><span>{t("tk.chars", { n: n.c })}</span><span>{t("tk.wordsN", { n: n.w })}</span></div>
+      {children}
+    </div>
+  );
+}
+function Fixable({ tid, k, src, rows = 6, children }: { tid: string; k: string; src: string; rows?: number; children: React.ReactNode }) {
+  const { t } = useT();
+  const role = useTaskRole();
+  const [corr, setCorr] = useSlot<Record<string, string>>(tid, "corr", {}); // черновик учителя — ученик его не видит
+  const [sent, setSent] = useSlot<Record<string, string>>(tid, "corrSent", {}); // отправленная ученику версия
+  const draft = corr[k], shown = sent[k];
+  const teacher = role === "teacher";
+  const has = teacher ? !!src.trim() || draft !== undefined : shown !== undefined;
+  const [on, setOn] = useState(() => (teacher ? draft !== undefined : shown !== undefined));
+  // учитель отправил проверку, пока ученик в уроке, — у него сразу открывается исправленная версия
+  const seen = useRef(shown);
+  useEffect(() => { if (!teacher && shown !== undefined && shown !== seen.current) { seen.current = shown; setOn(true); } }, [shown, teacher]);
+  if (role === "guest" || !has) return <>{children}</>;
+  const toggle = (
+    <label className="tk-fixswitch">
+      <span>{t("tk.fixToggle")}</span>
+      <span className="switch"><input type="checkbox" checked={on} onChange={(e) => { const v = e.target.checked; setOn(v); if (v && teacher && draft === undefined) setCorr((c) => ({ ...c, [k]: src })); }} /><span /></span>
+    </label>
+  );
+  if (!on) return <>{children}{toggle}</>;
+  const right = teacher ? draft ?? src : shown ?? "";
+  const changed = teacher && draft !== undefined && draft !== shown;
+  return (
+    <>
+      {toggle}
+      <div className="tk-fix">
+        <FixCol title={teacher ? t("tk.fixStudent") : t("tk.fixMine")} text={src}><FixMarks a={src} b={right} side="src" /></FixCol>
+        <FixCol title={t("tk.fixTeacher")} text={right}>
+          {teacher ? (
+            <>
+              <textarea className="textarea tk-fixedit" rows={rows} value={right} placeholder={t("tk.fixPh")} aria-label={t("tk.fixTeacher")} onChange={(e) => setCorr((c) => ({ ...c, [k]: e.target.value }))} />
+              {right !== src && <FixMarks a={src} b={right} side="fix" />}
+            </>
+          ) : <FixMarks a={src} b={right} side="fix" />}
+        </FixCol>
+      </div>
+      {teacher && (
+        <div className="tk-fixbar">
+          {shown !== undefined && !changed && <span className="small text-ok">✓ {t("tk.fixSent")}</span>}
+          {changed && <button type="button" className="btn primary sm" onClick={() => setSent((x) => ({ ...x, [k]: right }))}>{shown === undefined ? t("tk.fixSend") : t("tk.fixResend")}</button>}
+        </div>
+      )}
+    </>
   );
 }
 
