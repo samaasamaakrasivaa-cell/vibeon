@@ -2418,3 +2418,8 @@ body.lmoving, body.lmoving * { cursor: grabbing !important; user-select: none; }
 [data-ans]:hover::after { content: attr(data-ans); position: absolute; left: 50%; bottom: calc(100% + 6px); transform: translateX(-50%); z-index: 30; padding: 4px 12px; border-radius: 10px; background: var(--ok-bg); color: var(--ok-text); font-size: 14px; font-weight: 600; line-height: 1.4; white-space: nowrap; box-shadow: 0 6px 18px rgba(0,0,0,.10); pointer-events: none; }
 .tk-sel[aria-expanded="true"]::after { display: none; }
 .tk-dd > .tk-sel, .tk-slot { min-height: calc(1.45em + 4px); }
+/* слово, с которым работает ученик (начальная форма в пропуске, ключевое слово в перефразе) — одной фиолетовой плашкой */
+.tk-hint, .tk-hint.tk-kw { display: inline-flex; align-items: center; margin: 0 4px; padding: 0 9px; border-radius: 8px; background: var(--violet-bg); color: color-mix(in srgb, var(--violet) 78%, var(--text)); font-size: .88em; font-weight: 600; font-style: normal; line-height: 1.7; vertical-align: baseline; white-space: nowrap; }
+.tk-hint.tk-kw { letter-spacing: .03em; }
+/* «Соедини пары»: пара для учителя — бледно-зелёным, как подсказка */
+.tk-card.keyhit { border-color: color-mix(in srgb, var(--ok) 45%, transparent); background: var(--ok-bg); color: var(--ok-text); transition: background .15s, border-color .15s; }

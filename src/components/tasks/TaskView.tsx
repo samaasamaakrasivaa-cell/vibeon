@@ -506,7 +506,11 @@ function Pairs({ task }: { task: TaskData }) {
   const ck = useChecker(o, task.id);
   const [link, setLink] = useSlot<Record<number, number>>(task.id, "link", {}); // левый → индекс правого
   const [sel, setSel] = useState<number | null>(null);
+  // учителю: навёл или нажал на левую карточку — её пара справа мягко подсвечивается зелёным (без текста-подсказки)
+  const key = useKey();
+  const [hov, setHov] = useState<number | null>(null);
   if (p.kind !== "pairs") return null;
+  const hint = key ? sel ?? hov : null;
   const right = shuffle(p.pairs.map((_, i) => i), task.id);
   const usedR = new Map(Object.entries(link).map(([l, r]) => [r, +l]));
   const okPair = (l: number) => link[l] === l;
@@ -519,12 +523,13 @@ function Pairs({ task }: { task: TaskData }) {
           {p.pairs.map((pr, i) => done.includes(i) ? null : (
             <button key={i} type="button" className={`tk-card ${sel === i ? "on" : ""} ${ck.checked && link[i] !== undefined && !okPair(i) ? "bad" : ""}`}
               style={link[i] !== undefined ? { boxShadow: `inset 4px 0 0 ${LINK_COLORS[i % 8]}` } : undefined}
-              onClick={() => setSel(sel === i ? null : i)}>{pr[0]}<Key text={pr[1]} pre="→" /></button>
+              onMouseEnter={() => setHov(i)} onMouseLeave={() => setHov((h) => (h === i ? null : h))} onFocus={() => setHov(i)} onBlur={() => setHov((h) => (h === i ? null : h))}
+              onClick={() => setSel(sel === i ? null : i)}>{pr[0]}</button>
           ))}
         </div>
         <div className="flex flex-col gap-2">
           {right.map((ri) => done.includes(ri) ? null : (
-            <button key={ri} type="button" className="tk-card"
+            <button key={ri} type="button" className={`tk-card ${hint === ri ? "keyhit" : ""}`}
               style={usedR.has(ri) ? { boxShadow: `inset 4px 0 0 ${LINK_COLORS[usedR.get(ri)! % 8]}` } : undefined}
               onClick={() => {
                 if (sel === null) { if (usedR.has(ri)) setLink((x) => { const y = { ...x }; delete y[usedR.get(ri)!]; return y; }); return; }
@@ -703,7 +708,7 @@ function Arrow({ task }: { task: TaskData }) {
         const m: Mark = ck.checked && val[i] && it.answers.length ? (same(val[i], it.answers) ? "ok" : "bad") : undefined;
         return (
           <div key={i}>
-            <div className="mb-1.5"><Num i={i} o={o} /> {it.q} {it.key && <b className="tk-key">{it.key}</b>}</div>
+            <div className="mb-1.5"><Num i={i} o={o} /> {it.q} {it.key && <span className="tk-hint tk-kw" title={t("tk.keyWord")}>{it.key}</span>}</div>
             <span className="flex items-center gap-2"><input className={`input tk-line ${m ?? ""}`} value={val[i] ?? ""} onChange={(e) => setVal((x) => ({ ...x, [i]: e.target.value }))} onBlur={(e) => { if (ck.instant && e.target.value) { ck.bump(String(i)); ck.record(String(i), e.target.value, same(e.target.value, it.answers)); } }} aria-label={`answer ${i + 1}`} />
             {it.answers.length > 0 && <Tries hist={ck.hist[String(i)]} answer={it.answers.join(" / ")} tid={task.id} k={String(i)} noKey />}</span>
             {m === "bad" && <span className="small text-text2">{t("tk.teacherWillSee")}</span>}
