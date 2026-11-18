@@ -97,6 +97,49 @@ export function WeekGrid(props: {
     if (sel) setPicked({ day: sel.day, from: sel.a, to: sel.b });
     setSel(null);
   };
+  // перетаскивание урока мышью: зажали урок и тянем на другое время или день — тень показывает новое место;
+  // отпустили — окно «Перенести» с подставленной датой и временем (одно нажатие — и готово)
+  const [ghost, setGhost] = useState<{ id: string; day: number; min: number; dur: number } | null>(null);
+  const [moveTo, setMoveTo] = useState<{ date: string; start: string } | null>(null);
+  const lDrag = useRef<{ id: string; x0: number; y0: number; grab: number; dur: number; moved: boolean } | null>(null);
+  const targetOf = (x: number, y: number, grab: number, dur: number) => {
+    const cols = [...(wrap.current?.querySelectorAll<HTMLElement>(".daycol") ?? [])];
+    const di = cols.findIndex((c) => { const r = c.getBoundingClientRect(); return x >= r.left && x <= r.right; });
+    if (di < 0) return null;
+    const r = cols[di].getBoundingClientRect();
+    const raw = hourFrom * 60 + ((y - r.top) / PX) * 60 - grab;
+    const min = Math.max(hourFrom * 60, Math.min(hourTo * 60 - Math.min(dur, 60), Math.round(raw / 15) * 15));
+    return { day: di, min };
+  };
+  const onLessonDown = (e: React.PointerEvent<HTMLButtonElement>, l: GridLesson) => {
+    if (e.pointerType !== "mouse" || e.button !== 0 || l.status !== "PLANNED") return;
+    const r = e.currentTarget.getBoundingClientRect();
+    lDrag.current = { id: l.id, x0: e.clientX, y0: e.clientY, grab: ((e.clientY - r.top) / PX) * 60, dur: l.dur, moved: false };
+    const move = (ev: PointerEvent) => {
+      const d = lDrag.current;
+      if (!d) return;
+      if (!d.moved && Math.hypot(ev.clientX - d.x0, ev.clientY - d.y0) < 6) return;
+      d.moved = true;
+      document.body.classList.add("lmoving");
+      const tg = targetOf(ev.clientX, ev.clientY, d.grab, d.dur);
+      setGhost(tg ? { id: d.id, ...tg, dur: d.dur } : null);
+    };
+    const up = (ev: PointerEvent) => {
+      window.removeEventListener("pointermove", move); window.removeEventListener("pointerup", up);
+      document.body.classList.remove("lmoving");
+      const d = lDrag.current;
+      lDrag.current = null;
+      setGhost(null);
+      if (!d?.moved) return;
+      justDragged.current = true; setTimeout(() => { justDragged.current = false; }, 0);
+      const tg = targetOf(ev.clientX, ev.clientY, d.grab, d.dur);
+      const l0 = lessons.find((x) => x.id === d.id);
+      if (!tg || !l0 || (tg.day === l0.day && tg.min === l0.startMin)) return;
+      setMoveTo({ date: days[tg.day].iso, start: hm(tg.min) });
+      setOpenId(d.id);
+    };
+    window.addEventListener("pointermove", move); window.addEventListener("pointerup", up);
+  };
   const pickTime = (e: React.MouseEvent<HTMLDivElement>, day: Day) => {
     if (justDragged.current) return;
     if ((e.target as HTMLElement).closest(".lesson, .offblk")) return;
@@ -135,6 +178,8 @@ export function WeekGrid(props: {
                   </button>
                 );
               })}
+              {/* тень перетаскиваемого урока — новое время */}
+              {ghost?.day === di && <div className="lghost" style={{ top: ((ghost.min - hourFrom * 60) / 60) * PX + 1.5, height: Math.max(22, (ghost.dur / 60) * PX - 3) }}><span>{hm(ghost.min)}–{hm(ghost.min + ghost.dur)}</span></div>}
               {sel?.day === di && <div className="selblk" style={{ top: ((sel.a - hourFrom * 60) / 60) * PX, height: ((sel.b - sel.a) / 60) * PX }}><span>{hm(sel.a)}–{hm(sel.b)}</span></div>}
               {props.nowDay === di && props.nowMin >= hourFrom * 60 && props.nowMin <= hourTo * 60 && (
                 <div className="nowline" style={{ top: ((props.nowMin - hourFrom * 60) / 60) * PX }} />
@@ -144,10 +189,11 @@ export function WeekGrid(props: {
                 const h = Math.max(22, (l.dur / 60) * PX - 3);
                 return (
                   <button
-                    key={l.id} data-lesson={l.id} type="button" className={`lesson ${cls}`}
+                    key={l.id} data-lesson={l.id} type="button" className={`lesson ${cls} ${ghost?.id === l.id ? "lsrc" : ""}`}
                     style={{ top: ((l.startMin - hourFrom * 60) / 60) * PX + 1.5, height: h }}
-                    onClick={() => setOpenId(l.id)}
-                    title={`${l.start}–${l.end} · ${l.who}${l.note ? "\n" + l.note : ""}`}
+                    onClick={() => { if (justDragged.current) return; setMoveTo(null); setOpenId(l.id); }}
+                    onPointerDown={(e) => onLessonDown(e, l)}
+                    title={`${l.start}–${l.end} · ${l.who}${l.note ? "\n" + l.note : ""}${l.status === "PLANNED" ? `\n${t("sch.dragHint")}` : ""}`}
                   >
                     <span className="nm">
                       <span className={`sdot ${cls}`} />
@@ -190,7 +236,7 @@ export function WeekGrid(props: {
         </Dialog>
       )}
       {off && <TimeOffDialog x={off} onClose={() => setOff(null)} />}
-      {open && <LessonDialog l={open} onClose={() => setOpenId(null)} />}
+      {open && <LessonDialog l={open} onClose={() => { setOpenId(null); setMoveTo(null); }} initial={moveTo ? "move" : "main"} moveTo={moveTo} />}
     </>
   );
 }
@@ -466,7 +512,7 @@ function Prices({ l }: { l: GridLesson }) {
   );
 }
 
-function LessonDialog({ l, onClose, initial = "main" }: { l: GridLesson; onClose: () => void; initial?: "main" | "move" | "cancel" }) {
+function LessonDialog({ l, onClose, initial = "main", moveTo }: { l: GridLesson; onClose: () => void; initial?: "main" | "move" | "cancel"; moveTo?: { date: string; start: string } | null }) {
   const { t } = useT();
   const { pending, error, run } = useRun();
   const [mode, setMode] = useState<"main" | "move" | "miss" | "cancel" | "del">(initial);
@@ -479,8 +525,8 @@ function LessonDialog({ l, onClose, initial = "main" }: { l: GridLesson; onClose
     });
   const [note, setNote] = useState(l.note ?? "");
   const [saved, setSaved] = useState(false);
-  const [date, setDate] = useState(l.date);
-  const [start, setStart] = useState(l.start);
+  const [date, setDate] = useState(moveTo?.date ?? l.date); // перетащили урок в сетке — новое место уже подставлено
+  const [start, setStart] = useState(moveTo?.start ?? l.start);
   const head = (
     <div className="mb-4">
       {/* имя — ссылка на анкету (у группы — на настройки групп) */}

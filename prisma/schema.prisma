@@ -426,6 +426,8 @@ model Homework {
   teacherComment   String?
   extraTaskIds     String[] // задания урока, отправленные в домашку во время занятия
   wordTraining     String[] // «new» — тренировать новые слова, «review» — общее повторение
+  taskOrder        String[] @default([]) // порядок заданий домашки этого урока (учитель переставил); пусто — как в уроке
+  removedTaskIds   String[] @default([]) // задания раздела «Домашка», которые учитель убрал из домашки этого урока
   lessonInstance   LessonInstance @relation(fields: [lessonInstanceId], references: [id], onDelete: Cascade)
 }
 

@@ -2344,3 +2344,20 @@ button.grp-row:hover { background: var(--fill); }
 .tavatar { position: relative; border: 0; background: none; padding: 0; cursor: pointer; border-radius: 50%; }
 .tavatar-ed { position: absolute; right: -2px; bottom: -2px; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--surface); color: var(--accent); box-shadow: 0 1px 4px rgba(0,0,0,.2); opacity: .9; }
 .tavatar:hover .tavatar-ed { opacity: 1; background: var(--accent); color: #fff; }
+
+/* домашка в классе: перестановка заданий */
+.hwdrag { position: relative; }
+.hwgrip { position: absolute; left: -34px; top: 14px; width: 26px; height: 32px; display: flex; align-items: center; justify-content: center; border: 0; border-radius: 8px; background: transparent; color: var(--text3); cursor: grab; z-index: 2; }
+.hwgrip:hover { background: var(--surface2); color: var(--accent); }
+.hwgrip:active { cursor: grabbing; }
+@media (max-width: 1100px) { .hwgrip { left: auto; right: 8px; top: -14px; background: var(--surface); box-shadow: 0 1px 4px rgba(0,0,0,.12); } }
+.hwdrag-src { opacity: .45; }
+.hwdrop-before::before, .hwdrop-after::after { content: ""; display: block; height: 4px; border-radius: 2px; background: var(--accent); margin: 4px 0; }
+
+/* расписание: перетаскивание урока */
+.lesson.lsrc { opacity: .35; }
+.lghost { position: absolute; left: 3px; right: 3px; border-radius: 8px; border: 2px dashed var(--accent); background: var(--accent-bg); pointer-events: none; z-index: 5; display: flex; align-items: flex-start; padding: 2px 6px; }
+.lghost span { font-size: 12px; font-weight: 700; color: var(--accent-text); }
+body.lmoving, body.lmoving * { cursor: grabbing !important; user-select: none; }
+.daycol .lesson:not(.done):not(.cancelled):not(.missed) { cursor: grab; }
+.hwgrip span { font-size: 18px; line-height: 1; letter-spacing: -1px; }

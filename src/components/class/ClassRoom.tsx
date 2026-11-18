@@ -36,7 +36,7 @@ export type ClassData = {
   teacher: { id: string; name: string; lastName: string | null }; student: { id: string; userId: string | null; name: string; lastName: string | null; level: string | null; course: string | null; gender?: string | null } | null;
   title: string | null; crumbs: string | null; course: { title: string; cover: string | null } | null; rubrics: Rubric[]; tasks: CTask[]; teacherInfo?: TInfo;
   answers: Answers; statuses: Record<string, string>; reviews: Record<string, Review>; aiDrafts: Record<string, AiCheck>; live: LiveState;
-  board: BObj[][]; homework: { extraTaskIds: string[]; wordTraining: string[]; teacherComment: string | null };
+  board: BObj[][]; homework: { extraTaskIds: string[]; wordTraining: string[]; teacherComment: string | null; taskOrder?: string[]; removedTaskIds?: string[] };
   lessonWords: { word: string; tr: string; ex: string }[]; words: Word[]; messages: Msg[];
   note: string | null; studentNote: string | null; callLink: string | null; callOwn?: boolean; when: string; durationMin: number; status: string; goal: string | null;
   templates: { id: string; label: string }[]; homeHref: string;
@@ -242,7 +242,21 @@ export function ClassRoom({ d }: { d: ClassData }) {
   const ri = Math.max(0, d.rubrics.findIndex((r) => r.id === rubric));
   const cur = d.rubrics[ri];
   const inRubric = lessonTasks.filter((x) => x.rubricId === cur?.id || (!x.rubricId && ri === 0) || (x.rubricId && !d.rubrics.some((r) => r.id === x.rubricId) && ri === 0));
-  const hwTasks = [...d.tasks.filter((x) => x.section === "homework" && !x.hidden), ...d.tasks.filter((x) => hw.extraTaskIds.includes(x.id))];
+  // домашка: задания раздела «Домашка» + отправленные с урока; порядок — как переставил учитель (новые — в конце)
+  const hwBase = [...d.tasks.filter((x) => x.section === "homework" && !x.hidden && !(hw.removedTaskIds ?? []).includes(x.id)), ...d.tasks.filter((x) => hw.extraTaskIds.includes(x.id))];
+  // крестик: убрать из домашки (по ошибке добавили)
+  const removeHw = (task: CTask) => { if (!confirm(t("cls.hwRemoveQ", { n: task.title || t("cls.thisTask") }))) return; setHw((h) => ({ ...h, extraTaskIds: h.extraTaskIds.filter((x) => x !== task.id), removedTaskIds: h.extraTaskIds.includes(task.id) ? h.removedTaskIds : [...(h.removedTaskIds ?? []), task.id] })); void send("hwRemove", { taskId: task.id }); };
+  const hwOrder = hw.taskOrder ?? [];
+  const hwTasks = [...hwBase].sort((a, b) => { const ia = hwOrder.indexOf(a.id), ib = hwOrder.indexOf(b.id); return (ia < 0 ? 1e6 + hwBase.indexOf(a) : ia) - (ib < 0 ? 1e6 + hwBase.indexOf(b) : ib); });
+  const setHwOrder = (ids: string[]) => { setHw((h) => ({ ...h, taskOrder: ids })); void send("hwOrder", { order: ids }); };
+  /** переставить задание домашки: на позицию to (или на шаг вверх/вниз) */
+  const moveHw = (id: string, to: number) => {
+    const ids = hwTasks.map((x) => x.id).filter((x) => x !== id);
+    ids.splice(Math.max(0, Math.min(ids.length, to)), 0, id);
+    setHwOrder(ids);
+  };
+  const [dragHw, setDragHw] = useState<string | null>(null);
+  const [overHw, setOverHw] = useState<{ id: string; after: boolean } | null>(null);
   const go = (id: string) => { setRubric(id); if (teacher) patchLive({ rubricId: id }); };
   const studentOnline = d.group ? d.group.members.some((m) => m.userId && online.includes(m.userId)) : d.student?.userId ? online.includes(d.student.userId) : false;
   const teacherOnline = online.includes(d.teacher.id);
@@ -289,6 +303,13 @@ export function ClassRoom({ d }: { d: ClassData }) {
         {/* групповой урок: чьи ответы смотреть — компактно, рядом с инструментами; повторное нажатие — снять выбор */}
         {gTeacher && <StudentChips task={task} members={d.group!.members} ansBy={ansBy} sel={sid} online={online} onPick={(x) => setTaskView((v) => ({ ...v, [task.id]: v[task.id] === x ? "" : x }))} />}
         {inHw && <span className={`pill ${statuses[task.id] === "NEEDS_REVIEW" && !reviews[task.id] ? "orange" : "grey"}`}>{statusLabel(statuses[task.id], !!reviews[task.id], t)}</span>}
+        {inHw && (() => { const i = hwTasks.findIndex((x) => x.id === task.id); return (
+          <>
+            <button type="button" className="iconbtn" title={t("cls.hwUp")} aria-label={t("cls.hwUp")} disabled={i <= 0} onClick={() => moveHw(task.id, i - 1)}>↑</button>
+            <button type="button" className="iconbtn" title={t("cls.hwDown")} aria-label={t("cls.hwDown")} disabled={i < 0 || i >= hwTasks.length - 1} onClick={() => moveHw(task.id, i + 1)}>↓</button>
+            <button type="button" className="iconbtn" title={t("cls.hwRemove")} aria-label={t("cls.hwRemove")} onClick={() => removeHw(task)}><Icon name="close" size="sm" /></button>
+          </>
+        ); })()}
         <button data-keep-panel className={`iconbtn ${live.timer?.taskId === task.id && timerLeft > 0 ? "bd-on" : ""}`} title={t("cls.taskTimer")} aria-label={t("cls.taskTimer")} onClick={() => { setTimerTask(task.id); setPanel("timer"); }}><Icon name="clock" size="sm" /></button>
         <button className={`iconbtn ${live.spotlight?.taskId === task.id ? "bd-on" : ""}`} title={t("cls.show")} aria-label={t("cls.show")} onClick={() => { patchLive({ spotlight: { taskId: task.id, at: Date.now() }, ...(inHw ? { tab: "homework" } : { rubricId: cur?.id ?? null, tab: "lesson" }) }); setFlash(null); requestAnimationFrame(() => setFlash(task.id)); setTimeout(() => setFlash(null), 3600); }}><Icon name="pointer" size="sm" /></button>
         {!inHw && <button className={`iconbtn ${isHw ? "bd-on" : ""}`} title={isHw ? t("cls.fromHw") : t("bld.toHw")} aria-label={t("bld.toHw")} onClick={() => { const on = !isHw; setHw((h) => ({ ...h, extraTaskIds: on ? [...h.extraTaskIds, task.id] : h.extraTaskIds.filter((x) => x !== task.id) })); send("hw", { taskId: task.id, on }); }}><Icon name="home" size="sm" /></button>}
@@ -318,7 +339,17 @@ export function ClassRoom({ d }: { d: ClassData }) {
         const m = sid ? d.group?.members.find((x) => x.sid === sid) : undefined;
         const sendFor = (type: string, x: Record<string, unknown> = {}) => rawSend(type, { ...x, studentId: sid });
         return (
-        <div key={task.id} id={`task-${task.id}`} className={`${isDone(task) ? "tk-donebg" : ""} ${live.timer?.taskId === task.id && timerLeft > 0 ? "tk-timed" : ""} ${flash === task.id ? "cls-flash" : ""} ${teacher && hidden.has(task.id) ? "tk-teacheronly" : ""} ${gTeacher && sid ? "tk-viewing" : ""}`}>
+        <div key={task.id} id={`task-${task.id}`}
+          {...(inHw && teacher ? {
+            draggable: dragHw === task.id,
+            onDragStart: (e: React.DragEvent) => { e.dataTransfer.effectAllowed = "move"; e.dataTransfer.setData("text/plain", task.id); },
+            onDragOver: (e: React.DragEvent) => { if (!dragHw || dragHw === task.id) return; e.preventDefault(); const r = (e.currentTarget as HTMLElement).getBoundingClientRect(); const after = e.clientY > r.top + r.height / 2; if (overHw?.id !== task.id || overHw.after !== after) setOverHw({ id: task.id, after }); },
+            onDrop: (e: React.DragEvent) => { e.preventDefault(); if (dragHw && overHw) { const ids = hwTasks.map((x) => x.id).filter((x) => x !== dragHw); const at = ids.indexOf(overHw.id) + (overHw.after ? 1 : 0); moveHw(dragHw, at); } setDragHw(null); setOverHw(null); },
+            onDragEnd: () => { setDragHw(null); setOverHw(null); },
+          } : {})}
+          className={`${inHw && teacher ? "hwdrag" : ""} ${dragHw === task.id ? "hwdrag-src" : ""} ${overHw?.id === task.id ? (overHw.after ? "hwdrop-after" : "hwdrop-before") : ""} ${isDone(task) ? "tk-donebg" : ""} ${live.timer?.taskId === task.id && timerLeft > 0 ? "tk-timed" : ""} ${flash === task.id ? "cls-flash" : ""} ${teacher && hidden.has(task.id) ? "tk-teacheronly" : ""} ${gTeacher && sid ? "tk-viewing" : ""}`}>
+          {/* ручка: зажать и перетащить задание домашки выше или ниже */}
+          {inHw && teacher && <button type="button" className="hwgrip" title={t("cls.hwDrag")} aria-label={t("cls.hwDrag")} onPointerDown={() => setDragHw(task.id)} onPointerUp={() => !overHw && setDragHw(null)}><span aria-hidden="true">⠿</span></button>}
           {live.timer?.taskId === task.id && timerLeft > 0 && <div className={`tk-timer ${timerPaused ? "paused" : ""}`} aria-live="polite"><Icon name="clock" size="sm" />{fmtT(timerLeft)}{timerPaused ? ` · ${t("cls.tPaused")}` : ""}</div>}
           {gTeacher ? (
             <AnswerProvider key={`${sid ?? "me"}-${resetTick[task.id] ?? 0}`} answers={sid ? ansBy[sid] ?? {} : sandbox}
@@ -440,7 +471,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
               )
             )}
             {tab === "homework" && (
-              <Homework teacher={teacher} tasks={hwTasks} statuses={statuses} reviews={reviews} training={hw.wordTraining} comment={hw.teacherComment} render={renderTasks}
+              <Homework teacher={teacher} tasks={hwTasks} removed={teacher ? (hw.removedTaskIds ?? []).length : 0} onRestore={() => { setHw((h) => ({ ...h, removedTaskIds: [] })); void send("hwRestore", {}); }} statuses={statuses} reviews={reviews} training={hw.wordTraining} comment={hw.teacherComment} render={renderTasks}
                 cards={[...d.lessonWords.map((w) => ({ word: w.word, tr: w.tr, ex: w.ex })), ...words.filter((w) => !d.lessonWords.some((l) => l.word.toLowerCase() === w.word.toLowerCase())).map((w) => ({ word: w.word, tr: w.translation ?? "", ex: w.example ?? "" }))].filter((w) => w.tr || w.ex)} />
             )}
             {tab === "words" && <Words key={viewSid} teacher={teacher} lessonWords={d.lessonWords} words={words} training={hw.wordTraining} send={send} setHw={setHw} />}
@@ -643,7 +674,8 @@ function ReviewBox({ lessonId, task, review, draft, answered, send }: { lessonId
   );
 }
 
-function Homework({ teacher, tasks, statuses, reviews, training, comment, render, cards }: {
+function Homework({ teacher, tasks, statuses, reviews, training, comment, render, cards, removed = 0, onRestore }: {
+  removed?: number; onRestore?: () => void;
   teacher: boolean; tasks: (TaskData & { section: string })[]; statuses: Record<string, string>; reviews: Record<string, Review>; training: string[]; comment: string | null;
   render: (list: never[], inHw?: boolean) => React.ReactNode; cards: { word: string; tr: string; ex: string }[];
 }) {
@@ -675,6 +707,7 @@ function Homework({ teacher, tasks, statuses, reviews, training, comment, render
       )}
       {train && <WordTrainer cards={cards} say={say} onClose={() => setTrain(false)} />}
       {render(list as never[], true)}
+      {removed > 0 && f === "all" && <button type="button" className="btn plain sm mt-3" onClick={onRestore}><Icon name="undo" size="sm" />{t("cls.hwRestore", { n: removed })}</button>}
     </>
   );
 }

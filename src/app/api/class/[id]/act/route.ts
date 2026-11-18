@@ -101,6 +101,30 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       publish(ch, "hw", { extraTaskIds: extra });
       return NextResponse.json({ ok: true });
     }
+    // ── убрать задание из домашки (добавили по ошибке): с урока — снять перенос; из раздела «Домашка» — скрыть для этого занятия
+    case "hwRemove": case "hwRestore": {
+      if (!teacher) return bad("teacher only");
+      const taskId = str(body.taskId, 60);
+      let x = { extraTaskIds: [] as string[], removedTaskIds: [] as string[] };
+      for (const lid of slotIds) {
+        const hw = await db.homework.upsert({ where: { lessonInstanceId: lid }, create: { lessonInstanceId: lid, taskIds: [] }, update: {} });
+        const data = body.type === "hwRemove"
+          ? { extraTaskIds: hw.extraTaskIds.filter((y) => y !== taskId), taskIds: hw.taskIds.filter((y) => y !== taskId), removedTaskIds: hw.extraTaskIds.includes(taskId) ? hw.removedTaskIds : [...new Set([...hw.removedTaskIds, taskId])] }
+          : { removedTaskIds: [], taskIds: hw.taskIds.length ? [...new Set([...hw.taskIds, ...hw.removedTaskIds])] : hw.taskIds };
+        const u = await db.homework.update({ where: { id: hw.id }, data });
+        x = { extraTaskIds: u.extraTaskIds, removedTaskIds: u.removedTaskIds };
+      }
+      publish(ch, "hw", x);
+      return NextResponse.json({ ok: true });
+    }
+    // ── порядок заданий домашки (учитель перетащил или нажал стрелку) — всем ученикам занятия
+    case "hwOrder": {
+      if (!teacher) return bad("teacher only");
+      const order = Array.isArray(body.order) ? (body.order as unknown[]).map((x) => str(x, 60)).filter(Boolean).slice(0, 300) : [];
+      for (const lid of slotIds) await db.homework.upsert({ where: { lessonInstanceId: lid }, create: { lessonInstanceId: lid, taskIds: [], taskOrder: order }, update: { taskOrder: order } });
+      publish(ch, "hw", { taskOrder: order });
+      return NextResponse.json({ ok: true });
+    }
     case "training": {
       if (!teacher) return bad("teacher only");
       const kind = body.kind === "review" ? "review" : "new";
