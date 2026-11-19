@@ -1,0 +1,1269 @@
+[
+  {
+    "from": "G-A1-01",
+    "wrong": 0,
+    "accept": [
+      "is"
+    ]
+  },
+  {
+    "from": "G-A1-25",
+    "wrong": 1,
+    "accept": [
+      "are"
+    ]
+  },
+  {
+    "from": "G-A1-03",
+    "wrong": 1,
+    "accept": [
+      "her"
+    ]
+  },
+  {
+    "from": "G-A1-36",
+    "wrong": 0,
+    "accept": [
+      "We"
+    ]
+  },
+  {
+    "from": "G-A1-50",
+    "wrong": 1,
+    "accept": [
+      "watching"
+    ]
+  },
+  {
+    "from": "G-A1-05",
+    "wrong": 1,
+    "accept": [
+      "Kate's"
+    ]
+  },
+  {
+    "from": "G-A1-54",
+    "wrong": 2,
+    "accept": [
+      "his"
+    ]
+  },
+  {
+    "from": "G-A1-06",
+    "wrong": 0,
+    "accept": [
+      "These"
+    ]
+  },
+  {
+    "from": "G-A1-07",
+    "wrong": 0,
+    "accept": [
+      "a"
+    ]
+  },
+  {
+    "from": "G-A1-57",
+    "wrong": 1,
+    "accept": [
+      "an"
+    ]
+  },
+  {
+    "from": "G-A1-58",
+    "wrong": 3,
+    "accept": [
+      "children"
+    ]
+  },
+  {
+    "from": "G-A1-08",
+    "wrong": 0,
+    "accept": [
+      "women"
+    ]
+  },
+  {
+    "from": "G-A1-09",
+    "wrong": 1,
+    "accept": [
+      "There is"
+    ]
+  },
+  {
+    "from": "G-A1-67",
+    "wrong": 2,
+    "accept": [
+      "is there"
+    ]
+  },
+  {
+    "from": "G-A1-44",
+    "wrong": 0,
+    "accept": [
+      "live"
+    ]
+  },
+  {
+    "from": "G-A1-45",
+    "wrong": 1,
+    "accept": [
+      "works"
+    ]
+  },
+  {
+    "from": "G-A1-14",
+    "wrong": 1,
+    "accept": [
+      "Don't be"
+    ]
+  },
+  {
+    "from": "G-A1-15",
+    "wrong": 2,
+    "accept": [
+      "am always"
+    ]
+  },
+  {
+    "from": "G-A1-29",
+    "wrong": 1,
+    "accept": [
+      "is sleeping",
+      "'s sleeping"
+    ]
+  },
+  {
+    "from": "G-A1-49",
+    "wrong": 2,
+    "accept": [
+      "are dancing"
+    ]
+  },
+  {
+    "from": "G-A1-17",
+    "wrong": 2,
+    "accept": [
+      "Can"
+    ]
+  },
+  {
+    "from": "G-A1-39",
+    "wrong": 0,
+    "accept": [
+      "can"
+    ]
+  },
+  {
+    "from": "G-A1-18",
+    "wrong": 0,
+    "accept": [
+      "at"
+    ]
+  },
+  {
+    "from": "G-A1-40",
+    "wrong": 0,
+    "accept": [
+      "in"
+    ]
+  },
+  {
+    "from": "G-A1-61",
+    "wrong": 0,
+    "accept": [
+      "like"
+    ]
+  },
+  {
+    "from": "G-A1-19",
+    "wrong": 0,
+    "accept": [
+      "Would you"
+    ]
+  },
+  {
+    "from": "G-A1-20",
+    "wrong": 3,
+    "accept": [
+      "on"
+    ]
+  },
+  {
+    "from": "G-A1-59",
+    "wrong": 2,
+    "accept": [
+      "any"
+    ]
+  },
+  {
+    "from": "G-A1-38",
+    "wrong": 1,
+    "accept": [
+      "some"
+    ]
+  },
+  {
+    "from": "G-A1-32",
+    "wrong": 1,
+    "accept": [
+      "were"
+    ]
+  },
+  {
+    "from": "G-A1-51",
+    "wrong": 2,
+    "accept": [
+      "was"
+    ]
+  },
+  {
+    "from": "G-A1-52",
+    "wrong": 2,
+    "accept": [
+      "had"
+    ]
+  },
+  {
+    "from": "G-A1-33",
+    "wrong": 0,
+    "accept": [
+      "saw"
+    ]
+  },
+  {
+    "from": "G-A1-62",
+    "wrong": 1,
+    "accept": [
+      "has"
+    ]
+  },
+  {
+    "from": "G-A1-64",
+    "wrong": 0,
+    "accept": [
+      "When"
+    ]
+  },
+  {
+    "from": "G-A1-65",
+    "wrong": 0,
+    "accept": [
+      "because"
+    ]
+  },
+  {
+    "from": "G-A2-01",
+    "wrong": 0,
+    "accept": [
+      "lost"
+    ]
+  },
+  {
+    "from": "G-A2-25",
+    "wrong": 1,
+    "accept": [
+      "met"
+    ]
+  },
+  {
+    "from": "G-A2-28",
+    "wrong": 2,
+    "accept": [
+      "was having"
+    ]
+  },
+  {
+    "from": "G-A2-45",
+    "wrong": 0,
+    "accept": [
+      "was watching"
+    ]
+  },
+  {
+    "from": "G-A2-04",
+    "wrong": 0,
+    "accept": [
+      "Have"
+    ]
+  },
+  {
+    "from": "G-A2-48",
+    "wrong": 1,
+    "accept": [
+      "has"
+    ]
+  },
+  {
+    "from": "G-A2-49",
+    "wrong": 0,
+    "accept": [
+      "just"
+    ]
+  },
+  {
+    "from": "G-A2-32",
+    "wrong": 0,
+    "accept": [
+      "already"
+    ]
+  },
+  {
+    "from": "G-A2-07",
+    "wrong": 2,
+    "accept": [
+      "is going to"
+    ]
+  },
+  {
+    "from": "G-A2-34",
+    "wrong": 0,
+    "accept": [
+      "am going to",
+      "'m going to"
+    ]
+  },
+  {
+    "from": "G-A2-52",
+    "wrong": 0,
+    "accept": [
+      "will"
+    ]
+  },
+  {
+    "from": "G-A2-08",
+    "wrong": 0,
+    "accept": [
+      "will"
+    ]
+  },
+  {
+    "from": "G-A2-53",
+    "wrong": 0,
+    "accept": [
+      "are"
+    ]
+  },
+  {
+    "from": "G-A2-09",
+    "wrong": 2,
+    "accept": [
+      "am meeting"
+    ]
+  },
+  {
+    "from": "G-A2-10",
+    "wrong": 1,
+    "accept": [
+      "bigger"
+    ]
+  },
+  {
+    "from": "G-A2-54",
+    "wrong": 1,
+    "accept": [
+      "older"
+    ]
+  },
+  {
+    "from": "G-A2-55",
+    "wrong": 0,
+    "accept": [
+      "as big as"
+    ]
+  },
+  {
+    "from": "G-A2-12",
+    "wrong": 2,
+    "accept": [
+      "as stressful as",
+      "so stressful as"
+    ]
+  },
+  {
+    "from": "G-A2-56",
+    "wrong": 0,
+    "accept": [
+      "enough"
+    ]
+  },
+  {
+    "from": "G-A2-13",
+    "wrong": 3,
+    "accept": [
+      "too"
+    ]
+  },
+  {
+    "from": "G-A2-15",
+    "wrong": 0,
+    "accept": [
+      "carefully"
+    ]
+  },
+  {
+    "from": "G-A2-57",
+    "wrong": 1,
+    "accept": [
+      "have to"
+    ]
+  },
+  {
+    "from": "G-A2-16",
+    "wrong": 3,
+    "accept": [
+      "don't have to"
+    ]
+  },
+  {
+    "from": "G-A2-17",
+    "wrong": 1,
+    "accept": [
+      "should"
+    ]
+  },
+  {
+    "from": "G-A2-18",
+    "wrong": 0,
+    "accept": [
+      "might"
+    ]
+  },
+  {
+    "from": "G-A2-40",
+    "wrong": 2,
+    "accept": [
+      "rains"
+    ]
+  },
+  {
+    "from": "G-A2-19",
+    "wrong": 1,
+    "accept": [
+      "wake up"
+    ]
+  },
+  {
+    "from": "G-A2-20",
+    "wrong": 0,
+    "accept": [
+      "to eat"
+    ]
+  },
+  {
+    "from": "G-A2-41",
+    "wrong": 2,
+    "accept": [
+      "cooking"
+    ]
+  },
+  {
+    "from": "G-A2-22",
+    "wrong": 2,
+    "accept": [
+      "mine"
+    ]
+  },
+  {
+    "from": "G-A2-24",
+    "wrong": 3,
+    "accept": [
+      "across"
+    ]
+  },
+  {
+    "from": "G-A2-66",
+    "wrong": 0,
+    "accept": [
+      "Did"
+    ]
+  },
+  {
+    "from": "G-A2-67",
+    "wrong": 0,
+    "accept": [
+      "didn't"
+    ]
+  },
+  {
+    "from": "G-A2-38",
+    "wrong": 1,
+    "accept": [
+      "a"
+    ]
+  },
+  {
+    "from": "G-A2-39",
+    "wrong": 0,
+    "accept": [
+      "The"
+    ]
+  },
+  {
+    "from": "G-A2-60",
+    "wrong": 0,
+    "accept": [
+      "much"
+    ]
+  },
+  {
+    "from": "G-A2-61",
+    "wrong": 2,
+    "accept": [
+      "anywhere"
+    ]
+  },
+  {
+    "from": "G-A2-64",
+    "wrong": 0,
+    "accept": [
+      "to"
+    ]
+  },
+  {
+    "from": "G-B1-52",
+    "wrong": 2,
+    "accept": [
+      "for"
+    ]
+  },
+  {
+    "from": "G-B1-03",
+    "wrong": 0,
+    "accept": [
+      "left"
+    ]
+  },
+  {
+    "from": "G-B1-53",
+    "wrong": 3,
+    "accept": [
+      "went"
+    ]
+  },
+  {
+    "from": "G-B1-04",
+    "wrong": 3,
+    "accept": [
+      "have been preparing"
+    ]
+  },
+  {
+    "from": "G-B1-55",
+    "wrong": 0,
+    "accept": [
+      "had left"
+    ]
+  },
+  {
+    "from": "G-B1-05",
+    "wrong": 0,
+    "accept": [
+      "had already left"
+    ]
+  },
+  {
+    "from": "G-B1-06",
+    "wrong": 1,
+    "accept": [
+      "used to"
+    ]
+  },
+  {
+    "from": "G-B1-56",
+    "wrong": 1,
+    "accept": [
+      "used to"
+    ]
+  },
+  {
+    "from": "G-B1-65",
+    "wrong": 0,
+    "accept": [
+      "lived"
+    ]
+  },
+  {
+    "from": "G-B1-08",
+    "wrong": 0,
+    "accept": [
+      "had"
+    ]
+  },
+  {
+    "from": "G-B1-11",
+    "wrong": 2,
+    "accept": [
+      "who"
+    ]
+  },
+  {
+    "from": "G-B1-12",
+    "wrong": 0,
+    "accept": [
+      "where"
+    ]
+  },
+  {
+    "from": "G-B1-74",
+    "wrong": 0,
+    "accept": [
+      "told"
+    ]
+  },
+  {
+    "from": "G-B1-13",
+    "wrong": 1,
+    "accept": [
+      "was"
+    ]
+  },
+  {
+    "from": "G-B1-72",
+    "wrong": 2,
+    "accept": [
+      "if"
+    ]
+  },
+  {
+    "from": "G-B1-14",
+    "wrong": 2,
+    "accept": [
+      "wanted"
+    ]
+  },
+  {
+    "from": "G-B1-73",
+    "wrong": 1,
+    "accept": [
+      "this jacket costs"
+    ]
+  },
+  {
+    "from": "G-B1-43",
+    "wrong": 2,
+    "accept": [
+      "the shop closes"
+    ]
+  },
+  {
+    "from": "G-B1-62",
+    "wrong": 0,
+    "accept": [
+      "can't"
+    ]
+  },
+  {
+    "from": "G-B1-63",
+    "wrong": 3,
+    "accept": [
+      "be able to"
+    ]
+  },
+  {
+    "from": "G-B1-64",
+    "wrong": 0,
+    "accept": [
+      "managed to"
+    ]
+  },
+  {
+    "from": "G-B1-18",
+    "wrong": 1,
+    "accept": [
+      "to eat"
+    ]
+  },
+  {
+    "from": "G-B1-79",
+    "wrong": 0,
+    "accept": [
+      "seeing"
+    ]
+  },
+  {
+    "from": "G-B1-20",
+    "wrong": 0,
+    "accept": [
+      "such"
+    ]
+  },
+  {
+    "from": "G-B1-21",
+    "wrong": 3,
+    "accept": [
+      "neither"
+    ]
+  },
+  {
+    "from": "G-B1-29",
+    "wrong": 3,
+    "accept": [
+      "leaves",
+      "is leaving"
+    ]
+  },
+  {
+    "from": "G-B1-58",
+    "wrong": 1,
+    "accept": [
+      "I'll",
+      "I will"
+    ]
+  },
+  {
+    "from": "G-B1-23",
+    "wrong": 1,
+    "accept": [
+      "although",
+      "though",
+      "even though"
+    ]
+  },
+  {
+    "from": "G-B1-45",
+    "wrong": 0,
+    "accept": [
+      "the"
+    ]
+  },
+  {
+    "from": "G-B1-68",
+    "wrong": 1,
+    "accept": [
+      "is cleaned"
+    ]
+  },
+  {
+    "from": "G-B1-39",
+    "wrong": 3,
+    "accept": [
+      "was stolen"
+    ]
+  },
+  {
+    "from": "G-B1-81",
+    "wrong": 2,
+    "accept": [
+      "better"
+    ]
+  },
+  {
+    "from": "G-B1-66",
+    "wrong": 2,
+    "accept": [
+      "heat"
+    ]
+  },
+  {
+    "from": "G-B1-80",
+    "wrong": 0,
+    "accept": [
+      "shall we"
+    ]
+  },
+  {
+    "from": "G-B2-06",
+    "wrong": 0,
+    "accept": [
+      "would live"
+    ]
+  },
+  {
+    "from": "G-B2-62",
+    "wrong": 2,
+    "accept": [
+      "should have"
+    ]
+  },
+  {
+    "from": "G-B2-07",
+    "wrong": 1,
+    "accept": [
+      "shouldn't have cooked"
+    ]
+  },
+  {
+    "from": "G-B2-08",
+    "wrong": 1,
+    "accept": [
+      "will be delivered"
+    ]
+  },
+  {
+    "from": "G-B2-09",
+    "wrong": 0,
+    "accept": [
+      "to drink"
+    ]
+  },
+  {
+    "from": "G-B2-68",
+    "wrong": 1,
+    "accept": [
+      "to call"
+    ]
+  },
+  {
+    "from": "G-B2-10",
+    "wrong": 3,
+    "accept": [
+      "who"
+    ]
+  },
+  {
+    "from": "G-B2-71",
+    "wrong": 2,
+    "accept": [
+      "which"
+    ]
+  },
+  {
+    "from": "G-B2-52",
+    "wrong": 1,
+    "accept": [
+      "will have been"
+    ]
+  },
+  {
+    "from": "G-B2-11",
+    "wrong": 3,
+    "accept": [
+      "will have saved"
+    ]
+  },
+  {
+    "from": "G-B2-74",
+    "wrong": 2,
+    "accept": [
+      "smoking"
+    ]
+  },
+  {
+    "from": "G-B2-12",
+    "wrong": 1,
+    "accept": [
+      "seeing"
+    ]
+  },
+  {
+    "from": "G-B2-13",
+    "wrong": 2,
+    "accept": [
+      "Despite",
+      "In spite of"
+    ]
+  },
+  {
+    "from": "G-B2-72",
+    "wrong": 3,
+    "accept": [
+      "However",
+      "Nevertheless"
+    ]
+  },
+  {
+    "from": "G-B2-14",
+    "wrong": 1,
+    "accept": [
+      "so that",
+      "so",
+      "in order that"
+    ]
+  },
+  {
+    "from": "G-B2-73",
+    "wrong": 0,
+    "accept": [
+      "Cheered"
+    ]
+  },
+  {
+    "from": "G-B2-15",
+    "wrong": 1,
+    "accept": [
+      "Having sent"
+    ]
+  },
+  {
+    "from": "G-B2-16",
+    "wrong": 2,
+    "accept": [
+      "stay"
+    ]
+  },
+  {
+    "from": "G-B2-40",
+    "wrong": 0,
+    "accept": [
+      "went"
+    ]
+  },
+  {
+    "from": "G-B2-67",
+    "wrong": 2,
+    "accept": [
+      "is reported"
+    ]
+  },
+  {
+    "from": "G-B2-17",
+    "wrong": 3,
+    "accept": [
+      "is said to serve"
+    ]
+  },
+  {
+    "from": "G-B2-55",
+    "wrong": 0,
+    "accept": [
+      "had left"
+    ]
+  },
+  {
+    "from": "G-B2-27",
+    "wrong": 2,
+    "accept": [
+      "had escaped"
+    ]
+  },
+  {
+    "from": "G-B2-53",
+    "wrong": 0,
+    "accept": [
+      "have you been learning"
+    ]
+  },
+  {
+    "from": "G-B2-25",
+    "wrong": 1,
+    "accept": [
+      "have been cleaning"
+    ]
+  },
+  {
+    "from": "G-B2-56",
+    "wrong": 0,
+    "accept": [
+      "get"
+    ]
+  },
+  {
+    "from": "G-B2-57",
+    "wrong": 0,
+    "accept": [
+      "used to"
+    ]
+  },
+  {
+    "from": "G-B2-61",
+    "wrong": 0,
+    "accept": [
+      "can't have"
+    ]
+  },
+  {
+    "from": "G-B2-30",
+    "wrong": 1,
+    "accept": [
+      "must have rained"
+    ]
+  },
+  {
+    "from": "G-B2-78",
+    "wrong": 2,
+    "accept": [
+      "The"
+    ]
+  },
+  {
+    "from": "G-B2-79",
+    "wrong": 2,
+    "accept": [
+      "the"
+    ]
+  },
+  {
+    "from": "G-B2-46",
+    "wrong": 2,
+    "accept": [
+      "the more confident"
+    ]
+  },
+  {
+    "from": "G-B2-81",
+    "wrong": 0,
+    "accept": [
+      "far",
+      "much",
+      "a lot",
+      "even"
+    ]
+  },
+  {
+    "from": "G-B2-58",
+    "wrong": 1,
+    "accept": [
+      "wouldn't have missed"
+    ]
+  },
+  {
+    "from": "G-B2-59",
+    "wrong": 3,
+    "accept": [
+      "could"
+    ]
+  },
+  {
+    "from": "G-B2-66",
+    "wrong": 3,
+    "accept": [
+      "get"
+    ]
+  },
+  {
+    "from": "G-C1-59",
+    "wrong": 1,
+    "accept": [
+      "is"
+    ]
+  },
+  {
+    "from": "G-C1-02",
+    "wrong": 2,
+    "accept": [
+      "What"
+    ]
+  },
+  {
+    "from": "G-C1-06",
+    "wrong": 1,
+    "accept": [
+      "well"
+    ]
+  },
+  {
+    "from": "G-C1-62",
+    "wrong": 2,
+    "accept": [
+      "bound"
+    ]
+  },
+  {
+    "from": "G-C1-07",
+    "wrong": 1,
+    "accept": [
+      "was she"
+    ]
+  },
+  {
+    "from": "G-C1-56",
+    "wrong": 0,
+    "accept": [
+      "have I seen"
+    ]
+  },
+  {
+    "from": "G-C1-64",
+    "wrong": 3,
+    "accept": [
+      "get"
+    ]
+  },
+  {
+    "from": "G-C1-08",
+    "wrong": 2,
+    "accept": [
+      "complete"
+    ]
+  },
+  {
+    "from": "G-C1-09",
+    "wrong": 1,
+    "accept": [
+      "Built"
+    ]
+  },
+  {
+    "from": "G-C1-68",
+    "wrong": 0,
+    "accept": [
+      "Having"
+    ]
+  },
+  {
+    "from": "G-C1-10",
+    "wrong": 0,
+    "accept": [
+      "do"
+    ]
+  },
+  {
+    "from": "G-C1-25",
+    "wrong": 3,
+    "accept": [
+      "whatsoever"
+    ]
+  },
+  {
+    "from": "G-C1-69",
+    "wrong": 0,
+    "accept": [
+      "neither"
+    ]
+  },
+  {
+    "from": "G-C1-11",
+    "wrong": 1,
+    "accept": [
+      "so"
+    ]
+  },
+  {
+    "from": "G-C1-53",
+    "wrong": 0,
+    "accept": [
+      "would"
+    ]
+  },
+  {
+    "from": "G-C1-12",
+    "wrong": 1,
+    "accept": [
+      "were about to"
+    ]
+  },
+  {
+    "from": "G-C1-13",
+    "wrong": 2,
+    "accept": [
+      "provided",
+      "providing",
+      "as long as",
+      "so long as",
+      "on condition that"
+    ]
+  },
+  {
+    "from": "G-C1-71",
+    "wrong": 1,
+    "accept": [
+      "otherwise",
+      "or",
+      "or else"
+    ]
+  },
+  {
+    "from": "G-C1-73",
+    "wrong": 0,
+    "accept": [
+      "to whom"
+    ]
+  },
+  {
+    "from": "G-C1-14",
+    "wrong": 0,
+    "accept": [
+      "in which"
+    ]
+  },
+  {
+    "from": "G-C1-15",
+    "wrong": 2,
+    "accept": [
+      "The introduction"
+    ]
+  },
+  {
+    "from": "G-C1-63",
+    "wrong": 3,
+    "accept": [
+      "were"
+    ]
+  },
+  {
+    "from": "G-C1-16",
+    "wrong": 0,
+    "accept": [
+      "took",
+      "was taking"
+    ]
+  },
+  {
+    "from": "G-C1-54",
+    "wrong": 0,
+    "accept": [
+      "had worked"
+    ]
+  },
+  {
+    "from": "G-C1-23",
+    "wrong": 0,
+    "accept": [
+      "would become"
+    ]
+  },
+  {
+    "from": "G-C1-57",
+    "wrong": 1,
+    "accept": [
+      "Had"
+    ]
+  },
+  {
+    "from": "G-C1-83",
+    "wrong": 0,
+    "accept": [
+      "Were"
+    ]
+  },
+  {
+    "from": "G-C1-65",
+    "wrong": 2,
+    "accept": [
+      "to appear"
+    ]
+  },
+  {
+    "from": "G-C1-66",
+    "wrong": 1,
+    "accept": [
+      "to be recording"
+    ]
+  },
+  {
+    "from": "G-C1-76",
+    "wrong": 2,
+    "accept": [
+      "the"
+    ]
+  },
+  {
+    "from": "G-C1-41",
+    "wrong": 3,
+    "accept": [
+      "by far"
+    ]
+  },
+  {
+    "from": "G-C1-78",
+    "wrong": 0,
+    "accept": [
+      "as"
+    ]
+  },
+  {
+    "from": "G-C1-46",
+    "wrong": 0,
+    "accept": [
+      "to apply"
+    ]
+  },
+  {
+    "from": "G-C1-81",
+    "wrong": 1,
+    "accept": [
+      "for arriving"
+    ]
+  }
+]

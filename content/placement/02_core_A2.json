@@ -1940,5 +1940,340 @@
     ],
     "answer": 2,
     "explain_ru": "Отрицание в прошлом — didn't + глагол в начальной форме."
+  },
+  {
+    "id": "G-A2-T01",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-past-simple",
+    "topic_en": "Past simple: regular and irregular verbs",
+    "topic_ru": "Past Simple: правильные и неправильные глаголы",
+    "type": "brackets",
+    "q": "We ___ (buy) a new sofa last weekend.",
+    "accept": [
+      "bought"
+    ],
+    "explain_ru": "Buy — неправильный глагол: buy – bought – bought."
+  },
+  {
+    "id": "G-A2-T02",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "g-a2-pp-just-already-yet",
+    "topic_en": "Present perfect with just / already / yet",
+    "topic_ru": "Present Perfect с just / already / yet",
+    "type": "brackets",
+    "q": "I ___ (already / finish) my homework, so can I go out now?",
+    "accept": [
+      "have already finished"
+    ],
+    "explain_ru": "Already стоит между have и третьей формой: have already finished."
+  },
+  {
+    "id": "G-A2-T03",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-going-to",
+    "topic_en": "be going to for plans and predictions",
+    "topic_ru": "be going to: планы и прогнозы",
+    "type": "brackets",
+    "q": "I ___ (visit) my aunt in Spain next month. I've already booked the flights.",
+    "accept": [
+      "am going to visit",
+      "am visiting"
+    ],
+    "explain_ru": "План, который уже решён, — be going to (или Present Continuous для договорённости)."
+  },
+  {
+    "id": "G-A2-T04",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-will",
+    "topic_en": "will for predictions, offers and decisions",
+    "topic_ru": "will: прогнозы, предложения, спонтанные решения",
+    "type": "brackets",
+    "q": "I'm sure you ___ (love) this film. It's really funny.",
+    "accept": [
+      "will love"
+    ],
+    "explain_ru": "Прогноз с I'm sure / I think — will + глагол."
+  },
+  {
+    "id": "G-A2-T05",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "g-a2-pc-future",
+    "topic_en": "Present continuous for future arrangements",
+    "topic_ru": "Present Continuous для договорённостей о будущем",
+    "type": "brackets",
+    "q": "I can't meet you on Thursday — I ___ (fly) to Paris that morning.",
+    "accept": [
+      "am flying",
+      "am going to fly",
+      "will be flying"
+    ],
+    "explain_ru": "Договорённость на будущее — Present Continuous: I'm flying."
+  },
+  {
+    "id": "G-A2-T06",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-as-as",
+    "topic_en": "(not) as ... as",
+    "topic_ru": "Сравнение (not) as ... as",
+    "type": "gap",
+    "q": "My brother is ___ tall as my dad now.",
+    "accept": [
+      "as"
+    ],
+    "explain_ru": "Равенство — as + прилагательное + as.",
+    "hint_ru": "as / so / than"
+  },
+  {
+    "id": "G-A2-T07",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-too-enough",
+    "topic_en": "too / enough",
+    "topic_ru": "too / enough",
+    "type": "gap",
+    "q": "This coffee is ___ hot to drink. Let's wait a minute.",
+    "accept": [
+      "too"
+    ],
+    "explain_ru": "Слишком (больше, чем нужно) — too + прилагательное.",
+    "hint_ru": "too / enough"
+  },
+  {
+    "id": "G-A2-T08",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-quantifiers",
+    "topic_en": "much / many / a lot of / a few / a little",
+    "topic_ru": "much / many / a lot of / a few / a little",
+    "type": "gap",
+    "q": "There isn't ___ milk left. Can you buy some on your way home?",
+    "accept": [
+      "much",
+      "any"
+    ],
+    "explain_ru": "Milk неисчисляемое — в отрицании much (или any).",
+    "hint_ru": "much / many / a lot of"
+  },
+  {
+    "id": "G-A2-T09",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-adverbs-manner",
+    "topic_en": "Adverbs of manner",
+    "topic_ru": "Наречия образа действия",
+    "type": "brackets",
+    "q": "She speaks English very ___ (good). She lived in London for five years.",
+    "accept": [
+      "well"
+    ],
+    "explain_ru": "Наречие от good — well."
+  },
+  {
+    "id": "G-A2-T10",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-adverbs-manner",
+    "topic_en": "Adverbs of manner",
+    "topic_ru": "Наречия образа действия",
+    "type": "brackets",
+    "q": "Please talk ___ (quiet). The baby is asleep.",
+    "accept": [
+      "quietly"
+    ],
+    "explain_ru": "Как говорить — наречие с -ly: quietly."
+  },
+  {
+    "id": "G-A2-T11",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-obligation",
+    "topic_en": "must / have to / don't have to",
+    "topic_ru": "must / have to / don't have to",
+    "type": "gap",
+    "q": "In my country, you ___ to wear a seatbelt in the car. It's the law.",
+    "accept": [
+      "have",
+      "need"
+    ],
+    "explain_ru": "Обязанность по правилам — have to.",
+    "hint_ru": "have to / must"
+  },
+  {
+    "id": "G-A2-T12",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-should",
+    "topic_en": "should / shouldn't for advice",
+    "topic_ru": "should / shouldn't: совет",
+    "type": "gap",
+    "q": "You ___ eat so much sugar. It's bad for your teeth.",
+    "accept": [
+      "shouldn't",
+      "should not"
+    ],
+    "explain_ru": "Совет «не стоит» — shouldn't + глагол.",
+    "hint_ru": "should в отрицании"
+  },
+  {
+    "id": "G-A2-T13",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-might-may",
+    "topic_en": "might / may for possibility",
+    "topic_ru": "might / may: возможность",
+    "type": "gap",
+    "q": "Take an umbrella. It ___ rain later.",
+    "accept": [
+      "might",
+      "may",
+      "could"
+    ],
+    "explain_ru": "Возможность (не уверены) — might / may.",
+    "hint_ru": "might / may"
+  },
+  {
+    "id": "G-A2-T14",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-first-conditional",
+    "topic_en": "First conditional",
+    "topic_ru": "Условные предложения первого типа",
+    "type": "brackets",
+    "q": "If you ___ (study) hard, you will pass the exam.",
+    "accept": [
+      "study"
+    ],
+    "explain_ru": "В части с if про будущее — Present Simple: If you study."
+  },
+  {
+    "id": "G-A2-T15",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-verb-patterns-basic",
+    "topic_en": "Verb + to-infinitive / -ing (want to, enjoy -ing)",
+    "topic_ru": "Глагол + инфинитив / -ing (want to, enjoy -ing)",
+    "type": "brackets",
+    "q": "I hope ___ (see) you again soon.",
+    "accept": [
+      "to see"
+    ],
+    "explain_ru": "После hope — to + глагол."
+  },
+  {
+    "id": "G-A2-T16",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-infinitive-purpose",
+    "topic_en": "Infinitive of purpose",
+    "topic_ru": "Инфинитив цели (to + глагол)",
+    "type": "brackets",
+    "q": "I went to the bank ___ (get) some money.",
+    "accept": [
+      "to get"
+    ],
+    "explain_ru": "Цель — to + глагол: to get."
+  },
+  {
+    "id": "G-A2-T17",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-possessive-pronouns",
+    "topic_en": "Possessive pronouns: mine / yours",
+    "topic_ru": "Притяжательные местоимения mine / yours",
+    "type": "gap",
+    "q": "That isn't my coat. ___ is blue.",
+    "accept": [
+      "mine"
+    ],
+    "explain_ru": "Мой (без существительного после) — mine.",
+    "hint_ru": "my / mine"
+  },
+  {
+    "id": "G-A2-T18",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-possessive-pronouns",
+    "topic_en": "Possessive pronouns: mine / yours",
+    "topic_ru": "Притяжательные местоимения mine / yours",
+    "type": "gap",
+    "q": "Is this Tom's phone? — Yes, it's ___.",
+    "accept": [
+      "his"
+    ],
+    "explain_ru": "Его (без существительного после) — his.",
+    "hint_ru": "притяжательное местоимение"
+  },
+  {
+    "id": "G-A2-T19",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-indefinite-pronouns",
+    "topic_en": "something / anyone / nowhere",
+    "topic_ru": "Неопределённые местоимения something / anyone / nowhere",
+    "type": "gap",
+    "q": "Is there ___ here who speaks French?",
+    "accept": [
+      "anyone",
+      "anybody"
+    ],
+    "explain_ru": "Вопрос о человеке — anyone / anybody.",
+    "hint_ru": "something / anyone / nowhere"
+  },
+  {
+    "id": "G-A2-T20",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-prepositions-movement",
+    "topic_en": "Prepositions of movement",
+    "topic_ru": "Предлоги движения",
+    "type": "gap",
+    "q": "The train went ___ a long tunnel and came out on the other side of the mountain.",
+    "accept": [
+      "through"
+    ],
+    "explain_ru": "Движение сквозь что-то — through.",
+    "hint_ru": "предлог движения"
+  },
+  {
+    "id": "G-A2-T21",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-articles",
+    "topic_en": "Articles: first and second mention, the with unique things",
+    "topic_ru": "Артикли: первое и повторное упоминание, the с уникальными предметами",
+    "type": "gap",
+    "q": "I saw ___ great film last night. The film was about a dog.",
+    "accept": [
+      "a"
+    ],
+    "explain_ru": "Первое упоминание — a.",
+    "hint_ru": "a / an / the"
   }
 ]

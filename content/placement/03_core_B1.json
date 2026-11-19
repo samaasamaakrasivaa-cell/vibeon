@@ -2277,5 +2277,245 @@
     "answer": 2,
     "explain_ru": "Break a leg! — «Ни пуха ни пера!», пожелание удачи перед выступлением.",
     "group": "b1-v5"
+  },
+  {
+    "id": "G-B1-T01",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "g-b1-ppc",
+    "topic_en": "Present perfect continuous",
+    "topic_ru": "Present Perfect Continuous",
+    "type": "brackets",
+    "q": "She's exhausted. She ___ (clean) the house all morning.",
+    "accept": [
+      "has been cleaning"
+    ],
+    "explain_ru": "Длительное действие, которое только что закончилось и видно по результату, — Present Perfect Continuous."
+  },
+  {
+    "id": "G-B1-T02",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-b1-defining-relatives",
+    "topic_en": "Defining relative clauses",
+    "topic_ru": "Определительные придаточные (who / which / that)",
+    "type": "gap",
+    "q": "The man ___ lives next door is a doctor.",
+    "accept": [
+      "who",
+      "that"
+    ],
+    "explain_ru": "О человеке — who (или that).",
+    "hint_ru": "who / which / that"
+  },
+  {
+    "id": "G-B1-T03",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-b1-reported-statements",
+    "topic_en": "Reported speech: statements",
+    "topic_ru": "Косвенная речь: утверждения",
+    "type": "brackets",
+    "q": "Yesterday Tom said that he ___ (be) hungry, so we went to a café.",
+    "accept": [
+      "was"
+    ],
+    "explain_ru": "В косвенной речи после said время сдвигается: am → was."
+  },
+  {
+    "id": "G-B1-T04",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "g-b1-reported-questions",
+    "topic_en": "Reported speech: questions",
+    "topic_ru": "Косвенная речь: вопросы",
+    "type": "brackets",
+    "q": "'Where do you live?' she asked me. → She asked me where ___ (I / live).",
+    "accept": [
+      "I lived"
+    ],
+    "explain_ru": "В косвенном вопросе — прямой порядок слов и сдвиг времени: where I lived."
+  },
+  {
+    "id": "G-B1-T05",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-b1-indirect-questions",
+    "topic_en": "Indirect questions",
+    "topic_ru": "Косвенные вопросы (Could you tell me...)",
+    "type": "gap",
+    "q": "Could you tell me what time the museum ___ on Sundays?",
+    "accept": [
+      "opens",
+      "closes"
+    ],
+    "explain_ru": "В косвенном вопросе — прямой порядок слов, без does: what time the museum opens.",
+    "hint_ru": "косвенный вопрос — прямой порядок слов"
+  },
+  {
+    "id": "G-B1-T06",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-b1-deduction-present",
+    "topic_en": "Modals of deduction: must / might / can't (present)",
+    "topic_ru": "Модальные глаголы предположения в настоящем",
+    "type": "gap",
+    "q": "Anna has been working since 6 a.m. She ___ be very tired.",
+    "accept": [
+      "must"
+    ],
+    "explain_ru": "Уверенный логический вывод — must.",
+    "hint_ru": "must / might / can't"
+  },
+  {
+    "id": "G-B1-T07",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-b1-be-able-to",
+    "topic_en": "be able to / manage to",
+    "topic_ru": "be able to / manage to",
+    "type": "brackets",
+    "q": "I'm sorry, I won't ___ (can) come to the meeting tomorrow.",
+    "accept": [
+      "be able to"
+    ],
+    "explain_ru": "У can нет будущего времени — will be able to."
+  },
+  {
+    "id": "G-B1-T08",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-b1-verb-patterns",
+    "topic_en": "Verb patterns: -ing vs to-infinitive",
+    "topic_ru": "Глагол + -ing или инфинитив",
+    "type": "brackets",
+    "q": "I've just finished ___ (write) the report.",
+    "accept": [
+      "writing"
+    ],
+    "explain_ru": "После finish — глагол с -ing."
+  },
+  {
+    "id": "G-B1-T09",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-b1-question-tags",
+    "topic_en": "Question tags",
+    "topic_ru": "Разделительные вопросы",
+    "type": "gap",
+    "q": "She lives in Paris, ___ she?",
+    "accept": [
+      "doesn't"
+    ],
+    "explain_ru": "Утверждение в Present Simple — хвостик doesn't she?",
+    "hint_ru": "разделительный вопрос"
+  },
+  {
+    "id": "G-B1-T10",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-b1-so-such",
+    "topic_en": "so / such",
+    "topic_ru": "so / such",
+    "type": "gap",
+    "q": "The film was ___ boring that I fell asleep.",
+    "accept": [
+      "so"
+    ],
+    "explain_ru": "Перед прилагательным без существительного — so.",
+    "hint_ru": "so / such"
+  },
+  {
+    "id": "G-B1-T11",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-b1-so-such",
+    "topic_en": "so / such",
+    "topic_ru": "so / such",
+    "type": "gap",
+    "q": "They're ___ nice people. I always enjoy visiting them.",
+    "accept": [
+      "such"
+    ],
+    "explain_ru": "Перед прилагательным с существительным — such.",
+    "hint_ru": "so / such"
+  },
+  {
+    "id": "G-B1-T12",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-b1-quantifiers-both",
+    "topic_en": "both / either / neither / each / every",
+    "topic_ru": "both / either / neither / each / every",
+    "type": "gap",
+    "q": "I've got two brothers, and ___ of them are teachers.",
+    "accept": [
+      "both"
+    ],
+    "explain_ru": "Оба из двух (глагол во множественном числе) — both.",
+    "hint_ru": "both / either / neither"
+  },
+  {
+    "id": "G-B1-T13",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-b1-contrast-basic",
+    "topic_en": "although / however / even though",
+    "topic_ru": "although / however / even though",
+    "type": "gap",
+    "q": "___ he earns a lot of money, he isn't happy in his job.",
+    "accept": [
+      "although",
+      "even though",
+      "though"
+    ],
+    "explain_ru": "Противопоставление в одном предложении — although / even though.",
+    "hint_ru": "although / however"
+  },
+  {
+    "id": "G-B1-T14",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "g-b1-contrast-basic",
+    "topic_en": "although / however / even though",
+    "topic_ru": "although / however / even though",
+    "type": "gap",
+    "q": "The hotel was very cheap. ___, the rooms were clean and comfortable.",
+    "accept": [
+      "however",
+      "nevertheless"
+    ],
+    "explain_ru": "Противопоставление в начале нового предложения, с запятой — However.",
+    "hint_ru": "although / however"
+  },
+  {
+    "id": "G-B1-T15",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-b1-articles-general",
+    "topic_en": "Articles: general vs specific meaning",
+    "topic_ru": "Артикли: общее и конкретное значение",
+    "type": "gap",
+    "q": "Can you close ___ door, please? It's cold in here.",
+    "accept": [
+      "the"
+    ],
+    "explain_ru": "Конкретная дверь, понятно какая, — the.",
+    "hint_ru": "a / an / the"
   }
 ]

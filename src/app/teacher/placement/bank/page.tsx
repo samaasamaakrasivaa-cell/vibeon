@@ -25,7 +25,7 @@ export default async function BankPage({ searchParams }: { searchParams: Promise
     <div className="page" style={{ maxWidth: 1000 }}>
       <Link href="/teacher/courses?tab=tests" className="small muted">← {t("pl.backTests")}</Link>
       <h1 className="mt-2 mb-1">{t("pl.bankTitle")}</h1>
-      <p className="muted mt-0 mb-3">{t("pl.bankLead")}</p>
+      <p className="muted mt-0 mb-3">{t("pl.bankLead")} <Link className="alink" href="/teacher/placement/quality">{t("q.title")} →</Link></p>
       <nav className="seg mb-5" aria-label={t("pl.track")}>
         <Link href="/teacher/placement/bank" aria-current={track === "adult" ? "page" : undefined}>{t("pl.bankAdult")}</Link>
         <Link href="/teacher/placement/bank?track=teen" aria-current={track === "teen" ? "page" : undefined}>{t("pl.bankTeen")}</Link>

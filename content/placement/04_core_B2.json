@@ -2291,5 +2291,175 @@
     "answer": 2,
     "explain_ru": "Call it a day — закончить работу на сегодня.",
     "group": "b2-v5"
+  },
+  {
+    "id": "G-B2-T01",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "g-b2-mixed-conditionals",
+    "topic_en": "Mixed conditionals",
+    "topic_ru": "Смешанные условные предложения",
+    "type": "brackets",
+    "q": "If I ___ (not / miss) the bus this morning, I wouldn't be so stressed now.",
+    "accept": [
+      "hadn't missed"
+    ],
+    "explain_ru": "Условие в прошлом, результат сейчас — смешанный тип: If I hadn't missed..., I wouldn't be..."
+  },
+  {
+    "id": "G-B2-T02",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 3,
+    "topic_id": "g-b2-mixed-conditionals",
+    "topic_en": "Mixed conditionals",
+    "topic_ru": "Смешанные условные предложения",
+    "type": "brackets",
+    "q": "If she were more organised, she ___ (not / forget) her passport yesterday.",
+    "accept": [
+      "wouldn't have forgotten"
+    ],
+    "explain_ru": "Постоянная черта сейчас, результат в прошлом — would have + третья форма."
+  },
+  {
+    "id": "G-B2-T03",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-reporting-verbs",
+    "topic_en": "Reporting verbs (suggest, deny, advise...)",
+    "topic_ru": "Глаголы косвенной речи (suggest, deny, advise...)",
+    "type": "brackets",
+    "q": "He refused ___ (help) us with the project.",
+    "accept": [
+      "to help"
+    ],
+    "explain_ru": "После refuse — to + глагол."
+  },
+  {
+    "id": "G-B2-T04",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-verb-patterns-meaning",
+    "topic_en": "Verbs that change meaning: -ing vs to-infinitive",
+    "topic_ru": "Глаголы с разным значением: -ing и инфинитив",
+    "type": "brackets",
+    "q": "Don't forget ___ (send) me the photos from the party!",
+    "accept": [
+      "to send"
+    ],
+    "explain_ru": "Forget to do — забыть сделать (то, что нужно сделать)."
+  },
+  {
+    "id": "G-B2-T05",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-linkers-contrast",
+    "topic_en": "despite / in spite of / whereas",
+    "topic_ru": "despite / in spite of / whereas",
+    "type": "gap",
+    "q": "___ the rain, we really enjoyed our trip to the coast.",
+    "accept": [
+      "despite",
+      "in spite of"
+    ],
+    "explain_ru": "Перед существительным — despite / in spite of.",
+    "hint_ru": "despite / although / however"
+  },
+  {
+    "id": "G-B2-T06",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-linkers-purpose-result",
+    "topic_en": "so that / in order to / as a result",
+    "topic_ru": "Связки цели и результата",
+    "type": "gap",
+    "q": "I'm leaving now ___ that I don't miss the last train.",
+    "accept": [
+      "so"
+    ],
+    "explain_ru": "Цель с подлежащим и глаголом — so that.",
+    "hint_ru": "связка цели"
+  },
+  {
+    "id": "G-B2-T07",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-linkers-purpose-result",
+    "topic_en": "so that / in order to / as a result",
+    "topic_ru": "Связки цели и результата",
+    "type": "gap",
+    "q": "The roads were icy. ___ a result, many schools were closed.",
+    "accept": [
+      "as"
+    ],
+    "explain_ru": "Результат — As a result,...",
+    "hint_ru": "связка результата"
+  },
+  {
+    "id": "G-B2-T08",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "g-b2-participle-clauses",
+    "topic_en": "Participle clauses",
+    "topic_ru": "Причастные обороты",
+    "type": "brackets",
+    "q": "___ (finish) her work, she turned off the computer and went home.",
+    "accept": [
+      "having finished"
+    ],
+    "explain_ru": "Действие, которое закончилось раньше другого, — Having + третья форма."
+  },
+  {
+    "id": "G-B2-T09",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "g-b2-would-rather",
+    "topic_en": "would rather / it's time",
+    "topic_ru": "would rather / it's time",
+    "type": "brackets",
+    "q": "I'd rather you ___ (not / tell) anyone about this yet.",
+    "accept": [
+      "didn't tell"
+    ],
+    "explain_ru": "I'd rather + другой человек + Past Simple."
+  },
+  {
+    "id": "G-B2-T10",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "g-b2-impersonal-passive",
+    "topic_en": "Impersonal passive: it is said that...",
+    "topic_ru": "Безличный пассив: it is said that...",
+    "type": "brackets",
+    "q": "The painting ___ (believe) to be worth millions.",
+    "accept": [
+      "is believed"
+    ],
+    "explain_ru": "Безличный пассив: is believed to be..."
+  },
+  {
+    "id": "G-B2-T11",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-articles",
+    "topic_en": "Articles: abstract nouns, institutions, geography",
+    "topic_ru": "Артикли: абстрактные понятия, институты, география",
+    "type": "gap",
+    "q": "We went skiing in ___ Alps last winter.",
+    "accept": [
+      "the"
+    ],
+    "explain_ru": "Горные цепи — с the: the Alps.",
+    "hint_ru": "a / an / the"
   }
 ]

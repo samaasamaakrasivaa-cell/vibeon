@@ -1,7 +1,7 @@
 import "server-only";
 import { db } from "../db";
 import { fileUrl } from "../storage";
-import type { AnyItem, Bank, CoreItem, Family, Group, ListenItem, ReadItem, SpeakItem, WriteItem } from "./engine";
+import { buildFix, type AnyItem, type Bank, type CoreItem, type Family, type Group, type ListenItem, type ReadItem, type SpeakItem, type WriteItem } from "./engine";
 import c1 from "../../../content/placement/01_core_A1.json";
 import c2 from "../../../content/placement/02_core_A2.json";
 import c3 from "../../../content/placement/03_core_B1.json";
@@ -20,6 +20,8 @@ import rubricsJson from "../../../content/placement/15_rubrics.json";
 import instructionsJson from "../../../content/placement/00_instructions.json";
 import groupsJson from "../../../content/placement/00_groups.json";
 import familiesJson from "../../../content/placement/00_families.json";
+import fixJson from "../../../content/placement/09_fix.json";
+import prereqJson from "../../../content/placement/00_prereq.json";
 // Placement test Teens — отдельный банк (10–17 лет, уровни до B2+, небольшой запас C1)
 import tc1 from "../../../content/placement/teen/01_core_A1.json";
 import tc2 from "../../../content/placement/teen/02_core_A2.json";
@@ -100,6 +102,8 @@ export async function getBank(track: Track = "adult"): Promise<{ bank: Bank; edi
     groups: track === "teen" ? TEEN_GROUPS : GROUPS,
     families: (track === "teen" ? tFamiliesJson : familiesJson) as unknown as Family[],
     core: items.filter((x): x is CoreItem => x.skill === "grammar" || x.skill === "vocabulary"),
+    // взрослые (v6): «найди и исправь» из заданий с вариантами (с правками владельца) и карта связей тем
+    ...(track === "teen" ? {} : { fix: buildFix(items.filter((x): x is CoreItem => x.skill === "grammar"), fixJson as { from: string; wrong: number; accept: string[] }[]), prereq: Object.fromEntries(Object.entries(prereqJson).filter(([k]) => !k.startsWith("_"))) as Record<string, string[]> }),
     reading: items.filter((x): x is ReadItem => x.type === "reading"),
     listening: items.filter((x): x is ListenItem => x.type === "listening"),
     writing: items.filter((x): x is WriteItem => x.type === "writing"),

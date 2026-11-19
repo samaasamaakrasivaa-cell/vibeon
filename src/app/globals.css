@@ -1176,7 +1176,7 @@ select.iedit, select.iedit:hover, select.iedit:focus { background-position: righ
 /* ───────── Вводный тест v2 ───────── */
 .plcorebar { height: 6px; border-radius: 3px; background: var(--fill); overflow: hidden; }
 .plcorebar div { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--accent), #5E5CE6); transition: width .5s ease; }
-.plpause { display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; }
+.plpausebar { display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; }
 .plinstr { margin: 0; font-size: 14px; color: var(--text2); line-height: 1.45; }
 .plactions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
 .plico.sm { width: 40px; height: 40px; border-radius: 12px; }
@@ -1305,7 +1305,7 @@ select.iedit, select.iedit:hover, select.iedit:focus { background-position: righ
 @media (hover: none) { [data-tip]::after { display: none; } }
 .plhint { display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; padding: 4px 10px; border-radius: 8px; background: var(--warn-bg); color: var(--warn-text); font-size: 13px; font-weight: 600; }
 .plpast { display: flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: 10px; background: var(--accent-bg); color: var(--accent-text); font-size: 13px; font-weight: 600; }
-.plpause { flex-direction: column; gap: 2px; }
+.plpausebar { flex-direction: column; gap: 2px; }
 .plhero2 { display: flex; flex-direction: column; gap: 16px; }
 .plhero2-top { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
 .pllogo { width: 64px; height: 64px; border-radius: 18px; display: inline-flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #0A84FF, #5E5CE6); box-shadow: 0 6px 18px rgba(10, 132, 255, .3); flex-shrink: 0; }
@@ -2628,3 +2628,15 @@ details.prblock[open] .prchev { transform: rotate(180deg); }
 @media print { details.prblock > .prblock-b { display: flex !important; } }
 /* кнопка под сообщением (например, «Подключить Telegram») */
 .bubble-act { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 8px; }
+
+/* Placement v6: «найди и исправь» и «уверен / не уверен» */
+.plfix { display: flex; flex-wrap: wrap; gap: 4px 6px; line-height: 1.6; }
+.plfixw { border: 0; background: transparent; font: inherit; color: inherit; padding: 2px 6px; border-radius: 8px; cursor: pointer; box-shadow: inset 0 -2px 0 var(--sep); }
+.plfixw:hover { background: var(--accent-bg); }
+.plfixw.on { background: var(--bad-bg); color: var(--bad-text); box-shadow: inset 0 -2px 0 var(--bad); text-decoration: line-through; }
+.plfixin { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
+.plsure { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; }
+.plsure .small { margin-right: 4px; }
+.prgrp { display: flex; flex-direction: column; gap: 4px; }
+.prflags { display: flex; flex-wrap: wrap; gap: 4px; }
+.prflags .pill { white-space: normal; }

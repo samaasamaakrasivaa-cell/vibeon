@@ -127,7 +127,7 @@ export function PlacementRunner({ id, initial, sample, done, home, canFlag = fal
         {v.section === "intro" && <Intro sample={sample} pending={pending} parts={PARTS.filter((p) => (vp.todo ?? vp.parts ?? PARTS).includes(p))} onStart={() => step(() => startPlacement(id))} />}
         {block && (past && back > 0
           ? <CoreStep key={`past-${past.item.id}`} item={past.item} n={curIdx - back - from + 1} initial={past.dk ? "" : past.given ?? ""} initialDk={past.dk} past pending={pending} onBack={curIdx - back > from ? () => openPast(back + 1) : undefined} onAnswer={revise} />
-          : (v as Core).item && <CoreStep key={(v as Core).item!.id} item={(v as Core).item!} n={curIdx - from + 1} pending={pending} onBack={curIdx > from ? () => openPast(1) : undefined} onAnswer={(val, dk, h, tr) => step(() => answerCore(id, (v as Core).item!.id, val, ms(), dk, h, tr))} />)}
+          : (v as Core).item && <CoreStep key={(v as Core).item!.id} item={(v as Core).item!} n={curIdx - from + 1} pending={pending} onBack={curIdx > from ? () => openPast(1) : undefined} onAnswer={(val, dk, h, tr, sure) => step(() => answerCore(id, (v as Core).item!.id, val, ms(), dk, h, tr, sure))} />)}
         {(v.section === "reading" || v.section === "listening") && (
           <TextStep key={(v as unknown as TextV).items.map((x) => x.id).join()} v={v as unknown as TextV} pending={pending} attempt={id} onFinish={() => step(() => finishTexts(id))} />
         )}
@@ -136,7 +136,7 @@ export function PlacementRunner({ id, initial, sample, done, home, canFlag = fal
       </>}
       {err && <div className="alert">{err}</div>}
       {v.section !== "intro" && !between && (
-        <div className="plpause">
+        <div className="plpausebar">
           <button type="button" className="btn plain sm" onClick={() => setPaused(true)}><Icon name="clock" size="sm" />{t("pl.saveLater")}</button>
           {/* примерно на середине грамматики — мягко напоминаем, что можно передохнуть */}
           {block && curIdx >= 15 && curIdx < 19 ? <span className="small pltired" role="status"><Icon name="info" size="sm" />{t("pl.tiredTip")}</span> : <span className="small muted">{t("pl.saved")}</span>}
@@ -261,7 +261,7 @@ function Intro({ sample, pending, onStart, parts = [...PARTS] }: { sample: strin
 
 // ───────── Грамматика и лексика ─────────
 
-function CoreStep({ item: it, n, pending, onAnswer, onBack, initial, initialDk, past }: { item: CoreItemV; n: number; pending: boolean; onAnswer: (val: string | number | null, dk: boolean, hinted: boolean, tried?: number[]) => void; onBack?: () => void; initial?: string | number; initialDk?: boolean; past?: boolean }) {
+function CoreStep({ item: it, n, pending, onAnswer, onBack, initial, initialDk, past }: { item: CoreItemV; n: number; pending: boolean; onAnswer: (val: string | number | null, dk: boolean, hinted: boolean, tried?: number[], sure?: boolean) => void; onBack?: () => void; initial?: string | number; initialDk?: boolean; past?: boolean }) {
   const { t } = useT();
   const [val, setVal] = useState<string | number>(initial ?? "");
   const [dk, setDk] = useState(!!initialDk);
@@ -276,14 +276,21 @@ function CoreStep({ item: it, n, pending, onAnswer, onBack, initial, initialDk, 
     const h = setTimeout(() => setSlow(true), (it.type === "mcq" ? SLOW_CHOICE : SLOW_TYPED) * 1000);
     return () => clearTimeout(h);
   }, [it.id, it.type, past]);
-  const submit = () => onAnswer(dk ? null : val, dk, showHint, tried.current);
+  // «найди и исправь»: выбранное слово и исправление → «номер::текст»
+  const [fixI, setFixI] = useState<number | null>(() => (typeof initial === "string" && initial.includes("::") ? Number(initial.split("::")[0]) : null));
+  const [fixT, setFixT] = useState(() => (typeof initial === "string" && initial.includes("::") ? initial.split("::").slice(1).join("::") : ""));
+  const fixVal = fixI === null || !fixT.trim() ? "" : `${fixI}::${fixT.trim()}`;
+  const value = it.type === "fix" ? fixVal : val;
+  // на проверке тем вместо «Дальше» — «Уверен / Не уверен»: так видно, знает ли ученик правило или угадал
+  const ask = !!(it as CoreItemV & { ask?: boolean }).ask && !past;
+  const submit = (sure?: boolean) => onAnswer(dk ? null : value, dk, showHint, tried.current, sure);
   const input = (
     <input className="input plgap" autoFocus autoComplete="off" autoCapitalize="off" spellCheck={false} value={String(val)} onChange={(e) => pick(e.target.value)}
-      onKeyDown={(e) => { if (e.key === "Enter" && String(val).trim()) onAnswer(String(val), false, showHint); }} aria-label={t("pl.answer")} />
+      onKeyDown={(e) => { if (e.key === "Enter" && String(val).trim() && !ask) onAnswer(String(val), false, showHint); }} aria-label={t("pl.answer")} />
   );
   const parts = (s2: string) => { const [a, b] = s2.split("___"); return <p className="plq">{a}{input}{b}</p>; };
-  const empty = !dk && (val === "" || (typeof val === "string" && !val.trim()));
-  const typed = it.type !== "mcq";
+  const empty = !dk && (value === "" || (typeof value === "string" && !value.trim()));
+  const typed = it.type !== "mcq" && it.type !== "fix";
   return (
     <section className="card flex flex-col gap-4" data-item={it.id}>
       {past && <div className="plpast"><Icon name="chevl" size="sm" />{t("pl.pastNote", { n })}</div>}
@@ -292,6 +299,16 @@ function CoreStep({ item: it, n, pending, onAnswer, onBack, initial, initialDk, 
         {it.type === "mcq" && <p className="plq">{it.q.split("___").map((x, i, a) => <span key={i}>{x}{i < a.length - 1 && <span className="plblank">{typeof val === "number" ? it.options![val] : "\u00a0"}</span>}</span>)}</p>}
         {it.type === "wordform" && <><div className="plword"><span className="plbase">{it.base}</span><Icon name="right" size="sm" /><span className="muted small">?</span></div>{parts(it.q)}</>}
         {(it.type === "gap" || it.type === "brackets") && parts(it.q)}
+        {it.type === "fix" && (
+          <>
+            <p className="plq plfix">{it.q.split(" ").map((w, i) => <button key={i} type="button" className={`plfixw ${fixI === i ? "on" : ""}`} aria-pressed={fixI === i} onClick={() => { setFixI(i); setDk(false); }}>{w}</button>)}</p>
+            {fixI !== null && (
+              <label className="plfixin"><span className="small muted">{t("pl.fixHow", { w: it.q.split(" ")[fixI].replace(/[.,!?;:]+$/, "") })}</span>
+                <input className="input plgap" autoFocus autoComplete="off" autoCapitalize="off" spellCheck={false} value={fixT} onChange={(e) => setFixT(e.target.value)} aria-label={t("pl.answer")} />
+              </label>
+            )}
+          </>
+        )}
         {it.type === "transform" && (
           <>
             <p className="plq m-0">{it.q}</p>
@@ -319,7 +336,13 @@ function CoreStep({ item: it, n, pending, onAnswer, onBack, initial, initialDk, 
       )}
       <div className="plactions">
         {onBack && <button type="button" className="btn plain mr-auto" disabled={pending} onClick={onBack}><Icon name="chevl" size="sm" />{t("pl.prevQ")}</button>}
-        <button className="btn primary" disabled={pending || empty} onClick={submit}>{past ? t("pl.saveFix") : t("pl.next")}</button>
+        {ask && !dk ? (
+          <div className="plsure">
+            <span className="small muted">{t("pl.sureQ")}</span>
+            <button className="btn secondary" disabled={pending || empty} onClick={() => submit(false)}>{t("pl.notSure")}</button>
+            <button className="btn primary" disabled={pending || empty} onClick={() => submit(true)}>{t("pl.sure")}</button>
+          </div>
+        ) : <button className="btn primary" disabled={pending || empty} onClick={() => submit()}>{past ? t("pl.saveFix") : t("pl.next")}</button>}
       </div>
     </section>
   );

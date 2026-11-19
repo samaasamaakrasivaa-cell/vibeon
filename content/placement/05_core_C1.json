@@ -2372,5 +2372,148 @@
     ],
     "answer": 0,
     "explain_ru": "Условие с инверсией: Should you change… = If you change…"
+  },
+  {
+    "id": "G-C1-T01",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 2,
+    "topic_id": "g-c1-subjunctive",
+    "topic_en": "Subjunctive: It's essential that he be...",
+    "topic_ru": "Сослагательное наклонение: It's essential that he be...",
+    "type": "brackets",
+    "q": "The manager insisted that every employee ___ (attend) the meeting.",
+    "accept": [
+      "attend",
+      "should attend"
+    ],
+    "explain_ru": "После insist that — сослагательное наклонение: глагол без окончания (attend) или should attend."
+  },
+  {
+    "id": "G-C1-T02",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 2,
+    "topic_id": "g-c1-participle-advanced",
+    "topic_en": "Advanced participle and reduced relative clauses",
+    "topic_ru": "Сложные причастные обороты",
+    "type": "brackets",
+    "q": "___ (not / know) what to say, she just smiled.",
+    "accept": [
+      "not knowing"
+    ],
+    "explain_ru": "Отрицание в причастном обороте — not перед причастием: Not knowing..."
+  },
+  {
+    "id": "G-C1-T03",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-emphasis",
+    "topic_en": "Emphasis: do / at all / whatsoever",
+    "topic_ru": "Усиление: do / at all / whatsoever",
+    "type": "gap",
+    "q": "I ___ believe you — I'm just surprised, that's all.",
+    "accept": [
+      "do"
+    ],
+    "explain_ru": "Усиление в утверждении — do + глагол: I do believe.",
+    "hint_ru": "усиление"
+  },
+  {
+    "id": "G-C1-T04",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-ellipsis-substitution",
+    "topic_en": "Ellipsis and substitution",
+    "topic_ru": "Эллипсис и замещение",
+    "type": "gap",
+    "q": "Is it going to rain? I haven't got an umbrella. — I hope ___.",
+    "accept": [
+      "not"
+    ],
+    "explain_ru": "Не хочу, чтобы это случилось, — I hope not.",
+    "hint_ru": "замещение: so / not"
+  },
+  {
+    "id": "G-C1-T05",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-conditionals-alternatives",
+    "topic_en": "provided that / as long as / unless / otherwise",
+    "topic_ru": "provided that / as long as / unless / otherwise",
+    "type": "gap",
+    "q": "You can borrow my bike as ___ as you bring it back by Sunday.",
+    "accept": [
+      "long"
+    ],
+    "explain_ru": "При условии, что — as long as.",
+    "hint_ru": "as long as / provided"
+  },
+  {
+    "id": "G-C1-T06",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-relatives-prepositions",
+    "topic_en": "Relative clauses with prepositions: in which / whereby",
+    "topic_ru": "Придаточные с предлогами: in which / whereby",
+    "type": "gap",
+    "q": "This is the hotel ___ which we stayed on our honeymoon.",
+    "accept": [
+      "in",
+      "at"
+    ],
+    "explain_ru": "Предлог переносится перед which: the hotel in which we stayed.",
+    "hint_ru": "предлог + which"
+  },
+  {
+    "id": "G-C1-T07",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-nominalisation",
+    "topic_en": "Nominalisation and complex noun phrases",
+    "topic_ru": "Номинализация и сложные именные группы",
+    "type": "brackets",
+    "q": "The ___ (decide) to close the factory surprised everyone in the town.",
+    "accept": [
+      "decision"
+    ],
+    "explain_ru": "Существительное от decide — decision."
+  },
+  {
+    "id": "G-C1-T08",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-articles",
+    "topic_en": "Articles: generalisation, abstract nouns, fixed cases",
+    "topic_ru": "Артикли: обобщение, абстрактные существительные, устойчивые случаи",
+    "type": "gap",
+    "q": "She plays ___ piano beautifully.",
+    "accept": [
+      "the"
+    ],
+    "explain_ru": "Играть на музыкальном инструменте — the: play the piano.",
+    "hint_ru": "a / an / the"
+  },
+  {
+    "id": "G-C1-T09",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-comparatives",
+    "topic_en": "Advanced comparison: by far, nothing like as, the sooner the better",
+    "topic_ru": "Сложные сравнения: by far, nothing like as, the sooner the better",
+    "type": "gap",
+    "q": "The longer you wait, ___ more expensive the tickets get.",
+    "accept": [
+      "the"
+    ],
+    "explain_ru": "Чем..., тем... — the + сравнительная степень, the + сравнительная степень.",
+    "hint_ru": "the ..., the ..."
   }
 ]

@@ -164,6 +164,67 @@ function ExtraBlock({ id, kind, step, status, mode, xs }: { id: string; kind: "c
   );
 }
 
+/** v6: лесенка сериями, итог по каждой теме найденного уровня, пробелы базы, уверенность. */
+const VERD: Record<string, [string, string]> = { own: ["green", "pr.v.own"], part: ["orange", "pr.v.part"], gap: ["red", "pr.v.gap"] };
+function V6Grammar({ v, G, answerRows }: { v: NonNullable<Summary["v6"]>; G: Item[]; answerRows: React.ReactNode[][] }) {
+  const { t } = useT();
+  const topicRow = (x: NonNullable<Summary["v6"]>["topics"][number]) => [
+    <span key="n">{x.name}{x.roots.length > 0 && <span className="small muted block">{t("pr.root", { list: x.roots.join(", ") })}</span>}</span>,
+    <Res key="r" r={[x.c, x.n]} />,
+    x.verdict ? <span key="v" className={`pill ${VERD[x.verdict][0]}`}>{t(VERD[x.verdict][1] as DictKey)}</span> : "—",
+    <span key="f" className="prflags">
+      {x.sureWrong && x.verdict !== "own" && <span className="pill red">{t("pr.f.sureWrong")}</span>}
+      {x.fix === true && x.verdict !== "own" && <span className="pill grey">{t("pr.f.fixOk")}</span>}
+      {x.fix === false && x.verdict !== "gap" && <span className="pill grey">{t("pr.f.fixNo")}</span>}
+      {x.slow && x.verdict === "own" && <span className="pill grey">{t("pr.f.slow")}</span>}
+    </span>,
+  ];
+  const byGroup = [...new Set(v.topics.map((x) => x.groupName))];
+  const cnt = (k: string) => v.topics.filter((x) => x.verdict === k).length;
+  const gaps = v.topics.filter((x) => x.verdict === "gap").map((x) => x.name);
+  const conf = v.conf;
+  return (
+    <>
+      <Sub title={t("pr.path")}>
+        <Ladder stops={runs(G.filter((x) => x.ph === "q"))} />
+        <ul className="prfacts">
+          {v.ladder.map((l, i) => (
+            <li key={i} className={l.verdict === "down" ? "bad" : l.verdict === "up" ? "" : "mid"}>
+              <b>{l.level}</b> [{l.series.map((s2) => `${s2.c}/${s2.n}`).join(" ")}] — {Math.round(l.p * 100)}%
+              {" "}{l.verdict === "up" ? t("pr.l.up") : l.verdict === "down" ? t("pr.l.down") : t("pr.l.open")}
+            </li>
+          ))}
+        </ul>
+        {v.found && <p className="m-0"><b>{t("pr.l.found", { l: v.found })}</b></p>}
+      </Sub>
+      {v.topics.length > 0 && (
+        <Sub title={t("pr.topicsT", { l: v.found ?? "" })}>
+          <p className="small muted m-0">{t("pr.topicsHint")}</p>
+          {byGroup.map((g) => (
+            <div key={g} className="prgrp">
+              <div className="small font-semibold">{g}</div>
+              <Tbl rows={v.topics.filter((x) => x.groupName === g).map(topicRow)} />
+            </div>
+          ))}
+        </Sub>
+      )}
+      {v.base.length > 0 && (
+        <Sub title={t("pr.baseT")}>
+          <p className="small muted m-0">{t("pr.baseHint")}</p>
+          <Tbl rows={v.base.map((x) => [<span key="n">{x.name} <span className="pill grey">{x.level}</span></span>, ...topicRow(x).slice(1)])} />
+        </Sub>
+      )}
+      <Sub title={t("pr.analysis")}>
+        <Tbl rows={[...answerRows,
+          ...(conf.unsureRight ? [[t("pr.c.unsureRight"), String(conf.unsureRight)]] : []),
+          ...(conf.sureWrong ? [[t("pr.c.sureWrong"), String(conf.sureWrong)]] : []),
+        ]} />
+      </Sub>
+      <Mean text={[t("pr.v6Out", { own: cnt("own"), part: cnt("part"), gap: cnt("gap") }), gaps.length ? t("pr.v6Gaps", { list: gaps.slice(0, 4).join(", ") }) : ""].filter(Boolean).join(" ")} />
+    </>
+  );
+}
+
 /** Вывод по блоку — отдельной плашкой внизу. */
 function Mean({ text }: { text: string | null }) { const { t } = useT(); return text ? <p className="prmean"><Icon name="spark" size="sm" /> <span><b>{t("pr.outLabel")}: </b>{text}</span></p> : null; }
 
@@ -288,6 +349,7 @@ export function ReviewInsights(p: InsightsProps) {
 
         {(G.length > 0 || p.base) && (
           <Block time={time("core")} idle={p.idle.core ? fmtSec(p.idle.core) : null} title={t("pl.part.core")} step={lvName(p.has("core") ? p.steps.core ?? null : null)}>
+            {sm.v6 ? <V6Grammar v={sm.v6} G={G} answerRows={answerRows(G)} /> : (<>
             <Sub title={t("pr.path")}>
               <Facts list={[warmLine, sm.anchors.length > 0 && t("pr.searchT"), sm.fb && sm.diag && t("pr.fallback", { l: PL_LEVELS[lvIdx(sm.diag) + 1] ?? "", d: sm.diag }), !p.has("core") && p.base && t(p.base.from === "test" ? "pl.exBaseTest" : "pl.exBaseTeacher", { l: p.base.sub })]} />
               <Ladder stops={runs(G.filter((x) => x.ph !== "w"))} />
@@ -304,6 +366,7 @@ export function ReviewInsights(p: InsightsProps) {
               </Sub>
             )}
             <Mean text={gOut} />
+            </>)}
             <div className="prmore">
               {G.length > 0 && <AnswersBox ans={ans} who={p.who} title={t("pl.part.core")} only="core" />}
               {sm.families.length > 0 && (

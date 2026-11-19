@@ -51,7 +51,12 @@ export function PlacementAnswers({ id, d, teacher, reveal: initial, only }: { id
                     {x.base && <span className="plbase sm">{x.base}</span>} {x.type === "transform" ? <><span>{x.q}</span><br /><span>{x.frame}</span></> : <span>{x.q}</span>}
                     <div className="small mt-1">{x.ok ? <b>{x.given}</b> : <>{x.dk ? <span className="pill grey">{t("pl.dontKnow")}</span> : <s className="muted">{x.given || t("pl.noAnswer")}</s>} → <b>{x.right}</b></>}</div>
                     {tried(x.tried ?? [])}
-                    <div className="small muted">{x.hinted && <span className="pill orange mr-1">{t("pl.withHint")}</span>}{x.topic}{x.explain ? ` · ${x.explain}` : ""}</div>
+                    <div className="small muted">{x.hinted && <span className="pill orange mr-1">{t("pl.withHint")}</span>}
+                      {teacher && x.type === "fix" && <span className="pill violet mr-1">{t("pr.fixPill")}</span>}
+                      {teacher && x.cf === 1 && !x.ok && <span className="pill red mr-1">{t("pr.sureWrongPill")}</span>}
+                      {teacher && x.cf === 0 && <span className="pill grey mr-1">{t("pr.unsurePill")}</span>}
+                      {teacher && x.typo && <span className="pill grey mr-1">{t("pr.typoPill")}</span>}
+                      {x.topic}{x.explain ? ` · ${x.explain}` : ""}</div>
                   </div>{teacher && x.ms !== null && <span className={`plms ${x.ms < 3000 ? "fast" : x.ms > 60000 ? "slow" : ""}`} title={x.ms < 3000 ? t("pl.fastHint") : undefined}>{fmtSec(x.ms)}</span>}
                   {teacher && <Flag itemId={x.id} attempt={id} />}
                   </div>

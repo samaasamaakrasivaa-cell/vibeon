@@ -2031,5 +2031,293 @@
     ],
     "answer": 0,
     "explain_ru": "Вопрос «есть ли…» с единственным числом — is there."
+  },
+  {
+    "id": "G-A1-T01",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-pronouns",
+    "topic_en": "Subject and object pronouns",
+    "topic_ru": "Личные и объектные местоимения",
+    "type": "gap",
+    "q": "Where are my keys? I can't find ___ anywhere.",
+    "accept": [
+      "them"
+    ],
+    "explain_ru": "Ключи (keys) — множественное число, в роли дополнения: them.",
+    "hint_ru": "местоимение"
+  },
+  {
+    "id": "G-A1-T02",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-like-ing",
+    "topic_en": "like / love / hate + -ing",
+    "topic_ru": "like / love / hate + -ing",
+    "type": "brackets",
+    "q": "I hate ___ (wait) in long queues at the supermarket.",
+    "accept": [
+      "waiting",
+      "to wait"
+    ],
+    "explain_ru": "После hate / like / love — глагол с -ing (в британском варианте возможно и to + глагол)."
+  },
+  {
+    "id": "G-A1-T03",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-possessives",
+    "topic_en": "Possessive adjectives and 's",
+    "topic_ru": "Притяжательные местоимения и 's",
+    "type": "brackets",
+    "q": "That's ___ (Anna) bag on the chair. Can you give it to her?",
+    "accept": [
+      "Anna's"
+    ],
+    "explain_ru": "Принадлежность человеку — 's: Anna's bag."
+  },
+  {
+    "id": "G-A1-T04",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-demonstratives",
+    "topic_en": "this / that / these / those",
+    "topic_ru": "this / that / these / those",
+    "type": "gap",
+    "q": "Look at ___ beautiful flowers over there by the window!",
+    "accept": [
+      "those"
+    ],
+    "explain_ru": "Несколько предметов далеко (over there) — those.",
+    "hint_ru": "this / that / these / those"
+  },
+  {
+    "id": "G-A1-T05",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-articles-basic",
+    "topic_en": "Articles a / an / the (basic use)",
+    "topic_ru": "Артикли a / an / the (базовое употребление)",
+    "type": "gap",
+    "q": "My sister is ___ engineer at a big car company.",
+    "accept": [
+      "an"
+    ],
+    "explain_ru": "Профессия — с a / an; engineer начинается с гласного звука — an.",
+    "hint_ru": "a / an / the"
+  },
+  {
+    "id": "G-A1-T06",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-plural-nouns",
+    "topic_en": "Plural nouns (regular and irregular)",
+    "topic_ru": "Множественное число существительных",
+    "type": "brackets",
+    "q": "There are three ___ (box) on the kitchen floor.",
+    "accept": [
+      "boxes"
+    ],
+    "explain_ru": "После x, s, sh, ch во множественном числе добавляется -es: boxes."
+  },
+  {
+    "id": "G-A1-T07",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-there-is-are",
+    "topic_en": "there is / there are",
+    "topic_ru": "Оборот there is / there are",
+    "type": "brackets",
+    "q": "___ (there / be) any milk in the fridge? I want to make some tea.",
+    "accept": [
+      "is there"
+    ],
+    "explain_ru": "Milk неисчисляемое — вопрос Is there any...?"
+  },
+  {
+    "id": "G-A1-T08",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-conjunctions-basic",
+    "topic_en": "Conjunctions: and / but / or / because",
+    "topic_ru": "Союзы and / but / or / because",
+    "type": "gap",
+    "q": "Would you like tea ___ coffee?",
+    "accept": [
+      "or"
+    ],
+    "explain_ru": "Выбор из двух вариантов — or.",
+    "hint_ru": "and / but / or / because"
+  },
+  {
+    "id": "G-A1-T09",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-have-got",
+    "topic_en": "have got",
+    "topic_ru": "Конструкция have got",
+    "type": "gap",
+    "q": "My sister ___ got two children, a boy and a girl.",
+    "accept": [
+      "has"
+    ],
+    "explain_ru": "He / she / it — has got.",
+    "hint_ru": "have / has"
+  },
+  {
+    "id": "G-A1-T10",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-imperatives",
+    "topic_en": "Imperatives",
+    "topic_ru": "Повелительное наклонение",
+    "type": "brackets",
+    "q": "___ (not / touch) the oven! It's very hot.",
+    "accept": [
+      "don't touch",
+      "do not touch"
+    ],
+    "explain_ru": "Запрет — Don't + глагол."
+  },
+  {
+    "id": "G-A1-T11",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-imperatives",
+    "topic_en": "Imperatives",
+    "topic_ru": "Повелительное наклонение",
+    "type": "brackets",
+    "q": "Please ___ (close) the door. It's cold in here.",
+    "accept": [
+      "close"
+    ],
+    "explain_ru": "Просьба — глагол в начальной форме без to."
+  },
+  {
+    "id": "G-A1-T12",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 2,
+    "topic_id": "g-a1-frequency-adverbs",
+    "topic_en": "Adverbs of frequency",
+    "topic_ru": "Наречия частотности",
+    "type": "transform",
+    "q": "I go to the gym on Mondays.",
+    "accept": [
+      "always go"
+    ],
+    "explain_ru": "Наречие частотности стоит перед смысловым глаголом: I always go.",
+    "key": "ALWAYS",
+    "frame": "I ___ to the gym on Mondays."
+  },
+  {
+    "id": "G-A1-T13",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-can",
+    "topic_en": "can / can't for ability and permission",
+    "topic_ru": "can / can't: умение и разрешение",
+    "type": "gap",
+    "q": "___ I open the window? It's really hot in here.",
+    "accept": [
+      "can",
+      "could",
+      "may"
+    ],
+    "explain_ru": "Просьба о разрешении — Can I...? (вежливее — Could I / May I).",
+    "hint_ru": "can"
+  },
+  {
+    "id": "G-A1-T14",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-prepositions-time",
+    "topic_en": "Prepositions of time: in / on / at",
+    "topic_ru": "Предлоги времени: in / on / at",
+    "type": "gap",
+    "q": "The shop closes ___ 8 o'clock in the evening.",
+    "accept": [
+      "at"
+    ],
+    "explain_ru": "Точное время — at: at 8 o'clock.",
+    "hint_ru": "in / on / at"
+  },
+  {
+    "id": "G-A1-T15",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-would-like",
+    "topic_en": "would like",
+    "topic_ru": "Конструкция would like",
+    "type": "gap",
+    "q": "I'd ___ a glass of water, please.",
+    "accept": [
+      "like",
+      "love"
+    ],
+    "explain_ru": "Вежливая просьба — I'd like (I would like).",
+    "hint_ru": "would ___"
+  },
+  {
+    "id": "G-A1-T16",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-prepositions-place",
+    "topic_en": "Prepositions of place",
+    "topic_ru": "Предлоги места",
+    "type": "gap",
+    "q": "I live ___ London, but I work in Oxford.",
+    "accept": [
+      "in"
+    ],
+    "explain_ru": "Город — in: in London.",
+    "hint_ru": "in / on / at"
+  },
+  {
+    "id": "G-A1-T17",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-some-any",
+    "topic_en": "Countable and uncountable nouns with some / any",
+    "topic_ru": "Исчисляемые и неисчисляемые с some / any",
+    "type": "gap",
+    "q": "Have you got ___ brothers or sisters?",
+    "accept": [
+      "any"
+    ],
+    "explain_ru": "В вопросе — any.",
+    "hint_ru": "some / any"
+  },
+  {
+    "id": "G-A1-T18",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-question-words",
+    "topic_en": "Question words",
+    "topic_ru": "Вопросительные слова",
+    "type": "gap",
+    "q": "___ do you live? — In a small flat near the station.",
+    "accept": [
+      "where"
+    ],
+    "explain_ru": "Вопрос о месте — Where.",
+    "hint_ru": "вопросительное слово"
   }
 ]

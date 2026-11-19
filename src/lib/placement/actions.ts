@@ -11,7 +11,7 @@ import { rateLimit } from "../rate-limit";
 import { getLang } from "../i18n/server";
 import { attemptFor, ptCookie } from "./access";
 import { getBank, isOwner, RUBRICS, TEEN_READY, trackOf, type Track } from "./bank";
-import { checkCore, emptyState, EXPECT, pickTask, PL_LEVELS, SECTIONS, STEPS, stepIdx, type Section, summarize, words, type CoreItem, type Expect, type ListenItem, type ReadItem, type SpeakItem, type WriteItem } from "./engine";
+import { checkCore, typoOk, emptyState, EXPECT, pickTask, PL_LEVELS, SECTIONS, STEPS, stepIdx, type Section, summarize, words, type CoreItem, type Expect, type ListenItem, type ReadItem, type SpeakItem, type WriteItem } from "./engine";
 import { addNextText, advance, begin, closeSection, doneOf, ensureTasks, enter, goTo, json, LATER, availOf, openOf, partsOf, publicView, stateOf, touch, type Later, type PView } from "./run";
 import { revealedScripts } from "./review";
 import { R_BLOCKS, type RCfg, type RSaved, type RVariant } from "./report";
@@ -68,7 +68,7 @@ function trail(x: unknown, n: number, final: string | number | null): number[] {
 }
 
 /** dk — «Не знаю»: засчитывается как неверный ответ, но в разборе отмечен отдельно. */
-export async function answerCore(id: string, itemId: string, v: string | number | null, ms: number, dk = false, hinted = false, tried: unknown = []): Promise<R> {
+export async function answerCore(id: string, itemId: string, v: string | number | null, ms: number, dk = false, hinted = false, tried: unknown = [], sure?: boolean | null): Promise<R> {
   return wrap(async () => {
     const { st } = await load(id);
     const last = st.core[st.core.length - 1];
@@ -76,7 +76,12 @@ export async function answerCore(id: string, itemId: string, v: string | number 
     const it = st.items[itemId] as CoreItem;
     const val = dk ? null : typeof v === "number" ? v : str(v, 120);
     const tr = trail(tried, it.options?.length ?? 0, val);
-    st.answers[itemId] = { v: val, ok: dk ? false : checkCore(it, val), ms: Math.max(0, Math.min(3600e3, Math.round(ms) || 0)), ...(dk ? { dk: true } : {}), ...(hinted ? { h: true } : {}), ...(tr.length ? { tr } : {}) };
+    const ok = dk ? false : checkCore(it, val);
+    // опечатка в слове при верной форме — засчитываем (только «вписать самому»), отмечаем для учителя
+    const typo = !ok && !dk && typeof val === "string" && it.type !== "mcq" && it.type !== "fix" && it.skill === "grammar" && typoOk(val, it.accept ?? []);
+    const ph = st.core[st.core.length - 1]?.ph;
+    st.answers[itemId] = { v: val, ok: ok || typo, ms: Math.max(0, Math.min(3600e3, Math.round(ms) || 0)), ...(dk ? { dk: true } : {}), ...(hinted ? { h: true } : {}), ...(tr.length ? { tr } : {}),
+      ...(typo ? { ty: true } : {}), ...(!dk && typeof sure === "boolean" && (ph === "t" || ph === "c" || ph === "g") ? { cf: (sure ? 1 : 0) as 0 | 1 } : {}) };
     if (advance(st, (await getBank(trackOf(st.track))).bank)) return submit(await load(id).then((l) => ({ ...l, st })), st);
     return save(id, st);
   });
@@ -245,7 +250,9 @@ export async function reviseCore(id: string, itemId: string, v: string | number 
     const val = dk ? null : typeof v === "number" ? v : str(v, 120);
     const old = st.answers[itemId];
     const tr = [...(old.tr ?? []), ...(old.dk ? [-1] : old.v !== null && old.v !== val ? [old.v] : [])].slice(-10);
-    st.answers[itemId] = { ...old, v: val, ok: dk ? false : checkCore(it, val), dk: dk || undefined, ...(tr.length ? { tr } : {}) };
+    const ok = dk ? false : checkCore(it, val);
+    const typo = !ok && !dk && typeof val === "string" && it.type !== "mcq" && it.type !== "fix" && it.skill === "grammar" && typoOk(val, it.accept ?? []);
+    st.answers[itemId] = { ...old, v: val, ok: ok || typo, ty: typo || undefined, dk: dk || undefined, ...(tr.length ? { tr } : {}) };
     return save(id, st);
   });
 }

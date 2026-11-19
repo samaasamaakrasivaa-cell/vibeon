@@ -34,5 +34,9 @@
   "speaking": {
     "easy": "Listen to the question. Think, then answer. You can listen to your answer and record it again.",
     "std": "Listen to the question, prepare, then answer. You can play back your answer and record it again."
+  },
+  "fix": {
+    "easy": "There is one mistake in the sentence. Click the wrong word and write it correctly.",
+    "std": "There is one mistake in the sentence. Click the word that is wrong and write the correct version."
   }
 }
