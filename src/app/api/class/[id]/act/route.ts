@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { carriedOne, isEmptyPayload } from "@/lib/class/carry";
 import { Prisma } from "@prisma/client";
 import { getSessionUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
@@ -44,7 +45,10 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       if (!task || task.templateId !== host.templateId) return bad("task");
       const where = { lessonInstanceId_taskId_studentId: { lessonInstanceId: tg.id, taskId, studentId: sid } };
       return withLock(`answer:${tg.id}:${taskId}`, async () => {
-      const prev = await db.answer.findUnique({ where });
+      const prev0 = await db.answer.findUnique({ where });
+      // ответа здесь ещё нет, а на прошлом занятии того же урока был — продолжаем с него (копия в это занятие)
+      const carried = !prev0 || isEmptyPayload(prev0.payload) ? await carriedOne(tg.id, sid, taskId) : null;
+      const prev = carried ? { ...(prev0 ?? {}), payload: carried.payload, status: carried.status } as NonNullable<typeof prev0> : prev0;
       const payload = { ...((prev?.payload as object) ?? {}), [key]: body.value ?? null };
       const teacherCheck = ["essay", "open", "record", "transform", "translate"].includes(task.type);
       // комментарии учителя к полям (gnotes) — не ответ ученика: статус не меняется
@@ -108,14 +112,16 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       if (!taskId) return bad();
       const where = { lessonInstanceId_taskId_studentId: { lessonInstanceId: tg.id, taskId, studentId: sid } };
       return withLock(`answer:${tg.id}:${taskId}`, async () => {
-        const prev = await db.answer.findUnique({ where });
+        const prev0 = await db.answer.findUnique({ where });
+        const carried = !prev0 || isEmptyPayload(prev0.payload) ? await carriedOne(tg.id, sid, taskId) : null;
+        const prev = carried ? { payload: carried.payload } : prev0;
         const p = ((prev?.payload as Record<string, unknown>) ?? {});
         const KEEP = ["rounds", "gnotes", "corr", "corrSent"];
         const snap = Object.fromEntries(Object.entries(p).filter(([k]) => !KEEP.includes(k)));
         if (!prev || !Object.keys(snap).length) return NextResponse.json({ ok: true });
         const rounds = [...((p.rounds as unknown[]) ?? []), { at: new Date().toISOString(), by: teacher ? "teacher" : "student", p: snap }].slice(-10);
         const payload = { ...Object.fromEntries(Object.entries(p).filter(([k]) => KEEP.includes(k) && k !== "rounds")), rounds };
-        await db.answer.update({ where, data: { payload: json(payload), status: "DRAFT", teacherReview: Prisma.DbNull, shownToStudent: false } });
+        await db.answer.upsert({ where, create: { lessonInstanceId: tg.id, taskId, studentId: sid, payload: json(payload), status: "DRAFT" }, update: { payload: json(payload), status: "DRAFT", teacherReview: Prisma.DbNull, shownToStudent: false } });
         publish(ch, "retry", { taskId, sid, payload, by });
         return NextResponse.json({ ok: true });
       });

@@ -96,7 +96,9 @@ function useChecker(o: TaskOptions, id: string) {
     if (!v.trim() || byTeacher) return;
     setHist((h) => { const a = h[k] ?? []; if (a.length && a[a.length - 1].v === v) return h; return { ...h, [k]: [...a, { v, ok }].slice(-10) }; });
   };
-  return { instant, checked: instant || checked, setChecked, tries, bump, reveal, hist, record, reset: () => { setChecked(false); setTries({}); setHist({}); } };
+  // в этом поле ученик ошибался (была красная попытка) — для «Разобрать ошибки», даже если потом исправил
+  const wasWrong = (k: string) => (hist[k] ?? []).some((h) => !h.ok);
+  return { instant, checked: instant || checked, setChecked, tries, bump, reveal, hist, record, wasWrong, reset: () => { setChecked(false); setTries({}); setHist({}); } };
 }
 
 function CheckBar({ ck, errors, total, onReset, onCheck }: { ck: ReturnType<typeof useChecker>; errors: number; total: number; onReset: () => void; onCheck?: () => void }) {
@@ -206,7 +208,7 @@ function Gaps({ task, kind }: { task: TaskData; kind: "gap" | "dropdown" }) {
               </div>
             )}
             <ol className="tk-lines">
-              {g.filter(({ l, i }) => !errOnly || l.some((s, si) => s.t === "gap" && !same(val[`${i}:${si}`] ?? "", s.answers))).map(({ l, i }) => (
+              {g.filter(({ l, i }) => !errOnly || l.some((s, si) => s.t === "gap" && (!same(val[`${i}:${si}`] ?? "", s.answers) || ck.wasWrong(`${i}:${si}`)))).map(({ l, i }) => (
                 <li key={i}>
                   <Num i={i} o={o} />
                   <span>
@@ -276,7 +278,7 @@ function Errors({ task }: { task: TaskData }) {
       <ol className="tk-lines">
         {p.lines.map((l, i) => {
           const g = l.find((s) => s.t === "gap") as Extract<Seg, { t: "gap" }> | undefined;
-          if (errOnly && (!g || (found[i] && same(fix[i] ?? "", g.answers)))) return null;
+          if (errOnly && (!g || (found[i] && same(fix[i] ?? "", g.answers) && !ck.wasWrong(String(i))))) return null;
           return (
           <li key={i}>
             <Num i={i} o={o} />
@@ -460,7 +462,7 @@ function Test({ task }: { task: TaskData }) {
   return (
     <div className="flex flex-col gap-4">
       {p.qs.map((q, qi) => {
-        if (errOnly && ok(qi)) return null;
+        if (errOnly && ok(qi) && (ck.tries[String(qi)] ?? 0) < 2) return null;
         const multi = q.correct.length > 1 || o.multi;
         return (
           <div key={qi}>
@@ -500,7 +502,7 @@ function TF({ task }: { task: TaskData }) {
   const errors = p.items.filter((it, i) => ans[i] !== it.a).length;
   return (
     <div className="flex flex-col gap-3">
-      {p.items.map((it, i) => errOnly && ans[i] === it.a ? null : (
+      {p.items.map((it, i) => errOnly && ans[i] === it.a && (ck.tries[String(i)] ?? 0) < 2 ? null : (
         <div key={i} className="tk-tf">
           <span className="grow"><Num i={i} o={o} /> <Inl text={it.s} /></span>
           <div className="seg xs">
@@ -726,7 +728,7 @@ function Arrow({ task }: { task: TaskData }) {
   return (
     <div className="flex flex-col gap-4">
       {p.items.map((it, i) => {
-        if (errOnly && (!it.answers.length || same(val[i] ?? "", it.answers))) return null;
+        if (errOnly && (!it.answers.length || (same(val[i] ?? "", it.answers) && !ck.wasWrong(String(i))))) return null;
         const m: Mark = ck.checked && val[i] && it.answers.length ? (same(val[i], it.answers) ? "ok" : "bad") : undefined;
         return (
           <div key={i}>

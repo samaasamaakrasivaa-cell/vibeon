@@ -2585,3 +2585,5 @@ button.fintile.main.on { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px #34C759
 }
 .errbar.none { background: var(--surface2); }
 .errbar.none .si { background: var(--ok); }
+.carrynote { display: flex; align-items: center; gap: 6px; margin: 0 0 12px; font-size: 13px; color: var(--text2); }
+.carrynote .i { color: var(--accent); }

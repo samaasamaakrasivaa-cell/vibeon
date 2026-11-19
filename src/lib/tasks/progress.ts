@@ -11,6 +11,15 @@ const filled = (v: unknown) => typeof v === "string" ? !!v.trim() : v != null;
 /** Ученик уже проверил ответ (кнопка «Проверить» или режим «проверять сразу») — только тогда показываем верно/ошибка. */
 export const isFinal = (task: { options: TaskOptions }, a: P | undefined) => task.options.checkMode === "instant" || !!a?.checked;
 
+/** Ученик ошибался по пути: у поля была неверная попытка (красная точка) — даже если потом исправил.
+ *  В тестах и True/False попыток по полям нет — там считаем, что ответ меняли после проверки (2+ нажатия). */
+export function hadWrongTry(task: { type: string }, a: P | undefined): boolean {
+  const h = a?.hist as Record<string, { ok?: boolean }[]> | undefined;
+  if (h && Object.values(h).some((xs) => Array.isArray(xs) && xs.some((x) => x && x.ok === false))) return true;
+  const tr = a?.tries as Record<string, number> | undefined;
+  return (task.type === "test" || task.type === "tf") && !!tr && Object.values(tr).some((n) => Number(n) >= 2);
+}
+
 /** null — у задания нет ответа ученика. До проверки ответы — «сделано», без верно/ошибка: ученик ещё может передумать. */
 export function progressOf(task: { id: string; type: TaskType; content: string; options: TaskOptions }, a: P | undefined): Step[] | null {
   const st = rawProgress(task, a);

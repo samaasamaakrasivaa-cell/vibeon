@@ -13,7 +13,8 @@ import { loadLesson } from "@/lib/teacher/builder-data";
 import { parse } from "@/lib/tasks/parse";
 import { hhmm } from "@/lib/time";
 import { homeworkFor } from "@/lib/homework";
-import { isFinal, progressOf } from "@/lib/tasks/progress";
+import { carriedAnswers, isEmptyPayload } from "@/lib/class/carry";
+import { hadWrongTry, isFinal, progressOf } from "@/lib/tasks/progress";
 import type { TaskOptions, TaskType } from "@/lib/tasks/catalog";
 
 export const metadata = { title: "Урок" };
@@ -46,7 +47,7 @@ export default async function ClassPage({ params, searchParams }: { params: Prom
   const data = templateId ? await loadLesson(templateId) : null;
   // групповое занятие: учитель видит уроки всех учеников, ученик — только свой
   const ids = role === "teacher" ? slot.map((x) => x.id) : [lesson.id];
-  const [allRows, hw, allWords, messages, templates, grp] = await Promise.all([
+  const [rows0, hw, allWords, messages, templates, grp] = await Promise.all([
     db.answer.findMany({ where: { lessonInstanceId: { in: ids } } }),
     db.homework.findUnique({ where: { lessonInstanceId: lesson.id } }),
     db.word.findMany({ where: { sourceLessonId: { in: ids } }, orderBy: { createdAt: "asc" } }),
@@ -54,6 +55,22 @@ export default async function ClassPage({ params, searchParams }: { params: Prom
     role === "teacher" ? db.lessonTemplate.findMany({ where: { unit: { course: { teacherId: teacherUser.id } } }, include: { unit: { include: { course: true } } }, orderBy: [{ unit: { course: { order: "asc" } } }, { unit: { order: "asc" } }, { order: "asc" }] }) : [],
     group && (host.groupId ?? lesson.groupId) ? db.group.findUnique({ where: { id: (host.groupId ?? lesson.groupId)! }, select: { title: true, callLink: true, messages: { orderBy: { createdAt: "desc" }, take: 60 } } }) : null,
   ]);
+  // продолжаем тот же урок, что и на прошлом занятии: ответы по заданиям урока — с прошлого занятия, пока здесь их нет
+  let carriedFrom: Date | null = null;
+  const allRows = [...rows0];
+  if (templateId) {
+    for (const m of slot.filter((x) => ids.includes(x.id) && x.studentId)) {
+      const base = await carriedAnswers({ lessonIds: slot.map((x) => x.id), studentId: m.studentId!, templateId, before: host.startsAt });
+      for (const [taskId, b] of base) {
+        const i = allRows.findIndex((a) => a.lessonInstanceId === m.id && a.taskId === taskId && a.studentId === m.studentId);
+        if (i >= 0 && !isEmptyPayload(allRows[i].payload)) continue;
+        const cur = i >= 0 ? allRows[i] : null;
+        const row = { ...(cur ?? { id: `carry-${taskId}`, lessonInstanceId: m.id, taskId, studentId: m.studentId!, lessonMs: 0, hwMs: 0, aiDraft: null, shownToStudent: false, createdAt: b.startsAt, updatedAt: b.startsAt }), payload: b.payload, status: b.status, teacherReview: b.teacherReview } as (typeof rows0)[number];
+        if (i >= 0) allRows[i] = row; else allRows.push(row);
+        if (!carriedFrom || b.startsAt > carriedFrom) carriedFrom = b.startsAt;
+      }
+    }
+  }
   // домашка прошлого урока этого ученика — чтобы на этом уроке разобрать ошибки (индивидуальные уроки)
   const prevHw = !group && lesson.studentId ? await (async () => {
     const items = (await homeworkFor({ studentId: lesson.studentId! })).filter((h) => h.lesson.id !== lesson.id && h.lesson.startsAt < lesson.startsAt);
@@ -62,7 +79,9 @@ export default async function ClassPage({ params, searchParams }: { params: Prom
     const ids = new Set([...h.lesson.homework!.taskIds, ...h.lesson.homework!.extraTaskIds]);
     const errors = (h.lesson.template?.tasks ?? []).filter((tk) => ids.has(tk.id)).filter((tk) => {
       const a = h.lesson.answers.find((x) => x.taskId === tk.id)?.payload as Record<string, unknown> | undefined;
-      if (!a || !isFinal({ options: (tk.options ?? {}) as TaskOptions }, a)) return false;
+      if (!a) return false;
+      if (hadWrongTry(tk, a)) return true; // ошибался по пути (красные точки), даже если потом исправил
+      if (!isFinal({ options: (tk.options ?? {}) as TaskOptions }, a)) return false;
       const st = progressOf({ ...tk, type: tk.type as TaskType, options: (tk.options ?? {}) as TaskOptions }, a);
       return !!st && st.some((x) => x === "bad");
     }).length;
@@ -115,6 +134,7 @@ export default async function ClassPage({ params, searchParams }: { params: Prom
         ...(role === "teacher" && data?.l.teacherInfo ? { teacherInfo: data.l.teacherInfo as TInfo } : {}),
         live: (host.live ?? {}) as LiveState, board,
         prevHw,
+        carriedFrom: carriedFrom ? (carriedFrom as Date).toLocaleDateString(lang === "ru" ? "ru-RU" : "en-GB", { day: "numeric", month: "long", timeZone: user.timezone }) : null,
         homework: { extraTaskIds: hw?.extraTaskIds ?? [], wordTraining: hw?.wordTraining ?? [], teacherComment: hw?.teacherComment ?? null, taskOrder: hw?.taskOrder ?? [], removedTaskIds: hw?.removedTaskIds ?? [], manual: hw ? hw.manual : true },
         lessonWords, words: words.map((w) => ({ id: w.id, word: w.word, translation: w.translation, example: w.example, level: w.level })),
         messages: (group ? [...(grp?.messages ?? [])] : messages).reverse().map((m) => ({ id: m.id, text: m.deletedAt ? "" : m.text, by: m.senderId, at: m.createdAt.toISOString(), replyTo: m.replyTo, edited: !!m.editedAt, deleted: !!m.deletedAt })),
