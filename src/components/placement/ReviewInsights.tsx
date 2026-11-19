@@ -166,7 +166,7 @@ function ExtraBlock({ id, kind, step, status, mode, xs }: { id: string; kind: "c
 
 /** v6: лесенка сериями, итог по каждой теме найденного уровня, пробелы базы, уверенность. */
 const VERD: Record<string, [string, string]> = { own: ["green", "pr.v.own"], part: ["orange", "pr.v.part"], gap: ["red", "pr.v.gap"] };
-function V6Grammar({ v, G, answerRows }: { v: NonNullable<Summary["v6"]>; G: Item[]; answerRows: React.ReactNode[][] }) {
+function V6Grammar({ v, G, answerRows, extra }: { v: NonNullable<Summary["v6"]>; G: Item[]; answerRows: React.ReactNode[][]; extra: React.ReactNode[][] }) {
   const { t } = useT();
   const topicRow = (x: NonNullable<Summary["v6"]>["topics"][number]) => [
     <span key="n">{x.name}{x.roots.length > 0 && <span className="small muted block">{t("pr.root", { list: x.roots.join(", ") })}</span>}</span>,
@@ -197,6 +197,7 @@ function V6Grammar({ v, G, answerRows }: { v: NonNullable<Summary["v6"]>; G: Ite
         </ul>
         {v.found && <p className="m-0"><b>{t("pr.l.found", { l: v.found })}</b></p>}
       </Sub>
+      {extra.length > 0 && <Sub title={t("pr.sec.detail")}><Tbl head={[t("pr.col.level"), t("pr.col.easy"), t("pr.col.hard"), t("pr.col.all")]} rows={extra} /></Sub>}
       {v.topics.length > 0 && (
         <Sub title={t("pr.topicsT", { l: v.found ?? "" })}>
           <p className="small muted m-0">{t("pr.topicsHint")}</p>
@@ -297,7 +298,9 @@ export function ReviewInsights(p: InsightsProps) {
     return [lv, easy.length ? <Res r={cnt(easy)} /> : "—", hard.length ? <Res r={cnt(hard)} /> : "—", <Res r={cnt(at)} />];
   });
   for (const lv of PL_LEVELS) { const ups = G.filter((x) => x.level === lv && UP.has(x.ph ?? "")); if (ups.length) detailRows.push([<>{lv} <span className="small muted">{t("pr.row.up")}</span></>, "—", "—", <Res r={cnt(ups)} />]); }
-  for (const lv of PL_LEVELS) { const xz = G.filter((x) => x.ph === "z" && x.level === lv); if (xz.length) detailRows.push([<>{lv} <span className="small muted">{t("pr.row.extra")}</span></>, "—", "—", <Res r={cnt(xz)} />]); }
+  const extraRows: React.ReactNode[][] = [];
+  for (const lv of PL_LEVELS) { const xz = G.filter((x) => x.ph === "z" && x.level === lv); if (xz.length) extraRows.push([<>{lv} <span className="small muted">{t("pr.row.extra")}</span></>, "—", "—", <Res r={cnt(xz)} />]); }
+  detailRows.push(...extraRows);
   const climbs = dLevels.slice(1).map((lv, i) => t("pr.climbShort", { from: dLevels[i], to: lv }));
   const answerRows = (xs: Item[]): React.ReactNode[][] => {
     const ch = cnt(xs.filter((x) => x.type === "mcq")), ty = cnt(xs.filter((x) => x.type !== "mcq")), dk = xs.filter((x) => x.dk).length, hi = xs.filter((x) => x.hinted).length;
@@ -349,7 +352,7 @@ export function ReviewInsights(p: InsightsProps) {
 
         {(G.length > 0 || p.base) && (
           <Block time={time("core")} idle={p.idle.core ? fmtSec(p.idle.core) : null} title={t("pl.part.core")} step={lvName(p.has("core") ? p.steps.core ?? null : null)}>
-            {sm.v6 ? <V6Grammar v={sm.v6} G={G} answerRows={answerRows(G)} /> : (<>
+            {sm.v6 ? <V6Grammar v={sm.v6} G={G} answerRows={answerRows(G)} extra={extraRows} /> : (<>
             <Sub title={t("pr.path")}>
               <Facts list={[warmLine, sm.anchors.length > 0 && t("pr.searchT"), sm.fb && sm.diag && t("pr.fallback", { l: PL_LEVELS[lvIdx(sm.diag) + 1] ?? "", d: sm.diag }), !p.has("core") && p.base && t(p.base.from === "test" ? "pl.exBaseTest" : "pl.exBaseTeacher", { l: p.base.sub })]} />
               <Ladder stops={runs(G.filter((x) => x.ph !== "w"))} />
