@@ -1,5 +1,6 @@
 "use server";
 import { revalidatePath } from "next/cache";
+import type { Invoice } from "@prisma/client";
 import { db } from "../db";
 import { requireUser } from "../auth/session";
 import { getT } from "../i18n/server";
@@ -85,14 +86,22 @@ export async function payLater(lessonId: string, back = false): Promise<R> {
   return { ok: true };
 }
 
-/** Отменить подтверждение оплаты (нажали по ошибке) — сутки после подтверждения, из плашки внизу экрана. */
+/** Оплату за уроки отменили (нажали «Оплачено» / «Отметить оплату» по ошибке): счёт снимается, уроки снова
+ *  в «Проведённые уроки без счёта» — с «Оплачено» и «Оплатит позже». Новый счёт за них сам не выставляется.
+ *  Счёт за абонемент — обратно в ожидание оплаты (абонемент, если ещё не начат, снимается). */
+async function reopenPaid(inv: Invoice) {
+  if (inv.kind === "pack" || !inv.lessonIds.length) return undoAccept(inv);
+  await db.$transaction([
+    inv.proofKind === "teacher" ? db.invoice.delete({ where: { id: inv.id } }) : db.invoice.update({ where: { id: inv.id }, data: { status: "CANCELLED", paidAt: null, closedAt: null, autoAccepted: false } }),
+    db.lessonInstance.updateMany({ where: { id: { in: inv.lessonIds } }, data: { billedAt: null, deductedAt: null, payLaterAt: null, noBill: true } }),
+  ]);
+}
+
+/** Отменить подтверждение оплаты (нажали по ошибке) — сутки после подтверждения, в «Финансах» → «Недавние оплаты». */
 export async function undoPaid(invoiceId: string): Promise<R> {
   const inv = await teacherInvoice(invoiceId);
   if (inv.status !== "PAID") return { ok: true };
-  if (inv.proofKind === "teacher" && inv.lessonIds.length === 1) {
-    await db.invoice.delete({ where: { id: inv.id } });
-    await db.lessonInstance.updateMany({ where: { id: inv.lessonIds[0] }, data: { billedAt: null, deductedAt: null } });
-  } else await undoAccept(inv);
+  await reopenPaid(inv);
   refresh();
   return { ok: true };
 }
@@ -105,10 +114,7 @@ export async function undoLessonPaid(lessonId: string): Promise<R> {
   if (!l || l.teacherId !== u.id || !l.studentId) return { ok: false, error: t("pay.err.notFound") };
   const inv = await db.invoice.findFirst({ where: { studentId: l.studentId, lessonIds: { has: l.id }, status: "PAID" } });
   if (!inv) return { ok: true };
-  if (inv.proofKind === "teacher" && inv.lessonIds.length === 1) {
-    await db.invoice.delete({ where: { id: inv.id } });
-    await db.lessonInstance.update({ where: { id: l.id }, data: { billedAt: null, deductedAt: null } });
-  } else await undoAccept(inv);
+  await reopenPaid(inv);
   refresh();
   return { ok: true };
 }

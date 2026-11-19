@@ -16,7 +16,7 @@ export function AfterNote({ id, next }: { id: string; next: { date: string; note
   const [err, setErr] = useState<string | null>(null);
   if (!next) return <span className="small muted tl-nonext">{t("today.noNext")}</span>;
   if (!open) return (
-    <button type="button" className="btn plain sm" onClick={() => setOpen(true)}>
+    <button type="button" className="btn plain sm afterbtn" onClick={() => setOpen(true)}>
       <Icon name="msg" size="sm" />{next.note ? t("today.afterEdit") : t("today.after")}
     </button>
   );

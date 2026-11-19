@@ -2575,3 +2575,11 @@ button.fintile.main.on { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px #34C759
 @media (max-width: 560px) { .errbar { flex-wrap: wrap; } .errbar .btn { width: 100%; justify-content: center; } }
 .prevhw .si { width: 34px; height: 34px; border-radius: 10px; color: #fff; display: flex; align-items: center; justify-content: center; flex: none; }
 .prevhw .btn { flex: none; }
+/* «Сегодня»: колонка с «Открыть класс» одной ширины у всех уроков; длинная подпись — в две строки */
+@media (min-width: 641px) {
+  .tl-act { width: 250px; min-width: 0; }
+  .tl-quick .btn { padding-left: 6px; padding-right: 6px; }
+  .tl-quick .btn.afterbtn { white-space: normal; height: auto; min-height: 32px; padding: 4px 8px; line-height: 1.25; text-align: left; }
+  .tl-quick .btn.afterbtn .i { flex: none; align-self: flex-start; margin-top: 2px; }
+  .afternote { width: 100%; }
+}

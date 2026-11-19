@@ -198,7 +198,8 @@ async function billPostpaid(now: Date) {
   for (const s of students) {
     const rule = s.billRule || "after_15";
     let unbilled = await db.lessonInstance.findMany({
-      where: { studentId: s.id, billedAt: null, NOT: { isTrial: true, OR: [{ price: null }, { price: { lte: 0 } }] }, // платный пробный — в счёт; бесплатный — нет
+      // «Оплатит позже» и уроки с отменённой оплатой учитель ведёт сам — счёт за них не выставляем
+      where: { studentId: s.id, billedAt: null, noBill: false, payLaterAt: null, NOT: { isTrial: true, OR: [{ price: null }, { price: { lte: 0 } }] }, // платный пробный — в счёт; бесплатный — нет
        OR: [{ status: "DONE" }, { status: "MISSED", charged: true }] },
       orderBy: { startsAt: "asc" },
       include: { group: { select: { title: true } } },

@@ -365,6 +365,7 @@ model LessonInstance {
   billedAt    DateTime? // постоплата: урок включён в счёт
   deductedAt  DateTime? // абонемент: урок списан
   payLaterAt  DateTime? // постоплата: учитель отметил «Оплатит позже» — урок ждёт оплаты в отдельном списке, не висит в «без счёта»
+  noBill      Boolean   @default(false) // счёт за урок сам не выставляется: оплату учитель отметил и отменил — урок ждёт «Оплачено» / «Оплатит позже»
   board       Json            @default("{\"pages\":[[]]}") // доска: страницы с объектами
   studentNote String? // заметки ученика к уроку
   startedAt   DateTime?
