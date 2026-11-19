@@ -2626,3 +2626,5 @@ details.prblock[open] .prchev { transform: rotate(180deg); }
 .prl-key.ok { background: var(--ok); } .prl-key.mid { background: var(--warn); } .prl-key.bad { background: var(--bad); }
 .prmore { display: flex; flex-direction: column; gap: 2px; border-top: 1px solid var(--sep); padding-top: 8px; }
 @media print { details.prblock > .prblock-b { display: flex !important; } }
+/* кнопка под сообщением (например, «Подключить Telegram») */
+.bubble-act { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 8px; }

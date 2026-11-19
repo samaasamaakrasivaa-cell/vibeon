@@ -1,4 +1,5 @@
 "use client";
+import { TgAskInMsg } from "../TgAskInMsg";
 import Link from "next/link";
 import { TeacherInfo } from "../lesson/TeacherInfo";
 import type { TInfo } from "@/lib/tasks/teacher-info";
@@ -37,6 +38,7 @@ export type ClassData = {
   title: string | null; crumbs: string | null; course: { title: string; cover: string | null } | null; rubrics: Rubric[]; tasks: CTask[]; teacherInfo?: TInfo;
   answers: Answers; statuses: Record<string, string>; reviews: Record<string, Review>; aiDrafts: Record<string, AiCheck>; live: LiveState;
   times?: Record<string, [number, number]>; // активное время над заданием: [на уроке, вне урока (домашка)], мс
+  tgLinked?: boolean | null; // ученик: подключён ли Telegram-бот (кнопка под сообщением «подключите бот»)
   carriedFrom?: string | null; // тот же урок продолжаем с прошлого занятия — ответы оттуда
   prevHw?: { id: string; date: string; done: number; total: number; errors: number } | null; // домашка прошлого урока (разобрать ошибки)
   board: BObj[][]; homework: { extraTaskIds: string[]; wordTraining: string[]; teacherComment: string | null; taskOrder?: string[]; removedTaskIds?: string[]; manual?: boolean };
@@ -500,7 +502,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
           {panel && (
             <aside className="cls-panel">
               <button className="iconbtn dlgx" onClick={() => setPanel(null)} aria-label="close"><Icon name="close" size="sm" /></button>
-              {panel === "chat" && <Chat msgs={msgs} me={d.me.id} send={send} names={{ [d.teacher.id]: d.teacher.name, ...(d.chatNames ?? {}), ...(d.student?.userId ? { [d.student.userId]: d.student.name } : {}) }} />}
+              {panel === "chat" && <Chat msgs={msgs} me={d.me.id} send={send} tgLinked={d.tgLinked} names={{ [d.teacher.id]: d.teacher.name, ...(d.chatNames ?? {}), ...(d.student?.userId ? { [d.student.userId]: d.student.name } : {}) }} />}
               {panel === "dict" && <Dict send={send} />}
               {panel === "timer" && <Timer left={live.timer ? timerLeft : 0} paused={timerPaused} task={timerTask ? lessonTasks.concat(hwTasks).find((x) => x.id === timerTask)?.title || t("cls.thisTask") : null}
                 onClearTask={() => setTimerTask(null)}
@@ -1106,7 +1108,7 @@ function CallLinkEdit({ lessonId, value, group }: { lessonId: string; value: str
 }
 
 /** Чат урока / группы: подписи кто пишет; у сообщения — «Ответить» (с цитатой), свои — «Изменить» и «Удалить». */
-function Chat({ msgs, me, send, names }: { msgs: Msg[]; me: string; send: (type: string, d: Record<string, unknown>) => Promise<unknown>; names: Record<string, string> }) {
+function Chat({ msgs, me, send, names, tgLinked }: { msgs: Msg[]; me: string; send: (type: string, d: Record<string, unknown>) => Promise<unknown>; names: Record<string, string>; tgLinked?: boolean | null }) {
   const { t } = useT();
   const [v, setV] = useState("");
   const [reply, setReply] = useState<Msg | null>(null);
@@ -1134,6 +1136,7 @@ function Chat({ msgs, me, send, names }: { msgs: Msg[]; me: string; send: (type:
             <small>{names[m.by] ?? ""}</small>
             {m.replyTo && <span className="bq"><b>{names[byId.get(m.replyTo)?.by ?? ""] ?? ""}</b>{quote(m.replyTo)}</span>}
             {m.deleted ? <i>{t("cls.msgDeleted")}</i> : m.text}
+            {!m.deleted && <TgAskInMsg text={m.text} mine={m.by === me} linked={tgLinked} />}
             {m.edited && !m.deleted && <span className="edited">{t("cls.msgEdited")}</span>}
             {menu === m.id && (
               <span className="bmenu" onClick={(e) => e.stopPropagation()}>

@@ -1,4 +1,5 @@
 "use client";
+import { TgAskInMsg } from "./TgAskInMsg";
 import { useEffect, useRef, useState } from "react";
 import { Icon } from "./Icon";
 import { useT } from "@/lib/i18n/client";
@@ -7,7 +8,7 @@ import { markThreadRead, sendMessage } from "@/lib/student/actions";
 export type ThreadMsg = { id: string; text: string; by: string; at: string };
 
 /** Переписка учитель ↔ ученик: новые сообщения приходят сразу (SSE). */
-export function Thread({ studentId, initial, me, names, tz }: { studentId: string; initial: ThreadMsg[]; me: string; names: Record<string, string>; tz: string }) {
+export function Thread({ studentId, initial, me, names, tz, tgLinked }: { studentId: string; initial: ThreadMsg[]; me: string; names: Record<string, string>; tz: string; tgLinked?: boolean | null }) {
   const { t, lang } = useT();
   const [msgs, setMsgs] = useState(initial);
   const [v, setV] = useState("");
@@ -38,7 +39,7 @@ export function Thread({ studentId, initial, me, names, tz }: { studentId: strin
           return (
             <div key={m.id} className="contents">
               {sep}
-              <div className={`bubble ${m.by === me ? "me" : ""}`}><small>{names[m.by] ?? ""} · {d.toLocaleTimeString(loc, { hour: "2-digit", minute: "2-digit", timeZone: tz })}</small>{m.text}</div>
+              <div className={`bubble ${m.by === me ? "me" : ""}`}><small>{names[m.by] ?? ""} · {d.toLocaleTimeString(loc, { hour: "2-digit", minute: "2-digit", timeZone: tz })}</small>{m.text}<TgAskInMsg text={m.text} mine={m.by === me} linked={tgLinked} /></div>
             </div>
           );
         })}

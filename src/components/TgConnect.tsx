@@ -6,17 +6,17 @@ import { linkTelegram } from "@/lib/notify/actions";
 import { Icon } from "./Icon";
 
 /** «Подключить Telegram»: открывает бота с одноразовым кодом; после «Старт» аккаунт привязывается сам. */
-export function TgConnect() {
+export function TgConnect({ compact }: { compact?: boolean } = {}) {
   const { t } = useT();
   const router = useRouter();
   const [opened, setOpened] = useState(false);
   const [pending, start] = useTransition();
   return (
     <>
-      <button className="btn primary lg w-full" disabled={pending} onClick={() => start(async () => { const r = await linkTelegram(); if (r.ok && r.url) { window.open(r.url, "_blank"); setOpened(true); } })}>
-        <Icon name="telegram" />{t("tg.connect")}
+      <button type="button" className={compact ? "btn primary sm" : "btn primary lg w-full"} disabled={pending} onClick={() => start(async () => { const r = await linkTelegram(); if (r.ok && r.url) { window.open(r.url, "_blank"); setOpened(true); } })}>
+        <Icon name="telegram" size={compact ? "sm" : undefined} />{t("tg.connect")}
       </button>
-      {opened && <button className="btn secondary w-full" onClick={() => router.refresh()}>{t("nf.refresh")}</button>}
+      {opened && <button type="button" className={compact ? "btn plain sm" : "btn secondary w-full"} onClick={() => router.refresh()}>{t("nf.refresh")}</button>}
     </>
   );
 }

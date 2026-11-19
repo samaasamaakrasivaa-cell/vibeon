@@ -418,7 +418,7 @@ export async function requestTgConnect(studentId: string): Promise<Result> {
   if (!s.userId) return { ok: false, error: t("prof.tgNoUser") };
   const day = new Date().toISOString().slice(0, 10);
   const n = await notify({ userId: s.userId, kind: "message", title: "Подключите Telegram-бот VibeOn: туда придут напоминания об уроках и оплатах и результаты тестов", action: "open", link: "/student/welcome", dedupe: `tgask:${s.id}:${day}` });
-  if (n) await db.message.create({ data: { studentId: s.id, senderId: teacher.id, text: "Пожалуйста, подключите Telegram-бот VibeOn — туда будут приходить напоминания об уроках и оплатах, домашка и результаты ваших тестов. Кнопка «Подключить Telegram» — на главной странице кабинета." } });
+  if (n) await db.message.create({ data: { studentId: s.id, senderId: teacher.id, text: "Пожалуйста, подключите Telegram-бот VibeOn — туда будут приходить напоминания об уроках и оплатах, домашка и результаты ваших тестов. Нажмите «Подключить Telegram» прямо под этим сообщением — бот откроется в Telegram, останется нажать «Старт»." } });
   return { ok: true };
 }
 

@@ -17,7 +17,7 @@ export default async function Messages() {
       <h1 className="mb-1">{t("nav.messages")}</h1>
       <p className="muted mt-0 mb-5">{t("msg.withTeacher", { name: [tu.name, tu.lastName].filter(Boolean).join(" ") })}</p>
       <section className="card">
-        <Thread tz={me.timezone} studentId={s.id} me={me.id} names={{ [me.id]: me.name, [tu.id]: tu.name }} initial={msgs.map((m) => ({ id: m.id, text: m.text, by: m.senderId, at: m.createdAt.toISOString() }))} />
+        <Thread tz={me.timezone} tgLinked={!!me.telegramChatId} studentId={s.id} me={me.id} names={{ [me.id]: me.name, [tu.id]: tu.name }} initial={msgs.map((m) => ({ id: m.id, text: m.text, by: m.senderId, at: m.createdAt.toISOString() }))} />
       </section>
     </div>
   );
