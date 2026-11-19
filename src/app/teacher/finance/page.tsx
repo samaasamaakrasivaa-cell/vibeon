@@ -32,7 +32,7 @@ export default async function Finance({ searchParams }: { searchParams: Promise<
   const maxM = Math.max(1, ...d.months.flatMap((m) => [m.earned, m.received]));
   const maxS = Math.max(1, ...d.perStudent.map((p) => p.earned));
   const insightText: Record<string, (v: Record<string, string | number>) => string> = {
-    cancels: (v) => t("fin.ins.cancels", v), moves: (v) => t("fin.ins.moves", v), debt: (v) => t("fin.ins.debt", { name: v.name, sum: R(Number(v.sum)) }), ending: (v) => t("fin.ins.ending", v),
+    cancels: (v) => t("fin.ins.cancels", v), moves: (v) => t("fin.ins.moves", v), cancelsG: (v) => t("fin.ins.cancelsG", v), movesG: (v) => t("fin.ins.movesG", v), debt: (v) => t("fin.ins.debt", { name: v.name, sum: R(Number(v.sum)) }), ending: (v) => t("fin.ins.ending", v),
   };
   return (
     <div className="page">

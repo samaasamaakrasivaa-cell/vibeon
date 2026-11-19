@@ -125,6 +125,21 @@ export async function saveLessonNote(id: string, note: string): Promise<Result> 
   return { ok: true };
 }
 
+/** «Комментарий после урока» с главной: уходит в заметку к следующему запланированному уроку этого ученика (у группы — группы),
+ *  чтобы на нём было видно, на чём остановились. Заметка следующего урока заменяется этим текстом (учитель видит её заранее). */
+export async function afterLessonNote(id: string, note: string): Promise<Result & { date?: string }> {
+  const { t } = await getT();
+  const teacher = await me();
+  const l = await ownLesson(id, teacher.id);
+  const who = l.groupId ? { groupId: l.groupId } : l.studentId ? { studentId: l.studentId, groupId: null } : null;
+  if (!who) return { ok: false, error: t("today.noNext") };
+  const next = await db.lessonInstance.findFirst({ where: { teacherId: teacher.id, ...who, status: "PLANNED", startsAt: { gt: l.startsAt } }, orderBy: { startsAt: "asc" } });
+  if (!next) return { ok: false, error: t("today.noNext") };
+  await db.lessonInstance.updateMany({ where: { id: { in: (await slotOf(next)).map((x) => x.id) } }, data: { note: note.trim().slice(0, 2000) || null } });
+  refresh(l.studentId);
+  return { ok: true, date: next.startsAt.toISOString() };
+}
+
 /** Цена одного урока (у группового занятия — урока одного ученика); сумма счёта с этим уроком пересчитывается. */
 export async function setLessonPrice(id: string, price: number): Promise<Result> {
   const { t } = await getT();

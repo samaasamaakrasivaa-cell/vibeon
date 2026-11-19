@@ -34,8 +34,29 @@ function PdfBtn({ target }: { target: React.RefObject<HTMLElement | null> }) {
 }
 
 type Ans = { id: string; d: ReviewData; reveal: string[] };
-function Block({ title, step, time, idle, children, answers, ans }: { title: string; step: string; time: string | null; idle: string | null; children: React.ReactNode; answers?: "core" | "vocab" | "reading" | "listening"; ans: Ans }) {
+/** Имя файла латиницей: браузеры не везде сохраняют файлы с кириллицей в названии, созданные на странице. */
+const TR: Record<string, string> = { а: "a", б: "b", в: "v", г: "g", д: "d", е: "e", ё: "e", ж: "zh", з: "z", и: "i", й: "y", к: "k", л: "l", м: "m", н: "n", о: "o", п: "p", р: "r", с: "s", т: "t", у: "u", ф: "f", х: "h", ц: "ts", ч: "ch", ш: "sh", щ: "sch", ъ: "", ы: "y", ь: "", э: "e", ю: "yu", я: "ya" };
+const fileName = (s: string) => s.split("").map((c) => { const l = c.toLowerCase(), r = TR[l]; return r === undefined ? c : c === l ? r : r.charAt(0).toUpperCase() + r.slice(1); }).join("").replace(/[^A-Za-z0-9 _-]+/g, " ").trim().replace(/\s+/g, "_");
+
+/** Разбор блока — в Word: тот же текст (задание, ответ ученика, правильный ответ, пояснение) в простом документе. */
+function toWord(el: HTMLElement | null, name: string) {
+  if (!el) return;
+  const c = el.cloneNode(true) as HTMLElement;
+  c.querySelectorAll("button, audio, .noprint").forEach((x) => x.remove());
+  c.querySelectorAll("details").forEach((x) => x.setAttribute("open", ""));
+  const css = "body{font-family:Calibri,Arial,sans-serif;font-size:11pt} .plans{border-left:3px solid #ccc;padding:4px 8px;margin:6px 0} .plans.ok{border-color:#34C759} .plans.bad{border-color:#FF3B30} s{color:#C0392B} b{color:#111} .muted,.small{color:#666;font-size:9.5pt} .plab{font-weight:bold;margin-top:10px} .plnum{font-weight:bold;margin-right:6px}";
+  const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"><title>${name}</title><style>${css}</style></head><body><h2>${name}</h2>${c.innerHTML}</body></html>`;
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob(["\ufeff", html], { type: "application/msword" }));
+  a.download = `${fileName(name)}.doc`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+
+function Block({ title, step, time, idle, children, answers, ans, who }: { title: string; step: string; time: string | null; idle: string | null; children: React.ReactNode; answers?: "core" | "vocab" | "reading" | "listening"; ans: Ans; who: string }) {
   const { t } = useT();
+  const boxRef = useRef<HTMLDivElement>(null);
+  const name = `Placement test · ${who} · ${title}`;
   return (
     <div className="prblock">
       <div className="prblock-h">
@@ -45,9 +66,14 @@ function Block({ title, step, time, idle, children, answers, ans }: { title: str
       </div>
       {children}
       {answers && (
-        <details className="prdet noprint">
+        <details className="prdet">
           <summary>{t("pr.answers")}</summary>
-          <div className="mt-2"><PlacementAnswers id={ans.id} d={ans.d} teacher reveal={ans.reveal} only={answers} /></div>
+          {/* разбор блока можно скачать — чтобы смотреть вместе с учеником и не на платформе */}
+          <div className="prdl noprint"><span className="small muted">{t("pr.dlTitle")}:</span>
+            <button type="button" className="btn plain sm" onClick={() => printPart(boxRef.current)}><Icon name="dl" size="sm" />{t("pr.dlPdf")}</button>
+            <button type="button" className="btn plain sm" onClick={() => toWord(boxRef.current, name)}><Icon name="dl" size="sm" />{t("pr.dlWord")}</button>
+          </div>
+          <div className="mt-2" ref={boxRef}><div className="printonly"><b>{name}</b></div><PlacementAnswers id={ans.id} d={ans.d} teacher reveal={ans.reveal} only={answers} /></div>
         </details>
       )}
     </div>
@@ -61,13 +87,14 @@ export type InsightsProps = {
   has: (k: string) => boolean; steps: Record<string, number | null>; hint: number | null;
   tm: Record<string, number>; idle: Record<string, number>; dates?: Record<string, string>;
   base?: { sub: string; from: "test" | "teacher" } | null; wsWaiting: { writing: boolean; speaking: boolean };
+  wsRows: Record<"writing" | "speaking", Record<string, [number, number]>>; // баллы учителя за письмо и говорение по уровням заданий
 };
 
 export function ReviewInsights(p: InsightsProps) {
   const { t } = useT();
   const { sm, d } = p;
   const tableRef = useRef<HTMLElement>(null), topicsRef = useRef<HTMLDivElement>(null), vErrRef = useRef<HTMLDivElement>(null);
-  const L = PL_LEVELS.filter((l) => sm.core[l] || sm.reading[l] || sm.listening[l]);
+  const L = PL_LEVELS.filter((l) => sm.core[l] || sm.reading[l] || sm.listening[l] || p.wsRows.writing[l] || p.wsRows.speaking[l]);
   const G = d.core.filter((x) => !x.vocab), V = d.core.filter((x) => x.vocab);
   const lvName = (s: number | null) => (s === null ? "—" : STEPS[s]);
   const time = (k: string) => (p.tm[k] ? fmtSec(p.tm[k]) : null);
@@ -152,6 +179,9 @@ export function ReviewInsights(p: InsightsProps) {
               <tr><th>{t("pl.vocab")}</th>{L.map((l) => <td key={l}>{cell(sm.core[l]?.vocabulary)}</td>)}</tr>
               <tr><th>{t("pl.part.reading")}</th>{L.map((l) => <td key={l}>{cell(sm.reading[l])}</td>)}</tr>
               <tr><th>{t("pl.part.listening")}</th>{L.map((l) => <td key={l}>{cell(sm.listening[l])}</td>)}</tr>
+              {(["writing", "speaking"] as const).filter((k) => d[k] || Object.keys(p.wsRows[k]).length).map((k) => (
+                <tr key={k}><th>{t(`pl.part.${k}`)}<div className="small muted">{t("pr.wsScore")}</div></th>{L.map((l) => <td key={l}>{p.wsRows[k][l] ? <><b>{pct(p.wsRows[k][l])}%</b> <span className="muted">{p.wsRows[k][l][0]}/{p.wsRows[k][l][1]}</span></> : l === d[k]?.level ? <span className="small muted">{t("pr.wsNotYet")}</span> : <span className="muted">—</span>}</td>)}</tr>
+              ))}
             </tbody>
           </table>
         </div>
@@ -174,7 +204,7 @@ export function ReviewInsights(p: InsightsProps) {
         {p.hint !== null && <p className="prsum m-0">{t(p.wsWaiting.writing || p.wsWaiting.speaking ? "pr.sumWait" : "pr.sum", { h: STEPS[p.hint] })}</p>}
 
         {(G.length > 0 || p.base) && (
-          <Block time={time("core")} idle={p.idle.core ? fmtSec(p.idle.core) : null} ans={ans} title={t("pl.part.core")} step={lvName(p.has("core") ? p.steps.core ?? null : null)} answers={G.length ? "core" : undefined}>
+          <Block time={time("core")} idle={p.idle.core ? fmtSec(p.idle.core) : null} ans={ans} who={p.who} title={t("pl.part.core")} step={lvName(p.has("core") ? p.steps.core ?? null : null)} answers={G.length ? "core" : undefined}>
             <h4 className="prh">{t("pr.path")}</h4>
             <Lines list={gram} />
             {(formsLine || sm.repeats.length > 0 || gDk.length > 0) && <h4 className="prh">{t("pr.analysis")}</h4>}
@@ -220,7 +250,7 @@ export function ReviewInsights(p: InsightsProps) {
         )}
 
         {V.length > 0 && (
-          <Block time={time("vocab")} idle={p.idle.vocab ? fmtSec(p.idle.vocab) : null} ans={ans} title={t("pl.part.vocab")} step={lvName(p.steps.vocab ?? null)} answers="vocab">
+          <Block time={time("vocab")} idle={p.idle.vocab ? fmtSec(p.idle.vocab) : null} ans={ans} who={p.who} title={t("pl.part.vocab")} step={lvName(p.steps.vocab ?? null)} answers="vocab">
             <h4 className="prh">{t("pr.path")}</h4>
             <Lines list={[
               t("pr.vLevels", { list: vLv.map((x) => `${x.level} ${x.r[0]}/${x.r[1]} (${t(x.warm ? "pr.vWarm" : x.level === sm.vlevel ? "pr.vMain" : lvIdx(x.level) > lvIdx(sm.vlevel ?? "A1") ? "pr.vUp" : "pr.vDown")})`).join(" · ") }),
@@ -246,7 +276,7 @@ export function ReviewInsights(p: InsightsProps) {
         )}
 
         {([["reading", read, p.steps.reading], ["listening", listen, p.steps.listening]] as const).map(([k, list, step]) => list.length > 0 && (
-          <Block key={k} time={time(k)} idle={p.idle[k] ? fmtSec(p.idle[k]) : null} ans={ans} title={t(`pl.part.${k}`)} step={lvName(step)} answers={k}>
+          <Block key={k} time={time(k)} idle={p.idle[k] ? fmtSec(p.idle[k]) : null} ans={ans} who={p.who} title={t(`pl.part.${k}`)} step={lvName(step)} answers={k}>
             <Lines list={[
               ...list.map((x) => t(k === "listening" ? "pr.textL" : "pr.text", { title: x.title, l: x.level, r: `${x.r[0]}/${x.r[1]}`, p: pct(x.r), n: x.plays ?? 0 })),
               list.some((x) => x.dk) && t("pr.dkText", { n: list.reduce((a, x) => a + x.dk, 0) }),
@@ -256,7 +286,7 @@ export function ReviewInsights(p: InsightsProps) {
         ))}
 
         {(["writing", "speaking"] as const).map((k) => d[k] && (
-          <Block key={k} time={time(k)} idle={p.idle[k] ? fmtSec(p.idle[k]) : null} ans={ans} title={t(`pl.part.${k}`)} step={lvName(p.steps[k] ?? null)}>
+          <Block key={k} time={time(k)} idle={p.idle[k] ? fmtSec(p.idle[k]) : null} ans={ans} who={p.who} title={t(`pl.part.${k}`)} step={lvName(p.steps[k] ?? null)}>
             <Lines list={[
               t(k === "writing" ? "pr.wTask" : "pr.sTask", { l: d[k]!.level, n: k === "writing" ? (d.writing!.text.trim() ? d.writing!.text.trim().split(/\s+/).length : 0) : d.speaking!.questions.filter((q) => q.url).length, m: k === "writing" ? `${d.writing!.min}–${d.writing!.max}` : d.speaking!.questions.length }),
               p.wsWaiting[k] ? t("pr.wsWait") : t("pr.wsDone", { r: lvName(p.steps[k]) }),

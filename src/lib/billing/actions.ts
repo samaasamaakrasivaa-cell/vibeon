@@ -73,6 +73,18 @@ export async function confirmLessonPaid(lessonId: string, amount?: number): Prom
   return { ok: true };
 }
 
+/** Отменить подтверждение оплаты (нажали по ошибке) — сутки после подтверждения, из плашки внизу экрана. */
+export async function undoPaid(invoiceId: string): Promise<R> {
+  const inv = await teacherInvoice(invoiceId);
+  if (inv.status !== "PAID") return { ok: true };
+  if (inv.proofKind === "teacher" && inv.lessonIds.length === 1) {
+    await db.invoice.delete({ where: { id: inv.id } });
+    await db.lessonInstance.updateMany({ where: { id: inv.lessonIds[0] }, data: { billedAt: null, deductedAt: null } });
+  } else await undoAccept(inv);
+  refresh();
+  return { ok: true };
+}
+
 /** Отменить «Оплачено», отмеченное у урока (по ошибке): запись об оплате удаляется, урок снова не оплачен. */
 export async function undoLessonPaid(lessonId: string): Promise<R> {
   const { t } = await getT();

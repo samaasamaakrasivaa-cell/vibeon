@@ -88,13 +88,33 @@ export async function financeData(teacherId: string, tz: string, range: Range) {
   };
   const oldestProof = check.toCheck.reduce<Date | null>((mn, i) => (!mn || (i.proofAt && i.proofAt < mn) ? i.proofAt : mn), null);
 
-  // «Стоит взглянуть»
-  const avgCancel = total ? cancelled / total : 0, avgMove = total ? moved / total : 0;
+  // «Стоит взглянуть» — по последним 30 дням, а не по выбранному периоду: вывод по одному-двум урокам недели ничего не значит.
+  // Групповое занятие считается один раз и за группу (переносит группа, а не один ученик); вывод — только если переносов
+  // или отмен хотя бы 2, уроков хотя бы 4 и доля заметно выше средней.
+  const since = new Date(now.getTime() - 30 * 864e5);
+  const recent = await db.lessonInstance.findMany({
+    where: { teacherId, studentId: { not: null }, OR: [{ startsAt: { gte: since, lte: now } }, { movedFrom: { gte: since, lte: now } }] },
+    select: { slotId: true, groupId: true, studentId: true, status: true, movedFrom: true, isTrial: true, price: true, student: { select: { name: true, lastName: true, status: true } }, group: { select: { title: true } } },
+  });
+  type Unit = { name: string; total: number; moved: number; cancelled: number };
+  const units = new Map<string, Unit>(); const seenSlot = new Set<string>();
+  for (const l of recent) {
+    if ((l.isTrial && !((l.price ?? 0) > 0)) || l.student?.status !== "ACTIVE") continue;
+    if (l.groupId && l.slotId) { if (seenSlot.has(l.slotId)) continue; seenSlot.add(l.slotId); }
+    const key = l.groupId ? `g:${l.groupId}` : `s:${l.studentId}`;
+    const u = units.get(key) ?? { name: l.groupId ? `«${l.group?.title ?? ""}»` : `${l.student?.name ?? ""} ${l.student?.lastName ?? ""}`.trim(), total: 0, moved: 0, cancelled: 0 };
+    u.total++; if (l.movedFrom) u.moved++; if (l.status === "CANCELLED") u.cancelled++;
+    units.set(key, u);
+  }
+  const all = [...units.entries()];
+  const sumT = all.reduce((a, [, u]) => a + u.total, 0);
+  const avgOf = (k: "moved" | "cancelled") => (sumT ? all.reduce((a, [, u]) => a + u[k], 0) / sumT : 0);
   const insights: { kind: string; vars: Record<string, string | number> }[] = [];
-  const byCancel = perStudent.filter((p) => p.cancelRate > Math.max(0.15, avgCancel * 2)).sort((a, b) => b.cancelRate - a.cancelRate)[0];
-  if (byCancel) insights.push({ kind: "cancels", vars: { name: `${byCancel.s.name} ${byCancel.s.lastName ?? ""}`.trim(), p: Math.round(byCancel.cancelRate * 100), avg: Math.round(avgCancel * 100) } });
-  const byMove = perStudent.filter((p) => p.moveRate > Math.max(0.15, avgMove * 2)).sort((a, b) => b.moveRate - a.moveRate)[0];
-  if (byMove) insights.push({ kind: "moves", vars: { name: `${byMove.s.name} ${byMove.s.lastName ?? ""}`.trim(), p: Math.round(byMove.moveRate * 100), avg: Math.round(avgMove * 100) } });
+  for (const [k, kind] of [["cancelled", "cancels"], ["moved", "moves"]] as const) {
+    const avg = avgOf(k);
+    const top = all.filter(([, u]) => u[k] >= 2 && u.total >= 4 && u[k] / u.total > Math.max(0.2, avg * 2)).sort((a, b) => b[1][k] / b[1].total - a[1][k] / a[1].total)[0];
+    if (top) insights.push({ kind: top[0].startsWith("g:") ? `${kind}G` : kind, vars: { name: top[1].name, n: top[1][k], total: top[1].total, p: Math.round((top[1][k] / top[1].total) * 100), avg: Math.round(avg * 100) } });
+  }
   const debt = [...perStudent].sort((a, b) => b.debt - a.debt)[0];
   if (debt?.debt) insights.push({ kind: "debt", vars: { name: `${debt.s.name} ${debt.s.lastName ?? ""}`.trim(), sum: debt.debt } });
   const ending = perStudent.filter((p) => p.left !== null && p.left <= 1).map((p) => p.s.name);

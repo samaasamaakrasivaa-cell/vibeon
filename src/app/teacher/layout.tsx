@@ -1,4 +1,5 @@
 import { homeworkFor } from "@/lib/homework";
+import { RecentPaidBar } from "@/components/finance/RecentPaidBar";
 import { AppHeader } from "@/components/AppHeader";
 import { ActivityPing } from "@/components/ActivityPing";
 import { Sidebar } from "@/components/Sidebar";
@@ -34,10 +35,13 @@ export default async function TeacherLayout({ children }: { children: React.Reac
     db.message.count({ where: { student: { teacherId: user.id }, senderId: { not: user.id }, readAt: null } }),
     db.question.count({ where: { student: { teacherId: user.id }, askedTeacher: true, answeredAt: null } }),
     hwToReview(user.id),
-    db.invoice.count({ where: { student: { teacherId: user.id }, status: "PROOF_SENT" } }),
+    // «Финансы»: прислали чек — проверить; проведённые за месяц уроки без счёта — подтвердить оплату
+    db.invoice.count({ where: { student: { teacherId: user.id }, status: "PROOF_SENT" } }).then(async (n) => n + (await db.lessonInstance.count({ where: { teacherId: user.id, billedAt: null, deductedAt: null, startsAt: { gte: new Date(Date.now() - 30 * 864e5), lte: new Date() }, studentId: { not: null }, student: { status: "ACTIVE" }, OR: [{ status: "DONE" }, { status: "MISSED", charged: true }], NOT: { isTrial: true, OR: [{ price: null }, { price: { lte: 0 } }] } } }))),
     db.teacherProfile.findUnique({ where: { userId: user.id }, select: { trialUntil: true, paidUntil: true, blockedAt: true, settings: true } }),
     db.supportMessage.count({ where: { userId: user.id, fromAdmin: true, readAt: null } }),
   ]);
+  // оплаты, подтверждённые учителем за последние сутки, — плашка «Отменить» внизу экрана
+  const recentPaid = await db.invoice.findMany({ where: { student: { teacherId: user.id }, status: "PAID", autoAccepted: false, paidAt: { gte: new Date(Date.now() - 864e5) } }, include: { student: { select: { name: true, lastName: true } } }, orderBy: { paidAt: "desc" }, take: 5 });
   // новости платформы, которых учитель ещё не видел
   const seen = (prof?.settings as { newsSeenAt?: string } | null)?.newsSeenAt;
   const news = await db.article.count({ where: { published: true, kind: { in: ["news", "digest"] }, audience: { in: ["teacher", "all"] }, ...(seen ? { updatedAt: { gt: new Date(seen) } } : {}) } });
@@ -70,6 +74,7 @@ export default async function TeacherLayout({ children }: { children: React.Reac
       <AppHeader subtitle={t("ws.teacher")} user={user} homeHref="/teacher" profileHref="/teacher/profile" cabinet="teacher" />
       <div className="shell">
         <Sidebar groups={groups} bottom={bottom} ariaLabel={t("ws.teacher")} />
+        <RecentPaidBar items={recentPaid.map((i) => ({ id: i.id, who: `${i.student.name} ${i.student.lastName ?? ""}`.trim(), amount: `${new Intl.NumberFormat("ru-RU").format(i.amount)} ₽`, title: i.title ?? "" }))} />
         <main className="main">{acc && <TrialBanner state={acc.state} until={acc.until?.toISOString() ?? null} />}{acc?.state === "blocked" ? null : children}</main>
       </div>
     </>

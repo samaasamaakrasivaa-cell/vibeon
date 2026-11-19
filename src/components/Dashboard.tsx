@@ -8,6 +8,8 @@ import { HideSteps } from "./teacher/HideSteps";
 import { TgConnect } from "./TgConnect";
 import { tgEnabled } from "@/lib/notify/telegram";
 import { LessonQuick } from "./teacher/WeekGrid";
+import { AfterNote } from "./teacher/AfterNote";
+import { StudentAvatar } from "./awards/Medal";
 import { nextBirthday } from "@/lib/birthdays";
 import { getT } from "@/lib/i18n/server";
 import { greetingKey, hourIn } from "@/lib/greeting";
@@ -55,9 +57,15 @@ export async function Dashboard({ user, role, day }: { user: User; role: "TEACHE
     select: {
       id: true, movedFrom: true,
       template: { select: { title: true, subtitle: true, unit: { select: { title: true, course: { select: { title: true } } } } } },
-      student: { select: { payType: true, birthday: true, packs: { orderBy: { startsAt: "desc" }, take: 1, select: { lessonsLeft: true, lessonsTotal: true } }, invoices: { where: { status: { in: ["SENT", "PROOF_SENT"] } }, select: { id: true, amount: true, status: true } }, _count: { select: { lessons: { where: { status: "DONE" } } } } } },
+      student: { select: { id: true, avatar: true, payType: true, birthday: true, packs: { orderBy: { startsAt: "desc" }, take: 1, select: { lessonsLeft: true, lessonsTotal: true } }, invoices: { where: { status: { in: ["SENT", "PROOF_SENT"] } }, select: { id: true, amount: true, status: true } }, _count: { select: { lessons: { where: { status: "DONE" } } } } } },
     },
   })).map((x) => [x.id, x]));
+  // прошедшие уроки дня: следующий урок того же ученика (группы) — туда уходит «Комментарий после урока»
+  const nextOf = new Map(role === "TEACHER" ? await Promise.all(todayLessons.filter((l) => l.startsAt.getTime() + l.durationMin * 60000 <= now.getTime()).map(async (l) => {
+    const who = l.groupId ? { groupId: l.groupId } : l.studentId ? { studentId: l.studentId, groupId: null } : null;
+    const n = who ? await db.lessonInstance.findFirst({ where: { teacherId: user.id, ...who, status: "PLANNED", startsAt: { gt: l.startsAt } }, orderBy: { startsAt: "asc" }, select: { startsAt: true, note: true } }) : null;
+    return [l.id, n ? { date: n.startsAt.toLocaleString(loc, { day: "numeric", month: "long", hour: "2-digit", minute: "2-digit", timeZone: tz }), note: n.note } : null] as const;
+  })) : []);
   const selTitle = isToday ? t("dash.today") : ((x) => x.charAt(0).toUpperCase() + x.slice(1))(new Date(dayStart(sel, tz).getTime() + 12 * 3600e3).toLocaleDateString(loc, { weekday: "long", day: "numeric", month: "long", timeZone: tz }));
   const days = Array.from({ length: 7 }, (_, i) => {
     const iso = addDaysIso(todayIso, i);
@@ -169,14 +177,16 @@ export async function Dashboard({ user, role, day }: { user: User; role: "TEACHE
                   </div>
                   <div className="tl-main">
                     <div className="tl-who">
-                      <span className="avatar">{l.group ? <Icon name="group" size="sm" /> : initials(...(who.split(" ") as [string, string]))}</span>
+                      {/* аватарка — как в анкете ученика; у группы — значок группы */}
+                      {st && !l.slotId ? <StudentAvatar id={st.id} avatar={st.avatar} size={44} /> : <span className="avatar lg">{l.group ? <Icon name="group" size="sm" /> : initials(...(who.split(" ") as [string, string]))}</span>}
                       {role === "TEACHER" && l.studentId && !l.slotId ? <Link href={`/teacher/students/${l.studentId}`} className="hover:text-accent">{who}</Link> : <span>{who}</span>}
                       {l.isTrial && <span className="pill violet">{t("sch.trial")}</span>}
                       {first && <span className="pill violet">{t("today.first")}</span>}
                       {bday && <span className="pill orange">🎂 {t("today.bday")}</span>}
                     </div>
                     <div className="tl-what">
-                      {x?.template ? <><b>{x.template.title}</b>{x.template.subtitle ? ` · ${x.template.subtitle}` : ""}<span className="text-text3"> — {x.template.unit.course.title}, {x.template.unit.title}</span></> : <span className="text-text3">{t("today.noMaterial")}</span>}
+                      {/* только тема урока — подробности в классе */}
+                      {x?.template ? <b>{x.template.title}</b> : <span className="text-text3">{t("today.noMaterial")}</span>}
                       {/* сменить или выбрать урок занятия — откроется класс с выбором урока */}
                       {role === "TEACHER" && <Link href={`/class/${l.id}?pick=1`} className="tl-pick">{x?.template ? t("today.changeLesson") : t("today.pickLesson")}</Link>}
                     </div>
@@ -197,7 +207,9 @@ export async function Dashboard({ user, role, day }: { user: User; role: "TEACHE
 
                     <Link href={`/class/${l.id}`} className={`btn sm ${soon || live ? "primary" : "secondary"}`}><Icon name="class" size="sm" />{role === "TEACHER" ? t("dash.openClass") : t("cls.enter")}</Link>
                     <div className="tl-quick">
-                    {role === "TEACHER" && <LessonQuick l={{
+                    {/* урок прошёл — вместо «Перенести / Отменить» комментарий после урока (уйдёт в заметку к следующему) */}
+                    {role === "TEACHER" && end <= now.getTime() && <AfterNote id={l.id} next={nextOf.get(l.id) ?? null} />}
+                    {role === "TEACHER" && end > now.getTime() && <LessonQuick l={{
                       id: l.id, day: 0, startMin: 0, dur: l.durationMin, status: l.status, who, isTrial: l.isTrial, isGroup: !!l.slotId, note: l.note,
                       date: isoDay(l.startsAt, tz), start: hhmm(l.startsAt, tz), end: hhmm(new Date(end), tz), weekly: !!l.seriesId, past: end <= now.getTime(),
                       studentId: l.studentId, charged: l.charged, moved: !!l.movedFrom, price: l.price ?? 0, hw: null,

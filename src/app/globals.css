@@ -2481,3 +2481,14 @@ body.lmoving, body.lmoving * { cursor: grabbing !important; user-select: none; }
 .rounds-row .pill { cursor: pointer; border: 0; }
 .rounds-prev { flex-basis: 100%; margin-top: 6px; opacity: .92; }
 .rounds > .small { display: inline-flex; align-items: center; gap: 4px; }
+/* «Сегодня»: комментарий после урока */
+.afternote { display: flex; flex-direction: column; gap: 6px; width: min(320px, 100%); }
+.tl-nonext { padding: 6px 0; }
+.tl-who .stavatar { flex: none; }
+/* подтверждённые оплаты: сутки можно отменить */
+.paidbar { position: fixed; right: 20px; bottom: 20px; z-index: 60; display: flex; flex-direction: column; gap: 8px; width: min(420px, calc(100vw - 32px)); }
+.paidbar-row { display: flex; align-items: center; gap: 10px; padding: 10px 10px 10px 14px; border-radius: 16px; background: var(--surface); box-shadow: 0 12px 32px rgba(0,0,0,.16), 0 0 0 .5px var(--sep); }
+.paidbar-ok { width: 28px; height: 28px; flex: none; border-radius: 50%; background: var(--ok-bg); color: var(--ok); display: inline-flex; align-items: center; justify-content: center; }
+@media print { .paidbar { display: none; } }
+.prdl { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin-top: 4px; }
+.rpt-note { margin-top: 6px; }

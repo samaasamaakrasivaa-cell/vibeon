@@ -22,7 +22,8 @@ export default async function MyLessons({ searchParams }: { searchParams: Promis
   });
   const hw = new Map((await homeworkFor({ studentId: s.id })).map((h) => [h.lesson.id, h]));
   // назначенный тест — тоже домашняя работа
-  const tests = await db.placementAttempt.findMany({ where: { studentId: s.id, mode: "student", checkpointId: { not: null }, status: { in: ["new", "active", "submitted"] } }, orderBy: { createdAt: "desc" }, take: 3 });
+  // тесты ученика: незаконченные и отправленные, а также все, результат которых учитель открыл, — с разбором ответов
+  const tests = await db.placementAttempt.findMany({ where: { studentId: s.id, mode: "student", checkpointId: { not: null }, OR: [{ status: { in: ["new", "active", "submitted"] } }, { status: "reviewed", showResult: true }] }, orderBy: { createdAt: "desc" }, take: 20 });
   const courses = [...new Map(lessons.map((l) => [l.template!.unit.course.id, l.template!.unit.course])).values()];
   const cid = (await searchParams).c ?? s.courseId ?? courses[0]?.id;
   const inCourse = lessons.filter((l) => l.template!.unit.courseId === cid);
@@ -49,8 +50,9 @@ export default async function MyLessons({ searchParams }: { searchParams: Promis
           {tests.map((x) => (
             <Link key={x.id} href={`/student/test/${x.checkpointId}`} className="row hover:bg-surface2">
               <span className="pill violet"><Icon name="target" size="sm" /></span>
-              <div className="grow"><div className="t">{x.track === "teen" ? "Placement test Teens" : "Placement test"}</div><div className="s">{x.status === "submitted" ? t("stl.testSent") : x.status === "active" ? t("stl.testGoOn") : t("stl.testStart")}</div></div>
-              <span className={`pill ${x.status === "submitted" ? "orange" : "red"}`}>{x.status === "submitted" ? t("stl.hwSent") : t("stl.hwTodo")}</span>
+              <div className="grow"><div className="t">{x.track === "teen" ? "Placement test Teens" : "Placement test"}</div><div className="s">{x.status === "reviewed" ? (x.reviewedAt ?? x.createdAt).toLocaleDateString(loc, { day: "numeric", month: "long", timeZone: tz }) : x.status === "submitted" ? t("stl.testSent") : x.status === "active" ? t("stl.testGoOn") : t("stl.testStart")}</div></div>
+              {x.status === "reviewed" ? <span className="pill green">{x.level ?? "✓"} · {t("stl.testOpen")}</span>
+                : <span className={`pill ${x.status === "submitted" ? "orange" : "red"}`}>{x.status === "submitted" ? t("stl.hwSent") : t("stl.hwTodo")}</span>}
             </Link>
           ))}
         </section>

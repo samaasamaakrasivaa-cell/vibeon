@@ -97,6 +97,17 @@ export function PlacementReview(p: ReviewProps) {
   const waiting = p.status === "new" || p.status === "active";
 
   const sm = p.sm;
+  // письмо и говорение в таблице «Результаты по навыкам»: сумма баллов учителя из максимума на уровне задания
+  // (и дополнительные задания уровнем выше/ниже, и говорение на уроке) — когда оценены все критерии
+  const scoreOf = (list: Rubric[], m: Marks): [number, number] | null => (list.every((c) => typeof m[c.id] === "number") ? [list.reduce((a, c) => a + (m[c.id] ?? 0), 0), list.length * 3] : null);
+  const wsRows: Record<"writing" | "speaking", Record<string, [number, number]>> = { writing: {}, speaking: {} };
+  for (const kind of ["writing", "speaking"] as const) {
+    const list = kind === "writing" ? p.rubrics.writing : p.rubrics.speaking;
+    const add = (lv: string | undefined, m: Marks) => { const r = lv ? scoreOf(list, m) : null; if (r && lv) wsRows[kind][lv] = r; };
+    for (const x of (p.d.prev ?? []).filter((y) => y.kind === kind)) add(x.level, nums(x.marks));
+    add(p.d[kind]?.level, kind === "writing" ? w : s);
+    if (kind === "speaking" && lesson) add(lesson.level, lesson.marks);
+  }
   // активное время = всё время в разделе минус перерывы; перерывы показываем отдельно
   const idle: Record<string, number> = { ...(p.d.idle ?? {}) }, pauses: Record<string, number> = { ...(p.d.pauses ?? {}) };
   // старые прохождения без отметок активности: в грамматике и лексике время каждого ответа известно — по нему и считаем
@@ -225,7 +236,7 @@ export function PlacementReview(p: ReviewProps) {
     <div className="flex flex-col gap-4">
       {waiting && <div className="alert flex flex-wrap items-center gap-2"><Icon name="hourglass" size="sm" /> <span className="grow">{t(p.mode === "self" ? "pl.inProgressSelf" : "pl.inProgress")}</span>{p.mode === "self" && <a className="btn primary sm" href={`/placement/${p.id}`}>{t("pl.continueSelf")}</a>}</div>}
 
-      <ReviewInsights id={p.id} who={p.who ?? ""} sm={sm} d={p.d} reveal={p.reveal ?? []} has={has} hint={hint} tm={tm} idle={idle} dates={p.dates} base={p.base}
+      <ReviewInsights wsRows={wsRows} id={p.id} who={p.who ?? ""} sm={sm} d={p.d} reveal={p.reveal ?? []} has={has} hint={hint} tm={tm} idle={idle} dates={p.dates} base={p.base}
         steps={{ core: has("core") ? sm.coreStep : null, vocab: sm.vstep, reading: sm.readStep, listening: sm.listenStep, writing: wHint, speaking: sHint }}
         wsWaiting={{ writing: !!p.d.writing && wHint === null, speaking: !!p.d.speaking && sHint === null }} />
 

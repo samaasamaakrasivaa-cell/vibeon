@@ -17,7 +17,10 @@ export type RFamily = { id: string; name: string; c: number; n: number };
 export type RInput = {
   name: string; teen: boolean; level: string | null; // итоговый подуровень (A1…C1, с «+») — утверждённый или оценка системы
   skills: Partial<Record<RSkill, string | null>>; families: RFamily[]; vweak: string[]; comment: string;
+  gweak?: string[]; // темы грамматики с ошибками (из карты тем)
+  wsWeak?: { kind: "writing" | "speaking"; id: string; name: string; v: number }[]; // критерии письма и говорения с низким баллом (0–1 из 3)
 };
+const CRIT_EN: Record<string, string> = { task: "task achievement", coherence: "coherence and organisation", vocabulary: "vocabulary", grammar: "grammar", fluency: "fluency and coherence", pronunciation: "pronunciation" };
 export type RCfg = { lang: RLang; on: Partial<Record<RBlock, boolean>>; texts: Record<string, string> }; // texts: «ru:level», «en:plan»…
 export type RSaved = { student?: RCfg; parent?: RCfg; sent?: boolean; sentAt?: string };
 
@@ -85,6 +88,17 @@ const PLAIN: Record<RLang, Record<RSkill, [string, string]>> = { // [сильн�
   },
 };
 
+/** Письмо и говорение: критерии, где балл 0–1 из 3 — тоже в «Над чем поработать». */
+function wsWork(x: RInput, lang: RLang) {
+  const ru = lang === "ru";
+  return (["writing", "speaking"] as const).flatMap((k) => {
+    const low = (x.wsWeak ?? []).filter((c) => c.kind === k);
+    if (!low.length) return [];
+    const head = k === "writing" ? (ru ? "Письмо: " : "Writing: ") : (ru ? "Говорение: " : "Speaking: ");
+    return [head + low.map((c) => `${ru ? c.name.toLowerCase() : CRIT_EN[c.id] ?? c.name} (${c.v}/3)`).join(", ")];
+  });
+}
+
 /** Черновики текстовых блоков для варианта и языка. */
 export function draftTexts(x: RInput, v: RVariant, lang: RLang): Record<string, string> {
   const L = x.level ?? "—", B = base(x.level), ov = step(x.level);
@@ -110,8 +124,10 @@ export function draftTexts(x: RInput, v: RVariant, lang: RLang): Record<string, 
     strong = s1.length ? list(s1) : weakSk.length ? (ru ? "Допишите, что получилось лучше всего." : "Add what went best.") : ru ? `Результаты ровные по всем навыкам — хорошая база для уровня ${L}.` : `Your results are even across all skills — a good base for ${L}.`;
     const w1 = [
       ...weakSk.map((k) => `${R_SKILL_NAME[lang][k]}: ${x.skills[k]}`),
-      ...(famWeak.length ? [(ru ? "Грамматика: " : "Grammar: ") + famWeak.slice(0, 4).map((f) => famName(f, lang)).join(", ")] : []),
+      // грамматика: темы, где были ошибки (из карты тем), иначе — слабые разделы
+      ...((x.gweak?.length ? [(ru ? "Грамматика: " : "Grammar: ") + x.gweak.slice(0, 5).join(", ")] : famWeak.length ? [(ru ? "Грамматика: " : "Grammar: ") + famWeak.slice(0, 4).map((f) => famName(f, lang)).join(", ")] : [])),
       ...(ru && x.vweak.length ? ["Лексика: " + x.vweak.slice(0, 4).join(", ").toLowerCase()] : []),
+      ...wsWork(x, lang),
     ];
     work = w1.length ? list(w1) : ru ? `Явных пробелов тест не выявил — можно двигаться дальше по программе уровня ${L}.` : `The test found no clear gaps — ${enL ? "you can move on with the" : "you can go on with the"} ${L} programme.`;
     const focus = [...weakSk.map((k) => R_SKILL_NAME[lang][k].toLowerCase()), ...famWeak.slice(0, 2).map((f) => famName(f, lang))];
@@ -126,7 +142,7 @@ export function draftTexts(x: RInput, v: RVariant, lang: RLang): Record<string, 
       : `${nm}'s current level is ${L} on the international CEFR scale (from A1, beginner, to C2, proficient). ${can}`;
     const s1 = strongSk.map((k) => PLAIN[lang][k][0]);
     strong = s1.length ? list(s1.map(cap)) : weakSk.length ? (ru ? "Допишите, что получилось лучше всего." : "Add what went best.") : ru ? "Результаты ровные по всем навыкам — хорошая основа для дальнейших занятий." : "The results are even across all skills, which is a good foundation for further study.";
-    const w1 = [...weakSk.map((k) => PLAIN[lang][k][1]), ...(famWeak.length ? [(ru ? "отдельные темы грамматики: " : "some grammar topics: ") + famWeak.slice(0, 3).map((f) => famName(f, lang)).join(", ")] : [])];
+    const w1 = [...weakSk.map((k) => PLAIN[lang][k][1]), ...(x.gweak?.length ? [(ru ? "отдельные темы грамматики: " : "some grammar topics: ") + x.gweak.slice(0, 4).join(", ")] : famWeak.length ? [(ru ? "отдельные темы грамматики: " : "some grammar topics: ") + famWeak.slice(0, 3).map((f) => famName(f, lang)).join(", ")] : []), ...wsWork(x, lang)];
     work = w1.length ? list(w1.map(cap)) : ru ? "Серьёзных пробелов тест не выявил." : "The test did not reveal any serious gaps.";
     plan = ru
       ? `Рекомендуем регулярные занятия 2–3 раза в неделю и немного английского каждый день: сериалы, книги или игры на английском. Ближайшая цель — уровень ${next(x.level)}; при регулярных занятиях переход на следующий уровень обычно занимает от нескольких месяцев до полугода — точный срок зависит от ученика.`
