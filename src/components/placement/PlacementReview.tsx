@@ -34,12 +34,13 @@ const cell = (r?: [number, number]) => (r && r[1] ? <><b>{pct(r)}%</b> <span cla
 const EXAM: Record<string, string> = { A1: "шкала CEFR A1", A2: "A2 Key", B1: "B1 Preliminary", B2: "B2 First", C1: "C1 Advanced" };
 const EXAM_TEEN: Record<string, string> = { A1: "A1 Movers", A2: "A2 Key for Schools", B1: "B1 Preliminary for Schools", B2: "B2 First for Schools", C1: "C1 Advanced" };
 
-/** Комментарий к критерию: свёрнут в ссылку «+ комментарий», раскрывается полем. */
+/** Комментарий к критерию: поле всегда под шкалой 0–3. Заполнил — уйдёт в отчёт; пусто — ничего не выводится. */
 function CritNote({ v, onChange }: { v: string; onChange: (v: string) => void }) {
   const { t } = useT();
-  const [open, setOpen] = useState(!!v);
-  if (!open) return <button type="button" className="btn plain sm self-start critnote-add" onClick={() => setOpen(true)}><Icon name="plus" size="sm" />{t("pl.critNote")}</button>;
-  return <textarea className="textarea critnote" rows={2} value={v} autoFocus={!v} onChange={(e) => onChange(e.target.value)} placeholder={t("pl.critNotePh")} aria-label={t("pl.critNote")} />;
+  const ref = useRef<HTMLTextAreaElement>(null);
+  // высота по тексту: сохранённый комментарий виден целиком
+  useEffect(() => { const el = ref.current; if (el) { el.style.height = "auto"; el.style.height = `${el.scrollHeight}px`; } }, [v]);
+  return <textarea ref={ref} className="textarea critnote" rows={1} value={v} onChange={(e) => onChange(e.target.value)} placeholder={t("pl.critNotePh")} aria-label={t("pl.critNote")} />;
 }
 
 export function PlacementReview(p: ReviewProps) {
@@ -161,7 +162,6 @@ export function PlacementReview(p: ReviewProps) {
               </div>
             </div>
             {A?.why?.[c.id] && <div className="small plai-why"><Icon name="spark" size="sm" /> {A.why[c.id]}</div>}
-            {aiKind && <CritNote v={(aiKind === "writing" ? wc : sc)[c.id] ?? ""} onChange={(v) => (aiKind === "writing" ? setWc : setSc)((x) => ({ ...x, [c.id]: v }))} />}
             {/* шкала видна сразу: что значит каждый балл для этого уровня; строку можно нажать вместо кнопки */}
             <div className="plscale">
               {[3, 2, 1, 0].map((v) => (
@@ -170,6 +170,8 @@ export function PlacementReview(p: ReviewProps) {
                 </button>
               ))}
             </div>
+            {/* комментарий к баллу — поле всегда под шкалой; пусто — в отчёт ничего не идёт */}
+            {aiKind && <CritNote v={(aiKind === "writing" ? wc : sc)[c.id] ?? ""} onChange={(v) => (aiKind === "writing" ? setWc : setSc)((x) => ({ ...x, [c.id]: v }))} />}
           </div>
         ))}
         <details><summary className="small">{t("pl.scHow")}</summary><p className="small mt-2 mb-0">{p.total}</p></details>
