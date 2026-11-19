@@ -10,7 +10,8 @@ import type { Rubric } from "@/lib/placement/bank";
 import { useRun } from "../courses/useRun";
 import { Icon } from "../Icon";
 import { fmtSec } from "./PlacementAnswers";
-import { ReviewInsights } from "./ReviewInsights";
+import { Block, ReviewInsights } from "./ReviewInsights";
+import { levelNote } from "@/lib/placement/level-notes";
 import type { DictKey } from "@/lib/i18n/dict";
 
 type Marks = Record<string, number>;
@@ -44,7 +45,7 @@ function CritNote({ v, onChange }: { v: string; onChange: (v: string) => void })
 }
 
 export function PlacementReview(p: ReviewProps) {
-  const { t } = useT();
+  const { t, lang } = useT();
   const { run, pending, error } = useRun();
   const [w, setW] = useState<Marks>(nums(p.review.writing));
   const [s, setS] = useState<Marks>(nums(p.review.speaking));
@@ -134,6 +135,14 @@ export function PlacementReview(p: ReviewProps) {
     v === 3 ? `${t("pl.sc3")}: ${c.levels[level] ?? ""}` : v === 2 ? t("pl.sc2") : v === 1 ? (level === "A1" ? t("pl.sc1A1") : `${t("pl.sc1", { l: prevLevel(level) })}: ${c.levels[prevLevel(level)] ?? ""}`) : t("pl.sc0");
   const rubric = (title: string, list: Rubric[], m: Marks, set: (x: Marks) => void, h: number | null, level: string, aiKind?: "writing" | "speaking") => {
     const A = aiKind ? ai[aiKind] : undefined;
+    // выбрали балл — в комментарий сразу идёт его расшифровка; учитель дописывает своё. Свой текст не затираем:
+    // заменяем, только если поле пустое или в нём расшифровка прежнего балла
+    const pick = (c: Rubric, v: number) => {
+      set({ ...m, [c.id]: v });
+      if (!aiKind) return;
+      const setN = aiKind === "writing" ? setWc : setSc;
+      setN((x) => { const cur = (x[c.id] ?? "").trim(), old = typeof m[c.id] === "number" ? descr(c, level, m[c.id]) : ""; return !cur || cur === old ? { ...x, [c.id]: descr(c, level, v) } : x; });
+    };
     const done = list.filter((c) => typeof m[c.id] === "number");
     const sum = done.reduce((a, c) => a + m[c.id], 0);
     return (
@@ -158,14 +167,14 @@ export function PlacementReview(p: ReviewProps) {
             <div className="flex flex-wrap items-center gap-2">
               <span className="small font-semibold grow">{c.name_ru}{A && typeof A.scores?.[c.id] === "number" && <span className="pill violet ml-2">{t("pl.aiGave", { n: A.scores[c.id] as number })}</span>}</span>
               <div className="plscore" role="radiogroup" aria-label={`${title}: ${c.name_ru}`}>
-                {[0, 1, 2, 3].map((v) => <button key={v} type="button" role="radio" aria-checked={m[c.id] === v} className={m[c.id] === v ? "on" : ""} title={descr(c, level, v)} onClick={() => set({ ...m, [c.id]: v })}>{v}</button>)}
+                {[0, 1, 2, 3].map((v) => <button key={v} type="button" role="radio" aria-checked={m[c.id] === v} className={m[c.id] === v ? "on" : ""} title={descr(c, level, v)} onClick={() => pick(c, v)}>{v}</button>)}
               </div>
             </div>
             {A?.why?.[c.id] && <div className="small plai-why"><Icon name="spark" size="sm" /> {A.why[c.id]}</div>}
             {/* шкала видна сразу: что значит каждый балл для этого уровня; строку можно нажать вместо кнопки */}
             <div className="plscale">
               {[3, 2, 1, 0].map((v) => (
-                <button key={v} type="button" className={`plscrow ${m[c.id] === v ? "on" : ""}`} onClick={() => set({ ...m, [c.id]: v })}>
+                <button key={v} type="button" className={`plscrow ${m[c.id] === v ? "on" : ""}`} onClick={() => pick(c, v)}>
                   <b>{v}</b><span>{descr(c, level, v)}</span>
                 </button>
               ))}
@@ -199,7 +208,7 @@ export function PlacementReview(p: ReviewProps) {
         {done ? <p className="small muted m-0">{t(waiting ? "pl.extraWaiting" : "pl.extraDone", { d: t(done > 0 ? "pl.extraDirUp" : "pl.extraDirDown") })}</p> : !waiting && (
           <div className="flex flex-wrap gap-2">
             {up && <button type="button" className={`btn sm ${sug === "up" ? "primary" : "secondary"}`} disabled={pending} onClick={() => give(1, up)}><Icon name="right" size="sm" />{t("pl.extraGive", { l: up })}</button>}
-            {down && <button type="button" className={`btn sm ${sug === "down" ? "primary" : "secondary"}`} disabled={pending} onClick={() => give(-1, down)}><Icon name="left" size="sm" />{t("pl.extraGive", { l: down })}</button>}
+            {down && <button type="button" className={`btn sm ${sug === "down" ? "primary" : "secondary"}`} disabled={pending} onClick={() => give(-1, down)}><Icon name="chevl" size="sm" />{t("pl.extraGive", { l: down })}</button>}
             <span className="small muted self-center">{t("pl.extraNote")}</span>
           </div>
         )}
@@ -252,11 +261,11 @@ export function PlacementReview(p: ReviewProps) {
 
       <ReviewInsights wsRows={wsRows} status={p.status} mode={p.mode} id={p.id} who={p.who ?? ""} sm={sm} d={p.d} reveal={p.reveal ?? []} has={has} hint={hint} tm={tm} idle={idle} dates={p.dates} base={p.base}
         steps={{ core: has("core") ? sm.coreStep : null, vocab: sm.vstep, reading: sm.readStep, listening: sm.listenStep, writing: wHint, speaking: sHint }}
-        wsWaiting={{ writing: !!p.d.writing && wHint === null, speaking: !!p.d.speaking && sHint === null }} />
-
+        wsWaiting={{ writing: !!p.d.writing && wHint === null, speaking: !!p.d.speaking && sHint === null }}>
       {p.d.writing && (
-        <section className="card flex flex-col gap-3">
-          <div className="flex flex-wrap items-center gap-2"><h3 className="m-0 grow">{t("pl.part.writing")}</h3><span className="pill grey">{p.d.writing.level}</span></div>
+        <Block title={t("pl.part.writing")} step={wHint !== null ? STEPS[wHint] : p.d.writing.level} time={tm.writing ? fmtSec(tm.writing) : null} idle={idle.writing ? fmtSec(idle.writing) : null} note={!waiting && wHint === null ? t("pr.wsPending") : null}>
+          <div className="flex flex-col gap-3">
+          <p className="small muted m-0">{t("pr.wsTaskLevel", { l: p.d.writing.level })}</p>
           <p className="m-0">{p.d.writing.prompt_en}</p>
           <div className="tpassage plpassage">{p.d.writing.text || <span className="muted">{t("pl.noAnswer")}</span>}</div>
           <div className="small muted">{t("pl.wordsOf", { n: p.d.writing.text.trim() ? p.d.writing.text.trim().split(/\s+/).length : 0, a: p.d.writing.min, b: p.d.writing.max })}</div>
@@ -271,12 +280,14 @@ export function PlacementReview(p: ReviewProps) {
           {noteBox("pl-wnote", wNote, setWNote)}
           {extraBox("writing", p.d.writing.level, w, p.rubrics.writing)}
           {prevBlock("writing")}
-        </section>
+          </div>
+        </Block>
       )}
 
       {p.d.speaking && (
-        <section className="card flex flex-col gap-3">
-          <div className="flex flex-wrap items-center gap-2"><h3 className="m-0 grow">{t("pl.part.speaking")}</h3><span className="pill grey">{p.d.speaking.level}</span></div>
+        <Block title={t("pl.part.speaking")} step={sTask !== null ? STEPS[sTask] : p.d.speaking.level} time={tm.speaking ? fmtSec(tm.speaking) : null} idle={idle.speaking ? fmtSec(idle.speaking) : null} note={!waiting && sTask === null ? t("pr.wsPending") : null}>
+          <div className="flex flex-col gap-3">
+          <p className="small muted m-0">{t("pr.wsTaskLevel", { l: p.d.speaking.level })}</p>
           {p.d.speaking.noMic && <div className="alert">{t("pl.noMicNote")}</div>}
           {p.d.speaking.questions.map((q, i) => (
             <div key={i} className="flex flex-col gap-1">
@@ -290,8 +301,10 @@ export function PlacementReview(p: ReviewProps) {
           {extraBox("speaking", p.d.speaking.level, s, p.rubrics.speaking)}
           {prevBlock("speaking")}
           {lessonBox()}
-        </section>
+          </div>
+        </Block>
       )}
+      </ReviewInsights>
 
       {!waiting && (
         <section className="card flex flex-col gap-3">
@@ -305,10 +318,23 @@ export function PlacementReview(p: ReviewProps) {
             <button className="btn primary" disabled={pending || !lvl} onClick={() => run(() => finalizePlacement(p.id, lvl))}>{p.level ? t("pl.updateFinal") : t("pl.saveFinal")}</button>
             {p.level && <span className="pill green">✓ {p.level}</span>}
           </div>
-          <div className="field"><label htmlFor="pl-c">{t("pl.comment")}</label><textarea id="pl-c" className="textarea" value={comment} onChange={(e) => setComment(e.target.value)} placeholder={t("pl.commentPh")} /></div>
+          <div className="field">
+            <div className="flex flex-wrap items-center gap-2"><label htmlFor="pl-c" className="grow">{t("pl.comment")}</label>
+              {/* шаблон по уровню: что умеет, что подтянуть; темы с ошибками — первыми. Учитель правит под ученика */}
+              {lvl && <button type="button" className="btn plain sm" onClick={() => { if (comment.trim() && !confirm(t("pl.tplReplace"))) return; setComment(levelNote(lvl, sm.groups.filter((g) => g.c < g.n).sort((a, b) => (b.n - b.c) - (a.n - a.c)).map((g) => g.name), lang === "en" ? "en" : "ru")); }}><Icon name="spark" size="sm" />{t("pl.tplIns", { l: lvl })}</button>}
+            </div>
+            <textarea id="pl-c" className="textarea" rows={comment ? Math.min(16, Math.max(4, comment.split("\n").length + Math.ceil(comment.length / 95))) : 3} value={comment} onChange={(e) => setComment(e.target.value)} placeholder={t("pl.commentPh")} />
+          </div>
           {p.mode === "student" && (
             <label className="setting"><span>{t("pl.showToStudent")}<span className="small muted block">{p.level ? t("pl.showHint") : t("pl.showNeedLevel")}</span></span>
               <span className="switch"><input type="checkbox" checked={p.showResult} disabled={pending || !p.level} onChange={(e) => run(() => setShowResult(p.id, e.target.checked))} /><span /></span></label>
+          )}
+          {/* отчёт — когда всё проверено: тот же, что кнопкой вверху страницы */}
+          {(p.status === "submitted" || p.status === "reviewed") && (
+            <div className="flex flex-wrap items-center gap-2">
+              <a href={`/teacher/placement/${p.id}/report`} className="btn primary sm"><Icon name="dl" size="sm" />{t("pl.genReport")}</a>
+              <span className="small muted">{t("pl.genReportHint")}</span>
+            </div>
           )}
           {p.mode === "student" && p.level && (
             <div className="flex flex-wrap items-center gap-2">
