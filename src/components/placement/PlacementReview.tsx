@@ -16,7 +16,7 @@ import type { DictKey } from "@/lib/i18n/dict";
 type Marks = Record<string, number>;
 export type ReviewProps = {
   id: string; mode: string; status: string; level: string | null; showResult: boolean; teen?: boolean; tgSent?: string | null;
-  sm: Summary; d: ReviewData; review: { writing?: Record<string, unknown>; speaking?: Record<string, unknown>; points?: boolean[]; comment?: string; lesson?: { level: string; marks: Record<string, unknown> } | null; ai?: Partial<Record<"writing" | "speaking", PlScore & { level?: string; transcripts?: string[] }>> };
+  sm: Summary; d: ReviewData; review: { writing?: Record<string, unknown>; speaking?: Record<string, unknown>; points?: boolean[]; comment?: string; wNote?: string; sNote?: string; lesson?: { level: string; marks: Record<string, unknown> } | null; ai?: Partial<Record<"writing" | "speaking", PlScore & { level?: string; transcripts?: string[] }>> };
   lessonQs: { level: string; questions: string[] }[]; // говорение на уроке: вопросы уровнем выше и ниже
   rubrics: { writing: Rubric[]; speaking: Rubric[] }; howTo: string; sublevels: string; total: string;
   parts?: string[]; dates?: Record<string, string>; // разделы теста и даты, когда каждый пройден
@@ -69,14 +69,21 @@ export function PlacementReview(p: ReviewProps) {
   };
   const [pts, setPts] = useState<boolean[]>(p.review.points ?? []);
   const [comment, setComment] = useState(p.review.comment ?? "");
+  // почему поставлены такие баллы — ремарка учителя к письму и к говорению
+  const [wNote, setWNote] = useState(p.review.wNote ?? "");
+  const [sNote, setSNote] = useState(p.review.sNote ?? "");
   const [lesson, setLesson] = useState<{ level: string; marks: Marks } | null>(p.review.lesson ? { level: p.review.lesson.level, marks: nums(p.review.lesson.marks) } : null);
   const [lessonMsg, setLessonMsg] = useState<string | null>(null);
   const first = useRef(true);
   useEffect(() => {
     if (first.current) { first.current = false; return; }
-    const h = setTimeout(() => { void saveReview(p.id, { writing: w, speaking: s, points: pts, comment, lesson }); }, 800);
+    const h = setTimeout(() => { void saveReview(p.id, { writing: w, speaking: s, points: pts, comment, lesson, wNote, sNote }); }, 800);
     return () => clearTimeout(h);
-  }, [w, s, pts, comment, lesson, p.id]);
+  }, [w, s, pts, comment, lesson, wNote, sNote, p.id]);
+  const noteBox = (id: string, v: string, set: (x: string) => void) => (
+    <div className="field plnote"><label htmlFor={id}>{t("pl.scoreNote")}</label>
+      <textarea id={id} className="textarea" rows={3} value={v} onChange={(e) => set(e.target.value)} placeholder={t("pl.scoreNotePh")} /></div>
+  );
 
   const wHint = p.d.writing ? scoreStep(p.rubrics.writing.map((c) => w[c.id]), p.d.writing.level as PLevel, w.task) : null;
   const sTask = p.d.speaking ? scoreStep(p.rubrics.speaking.map((c) => s[c.id]), p.d.speaking.level as PLevel) : null;
@@ -236,6 +243,7 @@ export function PlacementReview(p: ReviewProps) {
           )}
           <details><summary className="small">{t("pl.expects")}</summary><ul className="small mt-2">{p.d.writing.expects.map((e) => <li key={e}>{e}</li>)}</ul></details>
           {rubric(t("pl.part.writing"), p.rubrics.writing, w, setW, wHint, p.d.writing.level, "writing")}
+          {noteBox("pl-wnote", wNote, setWNote)}
           {extraBox("writing", p.d.writing.level, w, p.rubrics.writing)}
           {prevBlock("writing")}
         </section>
@@ -253,6 +261,7 @@ export function PlacementReview(p: ReviewProps) {
           ))}
           <details><summary className="small">{t("pl.expects")}</summary><ul className="small mt-2">{p.d.speaking.expects.map((e) => <li key={e}>{e}</li>)}</ul></details>
           {rubric(t("pl.part.speaking"), p.rubrics.speaking, s, setS, sTask, p.d.speaking.level, p.d.speaking.questions.some((q) => q.url) ? "speaking" : undefined)}
+          {noteBox("pl-snote", sNote, setSNote)}
           {extraBox("speaking", p.d.speaking.level, s, p.rubrics.speaking)}
           {prevBlock("speaking")}
           {lessonBox()}

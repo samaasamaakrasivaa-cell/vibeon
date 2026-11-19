@@ -8,7 +8,7 @@ import { Dialog } from "../Dialog";
 import { Icon } from "../Icon";
 import { LangSwitch } from "../LangSwitch";
 import { LogoMark } from "../Logo";
-import { KeyCtx, MarkCtx, markMap, TaskCard, type MarkLayer, type TaskData } from "../tasks/TaskView";
+import { ErrOnlyCtx, KeyCtx, MarkCtx, markMap, TaskCard, type MarkLayer, type TaskData } from "../tasks/TaskView";
 import { isFinal, progressOf, summary, type Step } from "@/lib/tasks/progress";
 import { AnswerProvider, type Answers } from "../tasks/store";
 import { Catalog } from "../builder/Catalog";
@@ -36,6 +36,7 @@ export type ClassData = {
   teacher: { id: string; name: string; lastName: string | null }; student: { id: string; userId: string | null; name: string; lastName: string | null; level: string | null; course: string | null; gender?: string | null } | null;
   title: string | null; crumbs: string | null; course: { title: string; cover: string | null } | null; rubrics: Rubric[]; tasks: CTask[]; teacherInfo?: TInfo;
   answers: Answers; statuses: Record<string, string>; reviews: Record<string, Review>; aiDrafts: Record<string, AiCheck>; live: LiveState;
+  prevHw?: { id: string; date: string; done: number; total: number; errors: number } | null; // домашка прошлого урока (разобрать ошибки)
   board: BObj[][]; homework: { extraTaskIds: string[]; wordTraining: string[]; teacherComment: string | null; taskOrder?: string[]; removedTaskIds?: string[]; manual?: boolean };
   lessonWords: { word: string; tr: string; ex: string }[]; words: Word[]; messages: Msg[];
   note: string | null; studentNote: string | null; callLink: string | null; callOwn?: boolean; when: string; durationMin: number; status: string; goal: string | null;
@@ -186,6 +187,14 @@ export function ClassRoom({ d }: { d: ClassData }) {
     }
     else if (ev === "note") { if (x.who === "teacher") setNotes((n) => ({ ...n, teacher: x.text as string })); }
     else if (ev === "snote") { if (x.by !== d.me.id && (teacher || x.sid === own)) setSnotes((n) => ({ ...n, [x.sid as string]: x.text as string })); }
+    else if (ev === "retry") {
+      // «Решить заново»: ответы задания — с чистого листа, прошлые — в попытках
+      const taskId = x.taskId as string, who = x.sid as string;
+      if (!teacher && who !== own) return;
+      setAnsBy((all) => ({ ...all, [who]: { ...(all[who] ?? {}), [taskId]: x.payload as Record<string, unknown> } }));
+      setRevBy((all) => ({ ...all, [who]: Object.fromEntries(Object.entries(all[who] ?? {}).filter(([tk]) => tk !== taskId)) }));
+      setResetTick((r) => ({ ...r, [taskId]: (r[taskId] ?? 0) + 1 }));
+    }
     else if (ev === "reset") {
       // учитель сбросил ответы задания: одному ученику (sid) или всем
       const taskId = x.taskId as string, who = x.sid as string | null;
@@ -310,6 +319,8 @@ export function ClassRoom({ d }: { d: ClassData }) {
       <span className="bld-acts gap-1.5">
         <button type="button" className="iconbtn" title={t("cls.pointT")} aria-label={t("cls.pointT")} onClick={() => { void send("point", { taskId: task.id, where: inHw ? "homework" : "lesson" }); setFlash(null); requestAnimationFrame(() => setFlash(task.id)); setTimeout(() => setFlash(null), 1800); }}><Icon name="pointer" size="sm" /></button>
         <AskButton task={task} send={send} context={`${d.crumbs ?? ""} · ${cur?.title ?? ""}`} />
+        {/* решить задание заново: свои ответы — с чистого листа (прошлые учитель видит в попытках) */}
+        {STUDENT_KEYS(answers[task.id] as Record<string, unknown> | undefined) && !TYPES[task.type].teacherCheck && <button type="button" className="iconbtn" title={t("cls.retry")} aria-label={t("cls.retry")} onClick={() => { if (confirm(t("cls.retryQ"))) void send("retry", { taskId: task.id }); }}><Icon name="undo" size="sm" /></button>}
       </span>
     );
     const sid = sidFor(task.id);
@@ -323,7 +334,8 @@ export function ClassRoom({ d }: { d: ClassData }) {
       const name = who ? d.group?.members.find((m) => m.sid === who)?.name : null;
       if (!confirm(gTeacher && !who ? t("cls.resetAllQ") : t("cls.resetQ", { name: name ?? d.student?.name ?? "" }))) return;
       setSandbox((sb) => Object.fromEntries(Object.entries(sb).filter(([k]) => k !== task.id)));
-      void rawSend("reset", { taskId: task.id, ...(who ? { studentId: who } : {}) });
+      if (gTeacher && !who) void rawSend("reset", { taskId: task.id });
+      else void rawSend("retry", { taskId: task.id, ...(who ? { studentId: who } : {}) });
     };
     return (
       <span className="bld-acts">
@@ -354,12 +366,17 @@ export function ClassRoom({ d }: { d: ClassData }) {
   const isDone = (task: CTask) => gTeacher
     ? d.group!.members.length > 0 && d.group!.members.every((m) => doneBy(task, ansBy[m.sid]?.[task.id] as Record<string, unknown> | undefined))
     : doneBy(task, answers[task.id] as Record<string, unknown> | undefined);
-  const renderTasks = (list: CTask[], inHw = false) => (
+  const STUDENT_KEYS = (a: Record<string, unknown> | undefined) => !!a && Object.keys(a).some((k) => !["gnotes", "corr", "corrSent", "rounds", "hist", "tries"].includes(k));
+  const hasErr = (task: CTask, a: Record<string, unknown> | undefined) => { if (!STUDENT_KEYS(a) || !isFinal(task, a)) return false; const st = progressOf(task, a); return !!st && st.some((x) => x === "bad" || x === "todo"); };
+  const ansOf = (task: CTask) => ((gTeacher ? ansBy[sidFor(task.id) ?? ""] : answers)?.[task.id]) as Record<string, unknown> | undefined;
+  const errTasks = new Set(hwTasks.filter((x) => hasErr(x, ansOf(x))).map((x) => x.id));
+  const renderTasks = (list: CTask[], inHw = false, errOnly = false) => (
     <>
       {teacher && !inHw && <Plus onClick={() => setCatalog({ index: 0 })} />}
       {list.length === 0 && <div className="tk-empty"><Icon name="book" />{inHw ? t("cls.noHw") : t("bld.emptyStudent")}</div>}
       {list.map((task, i) => {
-        const card = <TaskCard key={resetTick[task.id] ?? 0} task={task} index={list.filter((x, j) => j <= i && numbered(x)).length - 1} actions={taskActions(task, inHw)} />;
+        const card0 = <TaskCard key={resetTick[task.id] ?? 0} task={task} index={list.filter((x, j) => j <= i && numbered(x)).length - 1} actions={taskActions(task, inHw)} />;
+        const card = errOnly ? <ErrCard key={`e${resetTick[task.id] ?? 0}`}>{card0}</ErrCard> : card0;
         // групповой урок: выбран ученик — его ответы; учитель может подставить ответ, если у ученика не получается,
         // и ученик сразу видит это у себя. Никто не выбран — учитель пробует задание сам, это никуда не сохраняется
         const sid = sidFor(task.id);
@@ -385,6 +402,8 @@ export function ClassRoom({ d }: { d: ClassData }) {
             </AnswerProvider>
           ) : card}
           {gTeacher && sid && <div className="tk-viewing-note small muted">{t("grp.viewing", { name: m?.name ?? "" })}</div>}
+          {/* ученик решал заново — учителю видно, что было до сброса */}
+          {teacher && <Rounds task={task} a={ansOf(task)} />}
           {inHw && teacher && (!gTeacher || sid) && (TYPES[task.type].teacherCheck || task.type === "transform" || task.type === "translate") && <ReviewBox key={sid ?? "_"} lessonId={m?.instanceId ?? d.id} task={task} review={(revBy[sid ?? own] ?? {})[task.id]} draft={(gTeacher ? d.byStudent?.[sid ?? ""]?.aiDrafts ?? {} : aiDrafts)[task.id]} answered={!!(ansBy[sid ?? own] ?? {})[task.id]} send={gTeacher ? sendFor : send} />}
           {inHw && !teacher && reviews[task.id] && <div className={`alert mt-2 ${reviews[task.id].ok ? "ok" : ""}`}>{reviews[task.id].ok ? "✓ " : ""}{t("cls.teacherSays")}: {reviews[task.id].comment || (reviews[task.id].ok ? t("cls.reviewedOk") : "—")}</div>}
           {inHw && !teacher && reviews[task.id]?.ai && <div className="mt-2"><AiCheckView check={reviews[task.id].ai!} /></div>}
@@ -498,7 +517,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
               )
             )}
             {tab === "homework" && (
-              <Homework teacher={teacher} tasks={hwTasks} prepared={prepared} onAssign={assignHw} removed={teacher && !manual ? (hw.removedTaskIds ?? []).length : 0} onRestore={() => { setHw((h) => ({ ...h, removedTaskIds: [] })); void send("hwRestore", {}); }} statuses={statuses} reviews={reviews} training={hw.wordTraining} comment={hw.teacherComment} render={renderTasks}
+              <Homework teacher={teacher} tasks={hwTasks} errTasks={errTasks} prevHw={d.prevHw ?? null} prepared={prepared} onAssign={assignHw} removed={teacher && !manual ? (hw.removedTaskIds ?? []).length : 0} onRestore={() => { setHw((h) => ({ ...h, removedTaskIds: [] })); void send("hwRestore", {}); }} statuses={statuses} reviews={reviews} training={hw.wordTraining} comment={hw.teacherComment} render={renderTasks}
                 cards={[...d.lessonWords.map((w) => ({ word: w.word, tr: w.tr, ex: w.ex })), ...words.filter((w) => !d.lessonWords.some((l) => l.word.toLowerCase() === w.word.toLowerCase())).map((w) => ({ word: w.word, tr: w.translation ?? "", ex: w.example ?? "" }))].filter((w) => w.tr || w.ex)} />
             )}
             {tab === "words" && <Words key={viewSid} teacher={teacher} lessonWords={d.lessonWords} words={words} training={hw.wordTraining} send={send} setHw={setHw} />}
@@ -701,18 +720,23 @@ function ReviewBox({ lessonId, task, review, draft, answered, send }: { lessonId
   );
 }
 
-function Homework({ teacher, tasks, statuses, reviews, training, comment, render, cards, removed = 0, onRestore, prepared = [], onAssign }: {
+function Homework({ teacher, tasks, statuses, reviews, training, comment, render, cards, removed = 0, onRestore, prepared = [], onAssign, errTasks, prevHw }: {
   removed?: number; onRestore?: () => void; prepared?: (TaskData & { section: string })[]; onAssign?: (ids: string[]) => void;
+  errTasks: Set<string>; prevHw: ClassData["prevHw"] | null;
   teacher: boolean; tasks: (TaskData & { section: string })[]; statuses: Record<string, string>; reviews: Record<string, Review>; training: string[]; comment: string | null;
-  render: (list: never[], inHw?: boolean) => React.ReactNode; cards: { word: string; tr: string; ex: string }[];
+  render: (list: never[], inHw?: boolean, errOnly?: boolean) => React.ReactNode; cards: { word: string; tr: string; ex: string }[];
 }) {
   const { t } = useT();
   const [train, setTrain] = useState(false);
+  // разбор ошибок: только задания с ошибками, а в них — только строки с ошибкой (задание целиком — кнопкой у задания)
+  const [errOnly, setErrOnly] = useState(false);
+  useEffect(() => { if (new URLSearchParams(location.search).get("err") === "1") setErrOnly(true); }, []); // ссылка «Разобрать ошибки» — сразу с фильтром
   const say = (w: string) => { const u = new SpeechSynthesisUtterance(w); u.lang = "en-GB"; u.rate = 0.9; speechSynthesis.cancel(); speechSynthesis.speak(u); };
   const [f, setF] = useState<"all" | "auto" | "needs">("all");
   const auto = tasks.filter((x) => statuses[x.id] === "AUTO_CHECKED");
   const needs = tasks.filter((x) => statuses[x.id] === "NEEDS_REVIEW" && !reviews[x.id]);
-  const list = f === "auto" ? auto : f === "needs" ? needs : tasks;
+  const list0 = f === "auto" ? auto : f === "needs" ? needs : tasks;
+  const list = errOnly ? list0.filter((x) => errTasks.has(x.id)) : list0;
   return (
     <>
       <h1 className="mb-4">{t("nav.homework")}</h1>
@@ -724,6 +748,20 @@ function Homework({ teacher, tasks, statuses, reviews, training, comment, render
         </div>
       )}
       {!teacher && comment && <div className="alert mb-4" style={{ background: "var(--accent-bg)", color: "var(--accent-text)" }}>{comment}</div>}
+      {/* домашка прошлого урока — разобрать ошибки на этом */}
+      {prevHw && (
+        <a className="prevhw mb-4" href={`/class/${prevHw.id}?tab=homework${prevHw.errors ? "&err=1" : ""}`}>
+          <span className="si" style={{ background: "var(--violet)" }}><Icon name="inbox" size="sm" /></span>
+          <span className="grow min-w-0"><b className="block">{t("cls.prevHw", { d: prevHw.date })}</b><span className="small muted">{t("cls.prevHwSub", { n: prevHw.done, total: prevHw.total })}{prevHw.errors ? ` · ${t("cls.prevHwErr", { n: prevHw.errors })}` : ""}</span></span>
+          <span className="btn secondary sm">{prevHw.errors ? t("cls.prevHwGo") : t("prof.open")}</span>
+        </a>
+      )}
+      {(errTasks.size > 0 || errOnly) && (
+        <label className="setting errswitch mb-4">
+          <span><span>{t("cls.errOnly")}</span><br /><span className="small muted">{t("cls.errOnlyHint", { n: errTasks.size })}</span></span>
+          <span className="switch"><input type="checkbox" checked={errOnly} onChange={(e) => setErrOnly(e.target.checked)} /><span /></span>
+        </label>
+      )}
       {/* слова этого урока — одна тренировка, запускается прямо здесь (и у учителя, и у ученика) */}
       {training.length > 0 && f === "all" && (
         <div className="tk mb-4 flex items-center gap-3">
@@ -733,11 +771,49 @@ function Homework({ teacher, tasks, statuses, reviews, training, comment, render
         </div>
       )}
       {train && <WordTrainer cards={cards} say={say} onClose={() => setTrain(false)} />}
-      {render(list as never[], true)}
+      {errOnly && list.length === 0 && <div className="tk-empty"><Icon name="check" />{t("cls.errNone")}</div>}
+      {render(list as never[], true, errOnly)}
       {/* заготовки раздела «Домашка»: видит только учитель; «Задать» — и задание появляется у ученика в конце его списка */}
       {teacher && prepared.length > 0 && f === "all" && <Prepared list={prepared} onAssign={onAssign!} />}
       {removed > 0 && f === "all" && <button type="button" className="btn plain sm mt-3" onClick={onRestore}><Icon name="undo" size="sm" />{t("cls.hwRestore", { n: removed })}</button>}
     </>
+  );
+}
+
+/** Задание в режиме «только ошибки»: верные строки скрыты; кнопка — показать задание целиком. */
+function ErrCard({ children }: { children: React.ReactNode }) {
+  const { t } = useT();
+  const [all, setAll] = useState(false);
+  return (
+    <>
+      <ErrOnlyCtx.Provider value={!all}>{children}</ErrOnlyCtx.Provider>
+      <button type="button" className="btn plain sm errall" onClick={() => setAll((x) => !x)}><Icon name={all ? "eyeoff" : "eye"} size="sm" />{all ? t("cls.errOnlyTask") : t("cls.errShowAll")}</button>
+    </>
+  );
+}
+
+/** Попытки до «Решить заново»: сколько раз, с каким результатом; каждую можно открыть — как было. */
+function Rounds({ task, a }: { task: CTask; a: Record<string, unknown> | undefined }) {
+  const { t, lang } = useT();
+  const [open, setOpen] = useState<number | null>(null);
+  const rounds = (a?.rounds as { at: string; by: string; p: Record<string, unknown> }[] | undefined) ?? [];
+  if (!rounds.length) return null;
+  const score = (p: Record<string, unknown>) => { const st = progressOf(task, p); if (!st?.length) return null; const sm = summary(st); return isFinal(task, p) ? `${sm.ok}/${sm.total}` : t("cls.roundAnswered", { n: st.filter((x) => x !== "todo").length, total: st.length }); };
+  const when = (iso: string) => new Date(iso).toLocaleString(lang === "ru" ? "ru-RU" : "en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+  return (
+    <div className="rounds">
+      <span className="small"><Icon name="undo" size="sm" /> <b>{t("cls.rounds", { n: rounds.length })}</b></span>
+      {rounds.map((r, i) => (
+        <span key={i} className="rounds-row">
+          <button type="button" className={`pill ${open === i ? "blue" : "grey"}`} onClick={() => setOpen(open === i ? null : i)}>{t("cls.roundN", { n: i + 1 })}{score(r.p) ? ` · ${score(r.p)}` : ""} · {when(r.at)}{r.by === "teacher" ? ` · ${t("cls.roundByT")}` : ""}</button>
+        </span>
+      ))}
+      {open !== null && rounds[open] && (
+        <div className="rounds-prev">
+          <AnswerProvider answers={{ [task.id]: rounds[open].p }} onSet={() => {}} role="teacher"><TaskCard task={task} index={-1} /></AnswerProvider>
+        </div>
+      )}
+    </div>
   );
 }
 

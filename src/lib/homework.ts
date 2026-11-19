@@ -31,7 +31,7 @@ export async function homeworkFor(where: { teacherId?: string; studentId?: strin
     // задания, в которых есть что делать; сделано — когда заполнено целиком (комментарии и исправления учителя не в счёт)
     const tasks = (l.template?.tasks ?? []).filter((t) => ids.includes(t.id)).map((t) => ({ t, done: taskDone(t, byTask.get(t.id)?.payload) })).filter((x) => x.done !== null);
     const doneTasks = tasks.filter((x) => x.done);
-    const started = tasks.filter((x) => { const p = byTask.get(x.t.id)?.payload as Record<string, unknown> | undefined; return !!p && Object.keys(p).some((k) => !["gnotes", "corr", "corrSent", "hist", "tries", "checked"].includes(k)); });
+    const started = tasks.filter((x) => { const p = byTask.get(x.t.id)?.payload as Record<string, unknown> | undefined; return !!p && Object.keys(p).some((k) => !["gnotes", "corr", "corrSent", "hist", "tries", "checked", "rounds"].includes(k)); });
     const doneIds = new Set(doneTasks.map((x) => x.t.id));
     const needs = l.answers.filter((a) => doneIds.has(a.taskId) && a.status === "NEEDS_REVIEW" && !a.teacherReview).length;
     const teacherTasks = tasks.filter((x) => TYPES[x.t.type as TaskType]?.teacherCheck);

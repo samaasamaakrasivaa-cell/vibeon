@@ -2472,3 +2472,12 @@ body.lmoving, body.lmoving * { cursor: grabbing !important; user-select: none; }
 /* оплата уроков в анкете */
 .lpays { display: flex; flex-direction: column; gap: 4px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--sep); }
 .lprice .pill { white-space: nowrap; }
+/* разбор домашки: прошлая домашка, «только ошибки», попытки */
+.prevhw { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 16px; background: var(--surface); border: 1px solid var(--sep); color: var(--text); text-decoration: none; }
+.prevhw:hover { border-color: color-mix(in srgb, var(--violet) 40%, var(--sep)); }
+.errswitch { padding: 10px 14px; border-radius: 14px; background: var(--bad-bg); }
+.errall { margin: 6px 0 0 4px; }
+.rounds { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 6px 4px 0; color: var(--text2); }
+.rounds-row .pill { cursor: pointer; border: 0; }
+.rounds-prev { flex-basis: 100%; margin-top: 6px; opacity: .92; }
+.rounds > .small { display: inline-flex; align-items: center; gap: 4px; }

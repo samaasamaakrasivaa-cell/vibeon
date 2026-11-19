@@ -49,6 +49,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       // комментарии учителя к полям (gnotes) — не ответ ученика: статус не меняется
       // комментарии и исправленная версия от учителя (gnotes, corr, corrSent) — не ответ ученика; ученик их не пишет
       if (["gnotes", "corr", "corrSent"].includes(key) && !teacher) return bad("teacher only");
+      if (key === "rounds") return bad("rounds");
       const status = ["gnotes", "corr", "corrSent"].includes(key) ? prev?.status ?? "DRAFT" : key === "checked" && body.value ? (teacherCheck ? "NEEDS_REVIEW" : "AUTO_CHECKED") : prev?.status === "REVIEWED" ? "REVIEWED" : teacherCheck ? "NEEDS_REVIEW" : "SUBMITTED";
       await db.answer.upsert({ where, create: { lessonInstanceId: tg.id, taskId, studentId: sid, payload: json(payload), status }, update: { payload: json(payload), status } });
       publish(ch, "answer", { taskId, key, value: body.value ?? null, by, sid });
@@ -79,6 +80,27 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       await db.answer.deleteMany({ where: { lessonInstanceId: { in: ids }, taskId } });
       publish(ch, "reset", { taskId, sid: who ?? (group ? null : lesson.studentId) });
       return NextResponse.json({ ok: true });
+    }
+    // ── «Решить заново»: ученик (или учитель за него) начинает задание с чистого листа; прошлые ответы не теряются —
+    //    уходят в «попытки» (rounds), учитель видит, что было до сброса. Комментарии и исправления учителя остаются.
+    case "retry": {
+      const sid = tg?.studentId;
+      if (!tg || !sid) return bad("no student");
+      const taskId = str(body.taskId, 60);
+      if (!taskId) return bad();
+      const where = { lessonInstanceId_taskId_studentId: { lessonInstanceId: tg.id, taskId, studentId: sid } };
+      return withLock(`answer:${tg.id}:${taskId}`, async () => {
+        const prev = await db.answer.findUnique({ where });
+        const p = ((prev?.payload as Record<string, unknown>) ?? {});
+        const KEEP = ["rounds", "gnotes", "corr", "corrSent"];
+        const snap = Object.fromEntries(Object.entries(p).filter(([k]) => !KEEP.includes(k)));
+        if (!prev || !Object.keys(snap).length) return NextResponse.json({ ok: true });
+        const rounds = [...((p.rounds as unknown[]) ?? []), { at: new Date().toISOString(), by: teacher ? "teacher" : "student", p: snap }].slice(-10);
+        const payload = { ...Object.fromEntries(Object.entries(p).filter(([k]) => KEEP.includes(k) && k !== "rounds")), rounds };
+        await db.answer.update({ where, data: { payload: json(payload), status: "DRAFT", teacherReview: Prisma.DbNull, shownToStudent: false } });
+        publish(ch, "retry", { taskId, sid, payload, by });
+        return NextResponse.json({ ok: true });
+      });
     }
     // ── состояние урока: рубрика, «показать ученику», скрытые, таймер, доска…
     case "live": {

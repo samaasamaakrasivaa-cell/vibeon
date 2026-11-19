@@ -125,6 +125,8 @@ const Num = ({ i, o }: { i: number; o: TaskOptions }) => (o.nonum ? null : <span
 
 /** Режим «ответы» у учителя (урок, конструктор, редактор): правильный ответ виден заранее. Ученику — никогда. */
 export const KeyCtx = createContext(false);
+/** «Только ошибки» (разбор домашки): в задании видны только строки с ошибкой или без ответа, верные скрыты. */
+export const ErrOnlyCtx = createContext(false);
 function useKey() { const on = useContext(KeyCtx); const role = useTaskRole(); return on && role !== "student"; }
 function Key({ text, pre = "✓", mode = "inline" }: { text: string; pre?: string; mode?: "inline" | "pop" | "block" }) {
   const on = useKey();
@@ -171,6 +173,7 @@ function Gaps({ task, kind }: { task: TaskData; kind: "gap" | "dropdown" }) {
   const ck = useChecker(o, task.id);
   const [val, setVal] = useSlot<Record<string, string>>(task.id, "val", {});
   const [pick, setPick] = useState<string | null>(null);
+  const errOnly = useContext(ErrOnlyCtx);
   const key = useKey(); // учителю правильный ответ всплывает зелёным словом при наведении на пропуск
   if (p.kind !== "gaps") return null;
   const groups = series(p.lines.map((l, i) => ({ l, i })), o.split ? (o.seriesSize ?? 5) : undefined);
@@ -203,7 +206,7 @@ function Gaps({ task, kind }: { task: TaskData; kind: "gap" | "dropdown" }) {
               </div>
             )}
             <ol className="tk-lines">
-              {g.map(({ l, i }) => (
+              {g.filter(({ l, i }) => !errOnly || l.some((s, si) => s.t === "gap" && !same(val[`${i}:${si}`] ?? "", s.answers))).map(({ l, i }) => (
                 <li key={i}>
                   <Num i={i} o={o} />
                   <span>
@@ -264,13 +267,17 @@ function Errors({ task }: { task: TaskData }) {
   const [fix, setFix] = useSlot<Record<number, string>>(task.id, "fix", {});
   const keyE = useKey();
   const role = useTaskRole();
+  const errOnly = useContext(ErrOnlyCtx);
   if (p.kind !== "gaps") return null;
   const errors = p.lines.filter((l, i) => { const g = l.find((s) => s.t === "gap") as Extract<Seg, { t: "gap" }> | undefined; return !g || !found[i] || !same(fix[i] ?? "", g.answers); }).length;
   return (
     <div className="flex flex-col gap-3">
       <p className="hint m-0">{t("tk.errorsHint")}</p>
       <ol className="tk-lines">
-        {p.lines.map((l, i) => (
+        {p.lines.map((l, i) => {
+          const g = l.find((s) => s.t === "gap") as Extract<Seg, { t: "gap" }> | undefined;
+          if (errOnly && (!g || (found[i] && same(fix[i] ?? "", g.answers)))) return null;
+          return (
           <li key={i}>
             <Num i={i} o={o} />
             <span>
@@ -298,7 +305,8 @@ function Errors({ task }: { task: TaskData }) {
               })}
             </span>
           </li>
-        ))}
+          );
+        })}
       </ol>
       <CheckBar ck={ck} errors={errors} total={p.lines.length} onReset={() => { setMiss({}); }}
         onCheck={() => p.lines.forEach((l, i) => { const g = l.find((x) => x.t === "gap") as Extract<Seg, { t: "gap" }> | undefined; if (g && found[i] && fix[i]) ck.record(String(i), fix[i], same(fix[i], g.answers)); })} />
@@ -445,12 +453,14 @@ function Test({ task }: { task: TaskData }) {
   const ck = useChecker(o, task.id);
   const [ans, setAns] = useSlot<Record<number, number[]>>(task.id, "ans", {});
   const keyT = useKey();
+  const errOnly = useContext(ErrOnlyCtx);
   if (p.kind !== "test") return null;
   const ok = (qi: number) => { const a = [...(ans[qi] ?? [])].sort().join(); return a === [...p.qs[qi].correct].sort().join(); };
   const errors = p.qs.filter((_, i) => !ok(i)).length;
   return (
     <div className="flex flex-col gap-4">
       {p.qs.map((q, qi) => {
+        if (errOnly && ok(qi)) return null;
         const multi = q.correct.length > 1 || o.multi;
         return (
           <div key={qi}>
@@ -484,12 +494,13 @@ function TF({ task }: { task: TaskData }) {
   const ck = useChecker(o, task.id);
   const [ans, setAns] = useSlot<Record<number, string>>(task.id, "ans", {});
   const keyF = useKey();
+  const errOnly = useContext(ErrOnlyCtx);
   if (p.kind !== "tf") return null;
   const opts: ["T" | "F" | "NS", string][] = [["T", t("tk.true")], ["F", t("tk.false")], ...(p.ns || o.ns ? [["NS", t("tk.ns")] as ["NS", string]] : [])];
   const errors = p.items.filter((it, i) => ans[i] !== it.a).length;
   return (
     <div className="flex flex-col gap-3">
-      {p.items.map((it, i) => (
+      {p.items.map((it, i) => errOnly && ans[i] === it.a ? null : (
         <div key={i} className="tk-tf">
           <span className="grow"><Num i={i} o={o} /> <Inl text={it.s} /></span>
           <div className="seg xs">
@@ -709,11 +720,13 @@ function Arrow({ task }: { task: TaskData }) {
   const p = useMemo(() => parse(task.type, task.content), [task.type, task.content]);
   const ck = useChecker(o, task.id);
   const [val, setVal] = useSlot<Record<number, string>>(task.id, "val", {});
+  const errOnly = useContext(ErrOnlyCtx);
   if (p.kind !== "pairsArrow") return null;
   const errors = p.items.filter((it, i) => it.answers.length && !same(val[i] ?? "", it.answers)).length;
   return (
     <div className="flex flex-col gap-4">
       {p.items.map((it, i) => {
+        if (errOnly && (!it.answers.length || same(val[i] ?? "", it.answers))) return null;
         const m: Mark = ck.checked && val[i] && it.answers.length ? (same(val[i], it.answers) ? "ok" : "bad") : undefined;
         return (
           <div key={i}>

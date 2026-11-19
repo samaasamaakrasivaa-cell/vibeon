@@ -398,7 +398,7 @@ export async function closePlacementLink(code: string): Promise<R> {
   return { ok: true };
 }
 
-export type ReviewInput = { writing: Record<string, number>; speaking: Record<string, number>; points: boolean[]; comment: string; lesson?: { level: string; marks: Record<string, number> } | null };
+export type ReviewInput = { writing: Record<string, number>; speaking: Record<string, number>; points: boolean[]; comment: string; lesson?: { level: string; marks: Record<string, number> } | null; wNote?: string; sNote?: string };
 const cleanScores = (m: Record<string, number> | undefined) => Object.fromEntries(Object.entries(m ?? {}).filter(([k, v]) => /^[a-z]{2,20}$/.test(k) && Number.isInteger(v) && v >= 0 && v <= 3));
 
 /** Баллы 0–3 по критериям письма и говорения, пункты задания письма, комментарий (сохраняются по ходу проверки). */
@@ -408,7 +408,7 @@ export async function saveReview(id: string, r: ReviewInput): Promise<R> {
     const prev = (a.review ?? {}) as Record<string, unknown>;
     const points = Array.isArray(r.points) ? r.points.slice(0, 10).map(Boolean) : [];
     const lesson = r.lesson && PL_LEVELS.includes(r.lesson.level as never) ? { level: r.lesson.level, marks: cleanScores(r.lesson.marks) } : r.lesson === null ? null : prev.lesson;
-    await db.placementAttempt.update({ where: { id }, data: { review: json({ ...prev, writing: cleanScores(r.writing), speaking: cleanScores(r.speaking), points, comment: str(r.comment, 3000), lesson }) } });
+    await db.placementAttempt.update({ where: { id }, data: { review: json({ ...prev, writing: cleanScores(r.writing), speaking: cleanScores(r.speaking), points, comment: str(r.comment, 3000), lesson, wNote: str(r.wNote ?? "", 3000), sNote: str(r.sNote ?? "", 3000) }) } });
     revalidatePath(`/teacher/placement/${id}`);
     return { ok: true };
   });

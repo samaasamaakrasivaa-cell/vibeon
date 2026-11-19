@@ -12,6 +12,9 @@ import { classAccess, type LiveState } from "@/lib/live/access";
 import { loadLesson } from "@/lib/teacher/builder-data";
 import { parse } from "@/lib/tasks/parse";
 import { hhmm } from "@/lib/time";
+import { homeworkFor } from "@/lib/homework";
+import { isFinal, progressOf } from "@/lib/tasks/progress";
+import type { TaskOptions, TaskType } from "@/lib/tasks/catalog";
 
 export const metadata = { title: "Урок" };
 export const dynamic = "force-dynamic";
@@ -51,6 +54,20 @@ export default async function ClassPage({ params, searchParams }: { params: Prom
     role === "teacher" ? db.lessonTemplate.findMany({ where: { unit: { course: { teacherId: teacherUser.id } } }, include: { unit: { include: { course: true } } }, orderBy: [{ unit: { course: { order: "asc" } } }, { unit: { order: "asc" } }, { order: "asc" }] }) : [],
     group && (host.groupId ?? lesson.groupId) ? db.group.findUnique({ where: { id: (host.groupId ?? lesson.groupId)! }, select: { title: true, callLink: true, messages: { orderBy: { createdAt: "desc" }, take: 60 } } }) : null,
   ]);
+  // домашка прошлого урока этого ученика — чтобы на этом уроке разобрать ошибки (индивидуальные уроки)
+  const prevHw = !group && lesson.studentId ? await (async () => {
+    const items = (await homeworkFor({ studentId: lesson.studentId! })).filter((h) => h.lesson.id !== lesson.id && h.lesson.startsAt < lesson.startsAt);
+    const h = items.sort((a, b) => +b.lesson.startsAt - +a.lesson.startsAt)[0];
+    if (!h) return null;
+    const ids = new Set([...h.lesson.homework!.taskIds, ...h.lesson.homework!.extraTaskIds]);
+    const errors = (h.lesson.template?.tasks ?? []).filter((tk) => ids.has(tk.id)).filter((tk) => {
+      const a = h.lesson.answers.find((x) => x.taskId === tk.id)?.payload as Record<string, unknown> | undefined;
+      if (!a || !isFinal({ options: (tk.options ?? {}) as TaskOptions }, a)) return false;
+      const st = progressOf({ ...tk, type: tk.type as TaskType, options: (tk.options ?? {}) as TaskOptions }, a);
+      return !!st && st.some((x) => x === "bad");
+    }).length;
+    return { id: h.lesson.id, date: h.lesson.startsAt.toLocaleDateString(lang === "ru" ? "ru-RU" : "en-GB", { day: "numeric", month: "long", timeZone: user.timezone }), done: h.done, total: h.total, errors };
+  })() : null;
   // чат группового урока: имена всех участников
   const chatNames: Record<string, string> = Object.fromEntries(slot.filter((x) => x.student?.userId).map((x) => [x.student!.userId!, x.student!.name]));
   // ответы, проверки и слова — по ученикам
@@ -94,6 +111,7 @@ export default async function ClassPage({ params, searchParams }: { params: Prom
         rubrics: data?.rubrics ?? [], tasks: (data?.tasks ?? []).filter((x) => role === "teacher" || !x.options?.teacherOnly).map((x) => (role === "teacher" || (!x.options?.teacherKey && !x.options?.help?.hidden) ? x : { ...x, options: { ...x.options, teacherKey: undefined, help: x.options?.help?.hidden ? undefined : x.options?.help } })), /* заметки «только учителю», ответы для учителя и скрытые Useful phrases ученику не отдаём */ answers, statuses, reviews, aiDrafts,
         ...(role === "teacher" && data?.l.teacherInfo ? { teacherInfo: data.l.teacherInfo as TInfo } : {}),
         live: (host.live ?? {}) as LiveState, board,
+        prevHw,
         homework: { extraTaskIds: hw?.extraTaskIds ?? [], wordTraining: hw?.wordTraining ?? [], teacherComment: hw?.teacherComment ?? null, taskOrder: hw?.taskOrder ?? [], removedTaskIds: hw?.removedTaskIds ?? [], manual: hw ? hw.manual : true },
         lessonWords, words: words.map((w) => ({ id: w.id, word: w.word, translation: w.translation, example: w.example, level: w.level })),
         messages: (group ? [...(grp?.messages ?? [])] : messages).reverse().map((m) => ({ id: m.id, text: m.deletedAt ? "" : m.text, by: m.senderId, at: m.createdAt.toISOString(), replyTo: m.replyTo, edited: !!m.editedAt, deleted: !!m.deletedAt })),
