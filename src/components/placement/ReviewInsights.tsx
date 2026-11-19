@@ -9,6 +9,8 @@ import { PL_LEVELS, STEPS, type Summary } from "@/lib/placement/engine";
 import type { ReviewData } from "@/lib/placement/review";
 import { Icon } from "../Icon";
 import { fmtSec, PlacementAnswers } from "./PlacementAnswers";
+import { assignExtraBlock } from "@/lib/placement/actions";
+import { useRun } from "../courses/useRun";
 
 type R = [number, number];
 type Item = ReviewData["core"][number];
@@ -79,6 +81,33 @@ function Block({ title, step, time, idle, children, answers, ans, who }: { title
     </div>
   );
 }
+/** Задание другого уровня в блоке (уточнить уровень): ученику уходит короткий набор этого уровня,
+ *  результат добавится в разбор; итог ученику — после того, как учитель сохранит его заново. */
+function ExtraBlock({ id, kind, step, status, mode, xs }: { id: string; kind: "core" | "vocab" | "reading" | "listening"; step: number | null; status: string; mode: string; xs: { kind: string; level: string; at: number }[] }) {
+  const { t } = useT();
+  const { run, pending, error } = useRun();
+  if (step === null || mode === "self") return null;
+  const li = Math.floor(Math.max(0, Math.min(8, step)) / 2);
+  const up = PL_LEVELS[li + 1], down = li > 0 ? PL_LEVELS[li - 1] : undefined, same = PL_LEVELS[li];
+  const mine = xs.filter((x) => x.kind === kind);
+  const waiting = status === "new" || status === "active";
+  const give = (lv: string) => { if (confirm(t("pr.xConfirm", { b: t(`pl.part.${kind}` as DictKey).toLowerCase(), l: lv }))) run(() => assignExtraBlock(id, kind, lv)); };
+  return (
+    <div className="prextra noprint">
+      {mine.length > 0 && <span className="small muted">{t("pr.xGiven", { list: mine.map((x) => x.level).join(", ") })}{waiting ? ` · ${t("pr.xWait")}` : ""}</span>}
+      {!waiting && (
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="small muted">{t("pr.xGive")}:</span>
+          {up && <button type="button" className="btn secondary sm" disabled={pending} onClick={() => give(up)}><Icon name="right" size="sm" />{t("pr.xUp", { l: up })}</button>}
+          {down && <button type="button" className="btn secondary sm" disabled={pending} onClick={() => give(down)}><Icon name="left" size="sm" />{t("pr.xDown", { l: down })}</button>}
+          <button type="button" className="btn plain sm" disabled={pending} onClick={() => give(same)}>{t("pr.xSame", { l: same })}</button>
+        </div>
+      )}
+      {error && <span className="small text-bad">{error}</span>}
+    </div>
+  );
+}
+
 const Lines = ({ list }: { list: (string | null | false | 0)[] }) => <ul className="prlist">{list.filter(Boolean).map((x, i) => <li key={i}>{x}</li>)}</ul>;
 const Mean = ({ text }: { text: string | null }) => (text ? <p className="prmean"><Icon name="spark" size="sm" /> {text}</p> : null);
 
@@ -88,6 +117,7 @@ export type InsightsProps = {
   tm: Record<string, number>; idle: Record<string, number>; dates?: Record<string, string>;
   base?: { sub: string; from: "test" | "teacher" } | null; wsWaiting: { writing: boolean; speaking: boolean };
   wsRows: Record<"writing" | "speaking", Record<string, [number, number]>>; // баллы учителя за письмо и говорение по уровням заданий
+  status: string; mode: string;
 };
 
 export function ReviewInsights(p: InsightsProps) {
@@ -124,6 +154,7 @@ export function ReviewInsights(p: InsightsProps) {
     const r = cnt(ups);
     gram.push(t(dLevels.includes(lv) ? "pr.upThenDetail" : "pr.upOnly", { l: lv, r: `${r[0]}/${r[1]}`, p: pct(r) }));
   }
+  for (const lv of PL_LEVELS) { const xz = G.filter((x) => x.ph === "z" && x.level === lv); if (xz.length) { const r = cnt(xz); gram.push(t("pr.xLine", { l: lv, r: `${r[0]}/${r[1]}`, p: pct(r) })); } }
   if (sm.fb && sm.diag) gram.push(t("pr.fallback", { l: PL_LEVELS[lvIdx(sm.diag) + 1] ?? "", d: sm.diag }));
   if (!p.has("core") && p.base) gram.push(t(p.base.from === "test" ? "pl.exBaseTest" : "pl.exBaseTeacher", { l: p.base.sub }));
   // узнаёт или употребляет: выбор из вариантов и «вписать самому»
@@ -246,6 +277,7 @@ export function ReviewInsights(p: InsightsProps) {
               </details>
             )}
             {timeDetails(G, gDk.length)}
+            <ExtraBlock id={p.id} kind="core" step={p.has("core") ? p.steps.core ?? null : null} status={p.status} mode={p.mode} xs={d.xs ?? []} />
           </Block>
         )}
 
@@ -256,6 +288,7 @@ export function ReviewInsights(p: InsightsProps) {
               t("pr.vLevels", { list: vLv.map((x) => `${x.level} ${x.r[0]}/${x.r[1]} (${t(x.warm ? "pr.vWarm" : x.level === sm.vlevel ? "pr.vMain" : lvIdx(x.level) > lvIdx(sm.vlevel ?? "A1") ? "pr.vUp" : "pr.vDown")})`).join(" · ") }),
               vTyped[1] && vChoice[1] ? t("pr.forms", { a: `${vChoice[0]}/${vChoice[1]}`, ap: pct(vChoice), b: `${vTyped[0]}/${vTyped[1]}`, bp: pct(vTyped) }) : null,
               V.some((x) => x.dk) && t("pr.dk", { n: V.filter((x) => x.dk).length, w: vErr.length }),
+              ...PL_LEVELS.map((lv) => { const xz = V.filter((x) => x.ph === "vz" && x.level === lv); if (!xz.length) return null; const r = cnt(xz); return t("pr.xLine", { l: lv, r: `${r[0]}/${r[1]}`, p: pct(r) }); }),
             ]} />
             <Mean text={vTyped[1] >= 3 && vChoice[1] >= 3 ? t(pct(vTyped) >= 80 && pct(vChoice) >= 80 ? "pr.vActive" : pct(vChoice) - pct(vTyped) >= 20 ? "pr.vPassive" : "pr.vEven") : null} />
             {vErr.length > 0 ? (
@@ -272,6 +305,7 @@ export function ReviewInsights(p: InsightsProps) {
               </div>
             ) : <p className="prmean ok m-0">✓ {t("pr.vNoErr")}</p>}
             {timeDetails(V, V.filter((x) => x.dk).length)}
+            <ExtraBlock id={p.id} kind="vocab" step={p.steps.vocab ?? null} status={p.status} mode={p.mode} xs={d.xs ?? []} />
           </Block>
         )}
 
@@ -282,6 +316,7 @@ export function ReviewInsights(p: InsightsProps) {
               list.some((x) => x.dk) && t("pr.dkText", { n: list.reduce((a, x) => a + x.dk, 0) }),
             ]} />
             <Mean text={(() => { const top = [...list].sort((a, b) => lvIdx(b.level) - lvIdx(a.level))[0]; return top ? `${top.level}: ${meanOf(top.r)}` : null; })()} />
+            <ExtraBlock id={p.id} kind={k} step={step ?? null} status={p.status} mode={p.mode} xs={d.xs ?? []} />
           </Block>
         ))}
 

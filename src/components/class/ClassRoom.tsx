@@ -36,6 +36,7 @@ export type ClassData = {
   teacher: { id: string; name: string; lastName: string | null }; student: { id: string; userId: string | null; name: string; lastName: string | null; level: string | null; course: string | null; gender?: string | null } | null;
   title: string | null; crumbs: string | null; course: { title: string; cover: string | null } | null; rubrics: Rubric[]; tasks: CTask[]; teacherInfo?: TInfo;
   answers: Answers; statuses: Record<string, string>; reviews: Record<string, Review>; aiDrafts: Record<string, AiCheck>; live: LiveState;
+  times?: Record<string, [number, number]>; // активное время над заданием: [на уроке, вне урока (домашка)], мс
   prevHw?: { id: string; date: string; done: number; total: number; errors: number } | null; // домашка прошлого урока (разобрать ошибки)
   board: BObj[][]; homework: { extraTaskIds: string[]; wordTraining: string[]; teacherComment: string | null; taskOrder?: string[]; removedTaskIds?: string[]; manual?: boolean };
   lessonWords: { word: string; tr: string; ex: string }[]; words: Word[]; messages: Msg[];
@@ -46,7 +47,7 @@ export type ClassData = {
   group?: { title: string; members: { sid: string; instanceId: string; userId: string | null; name: string; gender?: string | null }[] };
   chatNames?: Record<string, string>; // чат группового урока: userId → имя
   cheers?: CatalogItem[]; // «Подарить приятность»: каталог приятностей (с правками владельца) — только учителю
-  byStudent?: Record<string, { answers: Answers; statuses: Record<string, string>; reviews: Record<string, Review>; aiDrafts: Record<string, AiCheck>; words: Word[]; note?: string }>;
+  byStudent?: Record<string, { answers: Answers; statuses: Record<string, string>; reviews: Record<string, Review>; aiDrafts: Record<string, AiCheck>; words: Word[]; note?: string; times?: Record<string, [number, number]> }>;
 };
 
 export function ClassRoom({ d }: { d: ClassData }) {
@@ -242,6 +243,25 @@ export function ClassRoom({ d }: { d: ClassData }) {
     pending.current[k] = setTimeout(() => rawSend("answer", { taskId, key, value, studentId: sid }), key === "val" || key === "text" || key === "cell" || key === "fix" ? 350 : 0);
   }, [rawSend]);
 
+  // активное время ученика над заданиями: задание, в котором он что-то делал (ввод, нажатие, выбор) в последние 30 с;
+  // раз в минуту — на сервер; там делится на «урок по расписанию» и «вне урока» (домашка)
+  useEffect(() => {
+    if (teacher || d.preview) return;
+    const acc: Record<string, number> = {};
+    let task: string | null = null, last = 0;
+    const on = (e: Event) => { const el = (e.target as HTMLElement | null)?.closest?.('[id^="task-"]'); if (el) { task = el.id.slice(5); last = Date.now(); } };
+    const evs = ["input", "keydown", "pointerdown", "change"];
+    evs.forEach((e) => document.addEventListener(e, on, true));
+    const tick = setInterval(() => { if (task && !document.hidden && Date.now() - last < 30_000) acc[task] = (acc[task] ?? 0) + 5000; }, 5000);
+    const flush = () => {
+      const items = { ...acc }; for (const k of Object.keys(acc)) delete acc[k];
+      if (Object.keys(items).length) void fetch(`/api/class/${d.id}/act`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ type: "tick", items }), keepalive: true }).catch(() => {});
+    };
+    const fl = setInterval(flush, 60_000);
+    window.addEventListener("pagehide", flush);
+    return () => { evs.forEach((e) => document.removeEventListener(e, on, true)); clearInterval(tick); clearInterval(fl); window.removeEventListener("pagehide", flush); flush(); };
+  }, [teacher, d.preview, d.id]);
+
   // ответы: сразу в интерфейс, на сервер — с небольшой задержкой (набор текста)
   const setAnswer = useCallback((taskId: string, key: string, value: unknown) => {
     const sid = viewRef.current;
@@ -366,6 +386,8 @@ export function ClassRoom({ d }: { d: ClassData }) {
   const isDone = (task: CTask) => gTeacher
     ? d.group!.members.length > 0 && d.group!.members.every((m) => doneBy(task, ansBy[m.sid]?.[task.id] as Record<string, unknown> | undefined))
     : doneBy(task, answers[task.id] as Record<string, unknown> | undefined);
+  const timesOf = (taskId: string) => (gTeacher ? d.byStudent?.[sidFor(taskId) ?? ""]?.times : d.times)?.[taskId];
+  const hwTime = hwTasks.reduce((a, x) => a + (timesOf(x.id)?.[1] ?? 0), 0);
   const STUDENT_KEYS = (a: Record<string, unknown> | undefined) => !!a && Object.keys(a).some((k) => !["gnotes", "corr", "corrSent", "rounds", "hist", "tries"].includes(k));
   const hasErr = (task: CTask, a: Record<string, unknown> | undefined) => { if (!STUDENT_KEYS(a) || !isFinal(task, a)) return false; const st = progressOf(task, a); return !!st && st.some((x) => x === "bad" || x === "todo"); };
   const ansOf = (task: CTask) => ((gTeacher ? ansBy[sidFor(task.id) ?? ""] : answers)?.[task.id]) as Record<string, unknown> | undefined;
@@ -404,6 +426,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
           {gTeacher && sid && <div className="tk-viewing-note small muted">{t("grp.viewing", { name: m?.name ?? "" })}</div>}
           {/* ученик решал заново — учителю видно, что было до сброса */}
           {teacher && <Rounds task={task} a={ansOf(task)} />}
+          {teacher && ((tm) => tm && (tm[0] + tm[1]) >= 30_000 ? <div className="tasktime small muted"><Icon name="clock" size="sm" />{t("cls.timeTask")}: {tm[1] >= 30_000 ? `${t("cls.timeHw")} ${fmtMin(tm[1])}` : ""}{tm[1] >= 30_000 && tm[0] >= 30_000 ? " · " : ""}{tm[0] >= 30_000 ? `${t("cls.timeLesson")} ${fmtMin(tm[0])}` : ""}</div> : null)(timesOf(task.id))}
           {inHw && teacher && (!gTeacher || sid) && (TYPES[task.type].teacherCheck || task.type === "transform" || task.type === "translate") && <ReviewBox key={sid ?? "_"} lessonId={m?.instanceId ?? d.id} task={task} review={(revBy[sid ?? own] ?? {})[task.id]} draft={(gTeacher ? d.byStudent?.[sid ?? ""]?.aiDrafts ?? {} : aiDrafts)[task.id]} answered={!!(ansBy[sid ?? own] ?? {})[task.id]} send={gTeacher ? sendFor : send} />}
           {inHw && !teacher && reviews[task.id] && <div className={`alert mt-2 ${reviews[task.id].ok ? "ok" : ""}`}>{reviews[task.id].ok ? "✓ " : ""}{t("cls.teacherSays")}: {reviews[task.id].comment || (reviews[task.id].ok ? t("cls.reviewedOk") : "—")}</div>}
           {inHw && !teacher && reviews[task.id]?.ai && <div className="mt-2"><AiCheckView check={reviews[task.id].ai!} /></div>}
@@ -517,7 +540,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
               )
             )}
             {tab === "homework" && (
-              <Homework teacher={teacher} tasks={hwTasks} errTasks={errTasks} prevHw={d.prevHw ?? null} prepared={prepared} onAssign={assignHw} removed={teacher && !manual ? (hw.removedTaskIds ?? []).length : 0} onRestore={() => { setHw((h) => ({ ...h, removedTaskIds: [] })); void send("hwRestore", {}); }} statuses={statuses} reviews={reviews} training={hw.wordTraining} comment={hw.teacherComment} render={renderTasks}
+              <Homework teacher={teacher} hwTime={hwTime} tasks={hwTasks} errTasks={errTasks} prevHw={d.prevHw ?? null} prepared={prepared} onAssign={assignHw} removed={teacher && !manual ? (hw.removedTaskIds ?? []).length : 0} onRestore={() => { setHw((h) => ({ ...h, removedTaskIds: [] })); void send("hwRestore", {}); }} statuses={statuses} reviews={reviews} training={hw.wordTraining} comment={hw.teacherComment} render={renderTasks}
                 cards={[...d.lessonWords.map((w) => ({ word: w.word, tr: w.tr, ex: w.ex })), ...words.filter((w) => !d.lessonWords.some((l) => l.word.toLowerCase() === w.word.toLowerCase())).map((w) => ({ word: w.word, tr: w.translation ?? "", ex: w.example ?? "" }))].filter((w) => w.tr || w.ex)} />
             )}
             {tab === "words" && <Words key={viewSid} teacher={teacher} lessonWords={d.lessonWords} words={words} training={hw.wordTraining} send={send} setHw={setHw} />}
@@ -720,7 +743,8 @@ function ReviewBox({ lessonId, task, review, draft, answered, send }: { lessonId
   );
 }
 
-function Homework({ teacher, tasks, statuses, reviews, training, comment, render, cards, removed = 0, onRestore, prepared = [], onAssign, errTasks, prevHw }: {
+function Homework({ teacher, tasks, statuses, reviews, training, comment, render, cards, removed = 0, onRestore, prepared = [], onAssign, errTasks, prevHw, hwTime = 0 }: {
+  hwTime?: number;
   removed?: number; onRestore?: () => void; prepared?: (TaskData & { section: string })[]; onAssign?: (ids: string[]) => void;
   errTasks: Set<string>; prevHw: ClassData["prevHw"] | null;
   teacher: boolean; tasks: (TaskData & { section: string })[]; statuses: Record<string, string>; reviews: Record<string, Review>; training: string[]; comment: string | null;
@@ -740,6 +764,8 @@ function Homework({ teacher, tasks, statuses, reviews, training, comment, render
   return (
     <>
       <h1 className="mb-4">{t("nav.homework")}</h1>
+      {/* сколько ученик активно делал домашку (вне урока по расписанию) — по заданиям видно под каждым */}
+      {teacher && hwTime >= 60_000 && <p className="small muted mt-0 mb-4 flex items-center gap-1"><Icon name="clock" size="sm" />{t("cls.hwTime", { t: fmtMin(hwTime) })}</p>}
       {teacher && (
         <div className="seg mb-5">
           <button aria-pressed={f === "all"} onClick={() => setF("all")}>{t("cls.all")} · {tasks.length}</button>
@@ -779,6 +805,9 @@ function Homework({ teacher, tasks, statuses, reviews, training, comment, render
     </>
   );
 }
+
+/** Минуты: «4 мин», «1 ч 05 мин». */
+const fmtMin = (ms: number) => { const m = Math.max(1, Math.round(ms / 60000)); return m < 60 ? `${m} мин` : `${Math.floor(m / 60)} ч ${String(m % 60).padStart(2, "0")} мин`; };
 
 /** Задание в режиме «только ошибки»: верные строки скрыты; кнопка — показать задание целиком. */
 function ErrCard({ children }: { children: React.ReactNode }) {

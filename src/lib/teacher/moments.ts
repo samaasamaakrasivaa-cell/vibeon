@@ -11,7 +11,7 @@ export type Moment = {
   kind: "birthday" | "lessons" | "together" | "active" | "streak" | "event";
   day: string; // YYYY-MM-DD — когда
   days: number; // через сколько дней (отрицательное — уже было)
-  n?: number; text?: string; eventId?: string;
+  n?: number; n2?: number; text?: string; eventId?: string; // active: n — вне уроков (домашка, сам), n2 — на уроках, минуты
   give?: { key: string; name?: string };
   given?: boolean; // похожая награда уже выдана в последние 30 дней
 };
@@ -42,12 +42,12 @@ export async function momentsFor(teacherId: string, tz: string, studentId?: stri
   const [lessons, planned, act, practice, awards, events, allAct] = await Promise.all([
     db.lessonInstance.findMany({ where: { studentId: { in: ids }, status: "DONE" }, orderBy: { startsAt: "asc" }, select: { studentId: true, startsAt: true } }),
     db.lessonInstance.findMany({ where: { studentId: { in: ids }, status: "PLANNED", startsAt: { gt: new Date() } }, orderBy: { startsAt: "asc" }, select: { studentId: true, startsAt: true }, take: 500 }),
-    db.activityDay.groupBy({ by: ["userId"], where: { userId: { in: students.map((s) => s.userId).filter(Boolean) as string[] }, day: { gt: weekAgo } }, _sum: { minutes: true } }),
+    db.activityDay.groupBy({ by: ["userId"], where: { userId: { in: students.map((s) => s.userId).filter(Boolean) as string[] }, day: { gt: weekAgo } }, _sum: { minutes: true, lessonMinutes: true } }),
     db.wordPractice.findMany({ where: { studentId: { in: ids }, day: { gte: addDaysIso(today, -10) }, count: { gt: 0 } }, select: { studentId: true, day: true } }),
     db.award.findMany({ where: { studentId: { in: ids }, createdAt: { gt: new Date(Date.now() - 30 * 864e5) } }, select: { studentId: true, key: true, name: true } }),
     db.studentEvent.findMany({ where: { teacherId, studentId: { in: ids }, doneAt: null, day: { gte: addDaysIso(today, -3), lte: addDaysIso(today, 30) } } }),
     // самый активный — среди всех учеников учителя (в анкете тоже сравниваем со всеми)
-    studentId ? db.student.findMany({ where: { teacherId, status: "ACTIVE", userId: { not: null } }, select: { userId: true } }).then((all) => db.activityDay.groupBy({ by: ["userId"], where: { userId: { in: all.map((x) => x.userId!) }, day: { gt: weekAgo } }, _sum: { minutes: true } })) : null,
+    studentId ? db.student.findMany({ where: { teacherId, status: "ACTIVE", userId: { not: null } }, select: { userId: true } }).then((all) => db.activityDay.groupBy({ by: ["userId"], where: { userId: { in: all.map((x) => x.userId!) }, day: { gt: weekAgo } }, _sum: { minutes: true, lessonMinutes: true } })) : null,
   ]);
   const gave = (sid: string, key: string, name?: string) => awards.some((a) => a.studentId === sid && (a.key === key || (!!name && a.name === name)));
   const out: Moment[] = [];
@@ -55,7 +55,8 @@ export async function momentsFor(teacherId: string, tz: string, studentId?: stri
   const base = (s: (typeof students)[number]) => ({ studentId: s.id, name: full(s), avatar: s.avatar });
 
   // активнее всех за неделю (если учеников хотя бы двое и время заметное)
-  const actAll = (allAct ?? act).map((x) => ({ userId: x.userId, m: x._sum.minutes ?? 0 })).sort((a, b) => b.m - a.m);
+  // активнее всех — по времени вне уроков по расписанию (домашка, словарь, самостоятельно): уроки у всех по расписанию и так видны
+  const actAll = (allAct ?? act).map((x) => ({ userId: x.userId, m: Math.max(0, (x._sum.minutes ?? 0) - (x._sum.lessonMinutes ?? 0)), l: x._sum.lessonMinutes ?? 0 })).sort((a, b) => b.m - a.m);
   const top = actAll.length >= 2 && actAll[0].m >= 30 && actAll[0].m > actAll[1].m ? actAll[0] : null;
 
   for (const s of students) {
@@ -63,7 +64,7 @@ export async function momentsFor(teacherId: string, tz: string, studentId?: stri
     if (s.birthday) {
       const b = nextBirthday(s.birthday, addDaysIso(today, -3));
       const d = diff(b.iso, today);
-      if (d <= 30) out.push({ id: `bd-${s.id}`, ...base(s), kind: "birthday", day: b.iso, days: d, n: b.age ?? undefined, give: { key: "birthday" }, given: gave(s.id, "birthday") });
+      if (d <= 30) out.push({ id: `bd-${s.id}-${b.iso}`, ...base(s), kind: "birthday", day: b.iso, days: d, n: b.age ?? undefined, give: { key: "birthday" }, given: gave(s.id, "birthday") });
     }
     // круглое число уроков: уже было (2 недели) или будет по расписанию (2 недели)
     const done = lessons.filter((l) => l.studentId === s.id);
@@ -82,17 +83,19 @@ export async function momentsFor(teacherId: string, tz: string, studentId?: stri
       if (dd >= -7 && dd <= 14) out.push({ id: `tg-${s.id}-${M}`, ...base(s), kind: "together", day: d, days: dd, n: M, give: M === 12 ? { key: "year" } : { key: "together", name: label }, given: gave(s.id, M === 12 ? "year" : "together", label) });
     }
     // самый активный на платформе за неделю
-    if (top && s.userId === top.userId) out.push({ id: `ac-${s.id}`, ...base(s), kind: "active", day: today, days: 0, n: top.m, give: { key: "active_week" }, given: gave(s.id, "active_week") });
+    if (top && s.userId === top.userId) out.push({ id: `ac-${s.id}-${weekAgo}`, ...base(s), kind: "active", day: today, days: 0, n: top.m, n2: top.l, give: { key: "active_week" }, given: gave(s.id, "active_week") });
     // слова: 7+ дней подряд (до сегодня или вчера)
     const days = new Set(practice.filter((p) => p.studentId === s.id).map((p) => p.day));
     let streak = 0, d = days.has(today) ? today : addDaysIso(today, -1);
     while (days.has(d)) { streak++; d = addDaysIso(d, -1); }
-    if (streak >= 7) out.push({ id: `st-${s.id}`, ...base(s), kind: "streak", day: today, days: 0, n: streak, give: { key: "streak" }, given: gave(s.id, "streak") });
+    if (streak >= 7) out.push({ id: `st-${s.id}-${d}`, ...base(s), kind: "streak", day: today, days: 0, n: streak, give: { key: "streak" }, given: gave(s.id, "streak") });
   }
   for (const e of events) {
     const s = students.find((x) => x.id === e.studentId)!;
     out.push({ id: `ev-${e.id}`, ...base(s), kind: "event", day: e.day, days: diff(e.day, today), text: e.text, eventId: e.id });
   }
+  // закрытые учителем и те, за которые уже выдана награда, — не показываем
+  const hidden = new Set(((await db.teacherProfile.findUnique({ where: { userId: teacherId }, select: { settings: true } }))?.settings as { momentsHidden?: string[] } | null)?.momentsHidden ?? []);
   // сегодня → ближайшие → недавно прошедшие
-  return out.sort((a, b) => (a.days < 0 ? 1000 - a.days : a.days) - (b.days < 0 ? 1000 - b.days : b.days));
+  return out.filter((m) => !hidden.has(m.id) && !m.given).sort((a, b) => (a.days < 0 ? 1000 - a.days : a.days) - (b.days < 0 ? 1000 - b.days : b.days));
 }

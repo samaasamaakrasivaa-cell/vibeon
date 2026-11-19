@@ -5,7 +5,7 @@ import { Icon } from "../Icon";
 import { Dialog } from "../Dialog";
 import { upload } from "../courses/CourseView";
 import { useT } from "@/lib/i18n/client";
-import { attachReceipt, cancelInvoice, closeInvoice, confirmLessonPaid, invoiceDetails, markPaid, updateInvoice, rejectProof, resendInvoice, savePayDetails, undoAuto } from "@/lib/billing/actions";
+import { attachReceipt, cancelInvoice, closeInvoice, confirmLessonPaid, undoPaid, invoiceDetails, markPaid, updateInvoice, rejectProof, resendInvoice, savePayDetails, undoAuto } from "@/lib/billing/actions";
 
 type Res = { ok: boolean; error?: string };
 function useAct() {
@@ -130,4 +130,12 @@ export function LessonPaidBtn({ id }: { id: string }) {
       {err && <span className="small text-bad">{err}</span>}
     </>
   );
+}
+
+/** «Отменить оплату» — сутки после подтверждения (если нажали «Оплачено» по ошибке). */
+export function UndoPaidBtn({ id }: { id: string }) {
+  const { t } = useT();
+  const router = useRouter();
+  const [pending, start] = useTransition();
+  return <button type="button" className="btn plain sm text-bad" disabled={pending} title={t("pd.undoHint")} onClick={() => { if (confirm(t("pd.undoQ"))) start(async () => { await undoPaid(id); router.refresh(); }); }}><Icon name="undo" size="sm" />{t("pd.undo")}</button>;
 }

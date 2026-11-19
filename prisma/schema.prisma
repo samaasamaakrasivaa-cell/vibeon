@@ -61,6 +61,7 @@ model ActivityDay {
   day          String // YYYY-MM-DD
   minutes      Int      @default(0)
   classMinutes Int      @default(0) // из них — в классе (урок, домашка)
+  lessonMinutes Int     @default(0) // из них — во время урока по расписанию (остальное — домашка и самостоятельно)
   lastAt       DateTime @default(now())
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -400,6 +401,8 @@ model Answer {
   attempts         Int            @default(0)
   status           AnswerStatus   @default(DRAFT)
   aiDraft          Json?
+  lessonMs         Int            @default(0) // активное время над заданием во время урока по расписанию
+  hwMs             Int            @default(0) // активное время над заданием вне урока (домашка, самостоятельно)
   teacherReview    Json?
   shownToStudent   Boolean        @default(false)
   updatedAt        DateTime       @updatedAt

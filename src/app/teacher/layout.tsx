@@ -1,5 +1,4 @@
 import { homeworkFor } from "@/lib/homework";
-import { RecentPaidBar } from "@/components/finance/RecentPaidBar";
 import { AppHeader } from "@/components/AppHeader";
 import { ActivityPing } from "@/components/ActivityPing";
 import { Sidebar } from "@/components/Sidebar";
@@ -40,8 +39,6 @@ export default async function TeacherLayout({ children }: { children: React.Reac
     db.teacherProfile.findUnique({ where: { userId: user.id }, select: { trialUntil: true, paidUntil: true, blockedAt: true, settings: true } }),
     db.supportMessage.count({ where: { userId: user.id, fromAdmin: true, readAt: null } }),
   ]);
-  // оплаты, подтверждённые учителем за последние сутки, — плашка «Отменить» внизу экрана
-  const recentPaid = await db.invoice.findMany({ where: { student: { teacherId: user.id }, status: "PAID", autoAccepted: false, paidAt: { gte: new Date(Date.now() - 864e5) } }, include: { student: { select: { name: true, lastName: true } } }, orderBy: { paidAt: "desc" }, take: 5 });
   // новости платформы, которых учитель ещё не видел
   const seen = (prof?.settings as { newsSeenAt?: string } | null)?.newsSeenAt;
   const news = await db.article.count({ where: { published: true, kind: { in: ["news", "digest"] }, audience: { in: ["teacher", "all"] }, ...(seen ? { updatedAt: { gt: new Date(seen) } } : {}) } });
@@ -74,7 +71,6 @@ export default async function TeacherLayout({ children }: { children: React.Reac
       <AppHeader subtitle={t("ws.teacher")} user={user} homeHref="/teacher" profileHref="/teacher/profile" cabinet="teacher" />
       <div className="shell">
         <Sidebar groups={groups} bottom={bottom} ariaLabel={t("ws.teacher")} />
-        <RecentPaidBar items={recentPaid.map((i) => ({ id: i.id, who: `${i.student.name} ${i.student.lastName ?? ""}`.trim(), amount: `${new Intl.NumberFormat("ru-RU").format(i.amount)} ₽`, title: i.title ?? "" }))} />
         <main className="main">{acc && <TrialBanner state={acc.state} until={acc.until?.toISOString() ?? null} />}{acc?.state === "blocked" ? null : children}</main>
       </div>
     </>

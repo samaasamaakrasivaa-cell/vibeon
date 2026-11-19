@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useT } from "@/lib/i18n/client";
-import { addStudentEvent, closeStudentEvent } from "@/lib/teacher/moment-actions";
+import { addStudentEvent, closeStudentEvent, hideMoment } from "@/lib/teacher/moment-actions";
 import type { Moment } from "@/lib/teacher/moments";
 import { StudentAvatar } from "../awards/Medal";
 import { Dialog } from "../Dialog";
@@ -21,7 +21,7 @@ export function useMomentText() {
       case "birthday": return { what: m.days === 0 ? t("mo.bdToday") : past ? t("mo.bdPast") : m.n ? t("mo.bdAge", { n: m.n }) : t("mo.bd"), hint: past ? t("mo.bdPastHint") : t("mo.bdHint") };
       case "lessons": return { what: soon ? t("mo.lessonsSoon", { n: m.n ?? 0 }) : t("mo.lessons", { n: m.n ?? 0 }), hint: t("mo.giveHint") };
       case "together": return { what: (soon ? t("mo.soon") + " " : "") + (m.give?.name ?? t("mo.year")).toLowerCase(), hint: t("mo.giveHint") };
-      case "active": return { what: t("mo.active", { t: fmtMin(m.n ?? 0) }), hint: t("mo.giveHint") };
+      case "active": return { what: t("mo.active", { t: fmtMin(m.n ?? 0) }) + (m.n2 ? ` · ${t("mo.activeLesson", { t: fmtMin(m.n2) })}` : ""), hint: t("mo.giveHint") };
       case "streak": return { what: t("mo.streak", { n: m.n ?? 0 }), hint: t("mo.giveHint") };
       default: return { what: m.text ?? "", hint: t("mo.eventHint") };
     }
@@ -74,7 +74,11 @@ export function MomentsCard({ moments, students }: { moments: Moment[]; students
                       <button type="button" className="btn plain sm" onClick={() => close(m.eventId!)}>✓ {t("mo.done")}</button>
                       <button type="button" className="iconbtn" aria-label={t("common.delete")} title={t("common.delete")} onClick={() => confirm(t("mo.delQ")) && close(m.eventId!, true)}><Icon name="close" size="sm" /></button>
                     </>
-                  ) : <GiveLink m={m} />}
+                  ) : <>
+                    <GiveLink m={m} />
+                    {/* неактуально — закрыть; после выдачи награды событие уходит само */}
+                    <button type="button" className="iconbtn" aria-label={t("mo.hide")} title={t("mo.hide")} onClick={async () => { await hideMoment(m.id); router.refresh(); }}><Icon name="close" size="sm" /></button>
+                  </>}
                 </div>
               </li>
             );

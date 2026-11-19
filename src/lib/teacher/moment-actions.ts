@@ -26,3 +26,14 @@ export async function closeStudentEvent(id: string, remove = false): Promise<R> 
   revalidatePath("/teacher");
   return { ok: true };
 }
+
+/** Закрыть событие (учитель считает его неактуальным): из блока пропадает. */
+export async function hideMoment(id: string): Promise<R> {
+  const me = await requireUser("TEACHER");
+  const prof = await db.teacherProfile.findUnique({ where: { userId: me.id }, select: { settings: true } });
+  const st = (prof?.settings ?? {}) as Record<string, unknown>;
+  const list = [...((st.momentsHidden as string[] | undefined) ?? []).filter((x) => x !== id), id.slice(0, 120)].slice(-300);
+  await db.teacherProfile.update({ where: { userId: me.id }, data: { settings: { ...st, momentsHidden: list } } });
+  revalidatePath("/teacher");
+  return { ok: true };
+}

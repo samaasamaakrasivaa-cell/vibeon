@@ -29,7 +29,7 @@ export type Bank = { groups: Group[]; families?: Family[]; core: CoreItem[]; rea
 export const SECTIONS = ["core", "vocab", "reading", "listening", "writing", "speaking"] as const;
 export type Section = (typeof SECTIONS)[number];
 
-export type Ph = "w" | "l" | "d" | "u" | "s" | "x" | "b" | "r" | "f" | "vw" | "vm" | "vu" | "vd" | "vl" | "vc";
+export type Ph = "w" | "l" | "d" | "u" | "s" | "x" | "b" | "r" | "f" | "vw" | "vm" | "vu" | "vd" | "vl" | "vc" | "z" | "vz"; // z / vz — дополнительное задание другого уровня от учителя
 export type Ans = { v: string | number | null; ok: boolean | null; ms?: number; dk?: boolean; h?: boolean; tr?: (string | number)[] }; // dk — «Не знаю», h — открыл подсказку, tr — что выбирал до итогового ответа
 export type PState = {
   track?: "adult" | "teen"; // версия теста: взрослая или Placement test Teens
@@ -72,6 +72,10 @@ export type PState = {
   base?: number; // ступень грамматики, если сама грамматика не проверяется: по прошлому тесту или по выбору учителя
   baseFrom?: "test" | "teacher";
   added?: number; // когда учитель добавил разделы в уже пройденный тест
+  xq?: { kind: "core" | "vocab"; level: PLevel; ids: string[] }; // дополнительное задание учителя: грамматика или лексика другого уровня
+  xt?: { kind: "reading" | "listening"; level: PLevel }; // дополнительный текст другого уровня (после него раздел закрывается)
+  xs?: { kind: Section; level: PLevel; at: number }[]; // история дополнительных заданий (для разбора)
+  xdone?: Section; // какое дополнительное задание только что выполнено — для уведомления учителю
 };
 
 /** expected: ожидаемый уровень от учителя (A1 / B1 / B2) — тогда без разминки, поиск начинается с него. */

@@ -74,8 +74,9 @@ export default async function ClassPage({ params, searchParams }: { params: Prom
   const pack = (sid: string | null) => {
     const rows = allRows.filter((a) => a.studentId === sid);
     return {
-      answers: Object.fromEntries(rows.map((a) => [a.taskId, a.payload as Record<string, unknown>])) as Answers,
+      answers: Object.fromEntries(rows.filter((a) => Object.keys((a.payload as object) ?? {}).length).map((a) => [a.taskId, a.payload as Record<string, unknown>])) as Answers,
       statuses: Object.fromEntries(rows.map((a) => [a.taskId, a.status])) as Record<string, string>,
+      times: Object.fromEntries(rows.filter((a) => a.lessonMs || a.hwMs).map((a) => [a.taskId, [a.lessonMs, a.hwMs]])) as Record<string, [number, number]>,
       reviews: Object.fromEntries(rows.filter((a) => a.teacherReview).map((a) => [a.taskId, a.teacherReview as Review])),
       aiDrafts: role === "teacher" ? Object.fromEntries(rows.filter((a) => a.aiDraft).map((a) => [a.taskId, a.aiDraft as AiCheck])) : {},
       words: allWords.filter((w) => w.studentId === sid).map((w) => ({ id: w.id, word: w.word, translation: w.translation, example: w.example, level: w.level })),
@@ -85,8 +86,10 @@ export default async function ClassPage({ params, searchParams }: { params: Prom
   const members = slot.filter((x) => x.student).map((x) => ({ sid: x.student!.id, instanceId: x.id, userId: x.student!.userId, name: [x.student!.name, x.student!.lastName].filter(Boolean).join(" "), gender: x.student!.gender }));
   const answersRows = allRows.filter((a) => a.studentId === lesson.studentId);
   const words = allWords.filter((w) => w.studentId === lesson.studentId);
-  const answers: Answers = Object.fromEntries(answersRows.map((a) => [a.taskId, a.payload as Record<string, unknown>]));
+  const answers: Answers = Object.fromEntries(answersRows.filter((a) => Object.keys((a.payload as object) ?? {}).length).map((a) => [a.taskId, a.payload as Record<string, unknown>]));
   const statuses = Object.fromEntries(answersRows.map((a) => [a.taskId, a.status]));
+  // активное время ученика над заданиями: на уроке / вне урока (домашка) — учителю
+  const times = role === "teacher" ? Object.fromEntries(answersRows.filter((a) => a.lessonMs || a.hwMs).map((a) => [a.taskId, [a.lessonMs, a.hwMs]])) as Record<string, [number, number]> : {};
   const reviews = Object.fromEntries(answersRows.filter((a) => a.teacherReview).map((a) => [a.taskId, a.teacherReview as Review]));
   // черновики проверки ИИ видит только учитель
   const aiDrafts = role === "teacher" ? Object.fromEntries(answersRows.filter((a) => a.aiDraft).map((a) => [a.taskId, a.aiDraft as AiCheck])) : {};
@@ -108,7 +111,7 @@ export default async function ClassPage({ params, searchParams }: { params: Prom
         title: data?.l.title ?? null,
         crumbs: data ? `${data.l.unit.course.title} · Unit ${data.unitNo} · Lesson ${data.lessonNo}` : null,
         course: data ? { title: data.l.unit.course.title, cover: data.l.cover || data.l.unit.course.cover } : null,
-        rubrics: data?.rubrics ?? [], tasks: (data?.tasks ?? []).filter((x) => role === "teacher" || !x.options?.teacherOnly).map((x) => (role === "teacher" || (!x.options?.teacherKey && !x.options?.help?.hidden) ? x : { ...x, options: { ...x.options, teacherKey: undefined, help: x.options?.help?.hidden ? undefined : x.options?.help } })), /* заметки «только учителю», ответы для учителя и скрытые Useful phrases ученику не отдаём */ answers, statuses, reviews, aiDrafts,
+        rubrics: data?.rubrics ?? [], tasks: (data?.tasks ?? []).filter((x) => role === "teacher" || !x.options?.teacherOnly).map((x) => (role === "teacher" || (!x.options?.teacherKey && !x.options?.help?.hidden) ? x : { ...x, options: { ...x.options, teacherKey: undefined, help: x.options?.help?.hidden ? undefined : x.options?.help } })), /* заметки «только учителю», ответы для учителя и скрытые Useful phrases ученику не отдаём */ answers, statuses, reviews, aiDrafts, times,
         ...(role === "teacher" && data?.l.teacherInfo ? { teacherInfo: data.l.teacherInfo as TInfo } : {}),
         live: (host.live ?? {}) as LiveState, board,
         prevHw,

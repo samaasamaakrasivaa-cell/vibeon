@@ -102,6 +102,13 @@ export function advance(st: PState, bank: Bank): boolean {
   if (st.section !== "core" && st.section !== "vocab") { ensureTasks(st, bank); return false; }
   const last = st.core[st.core.length - 1];
   if (last && !st.answers[last.id]) return false;
+  // дополнительное задание учителя: заранее выбранные задания другого уровня; закончились — тест снова уходит учителю
+  if (st.xq) {
+    const pending = st.xq.ids.find((x) => !st.core.some((c) => c.id === x));
+    if (pending) { const it = st.items[pending] as CoreItem; st.core.push({ id: it.id, step: stepOf(it.level, it.band), ph: st.xq.kind === "vocab" ? "vz" : "z" }); return false; }
+    st.xdone = st.xq.kind; st.xq = undefined; mark(st, st.section); leave(st, st.section);
+    return true;
+  }
   if (st.section === "core") {
     const nx = nextCore(st, bank);
     if (nx) { snap(nx.item); st.core.push({ id: nx.item.id, step: stepOf(nx.item.level, nx.item.band), ph: nx.ph }); return false; }

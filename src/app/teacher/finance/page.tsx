@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Icon } from "@/components/Icon";
-import { CheckActions, InvoiceEdit, LessonPaidBtn, PayDetails, ReceiptButton, ResendLink } from "@/components/finance/FinanceParts";
+import { CheckActions, InvoiceEdit, LessonPaidBtn, UndoPaidBtn, PayDetails, ReceiptButton, ResendLink } from "@/components/finance/FinanceParts";
 import { requireUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { getT } from "@/lib/i18n/server";
@@ -190,6 +190,8 @@ async function RecentPaid({ teacherId, R, loc, tz, t }: { teacherId: string; R: 
           <InvoiceEdit id={i.id} />
           {i.receiptFile && <a className="pill blue" href={i.receiptFile} target="_blank" rel="noreferrer">{t("pay.receipt" as never)}</a>}
           <ReceiptButton id={i.id} has={!!i.receiptFile} />
+          {/* подтвердили по ошибке — сутки можно отменить прямо здесь */}
+          {!i.autoAccepted && i.paidAt && Date.now() - i.paidAt.getTime() < 864e5 && <UndoPaidBtn id={i.id} />}
         </div>
       ))}
     </section>

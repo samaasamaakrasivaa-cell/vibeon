@@ -12,7 +12,7 @@ export async function reportData(a: Attempt, st: PState) {
   const { bank } = await getBank(trackOf(st.track));
   const sm = summarize(st, bank);
   const d = reviewData(a.id, st, true);
-  const rv = (a.review ?? {}) as { writing?: Marks; speaking?: Marks; comment?: string; lesson?: { level: string; marks: Marks } | null; report?: RSaved; wNote?: string; sNote?: string };
+  const rv = (a.review ?? {}) as { writing?: Marks; speaking?: Marks; comment?: string; lesson?: { level: string; marks: Marks } | null; report?: RSaved; wNote?: string; sNote?: string; wc?: Record<string, string>; sc?: Record<string, string> };
   const W = RUBRICS.writing.criteria, S = RUBRICS.speaking.criteria;
   const w = rv.writing ?? {}, s = rv.speaking ?? {};
   const wStep = d.writing ? scoreStep(W.map((c) => w[c.id]), d.writing.level as PLevel, w.task) : null;
@@ -35,8 +35,8 @@ export async function reportData(a: Attempt, st: PState) {
     ],
   };
   // комментарий преподавателя к оценке — рядом с баллами в отчёте
-  const writing = d.writing && { ...d.writing, note: rv.wNote ?? "", marks: W.map((c) => ({ id: c.id, name: c.name_ru, v: typeof w[c.id] === "number" ? w[c.id] : null })) };
-  const speaking = d.speaking && { level: d.speaking.level, note: rv.sNote ?? "", marks: S.map((c) => ({ id: c.id, name: c.name_ru, v: typeof s[c.id] === "number" ? s[c.id] : null })) };
+  const writing = d.writing && { ...d.writing, note: rv.wNote ?? "", marks: W.map((c) => ({ id: c.id, name: c.name_ru, v: typeof w[c.id] === "number" ? w[c.id] : null, note: rv.wc?.[c.id] ?? "" })) };
+  const speaking = d.speaking && { level: d.speaking.level, note: rv.sNote ?? "", marks: S.map((c) => ({ id: c.id, name: c.name_ru, v: typeof s[c.id] === "number" ? s[c.id] : null, note: rv.sc?.[c.id] ?? "" })) };
   return { input, d, writing, speaking, saved: rv.report ?? {}, finalLevel: a.level, date: (a.submittedAt ?? a.startedAt ?? a.createdAt).toISOString() };
 }
 export type ReportDataT = Awaited<ReturnType<typeof reportData>>;

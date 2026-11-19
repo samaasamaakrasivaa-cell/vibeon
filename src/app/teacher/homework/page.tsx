@@ -120,6 +120,7 @@ export default async function ToReview({ searchParams }: { searchParams: Promise
                   <Link href={`/class/${h.lesson.id}?tab=homework`} className={`btn sm ${h.state === "review" ? "primary" : "secondary"}`}>{h.state === "review" ? t("hwT.check") : t("prof.open")}</Link>
                 </div>
                 {h.state === "partial" && <span className="pill blue self-start">{t("hwT.partialN", { n: h.done, total: h.total })}</span>}
+                {h.timeMs >= 60_000 && <span className="small muted self-start">⏱ {t("cls.hwTime", { t: h.timeMs < 3600e3 ? `${Math.round(h.timeMs / 60000)} мин` : `${Math.floor(h.timeMs / 3600e3)} ч ${String(Math.round((h.timeMs % 3600e3) / 60000)).padStart(2, "0")} мин` })}</span>}
                 {h.needs > 0 && <span className="pill orange self-start">{t("hwT.needs", { n: h.needs })}</span>}
               </div>
             ))}

@@ -16,7 +16,7 @@ import type { DictKey } from "@/lib/i18n/dict";
 type Marks = Record<string, number>;
 export type ReviewProps = {
   id: string; mode: string; status: string; level: string | null; showResult: boolean; teen?: boolean; tgSent?: string | null;
-  sm: Summary; d: ReviewData; review: { writing?: Record<string, unknown>; speaking?: Record<string, unknown>; points?: boolean[]; comment?: string; wNote?: string; sNote?: string; lesson?: { level: string; marks: Record<string, unknown> } | null; ai?: Partial<Record<"writing" | "speaking", PlScore & { level?: string; transcripts?: string[] }>> };
+  sm: Summary; d: ReviewData; review: { writing?: Record<string, unknown>; speaking?: Record<string, unknown>; points?: boolean[]; comment?: string; wNote?: string; sNote?: string; wc?: Record<string, string>; sc?: Record<string, string>; lesson?: { level: string; marks: Record<string, unknown> } | null; ai?: Partial<Record<"writing" | "speaking", PlScore & { level?: string; transcripts?: string[] }>> };
   lessonQs: { level: string; questions: string[] }[]; // говорение на уроке: вопросы уровнем выше и ниже
   rubrics: { writing: Rubric[]; speaking: Rubric[] }; howTo: string; sublevels: string; total: string;
   parts?: string[]; dates?: Record<string, string>; // разделы теста и даты, когда каждый пройден
@@ -33,6 +33,14 @@ const cell = (r?: [number, number]) => (r && r[1] ? <><b>{pct(r)}%</b> <span cla
 // На какой экзамен Cambridge опираются критерии уровня задания (для A1 у взрослых экзамена нет — шкала CEFR)
 const EXAM: Record<string, string> = { A1: "шкала CEFR A1", A2: "A2 Key", B1: "B1 Preliminary", B2: "B2 First", C1: "C1 Advanced" };
 const EXAM_TEEN: Record<string, string> = { A1: "A1 Movers", A2: "A2 Key for Schools", B1: "B1 Preliminary for Schools", B2: "B2 First for Schools", C1: "C1 Advanced" };
+
+/** Комментарий к критерию: свёрнут в ссылку «+ комментарий», раскрывается полем. */
+function CritNote({ v, onChange }: { v: string; onChange: (v: string) => void }) {
+  const { t } = useT();
+  const [open, setOpen] = useState(!!v);
+  if (!open) return <button type="button" className="btn plain sm self-start critnote-add" onClick={() => setOpen(true)}><Icon name="plus" size="sm" />{t("pl.critNote")}</button>;
+  return <textarea className="textarea critnote" rows={2} value={v} autoFocus={!v} onChange={(e) => onChange(e.target.value)} placeholder={t("pl.critNotePh")} aria-label={t("pl.critNote")} />;
+}
 
 export function PlacementReview(p: ReviewProps) {
   const { t } = useT();
@@ -72,14 +80,17 @@ export function PlacementReview(p: ReviewProps) {
   // почему поставлены такие баллы — ремарка учителя к письму и к говорению
   const [wNote, setWNote] = useState(p.review.wNote ?? "");
   const [sNote, setSNote] = useState(p.review.sNote ?? "");
+  // комментарий к каждому критерию: почему такой балл (ученик увидит его в отчёте под оценкой)
+  const [wc, setWc] = useState<Record<string, string>>(p.review.wc ?? {});
+  const [sc, setSc] = useState<Record<string, string>>(p.review.sc ?? {});
   const [lesson, setLesson] = useState<{ level: string; marks: Marks } | null>(p.review.lesson ? { level: p.review.lesson.level, marks: nums(p.review.lesson.marks) } : null);
   const [lessonMsg, setLessonMsg] = useState<string | null>(null);
   const first = useRef(true);
   useEffect(() => {
     if (first.current) { first.current = false; return; }
-    const h = setTimeout(() => { void saveReview(p.id, { writing: w, speaking: s, points: pts, comment, lesson, wNote, sNote }); }, 800);
+    const h = setTimeout(() => { void saveReview(p.id, { writing: w, speaking: s, points: pts, comment, lesson, wNote, sNote, wc, sc }); }, 800);
     return () => clearTimeout(h);
-  }, [w, s, pts, comment, lesson, wNote, sNote, p.id]);
+  }, [w, s, pts, comment, lesson, wNote, sNote, wc, sc, p.id]);
   const noteBox = (id: string, v: string, set: (x: string) => void) => (
     <div className="field plnote"><label htmlFor={id}>{t("pl.scoreNote")}</label>
       <textarea id={id} className="textarea" rows={3} value={v} onChange={(e) => set(e.target.value)} placeholder={t("pl.scoreNotePh")} /></div>
@@ -150,6 +161,7 @@ export function PlacementReview(p: ReviewProps) {
               </div>
             </div>
             {A?.why?.[c.id] && <div className="small plai-why"><Icon name="spark" size="sm" /> {A.why[c.id]}</div>}
+            {aiKind && <CritNote v={(aiKind === "writing" ? wc : sc)[c.id] ?? ""} onChange={(v) => (aiKind === "writing" ? setWc : setSc)((x) => ({ ...x, [c.id]: v }))} />}
             {/* шкала видна сразу: что значит каждый балл для этого уровня; строку можно нажать вместо кнопки */}
             <div className="plscale">
               {[3, 2, 1, 0].map((v) => (
@@ -236,7 +248,7 @@ export function PlacementReview(p: ReviewProps) {
     <div className="flex flex-col gap-4">
       {waiting && <div className="alert flex flex-wrap items-center gap-2"><Icon name="hourglass" size="sm" /> <span className="grow">{t(p.mode === "self" ? "pl.inProgressSelf" : "pl.inProgress")}</span>{p.mode === "self" && <a className="btn primary sm" href={`/placement/${p.id}`}>{t("pl.continueSelf")}</a>}</div>}
 
-      <ReviewInsights wsRows={wsRows} id={p.id} who={p.who ?? ""} sm={sm} d={p.d} reveal={p.reveal ?? []} has={has} hint={hint} tm={tm} idle={idle} dates={p.dates} base={p.base}
+      <ReviewInsights wsRows={wsRows} status={p.status} mode={p.mode} id={p.id} who={p.who ?? ""} sm={sm} d={p.d} reveal={p.reveal ?? []} has={has} hint={hint} tm={tm} idle={idle} dates={p.dates} base={p.base}
         steps={{ core: has("core") ? sm.coreStep : null, vocab: sm.vstep, reading: sm.readStep, listening: sm.listenStep, writing: wHint, speaking: sHint }}
         wsWaiting={{ writing: !!p.d.writing && wHint === null, speaking: !!p.d.speaking && sHint === null }} />
 

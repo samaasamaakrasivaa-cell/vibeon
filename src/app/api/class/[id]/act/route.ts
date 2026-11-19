@@ -4,6 +4,7 @@ import { getSessionUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { classAccess, type LiveState } from "@/lib/live/access";
 import { publish, withLock } from "@/lib/live/bus";
+import { inLessonNow } from "@/lib/student/in-lesson";
 import { rateLimit } from "@/lib/rate-limit";
 import { parse } from "@/lib/tasks/parse";
 import type { TaskType } from "@/lib/tasks/catalog";
@@ -79,6 +80,23 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       if (!ids.length) return bad("student");
       await db.answer.deleteMany({ where: { lessonInstanceId: { in: ids }, taskId } });
       publish(ch, "reset", { taskId, sid: who ?? (group ? null : lesson.studentId) });
+      return NextResponse.json({ ok: true });
+    }
+    // ── активное время ученика над заданиями (клиент шлёт раз в минуту): во время урока по расписанию — lessonMs, иначе — hwMs
+    case "tick": {
+      if (teacher || !tg?.studentId) return NextResponse.json({ ok: true });
+      const items = (body.items && typeof body.items === "object" ? body.items : {}) as Record<string, unknown>;
+      const ids = Object.keys(items).slice(0, 30);
+      if (!ids.length) return NextResponse.json({ ok: true });
+      const ok = new Set((await db.task.findMany({ where: { id: { in: ids }, templateId: host.templateId ?? "" }, select: { id: true } })).map((x) => x.id));
+      const lessonNow = await inLessonNow([tg.studentId]);
+      for (const taskId of ids) {
+        const ms = Math.round(Number(items[taskId]));
+        if (!ok.has(taskId) || !(ms > 0)) continue;
+        const add = Math.min(ms, 120_000); // не больше 2 минут за раз
+        const where = { lessonInstanceId_taskId_studentId: { lessonInstanceId: tg.id, taskId, studentId: tg.studentId } };
+        await db.answer.upsert({ where, create: { lessonInstanceId: tg.id, taskId, studentId: tg.studentId, payload: {}, status: "DRAFT", ...(lessonNow ? { lessonMs: add } : { hwMs: add }) }, update: lessonNow ? { lessonMs: { increment: add } } : { hwMs: { increment: add } } });
+      }
       return NextResponse.json({ ok: true });
     }
     // ── «Решить заново»: ученик (или учитель за него) начинает задание с чистого листа; прошлые ответы не теряются —

@@ -42,6 +42,8 @@ export async function homeworkFor(where: { teacherId?: string; studentId?: strin
     const state: HwState = all ? (reviewed >= teacherTasks.length && needs === 0 ? "checked" : "review") : done > 0 || started.length > 0 ? "partial" : "notdone";
     const ans = l.answers.filter((a) => ids.includes(a.taskId));
     const last = ans.reduce<Date | null>((m, a) => (!m || a.updatedAt > m ? a.updatedAt : m), null);
-    return { lesson: l, title: l.template?.title ?? "—", total, done, needs, state, lastAt: last, comment: hw.teacherComment, words: hw.wordTraining.length };
+    // активное время над домашкой — вне урока по расписанию
+    const timeMs = ans.reduce((a2, x) => a2 + x.hwMs, 0);
+    return { lesson: l, title: l.template?.title ?? "—", total, done, needs, state, lastAt: last, comment: hw.teacherComment, words: hw.wordTraining.length, timeMs };
   }).filter((h) => h.total > 0 || h.words > 0); // учитель ничего не задал — домашки нет (а не «не сделано»)
 }

@@ -41,11 +41,11 @@ export function ReportSheet({ r, v, lang, on, texts, answers, wrongOnly }: { r: 
         <section className="rpt-b"><h3>{T.writing} · {r.writing.level}</h3>
           <p className="rpt-q">{r.writing.prompt_en}</p>
           {r.writing.text ? <div className="rpt-t rpt-quote">{r.writing.text}</div> : <p className="rpt-muted">{ru ? "Ответа нет" : "No answer"}</p>}
-          {r.writing.marks.some((m) => m.v !== null) && <table className="rpt-tbl"><tbody>{r.writing.marks.map((m) => <tr key={m.id}><td>{ru ? m.name : CRIT_EN[m.id] ?? m.name}</td><td className="r">{m.v ?? "—"} / 3</td></tr>)}</tbody></table>}
+          {r.writing.marks.some((m) => m.v !== null) && <table className="rpt-tbl"><tbody>{r.writing.marks.map((m) => <tr key={m.id}><td>{ru ? m.name : CRIT_EN[m.id] ?? m.name}{m.note && <div className="rpt-cn">{m.note}</div>}</td><td className="r">{m.v ?? "—"} / 3</td></tr>)}</tbody></table>}
           {r.writing.note && <p className="rpt-t rpt-note"><b>{ru ? "Комментарий преподавателя: " : "Teacher's comment: "}</b>{r.writing.note}</p>}
           {r.speaking && r.speaking.marks.some((m) => m.v !== null) && <>
             <h3 className="mt">{ru ? "Говорение" : "Speaking"} · {r.speaking.level}</h3>
-            <table className="rpt-tbl"><tbody>{r.speaking.marks.map((m) => <tr key={m.id}><td>{ru ? m.name : CRIT_EN[m.id] ?? m.name}</td><td className="r">{m.v ?? "—"} / 3</td></tr>)}</tbody></table>
+            <table className="rpt-tbl"><tbody>{r.speaking.marks.map((m) => <tr key={m.id}><td>{ru ? m.name : CRIT_EN[m.id] ?? m.name}{m.note && <div className="rpt-cn">{m.note}</div>}</td><td className="r">{m.v ?? "—"} / 3</td></tr>)}</tbody></table>
             {r.speaking.note && <p className="rpt-t rpt-note"><b>{ru ? "Комментарий преподавателя: " : "Teacher's comment: "}</b>{r.speaking.note}</p>}
           </>}
         </section>

@@ -1,0 +1,7 @@
+-- AlterTable
+ALTER TABLE "ActivityDay" ADD COLUMN     "lessonMinutes" INTEGER NOT NULL DEFAULT 0;
+
+-- AlterTable
+ALTER TABLE "Answer" ADD COLUMN     "hwMs" INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN     "lessonMs" INTEGER NOT NULL DEFAULT 0;
+

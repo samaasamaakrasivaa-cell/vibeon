@@ -48,6 +48,7 @@ export function reviewData(id: string, st: PState, forTeacher: boolean) {
       };
     }),
     extra: st.wsExtra ?? {},
+    xs: st.xs ?? [], // дополнительные задания другого уровня (грамматика, лексика, чтение, аудирование)
     // время по разделам: всего, из него перерывы (паузы дольше 8 минут между действиями) и их число
     times: Object.fromEntries(Object.entries(st.times ?? {}).filter(([k, v]) => !/(At|Last|Idle|Pauses)$/.test(k) && v > 0)) as Record<string, number>,
     idle: Object.fromEntries(Object.entries(st.times ?? {}).filter(([k, v]) => k.endsWith("Idle") && v > 0).map(([k, v]) => [k.slice(0, -4), v])) as Record<string, number>,
