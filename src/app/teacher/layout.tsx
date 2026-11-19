@@ -35,7 +35,7 @@ export default async function TeacherLayout({ children }: { children: React.Reac
     db.question.count({ where: { student: { teacherId: user.id }, askedTeacher: true, answeredAt: null } }),
     hwToReview(user.id),
     // «Финансы»: прислали чек — проверить; проведённые за месяц уроки без счёта — подтвердить оплату
-    db.invoice.count({ where: { student: { teacherId: user.id }, status: "PROOF_SENT" } }).then(async (n) => n + (await db.lessonInstance.count({ where: { teacherId: user.id, billedAt: null, deductedAt: null, startsAt: { gte: new Date(Date.now() - 30 * 864e5), lte: new Date() }, studentId: { not: null }, student: { status: "ACTIVE" }, OR: [{ status: "DONE" }, { status: "MISSED", charged: true }], NOT: { isTrial: true, OR: [{ price: null }, { price: { lte: 0 } }] } } }))),
+    db.invoice.count({ where: { student: { teacherId: user.id }, status: "PROOF_SENT" } }).then(async (n) => n + (await db.lessonInstance.count({ where: { teacherId: user.id, billedAt: null, deductedAt: null, payLaterAt: null, startsAt: { lte: new Date() }, studentId: { not: null }, student: { status: "ACTIVE" }, OR: [{ status: "DONE" }, { status: "MISSED", charged: true }], NOT: { isTrial: true, OR: [{ price: null }, { price: { lte: 0 } }] } } }))),
     db.teacherProfile.findUnique({ where: { userId: user.id }, select: { trialUntil: true, paidUntil: true, blockedAt: true, settings: true } }),
     db.supportMessage.count({ where: { userId: user.id, fromAdmin: true, readAt: null } }),
   ]);

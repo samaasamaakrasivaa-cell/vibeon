@@ -36,18 +36,26 @@ export function AwardsCard({ studentId, studentName, gender, rows, linked, templ
       <div className="flex flex-col gap-2">
         {titles.map((a) => (
           <div key={a.id} className={`awrow ${a.pinned ? "pinned" : ""}`}>
-            <Medal icon={a.icon} color={a.color} size={40} />
-            <div className="grow min-w-0">
-              <b className="block truncate">{a.name}</b>
-              <span className="small muted">{a.date} · {a.until ? t("aw.until", { d: a.until }) : t("aw.forever")}</span>
+            {/* верх: медаль, название целиком, дата; правка/удаление — тихие значки справа */}
+            <div className="awrow-top">
+              <Medal icon={a.icon} color={a.color} size={44} />
+              <div className="grow min-w-0">
+                <b className="awrow-name">{a.name}</b>
+                <span className="awrow-meta">{a.date} · {a.until ? t("aw.until", { d: a.until }) : t("aw.forever")}</span>
+              </div>
+              <div className="awrow-tools">
+                <button type="button" className="iconbtn" title={t("aw.edit")} aria-label={t("aw.edit")} disabled={pending} onClick={() => setEdit(a)}><Icon name="pencil" size="sm" /></button>
+                <button type="button" className="iconbtn" title={t("aw.remove")} aria-label={t("aw.remove")} disabled={pending} onClick={() => confirm(t("aw.removeQ", { n: a.name })) && run(() => deleteAward(a.id))}><Icon name="close" size="sm" /></button>
+              </div>
             </div>
-            {a.pinned ? <span className="pill orange">{t("aw.main")}</span> : a.onMain && <button type="button" className="btn plain sm" disabled={pending} onClick={() => run(() => pinAward(a.id))}>{t("aw.makeMain")}</button>}
-            <label className="awmain" title={t("aw.onMainHint")}>
-              <span className="small">{t("aw.onMain")}</span>
-              <span className="switch"><input type="checkbox" checked={a.onMain} disabled={pending} onChange={(e) => run(() => setAwardMain(a.id, e.target.checked))} /><span /></span>
-            </label>
-            <button type="button" className="iconbtn" title={t("aw.edit")} aria-label={t("aw.edit")} disabled={pending} onClick={() => setEdit(a)}><Icon name="pencil" size="sm" /></button>
-            <button type="button" className="iconbtn" title={t("aw.remove")} aria-label={t("aw.remove")} disabled={pending} onClick={() => confirm(t("aw.removeQ", { n: a.name })) && run(() => deleteAward(a.id))}><Icon name="close" size="sm" /></button>
+            {/* низ: главный статус и показ на главной ученика */}
+            <div className="awrow-foot">
+              {a.pinned ? <span className="awrow-badge"><Icon name="star" size="sm" />{t("aw.main")}</span> : a.onMain ? <button type="button" className="btn plain sm awrow-mk" disabled={pending} onClick={() => run(() => pinAward(a.id))}>{t("aw.makeMain")}</button> : <span />}
+              <label className="awmain" title={t("aw.onMainHint")}>
+                <span className="small">{t("aw.onMain")}</span>
+                <span className="switch"><input type="checkbox" checked={a.onMain} disabled={pending} onChange={(e) => run(() => setAwardMain(a.id, e.target.checked))} /><span /></span>
+              </label>
+            </div>
           </div>
         ))}
       </div>

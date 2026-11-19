@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { Icon } from "@/components/Icon";
-import { CheckActions, InvoiceEdit, LessonPaidBtn, UndoPaidBtn, PayDetails, ReceiptButton, ResendLink } from "@/components/finance/FinanceParts";
+import { FinTiles, type FinTile } from "@/components/finance/FinTiles";
+import { StudentAvatar } from "@/components/awards/Medal";
+import { CheckActions, InvoiceEdit, LessonPaidBtn, PayLaterBtn, UndoPaidBtn, PayDetails, ReceiptButton, ResendLink } from "@/components/finance/FinanceParts";
 import { requireUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { getT } from "@/lib/i18n/server";
@@ -34,6 +36,30 @@ export default async function Finance({ searchParams }: { searchParams: Promise<
   const insightText: Record<string, (v: Record<string, string | number>) => string> = {
     cancels: (v) => t("fin.ins.cancels", v), moves: (v) => t("fin.ins.moves", v), cancelsG: (v) => t("fin.ins.cancelsG", v), movesG: (v) => t("fin.ins.movesG", v), debt: (v) => t("fin.ins.debt", { name: v.name, sum: R(Number(v.sum)) }), ending: (v) => t("fin.ins.ending", v),
   };
+  // плитки «Обновлений» и их расшифровка (нажали — раскрылся список)
+  const dt = (x: Date) => x.toLocaleDateString(loc, { day: "numeric", month: "short", timeZone: me.timezone }).replace(".", "");
+  const dtt = (x: Date) => `${dt(x)}, ${x.toLocaleTimeString(loc, { hour: "2-digit", minute: "2-digit", timeZone: me.timezone })}`;
+  const dates = (xs: Date[]) => (xs.length > 4 ? [...xs.slice(0, 4).map(dt), t("fin.det.more", { n: xs.length - 4 })] : xs.map(dt)).join(", ");
+  // «Ждём оплаты» у ученика: даты уроков (без счёта и из счетов за урок), другие счета — названием; прислал чек — пометка
+  const waitSub = (r: (typeof d.waitingBy)[number]) => {
+    const one = r.invoices.flatMap((i) => i.dates);
+    const lessonPart = [...r.lessons, ...one].sort((a, b) => a.getTime() - b.getTime()).map(dt);
+    const other = r.invoices.filter((i) => !i.dates.length).map((i) => i.title); // счёт не за уроки (абонемент) — названием
+    return [lessonPart.length ? t("fin.det.lessons", { d: lessonPart.length > 4 ? [...lessonPart.slice(0, 4), t("fin.det.more", { n: lessonPart.length - 4 })].join(", ") : lessonPart.join(", ") }) : "", ...other,
+      r.invoices.some((i) => i.proof) ? t("fin.det.proof") : "", r.later ? t("lp.laterTitle").toLowerCase() : ""].filter(Boolean).join(" · ");
+  };
+  const tiles: FinTile[] = [
+    { key: "earned", icon: "coin", main: true, value: R(d.earned), label: t("fin.earned"), rows: d.perStudent.filter((p) => p.earned > 0).map((p) => ({ id: p.s.id, sid: p.s.id, avatar: p.s.avatar, title: `${p.s.name} ${p.s.lastName ?? ""}`.trim(), sub: t("fin.lessonsN", { n: p.lessons }), right: R(p.earned) })) },
+    { key: "received", icon: "wallet", color: "var(--accent)", value: R(d.received), label: t("fin.received"), rows: d.receivedBy.map((r) => ({ id: r.id, sid: r.id, avatar: r.avatar, title: r.name, sub: t("fin.det.paid", { n: r.n, d: dt(r.last) }), right: R(r.sum) })) },
+    { key: "waiting", icon: "hourglass", color: "var(--warn)", value: R(d.waiting), bad: d.waiting > 0, label: t("fin.waiting"), note: d.unbilledSum > 0 ? t("lp.inclNoInv", { sum: R(d.unbilledSum) }) : undefined,
+      rows: d.waitingBy.map((r) => ({ id: r.id, sid: r.id, avatar: r.avatar, title: r.name, sub: waitSub(r), right: R(r.sum), tone: "bad" as const })) },
+    { key: "prepaid", icon: "gift", color: "var(--violet)", value: R(d.prepaid), label: t("fin.prepaid"), rows: d.prepaidBy.map((r) => ({ id: r.id, sid: r.id, avatar: r.avatar, title: r.name, sub: t("fin.det.pack", { left: r.left, total: r.totalN }), right: R(r.sum) })) },
+    { key: "cancelled", icon: "calx", color: "var(--bad)", value: `${pct(d.cancelled)}%`, label: t("fin.cancelled", { n: d.cancelled, total: d.total }), head: t("fin.det.groupOnce"),
+      rows: d.cancelledList.map((l) => ({ id: l.id, group: l.group, title: l.who, sub: dtt(l.at) + (l.charged ? ` · ${t("fin.det.charged")}` : ""), right: "" })) },
+    { key: "moved", icon: "move", color: "#5AC8FA", value: `${pct(d.moved)}%`, label: t("fin.moved", { n: d.moved, total: d.total }), head: t("fin.det.groupOnce"),
+      rows: d.movedList.map((l) => ({ id: l.id, group: l.group, title: l.who, sub: `${dtt(l.from)} → ${l.cancelled ? t("fin.det.thenCancelled") : dtt(l.to)}` })) },
+  ];
+  const toPay = d.check.toCheck.length + d.unbilled.length; // как значок у «Финансы» в меню
   return (
     <div className="page">
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
@@ -44,20 +70,13 @@ export default async function Finance({ searchParams }: { searchParams: Promise<
         </div>
       </div>
       <nav className="tabsbar mb-6">
-        {TABS.map((k) => <Link key={k} href={q({ tab: k })} aria-current={tab === k ? "page" : undefined}>{t(`fin.tab.${k}`)}{k === "check" && d.check.toCheck.length > 0 && <span className="dot ml-1.5" style={{ background: "var(--warn)" }} />}</Link>)}
+        {TABS.map((k) => <Link key={k} href={q({ tab: k })} aria-current={tab === k ? "page" : undefined}>{t(`fin.tab.${k}`)}{k === "check" && toPay > 0 && <span className="tabcnt">{toPay}</span>}</Link>)}
       </nav>
 
       {tab === "updates" && (
         <>
           <h2 className="mb-4">{title}</h2>
-          <div className="grid-3">
-            <div className="fintile main"><span className="si"><Icon name="coin" /></span><div><b>{R(d.earned)}</b><span>{t("fin.earned")}</span></div></div>
-            <div className="fintile"><span className="si" style={{ background: "var(--accent)" }}><Icon name="wallet" /></span><div><b>{R(d.received)}</b><span>{t("fin.received")}</span></div></div>
-            <div className="fintile"><span className="si" style={{ background: "var(--warn)" }}><Icon name="hourglass" /></span><div><b className={d.waiting ? "text-bad" : ""}>{R(d.waiting)}</b><span>{t("fin.waiting")}</span>{d.unbilledSum > 0 && <span className="small muted block">{t("lp.inclNoInv", { sum: R(d.unbilledSum) })}</span>}</div></div>
-            <div className="fintile"><span className="si" style={{ background: "var(--violet)" }}><Icon name="gift" /></span><div><b>{R(d.prepaid)}</b><span>{t("fin.prepaid")}</span></div></div>
-            <div className="fintile"><span className="si" style={{ background: "var(--bad)" }}><Icon name="calx" /></span><div><b>{pct(d.cancelled)}%</b><span>{t("fin.cancelled", { n: d.cancelled, total: d.total })}</span></div></div>
-            <div className="fintile"><span className="si" style={{ background: "#5AC8FA" }}><Icon name="move" /></span><div><b>{pct(d.moved)}%</b><span>{t("fin.moved", { n: d.moved, total: d.total })}</span></div></div>
-          </div>
+          <FinTiles tiles={tiles} />
           {d.check.toCheck.length > 0 && (
             <div className="alert mt-5 flex flex-wrap items-center gap-3" style={{ background: "var(--warn-bg)", color: "var(--warn-text)" }}>
               <Icon name="alert" size="sm" /><span className="grow">{daysSince > 0 ? t("fin.notChecked", { n: daysSince }) : t("fin.toCheckNow", { n: d.check.toCheck.length })}</span>
@@ -107,7 +126,7 @@ export default async function Finance({ searchParams }: { searchParams: Promise<
                 <span className="fr-bar hwbar"><i style={{ width: `${(p.earned / maxS) * 100}%` }} /></span>
                 <b className="fr-sum text-right">{R(p.earned)}</b>
                 <span className="fr-cnt text-right small muted">{t("fin.lessonsN", { n: p.lessons })}</span>
-                <span className={`fr-debt text-right small ${p.debt ? "text-bad font-semibold" : "text-text3"}`}>{p.debt ? t("fin.debt", { sum: R(p.debt) }) : "—"}</span>
+                <span className={`fr-debt text-right small ${p.debt ? "text-bad font-semibold debt-tip" : "text-text3"}`} tabIndex={p.debt ? 0 : undefined} data-tip={p.debt ? [p.debtLessons.length ? t("fin.det.unpaidLessons", { d: p.debtLessons.map(dtt).join("; ") }) : "", ...p.debtInvoices.map((i) => (i.dates.length ? t("fin.det.invLessons", { sum: R(i.amount), d: i.dates.map(dtt).join("; ") }) : t("fin.det.invSum", { title: i.title, sum: R(i.amount) })))].filter(Boolean).join("\n") : undefined}>{p.debt ? t("fin.debt", { sum: R(p.debt) }) : "—"}</span>
               </div>
             ))}
             {d.perStudent.length === 0 && <p className="hint m-0">{t("inviteT.none")}</p>}
@@ -118,29 +137,46 @@ export default async function Finance({ searchParams }: { searchParams: Promise<
       {tab === "check" && (
         <>
           <div className="mb-4 flex flex-wrap gap-3">
-            <Link href={q({ c: "waiting" })} className={`chkpill ${checkTab === "waiting" ? "on" : ""}`}><span className="si" style={{ background: "var(--accent)" }}><Icon name="wallet" size="sm" /></span><span className="small muted">{t("fin.c.waiting")}</span><b>{R(d.check.waiting.reduce((a, i) => a + i.amount, 0) + d.unbilledSum)}</b></Link>
-            <Link href={q({ c: "toCheck" })} className={`chkpill ${checkTab === "toCheck" ? "on" : ""}`}><span className="si" style={{ background: "var(--warn)" }}><Icon name="hourglass" size="sm" /></span><span className="small muted">{t("fin.c.toCheck")}</span><b>{d.check.toCheck.length}</b></Link>
+            <Link href={q({ c: "waiting" })} className={`chkpill ${checkTab === "waiting" ? "on" : ""}`}><span className="si" style={{ background: "var(--accent)" }}><Icon name="wallet" size="sm" /></span><span className="small muted">{t("fin.c.waiting")}</span><b>{R(d.check.waiting.reduce((a, i) => a + i.amount, 0) + d.unbilledSum)}</b>{d.unbilled.length > 0 && <span className="tabcnt">{d.unbilled.length}</span>}</Link>
+            <Link href={q({ c: "toCheck" })} className={`chkpill ${checkTab === "toCheck" ? "on" : ""}`}><span className="si" style={{ background: "var(--warn)" }}><Icon name="hourglass" size="sm" /></span><span className="small muted">{t("fin.c.toCheck")}</span><b>{d.check.toCheck.length}</b>{d.check.toCheck.length > 0 && <span className="tabcnt">{d.check.toCheck.length}</span>}</Link>
             <Link href={q({ c: "auto" })} className={`chkpill ${checkTab === "auto" ? "on" : ""}`}><span className="si" style={{ background: "var(--ok)" }}><Icon name="check" size="sm" /></span><span className="small muted">{t("fin.c.auto")}</span><b>{d.check.auto.length}</b></Link>
           </div>
           {/* проведённые уроки, за которые счёт ещё не выставлен: оплату можно подтвердить сразу */}
           {checkTab === "waiting" && d.unbilled.length > 0 && (
             <section className="card mb-4">
-              <h3 className="mt-0 mb-1">{t("lp.noInvTitle")}</h3>
-              <p className="small muted mt-0">{t("lp.noInvHint")}</p>
-              <div className="flex flex-col gap-1">
+              <div className="flex items-baseline gap-2"><h3 className="m-0">{t("lp.noInvTitle")}</h3><span className="tabcnt">{d.unbilled.length}</span></div>
+              <p className="small muted mt-1">{t("lp.noInvHint2")}</p>
+              <div className="paylist">
                 {d.unbilled.map((l) => (
-                  <div key={l.id} className="lprice">
-                    <span className="avatar">{initials(l.student.name, l.student.lastName)}</span>
-                    <span className="grow min-w-0 truncate"><b>{l.student.name} {l.student.lastName ?? ""}</b> · {l.startsAt.toLocaleString(loc, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: me.timezone })}</span>
-                    <span className="amt">{R(l.amount)}</span>
-                    <LessonPaidBtn id={l.id} />
+                  <div key={l.id} className="payrow">
+                    <StudentAvatar id={l.student.id} avatar={l.student.avatar} size={36} />
+                    <span className="grow min-w-0"><b className="block truncate">{l.student.name} {l.student.lastName ?? ""}</b><span className="small muted">{dtt(l.startsAt)}</span></span>
+                    <span className="payamt">{R(l.amount)}</span>
+                    <span className="payrow-act"><PayLaterBtn id={l.id} /><LessonPaidBtn id={l.id} soft /></span>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+          {/* «Оплатит позже»: копятся до оплаты (постоплата за неделю/месяц) — это недополученные деньги */
+          checkTab === "waiting" && d.later.length > 0 && (
+            <section className="card mb-4">
+              <div className="flex flex-wrap items-baseline gap-2"><h3 className="m-0 grow">{t("lp.laterTitle")}</h3><span className="small muted">{t("lp.laterSum")}</span><b className="text-bad">{R(d.laterSum)}</b></div>
+              <p className="small muted mt-1">{t("lp.laterHint")}</p>
+              <div className="paylist">
+                {d.later.map((l) => (
+                  <div key={l.id} className="payrow">
+                    <StudentAvatar id={l.student.id} avatar={l.student.avatar} size={36} />
+                    <span className="grow min-w-0"><b className="block truncate">{l.student.name} {l.student.lastName ?? ""}</b><span className="small muted">{dtt(l.startsAt)}</span></span>
+                    <span className="payamt">{R(l.amount)}</span>
+                    <span className="payrow-act"><PayLaterBtn id={l.id} back /><LessonPaidBtn id={l.id} soft /></span>
                   </div>
                 ))}
               </div>
             </section>
           )}
           <div className="flex flex-col gap-2">
-            {rows.length === 0 && !(checkTab === "waiting" && d.unbilled.length) && <div className="card"><p className="hint m-0">{t("fin.c.empty")}</p></div>}
+            {rows.length === 0 && !(checkTab === "waiting" && (d.unbilled.length || d.later.length)) && <div className="card"><p className="hint m-0">{t("fin.c.empty")}</p></div>}
             {rows.map((i) => {
               const ai = i.aiRead as { amounts?: number[]; matches?: boolean; source?: string } | null;
               return (

@@ -364,6 +364,7 @@ model LessonInstance {
   live        Json            @default("{}") // состояние класса: рубрика, «показать ученику», скрытые задания, таймер, доска заблокирована…
   billedAt    DateTime? // постоплата: урок включён в счёт
   deductedAt  DateTime? // абонемент: урок списан
+  payLaterAt  DateTime? // постоплата: учитель отметил «Оплатит позже» — урок ждёт оплаты в отдельном списке, не висит в «без счёта»
   board       Json            @default("{\"pages\":[[]]}") // доска: страницы с объектами
   studentNote String? // заметки ученика к уроку
   startedAt   DateTime?

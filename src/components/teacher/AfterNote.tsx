@@ -27,13 +27,14 @@ export function AfterNote({ id, next }: { id: string; next: { date: string; note
     if (!r.ok) return setErr(r.error);
     setOpen(false); router.refresh();
   };
+  const changed = v.trim() !== (next.note ?? "").trim();
   return (
     <div className="afternote">
-      <textarea className="textarea" rows={3} autoFocus value={v} onChange={(e) => setV(e.target.value)} placeholder={t("today.afterPh")} aria-label={t("today.after")} />
-      <span className="small muted">{t("today.afterTo", { d: next.date })}</span>
-      <div className="flex gap-2">
-        <button type="button" className="btn primary sm" disabled={busy} onClick={save}>{t("common.save")}</button>
-        <button type="button" className="btn plain sm" onClick={() => setOpen(false)}>{t("common.cancel")}</button>
+      <textarea className="afternote-in" rows={3} autoFocus value={v} onChange={(e) => setV(e.target.value)} placeholder={t("today.afterPh")} aria-label={t("today.after")} />
+      <span className="afternote-to"><Icon name="cal" size="sm" />{t("today.afterTo", { d: next.date })}</span>
+      <div className="afternote-btns">
+        <button type="button" className="btn plain sm" onClick={() => { setV(next.note ?? ""); setOpen(false); }}>{t("common.cancel")}</button>
+        <button type="button" className="btn tinted sm" disabled={busy || !changed} onClick={save}>{busy ? "…" : t("common.save")}</button>
       </div>
       {err && <span className="small text-bad">{err}</span>}
     </div>

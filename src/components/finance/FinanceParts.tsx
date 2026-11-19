@@ -5,7 +5,7 @@ import { Icon } from "../Icon";
 import { Dialog } from "../Dialog";
 import { upload } from "../courses/CourseView";
 import { useT } from "@/lib/i18n/client";
-import { attachReceipt, cancelInvoice, closeInvoice, confirmLessonPaid, undoPaid, invoiceDetails, markPaid, updateInvoice, rejectProof, resendInvoice, savePayDetails, undoAuto } from "@/lib/billing/actions";
+import { attachReceipt, cancelInvoice, closeInvoice, confirmLessonPaid, payLater, undoPaid, invoiceDetails, markPaid, updateInvoice, rejectProof, resendInvoice, savePayDetails, undoAuto } from "@/lib/billing/actions";
 
 type Res = { ok: boolean; error?: string };
 function useAct() {
@@ -120,16 +120,23 @@ export function PayDetails({ initial }: { initial: string }) {
 }
 
 /** «Оплачено» у проведённого урока без счёта. */
-export function LessonPaidBtn({ id }: { id: string }) {
+export function LessonPaidBtn({ id, soft }: { id: string; soft?: boolean }) {
   const { t } = useT();
   const [pending, start] = useTransition();
   const [err, setErr] = useState<string | null>(null);
   return (
     <>
-      <button type="button" className="btn primary sm" disabled={pending} onClick={() => start(async () => { const r = await confirmLessonPaid(id); setErr(r.ok ? null : r.error); })}><Icon name="check" size="sm" />{t("lp.confirm")}</button>
+      <button type="button" className={`btn ${soft ? "tinted" : "primary"} sm`} disabled={pending} onClick={() => start(async () => { const r = await confirmLessonPaid(id); setErr(r.ok ? null : r.error); })}><Icon name="check" size="sm" />{t("lp.confirm")}</button>
       {err && <span className="small text-bad">{err}</span>}
     </>
   );
+}
+
+/** «Оплатит позже» — урок уходит из «без счёта» в список «Оплатит позже»; back — вернуть обратно. */
+export function PayLaterBtn({ id, back }: { id: string; back?: boolean }) {
+  const { t } = useT();
+  const { pending, act } = useAct();
+  return <button type="button" className="btn plain sm paylater" disabled={pending} onClick={() => act(() => payLater(id, back))}>{back ? t("lp.laterBack") : <><Icon name="clock" size="sm" />{t("lp.later")}</>}</button>;
 }
 
 /** «Отменить оплату» — сутки после подтверждения (если нажали «Оплачено» по ошибке). */

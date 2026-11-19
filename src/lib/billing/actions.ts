@@ -73,6 +73,18 @@ export async function confirmLessonPaid(lessonId: string, amount?: number): Prom
   return { ok: true };
 }
 
+/** «Оплатит позже» у проведённого урока без счёта (постоплата за неделю/месяц): урок уходит из «Проведённые уроки без счёта»
+ *  в список «Оплатит позже» — копится там, в «Ждём оплаты» остаётся. back — вернуть обратно. */
+export async function payLater(lessonId: string, back = false): Promise<R> {
+  const { t } = await getT();
+  const u = await requireUser("TEACHER");
+  const l = await db.lessonInstance.findUnique({ where: { id: lessonId } });
+  if (!l || l.teacherId !== u.id || !l.studentId) return { ok: false, error: t("pay.err.notFound") };
+  await db.lessonInstance.update({ where: { id: l.id }, data: { payLaterAt: back ? null : new Date() } });
+  refresh();
+  return { ok: true };
+}
+
 /** Отменить подтверждение оплаты (нажали по ошибке) — сутки после подтверждения, из плашки внизу экрана. */
 export async function undoPaid(invoiceId: string): Promise<R> {
   const inv = await teacherInvoice(invoiceId);
