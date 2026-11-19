@@ -8,6 +8,7 @@ import { addDaysIso, dayStart, hhmm, isoDay, minutesOfDay, mondayOf, parseIsoDay
 import { earnedOf, lessonInclude, lessonWho, oneSlot, rub, syncSchedule } from "@/lib/teacher/data";
 import { initials } from "@/lib/invite";
 import { homeworkFor } from "@/lib/homework";
+import { payStateOf } from "@/lib/billing/lesson-pay";
 
 export const metadata = { title: "Расписание" };
 
@@ -47,8 +48,10 @@ export default async function Schedule({ searchParams }: { searchParams: Promise
   });
   const groupOf = new Map(groups.map((g) => [g.id, g]));
   // уроки в счетах, которые уже оплачены или ждут подтверждения оплаты, — цену не меняем
-  const locked = new Set((await db.invoice.findMany({ where: { lessonIds: { hasSome: rows.map((l) => l.id) }, status: { in: ["PROOF_SENT", "PAID"] } }, select: { lessonIds: true } })).flatMap((i) => i.lessonIds));
-  const priceRow = (l: (typeof rows)[number]) => ({ id: l.id, name: l.student ? [l.student.name, l.student.lastName].filter(Boolean).join(" ") : (l.trialName ?? "—"), price: l.price ?? 0, locked: locked.has(l.id), counts: earnedOf(l) > 0 });
+  const invs = await db.invoice.findMany({ where: { lessonIds: { hasSome: rows.map((l) => l.id) } }, select: { id: true, status: true, lessonIds: true, proofKind: true } });
+  const locked = new Set(invs.filter((i) => i.status === "PROOF_SENT" || i.status === "PAID").flatMap((i) => i.lessonIds));
+  // оплата урока: оплачен / счёт ждёт оплаты / списан из абонемента / не оплачен — «Оплачено» можно отметить всегда
+  const priceRow = (l: (typeof rows)[number]) => ({ id: l.id, name: l.student ? [l.student.name, l.student.lastName].filter(Boolean).join(" ") : (l.trialName ?? "—"), price: l.price ?? 0, locked: locked.has(l.id), counts: earnedOf(l) > 0, pay: l.studentId ? payStateOf(l, invs) : null });
   // групповое занятие — одним блоком; у кого из группы урок — по урокам этого занятия
   const slotMembers = new Map<string, string[]>();
   for (const l of rows) if (l.slotId && l.student) slotMembers.set(l.slotId, [...(slotMembers.get(l.slotId) ?? []), l.student.name]);

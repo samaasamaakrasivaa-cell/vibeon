@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Dialog } from "../Dialog";
+import { confirmLessonPaid, undoLessonPaid } from "@/lib/billing/actions";
 import { Icon } from "../Icon";
 import { useT } from "@/lib/i18n/client";
 import {
@@ -15,7 +16,7 @@ export type GridLesson = {
   weekly: boolean; past: boolean; studentId: string | null; charged: boolean; moved: boolean; price: number;
   group?: { id: string; members: string[] } | null; // групповое занятие: состав
   hw: "review" | "partial" | "notdone" | "checked" | null;
-  prices?: { id: string; name: string; price: number; locked: boolean; counts: boolean }[]; // цена урока; у группового — по ученикам
+  prices?: { id: string; name: string; price: number; locked: boolean; counts: boolean; pay?: { state: "paid" | "billed" | "pack" | "unpaid"; invId: string | null; quick: boolean } | null }[]; // цена и оплата урока; у группового — по ученикам
   callLink?: string | null; // ссылка на созвон (одна на ученика / группу)
   short?: string; // имя в сетке: «Анна», а если Ань несколько — «Анна К.»
 };
@@ -501,8 +502,20 @@ function Prices({ l }: { l: GridLesson }) {
           ) : (
             <>
               <b className={p.counts ? "" : "text-text3"}>{fmt(p.price)}</b>
-              {p.locked && <span className="small muted">{t("sch.pricePaidShort")}</span>}
               <button type="button" className="iconbtn" aria-label={t("sch.priceEdit")} title={t("sch.priceEdit")} onClick={() => { if (p.locked && !confirm(t("sch.pricePaidQ"))) return; setEdit(p.id); setVal(String(p.price || "")); }}><Icon name="pencil" size="sm" /></button>
+              {/* оплата этого урока: подтвердить можно всегда, даже если счёт ещё не выставлен */}
+              {p.pay && <span className="grow" />}
+              {p.pay?.state === "paid" && <span className="pill green">✓ {t("lp.paid")}</span>}
+              {p.pay?.state === "paid" && p.pay.quick && <button type="button" className="btn plain sm" disabled={pending} onClick={() => confirm(t("lp.undoQ")) && run(() => undoLessonPaid(p.id))}>{t("lp.undo")}</button>}
+              {p.pay?.state === "pack" && <span className="pill grey">{t("lp.pack")}</span>}
+              {(p.pay?.state === "billed" || p.pay?.state === "unpaid") && <>
+                <span className={`pill ${p.pay.state === "billed" ? "orange" : "red"}`}>{t(p.pay.state === "billed" ? "lp.billed" : "lp.unpaid")}</span>
+                <button type="button" className="btn primary sm" disabled={pending} onClick={() => {
+                  let sum: number | undefined;
+                  if (!p.price) { const v = Number((prompt(t("lp.askSum")) ?? "").replace(/\D/g, "")); if (!v) return; sum = v; }
+                  run(() => confirmLessonPaid(p.id, sum));
+                }}><Icon name="check" size="sm" />{t("lp.confirm")}</button>
+              </>}
             </>
           )}
         </div>
@@ -640,7 +653,7 @@ function LessonDialog({ l, onClose, initial = "main", moveTo }: { l: GridLesson;
             <span className="hint grow text-right">{t("sch.noteHint")}</span>
           </div>
         </div>
-        {!!l.prices?.length && !l.isTrial && <Prices l={l} />}
+        {!!l.prices?.length && (!l.isTrial || l.price > 0) && <Prices l={l} />}
       </div>
       {l.group && <p className="small muted mt-3 mb-0 flex flex-wrap items-center gap-1.5"><Icon name="group" size="sm" />{l.group.members.join(", ")}</p>}
     </Dialog>

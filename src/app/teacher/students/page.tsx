@@ -10,6 +10,7 @@ import { initials, inviteUrl } from "@/lib/invite";
 import { rub } from "@/lib/teacher/data";
 import { roadmapView } from "@/lib/roadmap/progress";
 import { PackTicket } from "@/components/teacher/PackTicket";
+import { LessonPaidBtn } from "@/components/finance/FinanceParts";
 import { packEndsAt } from "@/lib/teacher/pack";
 import { hhmm, isoDay } from "@/lib/time";
 import { levelLine, levelsOf } from "@/lib/teacher/levels";
@@ -49,7 +50,16 @@ export default async function Students({ searchParams }: { searchParams: Promise
   const lastInv = new Map<string, { id: string; amount: number; status: string; title: string; createdAt: Date; lessonDates: Date[] }>();
   const packEnds = new Map<string, Date | null>();
   const packUsed = new Map<string, string[]>();
+  // проведённые уроки без счёта и без списания из абонемента — «Оплачено» прямо в карточке
+  const unpaid = new Map<string, { id: string; startsAt: Date; amount: number; n: number; sum: number }>();
   if (tab === "payments") {
+    const ul = await db.lessonInstance.findMany({ where: { teacherId: me.id, studentId: { in: active.map((s) => s.id) }, billedAt: null, deductedAt: null, startsAt: { lte: new Date() }, OR: [{ status: "DONE" }, { status: "MISSED", charged: true }] }, orderBy: { startsAt: "desc" }, select: { id: true, studentId: true, startsAt: true, price: true, isTrial: true } });
+    for (const l of ul) {
+      if (l.isTrial && !(l.price ?? 0)) continue;
+      const amount = l.price ?? active.find((s) => s.id === l.studentId)?.price ?? 0;
+      const u = unpaid.get(l.studentId!);
+      if (u) { u.n++; u.sum += amount; } else unpaid.set(l.studentId!, { id: l.id, startsAt: l.startsAt, amount, n: 1, sum: amount });
+    }
     const invs = await db.invoice.findMany({ where: { studentId: { in: active.map((s) => s.id) }, status: { not: "CANCELLED" }, kind: { not: "pack" } }, orderBy: { createdAt: "desc" } });
     for (const v of invs) if (!lastInv.has(v.studentId)) lastInv.set(v.studentId, { id: v.id, amount: v.amount, status: v.status, title: v.title ?? "", createdAt: v.createdAt, lessonDates: [] });
     const lids = [...lastInv.values()].flatMap((v) => invs.find((x) => x.id === v.id)!.lessonIds);
@@ -157,7 +167,16 @@ export default async function Students({ searchParams }: { searchParams: Promise
                       {inv.status === "PAID" ? <span className="pill green">✓ {t("pay.paidPill")}</span>
                         : <Link href={`/teacher/finance?tab=check&c=${inv.status === "PROOF_SENT" ? "toCheck" : "waiting"}&hl=${inv.id}#inv-${inv.id}`} className="btn primary sm">{t("pay.confirm")}</Link>}
                     </div>
-                  ) : <p className="hint m-0">{s.payType === "PACK" ? t("prof.noPack") : t("pay.noInv")}</p>}
+                  ) : !unpaid.has(s.id) && <p className="hint m-0">{s.payType === "PACK" ? t("prof.noPack") : t("pay.noInv")}</p>}
+                  {unpaid.has(s.id) && ((u) => (
+                    <div className="payinv">
+                      <div className="grow min-w-0">
+                        <b className="block">{u.amount ? rub(u.amount, lang) : "—"}</b>
+                        <span className="small muted">{t("lp.lastNoInv", { d: lfmt(u.startsAt) })}{u.n > 1 ? ` · ${t("lp.moreNoInv", { n: u.n, sum: rub(u.sum, lang) })}` : ""}</span>
+                      </div>
+                      <LessonPaidBtn id={u.id} />
+                    </div>
+                  ))(unpaid.get(s.id)!)}
                 </section>
               );
             })}

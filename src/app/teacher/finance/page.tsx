@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Icon } from "@/components/Icon";
-import { CheckActions, InvoiceEdit, PayDetails, ReceiptButton, ResendLink } from "@/components/finance/FinanceParts";
+import { CheckActions, InvoiceEdit, LessonPaidBtn, PayDetails, ReceiptButton, ResendLink } from "@/components/finance/FinanceParts";
 import { requireUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { getT } from "@/lib/i18n/server";
@@ -53,7 +53,7 @@ export default async function Finance({ searchParams }: { searchParams: Promise<
           <div className="grid-3">
             <div className="fintile main"><span className="si"><Icon name="coin" /></span><div><b>{R(d.earned)}</b><span>{t("fin.earned")}</span></div></div>
             <div className="fintile"><span className="si" style={{ background: "var(--accent)" }}><Icon name="wallet" /></span><div><b>{R(d.received)}</b><span>{t("fin.received")}</span></div></div>
-            <div className="fintile"><span className="si" style={{ background: "var(--warn)" }}><Icon name="hourglass" /></span><div><b className={d.waiting ? "text-bad" : ""}>{R(d.waiting)}</b><span>{t("fin.waiting")}</span></div></div>
+            <div className="fintile"><span className="si" style={{ background: "var(--warn)" }}><Icon name="hourglass" /></span><div><b className={d.waiting ? "text-bad" : ""}>{R(d.waiting)}</b><span>{t("fin.waiting")}</span>{d.unbilledSum > 0 && <span className="small muted block">{t("lp.inclNoInv", { sum: R(d.unbilledSum) })}</span>}</div></div>
             <div className="fintile"><span className="si" style={{ background: "var(--violet)" }}><Icon name="gift" /></span><div><b>{R(d.prepaid)}</b><span>{t("fin.prepaid")}</span></div></div>
             <div className="fintile"><span className="si" style={{ background: "var(--bad)" }}><Icon name="calx" /></span><div><b>{pct(d.cancelled)}%</b><span>{t("fin.cancelled", { n: d.cancelled, total: d.total })}</span></div></div>
             <div className="fintile"><span className="si" style={{ background: "#5AC8FA" }}><Icon name="move" /></span><div><b>{pct(d.moved)}%</b><span>{t("fin.moved", { n: d.moved, total: d.total })}</span></div></div>
@@ -118,12 +118,29 @@ export default async function Finance({ searchParams }: { searchParams: Promise<
       {tab === "check" && (
         <>
           <div className="mb-4 flex flex-wrap gap-3">
-            <Link href={q({ c: "waiting" })} className={`chkpill ${checkTab === "waiting" ? "on" : ""}`}><span className="si" style={{ background: "var(--accent)" }}><Icon name="wallet" size="sm" /></span><span className="small muted">{t("fin.c.waiting")}</span><b>{R(d.check.waiting.reduce((a, i) => a + i.amount, 0))}</b></Link>
+            <Link href={q({ c: "waiting" })} className={`chkpill ${checkTab === "waiting" ? "on" : ""}`}><span className="si" style={{ background: "var(--accent)" }}><Icon name="wallet" size="sm" /></span><span className="small muted">{t("fin.c.waiting")}</span><b>{R(d.check.waiting.reduce((a, i) => a + i.amount, 0) + d.unbilledSum)}</b></Link>
             <Link href={q({ c: "toCheck" })} className={`chkpill ${checkTab === "toCheck" ? "on" : ""}`}><span className="si" style={{ background: "var(--warn)" }}><Icon name="hourglass" size="sm" /></span><span className="small muted">{t("fin.c.toCheck")}</span><b>{d.check.toCheck.length}</b></Link>
             <Link href={q({ c: "auto" })} className={`chkpill ${checkTab === "auto" ? "on" : ""}`}><span className="si" style={{ background: "var(--ok)" }}><Icon name="check" size="sm" /></span><span className="small muted">{t("fin.c.auto")}</span><b>{d.check.auto.length}</b></Link>
           </div>
+          {/* проведённые уроки, за которые счёт ещё не выставлен: оплату можно подтвердить сразу */}
+          {checkTab === "waiting" && d.unbilled.length > 0 && (
+            <section className="card mb-4">
+              <h3 className="mt-0 mb-1">{t("lp.noInvTitle")}</h3>
+              <p className="small muted mt-0">{t("lp.noInvHint")}</p>
+              <div className="flex flex-col gap-1">
+                {d.unbilled.map((l) => (
+                  <div key={l.id} className="lprice">
+                    <span className="avatar">{initials(l.student.name, l.student.lastName)}</span>
+                    <span className="grow min-w-0 truncate"><b>{l.student.name} {l.student.lastName ?? ""}</b> · {l.startsAt.toLocaleString(loc, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: me.timezone })}</span>
+                    <span className="amt">{R(l.amount)}</span>
+                    <LessonPaidBtn id={l.id} />
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
           <div className="flex flex-col gap-2">
-            {rows.length === 0 && <div className="card"><p className="hint m-0">{t("fin.c.empty")}</p></div>}
+            {rows.length === 0 && !(checkTab === "waiting" && d.unbilled.length) && <div className="card"><p className="hint m-0">{t("fin.c.empty")}</p></div>}
             {rows.map((i) => {
               const ai = i.aiRead as { amounts?: number[]; matches?: boolean; source?: string } | null;
               return (

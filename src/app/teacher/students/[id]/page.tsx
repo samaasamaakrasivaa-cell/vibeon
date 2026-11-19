@@ -14,6 +14,7 @@ import { guessGender } from "@/lib/student/gender";
 import { Medal, StudentAvatar } from "@/components/awards/Medal";
 import { notFound } from "next/navigation";
 import { Icon } from "@/components/Icon";
+import { payable, payStateOf } from "@/lib/billing/lesson-pay";
 import { DeleteStudent, FeedbackForm, PaymentCard, PrivateNote, ProfileActions, TgAsk } from "@/components/teacher/ProfileParts";
 import { InlineAbout, InlineContacts, type InlineData } from "@/components/teacher/InlineProfile";
 import { LinkMaker, ShareLink } from "@/components/teacher/InviteForm";
@@ -226,6 +227,11 @@ export default async function StudentProfile({ params, searchParams }: { params:
                     .map((l) => ({ id: l.id, date: `${dateFmt(l.startsAt, { day: "numeric", month: "short" }).replace(".", "")} (${dateFmt(l.startsAt, { weekday: "short" }).replace(".", "")}, ${hhmm(l.startsAt, tz)})`, missed: l.status === "MISSED" })),
                 } : null,
                 today: isoDay(now, tz),
+                // последние проведённые уроки и их оплата — «Оплачено» можно отметить у любого, даже без счёта
+                lessonsPay: s.lessons.filter((l) => l.startsAt < now && payable(l)).slice(0, 8).map((l) => ({
+                  id: l.id, date: `${dateFmt(l.startsAt, { day: "numeric", month: "short" }).replace(".", "")}, ${hhmm(l.startsAt, tz)}`, price: l.price ?? s.price ?? 0,
+                  pay: payStateOf(l, s.invoices)!,
+                })),
                 payerLinked: !!s.payerChatId, studentName: s.name, teacherName: meName,
               }}
             />

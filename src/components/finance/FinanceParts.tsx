@@ -5,7 +5,7 @@ import { Icon } from "../Icon";
 import { Dialog } from "../Dialog";
 import { upload } from "../courses/CourseView";
 import { useT } from "@/lib/i18n/client";
-import { attachReceipt, cancelInvoice, closeInvoice, invoiceDetails, markPaid, updateInvoice, rejectProof, resendInvoice, savePayDetails, undoAuto } from "@/lib/billing/actions";
+import { attachReceipt, cancelInvoice, closeInvoice, confirmLessonPaid, invoiceDetails, markPaid, updateInvoice, rejectProof, resendInvoice, savePayDetails, undoAuto } from "@/lib/billing/actions";
 
 type Res = { ok: boolean; error?: string };
 function useAct() {
@@ -115,6 +115,19 @@ export function PayDetails({ initial }: { initial: string }) {
         <div className="actions"><button className="btn secondary" onClick={() => setOpen(false)}>{t("common.cancel")}</button>
           <button className="btn primary" disabled={pending} onClick={() => { act(() => savePayDetails(v)); setOpen(false); }}>{t("common.save")}</button></div>
       </Dialog>
+    </>
+  );
+}
+
+/** «Оплачено» у проведённого урока без счёта. */
+export function LessonPaidBtn({ id }: { id: string }) {
+  const { t } = useT();
+  const [pending, start] = useTransition();
+  const [err, setErr] = useState<string | null>(null);
+  return (
+    <>
+      <button type="button" className="btn primary sm" disabled={pending} onClick={() => start(async () => { const r = await confirmLessonPaid(id); setErr(r.ok ? null : r.error); })}><Icon name="check" size="sm" />{t("lp.confirm")}</button>
+      {err && <span className="small text-bad">{err}</span>}
     </>
   );
 }

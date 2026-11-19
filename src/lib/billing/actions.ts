@@ -9,6 +9,7 @@ import { completeNotes, notify, notifyPayer } from "../notify";
 import { buildMessage } from "../invite";
 import { shortCode } from "../auth/crypto";
 import { tgEnabled, botUsername } from "../notify/telegram";
+import { payable } from "./lesson-pay";
 import { pluralForm } from "@/lib/i18n/dict";
 
 const zan = (n: number) => `${n} ${pluralForm("ru", n, ["занятие", "занятия", "занятий"])}`;
@@ -36,6 +37,57 @@ async function me() {
 }
 
 // ───────── Учитель ─────────
+
+/** «Оплачено» у проведённого урока — всегда, даже если счёт ещё не выставлен.
+ *  Урок в неоплаченном счёте: счёт только за него — счёт оплачен; в счёте за несколько уроков — урок выходит из счёта
+ *  (сумма счёта уменьшается) и оплачивается отдельно. Счёта нет — оплата записывается сразу (в финансах — «Получено»). */
+export async function confirmLessonPaid(lessonId: string, amount?: number): Promise<R> {
+  const { t } = await getT();
+  const u = await requireUser("TEACHER");
+  const l = await db.lessonInstance.findUnique({ where: { id: lessonId }, include: { student: true } });
+  if (!l || l.teacherId !== u.id || !l.student) return { ok: false, error: t("pay.err.notFound") };
+  if (!payable(l)) return { ok: false, error: t("pay.err.notPayable") };
+  const sum = Math.round(amount && amount > 0 ? amount : l.price ?? l.student.price ?? 0);
+  if (!(sum > 0 && sum < 10_000_000)) return { ok: false, error: t("pay.err.noPrice") };
+  const invs = await db.invoice.findMany({ where: { studentId: l.student.id, lessonIds: { has: l.id }, status: { not: "CANCELLED" } } });
+  if (invs.some((i) => i.status === "PAID")) return { ok: true }; // уже оплачен
+  const open = invs[0];
+  if (open && open.lessonIds.length === 1) {
+    if (amount && amount > 0 && amount !== open.amount) await db.invoice.update({ where: { id: open.id }, data: { amount: sum } });
+    await acceptInvoice({ ...open, amount: sum }, false);
+  } else {
+    if (open) {
+      // урок выходит из общего счёта: в нём остаются другие уроки, сумма — без этого урока
+      const left = open.lessonIds.filter((x) => x !== l.id);
+      await db.invoice.update({ where: { id: open.id }, data: { lessonIds: left, amount: Math.max(0, open.amount - (l.price ?? l.student.price ?? 0)), title: left.length === 1 ? open.title : `Уроки: ${left.length}` } });
+    }
+    const when = l.startsAt.toLocaleString("ru-RU", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: l.student.timezone });
+    const now = new Date();
+    await db.invoice.create({ data: { studentId: l.student.id, amount: sum, kind: "lessons", title: `Урок ${when}`, lessonIds: [l.id], status: "PAID", paidAt: now, closedAt: now, proofKind: "teacher", payerName: l.student.payerName, payerContact: l.student.payerContact } });
+    // абонемент: урок оплачен отдельно — из абонемента не списывается
+    await db.lessonInstance.update({ where: { id: l.id }, data: { billedAt: l.billedAt ?? now, ...(l.student.payType === "PACK" && !l.deductedAt ? { deductedAt: now } : {}) } });
+  }
+  if (l.price === null || (amount && amount > 0 && amount !== l.price)) await db.lessonInstance.update({ where: { id: l.id }, data: { price: sum } });
+  await checksDone(u.id);
+  refresh();
+  return { ok: true };
+}
+
+/** Отменить «Оплачено», отмеченное у урока (по ошибке): запись об оплате удаляется, урок снова не оплачен. */
+export async function undoLessonPaid(lessonId: string): Promise<R> {
+  const { t } = await getT();
+  const u = await requireUser("TEACHER");
+  const l = await db.lessonInstance.findUnique({ where: { id: lessonId } });
+  if (!l || l.teacherId !== u.id || !l.studentId) return { ok: false, error: t("pay.err.notFound") };
+  const inv = await db.invoice.findFirst({ where: { studentId: l.studentId, lessonIds: { has: l.id }, status: "PAID" } });
+  if (!inv) return { ok: true };
+  if (inv.proofKind === "teacher" && inv.lessonIds.length === 1) {
+    await db.invoice.delete({ where: { id: inv.id } });
+    await db.lessonInstance.update({ where: { id: l.id }, data: { billedAt: null, deductedAt: null } });
+  } else await undoAccept(inv);
+  refresh();
+  return { ok: true };
+}
 
 /** «Отметить оплату» — учитель сам подтверждает оплату. */
 /** Все чеки проверены — уведомления «Проверить скриншот» сделаны. */

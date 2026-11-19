@@ -9,7 +9,7 @@ import { PackTicket } from "./PackTicket";
 import { Icon } from "../Icon";
 import { useT } from "@/lib/i18n/client";
 import { TIMEZONES } from "@/lib/time";
-import { billNow, requestPackPayment } from "@/lib/billing/actions";
+import { billNow, confirmLessonPaid, requestPackPayment, undoLessonPaid } from "@/lib/billing/actions";
 import {
   addPack, archiveStudent, packReturn, savePrivateNoteKey, requestTgConnect, deleteStudent, savePayment, savePrivateNote, updateStudentProfile, type Result,
 } from "@/lib/teacher/actions";
@@ -132,7 +132,39 @@ export type PaymentData = {
   pack: { left: number; total: number; price: number; since?: string; ends?: string | null; frozen?: string | null; used?: { id: string; date: string; missed: boolean }[] } | null;
   today?: string;
   payerLinked?: boolean; studentName?: string; teacherName?: string;
+  lessonsPay?: { id: string; date: string; price: number; pay: { state: "paid" | "billed" | "pack" | "unpaid"; invId: string | null; quick: boolean } }[];
 };
+
+/** Оплата проведённых уроков: у каждого — состояние и «Оплачено» (всегда, даже если счёт не выставлен). */
+function LessonPays({ list }: { list: NonNullable<PaymentData["lessonsPay"]> }) {
+  const { t, lang } = useT();
+  const { pending, error, run } = useRun();
+  const fmt = (n: number) => (n ? new Intl.NumberFormat(lang === "ru" ? "ru-RU" : "en-GB").format(n).replace(/,/g, " ") + " ₽" : "—");
+  const open = list.filter((x) => x.pay.state === "unpaid" || x.pay.state === "billed");
+  return (
+    <div className="lpays">
+      <div className="flex items-center gap-2"><b className="grow">{t("lp.title")}</b>{open.length > 0 && <span className="pill red">{t("lp.openN", { n: open.length })}</span>}</div>
+      {list.map((x) => (
+        <div key={x.id} className="lprice">
+          <span className="grow">{x.date}</span>
+          <b className="small">{fmt(x.price)}</b>
+          {x.pay.state === "paid" && <span className="pill green">✓ {t("lp.paid")}</span>}
+          {x.pay.state === "paid" && x.pay.quick && <button type="button" className="btn plain sm" disabled={pending} onClick={() => confirm(t("lp.undoQ")) && run(() => undoLessonPaid(x.id))}>{t("lp.undo")}</button>}
+          {x.pay.state === "pack" && <span className="pill grey">{t("lp.pack")}</span>}
+          {(x.pay.state === "unpaid" || x.pay.state === "billed") && <>
+            <span className={`pill ${x.pay.state === "billed" ? "orange" : "red"}`}>{t(x.pay.state === "billed" ? "lp.billed" : "lp.unpaid")}</span>
+            <button type="button" className="btn primary sm" disabled={pending} onClick={() => {
+              let sum: number | undefined;
+              if (!x.price) { const v = Number((prompt(t("lp.askSum")) ?? "").replace(/\D/g, "")); if (!v) return; sum = v; }
+              run(() => confirmLessonPaid(x.id, sum));
+            }}><Icon name="check" size="sm" />{t("lp.confirm")}</button>
+          </>}
+        </div>
+      ))}
+      {error && <div className="alert mt-2">{error}</div>}
+    </div>
+  );
+}
 
 const PACK_RULES = ["pack_left_1", "pack_left_2", "pack_end"];
 const POST_RULES = ["after_5", "after_15", "after_30", "after_60", "next_day", "every_4_weeks"];
@@ -220,6 +252,7 @@ export function PaymentCard({ p, earnedMonth }: { p: PaymentData; earnedMonth: s
         </div>
       )}
       {error && !newPack && <div className="alert mt-3">{error}</div>}
+      {!!p.lessonsPay?.length && <LessonPays list={p.lessonsPay} />}
 
       <details className="paymore" onChange={() => setSaved(false)}>
         <summary><span>{t("pay.settings")}</span><Icon name="chevd" size="sm" /></summary>

@@ -2469,3 +2469,6 @@ body.lmoving, body.lmoving * { cursor: grabbing !important; user-select: none; }
 }
 .prtitle { display: flex; align-items: center; gap: 8px; }
 .prtime { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+/* оплата уроков в анкете */
+.lpays { display: flex; flex-direction: column; gap: 4px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--sep); }
+.lprice .pill { white-space: nowrap; }
