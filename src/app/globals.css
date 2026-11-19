@@ -2583,3 +2583,5 @@ button.fintile.main.on { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px #34C759
   .tl-quick .btn.afterbtn .i { flex: none; align-self: flex-start; margin-top: 2px; }
   .afternote { width: 100%; }
 }
+.errbar.none { background: var(--surface2); }
+.errbar.none .si { background: var(--ok); }

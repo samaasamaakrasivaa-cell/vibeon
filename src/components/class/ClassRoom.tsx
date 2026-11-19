@@ -787,22 +787,20 @@ function Homework({ teacher, tasks, statuses, reviews, training, comment, render
         <div className="prevhw mb-4">
           <span className="si" style={{ background: "var(--violet)" }}><Icon name="inbox" size="sm" /></span>
           <span className="grow min-w-0"><b className="block">{t("cls.prevHw", { d: prevHw.date })}</b><span className="small muted">{t("cls.prevHwSub", { n: prevHw.done, total: prevHw.total })}{prevHw.errors ? ` · ${t("cls.prevHwErr", { n: prevHw.errors })}` : ""}</span></span>
-          {prevHw.errors
-            ? <button type="button" className="btn tinted sm" title={teacher ? t("cls.errGoHint") : undefined} onClick={() => goPrev(`/class/${prevHw.id}?tab=homework&err=1&back=${selfId}`)}><Icon name="alert" size="sm" />{t("cls.prevHwGo")}</button>
-            : <button type="button" className="btn secondary sm" onClick={() => goPrev(`/class/${prevHw.id}?tab=homework&back=${selfId}`)}>{t("prof.open")}</button>}
+          <button type="button" className={`btn ${prevHw.errors ? "tinted" : "secondary"} sm`} title={teacher ? t("cls.errGoHint") : undefined} onClick={() => goPrev(`/class/${prevHw.id}?tab=homework${prevHw.errors ? "&err=1" : ""}&back=${selfId}`)}><Icon name={prevHw.errors ? "alert" : "inbox"} size="sm" />{prevHw.errors ? t("cls.prevHwGo") : t("cls.prevHwOpen")}</button>
         </div>
       )}
       {/* «Разобрать ошибки»: только задания с ошибками; у ученика на уроке — то же самое */}
-      {(errTasks.size > 0 || errOnly) && (
-        <div className={`errbar mb-4 ${errOnly ? "on" : ""}`}>
-          <span className="si"><Icon name={errOnly ? "target" : "alert"} size="sm" /></span>
+      {(tasks.length > 0 || errOnly) && (
+        <div className={`errbar mb-4 ${errOnly ? "on" : ""} ${!errOnly && errTasks.size === 0 ? "none" : ""}`}>
+          <span className="si"><Icon name={errOnly ? "target" : errTasks.size ? "alert" : "check"} size="sm" /></span>
           <span className="grow min-w-0">
-            <b className="block">{errOnly ? t("cls.errMode") : t("cls.errFound", { n: errTasks.size })}</b>
-            <span className="small muted">{errOnly ? t("cls.errModeHint", { n: errTasks.size }) + (teacher ? ` ${t("cls.errSynced")}` : "") : t("cls.errFoundHint")}</span>
+            <b className="block">{errOnly ? t("cls.errMode") : errTasks.size ? t("cls.errFound", { n: errTasks.size }) : t("cls.errZero")}</b>
+            <span className="small muted">{errOnly ? t("cls.errModeHint", { n: errTasks.size }) + (teacher ? ` ${t("cls.errSynced")}` : "") : errTasks.size ? t("cls.errFoundHint") : t("cls.errZeroHint")}</span>
           </span>
           {errOnly
             ? <button type="button" className="btn secondary sm" onClick={() => setErrOnly(false)}>{t("cls.errAll")}</button>
-            : <button type="button" className="btn primary sm" onClick={() => setErrOnly(true)}><Icon name="target" size="sm" />{t("cls.prevHwGo")}</button>}
+            : <button type="button" className={`btn ${errTasks.size ? "primary" : "secondary"} sm`} disabled={!errTasks.size} onClick={() => setErrOnly(true)}><Icon name="target" size="sm" />{t("cls.prevHwGo")}{errTasks.size ? ` · ${errTasks.size}` : ""}</button>}
         </div>
       )}
       {/* слова этого урока — одна тренировка, запускается прямо здесь (и у учителя, и у ученика) */}
