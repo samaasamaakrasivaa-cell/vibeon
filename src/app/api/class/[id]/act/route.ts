@@ -124,7 +124,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     case "live": {
       if (!teacher) return bad("teacher only");
       const patch = (body.patch ?? {}) as LiveState;
-      const allowed: (keyof LiveState)[] = ["rubricId", "spotlight", "hidden", "follow", "lockBoard", "page", "timer", "tab", "scriptOpen", "marks", "marksShown"];
+      const allowed: (keyof LiveState)[] = ["rubricId", "spotlight", "hidden", "follow", "lockBoard", "page", "timer", "tab", "scriptOpen", "marks", "marksShown", "hwErr"];
       const clean = Object.fromEntries(Object.entries(patch).filter(([k]) => allowed.includes(k as keyof LiveState)));
       if (JSON.stringify(clean).length > 60000) return bad("big");
       await withLock(`live:${host.id}`, async () => {
@@ -259,6 +259,14 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     case "notepoint": {
       if (!teacher) return bad();
       publish(ch, "notepoint", { sid: str(body.studentId, 60) || null });
+      return NextResponse.json({ ok: true });
+    }
+    case "goto": {
+      // учитель ведёт ученика в другой класс (разбор ошибок домашки прошлого урока и обратно); доступ проверит страница
+      if (!teacher) return bad();
+      const url = str(body.url, 200);
+      if (!/^\/class\/[A-Za-z0-9_-]+(\?[A-Za-z0-9_=&-]*)?$/.test(url)) return bad();
+      publish(ch, "goto", { url });
       return NextResponse.json({ ok: true });
     }
     case "point": {

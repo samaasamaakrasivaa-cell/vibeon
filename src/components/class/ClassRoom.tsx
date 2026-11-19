@@ -56,6 +56,10 @@ export function ClassRoom({ d }: { d: ClassData }) {
   const teacher = d.role === "teacher";
   const [tab, setTab] = useState<"lesson" | "homework" | "words" | "board">(d.initialTab ?? "lesson");
   const [addHwTip, setAddHwTip] = useState(!!d.addHw); // пришли из «Домашки» по «+»: подсказать, как добавить задания
+  // «Разобрать ошибки» в домашке: только задания с ошибками; учитель включает — у ученика тоже (live.hwErr)
+  const [hwErr, setHwErr] = useState(!!d.live?.hwErr);
+  const [back, setBack] = useState<string | null>(null); // пришли разбирать ошибки из другого урока — туда и вернуться
+  useEffect(() => { const q = new URLSearchParams(location.search); if (q.get("err") === "1") setHwErr(true); const b = q.get("back"); if (b && /^[A-Za-z0-9_-]+$/.test(b)) setBack(b); }, []);
   // ответы, проверки и слова — по ученикам (в группе учитель смотрит выбранного ученика)
   const gTeacher = teacher && !!d.group;
   const own = d.student?.id ?? "_";
@@ -156,6 +160,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
         if ("tab" in x && x.tab) setTab(x.tab as typeof tab);
         if (x.spotlight) spotlight((x.spotlight as { taskId: string }).taskId, x.tab as string | undefined);
         if ("page" in x && typeof x.page === "number") setPage(x.page);
+        if ("hwErr" in x) { setHwErr(!!x.hwErr); if (x.hwErr) setTab("homework"); }
       }
     } else if (ev === "hw") setHw((h) => ({ ...h, ...x }));
     else if (ev === "board") {
@@ -178,6 +183,8 @@ export function ClassRoom({ d }: { d: ClassData }) {
         document.getElementById("cls-snote")?.scrollIntoView({ behavior: "smooth", block: "center" });
         setTimeout(() => setNoteFlash(false), 3600);
       }
+    } else if (ev === "goto") {
+      if (!teacher && typeof x.url === "string" && x.url.startsWith("/class/")) router.push(x.url);
     } else if (ev === "point") {
       if (teacher && x.by !== d.me.id) { spotlight(x.taskId as string, x.where as string | undefined); setPointBy({ name: String(x.name ?? ""), at: Date.now() }); setTimeout(() => setPointBy(null), 5000); }
     } else if (ev === "chat") {
@@ -540,7 +547,8 @@ export function ClassRoom({ d }: { d: ClassData }) {
               )
             )}
             {tab === "homework" && (
-              <Homework teacher={teacher} hwTime={hwTime} tasks={hwTasks} errTasks={errTasks} prevHw={d.prevHw ?? null} prepared={prepared} onAssign={assignHw} removed={teacher && !manual ? (hw.removedTaskIds ?? []).length : 0} onRestore={() => { setHw((h) => ({ ...h, removedTaskIds: [] })); void send("hwRestore", {}); }} statuses={statuses} reviews={reviews} training={hw.wordTraining} comment={hw.teacherComment} render={renderTasks}
+              <Homework teacher={teacher} hwTime={hwTime} errOnly={hwErr} setErrOnly={(v) => { setHwErr(v); if (teacher) patchLive({ hwErr: v }); }}
+                selfId={d.id} goPrev={(url) => { if (teacher) void send("goto", { url }); router.push(url); }} back={back} onBack={() => { const url = `/class/${back}`; if (teacher) { patchLive({ hwErr: false }); void send("goto", { url }); } router.push(url); }} tasks={hwTasks} errTasks={errTasks} prevHw={d.prevHw ?? null} prepared={prepared} onAssign={assignHw} removed={teacher && !manual ? (hw.removedTaskIds ?? []).length : 0} onRestore={() => { setHw((h) => ({ ...h, removedTaskIds: [] })); void send("hwRestore", {}); }} statuses={statuses} reviews={reviews} training={hw.wordTraining} comment={hw.teacherComment} render={renderTasks}
                 cards={[...d.lessonWords.map((w) => ({ word: w.word, tr: w.tr, ex: w.ex })), ...words.filter((w) => !d.lessonWords.some((l) => l.word.toLowerCase() === w.word.toLowerCase())).map((w) => ({ word: w.word, tr: w.translation ?? "", ex: w.example ?? "" }))].filter((w) => w.tr || w.ex)} />
             )}
             {tab === "words" && <Words key={viewSid} teacher={teacher} lessonWords={d.lessonWords} words={words} training={hw.wordTraining} send={send} setHw={setHw} />}
@@ -743,8 +751,8 @@ function ReviewBox({ lessonId, task, review, draft, answered, send }: { lessonId
   );
 }
 
-function Homework({ teacher, tasks, statuses, reviews, training, comment, render, cards, removed = 0, onRestore, prepared = [], onAssign, errTasks, prevHw, hwTime = 0 }: {
-  hwTime?: number;
+function Homework({ teacher, tasks, statuses, reviews, training, comment, render, cards, removed = 0, onRestore, prepared = [], onAssign, errTasks, prevHw, hwTime = 0, errOnly, setErrOnly, goPrev, back, onBack, selfId }: {
+  hwTime?: number; errOnly: boolean; setErrOnly: (v: boolean) => void; goPrev: (url: string) => void; back: string | null; selfId: string; onBack: () => void;
   removed?: number; onRestore?: () => void; prepared?: (TaskData & { section: string })[]; onAssign?: (ids: string[]) => void;
   errTasks: Set<string>; prevHw: ClassData["prevHw"] | null;
   teacher: boolean; tasks: (TaskData & { section: string })[]; statuses: Record<string, string>; reviews: Record<string, Review>; training: string[]; comment: string | null;
@@ -753,8 +761,6 @@ function Homework({ teacher, tasks, statuses, reviews, training, comment, render
   const { t } = useT();
   const [train, setTrain] = useState(false);
   // разбор ошибок: только задания с ошибками, а в них — только строки с ошибкой (задание целиком — кнопкой у задания)
-  const [errOnly, setErrOnly] = useState(false);
-  useEffect(() => { if (new URLSearchParams(location.search).get("err") === "1") setErrOnly(true); }, []); // ссылка «Разобрать ошибки» — сразу с фильтром
   const say = (w: string) => { const u = new SpeechSynthesisUtterance(w); u.lang = "en-GB"; u.rate = 0.9; speechSynthesis.cancel(); speechSynthesis.speak(u); };
   const [f, setF] = useState<"all" | "auto" | "needs">("all");
   const auto = tasks.filter((x) => statuses[x.id] === "AUTO_CHECKED");
@@ -774,19 +780,30 @@ function Homework({ teacher, tasks, statuses, reviews, training, comment, render
         </div>
       )}
       {!teacher && comment && <div className="alert mb-4" style={{ background: "var(--accent-bg)", color: "var(--accent-text)" }}>{comment}</div>}
-      {/* домашка прошлого урока — разобрать ошибки на этом */}
-      {prevHw && (
-        <a className="prevhw mb-4" href={`/class/${prevHw.id}?tab=homework${prevHw.errors ? "&err=1" : ""}`}>
+      {/* пришли из урока разбирать ошибки этой домашки — вернуться (учитель возвращает и ученика) */}
+      {back && <button type="button" className="btn plain sm mb-3 -ml-2" onClick={onBack}><Icon name="chevl" size="sm" />{t("cls.errBack")}</button>}
+      {/* домашка прошлого урока — разобрать ошибки на этом уроке: учитель переводит туда и ученика */}
+      {prevHw && !back && (
+        <div className="prevhw mb-4">
           <span className="si" style={{ background: "var(--violet)" }}><Icon name="inbox" size="sm" /></span>
           <span className="grow min-w-0"><b className="block">{t("cls.prevHw", { d: prevHw.date })}</b><span className="small muted">{t("cls.prevHwSub", { n: prevHw.done, total: prevHw.total })}{prevHw.errors ? ` · ${t("cls.prevHwErr", { n: prevHw.errors })}` : ""}</span></span>
-          <span className="btn secondary sm">{prevHw.errors ? t("cls.prevHwGo") : t("prof.open")}</span>
-        </a>
+          {prevHw.errors
+            ? <button type="button" className="btn tinted sm" title={teacher ? t("cls.errGoHint") : undefined} onClick={() => goPrev(`/class/${prevHw.id}?tab=homework&err=1&back=${selfId}`)}><Icon name="alert" size="sm" />{t("cls.prevHwGo")}</button>
+            : <button type="button" className="btn secondary sm" onClick={() => goPrev(`/class/${prevHw.id}?tab=homework&back=${selfId}`)}>{t("prof.open")}</button>}
+        </div>
       )}
+      {/* «Разобрать ошибки»: только задания с ошибками; у ученика на уроке — то же самое */}
       {(errTasks.size > 0 || errOnly) && (
-        <label className="setting errswitch mb-4">
-          <span><span>{t("cls.errOnly")}</span><br /><span className="small muted">{t("cls.errOnlyHint", { n: errTasks.size })}</span></span>
-          <span className="switch"><input type="checkbox" checked={errOnly} onChange={(e) => setErrOnly(e.target.checked)} /><span /></span>
-        </label>
+        <div className={`errbar mb-4 ${errOnly ? "on" : ""}`}>
+          <span className="si"><Icon name={errOnly ? "target" : "alert"} size="sm" /></span>
+          <span className="grow min-w-0">
+            <b className="block">{errOnly ? t("cls.errMode") : t("cls.errFound", { n: errTasks.size })}</b>
+            <span className="small muted">{errOnly ? t("cls.errModeHint", { n: errTasks.size }) + (teacher ? ` ${t("cls.errSynced")}` : "") : t("cls.errFoundHint")}</span>
+          </span>
+          {errOnly
+            ? <button type="button" className="btn secondary sm" onClick={() => setErrOnly(false)}>{t("cls.errAll")}</button>
+            : <button type="button" className="btn primary sm" onClick={() => setErrOnly(true)}><Icon name="target" size="sm" />{t("cls.prevHwGo")}</button>}
+        </div>
       )}
       {/* слова этого урока — одна тренировка, запускается прямо здесь (и у учителя, и у ученика) */}
       {training.length > 0 && f === "all" && (

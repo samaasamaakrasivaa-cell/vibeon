@@ -23,5 +23,6 @@ export type LiveState = {
   rubricId?: string | null; spotlight?: { taskId: string; at: number } | null; hidden?: string[]; follow?: boolean;
   // timer: left — стоит на паузе (сколько секунд осталось); taskId — таймер к заданию
   lockBoard?: boolean; page?: number; timer?: { endsAt: number; left?: number; taskId?: string } | null; tab?: string; scriptOpen?: string[];
-  marks?: Record<string, number[] | Record<string, number>>; marksShown?: string[]; // «Выдели слова»: выделения учителя и задания, где они показаны ученику
+  marks?: Record<string, number[] | Record<string, number>>; marksShown?: string[];
+  hwErr?: boolean; // «Разобрать ошибки» в домашке: учитель включил — у ученика тоже только задания с ошибками // «Выдели слова»: выделения учителя и задания, где они показаны ученику
 };
