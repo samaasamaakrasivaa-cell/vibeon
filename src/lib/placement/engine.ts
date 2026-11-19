@@ -157,10 +157,13 @@ function locate(st: PState, bank: Bank): { cand: number | null; next: number | n
     if (p === undefined) return { cand: null, next: L };
     if (p) {
       if (L === 4) return { cand: 4, next: null };
+      // Teens: верхний уровень поиска — B2 (заданий C1 в банке немного, угаданные 2 из 3 не должны давать C1);
+      // B2 сдан — проверяем его подробно, а C1 — серией заданий по разделам после проверки
+      if (st.track === "teen" && L === 3) return { cand: 3, next: null, border: hasUpper(bank, 3) };
       const up = anchorPass(st, bank, L + 1);
-      if (up === false) return { cand: L, next: null };
-      // уровень выше сдан не чисто (2 из 3) — пограничный: проверяем этот уровень полностью и каждый раздел уровнем выше
-      if (up === true) { const s = ladderStat(st, L + 1); if (s.c < s.n && hasUpper(bank, L)) return { cand: L, next: null, border: true }; }
+      // уровень выше не сдан, но 1 из 3 там верно — пограничный: после проверки уровня — серия заданий уровнем выше по разделам
+      if (up === false) { const s = ladderStat(st, L + 1); return { cand: L, next: null, border: s.c > 0 && hasUpper(bank, L) }; }
+      // уровень выше: 2 из 3 или 3 из 3 — сдан, идём ещё выше (договорённость: тройка решает, вверх или вниз)
       L++;
     }
     else { if (L === 0) return { cand: 0, next: null }; if (anchorPass(st, bank, L - 1) === true) return { cand: L - 1, next: null }; L--; }
@@ -230,9 +233,12 @@ export function nextCore(st: PState, bank: Bank, rnd: () => number = Math.random
   {
     // добор разделов — не в конце пачкой, а вперемешку с проверкой: после первого круга — через задание
     const roundOne = groupsOf(bank, D).every((g) => inGroup(st, g.id) >= 1);
-    if (roundOne && st.core[st.core.length - 1]?.ph === "d") { const f = cover(st, bank, D, rnd, true); if (f) return f; }
+    if (roundOne && st.core[st.core.length - 1]?.ph === "d") { const f = cover(st, bank, D, rnd, true, "same"); if (f) return f; }
     const d = detailPick(st, bank, D, rnd); if (d) return d;
   }
+  // уровень проверки доводим до конца, прежде чем идти выше: добор и повторы после ошибок того же уровня,
+  // потом — добор уровнем ниже одной серией (а не по одному заданию между заданиями уровня выше)
+  { const o = tail(st, bank, D, rnd); if (o) return o; }
   // шаг вверх по разделам: раздел сделан без ошибок — проверяем его же уровнем выше
   // и так на каждом уровне: поднялись на B2 и делаем его уверенно — так же проверяем C1 (раньше подъём был только один раз)
   if (D < 4 && !st.fb && !st.bd) { const u = stepUp(st, bank, D, rnd); if (u) return u; }
@@ -278,9 +284,6 @@ export function nextCore(st: PState, bank: Bank, rnd: () => number = Math.random
   }
   // пограничный: задания уровнем выше по разделам вперемешку с повторами и добором уровня проверки
   if (st.bd && D < 4) {
-    const lastB = st.core[st.core.length - 1]?.ph === "b";
-    if (!lastB) { const b = border(st, bank, D, rnd, true); if (b) return b; }
-    const o = tail(st, bank, D, rnd); if (o) return o;
     const b = border(st, bank, D, rnd, false) ?? border(st, bank, D, rnd, false, false); if (b) return b;
     const u = upperStat(st, D);
     if (u.n >= 4 && u.c / u.n >= UP_FROM) { climb(st, D); return nextCore(st, bank, rnd); }
@@ -319,7 +322,8 @@ function detailPick(st: PState, bank: Bank, D: number, rnd: () => number): { ite
 /** Конец проверки: повторы после ошибок и добор разделов — через одно, чтобы не шли подряд. */
 function tail(st: PState, bank: Bank, D: number, rnd: () => number) {
   const last = st.core[st.core.length - 1]?.ph;
-  return last === "f" ? repeat(st, bank, D, rnd) ?? cover(st, bank, D, rnd) : cover(st, bank, D, rnd) ?? repeat(st, bank, D, rnd);
+  const same = last === "f" ? repeat(st, bank, D, rnd) ?? cover(st, bank, D, rnd, false, "same") : cover(st, bank, D, rnd, false, "same") ?? repeat(st, bank, D, rnd);
+  return same ?? cover(st, bank, D, rnd, false, "lower");
 }
 
 /** Повтор после ошибки: на тему, где ученик ошибся, — ещё одно задание (проверить, случайность или пробел). */
@@ -422,7 +426,7 @@ function stepUp(st: PState, bank: Bank, D: number, rnd: () => number): { item: C
 
 /** Добор в конце грамматики: в каждом большом разделе (времена, условные, глагольные модели…) должно быть хотя бы 3 ответа
  *  на уровне проверки (или уровнем ниже, если на этом уровне у раздела нет тем); 1 из 2 — спорно, даём ещё одно. */
-function cover(st: PState, bank: Bank, D: number, rnd: () => number, strict = false): { item: CoreItem; ph: Ph } | null {
+function cover(st: PState, bank: Bank, D: number, rnd: () => number, strict = false, only?: "same" | "lower"): { item: CoreItem; ph: Ph } | null {
   const fams = bank.families ?? [];
   const done = st.core.filter((x) => x.ph === "f");
   if (!fams.length || done.length >= COVER_MAX) return null;
@@ -435,7 +439,7 @@ function cover(st: PState, bank: Bank, D: number, rnd: () => number, strict = fa
   for (const f of fams) {
     const at = (li: number) => f.topics.filter((t) => topicLv.get(t) === li);
     const L = at(D).length ? D : D > 0 && at(D - 1).length ? D - 1 : -1;
-    if (L < 0) continue;
+    if (L < 0 || (only === "same" && L !== D) || (only === "lower" && L === D)) continue;
     // считаем ровно то, что потом покажет таблица разделов: если у раздела есть темы на уровне проверки — ответы на этом уровне, иначе — все
     const s2 = stat(st, (it, x) => it.skill === "grammar" && !x.ph?.startsWith("v") && f.topics.includes(it.topic_id) && (L === D ? PL_LEVELS.indexOf(it.level) === D : true));
     const extra = done.filter((x) => f.topics.includes((st.items[x.id] as CoreItem)?.topic_id)).length;
