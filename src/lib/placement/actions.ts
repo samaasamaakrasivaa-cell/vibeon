@@ -50,6 +50,11 @@ export async function startPlacement(id: string): Promise<R> {
     const { a, st } = await load(id);
     const { bank } = await getBank(trackOf(st.track));
     if (!st.core) Object.assign(st, emptyState());
+    // взрослый тест, назначенный до v6 и ещё не начатый: проходит уже по v6 (разминки нет, старт — ожидаемый уровень или B1)
+    if (st.section === "intro" && st.track !== "teen" && !st.v6 && st.core.length === 0) {
+      st.v6 = true; delete st.warm;
+      if (st.start === undefined) st.start = emptyState().start;
+    }
     const fin = st.section === "intro" ? begin(st, bank) : advance(st, bank);
     if (fin) return submit(await load(id), st);
     // добавленные разделы: точка А с уровнем остаётся в маршруте
