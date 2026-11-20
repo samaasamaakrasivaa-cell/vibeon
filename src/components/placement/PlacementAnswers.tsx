@@ -13,7 +13,7 @@ import { Flag } from "./Flag";
 export const fmtSec = (ms: number) => (ms < 60000 ? `${Math.max(1, Math.round(ms / 1000))} с` : `${Math.floor(ms / 60000)} мин ${Math.round((ms % 60000) / 1000)} с`);
 
 /** only — показать один раздел (разбор под своим блоком в выводе системы), без карточки и заголовка. */
-export function PlacementAnswers({ id, d, teacher, reveal: initial, only }: { id: string; d: ReviewData; teacher: boolean; reveal: string[]; only?: "core" | "vocab" | "reading" | "listening" }) {
+export function PlacementAnswers({ id, d, teacher, reveal: initial, only, wrongOnly = false }: { id: string; d: ReviewData; teacher: boolean; reveal: string[]; only?: "core" | "vocab" | "reading" | "listening"; wrongOnly?: boolean }) {
   const { t } = useT();
   const [open, setOpen] = useState<Record<string, string>>({});
   const [rev, setRev] = useState<string[]>(initial);
@@ -38,7 +38,7 @@ export function PlacementAnswers({ id, d, teacher, reveal: initial, only }: { id
   const tried = (list: (string | null)[]) => teacher && list.length > 0 && <div className="small muted"><Icon name="pencil" size="sm" /> {t("pl.tried")}: {list.map((v) => v ?? t("pl.dontKnow")).join(" → ")}</div>;
   return (
     <div className="flex flex-col gap-4">
-      {(["core", "vocab"] as const).filter((part) => !only || only === part).map((part) => { const list = d.core.filter((x) => (part === "vocab") === !!x.vocab); return list.length > 0 && (
+      {(["core", "vocab"] as const).filter((part) => !only || only === part).map((part) => { const list = d.core.filter((x) => (part === "vocab") === !!x.vocab && (!wrongOnly || !x.ok)); return list.length > 0 && (
       <section key={part} className={only ? "" : "card"}>
         {!only && <h3 className="mt-0">{t(part === "vocab" ? "pl.part.vocab" : "pl.part.core")}</h3>}
         {L.filter((l) => list.some((x) => x.level === l)).map((l) => (
@@ -67,7 +67,7 @@ export function PlacementAnswers({ id, d, teacher, reveal: initial, only }: { id
         ))}
       </section>
       ); })}
-      {[...(!only || only === "reading" ? d.reading : []), ...(!only || only === "listening" ? d.listening : [])].map((x) => (
+      {[...(!only || only === "reading" ? d.reading : []), ...(!only || only === "listening" ? d.listening : [])].filter((x) => !wrongOnly || x.questions.some((q) => !q.ok)).map((x) => (
         <section key={x.id} className="card flex flex-col gap-3">
           <div className="flex flex-wrap items-center gap-2">
             <span className="pill grey">{t(x.kind === "reading" ? "pl.part.reading" : "pl.part.listening")} · {x.level}</span>
@@ -84,7 +84,7 @@ export function PlacementAnswers({ id, d, teacher, reveal: initial, only }: { id
           {x.audio && <audio controls src={x.audio} className="w-full" preload="none" />}
           {teacher && x.script && <details><summary className="small">{t("pl.script")}</summary><div className="tpassage plscript mt-2">{x.script}</div></details>}
           {!teacher && open[x.id] && <div className="tpassage plscript"><div className="small mb-1 font-bold"><Icon name="eye" size="sm" /> {t("pl.script")}</div>{open[x.id]}</div>}
-          {x.questions.map((q) => (
+          {x.questions.filter((q) => !wrongOnly || !q.ok).map((q) => (
             <div key={q.id} className={`plans ${q.ok ? "ok" : "bad"}`}>
               <div className="flex items-start gap-2"><span className="plnum">{num.get(q.id)}</span><Icon name={q.ok ? "check" : "close"} size="sm" /><div className="grow">
                 <span>{q.q}</span>{teacher && <span className="ml-2 inline-block align-middle"><Flag itemId={x.id} qid={q.id} attempt={id} small /></span>}

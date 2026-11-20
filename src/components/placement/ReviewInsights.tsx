@@ -2,7 +2,7 @@
 // Разбор placement test для учителя: таблица по навыкам и «Вывод системы» — по блокам (грамматика, лексика, чтение,
 // аудирование, письмо, говорение). В каждом блоке: как тест шёл по уровням, статистика, что это значит, время,
 // ошибки по темам и разбор ответов этого блока (раскрывается). Таблицу и списки ошибок можно скачать в PDF.
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useT } from "@/lib/i18n/client";
 import type { DictKey } from "@/lib/i18n/dict";
 import { PL_LEVELS, STEPS, type Summary } from "@/lib/placement/engine";
@@ -76,15 +76,24 @@ export function Block({ title, step, time, idle, children, note, defaultOpen }: 
 function AnswersBox({ ans, who, title, only }: { ans: Ans; who: string; title: string; only: "core" | "vocab" | "reading" | "listening" }) {
   const { t } = useT();
   const boxRef = useRef<HTMLDivElement>(null);
-  const name = `Placement test · ${who} · ${title}`;
+  const [wrongOnly, setWrongOnly] = useState(false);
+  const name = `Placement test · ${who} · ${title}${wrongOnly ? ` · ${t("rp.ansWrong")}` : ""}`;
+  // сколько вопросов и ошибок в этом блоке — для переключателя «Все / Только ошибки»
+  const qs = only === "core" || only === "vocab" ? ans.d.core.filter((x) => (only === "vocab") === !!x.vocab) : (only === "reading" ? ans.d.reading : ans.d.listening).flatMap((x) => x.questions);
+  const bad = qs.filter((x) => !x.ok).length;
   return (
     <details className="prdet">
       <summary>{t("pr.answers")}</summary>
-      <div className="prdl noprint"><span className="small muted">{t("pr.dlTitle")}:</span>
+      <div className="prdl noprint">
+        <div className="seg" role="group" aria-label={t("pr.ansFilter")}>
+          <button type="button" aria-pressed={!wrongOnly} onClick={() => setWrongOnly(false)}>{t("rp.ansAll")} · {qs.length}</button>
+          <button type="button" aria-pressed={wrongOnly} onClick={() => setWrongOnly(true)}>{t("rp.ansWrong")} · {bad}</button>
+        </div>
+        <span className="small muted ml-auto">{t("pr.dlTitle")}:</span>
         <button type="button" className="btn plain sm" onClick={() => printPart(boxRef.current)}><Icon name="dl" size="sm" />{t("pr.dlPdf")}</button>
         <button type="button" className="btn plain sm" onClick={() => toWord(boxRef.current, name)}><Icon name="dl" size="sm" />{t("pr.dlWord")}</button>
       </div>
-      <div className="mt-2" ref={boxRef}><div className="printonly"><b>{name}</b></div><PlacementAnswers id={ans.id} d={ans.d} teacher reveal={ans.reveal} only={only} /></div>
+      <div className="mt-2" ref={boxRef}><div className="printonly"><b>{name}</b></div>{wrongOnly && bad === 0 ? <p className="hint m-0">{t("pr.noWrong")}</p> : <PlacementAnswers id={ans.id} d={ans.d} teacher reveal={ans.reveal} only={only} wrongOnly={wrongOnly} />}</div>
     </details>
   );
 }
