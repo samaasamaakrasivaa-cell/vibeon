@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { PlacementReview } from "@/components/placement/PlacementReview";
 import { requireUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
+import type { RSaved } from "@/lib/placement/report";
 import { getT } from "@/lib/i18n/server";
 import { getBank, RUBRICS, trackOf } from "@/lib/placement/bank";
 import { PL_LEVELS, STEPS, summarize } from "@/lib/placement/engine";
@@ -34,6 +35,9 @@ export default async function PlacementReviewPage({ params }: { params: Promise<
   const when = a.submittedAt ?? a.startedAt ?? a.createdAt;
   // разделы теста и даты: когда пройден каждый (тест можно дополнять разделами)
   const dfmt = (ms: number) => new Date(ms).toLocaleDateString(loc, { day: "numeric", month: "short", timeZone: me.timezone });
+  // отчёт уже собран (сохранён) или отправлен ученику — «Редактировать отчёт» вместо «Сгенерировать»
+  const rep = ((a.review ?? {}) as { report?: RSaved }).report;
+  const hasRep = !!(rep && (rep.sent || rep.student || rep.parent));
   const dates = Object.fromEntries(Object.entries(st.sdates ?? {}).map(([k, v]) => [k, dfmt(v as number)]));
   // даты прохождения: один день — «пройден 18 ноября»; разные — какие разделы когда и общий промежуток «18–20 ноября»
   const sd = Object.entries(st.sdates ?? {}).filter(([, v]) => typeof v === "number") as [string, number][];
@@ -53,7 +57,12 @@ export default async function PlacementReviewPage({ params }: { params: Promise<
       <div className="mt-2 mb-4 flex flex-wrap items-center gap-3">
         <h1 className="m-0">{t("pl.title")}: {who}</h1>
         <span className={`pill ${a.status === "reviewed" ? "green" : a.status === "submitted" ? "orange" : "grey"}`}>{t(`pl.st.${a.status}` as "pl.st.new")}</span>
-        {(a.status === "submitted" || a.status === "reviewed") && <Link href={`/teacher/placement/${id}/report`} className="btn primary sm ml-auto">{t("pl.genReport")}</Link>}
+        {(a.status === "submitted" || a.status === "reviewed") && (
+          <span className="ml-auto flex flex-wrap items-center gap-2">
+            {rep?.sent && <span className="small muted">{t("pl.repSent", { d: rep.sentAt ? new Date(rep.sentAt).toLocaleDateString(loc, { day: "numeric", month: "long", timeZone: me.timezone }) : "" })}</span>}
+            <Link href={`/teacher/placement/${id}/report`} className="btn primary sm">{t(hasRep ? "pl.editReport" : "pl.genReport")}</Link>
+          </span>
+        )}
       </div>
       <p className="muted mt-0 mb-5">
         {a.status === "submitted" || a.status === "reviewed" ? doneLine : when.toLocaleDateString(loc, { day: "numeric", month: "long", hour: "2-digit", minute: "2-digit", timeZone: me.timezone })}

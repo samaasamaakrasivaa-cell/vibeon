@@ -17,7 +17,7 @@ import type { DictKey } from "@/lib/i18n/dict";
 type Marks = Record<string, number>;
 export type ReviewProps = {
   id: string; mode: string; status: string; level: string | null; showResult: boolean; teen?: boolean; tgSent?: string | null;
-  sm: Summary; d: ReviewData; review: { writing?: Record<string, unknown>; speaking?: Record<string, unknown>; points?: boolean[]; comment?: string; wNote?: string; sNote?: string; wc?: Record<string, string>; sc?: Record<string, string>; lesson?: { level: string; marks: Record<string, unknown> } | null; ai?: Partial<Record<"writing" | "speaking", PlScore & { level?: string; transcripts?: string[] }>> };
+  sm: Summary; d: ReviewData; review: { writing?: Record<string, unknown>; speaking?: Record<string, unknown>; points?: boolean[]; comment?: string; wNote?: string; sNote?: string; wc?: Record<string, string>; sc?: Record<string, string>; lesson?: { level: string; marks: Record<string, unknown> } | null; report?: { student?: unknown; parent?: unknown; sent?: boolean; sentAt?: string }; ai?: Partial<Record<"writing" | "speaking", PlScore & { level?: string; transcripts?: string[] }>> };
   lessonQs: { level: string; questions: string[] }[]; // говорение на уроке: вопросы уровнем выше и ниже
   rubrics: { writing: Rubric[]; speaking: Rubric[] }; howTo: string; sublevels: string; total: string;
   parts?: string[]; dates?: Record<string, string>; // разделы теста и даты, когда каждый пройден
@@ -332,8 +332,13 @@ export function PlacementReview(p: ReviewProps) {
           {/* отчёт — когда всё проверено: тот же, что кнопкой вверху страницы */}
           {(p.status === "submitted" || p.status === "reviewed") && (
             <div className="flex flex-wrap items-center gap-2">
-              <a href={`/teacher/placement/${p.id}/report`} className="btn primary sm"><Icon name="dl" size="sm" />{t("pl.genReport")}</a>
-              <span className="small muted">{t("pl.genReportHint")}</span>
+              {(() => {
+                const r = p.review.report, has = !!(r && (r.sent || r.student || r.parent));
+                return <>
+                  <a href={`/teacher/placement/${p.id}/report`} className="btn primary sm"><Icon name={has ? "pencil" : "dl"} size="sm" />{t(has ? "pl.editReport" : "pl.genReport")}</a>
+                  <span className="small muted">{r?.sent ? t("pl.repSent", { d: r.sentAt ? new Date(r.sentAt).toLocaleDateString(lang === "ru" ? "ru-RU" : "en-GB", { day: "numeric", month: "long" }) : "" }) : t(has ? "pl.editReportHint" : "pl.genReportHint")}</span>
+                </>;
+              })()}
             </div>
           )}
           {p.mode === "student" && p.level && (
