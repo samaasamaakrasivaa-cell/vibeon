@@ -258,6 +258,22 @@ enum InviteChannel {
   LINK // учитель сам отправляет короткую ссылку (мессенджер, соцсеть)
 }
 
+/// Приглашение преподавателя ссылкой (без писем на почту): администратор создаёт ссылку, человек по ней
+/// регистрируется сам или подключает кабинет учителя к своему входу ученика.
+model TeacherInvite {
+  id        String    @id @default(cuid())
+  code      String    @unique
+  name      String
+  lastName  String?
+  days      Int       @default(14) // пробный доступ, дней
+  planId    String?
+  createdBy String
+  expiresAt DateTime
+  usedAt    DateTime?
+  usedBy    String? // id созданного кабинета учителя
+  createdAt DateTime  @default(now())
+}
+
 model Invite {
   id        String         @id @default(cuid())
   teacherId String

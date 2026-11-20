@@ -11,6 +11,9 @@ import { FEATURE_KEYS, KB_TOPICS, NEWS_TAGS } from "./features";
 import { notify } from "../notify";
 import { isOwner } from "../placement/bank";
 import { isAdmin } from "./access";
+import { shortCode } from "../auth/crypto";
+import { isInternalEmail } from "../auth/cabinet";
+import { translate } from "../i18n/dict";
 
 type R<T = object> = ({ ok: true } & T) | { ok: false; error: string };
 const DAY = 864e5;
@@ -45,6 +48,29 @@ export async function createTeacher(x: { name: string; lastName: string; email: 
   await mailTeacherInvite(user.email, name, link, days, "ru").catch(() => undefined);
   done();
   return { ok: true, link, id: user.id };
+}
+
+/** Пригласить учителя ссылкой (без писем): человек по ней регистрируется сам или подключает кабинет учителя к своему входу ученика. */
+export async function createTeacherInvite(x: { name: string; lastName: string; days: number; planId: string | null }): Promise<R<{ link: string; msg: string }>> {
+  const me = await admin();
+  const name = x.name.trim().slice(0, 80);
+  if (!name) return { ok: false, error: "name" };
+  const days = Math.min(365, Math.max(1, Math.round(x.days || 14)));
+  const plan = x.planId ? await db.plan.findUnique({ where: { id: x.planId } }) : null;
+  const code = shortCode();
+  await db.teacherInvite.create({ data: { code, name, lastName: x.lastName.trim().slice(0, 80) || null, days, planId: plan?.id ?? null, createdBy: me.id, expiresAt: new Date(Date.now() + 30 * DAY) } });
+  const link = `${env.appUrl}/ti/${code}`;
+  const msg = translate("ru", "tinv.msg", { name, link });
+  done();
+  return { ok: true, link, msg };
+}
+
+/** Отозвать неиспользованное приглашение учителя. */
+export async function revokeTeacherInvite(id: string): Promise<R> {
+  await admin();
+  await db.teacherInvite.deleteMany({ where: { id, usedAt: null } });
+  done();
+  return { ok: true };
 }
 
 /** Новая ссылка, чтобы задать пароль (если учитель потерял письмо). */
@@ -188,6 +214,9 @@ export async function linkCabinet(email: string, password: string): Promise<R> {
 
 export async function unlinkCabinet(): Promise<R> {
   const me = await requireUser();
+  const other = me.linkedUserId ? await db.user.findUnique({ where: { id: me.linkedUserId }, select: { email: true } }) : null;
+  if (isInternalEmail(me.email) || isInternalEmail(other?.email)) return { ok: false, error: "shared" }; // кабинет без своего входа потерялся бы
+
   await db.user.updateMany({ where: { OR: [{ id: me.id }, { linkedUserId: me.id }] }, data: { linkedUserId: null } });
   revalidatePath("/", "layout");
   return { ok: true };

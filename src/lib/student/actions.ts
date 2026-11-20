@@ -1,5 +1,6 @@
 "use server";
 import { revalidatePath } from "next/cache";
+import { loginOf } from "../auth/cabinet";
 import { db } from "../db";
 import { requireUser } from "../auth/session";
 import { chatAccess } from "./access";
@@ -165,7 +166,9 @@ export async function changePassword(oldPw: string, newPw: string): Promise<R> {
   const { t } = await getT();
   const u = await requireUser();
   if (newPw.length < MIN_PASSWORD) return { ok: false, error: t("auth.err.password") };
-  if (u.passwordHash && !(await verifyPassword(oldPw, u.passwordHash))) return { ok: false, error: t("prf.err.old") };
-  await db.user.update({ where: { id: u.id }, data: { passwordHash: await hashPassword(newPw) } });
+  // кабинет учителя на входе ученика: пароль один — меняем пароль входа
+  const login = await loginOf(u);
+  if (login.passwordHash && !(await verifyPassword(oldPw, login.passwordHash))) return { ok: false, error: t("prf.err.old") };
+  await db.user.update({ where: { id: login.id }, data: { passwordHash: await hashPassword(newPw) } });
   return { ok: true };
 }

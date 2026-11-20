@@ -5,7 +5,7 @@ import { useT } from "@/lib/i18n/client";
 import { linkCabinet, switchCabinet, unlinkCabinet } from "@/lib/admin/actions";
 
 /** Профиль → «Второй кабинет»: тот же человек — учитель и ученик; привязка паролем от второго кабинета. */
-export function LinkCabinet({ linked }: { linked: { role: "TEACHER" | "STUDENT"; email: string } | null }) {
+export function LinkCabinet({ linked }: { linked: { role: "TEACHER" | "STUDENT"; email: string; shared?: boolean } | null }) {
   const { t } = useT();
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -19,9 +19,9 @@ export function LinkCabinet({ linked }: { linked: { role: "TEACHER" | "STUDENT";
       <p className="small muted mt-0">{t("cab.hint")}</p>
       {linked ? (
         <div className="flex flex-wrap items-center gap-2">
-          <span className="grow">{t("cab.linked", { r: role(linked.role), e: linked.email })}</span>
+          <span className="grow">{linked.shared ? t("cab.shared", { r: role(linked.role) }) : t("cab.linked", { r: role(linked.role), e: linked.email })}</span>
           <button type="button" className="btn primary sm" disabled={busy} onClick={async () => { setBusy(true); const r = await switchCabinet(); if (r.ok) window.location.href = r.href; else setBusy(false); }}>{t("cab.go")}</button>
-          <button type="button" className="btn plain sm" disabled={busy} onClick={async () => { setBusy(true); await unlinkCabinet(); setBusy(false); router.refresh(); }}>{t("cab.unlink")}</button>
+          {!linked.shared && <button type="button" className="btn plain sm" disabled={busy} onClick={async () => { setBusy(true); await unlinkCabinet(); setBusy(false); router.refresh(); }}>{t("cab.unlink")}</button>}
         </div>
       ) : (
         <form className="grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end" onSubmit={async (e) => { e.preventDefault(); setBusy(true); setErr(null); const r = await linkCabinet(email, pw); setBusy(false); if (!r.ok) setErr(r.error); else { setPw(""); router.refresh(); } }}>

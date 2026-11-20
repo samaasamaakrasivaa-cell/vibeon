@@ -1,3 +1,4 @@
+import { isInternalEmail } from "../auth/cabinet";
 import "server-only";
 import { db } from "../db";
 import { accessOf, type AccessState } from "./features";
@@ -15,7 +16,7 @@ export async function teacherRows(now = new Date()): Promise<TeacherRow[]> {
   const since = new Date(now.getTime() - 30 * DAY);
   const [profiles, lessons, everDone, pays] = await Promise.all([
     db.teacherProfile.findMany({
-      include: { user: { select: { name: true, lastName: true, email: true, createdAt: true, lastSeenAt: true } }, plan: { select: { id: true, name: true, priceMonth: true } }, _count: { select: { students: { where: { status: { not: "ARCHIVED" } } } } } },
+      include: { user: { select: { name: true, lastName: true, email: true, createdAt: true, lastSeenAt: true, linkedUserId: true } }, plan: { select: { id: true, name: true, priceMonth: true } }, _count: { select: { students: { where: { status: { not: "ARCHIVED" } } } } } },
     }),
     db.lessonInstance.groupBy({ by: ["teacherId"], where: { status: "DONE", startsAt: { gte: since } }, _count: { _all: true } }),
     db.lessonInstance.groupBy({ by: ["teacherId"], where: { status: "DONE" }, _count: { _all: true } }),
@@ -24,10 +25,13 @@ export async function teacherRows(now = new Date()): Promise<TeacherRow[]> {
   const l30 = new Map(lessons.map((x) => [x.teacherId, x._count._all]));
   const done = new Set(everDone.map((x) => x.teacherId));
   const paid = new Map(pays.map((x) => [x.teacherId, x._sum.amount ?? 0]));
+  // кабинет учителя, подключённый к входу ученика: показываем почту, по которой человек входит
+  const viaIds = profiles.filter((p) => isInternalEmail(p.user.email) && p.user.linkedUserId).map((p) => p.user.linkedUserId!);
+  const via = new Map((viaIds.length ? await db.user.findMany({ where: { id: { in: viaIds } }, select: { id: true, email: true } }) : []).map((u) => [u.id, u.email]));
   return profiles.map((p) => {
     const a = accessOf(p, now);
     return {
-      id: p.userId, name: [p.user.name, p.user.lastName].filter(Boolean).join(" "), email: p.user.email, createdAt: p.user.createdAt, lastSeenAt: p.user.lastSeenAt,
+      id: p.userId, name: [p.user.name, p.user.lastName].filter(Boolean).join(" "), email: isInternalEmail(p.user.email) ? via.get(p.user.linkedUserId ?? "") ?? "—" : p.user.email, createdAt: p.user.createdAt, lastSeenAt: p.user.lastSeenAt,
       source: p.source, state: a.state, until: a.until, plan: p.plan, students: p._count.students, lessons30: l30.get(p.userId) ?? 0,
       paidTotal: paid.get(p.userId) ?? 0, activated: p._count.students > 0 && done.has(p.userId),
     };

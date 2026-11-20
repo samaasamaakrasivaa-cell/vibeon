@@ -4,7 +4,9 @@ import { requireAdmin } from "@/lib/admin/access";
 import { teacherRows } from "@/lib/admin/data";
 import { rub } from "@/lib/admin/features";
 import { db } from "@/lib/db";
-import { AddTeacher } from "@/components/admin/AdminForms";
+import { AddTeacher, TeacherInvites } from "@/components/admin/AdminForms";
+import { env } from "@/lib/env";
+import { isInternalEmail } from "@/lib/auth/cabinet";
 import { StatePill } from "@/components/admin/StatePill";
 
 const FILTERS = ["all", "trial", "paid", "expired", "blocked"] as const;
@@ -15,7 +17,8 @@ export default async function AdminTeachers({ searchParams }: { searchParams: Pr
   const sp = await searchParams;
   const f = (FILTERS as readonly string[]).includes(sp.s ?? "") ? (sp.s as (typeof FILTERS)[number]) : "all";
   const q = (sp.q ?? "").trim().toLowerCase();
-  const [all, plans] = await Promise.all([teacherRows(), db.plan.findMany({ where: { active: true }, orderBy: { order: "asc" }, select: { id: true, name: true } })]);
+  const [all, plans, invites] = await Promise.all([teacherRows(), db.plan.findMany({ where: { active: true }, orderBy: { order: "asc" }, select: { id: true, name: true } }),
+    db.teacherInvite.findMany({ where: { usedAt: null, expiresAt: { gt: new Date() } }, orderBy: { createdAt: "desc" }, take: 50 })]);
   const rows = all.filter((r) => (f === "all" || r.state === f) && (!q || r.name.toLowerCase().includes(q) || r.email.toLowerCase().includes(q)));
   const loc = lang === "en" ? "en-GB" : "ru-RU";
   const d = (x: Date | null) => (x ? x.toLocaleDateString(loc, { day: "numeric", month: "short", year: "2-digit" }) : "—");
@@ -26,6 +29,7 @@ export default async function AdminTeachers({ searchParams }: { searchParams: Pr
         <h1 className="m-0 grow">{t("adm.nav.teachers")}</h1>
         <AddTeacher plans={plans} />
       </div>
+      <TeacherInvites list={invites.map((x) => ({ id: x.id, name: [x.name, x.lastName].filter(Boolean).join(" "), link: `${env.appUrl}/ti/${x.code}`, until: d(x.expiresAt) }))} />
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <div className="seg nowrap">{FILTERS.map((k) => <Link key={k} href={`?s=${k}${q ? `&q=${encodeURIComponent(q)}` : ""}`} aria-current={f === k ? "page" : undefined}>{t(`adm.f.${k}` as "adm.f.all")} <span className="muted">{k === "all" ? all.length : all.filter((r) => r.state === k).length}</span></Link>)}</div>
         <form className="grow" style={{ minWidth: 200, maxWidth: 320 }}><input type="hidden" name="s" value={f} /><input className="input" name="q" defaultValue={sp.q ?? ""} placeholder={t("adm.search")} aria-label={t("adm.search")} /></form>

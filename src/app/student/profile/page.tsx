@@ -7,6 +7,7 @@ import { LinkCabinet } from "@/components/admin/LinkCabinet";
 import { settingsOf } from "@/lib/notify/settings";
 import { tgEnabled } from "@/lib/notify/telegram";
 import { requireUser } from "@/lib/auth/session";
+import { isInternalEmail } from "@/lib/auth/cabinet";
 import { db } from "@/lib/db";
 import { getT } from "@/lib/i18n/server";
 
@@ -22,7 +23,7 @@ export default async function StudentProfile() {
       {s && <AvatarPicker id={s.id} avatar={s.avatar} tgLinked={!!me.telegramChatId} />}
       <ProfileForm hasPassword={!!me.passwordHash} init={{ name: me.name, lastName: me.lastName ?? "", phone: me.phone ?? "", telegram: s?.telegram ?? "", timezone: me.timezone, email: me.email }} />
       <NotifySettings role="STUDENT" init={settingsOf("STUDENT", me.notify)} linked={!!me.telegramChatId} enabled={tgEnabled()} email={me.email} />
-      <LinkCabinet linked={me.linkedUserId ? await db.user.findUnique({ where: { id: me.linkedUserId }, select: { role: true, email: true } }) : null} />
+      <LinkCabinet linked={await (async () => { const o = me.linkedUserId ? await db.user.findUnique({ where: { id: me.linkedUserId }, select: { role: true, email: true } }) : null; return o ? { ...o, shared: isInternalEmail(o.email) } : null; })()} />
       {s && (
         <section className="card">
           <h2 className="mb-2">{t("prf.teacher")}</h2>

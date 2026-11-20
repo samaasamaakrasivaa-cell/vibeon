@@ -21,6 +21,7 @@ function getTransport() {
 }
 
 export async function sendMail(to: string, subject: string, html: string, text: string) {
+  if (to.endsWith("@cabinet.vibeon.invalid")) return; // кабинет учителя на входе ученика: своей почты нет
   const t = getTransport();
   if (!t) {
     outbox.unshift({ to, subject, html, text, at: new Date() });

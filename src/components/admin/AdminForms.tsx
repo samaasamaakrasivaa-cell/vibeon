@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useT } from "@/lib/i18n/client";
-import { addPayment, blockTeacher, createTeacher, deleteArticle, extendAccess, saveArticle, savePlan, setAdminNote, setTeacherPlan, teacherLink, type ArticleInput, type PlanInput } from "@/lib/admin/actions";
+import { addPayment, blockTeacher, createTeacherInvite, revokeTeacherInvite, deleteArticle, extendAccess, saveArticle, savePlan, setAdminNote, setTeacherPlan, teacherLink, type ArticleInput, type PlanInput } from "@/lib/admin/actions";
 import { FEATURES, KB_TOPICS, NEWS_TAGS } from "@/lib/admin/features";
 import { Dialog } from "../Dialog";
 import { Icon } from "../Icon";
@@ -41,28 +41,33 @@ export function AddTeacher({ plans }: { plans: { id: string; name: string }[] })
   const { t } = useT();
   const { busy, err, run } = useAct();
   const [open, setOpen] = useState(false);
-  const [f, setF] = useState({ name: "", lastName: "", email: "", days: 14, planId: "" });
-  const [link, setLink] = useState<string | null>(null);
-  const close = () => { setOpen(false); setLink(null); setF({ name: "", lastName: "", email: "", days: 14, planId: "" }); };
+  const [f, setF] = useState({ name: "", lastName: "", days: 14, planId: "" });
+  const [res, setRes] = useState<{ link: string; msg: string } | null>(null);
+  const [copied, setCopied] = useState(false);
+  const close = () => { setOpen(false); setRes(null); setCopied(false); setF({ name: "", lastName: "", days: 14, planId: "" }); };
   return (
     <>
       <button type="button" className="btn primary" onClick={() => setOpen(true)}><Icon name="plus" size="sm" />{t("adm.addTeacher")}</button>
       {open && (
         <Dialog open onClose={close} title={t("adm.addTeacher")}>
-          {link ? (
+          {res ? (
             <>
-              <p className="alert ok mt-0">✓ {t("adm.added")}</p>
-              <p className="small muted">{t("adm.linkHint")}</p>
-              <CopyLink link={link} />
-              <div className="actions"><button type="button" className="btn primary" onClick={close}>{t("common.close")}</button></div>
+              <p className="alert ok mt-0">✓ {t("tinv.adm.done")}</p>
+              <p className="small muted">{t("tinv.adm.linkHint")}</p>
+              <CopyLink link={res.link} />
+              <div className="field mt-3"><span className="flabel">{t("tinv.adm.msg")}</span><textarea className="textarea" rows={5} readOnly value={res.msg} onFocus={(e) => e.target.select()} /></div>
+              <div className="actions">
+                <button type="button" className="btn secondary" onClick={() => { void navigator.clipboard?.writeText(res.msg); setCopied(true); }}><Icon name="copy" size="sm" />{copied ? t("adm.copied") : t("tinv.adm.copyMsg")}</button>
+                <button type="button" className="btn primary" onClick={close}>{t("common.close")}</button>
+              </div>
             </>
           ) : (
             <>
+              <p className="small muted mt-0">{t("tinv.adm.lead")}</p>
               <div className="grid gap-3 sm:grid-cols-2">
                 <div className="field"><label htmlFor="at-n">{t("adm.f.name")}</label><input id="at-n" className="input" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} autoFocus /></div>
                 <div className="field"><label htmlFor="at-l">{t("adm.f.lastName")}</label><input id="at-l" className="input" value={f.lastName} onChange={(e) => setF({ ...f, lastName: e.target.value })} /></div>
               </div>
-              <div className="field mt-3"><label htmlFor="at-e">{t("adm.email")}</label><input id="at-e" className="input" type="email" value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} /></div>
               <div className="field mt-3">
                 <span className="flabel">{t("adm.trialDays")}</span>
                 <div className="flex flex-wrap items-center gap-2">
@@ -73,15 +78,35 @@ export function AddTeacher({ plans }: { plans: { id: string; name: string }[] })
               <div className="field mt-3"><label htmlFor="at-p">{t("adm.planAfter")}</label>
                 <select id="at-p" className="select" value={f.planId} onChange={(e) => setF({ ...f, planId: e.target.value })}><option value="">—</option>{plans.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</select>
               </div>
-              <p className="hint">{t("adm.addHint")}</p>
               {err && <div className="alert">{t(`adm.err.${err}` as "adm.err.fail")}</div>}
               <div className="actions"><button type="button" className="btn secondary" onClick={close}>{t("common.cancel")}</button>
-                <button type="button" className="btn primary" disabled={busy || !f.name.trim() || !f.email.trim()} onClick={() => run(() => createTeacher({ ...f, planId: f.planId || null }), (r) => setLink((r as { link: string }).link))}>{t("adm.create")}</button></div>
+                <button type="button" className="btn primary" disabled={busy || !f.name.trim()} onClick={() => run(() => createTeacherInvite({ ...f, planId: f.planId || null }), (r) => setRes(r as { link: string; msg: string }))}>{t("tinv.adm.create")}</button></div>
             </>
           )}
         </Dialog>
       )}
     </>
+  );
+}
+
+/** Приглашения учителей, по которым ещё не зарегистрировались: скопировать ссылку или отозвать. */
+export function TeacherInvites({ list }: { list: { id: string; name: string; link: string; until: string }[] }) {
+  const { t } = useT();
+  const { busy, run } = useAct();
+  if (!list.length) return null;
+  return (
+    <section className="card mb-4">
+      <h3 className="mt-0 mb-2">{t("tinv.adm.pending", { n: list.length })}</h3>
+      <div className="flex flex-col gap-3">
+        {list.map((x) => (
+          <div key={x.id} className="flex flex-wrap items-center gap-2">
+            <b className="grow">{x.name} <span className="small muted">· {t("tinv.adm.until", { d: x.until })}</span></b>
+            <div className="grow" style={{ minWidth: 260 }}><CopyLink link={x.link} /></div>
+            <button type="button" className="btn plain sm" disabled={busy} onClick={() => confirm(t("tinv.adm.revokeQ")) && run(() => revokeTeacherInvite(x.id))}>{t("tinv.adm.revoke")}</button>
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }
 

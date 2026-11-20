@@ -2640,3 +2640,8 @@ details.prblock[open] .prchev { transform: rotate(180deg); }
 .prgrp { display: flex; flex-direction: column; gap: 4px; }
 .prflags { display: flex; flex-wrap: wrap; gap: 4px; }
 .prflags .pill { white-space: normal; }
+/* Выбор кабинета после входа */
+.chc { display: flex; align-items: center; gap: 14px; width: 100%; padding: 16px 18px; border-radius: 16px; border: 1px solid var(--sep); background: var(--surface); color: var(--text); text-align: left; font: inherit; cursor: pointer; text-decoration: none; transition: border-color .15s, box-shadow .15s; }
+.chc:hover { border-color: var(--accent); box-shadow: 0 4px 14px rgba(10, 132, 255, .12); }
+.chc:disabled { opacity: .6; cursor: default; }
+.chc-ic { width: 44px; height: 44px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; background: var(--accent-bg); color: var(--accent); flex-shrink: 0; }

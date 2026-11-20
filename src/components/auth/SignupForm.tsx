@@ -1,5 +1,5 @@
 "use client";
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { signupAction, type FormState } from "@/lib/auth/actions";
 import { useT } from "@/lib/i18n/client";
 import { Submit } from "./Submit";
@@ -10,6 +10,8 @@ export function SignupForm({ oauth }: { oauth: { yandex: boolean; vk: boolean } 
   const { t } = useT();
   const [st, action] = useActionState<FormState, FormData>(signupAction, undefined);
   const [consent, setConsent] = useState(false);
+  // после ошибки форма сбрасывает поля (и галочку) — состояние галочки сбрасываем вместе с ней, чтобы не расходились
+  useEffect(() => { if (st) setConsent(false); }, [st]);
   return (
     <form action={action} className="authform" noValidate>
       {st?.error && <div className="alert" role="alert">{st.error}</div>}
