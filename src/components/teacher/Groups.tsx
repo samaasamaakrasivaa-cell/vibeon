@@ -3,13 +3,22 @@ import Link from "next/link";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useT } from "@/lib/i18n/client";
-import { createGroup, deleteGroup, updateGroup } from "@/lib/teacher/groups";
+import { createGroup, deleteGroup, setGroupAvatar, updateGroup } from "@/lib/teacher/groups";
+import { CHARACTER_KEYS, CHARACTERS, CharacterArt } from "../awards/Characters";
 import { Dialog } from "../Dialog";
 import { Icon } from "../Icon";
 import { avatarStyle } from "./StudentsGrid";
 
 export type GStudent = { id: string; name: string; initials: string; color: number };
-export type GGroup = { id: string; title: string; price: number | null; members: string[]; level: string | null; callLink: string | null; info: string | null; when: string | null };
+export type GGroup = { id: string; title: string; price: number | null; members: string[]; level: string | null; callLink: string | null; info: string | null; avatar?: string | null; when: string | null };
+
+/** Аватарка группы: выбранный или сгенерированный персонаж, иначе значок группы. */
+export function GroupAvatar({ avatar, size = 36 }: { avatar: string | null; size?: number }) {
+  const ch = avatar?.startsWith("char:") ? avatar.slice(5) : null;
+  return ch
+    ? <span className="grp-av" style={{ width: size, height: size }}><CharacterArt k={ch} size={size} /></span>
+    : <span className="grp-ic" style={{ width: size, height: size }}><Icon name="group" size="sm" /></span>;
+}
 
 /** Группы на странице «Ученики»: создать, выбрать учеников галочками, поставить группу в расписание. */
 export function Groups({ groups, students }: { groups: GGroup[]; students: GStudent[] }) {
@@ -33,7 +42,7 @@ export function Groups({ groups, students }: { groups: GGroup[]; students: GStud
           {groups.map((g) => (
             <div key={g.id} className="grp-card">
               <div className="flex items-center gap-2">
-                <span className="grp-ic"><Icon name="group" size="sm" /></span>
+                <GroupAvatar avatar={g.avatar ?? null} size={36} />
                 <b className="grow truncate">{g.title}</b>
                 <button type="button" className="iconbtn" aria-label={t("grp.edit")} title={t("grp.edit")} onClick={() => setEdit(g)}><Icon name="pencil" size="sm" /></button>
               </div>
@@ -142,9 +151,31 @@ function GroupSettings({ group, students, onClose }: { group: GGroup; students: 
     if (!confirm(t("grp.delQ", { name: group.title }))) return;
     start(async () => { await deleteGroup(group.id); router.refresh(); onClose(); });
   };
+  // аватарка сохраняется сразу; «Сгенерировать» — случайный персонаж (не тот, что сейчас)
+  const [av, setAv] = useState<string | null>(group.avatar ?? null);
+  const [pick, setPick] = useState(false);
+  const putAv = (v: string | null) => { setAv(v); start(async () => { await setGroupAvatar(group.id, v); router.refresh(); }); };
+  const gen = () => { const cur = av?.slice(5); const pool = CHARACTER_KEYS.filter((k) => k !== cur); putAv(`char:${pool[Math.floor(Math.random() * pool.length)]}`); };
   return (
     <Dialog open onClose={onClose} title={t("grp.settings")}>
       <div className="flex flex-col gap-4">
+        <div className="grp-avrow">
+          <GroupAvatar avatar={av} size={64} />
+          <div className="flex flex-wrap gap-2">
+            <button type="button" className="btn secondary sm" disabled={pending} onClick={gen}><Icon name="spark" size="sm" />{t("grp.avGen")}</button>
+            <button type="button" className="btn plain sm" aria-expanded={pick} onClick={() => setPick(!pick)}>{t("grp.avPick")}</button>
+            {av && <button type="button" className="btn plain sm" disabled={pending} onClick={() => putAv(null)}>{t("grp.avNone")}</button>}
+          </div>
+        </div>
+        {pick && (
+          <div className="grp-avgrid" role="group" aria-label={t("grp.avPick")}>
+            {CHARACTER_KEYS.map((k) => (
+              <button key={k} type="button" className={`grp-avopt ${av === `char:${k}` ? "on" : ""}`} aria-pressed={av === `char:${k}`} title={CHARACTERS[k].ru} onClick={() => { putAv(`char:${k}`); setPick(false); }}>
+                <CharacterArt k={k} size={44} />
+              </button>
+            ))}
+          </div>
+        )}
         <div className="grid grid-cols-[1fr_96px] gap-3">
           <label className="field"><span className="flabel">{t("grp.name")}</span><input className="input" value={title} onChange={(e) => setTitle(e.target.value)} maxLength={80} /></label>
           <label className="field"><span className="flabel">{t("grp.level")}</span><input className="input" value={level} onChange={(e) => setLevel(e.target.value)} placeholder="B1" maxLength={20} /></label>

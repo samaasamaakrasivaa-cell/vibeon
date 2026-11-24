@@ -73,7 +73,9 @@ export function parseImport(text: string): ImpPlan | null {
   if (!raw.startsWith("{") && !raw.startsWith("[")) return null;
   let j: unknown;
   try { j = JSON.parse(raw); } catch { return null; }
-  const o = (Array.isArray(j) ? { tasks: j } : j) as Record<string, unknown>;
+  // одно упражнение ({ "type": …, "title": …, "content": … }) — как урок из одного задания
+  const one = !Array.isArray(j) && j && typeof j === "object" && typeof (j as Record<string, unknown>).type === "string" && !("tasks" in (j as object));
+  const o = (Array.isArray(j) ? { tasks: j } : one ? { tasks: [j] } : j) as Record<string, unknown>;
   const issues: ImpIssue[] = [];
   const lesson = (l: unknown, i: number) => {
     const x = (l ?? {}) as Record<string, unknown>;
@@ -144,6 +146,7 @@ Rules:
 - "teacherOnly": true — only for a teacher note that must stay next to a specific task (answer key, tip). General lesson information goes to "teacher", not here. Every "note" task is hidden from the student automatically; add "teacherOnly": false only if the student must see that note.
 - Pictures, audio and video can't go into JSON: where the material has one, add a task { "type": "note", "teacherOnly": true, "part": "<stage>", "title": "Add media", "content": "Add the picture/audio here: <short description, page number>" }.
 - If several lessons: { "lessons": [ { "title": "...", "teacher": {...}, "tasks": [...] }, ... ] }.
+- If I ask for ONE exercise only (to add to an existing lesson): output just that task object, e.g. { "type": "gap", "title": "Complete the sentences", "content": "...", "options": {} } — no lesson wrapper.
 - Before answering, check: is there a "teacher" block? Are all homework exercises in "homework"? Are all new words in one "wordset" in "words"?
 - Output only the JSON, no comments before or after it.
 

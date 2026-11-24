@@ -4,6 +4,7 @@ import { db } from "../db";
 import { requireUser } from "../auth/session";
 import { getT } from "../i18n/server";
 import { repriceLessons } from "../billing/engine";
+import { CHARACTER_KEYS } from "@/components/awards/Characters";
 
 // Группы учеников. Групповое занятие — это урок у каждого ученика группы с общим slotId:
 // оплата, абонементы, домашка и кабинет ученика работают как с обычными уроками, а в расписании и в классе это одно занятие.
@@ -109,5 +110,16 @@ export async function deleteGroup(id: string): Promise<R> {
     db.group.delete({ where: { id } }),
   ]);
   refresh();
+  return { ok: true };
+}
+
+/** Аватарка группы: персонаж «char:…» (кнопка «Сгенерировать» выбирает случайного, можно выбрать самому) или null — значок группы. */
+export async function setGroupAvatar(id: string, v: string | null): Promise<R> {
+  const teacher = await me();
+  const g = await db.group.findUnique({ where: { id }, select: { teacherId: true } });
+  if (!g || g.teacherId !== teacher.id) return { ok: false, error: "not found" };
+  if (v !== null && !(v.startsWith("char:") && CHARACTER_KEYS.includes(v.slice(5)))) return { ok: false, error: "char" };
+  await db.group.update({ where: { id }, data: { avatar: v } });
+  revalidatePath("/teacher/students");
   return { ok: true };
 }

@@ -1,3 +1,5 @@
+import { TeacherAboutForm } from "@/components/teacher/TeacherAbout";
+import { cleanAbout } from "@/lib/teacher/about-data";
 import { NotifySettings } from "@/components/NotifySettings";
 import { LinkCabinet } from "@/components/admin/LinkCabinet";
 import { ProfileForm } from "@/components/student/ProfileForm";
@@ -20,6 +22,8 @@ export default async function TeacherProfilePage() {
     <div className="page" style={{ maxWidth: 820 }}>
       <h1 className="mb-5">{t("common.profile")}</h1>
       <ProfileForm teacher hasPassword={!!login.passwordHash} init={{ name: me.name, lastName: me.lastName ?? "", phone: me.phone ?? "", telegram: "", timezone: me.timezone, email: login.email, callLink: prof?.callLink ?? "" }} />
+      {/* анкета преподавателя — её видят ученики (страница «Мой преподаватель») */}
+      <TeacherAboutForm name={[me.name, me.lastName].filter(Boolean).join(" ")} init={cleanAbout(prof?.about)} />
       <NotifySettings role="TEACHER" init={settingsOf("TEACHER", me.notify)} linked={!!me.telegramChatId} enabled={tgEnabled()} email={login.email} />
       <LinkCabinet linked={other ? { ...other, shared: isInternalEmail(me.email) || isInternalEmail(other.email) } : null} />
     </div>

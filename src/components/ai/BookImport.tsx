@@ -71,7 +71,8 @@ function ImportSummary({ tasks, issues }: { tasks: ImpTask[]; issues: ImpIssue[]
 }
 
 /** «Импорт» в конструкторе: файл или вставленный текст → задания урока. */
-export function ImportDialog({ lessonId, section, rubricId, onClose, onDone, hasTasks = false }: { lessonId: string; section: "lesson" | "homework" | "words"; rubricId: string | null; onClose: () => void; onDone: () => void; hasTasks?: boolean }) {
+export function ImportDialog({ lessonId, section, rubricId, onClose, onDone, hasTasks = false, at }: { lessonId: string; section: "lesson" | "homework" | "words"; rubricId: string | null; onClose: () => void; onDone: () => void; hasTasks?: boolean; at?: number }) {
+  // at — «+» между заданиями: упражнение встаёт на это место, урок никогда не заменяется
   const { t } = useT();
   const [text, setText] = useState("");
   const [tasks, setTasks] = useState<DraftTask[] | null>(null);
@@ -79,7 +80,7 @@ export function ImportDialog({ lessonId, section, rubricId, onClose, onDone, has
   const [busy, setBusy] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [fromJson, setFromJson] = useState(false);
-  const [replace, setReplace] = useState(hasTasks); // в уроке уже есть задания — по умолчанию файл заменяет урок целиком (исправленная версия)
+  const [replace, setReplace] = useState(hasTasks && at === undefined); // в уроке уже есть задания — по умолчанию файл заменяет урок целиком (исправленная версия)
   const [meta, setMeta] = useState<ImpMeta | undefined>(); // блок «Для учителя», длительность, подзаголовок из файла
   const [issues, setIssues] = useState<ImpIssue[]>([]); // задания файла, которые пропущены (остальные загружаются)
   const [result, setResult] = useState<{ by: Record<string, number>; failed: { title: string; error: string }[] } | null>(null);
@@ -102,7 +103,7 @@ export function ImportDialog({ lessonId, section, rubricId, onClose, onDone, has
   const add = async () => {
     setBusy(t("common.saving")); setErr(null);
     if (replace && !confirm(t("ai.replaceSure"))) { setBusy(null); return; }
-    const r = await addDraftTasks(lessonId, section, rubricId, tasks!.filter((_, i) => picked.has(i)), fromJson && replace, fromJson ? meta : undefined);
+    const r = await addDraftTasks(lessonId, section, rubricId, tasks!.filter((_, i) => picked.has(i)), fromJson && replace && at === undefined, fromJson && at === undefined ? meta : undefined, at);
     setBusy(null);
     if (!r.ok) { setErr(r.error === "answers" ? t("ai.replaceAnswers") : r.error); return; }
     onDone();
@@ -111,7 +112,7 @@ export function ImportDialog({ lessonId, section, rubricId, onClose, onDone, has
     if (fromJson || res.failed?.length) setResult({ by: res.by ?? {}, failed: res.failed ?? [] }); else onClose();
   };
   return (
-    <Dialog open onClose={onClose} title={t("bld.import")} wide>
+    <Dialog open onClose={onClose} title={at !== undefined ? t("bld.attach") : t("bld.import")} wide>
       {result ? (
         <>
           <div className="impsum ok"><Icon name="check" size="sm" /><span>{t("ai.impDone", { l: result.by.lesson ?? 0, h: result.by.homework ?? 0, w: result.by.words ?? 0 })}</span></div>
@@ -121,7 +122,7 @@ export function ImportDialog({ lessonId, section, rubricId, onClose, onDone, has
       ) : <>
       {!tasks ? (
         <>
-          <p className="muted mt-0">{t("ai.importLead")}</p>
+          <p className="muted mt-0">{at !== undefined ? t("ai.importOneLead") : t("ai.importLead")}</p>
           <PromptCopy />
           <label className="upl"><Icon name="clip" />{busy === t("ai.reading") ? busy : t("ai.chooseFile")}<input type="file" hidden accept={ACCEPT} onChange={(e) => read(e.target.files?.[0])} /></label>
           <div className="field mt-3"><label htmlFor="imp-t" className="small muted">{t("ai.orPaste")}</label><textarea id="imp-t" className="textarea" style={{ minHeight: 200 }} value={text} onChange={(e) => setText(e.target.value)} /></div>
@@ -130,7 +131,7 @@ export function ImportDialog({ lessonId, section, rubricId, onClose, onDone, has
         {fromJson && <ImportSummary tasks={tasks.filter((_, i) => picked.has(i)) as ImpTask[]} issues={issues} />}
         {meta?.teacher && <p className="small m-0 mb-2"><Icon name="lock" size="sm" /> {t("ai.jsonTeacher")}</p>}
         <DraftList tasks={tasks} picked={picked} setPicked={setPicked} />
-        {fromJson && hasTasks && (
+        {fromJson && hasTasks && at === undefined && (
           <div className="impmode mt-3" role="radiogroup" aria-label={t("ai.replace")}>
             <label><input type="radio" checked={replace} onChange={() => setReplace(true)} /><span><b>{t("ai.replace")}</b><span className="block small muted">{t("ai.replaceHint")}</span></span></label>
             <label><input type="radio" checked={!replace} onChange={() => setReplace(false)} /><span><b>{t("ai.appendAll")}</b><span className="block small muted">{t("ai.appendHint")}</span></span></label>

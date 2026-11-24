@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Clock } from "./Clock";
+import { GroupAvatar } from "./teacher/Groups";
 import { Icon } from "./Icon";
 import { NotificationList } from "./NotificationList";
 import { MomentsCard } from "./teacher/MomentsCard";
@@ -21,7 +22,7 @@ import { homeworkFor, type HwState } from "@/lib/homework";
 import type { User } from "@prisma/client";
 
 /** Главный экран «Обновления»: приветствие, часы, «Сегодня», неделя, «Что нового». */
-export async function Dashboard({ user, role, day }: { user: User; role: "TEACHER" | "STUDENT"; day?: string }) {
+export async function Dashboard({ user, role, day, top }: { user: User; role: "TEACHER" | "STUDENT"; day?: string; top?: React.ReactNode }) {
   const { t, lang } = await getT();
   const tz = user.timezone;
   const now = new Date();
@@ -113,6 +114,7 @@ export async function Dashboard({ user, role, day }: { user: User; role: "TEACHE
 
   return (
     <div className="page">
+      {top}
       {/* ученику без Telegram-бота — напоминание подключить (пропадает, когда подключил) */}
       {role === "STUDENT" && !user.telegramChatId && tgEnabled() && (
         <section className="card tgbanner">
@@ -178,7 +180,7 @@ export async function Dashboard({ user, role, day }: { user: User; role: "TEACHE
                   <div className="tl-main">
                     <div className="tl-who">
                       {/* аватарка — как в анкете ученика; у группы — значок группы */}
-                      {st && !l.slotId ? <StudentAvatar id={st.id} avatar={st.avatar} size={44} /> : <span className="avatar lg">{l.group ? <Icon name="group" size="sm" /> : initials(...(who.split(" ") as [string, string]))}</span>}
+                      {st && !l.slotId ? <StudentAvatar id={st.id} avatar={st.avatar} size={44} /> : l.group?.avatar?.startsWith("char:") ? <GroupAvatar avatar={l.group.avatar} size={44} /> : <span className="avatar lg">{l.group ? <Icon name="group" size="sm" /> : initials(...(who.split(" ") as [string, string]))}</span>}
                       {role === "TEACHER" && l.studentId && !l.slotId ? <Link href={`/teacher/students/${l.studentId}`} className="hover:text-accent">{who}</Link> : <span>{who}</span>}
                       {l.isTrial && <span className="pill violet">{t("sch.trial")}</span>}
                       {first && <span className="pill violet">{t("today.first")}</span>}

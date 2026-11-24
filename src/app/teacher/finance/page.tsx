@@ -7,6 +7,8 @@ import { requireUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { getT } from "@/lib/i18n/server";
 import { financeData, type Range } from "@/lib/billing/finance";
+import { weekReport } from "@/lib/billing/weekly";
+import { WeekCard } from "@/components/finance/WeekCard";
 import { initials } from "@/lib/invite";
 import { rub } from "@/lib/teacher/data";
 
@@ -22,6 +24,7 @@ export default async function Finance({ searchParams }: { searchParams: Promise<
   const tab = (TABS as readonly string[]).includes(sp.tab ?? "") ? sp.tab! : "updates";
   const range: Range = sp.r === "week" || sp.r === "all" ? sp.r : "month";
   const d = await financeData(me.id, me.timezone, range);
+  const week = tab === "updates" ? await weekReport(me.id, me.timezone) : null;
   const prof = await db.teacherProfile.findUnique({ where: { userId: me.id } });
   const loc = lang === "ru" ? "ru-RU" : "en-GB";
   const R = (n: number) => rub(n, lang);
@@ -77,6 +80,7 @@ export default async function Finance({ searchParams }: { searchParams: Promise<
         <>
           <h2 className="mb-4">{title}</h2>
           <FinTiles tiles={tiles} />
+          <WeekCard r={week} lang={lang} />
           {d.check.toCheck.length > 0 && (
             <div className="alert mt-5 flex flex-wrap items-center gap-3" style={{ background: "var(--warn-bg)", color: "var(--warn-text)" }}>
               <Icon name="alert" size="sm" /><span className="grow">{daysSince > 0 ? t("fin.notChecked", { n: daysSince }) : t("fin.toCheckNow", { n: d.check.toCheck.length })}</span>

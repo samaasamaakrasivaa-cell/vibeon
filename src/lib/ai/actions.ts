@@ -79,13 +79,18 @@ const lessonMeta = (m?: ImpMeta) => {
   return { ...(Object.keys(ti).length ? { teacherInfo: ti as Prisma.InputJsonObject } : {}), ...(d ? { durationMin: d } : {}), ...(m.subtitle ? { subtitle: str(m.subtitle, 160) } : {}) };
 };
 
-export async function addDraftTasks(lessonId: string, section: "lesson" | "homework" | "words", rubricId: string | null, tasks: DraftTask[], replace = false, meta?: ImpMeta): Promise<Ok<{ n: number; by: Record<"lesson" | "homework" | "words", number>; failed: { title: string; error: string }[] }>> {
+export async function addDraftTasks(lessonId: string, section: "lesson" | "homework" | "words", rubricId: string | null, tasks: DraftTask[], replace = false, meta?: ImpMeta, at?: number): Promise<Ok<{ n: number; by: Record<"lesson" | "homework" | "words", number>; failed: { title: string; error: string }[] }>> {
   if (meta) {
     const user = await requireUser("TEACHER");
     const l = await db.lessonTemplate.findUnique({ where: { id: lessonId }, include: { unit: { include: { course: true } } } });
     if (!l || l.unit.course.teacherId !== user.id) return { ok: false, error: "not found" };
     const m = lessonMeta(meta);
     if (Object.keys(m).length) await db.lessonTemplate.update({ where: { id: lessonId }, data: m });
+  }
+  // этап урока не указан (импорт из списка уроков курса) — первый этап урока
+  if (section === "lesson" && !rubricId) {
+    const l = await db.lessonTemplate.findUnique({ where: { id: lessonId }, select: { sections: true } });
+    rubricId = ((l?.sections ?? []) as { id: string }[])[0]?.id ?? null;
   }
   // replace — исправленный файл заменяет урок целиком: старые задания удаляются (если ученики ещё ничего в нём не отвечали)
   // замена урока: задания, которые в новом файле те же (тот же тип, формулировка и раздел), обновляются на месте —
@@ -137,6 +142,16 @@ export async function addDraftTasks(lessonId: string, section: "lesson" | "homew
     // порядок — как в файле, внутри каждого раздела и этапа
     const pos: Record<string, number> = {};
     await db.$transaction(final.map((f) => { const k = `${f.section}:${f.rubricId}`; pos[k] = (pos[k] ?? -1) + 1; return db.task.update({ where: { id: f.id }, data: { order: pos[k] } }); }));
+  }
+  // «+» между заданиями: новые встают на это место (в своём разделе и этапе), а не в конец
+  if (!replace && typeof at === "number" && at >= 0 && final.length) {
+    const mine = final.filter((f) => f.section === section && f.rubricId === (section === "lesson" ? rubricId : null)).map((f) => f.id);
+    if (mine.length) {
+      const list = await db.task.findMany({ where: { templateId: lessonId, section, ...(section === "lesson" ? { rubricId } : {}) }, orderBy: { order: "asc" }, select: { id: true } });
+      const rest = list.map((x) => x.id).filter((id) => !mine.includes(id));
+      const ids = [...rest.slice(0, at), ...mine, ...rest.slice(at)];
+      await db.$transaction(ids.map((id, i) => db.task.update({ where: { id }, data: { order: i } })));
+    }
   }
   if (tasks.length > MAX_TASKS) failed.push({ title: "", error: `limit:${tasks.length - MAX_TASKS}` });
   return { ok: true, n, by, failed };

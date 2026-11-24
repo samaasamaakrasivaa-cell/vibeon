@@ -110,7 +110,7 @@ export default async function Students({ searchParams }: { searchParams: Promise
           <StudentsGrid title={t("stu.registered")} cards={active.map((s, i) => card(s, i, levelLine(lv.get(s.id)) || t("stu.noLevel")))} empty={t("inviteT.none")} />
           {/* группы: выбрать учеников галочками — и ставить группу в расписание одним занятием */}
           <Groups
-            groups={groups.map((g, i) => ({ id: g.id, title: g.title, price: g.price, members: g.members.map((m) => m.studentId), level: g.level, callLink: g.callLink, info: g.info, when: whenOf(i) }))}
+            groups={groups.map((g, i) => ({ id: g.id, title: g.title, price: g.price, members: g.members.map((m) => m.studentId), level: g.level, callLink: g.callLink, info: g.info, avatar: g.avatar, when: whenOf(i) }))}
             students={[...active, ...invited].map((s, i) => ({ id: s.id, name: full(s), initials: initials(s.name, s.lastName), color: i }))}
           />
           {invited.length > 0 && (

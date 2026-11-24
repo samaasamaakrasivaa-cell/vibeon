@@ -56,6 +56,7 @@ export function Builder({ d }: { d: BuilderData }) {
   const [shareOpen, setShareOpen] = useState(false);
   const [startOpen, setStartOpen] = useState(false);
   const [imp, setImp] = useState<"file" | "book" | null>(null);
+  const [impAt, setImpAt] = useState<number | undefined>(undefined); // «+» → «Прикрепить упражнение»: место вставки
   const router = useRouter();
   const [saved, setSaved] = useState(true);
   useEffect(() => { if (!pending) setSaved(true); }, [pending, d]);
@@ -275,7 +276,7 @@ export function Builder({ d }: { d: BuilderData }) {
         </aside>
       </div>
 
-      {catalog && <Catalog fav={d.fav} onImport={() => { setCatalog(null); setImp("file"); }} onClose={() => setCatalog(null)} onPick={(ty) => { const idx = catalog.index; setCatalog(null); newTask(ty, idx); }} />}
+      {catalog && <Catalog fav={d.fav} onImport={() => { setImpAt(catalog.index); setCatalog(null); setImp("file"); }} onClose={() => setCatalog(null)} onPick={(ty) => { const idx = catalog.index; setCatalog(null); newTask(ty, idx); }} />}
       {editing && (
         <TaskEditor
           lessonId={d.id}
@@ -286,7 +287,7 @@ export function Builder({ d }: { d: BuilderData }) {
           onSave={(task) => go(() => saveTask(d.id, editing.task.id === "new" ? null : editing.task.id, { section: editing.task.section, rubricId: editing.task.rubricId, type: task.type, title: task.title, content: task.content, options: task.options }, editing.index), () => setEditing(null))}
         />
       )}
-      {imp === "file" && <ImportDialog hasTasks={d.tasks.length > 0} lessonId={d.id} section={part} rubricId={part === "lesson" ? active : null} onClose={() => setImp(null)} onDone={() => setTimeout(() => router.refresh(), 0)} />}
+      {imp === "file" && <ImportDialog hasTasks={d.tasks.length > 0} at={impAt} lessonId={d.id} section={part} rubricId={part === "lesson" ? active : null} onClose={() => { setImp(null); setImpAt(undefined); }} onDone={() => setTimeout(() => router.refresh(), 0)} />}
       {imp === "book" && <BookDialog courseId={d.course.id} onClose={() => setImp(null)} />}
       {shareOpen && <ShareDialog d={d} onClose={() => setShareOpen(false)} />}
       {startOpen && (

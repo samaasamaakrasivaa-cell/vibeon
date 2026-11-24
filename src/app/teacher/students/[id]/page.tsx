@@ -136,11 +136,11 @@ export default async function StudentProfile({ params, searchParams }: { params:
   return (
     <div className="page">
       <Link href="/teacher/students" className="mb-4 inline-flex items-center gap-1 text-[14px] font-semibold text-accent"><Icon name="chevl" size="sm" />{t("nav.students")}</Link>
-      <div className="mb-5 flex flex-wrap items-center gap-4">
-        <TeacherAvatar id={s.id} avatar={s.avatar} crown={!!pinnedTitle} locked={await studentChose(s)} />
-        <div className="grow min-w-[200px] flex-1">
-          <h1>{fullName}</h1>
-          <div className="mt-1 flex flex-wrap items-center gap-2 text-text2">
+      {/* шапка анкеты: аватар на одной линии с именем; под именем — уровни и статус, ниже — связь (Telegram ученика и плательщика) */}
+      <div className="prof-hd mb-5">
+        <div className="prof-av"><TeacherAvatar id={s.id} avatar={s.avatar} crown={!!pinnedTitle} locked={await studentChose(s)} /></div>
+        <h1 className="prof-name">{fullName}</h1>
+          <div className="prof-pills text-text2">
             {/* уровни: по анкете, сейчас (тест / срез), цель; курс */}
             {pinnedTitle && <span className="pill awpill" title={pinnedTitle.why ?? undefined}><Medal icon={pinnedTitle.icon} color={pinnedTitle.color} size={18} />{pinnedTitle.name}</span>}
             {(() => { const L = lvMap.get(s.id); return L ? (<>
@@ -154,11 +154,13 @@ export default async function StudentProfile({ params, searchParams }: { params:
             {/* статус: приглашён и ещё не заходил / был в сети — как в мессенджерах */}
             {!s.userId ? <span className="pill orange" title={t("prof.invitedHint")}>{s.invites[0] ? t("prof.invitedOn", { d: dateFmt(s.invites[0].createdAt, { day: "numeric", month: "short" }) }) : t("prof.notOnPlatform")}</span>
               : <span className={`pill ${lastSeen && Date.now() - lastSeen.getTime() < 3 * 60000 ? "green" : "grey"}`}>{lastSeen ? seenAgo(lastSeen) : t("prof.registered")}</span>}
-            {tgUser?.telegramChatId || !s.userId ? <span className={`pill ${tgUser?.telegramChatId ? "green" : "grey"}`} title={t("prof.tgHint")}><Icon name="telegram" size="sm" />{t(tgUser?.telegramChatId ? "prof.tgOn" : "prof.tgOff")}</span> : <TgAsk id={s.id} />}
             {lastTest && <Link href={`/teacher/placement/${lastTest.id}`} className={`pill ${lastTest.status === "submitted" ? "orange" : "violet"}`}><Icon name="target" size="sm" />{lastTest.status === "submitted" ? t("prof.testToReview") : `${t("prof.testResult")}${lastTest.level ? ` · ${lastTest.level}` : ""}`}</Link>}
-            {(s.payerName || s.payerChatId) && <span className={`pill ${s.payerChatId ? "green" : "grey"}`}><Icon name="telegram" size="sm" />{t(s.payerChatId ? "prof.payerTgOn" : "prof.payerTgOff")}</span>}
           </div>
-        </div>
+          <div className="prof-tg">
+            {tgUser?.telegramChatId || !s.userId ? <span className={`tgchip ${tgUser?.telegramChatId ? "on" : ""}`} title={t("prof.tgHint")}><span className="tgchip-ic"><Icon name="telegram" size="sm" /></span>{t(tgUser?.telegramChatId ? "prof.tgOn" : "prof.tgOff")}</span> : <TgAsk id={s.id} />}
+            {(s.payerName || s.payerChatId) && <span className={`tgchip ${s.payerChatId ? "on" : ""}`}><span className="tgchip-ic"><Icon name="telegram" size="sm" /></span>{t(s.payerChatId ? "prof.payerTgOn" : "prof.payerTgOff")}</span>}
+          </div>
+        <div className="prof-acts">
         <ProfileActions
           p={{
             id: s.id, name: s.name, lastName: s.lastName ?? "", email: s.email ?? "", phone: form.phone ?? "", telegram: s.telegram ?? "",
@@ -167,6 +169,7 @@ export default async function StudentProfile({ params, searchParams }: { params:
             startedAt: s.startedAt ? s.startedAt.toISOString().slice(0, 10) : "", archived: s.status === "ARCHIVED",
           }}
         />
+        </div>
       </div>
 
       {s.status === "INVITED" && !s.userId && (

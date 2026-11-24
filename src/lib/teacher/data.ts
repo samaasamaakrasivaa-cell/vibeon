@@ -52,7 +52,7 @@ export async function syncSchedule(teacherId: string) {
 
 export const lessonInclude = {
   student: { select: { id: true, name: true, lastName: true, price: true, callLink: true } },
-  group: { select: { id: true, title: true, callLink: true } },
+  group: { select: { id: true, title: true, callLink: true, avatar: true } },
 } as const;
 
 /** Групповое занятие в расписании и на «Сегодня» — одна строка (первый урок занятия). */

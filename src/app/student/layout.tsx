@@ -3,6 +3,7 @@ import { ActivityPing } from "@/components/ActivityPing";
 import { Sidebar } from "@/components/Sidebar";
 import { getT } from "@/lib/i18n/server";
 import { requireUser } from "@/lib/auth/session";
+import { aboutFilled, cleanAbout } from "@/lib/teacher/about-data";
 import { db } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
@@ -18,6 +19,9 @@ export default async function StudentLayout({ children }: { children: React.Reac
     db.student.findUnique({ where: { userId: user.id }, select: { id: true, avatar: true, awards: { where: { kind: "title", pinned: true, onMain: true, OR: [{ until: null }, { until: { gt: new Date() } }] }, select: { id: true }, take: 1 } } }),
     db.article.count({ where: { published: true, audience: { in: ["student", "all"] } } }),
   ]);
+  // «Мой преподаватель» — если учитель заполнил анкету и разрешил показывать её ученикам
+  const tAbout = await db.student.findUnique({ where: { userId: user.id }, select: { teacher: { select: { about: true } } } });
+  const showTeacher = (() => { const a = cleanAbout(tAbout?.teacher.about); return a.show !== false && aboutFilled(a); })();
   const groups = [
     [
       { href: "/student", label: t("nav.updates"), icon: "bell" as const, count: unread },
@@ -36,7 +40,7 @@ export default async function StudentLayout({ children }: { children: React.Reac
       { href: "/student/messages", label: t("nav.messages"), icon: "msg" as const, count: msgs },
     ],
     [{ href: "/student/payments", label: t("nav.payments"), icon: "card" as const, count: bills }],
-    [{ href: "/student/profile", label: t("common.profile"), icon: "user" as const }, ...(help ? [{ href: "/student/help", label: t("nav.help"), icon: "info" as const }] : [])],
+    [...(showTeacher ? [{ href: "/student/teacher", label: t("nav.myTeacher"), icon: "user" as const }] : []), { href: "/student/profile", label: t("common.profile"), icon: "user" as const }, ...(help ? [{ href: "/student/help", label: t("nav.help"), icon: "info" as const }] : [])],
   ];
   return (
     <>

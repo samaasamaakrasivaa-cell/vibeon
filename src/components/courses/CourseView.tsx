@@ -13,6 +13,7 @@ import { COVER, COVER_INK } from "./CoursesBoard";
 import { TeacherInfo } from "../lesson/TeacherInfo";
 import { AIM_KEYS, hasInfo, type TInfo } from "@/lib/tasks/teacher-info";
 import type { DictKey } from "@/lib/i18n/dict";
+import { ImportDialog } from "../ai/BookImport";
 import { useRouter } from "next/navigation";
 import { useRun } from "./useRun";
 
@@ -42,6 +43,7 @@ function Editable({ value, onSave, className = "", placeholder }: { value: strin
 export function CourseView({ c, students }: { c: CourseData; students: AssignStudent[] }) {
   const { t, lang } = useT();
   const { pending, error, run } = useRun();
+  const router = useRouter();
   const [units, setUnits] = useState(c.units);
   useEffect(() => { setUnits(c.units); }, [c.units]);
   const [drag, setDrag] = useState<{ kind: "unit" | "lesson"; id: string } | null>(null);
@@ -50,6 +52,7 @@ export function CourseView({ c, students }: { c: CourseData; students: AssignStu
   const [edit, setEdit] = useState(false);
   const [open, setOpen] = useState<string | null>(null); // развёрнутый урок: сведения, цели, ход урока
   const [newIn, setNewIn] = useState<string | null>(null); // «+ Урок»: окно нового урока в этом юните
+  const [impTo, setImpTo] = useState<{ id: string; tasks: number } | null>(null); // загрузить файл урока, не открывая конструктор
   const [f, setF] = useState({ title: c.title, level: c.level ?? "", category: c.category });
   const fileRef = useRef<HTMLInputElement>(null);
   const lessonsTotal = units.reduce((a, u) => a + u.lessons.length, 0);
@@ -150,6 +153,7 @@ export function CourseView({ c, students }: { c: CourseData; students: AssignStu
                     </button>
                     <div className="lacts">
                       <button type="button" className={`iconbtn lrow-more ${open === l.id ? "on" : ""}`} title={t("crs.details")} aria-label={t("crs.details")} onClick={() => setOpen(open === l.id ? null : l.id)}><Icon name="chevd" size="sm" /></button>
+                      <button type="button" className="iconbtn" title={t("crs.importLesson")} aria-label={t("crs.importLesson")} onClick={() => setImpTo({ id: l.id, tasks: l.tasks })}><Icon name="down" size="sm" /></button>
                       <Link href={`/builder/${l.id}`} className="btn secondary sm"><Icon name="pencil" size="sm" />{t("crs.builder")}</Link>
                       <button className="btn plain sm" onClick={() => setAssign(l)}><Icon name="send" size="sm" />{t("crs.assign")}</button>
                       <button className="iconbtn" title={t("common.delete")} aria-label={t("common.delete")} onClick={() => confirm(t("crs.delLessonQ", { name: l.title })) && run(() => deleteLessonTemplate(l.id))}><Icon name="close" size="sm" /></button>
@@ -180,6 +184,7 @@ export function CourseView({ c, students }: { c: CourseData; students: AssignStu
         <button className="btn plain" style={{ color: "var(--bad)" }} onClick={() => confirm(t("crs.delCourseQ", { name: c.title })) && run(() => deleteCourse(c.id))}>{t("crs.delCourse")}</button>
       </div>
 
+      {impTo && <ImportDialog lessonId={impTo.id} section="lesson" rubricId={null} hasTasks={impTo.tasks > 0} onDone={() => router.refresh()} onClose={() => setImpTo(null)} />}
       <Dialog open={!!assign} onClose={() => setAssign(null)} title={`${t("crs.assign")}: ${assign?.title ?? ""}`}>
         <p className="muted mt-0">{t("crs.assignLead")}</p>
         {students.length === 0 ? <p className="hint">{t("inviteT.none")}</p> : (
@@ -228,15 +233,19 @@ function NewLesson({ unitId, onClose }: { unitId: string; onClose: () => void })
   const [overview, setOverview] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
-  const create = async (thenBuild: boolean) => {
+  const [made, setMade] = useState<{ id: string; rubricId: string | null } | null>(null); // создали шапку и сразу грузим файл урока
+  const create = async (thenBuild: boolean | "import") => {
     setBusy(true); setErr(null);
     // те же поля, что в блоке «Для учителя» в конструкторе: уровень, Lesson info, цели, ход урока
     const ti: TInfo = { level, info, aims, overview };
     const r = await createLessonTemplate(unitId, title, { durationMin: dur, info: hasInfo(ti) ? ti : undefined }).catch(() => ({ ok: false as const, error: t("pl.err.net") }));
     setBusy(false);
     if (!r.ok) { setErr(r.error); return; }
+    if (thenBuild === "import" && r.id) { setMade({ id: r.id, rubricId: (r as { rubricId?: string }).rubricId ?? null }); return; }
     if (thenBuild && r.id) router.push(`/builder/${r.id}`); else { router.refresh(); onClose(); }
   };
+  // файл урока: импорт сразу после создания шапки; после загрузки — в конструктор, посмотреть результат
+  if (made) return <ImportDialog lessonId={made.id} section="lesson" rubricId={made.rubricId} onDone={() => {}} onClose={() => router.push(`/builder/${made.id}`)} />;
   return (
     <Dialog open onClose={onClose} title={t("crs.newLesson")} wide>
       <div className="flex flex-col gap-4">
@@ -260,6 +269,7 @@ function NewLesson({ unitId, onClose }: { unitId: string; onClose: () => void })
       <div className="actions">
         <button type="button" className="btn secondary" onClick={onClose}>{t("common.cancel")}</button>
         <button type="button" className="btn secondary" disabled={busy || !title.trim()} onClick={() => void create(false)}>{t("crs.createLesson")}</button>
+        <button type="button" className="btn secondary" disabled={busy || !title.trim()} onClick={() => void create("import")}><Icon name="down" size="sm" />{t("crs.createImport")}</button>
         <button type="button" className="btn primary" disabled={busy || !title.trim()} onClick={() => void create(true)}>{t("crs.createBuild")}</button>
       </div>
     </Dialog>

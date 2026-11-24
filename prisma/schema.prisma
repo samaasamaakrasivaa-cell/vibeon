@@ -124,6 +124,7 @@ model TeacherProfile {
   blockedAt  DateTime? // доступ закрыт администратором
   adminNote  String? // заметка администратора об учителе
   source     String? // откуда пришёл: сам зарегистрировался / добавлен администратором
+  about      Json      @default("{}") // анкета преподавателя для учеников: о себе, образование, сертификаты, опыт, подход…
   user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   plan       Plan?     @relation(fields: [planId], references: [id], onDelete: SetNull)
   payments   TeacherPayment[]
@@ -221,6 +222,7 @@ model Group {
   level     String? // уровень группы
   callLink  String? // ссылка на созвон группы
   info      String? // о группе: цели, учебник, договорённости — пишет учитель
+  avatar    String? // аватарка группы: персонаж «char:owl» (сгенерирован или выбран учителем); пусто — значок группы
   createdAt DateTime         @default(now())
   teacher   TeacherProfile   @relation(fields: [teacherId], references: [userId], onDelete: Cascade)
   members   GroupMember[]

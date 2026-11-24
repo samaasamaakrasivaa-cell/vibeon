@@ -253,23 +253,44 @@ export function ClassRoom({ d }: { d: ClassData }) {
     pending.current[k] = setTimeout(() => rawSend("answer", { taskId, key, value, studentId: sid }), key === "val" || key === "text" || key === "cell" || key === "fix" ? 350 : 0);
   }, [rawSend]);
 
-  // активное время ученика над заданиями: задание, в котором он что-то делал (ввод, нажатие, выбор) в последние 30 с;
-  // раз в минуту — на сервер; там делится на «урок по расписанию» и «вне урока» (домашка)
+  // Активное время ученика над заданиями (внимание, а не только ввод):
+  //  • ученик что-то делает — ввод, нажатие, выбор, прокрутка, мышь, касание; без этого 45 с — время не идёт (ушёл);
+  //  • недавно (≤ 45 с) действовал внутри задания — время этому заданию; просто читает/листает — заданию в середине экрана;
+  //  • внутри задания играет видео или аудио — время ему, даже если ученик не двигается; вкладка скрыта — не считаем.
+  //  Раз в 5 с копим, раз в минуту — на сервер; там делится на «урок по расписанию» и «вне урока» (домашка).
   useEffect(() => {
     if (teacher || d.preview) return;
     const acc: Record<string, number> = {};
-    let task: string | null = null, last = 0;
-    const on = (e: Event) => { const el = (e.target as HTMLElement | null)?.closest?.('[id^="task-"]'); if (el) { task = el.id.slice(5); last = Date.now(); } };
-    const evs = ["input", "keydown", "pointerdown", "change"];
-    evs.forEach((e) => document.addEventListener(e, on, true));
-    const tick = setInterval(() => { if (task && !document.hidden && Date.now() - last < 30_000) acc[task] = (acc[task] ?? 0) + 5000; }, 5000);
+    let task: string | null = null, taskAt = 0, activeAt = Date.now();
+    const IDLE = 45_000;
+    const taskOf = (el: Element | null) => (el?.closest?.('[id^="task-"]') as HTMLElement | null)?.id.slice(5) ?? null;
+    const act = (e: Event) => { activeAt = Date.now(); const id = taskOf(e.target as Element | null); if (id) { task = id; taskAt = activeAt; } };
+    const seen = () => { activeAt = Date.now(); }; // прокрутка, мышь — ученик здесь, но задание определим по экрану
+    const evs = ["input", "keydown", "pointerdown", "change", "focusin"];
+    const pas = ["scroll", "wheel", "mousemove", "touchmove"];
+    evs.forEach((e) => document.addEventListener(e, act, true));
+    pas.forEach((e) => document.addEventListener(e, seen, { capture: true, passive: true }));
+    // задание в середине экрана: то, что пересекает линию на 40% высоты окна
+    const centered = () => {
+      const y = window.innerHeight * 0.4;
+      for (const el of Array.from(document.querySelectorAll('[id^="task-"]'))) { const r = el.getBoundingClientRect(); if (r.top <= y && r.bottom >= y) return el.id.slice(5); }
+      return null;
+    };
+    const playing = () => { for (const m of Array.from(document.querySelectorAll("video, audio")) as HTMLMediaElement[]) if (!m.paused && !m.ended) { const id = taskOf(m); if (id) return id; } return null; };
+    const tick = setInterval(() => {
+      if (document.hidden) return;
+      const now = Date.now();
+      const media = playing();
+      const who = media ?? (now - activeAt < IDLE ? (task && now - taskAt < IDLE ? task : centered()) : null);
+      if (who) acc[who] = (acc[who] ?? 0) + 5000;
+    }, 5000);
     const flush = () => {
       const items = { ...acc }; for (const k of Object.keys(acc)) delete acc[k];
       if (Object.keys(items).length) void fetch(`/api/class/${d.id}/act`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ type: "tick", items }), keepalive: true }).catch(() => {});
     };
     const fl = setInterval(flush, 60_000);
     window.addEventListener("pagehide", flush);
-    return () => { evs.forEach((e) => document.removeEventListener(e, on, true)); clearInterval(tick); clearInterval(fl); window.removeEventListener("pagehide", flush); flush(); };
+    return () => { evs.forEach((e) => document.removeEventListener(e, act, true)); pas.forEach((e) => document.removeEventListener(e, seen, true)); clearInterval(tick); clearInterval(fl); window.removeEventListener("pagehide", flush); flush(); };
   }, [teacher, d.preview, d.id]);
 
   // ответы: сразу в интерфейс, на сервер — с небольшой задержкой (набор текста)
@@ -369,6 +390,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
     };
     return (
       <span className="bld-acts">
+        {!inHw && !d.preview && <button type="button" className={`iconbtn ${markedWorked(task) ? "bd-on" : ""}`} title={markedWorked(task) ? t("cls.workedOff") : t("cls.workedOn")} aria-label={markedWorked(task) ? t("cls.workedOff") : t("cls.workedOn")} aria-pressed={markedWorked(task)} onClick={() => toggleWorked(task)}><Icon name="check" size="sm" /></button>}
         {/* групповой урок: чьи ответы смотреть — компактно, рядом с инструментами; повторное нажатие — снять выбор */}
         {gTeacher && <StudentChips task={task} members={d.group!.members} ansBy={ansBy} sel={sid} online={online} onPick={(x) => setTaskView((v) => ({ ...v, [task.id]: v[task.id] === x ? "" : x }))} />}
         {inHw && <span className={`pill ${statuses[task.id] === "NEEDS_REVIEW" && !reviews[task.id] ? "orange" : "grey"}`}>{statusLabel(statuses[task.id], !!reviews[task.id], t)}</span>}
@@ -398,17 +420,37 @@ export function ClassRoom({ d }: { d: ClassData }) {
     : doneBy(task, answers[task.id] as Record<string, unknown> | undefined);
   const timesOf = (taskId: string) => (gTeacher ? d.byStudent?.[sidFor(taskId) ?? ""]?.times : d.times)?.[taskId];
   const hwTime = hwTasks.reduce((a, x) => a + (timesOf(x.id)?.[1] ?? 0), 0);
-  const STUDENT_KEYS = (a: Record<string, unknown> | undefined) => !!a && Object.keys(a).some((k) => !["gnotes", "corr", "corrSent", "rounds", "hist", "tries"].includes(k));
+  // Время рядом с заданием домашки (учителю): сколько внимания ученик уделил заданию вне урока.
+  // «Быстро» — задание сделано, но времени заметно меньше, чем обычно у этого ученика на задания этой домашки.
+  const hwMed = (() => { const xs = hwTasks.map((x) => timesOf(x.id)?.[1] ?? 0).filter((x) => x >= 60_000).sort((a, b) => a - b); return xs.length >= 2 ? xs[Math.floor(xs.length / 2)] : 0; })();
+  const hwTimeChip = (task: CTask) => {
+    if (TYPES[task.type]?.g === "tech" || ["info", "note", "divider", "vocab", "link"].includes(task.type)) return null; // служебные блоки — без времени
+    const tm = timesOf(task.id); const ms = tm?.[1] ?? 0;
+    const quick = ms > 0 && hwMed > 0 && isDone(task) && ms < hwMed * 0.3;
+    const title = [ms ? t("cls.hwTimeT", { t: fmtMin(ms) }) : t("cls.hwTimeNone"), tm?.[0] && tm[0] >= 30_000 ? t("cls.hwTimeLesson", { t: fmtMin(tm[0]) }) : "", quick ? t("cls.hwQuick") : ""].filter(Boolean).join(" · ");
+    return <span key="hwt" className={`hwtime ${ms ? "" : "none"} ${quick ? "quick" : ""}`} title={title} aria-label={title}><Icon name="clock" size="sm" />{ms ? (ms < 60_000 ? "<1 мин" : fmtMin(ms)) : "—"}</span>;
+  };
+  const STUDENT_KEYS = (a: Record<string, unknown> | undefined) => !!a && Object.keys(a).some((k) => !["gnotes", "corr", "corrSent", "rounds", "hist", "tries", "worked"].includes(k));
   // с ошибками: после проверки есть неверные/пустые строки — или по пути были неверные попытки (красные точки), даже если потом исправлено
   const hasErr = (task: CTask, a: Record<string, unknown> | undefined) => { if (!STUDENT_KEYS(a)) return false; if (hadWrongTry(task, a)) return true; if (!isFinal(task, a)) return false; const st = progressOf(task, a); return !!st && st.some((x) => x === "bad" || x === "todo"); };
   const ansOf = (task: CTask) => ((gTeacher ? ansBy[sidFor(task.id) ?? ""] : answers)?.[task.id]) as Record<string, unknown> | undefined;
   const errTasks = new Set(hwTasks.filter((x) => hasErr(x, ansOf(x))).map((x) => x.id));
+  // Проработанные на уроке задания — мягкий зелёный фон: сделано целиком, ученик что-то отвечал или учитель отметил «Проработали»
+  // (для текста, видео, обсуждения — там отвечать нечего). Пропущенные — без подсветки.
+  const workedA = (a: Record<string, unknown> | undefined) => !!a && (a.worked === true || STUDENT_KEYS(a));
+  const isWorked = (task: CTask) => gTeacher ? Object.values(ansBy).some((a) => workedA(a[task.id] as Record<string, unknown> | undefined)) : workedA(answers[task.id] as Record<string, unknown> | undefined);
+  const markedWorked = (task: CTask) => gTeacher ? Object.values(ansBy).some((a) => (a[task.id] as Record<string, unknown> | undefined)?.worked === true) : (answers[task.id] as Record<string, unknown> | undefined)?.worked === true;
+  const toggleWorked = (task: CTask) => {
+    const v = !markedWorked(task);
+    if (gTeacher) for (const m of d.group!.members) setAnswerFor(m.sid, task.id, "worked", v);
+    else setAnswer(task.id, "worked", v);
+  };
   const renderTasks = (list: CTask[], inHw = false, errOnly = false) => (
     <>
       {teacher && !inHw && <Plus onClick={() => setCatalog({ index: 0 })} />}
       {list.length === 0 && <div className="tk-empty"><Icon name="book" />{inHw ? t("cls.noHw") : t("bld.emptyStudent")}</div>}
       {list.map((task, i) => {
-        const card0 = <TaskCard key={resetTick[task.id] ?? 0} task={task} index={list.filter((x, j) => j <= i && numbered(x)).length - 1} actions={taskActions(task, inHw)} />;
+        const card0 = <TaskCard key={resetTick[task.id] ?? 0} task={task} index={list.filter((x, j) => j <= i && numbered(x)).length - 1} actions={inHw && teacher ? <>{hwTimeChip(task)}{taskActions(task, inHw)}</> : taskActions(task, inHw)} />;
         const card = errOnly ? <ErrCard key={`e${resetTick[task.id] ?? 0}`}>{card0}</ErrCard> : card0;
         // групповой урок: выбран ученик — его ответы; учитель может подставить ответ, если у ученика не получается,
         // и ученик сразу видит это у себя. Никто не выбран — учитель пробует задание сам, это никуда не сохраняется
@@ -424,7 +466,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
             onDrop: (e: React.DragEvent) => { e.preventDefault(); if (dragHw && overHw) { const ids = hwTasks.map((x) => x.id).filter((x) => x !== dragHw); const at = ids.indexOf(overHw.id) + (overHw.after ? 1 : 0); moveHw(dragHw, at); } setDragHw(null); setOverHw(null); },
             onDragEnd: () => { setDragHw(null); setOverHw(null); },
           } : {})}
-          className={`${inHw && teacher ? "hwdrag" : ""} ${dragHw === task.id ? "hwdrag-src" : ""} ${overHw?.id === task.id ? (overHw.after ? "hwdrop-after" : "hwdrop-before") : ""} ${isDone(task) ? "tk-donebg" : ""} ${live.timer?.taskId === task.id && timerLeft > 0 ? "tk-timed" : ""} ${flash === task.id ? "cls-flash" : ""} ${teacher && hidden.has(task.id) ? "tk-teacheronly" : ""} ${gTeacher && sid ? "tk-viewing" : ""}`}>
+          className={`${inHw && teacher ? "hwdrag" : ""} ${dragHw === task.id ? "hwdrag-src" : ""} ${overHw?.id === task.id ? (overHw.after ? "hwdrop-after" : "hwdrop-before") : ""} ${isDone(task) ? "tk-donebg" : !inHw && isWorked(task) ? "tk-workedbg" : ""} ${live.timer?.taskId === task.id && timerLeft > 0 ? "tk-timed" : ""} ${flash === task.id ? "cls-flash" : ""} ${teacher && hidden.has(task.id) ? "tk-teacheronly" : ""} ${gTeacher && sid ? "tk-viewing" : ""}`}>
           {/* ручка: зажать и перетащить задание домашки выше или ниже */}
           {inHw && teacher && <button type="button" className="hwgrip" title={t("cls.hwDrag")} aria-label={t("cls.hwDrag")} onPointerDown={() => setDragHw(task.id)} onPointerUp={() => !overHw && setDragHw(null)}><span aria-hidden="true">⠿</span></button>}
           {live.timer?.taskId === task.id && timerLeft > 0 && <div className={`tk-timer ${timerPaused ? "paused" : ""}`} aria-live="polite"><Icon name="clock" size="sm" />{fmtT(timerLeft)}{timerPaused ? ` · ${t("cls.tPaused")}` : ""}</div>}
@@ -437,7 +479,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
           {gTeacher && sid && <div className="tk-viewing-note small muted">{t("grp.viewing", { name: m?.name ?? "" })}</div>}
           {/* ученик решал заново — учителю видно, что было до сброса */}
           {teacher && <Rounds task={task} a={ansOf(task)} />}
-          {teacher && ((tm) => tm && (tm[0] + tm[1]) >= 30_000 ? <div className="tasktime small muted"><Icon name="clock" size="sm" />{t("cls.timeTask")}: {tm[1] >= 30_000 ? `${t("cls.timeHw")} ${fmtMin(tm[1])}` : ""}{tm[1] >= 30_000 && tm[0] >= 30_000 ? " · " : ""}{tm[0] >= 30_000 ? `${t("cls.timeLesson")} ${fmtMin(tm[0])}` : ""}</div> : null)(timesOf(task.id))}
+          {teacher && !inHw && ((tm) => tm && (tm[0] + tm[1]) >= 30_000 ? <div className="tasktime small muted"><Icon name="clock" size="sm" />{t("cls.timeTask")}: {tm[1] >= 30_000 ? `${t("cls.timeHw")} ${fmtMin(tm[1])}` : ""}{tm[1] >= 30_000 && tm[0] >= 30_000 ? " · " : ""}{tm[0] >= 30_000 ? `${t("cls.timeLesson")} ${fmtMin(tm[0])}` : ""}</div> : null)(timesOf(task.id))}
           {inHw && teacher && (!gTeacher || sid) && (TYPES[task.type].teacherCheck || task.type === "transform" || task.type === "translate") && <ReviewBox key={sid ?? "_"} lessonId={m?.instanceId ?? d.id} task={task} review={(revBy[sid ?? own] ?? {})[task.id]} draft={(gTeacher ? d.byStudent?.[sid ?? ""]?.aiDrafts ?? {} : aiDrafts)[task.id]} answered={!!(ansBy[sid ?? own] ?? {})[task.id]} send={gTeacher ? sendFor : send} />}
           {inHw && !teacher && reviews[task.id] && <div className={`alert mt-2 ${reviews[task.id].ok ? "ok" : ""}`}>{reviews[task.id].ok ? "✓ " : ""}{t("cls.teacherSays")}: {reviews[task.id].comment || (reviews[task.id].ok ? t("cls.reviewedOk") : "—")}</div>}
           {inHw && !teacher && reviews[task.id]?.ai && <div className="mt-2"><AiCheckView check={reviews[task.id].ai!} /></div>}
@@ -1233,20 +1275,31 @@ function SharedNotes({ value, onChange, who, hint, all, onPick, flash, point }: 
   const { t } = useT();
   const [v, setV] = useState(value);
   const [state, setState] = useState<"" | "saving" | "saved">("");
-  const typedAt = useRef(0);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // пришло с другой стороны — показываем сразу, если сами не печатаем прямо сейчас
+  // Правки ученика не перетираем: пока есть несохранённый текст или сохранение ещё в пути, пришедшее с сервера
+  // (оно могло быть снято до нашего сохранения) не подставляем. Когда своё сохранено и правок нет — показываем чужие изменения.
+  const seq = useRef(0); // номер последней правки
+  const savedSeq = useRef(0); // номер правки, сохранение которой подтвердилось
+  const typedAt = useRef(0);
+  const latest = useRef(value);
+  const busy = () => seq.current !== savedSeq.current || Date.now() - typedAt.current < 1500;
   useEffect(() => {
-    if (Date.now() - typedAt.current > 1500) { setV(value); return; }
-    const h = setTimeout(() => setV(value), 1600 - (Date.now() - typedAt.current));
-    return () => clearTimeout(h);
-  }, [value]);
+    latest.current = value;
+    if (busy()) return;
+    setV(value);
+  }, [value]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
   const change = (x: string) => {
+    const n = ++seq.current;
     typedAt.current = Date.now();
     setV(x); setState("saving");
     if (timer.current) clearTimeout(timer.current);
-    timer.current = setTimeout(() => { void onChange(x).then(() => setState("saved")); }, 500);
+    timer.current = setTimeout(() => {
+      void onChange(x).then(() => {
+        if (seq.current !== n) return; // за время сохранения напечатали ещё — ждём следующее сохранение
+        savedSeq.current = n; setState("saved");
+      });
+    }, 500);
   };
   return (
     <div id="cls-snote" className={`cls-snote mt-4 ${flash ? "cls-flash" : ""}`}>

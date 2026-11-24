@@ -1233,7 +1233,7 @@
   },
   {
     "from": "G-C1-76",
-    "wrong": 2,
+    "wrong": 1,
     "accept": [
       "the"
     ]
@@ -1247,9 +1247,9 @@
   },
   {
     "from": "G-C1-78",
-    "wrong": 0,
+    "wrong": 3,
     "accept": [
-      "as"
+      "anywhere"
     ]
   },
   {

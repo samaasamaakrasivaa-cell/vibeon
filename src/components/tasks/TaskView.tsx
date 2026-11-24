@@ -620,6 +620,14 @@ function Sort({ task, pictures }: { task: TaskData; pictures?: boolean }) {
 }
 
 // ───────── Собери предложение / слово из букв ─────────
+/** Строка ответа, которая растёт по высоте: длинный ответ виден целиком (на телефоне конец не уходит за край). Enter — не перенос. */
+function GrowLine({ value, onChange, onBlur, className, label }: { value: string; onChange: (v: string) => void; onBlur?: (v: string) => void; className: string; label: string }) {
+  const ref = useRef<HTMLTextAreaElement>(null);
+  useEffect(() => { const el = ref.current; if (!el) return; el.style.height = "auto"; el.style.height = `${el.scrollHeight + 2}px`; }, [value]);
+  return <textarea ref={ref} rows={1} className={`${className} tk-grow`} value={value} aria-label={label} spellCheck={false}
+    onChange={(e) => onChange(e.target.value.replace(/\n/g, " "))} onKeyDown={(e) => { if (e.key === "Enter") e.preventDefault(); }} onBlur={(e) => onBlur?.(e.target.value)} />;
+}
+
 function Build({ task, letters }: { task: TaskData; letters?: boolean }) {
   const { t } = useT();
   const o = task.options;
@@ -636,6 +644,21 @@ function Build({ task, letters }: { task: TaskData; letters?: boolean }) {
   const answer = (i: number) => (built[i] ?? []).map((k) => items[i].toks[k]).join(letters ? "" : " ");
   const right = (i: number) => (letters ? answer(i).toLowerCase() === items[i].toks.join("").toLowerCase() : same(answer(i), [items[i].toks.join(" ")]));
   const errors = items.filter((_, i) => !right(i)).length;
+  // Собранное можно править до проверки: нажали на слово в строке — оно выбрано; нажали на другое слово — выбранное встаёт
+  // перед ним; «в конец» — в конец; ещё раз на выбранное — слово уходит обратно вниз. На компьютере слова можно перетаскивать.
+  const [sel, setSel] = useState<{ i: number; at: number } | null>(null);
+  const [dragAt, setDragAt] = useState<{ i: number; at: number } | null>(null);
+  const put = (i: number, nb: number[]) => {
+    setBuilt((x) => ({ ...x, [i]: nb }));
+    if (ck.instant && nb.length === items[i].toks.length) ck.bump(String(i));
+  };
+  const moveTo = (i: number, from: number, to: number) => {
+    const b = [...(built[i] ?? [])];
+    if (from === to || from < 0 || from >= b.length) return;
+    const [v] = b.splice(from, 1);
+    b.splice(to > from ? to - 1 : to, 0, v);
+    put(i, b);
+  };
   return (
     <div className="flex flex-col gap-4">
       {letters && o.limitSec ? <div className={`pill ${left > 0 ? "blue" : "red"} self-start`}><Icon name="clock" size="sm" />{left > 0 ? `0:${String(left).padStart(2, "0")}` : t("tk.timeUp")}</div> : null}
@@ -643,6 +666,12 @@ function Build({ task, letters }: { task: TaskData; letters?: boolean }) {
         const order = shuffle(it.toks.map((_, k) => k), task.id + i);
         const b = built[i] ?? [];
         const m: Mark = ck.checked && b.length ? (right(i) ? "ok" : "bad") : undefined;
+        const selAt = sel?.i === i ? sel.at : null;
+        const tap = (bi: number) => {
+          if (selAt === null) { setSel({ i, at: bi }); return; }
+          if (selAt === bi) { put(i, b.filter((_, j) => j !== bi)); setSel(null); return; } // второй раз — убрать вниз
+          moveTo(i, selAt, bi); setSel(null);
+        };
         return (
           <div key={i} className="flex gap-2">
             <Num i={i} o={o} />
@@ -650,13 +679,29 @@ function Build({ task, letters }: { task: TaskData; letters?: boolean }) {
               {it.hint && <span className="small muted">{it.hint}</span>}
               <div className={`tk-build ${m ?? ""}`}>
                 {b.length === 0 ? <span className="hint">{t("tk.tapWords")}</span> : b.map((k, bi) => (
-                  <button key={bi} type="button" className="tk-chip" onClick={() => setBuilt((x) => ({ ...x, [i]: b.filter((_, j) => j !== bi) }))}>{it.toks[k]}</button>
+                  <button key={bi} type="button" className={`tk-chip ${selAt === bi ? "sel" : ""} ${dragAt?.i === i && dragAt.at === bi ? "dragover" : ""}`} aria-pressed={selAt === bi}
+                    draggable onDragStart={(e) => { e.dataTransfer.setData("text/plain", String(bi)); setSel(null); }}
+                    onDragOver={(e) => { e.preventDefault(); setDragAt({ i, at: bi }); }} onDragLeave={() => setDragAt(null)}
+                    onDrop={(e) => { e.preventDefault(); setDragAt(null); moveTo(i, Number(e.dataTransfer.getData("text/plain")), bi); }}
+                    onClick={() => tap(bi)}>{it.toks[k]}</button>
                 ))}
+                {b.length > 0 && (selAt !== null || dragAt?.i === i) && (
+                  <button type="button" className={`tk-chip tk-end ${dragAt?.i === i && dragAt.at === b.length ? "dragover" : ""}`}
+                    onDragOver={(e) => { e.preventDefault(); setDragAt({ i, at: b.length }); }}
+                    onDrop={(e) => { e.preventDefault(); setDragAt(null); moveTo(i, Number(e.dataTransfer.getData("text/plain")), b.length); }}
+                    onClick={() => { if (selAt !== null) { moveTo(i, selAt, b.length); setSel(null); } }}>{t("tk.toEnd")}</button>
+                )}
               </div>
+              {selAt !== null && <span className="small muted">{t("tk.moveHint")}</span>}
               <div className="tk-bank">
                 {order.map((k) => (
                   <button key={k} type="button" className="tk-chip" disabled={b.includes(k) || (letters && !!o.limitSec && left <= 0)}
-                    onClick={() => { const nb = [...b, k]; setBuilt((x) => ({ ...x, [i]: nb })); if (ck.instant && nb.length === it.toks.length) ck.bump(String(i)); }}>{it.toks[k]}</button>
+                    onClick={() => {
+                      // выбрано слово в строке — новое встаёт перед ним, иначе в конец
+                      const nb = selAt !== null ? [...b.slice(0, selAt), k, ...b.slice(selAt)] : [...b, k];
+                      if (selAt !== null) setSel(null);
+                      put(i, nb);
+                    }}>{it.toks[k]}</button>
                 ))}
               </div>
               {ck.reveal(String(i)) && m === "bad" ? <span className="tk-ans self-start">{it.toks.join(letters ? "" : " ")}</span> : <Key text={it.toks.join(letters ? "" : " ")} mode="block" />}
@@ -734,7 +779,7 @@ function Arrow({ task }: { task: TaskData }) {
           <div key={i}>
             <div className="mb-1.5"><Num i={i} o={o} /> {it.q} {it.key && <span className="tk-hint tk-kw" title={t("tk.keyWord")}>{it.key}</span>}</div>
             <Fixable tid={task.id} k={String(i)} src={val[i] ?? ""} rows={2}>
-            <span className="flex items-center gap-2"><input className={`input tk-line ${m ?? ""}`} value={val[i] ?? ""} onChange={(e) => setVal((x) => ({ ...x, [i]: e.target.value }))} onBlur={(e) => { if (ck.instant && e.target.value) { ck.bump(String(i)); ck.record(String(i), e.target.value, same(e.target.value, it.answers)); } }} aria-label={`answer ${i + 1}`} />
+            <span className="flex items-center gap-2"><GrowLine className={`input tk-line ${m ?? ""}`} value={val[i] ?? ""} onChange={(v) => setVal((x) => ({ ...x, [i]: v }))} onBlur={(v) => { if (ck.instant && v) { ck.bump(String(i)); ck.record(String(i), v, same(v, it.answers)); } }} label={`answer ${i + 1}`} />
             {it.answers.length > 0 && <Tries hist={ck.hist[String(i)]} answer={it.answers.join(" / ")} tid={task.id} k={String(i)} noKey />}</span>
             </Fixable>
             {m === "bad" && <span className="small text-text2">{t("tk.teacherWillSee")}</span>}
@@ -772,7 +817,7 @@ function Dictation({ task }: { task: TaskData }) {
             <Num i={i} o={o} />
             <button type="button" className="iconbtn" style={{ background: "var(--accent-bg)", color: "var(--accent)" }} onClick={() => speak(s)} aria-label={t("tk.listen")}><Icon name="sound" size="sm" /></button>
             <div className="grow">
-              <input className={`input tk-line ${g === "exact" ? "ok" : g === "spelling" ? "spell" : g === "wrong" ? "bad" : ""}`} value={val[i] ?? ""} onChange={(e) => setVal((x) => ({ ...x, [i]: e.target.value }))} onBlur={(e) => ck.instant && e.target.value && ck.bump(String(i))} aria-label={`sentence ${i + 1}`} />
+              <GrowLine className={`input tk-line ${g === "exact" ? "ok" : g === "spelling" ? "spell" : g === "wrong" ? "bad" : ""}`} value={val[i] ?? ""} onChange={(v) => setVal((x) => ({ ...x, [i]: v }))} onBlur={(v) => { if (ck.instant && v) ck.bump(String(i)); }} label={`sentence ${i + 1}`} />
               {g === "spelling" && <span className="small text-warn">{t("tk.spelling")}: {s}</span>}
               {g === "wrong" && ck.reveal(String(i)) ? <span className="tk-ans">{s}</span> : <Key text={s} mode="block" />}
             </div>

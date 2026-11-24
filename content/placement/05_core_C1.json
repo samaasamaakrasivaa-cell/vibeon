@@ -1046,15 +1046,15 @@
     "topic_en": "Articles: generalisation, abstract nouns, fixed cases",
     "topic_ru": "Артикли: обобщение, абстрактные существительные, устойчивые случаи",
     "type": "mcq",
-    "q": "___ life is too short to waste on things you don't enjoy.",
+    "q": "We had a call from ___ certain Mr Peterson, who claimed to know you.",
     "options": [
-      "The",
-      "A",
+      "a",
+      "the",
       "—",
-      "An"
+      "one"
     ],
-    "answer": 2,
-    "explain_ru": "Жизнь вообще (абстрактное понятие) — без артикля."
+    "answer": 0,
+    "explain_ru": "a certain + имя: «некий мистер Питерсон» — человек, которого говорящий не знает."
   },
   {
     "id": "G-C1-39",
@@ -1430,12 +1430,12 @@
     "q": "She was elected ___ president of the club last year.",
     "options": [
       "a",
-      "the",
       "—",
-      "an"
+      "an",
+      "some"
     ],
-    "answer": 2,
-    "explain_ru": "После elect / appoint с названием единственной должности артикль обычно не ставится."
+    "answer": 1,
+    "explain_ru": "После elect / appoint с названием единственной должности артикль не ставится: elected president. «A president» значило бы «один из президентов»."
   },
   {
     "id": "G-C1-52",
@@ -1446,15 +1446,15 @@
     "topic_en": "Articles: generalisation, abstract nouns, fixed cases",
     "topic_ru": "Артикли: обобщение, абстрактные существительные, устойчивые случаи",
     "type": "mcq",
-    "q": "___ Smiths have invited us to dinner on Saturday.",
+    "q": "Small studios find it hard to compete with ___ likes of Disney and Netflix.",
     "options": [
+      "the",
       "—",
-      "A",
-      "Some",
-      "The"
+      "a",
+      "such"
     ],
-    "answer": 3,
-    "explain_ru": "Семья целиком — the + фамилия во множественном числе: the Smiths."
+    "answer": 0,
+    "explain_ru": "Устойчивое выражение the likes of — «такие, как» (о крупных, известных)."
   },
   {
     "id": "V-C1-28",
@@ -1919,15 +1919,15 @@
     "topic_en": "Articles: generalisation, abstract nouns, fixed cases",
     "topic_ru": "Артикли: обобщение, абстрактные существительные, устойчивые случаи",
     "type": "mcq",
-    "q": "___ computer has completely changed the way we live and work.",
+    "q": "___ elderly are often left out of debates about new technology.",
     "options": [
-      "A",
+      "The",
       "—",
       "An",
-      "The"
+      "Some"
     ],
-    "answer": 3,
-    "explain_ru": "Изобретение как явление в целом — the computer."
+    "answer": 0,
+    "explain_ru": "the + прилагательное = группа людей в целом: the elderly, the unemployed, the rich."
   },
   {
     "id": "G-C1-75",
@@ -1938,15 +1938,15 @@
     "topic_en": "Articles: generalisation, abstract nouns, fixed cases",
     "topic_ru": "Артикли: обобщение, абстрактные существительные, устойчивые случаи",
     "type": "mcq",
-    "q": "What ___ lovely weather we're having!",
+    "q": "She's something of ___ expert on medieval architecture.",
     "options": [
-      "—",
-      "a",
+      "an",
       "the",
-      "an"
+      "—",
+      "a"
     ],
     "answer": 0,
-    "explain_ru": "Weather — неисчисляемое, поэтому What lovely weather! без a."
+    "explain_ru": "something of a/an + существительное — «в некотором роде, довольно большой»: something of an expert."
   },
   {
     "id": "G-C1-76",
@@ -1957,15 +1957,15 @@
     "topic_en": "Articles: generalisation, abstract nouns, fixed cases",
     "topic_ru": "Артикли: обобщение, абстрактные существительные, устойчивые случаи",
     "type": "mcq",
-    "q": "Most people in ___ UK live in towns and cities.",
+    "q": "They run the festival for ___ good of the community, not for profit.",
     "options": [
-      "—",
       "the",
       "a",
-      "an"
+      "—",
+      "some"
     ],
-    "answer": 1,
-    "explain_ru": "Названия стран со словами Kingdom, States, Republic — с the: the UK."
+    "answer": 0,
+    "explain_ru": "Устойчивое выражение for the good of — «на благо»."
   },
   {
     "id": "G-C1-77",
@@ -1976,15 +1976,15 @@
     "topic_en": "Advanced comparison: by far, nothing like as, the sooner the better",
     "topic_ru": "Сложные сравнения: by far, nothing like as, the sooner the better",
     "type": "mcq",
-    "q": "The more I learn about the topic, ___ I realise how little I know.",
+    "q": "This year's results were ___ better than last year's — the difference was tiny.",
     "options": [
-      "more",
-      "the most",
-      "the more",
-      "most"
+      "marginally",
+      "vastly",
+      "far",
+      "considerably"
     ],
-    "answer": 2,
-    "explain_ru": "The more…, the more… — чем больше…, тем больше…"
+    "answer": 0,
+    "explain_ru": "Разница крошечная — marginally better (чуть-чуть). Vastly, far, considerably — «намного»."
   },
   {
     "id": "G-C1-78",
@@ -1995,15 +1995,15 @@
     "topic_en": "Advanced comparison: by far, nothing like as, the sooner the better",
     "topic_ru": "Сложные сравнения: by far, nothing like as, the sooner the better",
     "type": "mcq",
-    "q": "This flat is twice ___ big as our old one.",
+    "q": "The film wasn't ___ near as good as the book.",
     "options": [
-      "so",
-      "more",
-      "than",
-      "as"
+      "anywhere",
+      "somewhere",
+      "everywhere",
+      "nowhere"
     ],
-    "answer": 3,
-    "explain_ru": "Во сколько раз — twice as big as."
+    "answer": 0,
+    "explain_ru": "not anywhere near as … as — «далеко не такой, как». Nowhere near — только без not, иначе двойное отрицание."
   },
   {
     "id": "G-C1-79",
@@ -2014,15 +2014,15 @@
     "topic_en": "Advanced comparison: by far, nothing like as, the sooner the better",
     "topic_ru": "Сложные сравнения: by far, nothing like as, the sooner the better",
     "type": "mcq",
-    "q": "It's getting ___ difficult to find an affordable flat in the city.",
+    "q": "The new system is ___ superior to the old one in every respect.",
     "options": [
-      "increasingly",
-      "more and most",
-      "the more",
-      "increasing"
+      "vastly",
+      "much more",
+      "very more",
+      "the most"
     ],
     "answer": 0,
-    "explain_ru": "Всё более — increasingly (= more and more) difficult."
+    "explain_ru": "Superior уже означает сравнение (= better than): усиливаем vastly / far superior, без more и than."
   },
   {
     "id": "G-C1-80",
@@ -2493,12 +2493,13 @@
     "topic_en": "Articles: generalisation, abstract nouns, fixed cases",
     "topic_ru": "Артикли: обобщение, абстрактные существительные, устойчивые случаи",
     "type": "gap",
-    "q": "She plays ___ piano beautifully.",
+    "q": "Not ___ single person in the audience noticed the mistake.",
     "accept": [
-      "the"
+      "a",
+      "one"
     ],
-    "explain_ru": "Играть на музыкальном инструменте — the: play the piano.",
-    "hint_ru": "a / an / the"
+    "explain_ru": "Not a single … — эмфатическое «ни один»: not a single person.",
+    "hint_ru": "a / an / the / one"
   },
   {
     "id": "G-C1-T09",

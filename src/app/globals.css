@@ -2645,3 +2645,86 @@ details.prblock[open] .prchev { transform: rotate(180deg); }
 .chc:hover { border-color: var(--accent); box-shadow: 0 4px 14px rgba(10, 132, 255, .12); }
 .chc:disabled { opacity: .6; cursor: default; }
 .chc-ic { width: 44px; height: 44px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; background: var(--accent-bg); color: var(--accent); flex-shrink: 0; }
+/* «Составь предложение»: выбранное слово в строке и место, куда его поставить */
+.tk-build .tk-chip.sel { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-bg); background: var(--accent-bg); }
+.tk-build .tk-chip.dragover { box-shadow: -3px 0 0 var(--accent); }
+.tk-build .tk-chip[draggable] { cursor: grab; }
+.tk-build .tk-end { border-style: dashed; color: var(--text2); font-size: 13px; }
+/* Длинные ответы на телефоне: поле пропуска не шире строки, строка ответа растёт по высоте */
+.tk-gap { max-width: 100%; }
+.tk-gapw { max-width: 100%; }
+.tk-grow { resize: none; overflow: hidden; min-height: 0; line-height: 1.4; white-space: pre-wrap; overflow-wrap: anywhere; }
+/* Время ученика над заданием домашки — рядом с заголовком задания (видит учитель) */
+.hwtime { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px; background: var(--fill); color: var(--text2); font-size: 12.5px; font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.hwtime.none { background: transparent; color: var(--text3); font-weight: 500; }
+.hwtime.quick { background: var(--warn-bg); color: var(--warn-text); }
+/* Урок: задание, с которым поработали, но не закончили (или отмечено «Проработали») — ещё мягче, чем сделанное */
+.tk-workedbg > article.tk, .tk-workedbg article.tk { background: color-mix(in srgb, var(--ok) 4%, var(--surface)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ok) 18%, transparent); transition: background .3s; }
+/* Аватарка группы */
+.grp-av { border-radius: 12px; overflow: hidden; display: inline-flex; flex: none; }
+.grp-av svg { width: 100%; height: 100%; }
+.grp-avrow { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.grp-avrow .grp-av, .grp-avrow .grp-ic { border-radius: 16px; }
+.grp-avgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(52px, 1fr)); gap: 8px; }
+.grp-avopt { border: 2px solid transparent; border-radius: 12px; padding: 2px; background: none; cursor: pointer; display: inline-flex; justify-content: center; }
+.grp-avopt svg { border-radius: 10px; }
+.grp-avopt:hover { border-color: var(--sep); }
+.grp-avopt.on { border-color: var(--accent); }
+/* Шапка анкеты ученика: аватар на линии имени; уровни и связь — под именем */
+.prof-hd { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; column-gap: 16px; row-gap: 8px; align-items: center; }
+.prof-av { grid-row: 1; grid-column: 1; display: flex; }
+.prof-name { grid-row: 1; grid-column: 2; margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.prof-acts { grid-row: 1; grid-column: 3; display: flex; justify-content: flex-end; }
+.prof-pills, .prof-tg { grid-column: 2 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.prof-tg:empty { display: none; }
+.prof-tg .pill, .prof-pills .pill { line-height: 1.2; }
+.prof-tg .pill svg, .prof-pills .pill svg { flex: none; }
+@media (max-width: 720px) {
+  .prof-hd { grid-template-columns: auto minmax(0, 1fr); }
+  .prof-acts { grid-row: auto; grid-column: 1 / -1; justify-content: flex-start; }
+  .prof-pills, .prof-tg { grid-column: 1 / -1; }
+}
+/* Telegram в шапке анкеты: значок по центру кружка, статус и действие */
+.tgchip { display: inline-flex; align-items: center; gap: 8px; padding: 4px 12px 4px 4px; border-radius: 999px; background: var(--fill); color: var(--text2); font-size: 13.5px; font-weight: 600; line-height: 1.2; }
+.tgchip-ic { width: 26px; height: 26px; border-radius: 50%; background: #2AABEE; color: #fff; display: inline-flex; align-items: center; justify-content: center; flex: none; }
+.tgchip-ic svg { transform: translateX(-1px); }
+.tgchip:not(.on) .tgchip-ic { background: var(--grey); }
+.tgchip.on { background: var(--ok-bg); color: var(--ok-text); }
+.tgchip.on .tgchip-ic { background: #2AABEE; }
+.tgchip-act { border: 0; background: none; padding: 0; font: inherit; color: var(--accent); cursor: pointer; }
+.tgchip-act:disabled { color: var(--text3); cursor: default; }
+.tgchip-act::before { content: "·"; color: var(--text3); margin-right: 8px; }
+/* Анкета преподавателя (как видит ученик) */
+.tcard { background: var(--surface); border-radius: 20px; padding: 24px; display: flex; flex-direction: column; gap: 18px; box-shadow: var(--shadow); }
+.tcard-hd { display: flex; gap: 18px; align-items: center; }
+.tcard-ph { width: 96px; height: 96px; border-radius: 50%; object-fit: cover; flex: none; }
+.tcard-ini { display: inline-flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #0A84FF, #5E5CE6); color: #fff; font-size: 32px; font-weight: 700; }
+.tcard-hl { margin: 4px 0 0; color: var(--text2); font-size: 16px; }
+.tcard-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.tcard-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin: 0; }
+.tcard-facts > div { background: var(--fill); border-radius: 14px; padding: 10px 14px; }
+.tcard-facts dt { font-size: 12.5px; color: var(--text2); }
+.tcard-facts dd { margin: 2px 0 0; font-weight: 700; font-size: 16px; }
+.tcard-sec h3 { margin: 0 0 6px; font-size: 15px; }
+.tcard-sec p { margin: 0; white-space: pre-line; line-height: 1.55; color: var(--text); }
+.tcard-certs { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 6px 14px; }
+.tcard-certs li { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
+.tcard-certs svg { color: var(--ok); }
+.ta-photo { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.ta-photo .tcard-ph { width: 72px; height: 72px; font-size: 24px; }
+@media (max-width: 560px) { .tcard { padding: 18px; } .tcard-hd { flex-direction: column; align-items: flex-start; } .tcard-ph { width: 80px; height: 80px; } }
+/* «Финансы»: итоги прошлой недели */
+.wkcard { display: flex; flex-direction: column; gap: 12px; }
+.wk-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.wk-grid > div { background: var(--fill); border-radius: 14px; padding: 10px 14px; display: flex; flex-direction: column; gap: 2px; }
+.wk-grid span { font-size: 12.5px; color: var(--text2); }
+.wk-grid b { font-size: 20px; font-variant-numeric: tabular-nums; }
+.wk-d { font-size: 12px !important; font-weight: 600; }
+.wk-d.up { color: var(--ok-text) !important; }
+.wk-d.down { color: var(--bad-text) !important; }
+.wk-debt { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; justify-content: space-between; }
+/* Главная учителя: новое на платформе */
+.newsbn { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 16px; background: var(--accent-bg); color: var(--text); text-decoration: none; }
+.newsbn:hover { box-shadow: 0 0 0 1px var(--accent); }
+.newsbn-ic { width: 34px; height: 34px; border-radius: 10px; background: var(--accent); color: #fff; display: inline-flex; align-items: center; justify-content: center; flex: none; }
+.newsbn-list { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
