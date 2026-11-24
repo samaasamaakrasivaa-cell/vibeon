@@ -4,8 +4,10 @@
 export type Purpose = "check" | "route";
 
 const DEFAULTS: Record<Purpose, [string, string]> = {
-  check: ["deepseek-v32/latest", "aliceai-llm/latest"],
-  route: ["deepseek-v32/latest", "aliceai-llm/latest"],
+  // по сравнению на размеченных работах A2–C1 (scripts/ai-eval.ts): DeepSeek V4.1 Flash — лучший на всех уровнях
+  // и единственный, кто везде соблюдает язык пояснений; V3.2 — почти так же точен, запасной
+  check: ["deepseek-v4.1-flash/latest", "deepseek-v32/latest"],
+  route: ["deepseek-v4.1-flash/latest", "deepseek-v32/latest"],
 };
 
 const env = (k: string) => (process.env[k] || "").trim();

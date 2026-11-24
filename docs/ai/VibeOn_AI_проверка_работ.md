@@ -1,6 +1,6 @@
 # VibeOn — инструкция ИИ для проверки работ учеников
 
-> **Как это подключено в VibeOn.** Тексты промптов вынесены в папку `prompts/` (PROMPT 1 → `prompts/check-1.md`, PROMPT 2 → `prompts/check-2-review.md`) — платформа читает их оттуда, правьте там. Модели задаются в `.env`. Qwen3-235B в каталоге Yandex AI Studio оказался недоступен (Access denied), поэтому сейчас основная модель — DeepSeek V3.2 (`deepseek-v32/latest`), запасная — Alice AI LLM (`aliceai-llm/latest`).
+> **Как это подключено в VibeOn.** Тексты промптов вынесены в папку `prompts/` (PROMPT 1 → `prompts/check-1.md`, PROMPT 2 → `prompts/check-2-review.md`) — платформа читает их оттуда, правьте там. Модели задаются в `.env`. Qwen3-235B в каталоге Yandex AI Studio оказался недоступен (Access denied), поэтому модели выбраны сравнением на размеченных работах A2–C1 (`scripts/ai-eval.ts`): основная — DeepSeek V4.1 Flash (`deepseek-v4.1-flash/latest`), запасная — DeepSeek V3.2 (`deepseek-v32/latest`).
 
 Используется для: эссе, открытых ответов, расшифровок устных ответов (запись аудио, говорение с ИИ).
 Модель: Qwen3-235B (основная), DeepSeek V3.2 (запасная). Инструкция не зависит от модели.
