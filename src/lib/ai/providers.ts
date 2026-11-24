@@ -99,7 +99,12 @@ export async function studioChat(model: string, messages: LlmMsg[], o: LlmOpts =
     headers: { Authorization: `Api-Key ${Y().key}`, "OpenAI-Project": Y().folder, "Content-Type": "application/json" },
     body: JSON.stringify({
       model: modelUri(model), messages, temperature: o.temperature ?? 0.2, max_tokens: o.maxTokens ?? 4000,
-      ...(o.json ? { response_format: { type: "json_object" } } : {}),
+      // Строгий JSON-режим (response_format) не включаем: на длинной инструкции Alice AI в нём зацикливается (проверено);
+      // JSON требует сама инструкция, ответ разбирается и проверяется платформой. Включить: AI_JSON_MODE=1.
+      ...(o.json && process.env.AI_JSON_MODE === "1" ? { response_format: { type: "json_object" } } : {}),
+      // DeepSeek и Qwen в AI Studio «думают» перед ответом и могут истратить на это все токены (ответ пустой) —
+      // по умолчанию размышления выключены (проверено: 20–25 с, валидный JSON). AI_REASONING_EFFORT=low|medium|high — включить.
+      ...(/deepseek|qwen/i.test(model) ? { reasoning_effort: process.env.AI_REASONING_EFFORT || "none" } : {}),
     }),
   }, o.timeoutMs ?? 150000);
   return { text: stripThink(j.choices?.[0]?.message?.content ?? ""), model, tokensIn: j.usage?.prompt_tokens ?? 0, tokensOut: j.usage?.completion_tokens ?? 0 };
