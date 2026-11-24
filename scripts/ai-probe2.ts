@@ -160,7 +160,45 @@ async function details() {
   }
 }
 
+/** Картинки: правильное имя модели из AI Studio, синхронный OpenAI-совместимый адрес и асинхронный. */
+async function images2() {
+  const models = ["aliceai-image-art-3.0/latest", "yandex-art/latest", "yandexart-2.0/latest", "yandex-art-2.0/latest"];
+  let good: { model: string; how: string } | null = null;
+  for (const m of models) {
+    for (const prefix of ["art", "gpt"]) {
+      const t0 = Date.now();
+      try {
+        const r = await fetch("https://llm.api.cloud.yandex.net/v1/images/generations", { method: "POST", signal: AbortSignal.timeout(120000), headers: { Authorization: `Api-Key ${key}`, "OpenAI-Project": folder, "Content-Type": "application/json" }, body: JSON.stringify({ model: `${prefix}://${folder}/${m}`, prompt: style("apple"), n: 1, size: "1024x1024", response_format: "b64_json" }) });
+        const b = await r.text();
+        let img: Buffer | null = null;
+        try { const j = JSON.parse(b); const d = j.data?.[0]; if (d?.b64_json) img = Buffer.from(d.b64_json, "base64"); else if (d?.url) img = Buffer.from(await (await fetch(d.url)).arrayBuffer()); } catch {}
+        console.log(`IMG3 sync ${prefix}://${m}: HTTP ${r.status} ${img ? `OK ${img.length} bytes ${sec(t0)} s` : short(b)}`);
+        if (img) { writeFileSync(`${OUT}/img-${m.split("/")[0]}-apple.png`, img); good = good ?? { model: `${prefix}://${folder}/${m}`, how: "sync" }; }
+      } catch (e) { console.log(`IMG3 sync ${prefix}://${m}: ${short((e as Error).message)}`); }
+    }
+    try { const img = await imageAsync(m, style("apple")); writeFileSync(`${OUT}/img-${m.split("/")[0]}-apple-async.jpg`, img); console.log(`IMG3 async ${m}: OK ${img.length} bytes`); good = good ?? { model: m, how: "async" }; }
+    catch (e) { console.log(`IMG3 async ${m}: ${short((e as Error).message)}`); }
+  }
+  if (!good) return;
+  // остальные слова — рабочим способом
+  for (const w of WORDS.slice(1)) {
+    const t0 = Date.now();
+    try {
+      let img: Buffer;
+      if (good.how === "async") img = await imageAsync(good.model, style(w));
+      else {
+        const r = await fetch("https://llm.api.cloud.yandex.net/v1/images/generations", { method: "POST", signal: AbortSignal.timeout(120000), headers: { Authorization: `Api-Key ${key}`, "OpenAI-Project": folder, "Content-Type": "application/json" }, body: JSON.stringify({ model: good.model, prompt: style(w), n: 1, size: "1024x1024", response_format: "b64_json" }) });
+        const j = await r.json(); const d = j.data?.[0];
+        img = d?.b64_json ? Buffer.from(d.b64_json, "base64") : Buffer.from(await (await fetch(d.url)).arrayBuffer());
+      }
+      writeFileSync(`${OUT}/img-final-${w.replace(/\s+/g, "_")}.png`, img);
+      console.log(`IMG3 word «${w}»: OK ${sec(t0)} s`);
+    } catch (e) { console.log(`IMG3 word «${w}»: ${short((e as Error).message)}`); }
+  }
+}
+
 export async function run() {
+  if (process.argv[3] === "images") { rmSync(OUT, { recursive: true, force: true }); mkdirSync(OUT, { recursive: true }); await images2(); return; }
   if (process.argv[3] === "details") { await details(); return; }
   rmSync(OUT, { recursive: true, force: true }); mkdirSync(OUT, { recursive: true });
   console.log(`PROBE2 folder set: ${!!folder}, key set: ${!!key}`);
