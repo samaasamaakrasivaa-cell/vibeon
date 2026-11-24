@@ -18,6 +18,9 @@ on:
 
 concurrency: { group: server, cancel-in-progress: false }
 
+permissions:
+  contents: write
+
 jobs:
   run:
     runs-on: ubuntu-latest
@@ -117,10 +120,12 @@ jobs:
             ssh srv 'o=$(cat /tmp/vibeon-old-image 2>/dev/null); n=$(docker image inspect -f "{{.Id}}" vibeon-app:latest); [ -n "$o" ] && [ "$o" != "$n" ] && docker rmi "$o" >/dev/null 2>&1; rm -f /tmp/vibeon-old-image; true'
           fi
 
-      - name: Upload demo files
+      - name: Publish probe files to branch ai-probe-out
         if: inputs.action == 'aidemo' && hashFiles('aiout.tgz') != ''
-        uses: actions/upload-artifact@v4
-        with:
-          name: aiout
-          path: aiout.tgz
-          retention-days: 3
+        run: |
+          # тестовые картинки и аудио проб — в служебную ветку (данных платформы там нет); ветку можно удалить
+          mkdir -p /tmp/probe && tar xzf aiout.tgz -C /tmp/probe && rm aiout.tgz
+          cd /tmp/probe && git init -q && git checkout -q -b ai-probe-out
+          git config user.name "vibeon-deploy" && git config user.email "deploy@users.noreply.github.com"
+          git add -A && git commit -q -m "probe files ${{ github.run_id }}"
+          git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" ai-probe-out
