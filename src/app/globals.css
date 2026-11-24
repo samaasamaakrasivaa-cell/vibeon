@@ -2815,7 +2815,8 @@ details.prblock[open] .prchev { transform: rotate(180deg); }
 .airows del { color: var(--bad-text, #D70015); }
 .ainum { width: 22px; height: 22px; border-radius: 50%; background: var(--surface); font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; flex: none; margin-top: 4px; }
 .airow-top { display: flex; align-items: center; gap: 8px; }
-.airow-top del { white-space: nowrap; max-width: 40%; overflow: hidden; text-overflow: ellipsis; }
+.airow-top del { flex: 0 1 auto; max-width: 50%; white-space: normal; overflow-wrap: anywhere; }
+.airow-top .input { min-width: 40%; }
 .airow-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 6px 0; }
 .airows .textarea.sm { min-height: 34px; resize: vertical; }
 .aisum { margin-top: 14px; display: flex; flex-direction: column; gap: 10px; }
@@ -2827,3 +2828,10 @@ details.prblock[open] .prchev { transform: rotate(180deg); }
 .aiscore .input.xs:first-of-type { width: 64px; }
 .aicomment { background: var(--accent-bg); color: var(--accent-text, var(--text)); border-radius: 12px; padding: 10px 14px; margin: 10px 0; }
 .text-warn { color: var(--warn-text, #C93400); }
+.rtai { border-top: 1px solid var(--sep); padding-top: 10px; }
+.aqtable { width: 100%; border-collapse: collapse; font-size: 14px; }
+.aqtable th { text-align: left; font-size: 12px; font-weight: 600; color: var(--text2); padding: 6px 8px; border-bottom: 1px solid var(--sep); white-space: nowrap; }
+.aqtable td { padding: 10px 8px; border-bottom: 1px solid var(--sep); vertical-align: top; white-space: nowrap; }
+.aqtable tr:last-child td { border-bottom: 0; }
+/* значки — только картинка: клик всегда достаётся кнопке/ссылке (иначе при перерисовке значка между нажатием и отпусканием клик терялся) */
+svg.i { pointer-events: none; }

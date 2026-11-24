@@ -64,6 +64,14 @@ export async function roadmapView(studentId: string, tz: string, weekBack = 0) {
 }
 
 /** Данные вкладки «Маршрут к цели» у учителя. */
+/** Что ещё вернул ИИ к черновику маршрута (docs/ai/VibeOn_AI_маршрут_ученика.md). */
+export type RouteAi = {
+  label: string; fallbackFrom: string | null; start?: { overall_level: string; gaps: string[] }; goal?: { explanation: string };
+  weekly_hours: number | null; total_hours: number | null; forecast_weeks: number | null;
+  deadline_check: { fits: boolean; note: string } | null; risks: string[];
+  pace_options: { lessons_per_week: number; daily_minutes: number; forecast_weeks: number }[]; student_message: string;
+};
+
 export async function editorData(studentId: string, teacherId: string, tz: string, lang: "ru" | "en") {
   const s = await db.student.findUniqueOrThrow({ where: { id: studentId } });
   const v = await roadmapView(studentId, tz);
@@ -84,7 +92,7 @@ export async function editorData(studentId: string, teacherId: string, tz: strin
     roadmap: r && "stages" in v ? {
       id: r.id, type: r.type, goal: r.goal, fromLevel: r.fromLevel, deadline: r.deadline ? r.deadline.toISOString().slice(0, 7) : null, showDate: r.showDate,
       pace: r.pace ?? "2:20", mood: r.mood ?? "plan", note: r.note ?? "", courseIds: r.courseIds, leadCourseId: r.leadCourseId, approved: !!r.approvedAt, built: !!r.builtAt,
-      summary: r.summary, stages: v.stages.map((x) => ({ lvl: x.lvl, title: T(x.title), hours: x.hours, grammar: x.grammar.map(T), vocabulary: x.vocabulary.map(T), skills: x.skills.map(T), passed: !!x.passed })),
+      summary: r.summary, ai: (r.aiDraft ?? null) as RouteAi | null, stages: v.stages.map((x) => ({ lvl: x.lvl, title: T(x.title), hours: x.hours, grammar: x.grammar.map(T), vocabulary: x.vocabulary.map(T), skills: x.skills.map(T), passed: !!x.passed, focus: x.focus ?? [], checkpoint: x.checkpoint ?? null, weeks: x.weeks ?? null })),
       criteria: ((r.criteria as unknown[]) ?? []).map(T), units: ((r.units as { title: string }[]) ?? []).map((u) => u.title),
       done: v.done, ci: v.st.ci, left: v.st.left, lessonMin: v.lessonMin, lateWeeks: v.lateWeeks,
     } : null,

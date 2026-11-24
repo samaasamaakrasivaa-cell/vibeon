@@ -9,7 +9,7 @@ on:
       action:
         description: "Что сделать"
         type: choice
-        options: [check, install, update, status, logs, backup, verify, secrets, proxy, dns, testmail, aicheck, errors]
+        options: [check, install, update, status, logs, backup, verify, secrets, proxy, dns, testmail, aicheck, aidemo, errors]
         default: check
       arg:
         description: "Параметр: домен для proxy/install, почта для verify"
@@ -58,6 +58,10 @@ jobs:
           LEGAL_INN: ${{ secrets.LEGAL_INN }}
           LEGAL_EMAIL: ${{ secrets.LEGAL_EMAIL }}
           OWNER_EMAIL: ${{ secrets.OWNER_EMAIL }}
+          AI_MODEL_CHECK: ${{ vars.AI_MODEL_CHECK }}
+          AI_MODEL_CHECK_FALLBACK: ${{ vars.AI_MODEL_CHECK_FALLBACK }}
+          AI_MODEL_ROUTE: ${{ vars.AI_MODEL_ROUTE }}
+          AI_MODEL_ROUTE_FALLBACK: ${{ vars.AI_MODEL_ROUTE_FALLBACK }}
         run: |
           set -eo pipefail
           Q=$(printf '%q' "$ARG")
@@ -75,6 +79,8 @@ jobs:
             logs)    ssh srv "docker compose -f /opt/vibeon/deploy/docker-compose.prod.yml --env-file /opt/vibeon/deploy/.env logs --tail 200 --no-color" ;;
             backup)  ssh srv "$V backup" ;;
             verify)  ssh srv "$V verify $Q" ;;
+            aidemo)  npx --yes esbuild@0.24.0 scripts/ai-demo.ts --bundle --platform=node --target=node22 --alias:server-only=./scripts/noop.cjs --outfile=/tmp/ai-demo.js --log-level=warning
+                     cat /tmp/ai-demo.js | ssh srv "docker exec -i vibeon-app-1 sh -c 'cat > /tmp/ai-demo.js'" && ssh srv "docker exec vibeon-app-1 node /tmp/ai-demo.js" ;;
             aicheck) cat deploy/aicheck.js | ssh srv "docker exec -i vibeon-app-1 sh -c 'cat > /tmp/aicheck.js'" && ssh srv "docker exec vibeon-app-1 node /tmp/aicheck.js $Q" ;;
             testmail) docker_cp() { cat deploy/testmail.js | ssh srv "docker exec -i vibeon-app-1 sh -c 'cat > /tmp/testmail.js'"; }; docker_cp
                      ssh srv "docker exec -e HOME=/tmp -e npm_config_cache=/tmp/.npm vibeon-app-1 sh -c 'mkdir -p /tmp/tm && cd /tmp/tm && npm i --no-save --no-audit --no-fund --loglevel=error nodemailer@6 2>&1 | tail -5'; docker exec -e NODE_PATH=/tmp/tm/node_modules vibeon-app-1 node /tmp/testmail.js $Q" ;;
@@ -91,7 +97,7 @@ jobs:
             proxy)   sync; ssh srv "bash /opt/vibeon/deploy/attach-proxy.sh $Q" ;;
             secrets)
               n=0
-              for k in TELEGRAM_BOT_TOKEN YANDEX_CLOUD_FOLDER_ID YANDEX_CLOUD_API_KEY SMTP_HOST SMTP_PORT SMTP_USER SMTP_PASS MAIL_FROM LEGAL_OPERATOR LEGAL_INN LEGAL_EMAIL OWNER_EMAIL; do
+              for k in TELEGRAM_BOT_TOKEN YANDEX_CLOUD_FOLDER_ID YANDEX_CLOUD_API_KEY SMTP_HOST SMTP_PORT SMTP_USER SMTP_PASS MAIL_FROM LEGAL_OPERATOR LEGAL_INN LEGAL_EMAIL OWNER_EMAIL AI_MODEL_CHECK AI_MODEL_CHECK_FALLBACK AI_MODEL_ROUTE AI_MODEL_ROUTE_FALLBACK; do
                 v="${!k}"; [ -n "$v" ] || continue
                 printf '%s' "$v" | ssh srv "v=\$(cat); $V setq $k=\"\$v\"" && echo "записано: $k" && n=$((n+1))
               done

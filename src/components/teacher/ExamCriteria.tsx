@@ -40,6 +40,7 @@ export function ExamCriteria({ init }: { init: { oge: string; ege: string; at?: 
       <div className="flex flex-wrap items-center gap-3">
         <button type="button" className="btn primary" disabled={pending} onClick={() => start(async () => { const r = await saveExamCriteria(v); setMsg(r.ok ? t("ec.saved") : t("ai.err.fail")); })}>{t("common.save")}</button>
         {msg && <span className="small muted">{msg}</span>}
+        <a className="alink small ml-auto" href="/teacher/ai-quality">{t("aq.title")} →</a>
       </div>
     </section>
   );

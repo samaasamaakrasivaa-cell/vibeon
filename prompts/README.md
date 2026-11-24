@@ -13,3 +13,10 @@
 Если поле переименовать или убрать, его содержимое пропадёт из интерфейса.
 
 Какие модели вызываются — задаётся в `.env` (см. `.env.example`: `AI_MODEL_CHECK`, `AI_MODEL_CHECK_FALLBACK`, `AI_MODEL_ROUTE`, `AI_MODEL_ROUTE_FALLBACK`).
+
+## Как поменять модель без правки кода
+
+GitHub → репозиторий → Settings → Secrets and variables → Actions → вкладка **Variables** → New repository variable:
+`AI_MODEL_CHECK`, `AI_MODEL_CHECK_FALLBACK`, `AI_MODEL_ROUTE`, `AI_MODEL_ROUTE_FALLBACK` (например `deepseek-v4.1-flash/latest`).
+Потом Actions → deploy → Run workflow → `secrets` — значения запишутся на сервер, платформа перезапустится.
+Доступные каталогу модели можно посмотреть запуском deploy → `aicheck` с параметром `probe`.

@@ -3,6 +3,7 @@ import { useRef, useState } from "react";
 import { useT } from "@/lib/i18n/client";
 import { useAssignParts } from "../placement/AssignParts";
 import { ExpectField, Steps, TrackField, trackForAge, type PlTrack } from "../placement/PlacementPanel";
+import type { RouteAi } from "@/lib/roadmap/progress";
 import { approveRoadmap, assignTest, buildRoadmap, deleteCheckpoint, editStage, manualResults, type RoadmapForm } from "@/lib/roadmap/actions";
 import { LEVELS, ROUTE_TYPES, SKILL_COLOR, SKILL_NAME, SKILLS, txt, type Skill } from "@/lib/roadmap/cefr";
 import { etaRange, fmtHM, PACES, paceKey, paceLabel, parsePace } from "@/lib/roadmap/math";
@@ -19,8 +20,8 @@ export type EditorData = {
   checkpoints: CP[];
   roadmap: null | {
     id: string; type: string; goal: string; fromLevel: string | null; deadline: string | null; showDate: boolean; pace: string; mood: string; note: string;
-    courseIds: string[]; leadCourseId: string | null; approved: boolean; built: boolean; summary: string | null;
-    stages: { lvl: string; title: string; hours: number; grammar: string[]; vocabulary: string[]; skills: string[]; passed: boolean }[];
+    courseIds: string[]; leadCourseId: string | null; approved: boolean; built: boolean; summary: string | null; ai: RouteAi | null;
+    stages: { lvl: string; title: string; hours: number; grammar: string[]; vocabulary: string[]; skills: string[]; passed: boolean; focus: string[]; checkpoint: { tests: string[]; pass_rule: string } | null; weeks: number | null }[];
     criteria: string[]; units: string[]; done: number; ci: number; left: number; lessonMin: number; lateWeeks: number;
   };
 };
@@ -202,6 +203,17 @@ export function RoadmapEditor({ d }: { d: EditorData }) {
                 <dt>{t("rm.done")}</dt><dd>{fmtHM(r.done, lang)}</dd>
               </dl>
               {r.summary && <div className="aianswer mt-3"><span className="tk-aiico"><Icon name="spark" size="sm" /></span><p className="m-0">{r.summary}</p></div>}
+              {/* черновик ИИ: срок, риски, варианты темпа, сообщение ученику */}
+              {r.ai && (
+                <div className="rtai mt-3">
+                  <div className="small muted">{t("rm.aiBy", { m: r.ai.label })}{r.ai.fallbackFrom ? ` · ${t("air.fallback")}` : ""}{r.ai.total_hours ? ` · ${t("rm.aiTotal", { h: Math.round(r.ai.total_hours), w: r.ai.forecast_weeks ?? "—" })}` : ""}</div>
+                  {r.ai.deadline_check && <div className={`alert ${r.ai.deadline_check.fits ? "ok" : ""} mt-2`}><b>{r.ai.deadline_check.fits ? t("rm.aiFits") : t("rm.aiNoFit")}</b>{r.ai.deadline_check.note ? ` ${r.ai.deadline_check.note}` : ""}</div>}
+                  {(r.ai.start?.gaps?.length ?? 0) > 0 && <><h4 className="mb-1 mt-3">{t("rm.aiGaps")}</h4><ul className="m-0 pl-5 small">{r.ai.start!.gaps.map((x, i) => <li key={i}>{x}</li>)}</ul></>}
+                  {r.ai.risks.length > 0 && <><h4 className="mb-1 mt-3">{t("rm.aiRisks")}</h4><ul className="m-0 pl-5 small">{r.ai.risks.map((x, i) => <li key={i}>{x}</li>)}</ul></>}
+                  {r.ai.pace_options.length > 0 && <><h4 className="mb-1 mt-3">{t("rm.aiPace")}</h4><div className="flex flex-wrap gap-2">{r.ai.pace_options.map((p, i) => <span key={i} className="pill grey">{t("rm.aiPaceOpt", { l: p.lessons_per_week, m: p.daily_minutes, w: p.forecast_weeks })}</span>)}</div></>}
+                  {r.ai.student_message && <><h4 className="mb-1 mt-3">{t("rm.aiStudentMsg")}</h4><p className="m-0 small">{r.ai.student_message}</p></>}
+                </div>
+              )}
             </section>
             <div className="mtnwrap"><Mountain stages={r.stages} done={r.done} start={r.fromLevel ?? "A"} ini={d.ini} label={t("rm.isHere", { name: d.first })} units={r.units} ci={r.ci} sel={sel} onSelect={setSel} h={400} /></div>
             <section className="card">
@@ -217,6 +229,9 @@ export function RoadmapEditor({ d }: { d: EditorData }) {
                     {[["rm.grammar", s.grammar], ["rm.vocab", s.vocabulary], ["rm.can", s.skills]].map(([k, list]) => (list as string[]).length > 0 && (
                       <div key={k as string} className="mt-2 small"><b>{t(k as "rm.grammar")}:</b> {(list as string[]).join(" · ")}</div>
                     ))}
+                    {s.focus.length > 0 && <div className="mt-2 small"><b>{t("rm.aiFocus")}:</b> {s.focus.join(" · ")}</div>}
+                    {s.checkpoint && <div className="mt-2 small"><b>{t("rm.aiCheck")}:</b> {s.checkpoint.tests.join(", ")}{s.checkpoint.pass_rule ? ` — ${s.checkpoint.pass_rule}` : ""}</div>}
+                    {s.weeks ? <div className="mt-1 small muted">{t("rm.aiWeeks", { n: s.weeks })}</div> : null}
                   </details>
                 ))}
               </div>

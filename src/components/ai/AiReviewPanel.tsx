@@ -214,7 +214,7 @@ export function AiReviewPanel({ lessonId, taskId, answered, onPick }: { lessonId
           {order.length === 0 && <p className="small muted m-0">{t("air.noEdits")}</p>}
           <ol className="airows">
             {order.map((e, i) => (
-              <li key={e.id} className={`${e.type} ${sel === e.id ? "on" : ""}`} onFocus={() => setSel(e.id)}>
+              <li key={e.id} className={`${e.type} ${sel === e.id ? "on" : ""}`} onClickCapture={() => sel !== e.id && setSel(e.id)}>
                 <span className="ainum">{i + 1}</span>
                 <div className="grow min-w-0">
                   <div className="airow-top">
@@ -260,7 +260,7 @@ export function AiReviewPanel({ lessonId, taskId, answered, onPick }: { lessonId
               </div>
             )}
           </div>
-          <p className="small muted m-0 mt-2">{t("air.okHint")}</p>
+          <p className="small muted m-0 mt-2">{t("air.okHint")} <a className="alink" href="/teacher/ai-quality">{t("aq.title")} →</a></p>
         </>
       )}
     </div>

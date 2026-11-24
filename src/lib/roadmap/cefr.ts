@@ -6,6 +6,8 @@ export type Stage = {
   lvl: string; title: L2 | string; hours: number;
   grammar: (L2 | string)[]; vocabulary: (L2 | string)[]; skills: (L2 | string)[]; feel?: (L2 | string)[];
   passed?: { score: number; at: string } | null;
+  /** из черновика ИИ: остальной фокус этапа, юниты курса, срез в конце этапа, прогноз недель */
+  focus?: string[]; units?: string[]; checkpoint?: { tests: string[]; pass_rule: string } | null; weeks?: number | null;
 };
 export const txt = (x: L2 | string, lang: "ru" | "en") => (typeof x === "string" ? x : lang === "en" ? x[0] : x[1]);
 
