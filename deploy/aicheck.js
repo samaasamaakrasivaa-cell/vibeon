@@ -75,10 +75,32 @@ async function probe() {
   }
 }
 
+// node aicheck.js try:model1,model2 — мини-проверка ошибок в JSON-режиме: качество, время, валидный ли JSON (тестовый текст, не данные платформы)
+async function tryModels(names) {
+  const OH = { Authorization: H.Authorization, "OpenAI-Project": folder, "Content-Type": "application/json" };
+  const text = "Last summer I go to London with my friend. We was very exited because it was our first travel abroad. The weather were nice and we visited many museum.";
+  const sys = 'You check English texts of Russian-speaking learners (level B1). Return ONLY valid JSON: {"edits":[{"original":"exact fragment","corrected":"fix","explanation":"short, in Russian"}],"comment":"1-2 sentences in Russian"}';
+  for (const n of names) {
+    for (const rf of [true, false]) {
+      const t0 = Date.now();
+      try {
+        const r = await fetch("https://llm.api.cloud.yandex.net/v1/chat/completions", { method: "POST", headers: OH, signal: AbortSignal.timeout(120000), body: JSON.stringify({ model: `gpt://${folder}/${n}`, temperature: 0.2, max_tokens: 1500, ...(rf ? { response_format: { type: "json_object" } } : {}), messages: [{ role: "system", content: sys }, { role: "user", content: text }] }) });
+        const b = await r.text(); const ms = Date.now() - t0;
+        if (!r.ok) { console.log(`FAIL ${n} json_mode=${rf}: HTTP ${r.status} ${short(b)}`); continue; }
+        const j = JSON.parse(b); const c = j.choices?.[0]?.message?.content ?? ""; const u = j.usage ?? {};
+        let ok = false, edits = "";
+        try { const x = JSON.parse(c.replace(/^[\s\S]*?(\{)/, "$1").replace(/\}[^}]*$/, "}")); ok = true; edits = (x.edits ?? []).map((e) => `${e.original}→${e.corrected}`).join(" | "); } catch {}
+        console.log(`OK   ${n} json_mode=${rf}: ${(ms / 1000).toFixed(1)} с · токены ${u.prompt_tokens ?? "?"}/${u.completion_tokens ?? "?"} · JSON ${ok ? "валидный" : "НЕвалидный"} · think ${/<think>/.test(c) ? "да" : "нет"} · ${short(edits).slice(0, 400)}`);
+      } catch (e) { console.log(`FAIL ${n} json_mode=${rf}: ${short(e.message)}`); }
+    }
+  }
+}
+
 (async () => {
   console.log(`AI_PROVIDER=${process.env.AI_PROVIDER || "(пусто)"} · каталог задан: ${folder ? "да" : "нет"} · ключ задан: ${key ? "да" : "нет"}`);
   if (!folder || !key) { console.log("FAIL нет ключей в окружении контейнера"); process.exit(1); }
   if (process.argv[2] === "probe") return probe();
+  if ((process.argv[2] || "").startsWith("try:")) return tryModels(process.argv[2].slice(4).split(","));
   for (const f of [() => llm(process.env.AI_MODEL_FAST || "yandexgpt-lite/latest"), () => llm(process.env.AI_MODEL_STRONG || "yandexgpt/latest"), speech, ocr]) {
     try { await f(); } catch (e) { report("запрос", false, short(e.message)); }
   }
