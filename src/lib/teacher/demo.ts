@@ -4,6 +4,7 @@ import { db } from "../db";
 import { requireUser } from "../auth/session";
 import { demoEmail, isDemoEmail, linkedOf } from "../auth/cabinet";
 import { randomToken } from "../auth/crypto";
+import { switchCabinet } from "../admin/actions";
 
 type R = { ok: true; studentId?: string } | { ok: false; error: string };
 
@@ -45,4 +46,12 @@ export async function deleteDemoStudent(): Promise<R> {
   ]);
   revalidatePath("/", "layout");
   return { ok: true };
+}
+
+/** «Открыть кабинет ученика» из меню: есть второй кабинет (тестовый или свой ученический) — переходим в него;
+ *  нет — сначала создаём тестового ученика. */
+export async function openStudentCabinet(): Promise<{ ok: true; href: string } | { ok: false; error: string }> {
+  const me = await requireUser("TEACHER");
+  if (!(await linkedOf(me))) { const r = await createDemoStudent(); if (!r.ok) return r; }
+  return switchCabinet();
 }

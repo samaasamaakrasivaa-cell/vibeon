@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { openStudentCabinet } from "@/lib/teacher/demo";
 import { switchCabinet } from "@/lib/admin/actions";
 import { useT } from "@/lib/i18n/client";
 import { Icon } from "./Icon";
@@ -8,7 +9,7 @@ import { Icon } from "./Icon";
 export type Cabinet = { href: string; label: string; current: boolean };
 
 /** Шапка: «Кабинет учителя ▾» → администратор / второй кабинет (ученика) того же человека. */
-export function CabinetSwitch({ items, linked }: { items: Cabinet[]; linked: { label: string; email: string } | null }) {
+export function CabinetSwitch({ items, linked, asStudent }: { items: Cabinet[]; linked: { label: string; email: string } | null; asStudent?: boolean }) {
   const { t } = useT();
   const ref = useRef<HTMLDetailsElement>(null);
   const [busy, setBusy] = useState(false);
@@ -29,6 +30,12 @@ export function CabinetSwitch({ items, linked }: { items: Cabinet[]; linked: { l
             <span className="grow">{x.label}</span>{x.current && <Icon name="check" size="sm" />}
           </Link>
         ))}
+        {/* учитель без второго кабинета: «Кабинет ученика (тестовый)» — создаётся по первому нажатию */}
+        {asStudent && !linked && (
+          <button type="button" disabled={busy} onClick={async () => { setBusy(true); const r = await openStudentCabinet(); if (r.ok) window.location.href = r.href; else setBusy(false); }}>
+            <span className="grow">{t("ws.student")}<br /><span className="small muted">{t("demo.sub")}</span></span><Icon name="right" size="sm" />
+          </button>
+        )}
         {linked && (
           <button type="button" disabled={busy} onClick={go}>
             <span className="grow">{linked.label}<br /><span className="small muted">{linked.email}</span></span><Icon name="right" size="sm" />

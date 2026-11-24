@@ -7,8 +7,9 @@ import { Icon } from "./Icon";
 import { StudentAvatar } from "./awards/Medal";
 import type { Cabinet } from "./CabinetSwitch";
 import { switchCabinet } from "@/lib/admin/actions";
+import { openStudentCabinet } from "@/lib/teacher/demo";
 
-export function UserMenu({ name, lastName, email, profileHref, avatar, cabinets, linked }: { name: string; lastName?: string | null; email: string; profileHref: string; avatar?: { id: string; avatar: string | null; crown: boolean }; cabinets?: Cabinet[]; linked?: { label: string; email: string } | null }) {
+export function UserMenu({ name, lastName, email, profileHref, avatar, cabinets, linked, asStudent }: { name: string; lastName?: string | null; email: string; profileHref: string; avatar?: { id: string; avatar: string | null; crown: boolean }; cabinets?: Cabinet[]; linked?: { label: string; email: string } | null; asStudent?: boolean }) {
   const { t } = useT();
   const ref = useRef<HTMLDetailsElement>(null);
   useEffect(() => {
@@ -34,6 +35,8 @@ export function UserMenu({ name, lastName, email, profileHref, avatar, cabinets,
           <Link key={c.href} href={c.href} className="umcab" onClick={() => ref.current?.removeAttribute("open")}><Icon name="shift" />{c.label}</Link>
         ))}
         {linked && <button type="button" className="umcab" onClick={async () => { const r = await switchCabinet(); if (r.ok) window.location.href = r.href; }}><Icon name="shift" />{linked.label}</button>}
+        {/* учитель без второго кабинета: посмотреть всё глазами ученика (создаётся тестовый ученик) */}
+        {asStudent && !linked && <button type="button" className="umcab" onClick={async () => { const r = await openStudentCabinet(); if (r.ok) window.location.href = r.href; }}><Icon name="eye" />{t("demo.menu")}</button>}
         <Link href={profileHref} onClick={() => ref.current?.removeAttribute("open")}>
           <Icon name="user" />
           {t("common.profile")}

@@ -46,10 +46,10 @@ export async function AppHeader({
       </Link>
       <div className="atbar">
         <div className="atin">
-          {multi ? <CabinetSwitch items={items} linked={linked} /> : subtitle ? <span className="hsub">{subtitle}</span> : <span />}
+          {multi ? <CabinetSwitch items={items} linked={linked} asStudent={user?.role === "TEACHER"} /> : subtitle ? <span className="hsub">{subtitle}</span> : <span />}
           <div className="atr">
             <LangSwitch lang={lang} label={t("common.language")} />
-            {user && <UserMenu name={user.name} lastName={user.lastName} email={shownEmail} profileHref={profileHref ?? homeHref} avatar={user.avatar} cabinets={multi ? items : undefined} linked={linked} />}
+            {user && <UserMenu name={user.name} lastName={user.lastName} email={shownEmail} profileHref={profileHref ?? homeHref} avatar={user.avatar} cabinets={multi ? items : undefined} linked={linked} asStudent={user.role === "TEACHER"} />}
           </div>
         </div>
       </div>
