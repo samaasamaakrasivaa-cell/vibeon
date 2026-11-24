@@ -38,9 +38,47 @@ async function ocr() {
   report("распознавание текста (Vision OCR)", r.ok, r.ok ? "доступ есть" : `HTTP ${r.status} ${short(b)}`);
 }
 
+
+// node aicheck.js probe — какие модели доступны каталогу и по какому адресу API (ничего из данных платформы не читается)
+async function probe() {
+  const OH = { Authorization: H.Authorization, "OpenAI-Project": folder, "x-folder-id": folder, "Content-Type": "application/json" };
+  for (const base of ["https://llm.api.cloud.yandex.net/v1", "https://ai.api.cloud.yandex.net/v1"]) {
+    try {
+      const r = await fetch(`${base}/models`, { headers: OH });
+      const b = await r.text();
+      let ids = "";
+      try { ids = (JSON.parse(b).data ?? []).map((m) => m.id).join(", "); } catch { ids = short(b); }
+      console.log(`MODELS ${base}/models → HTTP ${r.status}: ${short(ids).slice(0, 2000)}`);
+      if (r.ok) try { for (const m of JSON.parse(b).data ?? []) console.log(`  model: ${m.id}`); } catch {}
+    } catch (e) { console.log(`MODELS ${base} → ${short(e.message)}`); }
+  }
+  const names = (process.argv[3] || "qwen3-235b-a22b-fp8/latest,deepseek-v32/latest,deepseek-v3.2/latest,qwen3-235b-a22b/latest,gpt-oss-120b/latest,yandexgpt/latest").split(",");
+  const msg = [{ role: "user", content: "Reply with one word: OK" }];
+  for (const n of names) {
+    const uri = `gpt://${folder}/${n}`;
+    for (const base of ["https://llm.api.cloud.yandex.net/v1", "https://ai.api.cloud.yandex.net/v1"]) {
+      try {
+        const r = await fetch(`${base}/chat/completions`, { method: "POST", headers: OH, body: JSON.stringify({ model: uri, messages: msg, max_tokens: 20, temperature: 0 }) });
+        const b = await r.text();
+        let out = short(b);
+        try { const j = JSON.parse(b); if (r.ok) out = `«${short(j.choices?.[0]?.message?.content ?? "")}» model=${j.model ?? ""}`; } catch {}
+        console.log(`${r.ok ? "OK  " : "FAIL"} openai ${base.replace("https://", "")} ${n}: HTTP ${r.status} ${out}`);
+      } catch (e) { console.log(`FAIL openai ${base} ${n}: ${short(e.message)}`); }
+    }
+    try {
+      const r = await fetch("https://llm.api.cloud.yandex.net/foundationModels/v1/completion", { method: "POST", headers: { ...H, "Content-Type": "application/json" }, body: JSON.stringify({ modelUri: uri, completionOptions: { stream: false, temperature: 0, maxTokens: "20" }, messages: [{ role: "user", text: "Reply with one word: OK" }] }) });
+      const b = await r.text();
+      let out = short(b);
+      try { const j = JSON.parse(b); if (r.ok) out = `«${short(j.result?.alternatives?.[0]?.message?.text ?? "")}»`; } catch {}
+      console.log(`${r.ok ? "OK  " : "FAIL"} native ${n}: HTTP ${r.status} ${out}`);
+    } catch (e) { console.log(`FAIL native ${n}: ${short(e.message)}`); }
+  }
+}
+
 (async () => {
   console.log(`AI_PROVIDER=${process.env.AI_PROVIDER || "(пусто)"} · каталог задан: ${folder ? "да" : "нет"} · ключ задан: ${key ? "да" : "нет"}`);
   if (!folder || !key) { console.log("FAIL нет ключей в окружении контейнера"); process.exit(1); }
+  if (process.argv[2] === "probe") return probe();
   for (const f of [() => llm(process.env.AI_MODEL_FAST || "yandexgpt-lite/latest"), () => llm(process.env.AI_MODEL_STRONG || "yandexgpt/latest"), speech, ocr]) {
     try { await f(); } catch (e) { report("запрос", false, short(e.message)); }
   }
