@@ -1,4 +1,5 @@
 import { weeklyFinanceReports } from "../billing/weekly";
+import { studyReminders } from "../study/remind";
 import "server-only";
 import { db } from "../db";
 import { hhmm, isoDay, minutesOfDay, partsIn } from "../time";
@@ -99,6 +100,7 @@ export async function runNotify(now = new Date()) {
     await homeworkReminders(now);
     await birthdayReminders(now);
     await weeklyFinanceReports(now); // понедельник: итоги прошлой недели в «Финансах»
+    await studyReminders(now); // свои слоты ученика: за 15 минут
     await deliverPending(now);
   } catch (e) {
     console.error("[notify]", e);

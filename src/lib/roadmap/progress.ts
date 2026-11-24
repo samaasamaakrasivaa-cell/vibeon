@@ -3,6 +3,7 @@ import { db } from "../db";
 import { isOwner, TEEN_READY } from "../placement/bank";
 import { addDaysIso, dayStart, isoDay, mondayOf } from "../time";
 import { parsePace, perWeek, routeState, etaDate, type Pace } from "./math";
+import { selfStudyMinutes } from "../study/data";
 import type { Stage } from "./cefr";
 
 // Сколько ученик позанимался: уроки (по длительности), домашка (≈ 6 мин на задание), слова (≈ 30 с на слово).
@@ -15,7 +16,9 @@ async function hours(studentId: string, from: Date, to: Date) {
     db.wordPractice.findMany({ where: { studentId, day: { gte: isoDay(from, "UTC"), lt: isoDay(to, "UTC") } }, select: { count: true } }),
   ]);
   const les = lessons.reduce((a, l) => a + l.durationMin, 0) / 60;
-  return { les, hw: (answers * HW_MIN) / 60, wd: (practice.reduce((a, p) => a + p.count, 0) * WORD_MIN) / 60, lessons: lessons.length };
+  // своя самостоятельная работа из расписания (фильм, чтение, говорение…), отмеченная «сделал»
+  const self = (await selfStudyMinutes(studentId, isoDay(from, "UTC"), isoDay(to, "UTC"))) / 60;
+  return { les, hw: (answers * HW_MIN) / 60, wd: (practice.reduce((a, p) => a + p.count, 0) * WORD_MIN) / 60, self, lessons: lessons.length };
 }
 
 /** Норма недели по темпу: уроки, домашка (⅔ самостоятельного времени), слова (⅓). */
@@ -37,7 +40,7 @@ export async function roadmapView(studentId: string, tz: string, weekBack = 0) {
   const lessonMin = await lessonMinOf(studentId);
   const since = r.approvedAt ?? r.createdAt;
   const all = await hours(studentId, since, new Date(Date.now() + 864e5));
-  const done = r.startHours + all.les + all.hw + all.wd;
+  const done = r.startHours + all.les + all.hw + all.wd + all.self;
   const st = routeState(stages, done);
   const paceT = parsePace(r.pace), paceS = r.paceStudent ? parsePace(r.paceStudent) : paceT;
   // недели: понедельник–воскресенье в поясе ученика
@@ -55,7 +58,7 @@ export async function roadmapView(studentId: string, tz: string, weekBack = 0) {
   return {
     r, checkpoints, stages, lessonMin, done, st, paceT, paceS, eta, lateWeeks,
     week: { ...week, cancelled, from: mon, to: addDaysIso(mon, 6) }, norm: norm(paceS, lessonMin),
-    achievements: { lessons: lessonsTotal, hours: Math.round(all.les + all.hw + all.wd + r.startHours), words: wordsLearned, pct: Math.round(st.frac * 100) },
+    achievements: { lessons: lessonsTotal, hours: Math.round(all.les + all.hw + all.wd + all.self + r.startHours), words: wordsLearned, pct: Math.round(st.frac * 100) },
     perWeek: perWeek(paceS, lessonMin),
   } as const;
 }

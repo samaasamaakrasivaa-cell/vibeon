@@ -1,3 +1,4 @@
+import { StudyTab } from "@/components/student/StudyTab";
 import { levelsOf } from "@/lib/teacher/levels";
 import { packEndsAt } from "@/lib/teacher/pack";
 import { InvoiceEdit } from "@/components/finance/FinanceParts";
@@ -32,11 +33,11 @@ import { SKILL_COLOR, SKILL_NAME, SKILLS as RM_SKILLS, txt } from "@/lib/roadmap
 
 export const metadata = { title: "Анкета ученика" };
 
-const TABS = ["profile", "progress", "roadmap", "feedback", "history"] as const;
+const TABS = ["profile", "progress", "roadmap", "study", "feedback", "history"] as const;
 
 type Form = { phone?: string; birthday?: string | null; goals?: string[]; otherGoal?: string; about?: string; since?: string; easy?: string[]; hard?: string[]; problem?: string; filledAt?: string };
 
-export default async function StudentProfile({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ tab?: string; give?: string; gn?: string }> }) {
+export default async function StudentProfile({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ tab?: string; give?: string; gn?: string; w?: string }> }) {
   const sp = await searchParams; // give / gn — подсказанная награда (из «Событий учеников» или блока «Вместе»)
   const { t, lang } = await getT();
   const me = await requireUser("TEACHER");
@@ -119,7 +120,7 @@ export default async function StudentProfile({ params, searchParams }: { params:
   const inviteValid = s.status === "INVITED" && inv && !inv.usedAt && inv.expiresAt > now;
 
   const tabLabel: Record<string, string> = {
-    profile: t("prof.tab.profile"), progress: t("nav.progress"), roadmap: t("prof.tab.roadmap"), feedback: t("prof.tab.feedback"), history: t("prof.tab.history"),
+    profile: t("prof.tab.profile"), progress: t("nav.progress"), roadmap: t("prof.tab.roadmap"), study: t("prof.tab.study"), feedback: t("prof.tab.feedback"), history: t("prof.tab.history"),
   };
   const st: Record<string, [string, string]> = {
     PLANNED: ["blue", t("sch.st.planned")], DONE: ["green", t("sch.st.done")], MISSED: ["red", t("sch.st.missed")], CANCELLED: ["orange", t("sch.st.cancelled")],
@@ -339,6 +340,7 @@ export default async function StudentProfile({ params, searchParams }: { params:
       )}
 
       {tab === "roadmap" && <RoadmapEditor d={await editorData(s.id, me.id, tz, lang)} />}
+      {tab === "study" && <StudyTab studentId={s.id} tz={s.timezone} w={sp.w} />}
       {tab === "progress" && <ProgressTab studentId={s.id} tz={tz} lang={lang} t={t} topics={held.filter((l) => l.templateId).length} />}
       {tab === "feedback" && <FeedbackTab studentId={s.id} tz={tz} lang={lang} t={t} />}
 

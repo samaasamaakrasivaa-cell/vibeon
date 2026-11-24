@@ -191,6 +191,7 @@ model Student {
   wordDays        Int[]         @default([0, 1, 2, 3, 4]) // дни тренировок: 0 = Пн … 6 = Вс
   remindAt        String        @default("19:00") // время напоминания (Telegram — этап 10)
   archivedAt      DateTime?
+  studySlots      StudySlot[]
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 
@@ -258,6 +259,44 @@ enum InviteChannel {
   EMAIL
   TELEGRAM
   LINK // учитель сам отправляет короткую ссылку (мессенджер, соцсеть)
+}
+
+/// Свой учебный слот ученика в расписании (самостоятельная работа): домашка, фильм, чтение… — разово или каждую неделю.
+/// «Слова» не хранятся здесь: этот слот строится из настроек слов ученика (дни, время, цель).
+model StudySlot {
+  id        String     @id @default(cuid())
+  studentId String
+  kind      String // homework | film | podcast | reading | speaking | grammar | club | exam
+  title     String? // своё название (необязательно)
+  repeat    Boolean    @default(true) // каждую неделю
+  weekday   Int? // 0 = пн … 6 = вс (для повторяющихся)
+  date      String? // YYYY-MM-DD (для разовых)
+  startMin  Int // начало, минут от полуночи (в поясе ученика)
+  durMin    Int
+  remind    Boolean    @default(true) // напоминание в Telegram за 15 минут
+  byTeacher Boolean    @default(false) // поставил учитель
+  from      String // YYYY-MM-DD: с какого дня действует серия
+  until     String? // YYYY-MM-DD: серия закончилась (не включая этот день)
+  createdAt DateTime   @default(now())
+  student   Student    @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  logs      StudyLog[]
+
+  @@index([studentId])
+}
+
+/// Отметка по одному дню слота: сделал (минуты идут в маршрут), перенесено на другое время, убрано из этого дня.
+model StudyLog {
+  id        String    @id @default(cuid())
+  slotId    String
+  studentId String
+  day       String // YYYY-MM-DD
+  status    String // done | moved | removed
+  minutes   Int       @default(0)
+  createdAt DateTime  @default(now())
+  slot      StudySlot @relation(fields: [slotId], references: [id], onDelete: Cascade)
+
+  @@unique([slotId, day])
+  @@index([studentId, day])
 }
 
 /// Приглашение преподавателя ссылкой (без писем на почту): администратор создаёт ссылку, человек по ней
