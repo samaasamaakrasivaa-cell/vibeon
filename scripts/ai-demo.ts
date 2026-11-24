@@ -66,7 +66,9 @@ async function raw(model: string, tag: string, extra: Record<string, unknown>) {
     ]);
     return;
   }
-  const models = modelsFor("check");
+  // node ai-demo.js models:a,b — сравнить другие модели (без маршрута)
+  const only = (process.argv[2] || "").startsWith("models:") ? process.argv[2].slice(7).split(",") : null;
+  const models = only ?? modelsFor("check");
   console.log(`DEMO models: ${models.join(", ")}`);
   const runs = await Promise.allSettled(models.map((m) => checkWith(llm, m, check, { check: P("check-1"), review: P("check-2-review") })));
   runs.forEach((r, i) => {
@@ -78,6 +80,7 @@ async function raw(model: string, tag: string, extra: Record<string, unknown>) {
     console.log("SUMMARY " + JSON.stringify(result.summary));
     console.log("CORRECTED " + JSON.stringify(result.corrected_text));
   });
+  if (only) return;
   console.log("\n=== ROUTE ===");
   try {
     const r = await runRoute(llm, modelsFor("route"), route, P("route"));
