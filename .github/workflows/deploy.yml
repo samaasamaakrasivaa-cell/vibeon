@@ -80,7 +80,7 @@ jobs:
             backup)  ssh srv "$V backup" ;;
             verify)  ssh srv "$V verify $Q" ;;
             aidemo)  npx --yes esbuild@0.24.0 scripts/ai-demo.ts --bundle --platform=node --target=node22 --alias:server-only=./scripts/noop.cjs --outfile=/tmp/ai-demo.js --log-level=warning
-                     cat /tmp/ai-demo.js | ssh srv "docker exec -i vibeon-app-1 sh -c 'cat > /tmp/ai-demo.js'" && ssh srv "docker exec vibeon-app-1 node /tmp/ai-demo.js" ;;
+                     cat /tmp/ai-demo.js | ssh srv "docker exec -i vibeon-app-1 sh -c 'cat > /tmp/ai-demo.js'" && ssh srv "docker exec vibeon-app-1 node /tmp/ai-demo.js $Q" ;;
             aicheck) cat deploy/aicheck.js | ssh srv "docker exec -i vibeon-app-1 sh -c 'cat > /tmp/aicheck.js'" && ssh srv "docker exec vibeon-app-1 node /tmp/aicheck.js $Q" ;;
             testmail) docker_cp() { cat deploy/testmail.js | ssh srv "docker exec -i vibeon-app-1 sh -c 'cat > /tmp/testmail.js'"; }; docker_cp
                      ssh srv "docker exec -e HOME=/tmp -e npm_config_cache=/tmp/.npm vibeon-app-1 sh -c 'mkdir -p /tmp/tm && cd /tmp/tm && npm i --no-save --no-audit --no-fund --loglevel=error nodemailer@6 2>&1 | tail -5'; docker exec -e NODE_PATH=/tmp/tm/node_modules vibeon-app-1 node /tmp/testmail.js $Q" ;;

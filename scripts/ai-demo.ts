@@ -42,7 +42,24 @@ const route: RouteInput = {
   today: new Date().toISOString().slice(0, 10),
 };
 
+/** Диагностика: сырой ответ модели на шаге 1 (причина остановки, токены, начало и конец ответа). */
+async function raw(model: string) {
+  const { inputBlock } = await import("../src/lib/ai/check-core");
+  const folder = process.env.YANDEX_CLOUD_FOLDER_ID || "", key = process.env.YANDEX_CLOUD_API_KEY || "";
+  const t0 = Date.now();
+  const r = await fetch("https://llm.api.cloud.yandex.net/v1/chat/completions", { method: "POST", signal: AbortSignal.timeout(240000), headers: { Authorization: `Api-Key ${key}`, "OpenAI-Project": folder, "Content-Type": "application/json" }, body: JSON.stringify({ model: `gpt://${folder}/${model}`, temperature: 0.2, max_tokens: 6000, response_format: { type: "json_object" }, messages: [{ role: "system", content: P("check-1") }, { role: "user", content: inputBlock(check) }] }) });
+  const b = await r.text();
+  console.log(`RAW ${model}: HTTP ${r.status} · ${Math.round((Date.now() - t0) / 1000)} s`);
+  try {
+    const j = JSON.parse(b); const c = j.choices?.[0]?.message?.content ?? ""; const m = j.choices?.[0]?.message ?? {};
+    console.log(`RAW finish=${j.choices?.[0]?.finish_reason} usage=${JSON.stringify(j.usage)} len=${c.length} keys=${Object.keys(m).join(",")}`);
+    console.log("RAW head " + JSON.stringify(c.slice(0, 700)));
+    console.log("RAW tail " + JSON.stringify(c.slice(-400)));
+  } catch { console.log("RAW body " + b.slice(0, 500)); }
+}
+
 (async () => {
+  if (process.argv[2] === "raw") { for (const m of modelsFor("check")) await raw(m).catch((e) => console.log("RAW fail", m, e.message)); return; }
   const models = modelsFor("check");
   console.log(`DEMO models: ${models.join(", ")}`);
   const runs = await Promise.allSettled(models.map((m) => checkWith(llm, m, check, { check: P("check-1"), review: P("check-2-review") })));
