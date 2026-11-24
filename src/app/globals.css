@@ -2784,3 +2784,46 @@ details.prblock[open] .prchev { transform: rotate(180deg); }
 .placecard li { display: flex; gap: 8px; font-size: 14px; }
 .placecard li .i { color: #AF52DE; flex: none; margin-top: 2px; }
 .feedhead { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+/* Проверка ИИ (эссе, открытый ответ, запись): текст с подсветкой, исправленная версия, правки, сравнение моделей */
+.aireview { border: 1px solid var(--sep); border-radius: 16px; padding: 14px 16px; background: var(--surface); }
+.aireview.student { background: var(--surface); }
+.aireview-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.select.sm, .input.sm, .textarea.sm { min-height: 32px; font-size: 13px; padding-top: 5px; padding-bottom: 5px; }
+.select.xs, .input.xs { min-height: 28px; height: 28px; font-size: 12px; padding: 0 8px; width: auto; }
+.aimeta { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 12px 0 8px; }
+.aicols, .aicompare { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 900px) { .aicols, .aicompare { grid-template-columns: 1fr; } }
+.aicol { background: var(--fill); border-radius: 14px; padding: 12px 14px; min-width: 0; }
+.aicol.rel { position: relative; }
+.aicol-h { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+.aitext { white-space: pre-wrap; line-height: 1.75; font-size: 15px; word-break: break-word; }
+.aitext mark.aim { background: color-mix(in srgb, var(--bad, #FF3B30) 14%, transparent); color: inherit; border-bottom: 2px solid var(--bad, #FF3B30); border-radius: 3px; padding: 0 1px; cursor: pointer; }
+.aitext mark.aim.sev-low { border-bottom-style: dotted; }
+.aitext mark.aim.improvement { background: color-mix(in srgb, var(--accent) 12%, transparent); border-bottom-color: var(--accent); }
+.aitext mark.aim.byt { border-bottom-color: #AF52DE; background: color-mix(in srgb, #AF52DE 12%, transparent); }
+.aitext mark.aim.on { outline: 2px solid var(--accent); }
+.aitext mark.aim sup { font-size: 10px; font-weight: 700; color: var(--text2); margin-left: 1px; }
+.aitext b.aiins { color: var(--ok-text, #248A3D); background: color-mix(in srgb, var(--ok) 12%, transparent); border-radius: 3px; padding: 0 1px; }
+.aitext b.aiins.improvement { color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, transparent); }
+.aitext .aidel { color: var(--text3); }
+.aiaddbtn { position: absolute; transform: translateX(-50%); z-index: 5; box-shadow: 0 4px 14px rgba(0,0,0,.18); }
+.airows { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.airows > li { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: 12px; background: var(--fill); border-left: 3px solid var(--bad, #FF3B30); }
+.airows > li.improvement { border-left-color: var(--accent); }
+.airows > li.on { box-shadow: 0 0 0 2px var(--accent) inset; }
+.airows.ro > li { flex-direction: column; gap: 2px; }
+.airows del { color: var(--bad-text, #D70015); }
+.ainum { width: 22px; height: 22px; border-radius: 50%; background: var(--surface); font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; flex: none; margin-top: 4px; }
+.airow-top { display: flex; align-items: center; gap: 8px; }
+.airow-top del { white-space: nowrap; max-width: 40%; overflow: hidden; text-overflow: ellipsis; }
+.airow-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 6px 0; }
+.airows .textarea.sm { min-height: 34px; resize: vertical; }
+.aisum { margin-top: 14px; display: flex; flex-direction: column; gap: 10px; }
+.aisum-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.aisum-grid.two { grid-template-columns: repeat(2, 1fr); }
+@media (max-width: 700px) { .aisum-grid, .aisum-grid.two { grid-template-columns: 1fr; } }
+.aiscores { background: var(--fill); border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; }
+.aiscore { display: flex; align-items: center; gap: 8px; }
+.aiscore .input.xs:first-of-type { width: 64px; }
+.aicomment { background: var(--accent-bg); color: var(--accent-text, var(--text)); border-radius: 12px; padding: 10px 14px; margin: 10px 0; }
+.text-warn { color: var(--warn-text, #C93400); }

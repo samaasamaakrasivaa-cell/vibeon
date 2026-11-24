@@ -79,6 +79,32 @@ async function anthropicChat(q: ChatReq): Promise<ChatRes> {
   return { text, model, tokensIn: j.usage?.input_tokens ?? 0, tokensOut: j.usage?.output_tokens ?? 0 };
 }
 
+// ───────── Модели Yandex AI Studio по OpenAI-совместимому API ─────────
+// Проверено на каталоге: https://llm.api.cloud.yandex.net/v1/chat/completions, ключ — «Api-Key», каталог — заголовок OpenAI-Project,
+// модель — gpt://<каталог>/<имя>/latest (deepseek-v32, aliceai-llm, deepseek-v4.1-flash, qwen3.6-35b-a3b, yandexgpt-5.1 …).
+// Открытые модели (DeepSeek, Qwen) работают только через этот адрес, не через foundationModels/v1/completion.
+
+export type LlmMsg = { role: "system" | "user" | "assistant"; content: string };
+export type LlmOpts = { json?: boolean; temperature?: number; maxTokens?: number; timeoutMs?: number };
+
+/** Полное имя модели: «deepseek-v32/latest» → gpt://<каталог>/deepseek-v32/latest (полный URI оставляем как есть). */
+export const modelUri = (name: string) => (name.includes("://") ? name : `gpt://${Y().folder}/${name.replace(/^\/+/, "")}`);
+
+/** Размышления модели (<think>…</think>) в ответ не попадают. */
+export const stripThink = (s: string) => s.replace(/<think>[\s\S]*?<\/think>/gi, "").replace(/^[\s\S]*<\/think>/i, "").trim();
+
+export async function studioChat(model: string, messages: LlmMsg[], o: LlmOpts = {}): Promise<ChatRes> {
+  const j = await fetchJson("https://llm.api.cloud.yandex.net/v1/chat/completions", {
+    method: "POST",
+    headers: { Authorization: `Api-Key ${Y().key}`, "OpenAI-Project": Y().folder, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: modelUri(model), messages, temperature: o.temperature ?? 0.2, max_tokens: o.maxTokens ?? 4000,
+      ...(o.json ? { response_format: { type: "json_object" } } : {}),
+    }),
+  }, o.timeoutMs ?? 150000);
+  return { text: stripThink(j.choices?.[0]?.message?.content ?? ""), model, tokensIn: j.usage?.prompt_tokens ?? 0, tokensOut: j.usage?.completion_tokens ?? 0 };
+}
+
 export async function chat(q: ChatReq): Promise<ChatRes> {
   const p = provider();
   if (p === "yandex") return yandexChat(q);

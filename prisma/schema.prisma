@@ -193,6 +193,7 @@ model Student {
   remindAt        String        @default("19:00") // время напоминания (Telegram — этап 10)
   archivedAt      DateTime?
   studySlots      StudySlot[]
+  aiReviews       AiReview[]
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 
@@ -531,6 +532,7 @@ model Roadmap {
   stages       Json         @default("[]") // [{ lvl, title, hours, grammar[], vocabulary[], skills[], feel[], passed? }]
   criteria     Json         @default("[]") // критерии достижения цели
   summary      String?
+  aiDraft      Json? // полный ответ ИИ по инструкции маршрута: точка A, проверка срока, риски, варианты темпа, сообщение ученику, модель
   units        Json         @default("[]") // юниты ведущего курса — отметки на карте
   startHours   Float        @default(0) // часы, засчитанные до начала маршрута
   builtAt      DateTime?
@@ -990,4 +992,31 @@ model LessonProgress {
   updatedAt  DateTime @updatedAt
 
   @@unique([owner, templateId])
+}
+
+/// Проверка работы ученика ИИ (эссе, открытый ответ, расшифровка устного ответа): черновик ИИ и итог учителя.
+/// По ним — страница «Качество ИИ»: сколько правок ИИ учитель оставил, изменил, удалил и добавил сам.
+model AiReview {
+  id               String    @id @default(cuid())
+  teacherId        String
+  studentId        String?
+  lessonInstanceId String?
+  taskId           String?
+  taskType         String // essay | open_answer | speech_transcript
+  exam             String    @default("none")
+  input            Json // поля INPUT (текст ученика — исходный, без замены имён; критерии экзамена — только отметка, что были)
+  model            String
+  draft            Json // черновик ИИ после самопроверки и проверки правок
+  final            Json? // версия учителя
+  meta             Json      @default("{}") // время, токены, повторы, отброшенные правки, запасная модель
+  status           String    @default("draft") // draft | approved
+  compareGroup     String? // режим сравнения: одна работа — две модели
+  chosen           Boolean   @default(true) // в сравнении — какой вариант учитель взял
+  stats            Json? // { ai, kept, edited, removed, added }
+  createdAt        DateTime  @default(now())
+  approvedAt       DateTime?
+  student          Student?  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([teacherId, createdAt])
+  @@index([lessonInstanceId, taskId, studentId])
 }

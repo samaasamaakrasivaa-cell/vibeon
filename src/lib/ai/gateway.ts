@@ -2,7 +2,8 @@ import "server-only";
 import { createHash } from "node:crypto";
 import type { Prisma } from "@prisma/client";
 import { db } from "../db";
-import { chat, provider, yandexOcr, yandexReady, yandexStt, yandexTts } from "./providers";
+import { chat, provider, studioChat, yandexOcr, yandexReady, yandexStt, yandexTts, type ChatRes, type LlmMsg, type LlmOpts } from "./providers";
+import { mockLlm } from "./mock-llm";
 import { SPECS, type Kind, type SpecIn, type SpecOut } from "./tasks";
 
 // ИИ-шлюз: все функции платформы обращаются к ИИ только через него.
@@ -14,7 +15,7 @@ export class AiError extends Error {
 export type Ctx = { userId: string; teacherId: string | null; names?: (string | null | undefined)[] };
 
 /** На тарифе «Старт» нет ИИ-проверки и ИИ-собеседника (Решения_и_доступы.md). Пробный период — как «Профи». */
-const PRO_ONLY: Kind[] = ["essay", "precheck", "partner"];
+const PRO_ONLY: string[] = ["essay", "precheck", "partner", "check"];
 const CACHED: Kind[] = ["file", "split", "book"];
 
 const monthStart = () => { const d = new Date(); return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1)); };
@@ -25,10 +26,10 @@ export async function usage(teacherId: string) {
   return { used, limit };
 }
 
-async function guard(kind: Kind | "stt" | "tts" | "ocr", ctx: Ctx) {
+async function guard(kind: Kind | "stt" | "tts" | "ocr" | "check" | "route", ctx: Ctx) {
   if (!ctx.teacherId) return;
   const prof = await db.teacherProfile.findUnique({ where: { userId: ctx.teacherId }, select: { tariff: true } });
-  if (prof?.tariff === "START" && (PRO_ONLY as string[]).includes(kind)) throw new AiError("tariff");
+  if (prof?.tariff === "START" && PRO_ONLY.includes(kind)) throw new AiError("tariff");
   const { used, limit } = await usage(ctx.teacherId);
   if (limit && used >= limit) throw new AiError("limit");
 }
@@ -78,6 +79,27 @@ export async function run<K extends Kind>(kind: K, input: SpecIn<K>, ctx: Ctx): 
   }
   if (key) await db.aiCache.upsert({ where: { key }, create: { key, value: out as Prisma.InputJsonValue }, update: { value: out as Prisma.InputJsonValue } }).catch(() => undefined);
   return out;
+}
+
+// ───────── Модели AI Studio для проверки работ и маршрута ─────────
+
+export type Llm = (model: string, messages: LlmMsg[], o?: LlmOpts) => Promise<ChatRes>;
+
+/** Вызов модели через шлюз: лимит тарифа, учёт каждого вызова (модель, токены, время). Личные данные убирает вызывающий код
+ *  (проверка работ — со сдвигом позиций правок, см. check-core). В режиме mock — заглушка без сети. */
+export function llmFor(kind: "check" | "route", ctx: Ctx): Llm {
+  return async (model, messages, o) => {
+    await guard(kind, ctx);
+    const t0 = Date.now();
+    try {
+      const res = provider() === "mock" ? await mockLlm(model, messages) : await studioChat(model, messages, o);
+      await log(kind, ctx, { model: res.model, tokensIn: res.tokensIn, tokensOut: res.tokensOut, ms: Date.now() - t0 });
+      return res;
+    } catch (e) {
+      await log(kind, ctx, { ok: false, model, ms: Date.now() - t0 });
+      throw e;
+    }
+  };
 }
 
 // ───────── Речь и распознавание ─────────

@@ -1,3 +1,4 @@
+import { cleanFinal, compareEdits, type CheckResult } from "@/lib/ai/check-core";
 import { NextResponse, type NextRequest } from "next/server";
 import { carriedOne, isEmptyPayload } from "@/lib/class/carry";
 import { Prisma } from "@prisma/client";
@@ -309,8 +310,22 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         source: str(a.source, 20000), corrected: str(a.corrected, 20000), summary: str(a.summary, 3000),
         notes: Array.isArray(a.notes) ? a.notes.slice(0, 40).map((n: Record<string, unknown>) => ({ from: str(n.from, 300), to: str(n.to, 300), why: str(n.why, 300) })) : [],
       } : null;
-      const review = { ok: !!body.ok, comment: str(body.comment, 3000) || null, at: new Date().toISOString(), ...(ai ? { ai } : {}) };
-      await db.answer.upsert({ where, create: { lessonInstanceId: tg.id, taskId, studentId: tg.studentId, payload: {}, status: "REVIEWED", teacherReview: review, shownToStudent: !!ai }, update: { status: "REVIEWED", teacherReview: review, shownToStudent: !!ai } });
+      // новая проверка ИИ (эссе, открытый ответ, запись): итог учителя → ученику; черновик и итог — в «Качество ИИ»
+      let ai2: CheckResult | null = null, ai2src = "";
+      const rid = str(body.aiReviewId, 40);
+      if (rid) {
+        const ar = await db.aiReview.findUnique({ where: { id: rid } });
+        if (ar && ar.teacherId === user.id && ar.lessonInstanceId === tg.id && ar.taskId === taskId) {
+          ai2src = (ar.input as { student_text: string }).student_text;
+          ai2 = cleanFinal(body.ai2 ?? ar.final ?? ar.draft, ai2src);
+          if (ai2) {
+            await db.aiReview.update({ where: { id: rid }, data: { final: ai2 as unknown as Prisma.InputJsonObject, status: "approved", approvedAt: new Date(), chosen: true, stats: compareEdits(ar.draft as unknown as CheckResult, ai2) as unknown as Prisma.InputJsonObject } });
+            if (ar.compareGroup) await db.aiReview.updateMany({ where: { compareGroup: ar.compareGroup, id: { not: rid } }, data: { chosen: false } });
+          }
+        }
+      }
+      const review = { ok: !!body.ok, comment: str(body.comment, 3000) || null, at: new Date().toISOString(), ...(ai ? { ai } : {}), ...(ai2 ? { ai2: { ...ai2, source: ai2src } } : {}) };
+      await db.answer.upsert({ where, create: { lessonInstanceId: tg.id, taskId, studentId: tg.studentId, payload: {}, status: "REVIEWED", teacherReview: review, shownToStudent: !!ai || !!ai2 }, update: { status: "REVIEWED", teacherReview: review, shownToStudent: !!ai || !!ai2 } });
       publish(ch, "review", { taskId, review, sid: tg.studentId });
       // всё в домашке проверено — уведомления о ней у учителя сделаны
       if (!(await db.answer.count({ where: { lessonInstanceId: tg.id, status: "NEEDS_REVIEW", teacherReview: { equals: Prisma.AnyNull } } })))

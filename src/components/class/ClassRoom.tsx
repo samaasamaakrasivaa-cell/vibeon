@@ -17,6 +17,7 @@ import { TaskEditor } from "../builder/TaskEditor";
 import { Board, type BObj } from "./Board";
 import { useLive } from "./useLive";
 import { AiCheckView, type AiCheck } from "../ai/AiCheckView";
+import { AiReviewPanel, StudentCheck, type AiPick, type StudentCheckData } from "../ai/AiReviewPanel";
 import { askAi, checkAnswer } from "@/lib/ai/actions";
 import { setCallLink } from "@/lib/teacher/actions";
 import { useT } from "@/lib/i18n/client";
@@ -30,7 +31,7 @@ import { CelebrateAwards, type NewAward } from "../awards/StudentAwards";
 type CTask = TaskData & { section: "lesson" | "homework" | "words"; rubricId: string | null; hidden: boolean };
 type Word = { id: string; word: string; translation: string | null; example: string | null; level: number };
 type Msg = { id: string; text: string; by: string; at: string; replyTo?: string | null; edited?: boolean; deleted?: boolean };
-export type Review = { ok: boolean; comment: string | null; ai?: AiCheck };
+export type Review = { ok: boolean; comment: string | null; ai?: AiCheck; ai2?: StudentCheckData };
 export type { AiCheck };
 export type ClassData = {
   id: string; templateId: string | null; role: "teacher" | "student"; me: { id: string; name: string }; preview?: boolean;
@@ -482,7 +483,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
           {teacher && !inHw && ((tm) => tm && (tm[0] + tm[1]) >= 30_000 ? <div className="tasktime small muted"><Icon name="clock" size="sm" />{t("cls.timeTask")}: {tm[1] >= 30_000 ? `${t("cls.timeHw")} ${fmtMin(tm[1])}` : ""}{tm[1] >= 30_000 && tm[0] >= 30_000 ? " · " : ""}{tm[0] >= 30_000 ? `${t("cls.timeLesson")} ${fmtMin(tm[0])}` : ""}</div> : null)(timesOf(task.id))}
           {inHw && teacher && (!gTeacher || sid) && (TYPES[task.type].teacherCheck || task.type === "transform" || task.type === "translate") && <ReviewBox key={sid ?? "_"} lessonId={m?.instanceId ?? d.id} task={task} review={(revBy[sid ?? own] ?? {})[task.id]} draft={(gTeacher ? d.byStudent?.[sid ?? ""]?.aiDrafts ?? {} : aiDrafts)[task.id]} answered={!!(ansBy[sid ?? own] ?? {})[task.id]} send={gTeacher ? sendFor : send} />}
           {inHw && !teacher && reviews[task.id] && <div className={`alert mt-2 ${reviews[task.id].ok ? "ok" : ""}`}>{reviews[task.id].ok ? "✓ " : ""}{t("cls.teacherSays")}: {reviews[task.id].comment || (reviews[task.id].ok ? t("cls.reviewedOk") : "—")}</div>}
-          {inHw && !teacher && reviews[task.id]?.ai && <div className="mt-2"><AiCheckView check={reviews[task.id].ai!} /></div>}
+          {inHw && !teacher && reviews[task.id]?.ai2 ? <div className="mt-2"><StudentCheck check={reviews[task.id].ai2!} /></div> : inHw && !teacher && reviews[task.id]?.ai && <div className="mt-2"><AiCheckView check={reviews[task.id].ai!} /></div>}
           {teacher && !inHw && <Plus onClick={() => setCatalog({ index: i + 1 })} />}
         </div>
         );
@@ -768,6 +769,9 @@ function AskButton({ task, send, context }: { task: TaskData; send: (type: strin
 function ReviewBox({ lessonId, task, review, draft, answered, send }: { lessonId: string; task: TaskData; review?: Review; draft?: AiCheck; answered: boolean; send: (type: string, d: Record<string, unknown>) => Promise<unknown> }) {
   const { t } = useT();
   const [c, setC] = useState(review?.comment ?? "");
+  // эссе, открытый ответ, запись — новая проверка ИИ (2 шага, правки по тексту, сравнение моделей); остальное — как раньше
+  const v2 = task.type === "essay" || task.type === "open" || task.type === "record";
+  const [pick, setPick] = useState<AiPick>(null);
   const [ai, setAi] = useState<AiCheck | null>(review?.ai ?? draft ?? null);
   const [useAi, setUseAi] = useState(!!review?.ai || !!draft);
   const [busy, setBusy] = useState(false);
@@ -780,16 +784,17 @@ function ReviewBox({ lessonId, task, review, draft, answered, send }: { lessonId
   }, [lessonId, task.id, t]);
   // «Предпроверка ИИ» в опциях задания: черновик готовится сам, как только есть ответ
   const auto = useRef(false);
-  useEffect(() => { if (task.options.aipre && answered && !ai && !review && !auto.current) { auto.current = true; void run(); } }, [task.options.aipre, answered, ai, review, run]);
-  const payload = () => (useAi && ai ? { ai } : {});
+  useEffect(() => { if (!v2 && task.options.aipre && answered && !ai && !review && !auto.current) { auto.current = true; void run(); } }, [v2, task.options.aipre, answered, ai, review, run]);
+  const payload = () => (v2 ? (pick ? { aiReviewId: pick.id, ai2: pick.final } : {}) : useAi && ai ? { ai } : {});
   return (
     <div className="flex flex-col gap-2">
-      {ai && useAi && <AiCheckView check={ai} edit onChange={setAi} />}
+      {v2 && <AiReviewPanel lessonId={lessonId} taskId={task.id} answered={answered} onPick={setPick} />}
+      {!v2 && ai && useAi && <AiCheckView check={ai} edit onChange={setAi} />}
       {err && <div className="alert">{err}</div>}
       <div className="cls-review">
         <input className="input" value={c} onChange={(e) => setC(e.target.value)} placeholder={t("cls.reviewPh")} aria-label={t("cls.reviewPh")} />
-        <button className="btn tinted sm" disabled={busy} onClick={run}><Icon name="spark" size="sm" />{busy ? t("ai.checking") : ai ? t("ai.recheck") : t("ai.check")}</button>
-        {ai && <button className="btn plain sm" onClick={() => setUseAi(!useAi)}>{useAi ? t("ai.hide") : t("ai.showDraft")}</button>}
+        {!v2 && <button className="btn tinted sm" disabled={busy} onClick={run}><Icon name="spark" size="sm" />{busy ? t("ai.checking") : ai ? t("ai.recheck") : t("ai.check")}</button>}
+        {!v2 && ai && <button className="btn plain sm" onClick={() => setUseAi(!useAi)}>{useAi ? t("ai.hide") : t("ai.showDraft")}</button>}
         <button className="btn secondary sm" onClick={() => send("review", { taskId: task.id, ok: false, comment: c, ...payload() })}>{t("cls.needsWork")}</button>
         <button className="btn primary sm" onClick={() => send("review", { taskId: task.id, ok: true, comment: c, ...payload() })}>✓ {t("cls.okShow")}</button>
         {review && <span className="small text-ok">✓ {t("cls.st.reviewed")}</span>}
