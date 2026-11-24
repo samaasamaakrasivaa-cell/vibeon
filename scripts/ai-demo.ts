@@ -58,6 +58,7 @@ async function raw(model: string, tag: string, extra: Record<string, unknown>) {
 
 (async () => {
   if (process.argv[2] === "tts") { const m = await import("./ai-tts"); await m.run(); return; }
+  if (process.argv[2] === "probe2") { const m = await import("./ai-probe2"); await m.run(); return; }
   if (process.argv[2] === "raw") {
     const ds = "deepseek-v32/latest", al = "aliceai-llm/latest";
     await Promise.all([

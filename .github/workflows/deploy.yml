@@ -84,8 +84,11 @@ jobs:
             verify)  ssh srv "$V verify $Q" ;;
             aieval)  npx --yes esbuild@0.24.0 scripts/ai-eval.ts --bundle --platform=node --target=node22 --alias:server-only=./scripts/noop.cjs --outfile=/tmp/ai-eval.js --log-level=warning
                      cat /tmp/ai-eval.js | ssh srv "docker exec -i vibeon-app-1 sh -c 'cat > /tmp/ai-eval.js'" && ssh srv "docker exec vibeon-app-1 node /tmp/ai-eval.js $Q" ;;
-            aidemo)  npx --yes esbuild@0.24.0 scripts/ai-demo.ts --bundle --platform=node --target=node22 --alias:server-only=./scripts/noop.cjs --outfile=/tmp/ai-demo.js --log-level=warning
-                     cat /tmp/ai-demo.js | ssh srv "docker exec -i vibeon-app-1 sh -c 'cat > /tmp/ai-demo.js'" && ssh srv "docker exec vibeon-app-1 node /tmp/ai-demo.js $Q" ;;
+            aidemo)  (mkdir -p /tmp/wsdep && cd /tmp/wsdep && npm i --silent --no-audit --no-fund ws@8.18.0 >/dev/null)
+                     npx --yes esbuild@0.24.0 scripts/ai-demo.ts --bundle --platform=node --target=node22 --alias:server-only=./scripts/noop.cjs --alias:ws=/tmp/wsdep/node_modules/ws --outfile=/tmp/ai-demo.js --log-level=warning
+                     cat /tmp/ai-demo.js | ssh srv "docker exec -i vibeon-app-1 sh -c 'cat > /tmp/ai-demo.js'" && ssh srv "docker exec vibeon-app-1 node /tmp/ai-demo.js $Q"
+                     # файлы проб (картинки, аудио) — архивом в артефакт запуска
+                     ssh srv "docker exec vibeon-app-1 sh -c 'cd /tmp/aiout 2>/dev/null && tar czf - . || true'" > aiout.tgz || true ;;
             aicheck) cat deploy/aicheck.js | ssh srv "docker exec -i vibeon-app-1 sh -c 'cat > /tmp/aicheck.js'" && ssh srv "docker exec vibeon-app-1 node /tmp/aicheck.js $Q" ;;
             testmail) docker_cp() { cat deploy/testmail.js | ssh srv "docker exec -i vibeon-app-1 sh -c 'cat > /tmp/testmail.js'"; }; docker_cp
                      ssh srv "docker exec -e HOME=/tmp -e npm_config_cache=/tmp/.npm vibeon-app-1 sh -c 'mkdir -p /tmp/tm && cd /tmp/tm && npm i --no-save --no-audit --no-fund --loglevel=error nodemailer@6 2>&1 | tail -5'; docker exec -e NODE_PATH=/tmp/tm/node_modules vibeon-app-1 node /tmp/testmail.js $Q" ;;
@@ -113,3 +116,11 @@ jobs:
           if [ "$ACTION" = install ] || [ "$ACTION" = update ]; then
             ssh srv 'o=$(cat /tmp/vibeon-old-image 2>/dev/null); n=$(docker image inspect -f "{{.Id}}" vibeon-app:latest); [ -n "$o" ] && [ "$o" != "$n" ] && docker rmi "$o" >/dev/null 2>&1; rm -f /tmp/vibeon-old-image; true'
           fi
+
+      - name: Upload demo files
+        if: inputs.action == 'aidemo' && hashFiles('aiout.tgz') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: aiout
+          path: aiout.tgz
+          retention-days: 3
