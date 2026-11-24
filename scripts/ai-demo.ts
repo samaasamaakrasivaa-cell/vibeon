@@ -28,7 +28,7 @@ const check: CheckInput = {
 
 const route: RouteInput = {
   student: { age: 24, form: { goal: "Хочу свободно говорить на работе и пройти собеседование в международную компанию", experience: "Учила английский в школе и университете, потом перерыв 3 года", strengths: "Читаю статьи по работе", difficulties: "Плохо понимаю на слух, боюсь говорить" } },
-  route_type: "general", goal: "B2", deadline: "2027-09",
+  route_type: "general", goal: "B2", deadline: "2027-09", weeks_until_deadline: Math.round((Date.UTC(2027, 8, 1) - Date.now()) / (7 * 864e5)),
   placement: { overall_level: "B1", skills: { grammar: 68, vocabulary: 72, reading: 74, listening: 52, writing: 63, speaking: 55 }, weak: ["Present Perfect vs Past Simple", "Conditionals 2", "Listening: natural speed"], date: "2026-11-20" },
   checkpoints: [],
   pace: { lessons_per_week: 2, lesson_minutes: 60, daily_minutes: 20 },

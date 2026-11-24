@@ -32,6 +32,7 @@
 - `route_type`: `general` | `ielts` | `oge` | `ege` | `toefl` | `cambridge` | `business` | `speaking` | `relocation` | `level_plus_exam`
 - `goal`: целевой уровень и/или балл экзамена (например «B2+» или «IELTS 6.5»)
 - `deadline`: дата или `null` (если учитель не включал срок)
+- `weeks_until_deadline`: сколько недель до срока — считает платформа (модели ошибаются в арифметике дат), или `null`
 - `placement`: результаты входного теста по навыкам (grammar_vocab, reading, listening, writing, speaking) — подуровни
 - `checkpoints`: результаты прошлых срезов (может быть пусто)
 - `pace`: уроков в неделю, длительность урока (мин), минут самостоятельной работы в день
@@ -55,7 +56,7 @@ PRINCIPLES
 4. Exam targets: map target scores to the level needed (IELTS 5.5 ≈ B2−, 6.0–6.5 ≈ B2, 7.0 ≈ C1−; ОГЭ «5» ≈ A2+/B1; ЕГЭ 80+ ≈ B1+/B2). Treat these as approximate.
 5. If courses/units are given, attach units of the leading course to stages in order, using their "after this lesson the student can" outcomes. If not, describe each stage with general CEFR can-do outcomes.
 6. Each stage ends with a checkpoint: what is tested (skills) and what result means "move on".
-7. Weekly study hours = lessons per week × lesson length + daily independent minutes × 7 (assume 5 active days if teacher_notes say the student may slack off). Forecast weeks per stage = stage hours / weekly hours. If a deadline is given, check whether the route fits; if not, say what pace would make it fit.
+7. Weekly study hours = lessons per week × lesson length + daily independent minutes × 7 (assume 5 active days if teacher_notes say the student may slack off). Forecast weeks per stage = stage hours / weekly hours. If a deadline is given, check whether the route fits (use weeks_until_deadline from INPUT — do not calculate dates yourself); if not, say what pace would make it fit.
 8. teacher_notes override generic assumptions.
 9. Tone for the student: warm, competitive, motivating, in Russian, no exaggerated promises.
 10. Language: write ALL text fields in Russian. Keep grammar topic names (Present Perfect, Conditionals 2), English words and phrases, and course unit titles in English, as in the original.

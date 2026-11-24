@@ -6,6 +6,8 @@ import { parseJsonLoose, type Llm } from "./check-core";
 export type RouteInput = {
   student: { age: number | null; form: Record<string, string> };
   route_type: string; goal: string; deadline: string | null;
+  /** сколько недель до срока — считает платформа (модели ошибаются в арифметике дат) */
+  weeks_until_deadline: number | null;
   placement: { overall_level: string | null; skills: Record<string, number | string>; weak: string[]; date: string | null } | null;
   checkpoints: { kind: string; stage: number | null; level: string | null; score: number | null; date: string | null }[];
   pace: { lessons_per_week: number; lesson_minutes: number; daily_minutes: number };

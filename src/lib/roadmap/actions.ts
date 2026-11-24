@@ -129,6 +129,7 @@ export async function buildRoadmap(studentId: string, f: RoadmapForm): Promise<R
   const moodNote = f.mood === "more" ? "Много занимается самостоятельно." : f.mood === "slack" ? "Может лениться — закладывай 5 активных дней в неделю." : "";
   const input: RouteInput = {
     student: { age, form }, route_type: ROUTE_TYPE[type] ?? "general", goal, deadline: f.deadline ?? null,
+    weeks_until_deadline: f.deadline ? Math.max(0, Math.round((new Date(`${f.deadline}-01T00:00:00Z`).getTime() - Date.now()) / (7 * 864e5))) : null,
     placement: entry ? { overall_level: entry.level, skills: res.skills ?? {}, weak: (res.weak ?? []).map((w) => w[1]).slice(0, 12), date: entry.takenAt?.toISOString().slice(0, 10) ?? null } : from ? { overall_level: from, skills: {}, weak: [], date: null } : null,
     checkpoints: slices.map((c) => ({ kind: c.kind, stage: c.stage, level: c.level, score: (c.results as { score?: number } | null)?.score ?? null, date: c.takenAt?.toISOString().slice(0, 10) ?? null })),
     pace: { lessons_per_week: pc.lessons, lesson_minutes: lessonMin, daily_minutes: pc.min },
