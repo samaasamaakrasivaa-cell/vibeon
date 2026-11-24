@@ -129,7 +129,39 @@ async function speech() {
   }
 }
 
+/** Полный ответ session.created (голос по умолчанию, форматы) и проверка «слово в слово» через распознавание речи. */
+async function details() {
+  const url = `wss://rest-assistant.api.cloud.yandex.net/v1/realtime?model=${encodeURIComponent(`gpt://${folder}/speech-realtime-max-tts-live/latest`)}`;
+  const ws = new WebSocket(url, { headers: { Authorization: `Api-Key ${key}`, "OpenAI-Project": folder } });
+  await new Promise<void>((res) => {
+    const t = setTimeout(() => { ws.close(); res(); }, 15000);
+    ws.on("message", (raw) => { const m = JSON.parse(String(raw)); if (m.type === "session.created") { console.log("SESSION " + JSON.stringify(m.session)); clearTimeout(t); ws.close(); res(); } });
+    ws.on("error", (e) => { console.log("SESSION err " + e.message); clearTimeout(t); res(); });
+  });
+  // озвучка TTS Live → распознавание: совпадает ли со скриптом
+  const r = await realtime(url, `gpt://${folder}/speech-realtime-max-tts-live/latest`, { instructions: READER, text: DIALOG });
+  if (r.ok && r.audio) {
+    const pcm = r.audio, rate = r.rate ?? 24000;
+    // 24 кГц → 16 кГц (линейно)
+    const n = Math.floor((pcm.length / 2) * 16000 / rate), out = Buffer.alloc(n * 2);
+    for (let i = 0; i < n; i++) { const x = i * rate / 16000, a = Math.floor(x), f = x - a; const s0 = pcm.readInt16LE(Math.min(a, pcm.length / 2 - 1) * 2), s1 = pcm.readInt16LE(Math.min(a + 1, pcm.length / 2 - 1) * 2); out.writeInt16LE(Math.round(s0 + (s1 - s0) * f), i * 2); }
+    const parts: string[] = [];
+    for (let i = 0; i < out.length; i += 16000 * 2 * 28) {
+      const j = await (await fetch(`https://stt.api.cloud.yandex.net/speech/v1/stt:recognize?folderId=${folder}&lang=en-US&format=lpcm&sampleRateHertz=16000`, { method: "POST", headers: { Authorization: `Api-Key ${key}` }, body: new Uint8Array(out.subarray(i, i + 16000 * 2 * 28)) })).json();
+      parts.push(j.result ?? JSON.stringify(j).slice(0, 100));
+    }
+    console.log("VERBATIM script: " + DIALOG);
+    console.log("VERBATIM heard:  " + parts.join(" "));
+  }
+  // картинки: тот же отказ через OpenAI-совместимый адрес — текст ошибки может быть подробнее
+  for (const m of ["yandex-art/latest", "aliceai-art/latest"]) {
+    const r2 = await fetch("https://llm.api.cloud.yandex.net/v1/images/generations", { method: "POST", headers: { Authorization: `Api-Key ${key}`, "OpenAI-Project": folder, "Content-Type": "application/json" }, body: JSON.stringify({ model: `art://${folder}/${m}`, prompt: style("apple"), n: 1, size: "1024x1024" }) });
+    console.log(`IMG2 ${m}: HTTP ${r2.status} ${short(await r2.text())}`);
+  }
+}
+
 export async function run() {
+  if (process.argv[3] === "details") { await details(); return; }
   rmSync(OUT, { recursive: true, force: true }); mkdirSync(OUT, { recursive: true });
   console.log(`PROBE2 folder set: ${!!folder}, key set: ${!!key}`);
   await images().catch((e) => console.log("IMG crash", short(e.message)));
