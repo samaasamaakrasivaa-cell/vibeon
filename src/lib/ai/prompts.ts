@@ -5,7 +5,7 @@ import path from "node:path";
 // Системные инструкции ИИ лежат в prompts/*.md — их можно править без изменения кода.
 // Файл перечитывается, если изменился (по времени изменения), иначе берётся из памяти.
 const cache = new Map<string, { at: number; text: string }>();
-export type PromptName = "check-1" | "check-2-review" | "route";
+export type PromptName = "check-1" | "check-2-review" | "route" | "image";
 
 export function prompt(name: PromptName): string {
   const file = path.join(process.cwd(), "prompts", `${name}.md`);

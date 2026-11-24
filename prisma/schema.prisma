@@ -1020,3 +1020,17 @@ model AiReview {
   @@index([teacherId, createdAt])
   @@index([lessonInstanceId, taskId, studentId])
 }
+
+/// Библиотека картинок ИИ для заданий «Слово к картинке»: одно слово — одна или несколько картинок, общие для всех уроков
+/// (повторное использование бесплатно). Данных учеников здесь нет.
+model AiImage {
+  id        String   @id @default(cuid())
+  word      String // слово в нижнем регистре
+  style     String   @default("flat") // версия стилевой инструкции (prompts/image.md)
+  model     String
+  url       String
+  teacherId String?
+  createdAt DateTime @default(now())
+
+  @@index([word, style])
+}

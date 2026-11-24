@@ -12,6 +12,7 @@ import { thumbSvg } from "@/lib/tasks/thumbs";
 import { fileToTask, helpTask } from "@/lib/ai/actions";
 import { getBuilderPrefs, saveMyTitle } from "@/lib/teacher/courses";
 import { extractFile } from "../ai/BookImport";
+import { PictureGenBar, VoiceScript, usePictureGen } from "./AiMedia";
 
 const CONTENT_TYPES: TaskType[] = ["gap", "drag", "dropdown", "test", "tf", "pairs", "columns", "picture", "sentence", "textorder", "letters", "essay", "open", "record", "speak", "errors", "mark", "transform", "translate", "dictation", "crossword", "wordset", "vocab", "info", "text", "note"];
 /** Где в содержании работает оформление (жирный, курсив, цвет, маркер): тексты, вопросы, утверждения, строки с пропусками. */
@@ -56,6 +57,10 @@ export function TaskEditor({ lessonId, initial, onSave, onClose, pending, error 
   const [undo, setUndo] = useState<string | null>(null);
   const [retype, setRetype] = useState(false);
   const type = task.type;
+  // «Слово к картинке»: картинки ИИ для слов без картинки (хук вызывается всегда — правило хуков)
+  const picWords = task.content.split("\n").map((w) => w.trim()).filter(Boolean);
+  const setPic = (i: number, url: string) => setTask((x) => { const pics = [...(x.options.pics ?? [])]; pics[i] = url; return { ...x, options: { ...x.options, pics } }; });
+  const pg = usePictureGen({ words: picWords, pics: picWords.map((_, i) => o.pics?.[i]), onPic: setPic });
   // «Сменить тип задания»: формулировка остаётся; содержание — если формат совместим; заметка, ставшая заданием, снова видна ученику
   const changeType = (to: TaskType) => {
     if (to === type) { setRetype(false); return; }
@@ -297,6 +302,7 @@ export function TaskEditor({ lessonId, initial, onSave, onClose, pending, error 
               {type === "video" && o.src && <VideoClip src={o.src} start={o.clipStart} end={o.clipEnd} onChange={(x) => setO(x)} />}
               <label htmlFor="te-script" className="flabel mt-2">{t("bld.script")}</label>
               <textarea id="te-script" className="textarea" value={o.script ?? ""} onChange={(e) => setO({ script: e.target.value })} />
+              {type === "audio" && <VoiceScript script={o.script ?? ""} onSrc={(u) => setO({ src: u })} />}
             </div>
           )}
           {type === "link" && (
@@ -308,11 +314,14 @@ export function TaskEditor({ lessonId, initial, onSave, onClose, pending, error 
           {type === "picture" && (
             <div className="field mt-4">
               <span className="flabel">{t("bld.picPerWord")}</span>
-              {task.content.split("\n").map((w) => w.trim()).filter(Boolean).map((w, i) => (
+              {picWords.length > 0 && <PictureGenBar g={pg} />}
+              {picWords.map((w, i) => (
                 <div key={i} className="flex items-center gap-2">
-                  {o.pics?.[i] ? <img src={o.pics[i]} alt="" className="h-12 w-16 rounded-lg object-cover" /> : <span className="flex h-12 w-16 items-center justify-center rounded-lg bg-fill text-text3"><Icon name="image" size="sm" /></span>}
-                  <span className="grow font-semibold">{w}</span>
-                  <label className="btn secondary sm">{t("bld.choose")}<input type="file" accept="image/*" hidden onChange={(e) => doUpload(e.target.files, (u) => { const pics = [...(o.pics ?? [])]; pics[i] = u[0]; setO({ pics }); })} /></label>
+                  {pg.busy.has(i) ? <span className="flex h-12 w-16 items-center justify-center rounded-lg bg-fill text-text3 aimedia-wait"><Icon name="spark" size="sm" /></span>
+                    : o.pics?.[i] ? <img src={o.pics[i]} alt="" className="h-12 w-16 rounded-lg object-cover" /> : <span className="flex h-12 w-16 items-center justify-center rounded-lg bg-fill text-text3"><Icon name="image" size="sm" /></span>}
+                  <span className="grow font-semibold">{w}{pg.lib.has(i) && <span className="pill grey ml-2">{t("pg2.fromLib")}</span>}</span>
+                  {o.pics?.[i] && <button type="button" className="btn plain sm" disabled={pg.busy.has(i)} onClick={() => pg.one(i, true)} title={t("pg2.otherHint")}><Icon name="spark" size="sm" />{t("pg2.other")}</button>}
+                  <label className="btn secondary sm">{t("bld.choose")}<input type="file" accept="image/*" hidden onChange={(e) => doUpload(e.target.files, (u) => setPic(i, u[0]))} /></label>
                 </div>
               ))}
             </div>

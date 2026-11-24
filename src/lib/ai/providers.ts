@@ -157,3 +157,38 @@ export async function yandexOcr(buf: Buffer, mime: string) {
   });
   return (j.result?.textAnnotation?.fullText as string) ?? "";
 }
+
+// ───────── Картинки (Alice AI ART, синхронный OpenAI-совместимый адрес) ─────────
+// Проверено: модель aliceai-image-art-3.0/latest, URI art://<каталог>/…, ~3 с на картинку 1024×1024.
+
+export async function studioImage(model: string, prompt: string): Promise<Buffer> {
+  const uri = model.includes("://") ? model : `art://${Y().folder}/${model}`;
+  const j = await fetchJson("https://llm.api.cloud.yandex.net/v1/images/generations", {
+    method: "POST",
+    headers: { Authorization: `Api-Key ${Y().key}`, "OpenAI-Project": Y().folder, "Content-Type": "application/json" },
+    body: JSON.stringify({ model: uri, prompt: prompt.slice(0, 500), n: 1, size: "1024x1024", response_format: "b64_json" }),
+  }, 120000);
+  const d = j.data?.[0];
+  if (d?.b64_json) return Buffer.from(d.b64_json, "base64");
+  if (d?.url) return Buffer.from(await (await fetch(d.url, { signal: AbortSignal.timeout(60000) })).arrayBuffer());
+  throw new Error("image: empty response");
+}
+
+// ───────── Озвучка фразы (SpeechKit v3: голос, скорость, высота тона) — для скриптов аудирования ─────────
+
+export async function speechkitV3(text: string, o: { voice: string; speed?: number; pitchShift?: number }): Promise<Buffer> {
+  const hints: Record<string, unknown>[] = [{ voice: o.voice }];
+  if (o.speed && o.speed !== 1) hints.push({ speed: String(o.speed) });
+  if (o.pitchShift) hints.push({ pitchShift: String(o.pitchShift) });
+  const r = await fetch("https://tts.api.cloud.yandex.net/tts/v3/utteranceSynthesis", {
+    method: "POST", signal: AbortSignal.timeout(60000),
+    headers: { Authorization: `Api-Key ${Y().key}`, "x-folder-id": Y().folder, "Content-Type": "application/json" },
+    body: JSON.stringify({ text, hints, outputAudioSpec: { containerAudio: { containerAudioType: "MP3" } }, loudnessNormalizationType: "LUFS" }),
+  });
+  const body = await r.text();
+  if (!r.ok) throw new Error(`TTS v3 HTTP ${r.status}: ${body.slice(0, 200)}`);
+  const parts: Buffer[] = [];
+  for (const line of body.split("\n")) { if (!line.trim()) continue; try { const d = JSON.parse(line).result?.audioChunk?.data; if (d) parts.push(Buffer.from(d, "base64")); } catch { /* служебная строка */ } }
+  if (!parts.length) throw new Error("TTS v3: no audio");
+  return Buffer.concat(parts);
+}

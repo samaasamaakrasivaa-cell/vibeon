@@ -26,7 +26,7 @@ export async function usage(teacherId: string) {
   return { used, limit };
 }
 
-async function guard(kind: Kind | "stt" | "tts" | "ocr" | "check" | "route", ctx: Ctx) {
+async function guard(kind: Kind | "stt" | "tts" | "ocr" | "check" | "route" | "image" | "tts-script", ctx: Ctx) {
   if (!ctx.teacherId) return;
   const prof = await db.teacherProfile.findUnique({ where: { userId: ctx.teacherId }, select: { tariff: true } });
   if (prof?.tariff === "START" && PRO_ONLY.includes(kind)) throw new AiError("tariff");
@@ -100,6 +100,21 @@ export function llmFor(kind: "check" | "route", ctx: Ctx): Llm {
       throw e;
     }
   };
+}
+
+/** Любой платный вызов ИИ через шлюз: лимит тарифа и учёт (картинки, озвучка скриптов). В режиме mock — заглушка. */
+export async function aiCall<T>(kind: "image" | "tts-script", ctx: Ctx, model: string, real: () => Promise<T>, mock: () => T | Promise<T>): Promise<T> {
+  await guard(kind, ctx);
+  const t0 = Date.now();
+  try {
+    const out = provider() === "mock" && !yandexReady() ? await mock() : await real();
+    await log(kind, ctx, { model: provider() === "mock" && !yandexReady() ? "mock" : model, ms: Date.now() - t0 });
+    return out;
+  } catch (e) {
+    await log(kind, ctx, { ok: false, model, ms: Date.now() - t0 });
+    console.error(`[ai:${kind}]`, e);
+    throw e instanceof AiError ? e : new AiError("fail", String((e as Error).message));
+  }
 }
 
 // ───────── Речь и распознавание ─────────

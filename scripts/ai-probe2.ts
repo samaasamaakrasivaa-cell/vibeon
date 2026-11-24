@@ -1,3 +1,4 @@
+// @ts-nocheck — разовый скрипт пробы; ws подставляется при сборке в выкладке
 // Пробы (deploy → aidemo probe2): картинки (YandexART / Alice AI ART), озвучка TTS Live и живой собеседник (Realtime API).
 // Тестовые примеры, данные платформы не используются. Файлы — в /tmp/aiout (выкладка забирает их архивом).
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";

@@ -20,3 +20,8 @@ GitHub → репозиторий → Settings → Secrets and variables → Act
 `AI_MODEL_CHECK`, `AI_MODEL_CHECK_FALLBACK`, `AI_MODEL_ROUTE`, `AI_MODEL_ROUTE_FALLBACK` (например `deepseek-v4.1-flash/latest`).
 Потом Actions → deploy → Run workflow → `secrets` — значения запишутся на сервер, платформа перезапустится.
 Доступные каталогу модели можно посмотреть запуском deploy → `aicheck` с параметром `probe`.
+
+## Картинки для «Слово к картинке»
+
+`image.md` — стиль картинок; `{word}` заменяется словом. Если стиль поменять, поменяйте и `AI_IMAGE_STYLE` в `.env`
+(например `flat2`): иначе платформа будет брать из библиотеки картинки в старом стиле.

@@ -57,6 +57,7 @@ async function raw(model: string, tag: string, extra: Record<string, unknown>) {
 }
 
 (async () => {
+  if (process.argv[2] === "media") { const m = await import("./ai-media-probe"); await m.run(); return; }
   if (process.argv[2] === "tts") { const m = await import("./ai-tts"); await m.run(); return; }
   if (process.argv[2] === "probe2images") { process.argv[3] = "images"; const m = await import("./ai-probe2"); await m.run(); return; }
   if (process.argv[2] === "probe2details") { process.argv[3] = "details"; const m = await import("./ai-probe2"); await m.run(); return; }
