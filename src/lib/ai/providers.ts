@@ -85,7 +85,7 @@ async function anthropicChat(q: ChatReq): Promise<ChatRes> {
 // Открытые модели (DeepSeek, Qwen) работают только через этот адрес, не через foundationModels/v1/completion.
 
 export type LlmMsg = { role: "system" | "user" | "assistant"; content: string };
-export type LlmOpts = { json?: boolean; temperature?: number; maxTokens?: number; timeoutMs?: number };
+export type LlmOpts = { json?: boolean; temperature?: number; maxTokens?: number; timeoutMs?: number; /** «размышления» DeepSeek/Qwen для этого вызова (иначе AI_REASONING_EFFORT) */ reasoning?: string };
 
 /** Полное имя модели: «deepseek-v32/latest» → gpt://<каталог>/deepseek-v32/latest (полный URI оставляем как есть). */
 export const modelUri = (name: string) => (name.includes("://") ? name : `gpt://${Y().folder}/${name.replace(/^\/+/, "")}`);
@@ -104,7 +104,7 @@ export async function studioChat(model: string, messages: LlmMsg[], o: LlmOpts =
       ...(o.json && process.env.AI_JSON_MODE === "1" ? { response_format: { type: "json_object" } } : {}),
       // DeepSeek и Qwen в AI Studio «думают» перед ответом и могут истратить на это все токены (ответ пустой) —
       // по умолчанию размышления выключены (проверено: 20–25 с, валидный JSON). AI_REASONING_EFFORT=low|medium|high — включить.
-      ...(/deepseek|qwen/i.test(model) ? { reasoning_effort: process.env.AI_REASONING_EFFORT || "none" } : {}),
+      ...(/deepseek|qwen/i.test(model) ? { reasoning_effort: o.reasoning || process.env.AI_REASONING_EFFORT || "none" } : {}),
     }),
   }, o.timeoutMs ?? 150000);
   return { text: stripThink(j.choices?.[0]?.message?.content ?? ""), model, tokensIn: j.usage?.prompt_tokens ?? 0, tokensOut: j.usage?.completion_tokens ?? 0 };
