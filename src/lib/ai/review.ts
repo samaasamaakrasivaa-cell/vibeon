@@ -71,7 +71,7 @@ export async function aiReviewLoad(lessonInstanceId: string, taskId: string): Pr
     const last = await db.aiReview.findFirst({ where: { lessonInstanceId, taskId, studentId: student.id, teacherId: user.id }, orderBy: { createdAt: "desc" } });
     const rows = last?.compareGroup ? await db.aiReview.findMany({ where: { compareGroup: last.compareGroup }, orderBy: { createdAt: "asc" } }) : last ? [last] : [];
     const crit = await teacherCriteria(user.id);
-    return { ok: true, reviews: rows.map(dto), exam: (last?.exam as Exam) ?? (await guessExam(student.id, taskType)), criteria: { oge: !!crit.oge?.trim(), ege: !!crit.ege?.trim() }, models: modelsFor("check").map(modelLabel) };
+    return { ok: true, reviews: rows.map(dto), exam: (last?.exam as Exam) ?? (await guessExam(student.id, taskType)), criteria: { oge: !!crit.oge?.trim(), ege: !!crit.ege?.trim() }, models: modelsFor("check", student.level).map(modelLabel) };
   } catch (e) { return { ok: false, error: (e as Error).message }; }
 }
 
@@ -96,7 +96,7 @@ export async function aiReviewRun(lessonInstanceId: string, taskId: string, opts
   const input: CheckInput = { task_type: taskType, level: student.level ?? "", exam, exam_criteria: criteria.slice(0, 12000), task_prompt: clean(taskPrompt), lesson_focus: clean(focus), teacher_notes: clean(notes), student_text: sc.text };
   const llm = llmFor("check", { ...(await aiCtx(user)) });
   const P = { check: prompt("check-1"), review: prompt("check-2-review") };
-  const models = modelsFor("check");
+  const models = modelsFor("check", student.level);
   const stored = { ...input, student_text: text, exam_criteria: criteria ? "(критерии учителя)" : "", task_prompt: taskPrompt, lesson_focus: focus, teacher_notes: notes ? "(заметки учителя)" : "" };
   const save = (model: string, result: CheckResult, meta: CheckMeta, group: string | null, chosen: boolean) => db.aiReview.create({
     data: { teacherId: user.id, studentId: student.id, lessonInstanceId, taskId, taskType, exam, input: json(stored), model, draft: json(result), meta: json(meta), compareGroup: group, chosen },

@@ -62,6 +62,9 @@ jobs:
           AI_MODEL_CHECK_FALLBACK: ${{ vars.AI_MODEL_CHECK_FALLBACK }}
           AI_MODEL_ROUTE: ${{ vars.AI_MODEL_ROUTE }}
           AI_MODEL_ROUTE_FALLBACK: ${{ vars.AI_MODEL_ROUTE_FALLBACK }}
+          AI_MODEL_CHECK_HIGH: ${{ vars.AI_MODEL_CHECK_HIGH }}
+          AI_MODEL_CHECK_HIGH_FALLBACK: ${{ vars.AI_MODEL_CHECK_HIGH_FALLBACK }}
+          AI_CHECK_HIGH_FROM: ${{ vars.AI_CHECK_HIGH_FROM }}
         run: |
           set -eo pipefail
           Q=$(printf '%q' "$ARG")
@@ -99,7 +102,7 @@ jobs:
             proxy)   sync; ssh srv "bash /opt/vibeon/deploy/attach-proxy.sh $Q" ;;
             secrets)
               n=0
-              for k in TELEGRAM_BOT_TOKEN YANDEX_CLOUD_FOLDER_ID YANDEX_CLOUD_API_KEY SMTP_HOST SMTP_PORT SMTP_USER SMTP_PASS MAIL_FROM LEGAL_OPERATOR LEGAL_INN LEGAL_EMAIL OWNER_EMAIL AI_MODEL_CHECK AI_MODEL_CHECK_FALLBACK AI_MODEL_ROUTE AI_MODEL_ROUTE_FALLBACK; do
+              for k in TELEGRAM_BOT_TOKEN YANDEX_CLOUD_FOLDER_ID YANDEX_CLOUD_API_KEY SMTP_HOST SMTP_PORT SMTP_USER SMTP_PASS MAIL_FROM LEGAL_OPERATOR LEGAL_INN LEGAL_EMAIL OWNER_EMAIL AI_MODEL_CHECK AI_MODEL_CHECK_FALLBACK AI_MODEL_ROUTE AI_MODEL_ROUTE_FALLBACK AI_MODEL_CHECK_HIGH AI_MODEL_CHECK_HIGH_FALLBACK AI_CHECK_HIGH_FROM; do
                 v="${!k}"; [ -n "$v" ] || continue
                 printf '%s' "$v" | ssh srv "v=\$(cat); $V setq $k=\"\$v\"" && echo "записано: $k" && n=$((n+1))
               done

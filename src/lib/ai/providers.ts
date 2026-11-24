@@ -93,7 +93,11 @@ export const modelUri = (name: string) => (name.includes("://") ? name : `gpt://
 /** Размышления модели (<think>…</think>) в ответ не попадают. */
 export const stripThink = (s: string) => s.replace(/<think>[\s\S]*?<\/think>/gi, "").replace(/^[\s\S]*<\/think>/i, "").trim();
 
-export async function studioChat(model: string, messages: LlmMsg[], o: LlmOpts = {}): Promise<ChatRes> {
+export async function studioChat(spec: string, messages: LlmMsg[], o: LlmOpts = {}): Promise<ChatRes> {
+  // «deepseek-v32/latest#low» — модель и глубина «размышлений»; размышлениям нужен запас токенов и времени
+  const [model, think] = spec.split("#");
+  const reasoning = o.reasoning || think || "";
+  if (reasoning && reasoning !== "none") o = { ...o, reasoning, maxTokens: Math.max(o.maxTokens ?? 0, 20000), timeoutMs: Math.max(o.timeoutMs ?? 0, 300000) };
   const j = await fetchJson("https://llm.api.cloud.yandex.net/v1/chat/completions", {
     method: "POST",
     headers: { Authorization: `Api-Key ${Y().key}`, "OpenAI-Project": Y().folder, "Content-Type": "application/json" },
@@ -107,7 +111,7 @@ export async function studioChat(model: string, messages: LlmMsg[], o: LlmOpts =
       ...(/deepseek|qwen/i.test(model) ? { reasoning_effort: o.reasoning || process.env.AI_REASONING_EFFORT || "none" } : {}),
     }),
   }, o.timeoutMs ?? 150000);
-  return { text: stripThink(j.choices?.[0]?.message?.content ?? ""), model, tokensIn: j.usage?.prompt_tokens ?? 0, tokensOut: j.usage?.completion_tokens ?? 0 };
+  return { text: stripThink(j.choices?.[0]?.message?.content ?? ""), model: spec, tokensIn: j.usage?.prompt_tokens ?? 0, tokensOut: j.usage?.completion_tokens ?? 0 };
 }
 
 export async function chat(q: ChatReq): Promise<ChatRes> {
