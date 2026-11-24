@@ -7,6 +7,9 @@ import { db } from "../db";
 export const INTERNAL_DOMAIN = "cabinet.vibeon.invalid";
 export const isInternalEmail = (e?: string | null) => !!e && e.endsWith(`@${INTERNAL_DOMAIN}`);
 export const internalEmail = (seed: string) => `teacher-${seed}@${INTERNAL_DOMAIN}`;
+/** Тестовый ученик учителя (посмотреть кабинет глазами ученика): тоже служебный адрес, вход — через кабинет учителя. */
+export const demoEmail = (seed: string) => `demo-${seed}@${INTERNAL_DOMAIN}`;
+export const isDemoEmail = (e?: string | null) => !!e && e.startsWith("demo-") && isInternalEmail(e);
 
 /** Чьими почтой и паролем входят в этот кабинет: свой вход или вход привязанного кабинета. */
 export async function loginOf<T extends Pick<User, "id" | "email" | "linkedUserId">>(u: T): Promise<User | T> {

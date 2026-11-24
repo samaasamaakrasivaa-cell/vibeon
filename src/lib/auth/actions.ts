@@ -12,7 +12,7 @@ import { accessUrl, buildMessage, inviteUrl } from "../invite";
 import { MIN_PASSWORD, hashPassword, verifyPassword } from "./password";
 import { createSession, destroySession, homeFor, requireUser } from "./session";
 import { issueToken, useToken } from "./tokens";
-import { linkedOf } from "./cabinet";
+import { isDemoEmail, linkedOf } from "./cabinet";
 
 export type FormState = { error?: string; fields?: Record<string, string>; ok?: string; link?: string; msg?: string; id?: string; warn?: boolean } | undefined;
 
@@ -37,7 +37,8 @@ export async function loginAction(_: FormState, f: FormData): Promise<FormState>
   await createSession(user.id, f.get("remember") === "on", await ua());
   // у человека два кабинета (ученик и учитель на одном входе) — даём выбрать, куда войти
   const next = safeNext(str(f, "next"));
-  if (!next && (await linkedOf(user))) redirect("/choose");
+  const other = next ? null : await linkedOf(user);
+  if (other && !isDemoEmail(other.email)) redirect("/choose"); // тестовый ученик учителя — без выбора: в кабинет учителя
   redirect(next ?? homeFor(user.role));
 }
 

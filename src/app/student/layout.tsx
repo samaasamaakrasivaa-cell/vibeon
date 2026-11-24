@@ -4,6 +4,8 @@ import { Sidebar } from "@/components/Sidebar";
 import { getT } from "@/lib/i18n/server";
 import { requireUser } from "@/lib/auth/session";
 import { aboutFilled, cleanAbout } from "@/lib/teacher/about-data";
+import { isDemoEmail } from "@/lib/auth/cabinet";
+import { DemoBar } from "@/components/teacher/DemoBar";
 import { db } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
@@ -48,7 +50,7 @@ export default async function StudentLayout({ children }: { children: React.Reac
       <AppHeader subtitle={t("ws.student")} user={{ ...user, avatar: me ? { id: me.id, avatar: me.avatar, crown: me.awards.length > 0 } : undefined }} homeHref="/student" profileHref="/student/profile" cabinet="student" />
       <div className="shell">
         <Sidebar groups={groups} ariaLabel={t("ws.student")} />
-        <main className="main">{children}</main>
+        <main className="main">{isDemoEmail(user.email) && <DemoBar />}{children}</main>
       </div>
     </>
   );
