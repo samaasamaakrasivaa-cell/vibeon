@@ -1,9 +1,10 @@
+import { ChatHead } from "@/components/student/SectionTabs";
 import { AskForm, EscalateButton } from "@/components/student/AskForm";
 import { requireUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { getT } from "@/lib/i18n/server";
 
-export const metadata = { title: "Вопросы" };
+export const metadata = { title: "Чат" };
 
 export default async function StudentQuestions() {
   const { t, lang } = await getT();
@@ -18,7 +19,7 @@ export default async function StudentQuestions() {
   const loc = lang === "ru" ? "ru-RU" : "en-GB";
   return (
     <div className="page" style={{ maxWidth: 820 }}>
-      <h1 className="mb-1">{t("nav.questions")}</h1>
+      <ChatHead active="answers" />
       <p className="muted mt-0 mb-5">{t("sq.lead")}</p>
       <AskForm contexts={contexts} />
       <section className="list mt-6">

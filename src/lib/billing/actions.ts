@@ -70,6 +70,11 @@ export async function confirmLessonPaid(lessonId: string, amount?: number): Prom
   }
   if (l.price === null || (amount && amount > 0 && amount !== l.price)) await db.lessonInstance.update({ where: { id: l.id }, data: { price: sum } });
   await checksDone(u.id);
+  // ученику — в «Что нового»: преподаватель отметил урок оплаченным
+  if (l.student.userId) {
+    const day = l.startsAt.toLocaleDateString("ru-RU", { day: "numeric", month: "long", timeZone: l.student.timezone });
+    await notify({ userId: l.student.userId, kind: "paid", title: `Преподаватель отметил оплату урока ${day}: ${new Intl.NumberFormat("ru-RU").format(sum)} ₽. Спасибо!`, link: "/student/payments?tab=bills" }).catch(() => null);
+  }
   refresh();
   return { ok: true };
 }

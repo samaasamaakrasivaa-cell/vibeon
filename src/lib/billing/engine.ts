@@ -81,7 +81,7 @@ export async function createInvoice(s: Student, data: { amount: number; kind: "l
 export async function notifyInvoice(s: Student, inv: Invoice, reminder: boolean) {
   const rub = new Intl.NumberFormat("ru-RU").format(inv.amount) + " ₽";
   if (s.userId)
-    await notify({ userId: s.userId, kind: "invoice", title: reminder ? `Напоминание: счёт на ${rub} ждёт оплаты` : `Новый счёт на оплату: ${rub}`, action: "decide", link: "/student/payments?tab=bills" });
+    await notify({ userId: s.userId, kind: "invoice", title: `${reminder ? `Напоминание: счёт на ${rub} ждёт оплаты` : `Новый счёт на оплату: ${rub}`}${inv.kind === "lessons" && inv.title ? ` — ${inv.title}` : ""}`, action: "decide", link: "/student/payments?tab=bills" });
   if (s.payerContact && /@.+\./.test(s.payerContact) && !s.payerContact.startsWith("@"))
     await mailInvoice(s.payerContact, s.payerName ?? "", `${s.name} ${s.lastName ?? ""}`.trim(), inv.title ?? "", rub, `${env.appUrl}/login`, reminder);
   if (s.payerChatId) {

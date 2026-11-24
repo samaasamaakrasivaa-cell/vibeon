@@ -28,7 +28,7 @@ export default async function StudentProfile() {
         <section className="card">
           <h2 className="mb-2">{t("prf.teacher")}</h2>
           <p className="m-0">{[s.teacher.user.name, s.teacher.user.lastName].filter(Boolean).join(" ")}</p>
-          <Link href="/student/messages" className="btn secondary sm mt-3"><Icon name="msg" size="sm" />{t("nav.messages")}</Link>
+          <Link href="/student/messages" className="btn secondary sm mt-3"><Icon name="msg" size="sm" />{t("nav.chat")}</Link>
         </section>
       )}
     </div>

@@ -172,3 +172,11 @@ export async function changePassword(oldPw: string, newPw: string): Promise<R> {
   await db.user.update({ where: { id: login.id }, data: { passwordHash: await hashPassword(newPw) } });
   return { ok: true };
 }
+
+/** Новичок закрыл подсказки «С чего начать» на главной. */
+export async function hideTips(): Promise<{ ok: true }> {
+  const me = await requireUser("STUDENT");
+  await db.student.updateMany({ where: { userId: me.id }, data: { tipsDoneAt: new Date() } });
+  revalidatePath("/student");
+  return { ok: true };
+}

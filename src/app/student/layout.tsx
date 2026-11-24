@@ -3,7 +3,6 @@ import { ActivityPing } from "@/components/ActivityPing";
 import { Sidebar } from "@/components/Sidebar";
 import { getT } from "@/lib/i18n/server";
 import { requireUser } from "@/lib/auth/session";
-import { aboutFilled, cleanAbout } from "@/lib/teacher/about-data";
 import { isDemoEmail } from "@/lib/auth/cabinet";
 import { DemoBar } from "@/components/teacher/DemoBar";
 import { db } from "@/lib/db";
@@ -21,35 +20,27 @@ export default async function StudentLayout({ children }: { children: React.Reac
     db.student.findUnique({ where: { userId: user.id }, select: { id: true, avatar: true, awards: { where: { kind: "title", pinned: true, onMain: true, OR: [{ until: null }, { until: { gt: new Date() } }] }, select: { id: true }, take: 1 } } }),
     db.article.count({ where: { published: true, audience: { in: ["student", "all"] } } }),
   ]);
-  // «Мой преподаватель» — если учитель заполнил анкету и разрешил показывать её ученикам
-  const tAbout = await db.student.findUnique({ where: { userId: user.id }, select: { teacher: { select: { about: true } } } });
-  const showTeacher = (() => { const a = cleanAbout(tAbout?.teacher.about); return a.show !== false && aboutFilled(a); })();
+  // меню ученика — коротко: учёба (уроки и слова), прогресс (темы, маршрут, тесты, награды, фидбэк), чат (преподаватель и ответы на вопросы);
+  // профиль — по аватарке справа вверху, помощь — внизу
   const groups = [
     [
-      { href: "/student", label: t("nav.updates"), icon: "bell" as const, count: unread },
+      { href: "/student", label: t("nav.home"), icon: "home" as const, count: unread },
       { href: "/student/schedule", label: t("nav.schedule"), icon: "cal" as const },
     ],
     [
-      { href: "/student/lessons", label: t("nav.lessons"), icon: "book" as const },
-      { href: "/student/words", label: t("nav.words"), icon: "cards" as const },
-    ],
-    [
-      { href: "/student/route", label: t("nav.route"), icon: "route" as const },
-      { href: "/student/progress", label: t("nav.progressAwards"), icon: "chart" as const },
-    ],
-    [
-      { href: "/student/questions", label: t("nav.questions"), icon: "qmark" as const, count: answers },
-      { href: "/student/messages", label: t("nav.messages"), icon: "msg" as const, count: msgs },
+      { href: "/student/lessons", label: t("nav.study"), icon: "book" as const, also: ["/student/words"] },
+      { href: "/student/progress", label: t("nav.myProgress"), icon: "chart" as const, also: ["/student/route", "/student/test"] },
+      { href: "/student/messages", label: t("nav.chat"), icon: "msg" as const, count: msgs + answers, also: ["/student/questions", "/student/teacher"] },
     ],
     [{ href: "/student/payments", label: t("nav.payments"), icon: "card" as const, count: bills }],
-    [...(showTeacher ? [{ href: "/student/teacher", label: t("nav.myTeacher"), icon: "user" as const }] : []), { href: "/student/profile", label: t("common.profile"), icon: "user" as const }, ...(help ? [{ href: "/student/help", label: t("nav.help"), icon: "info" as const }] : [])],
   ];
+
   return (
     <>
       <ActivityPing />
       <AppHeader subtitle={t("ws.student")} user={{ ...user, avatar: me ? { id: me.id, avatar: me.avatar, crown: me.awards.length > 0 } : undefined }} homeHref="/student" profileHref="/student/profile" cabinet="student" />
       <div className="shell">
-        <Sidebar groups={groups} ariaLabel={t("ws.student")} />
+        <Sidebar groups={groups} ariaLabel={t("ws.student")} bottom={help ? [{ href: "/student/help", label: t("nav.help"), icon: "info" as const }] : []} />
         <main className="main">{isDemoEmail(user.email) && <DemoBar />}{children}</main>
       </div>
     </>

@@ -11,6 +11,7 @@ import { homeworkFor } from "@/lib/homework";
 import { hhmm, isoDay } from "@/lib/time";
 import { Medal, StudentAvatar } from "@/components/awards/Medal";
 import { AvatarNotice, CelebrateAwards } from "@/components/awards/StudentAwards";
+import { StartTips, type Tip } from "@/components/student/StartTips";
 
 export const dynamic = "force-dynamic";
 
@@ -33,6 +34,22 @@ export default async function StudentHome() {
   // вводный тест: назначен / начат — карточка «Пройти», готов и показан учителем — «Посмотреть результат»
   const pa = s ? await db.placementAttempt.findFirst({ where: { studentId: s.id, OR: [{ status: { in: ["new", "active"] } }, { status: "reviewed", showResult: true, reviewedAt: { gt: new Date(now.getTime() - 14 * 864e5) } }] }, orderBy: { createdAt: "desc" } }) : null;
   const loc = lang === "ru" ? "ru-RU" : "en-GB";
+  // «С чего начать» — новичку, пока не закрыл: что уже сделано, отмечаем галочкой
+  const tips: Tip[] | null = s && !s.tipsDoneAt ? await (async () => {
+    const [slots, practiced, route, tests] = await Promise.all([
+      db.studySlot.count({ where: { studentId: s.id } }),
+      db.wordPractice.count({ where: { studentId: s.id } }),
+      db.roadmap.count({ where: { studentId: s.id, approvedAt: { not: null } } }),
+      db.checkpoint.count({ where: { studentId: s.id } }),
+    ]);
+    return [
+      { key: "schedule", icon: "cal", title: t("tips.schedT"), text: t("tips.sched"), href: "/student/schedule", cta: t("tips.schedGo"), done: slots > 0 },
+      { key: "words", icon: "cards", title: t("tips.wordsT"), text: t("tips.words"), href: "/student/words", cta: t("tips.wordsGo"), done: practiced > 0 },
+      { key: "tg", icon: "telegram", title: t("tips.tgT"), text: t("tips.tg"), href: "/student/profile", cta: t("tips.tgGo"), done: !!me.telegramChatId },
+      { key: "route", icon: "route", title: t("tips.routeT"), text: t("tips.route"), done: route > 0 },
+      { key: "tests", icon: "target", title: t("tips.testsT"), text: t("tips.tests"), href: "/student/progress?tab=tests", cta: t("tips.testsGo"), done: tests > 0 },
+    ];
+  })() : null;
   // статусы: титулы, выведенные учителем на главный экран (главный — под именем, корона на аватарке); новые — праздничным окном
   const [mains, fresh] = s ? await Promise.all([
     db.award.findMany({ where: { studentId: s.id, kind: "title", onMain: true, OR: [{ until: null }, { until: { gt: now } }] }, orderBy: [{ pinned: "desc" }, { createdAt: "desc" }] }),
@@ -63,7 +80,7 @@ export default async function StudentHome() {
                 <span className="awmainline" tabIndex={0}>
                   <Medal icon={pinned.icon} color={pinned.color} size={34} />
                   <b>{pinned.name}</b>
-                  <span className="awtip" role="tooltip">{pinned.why && <span>{pinned.why}</span>}<Link href="/student/progress#awards">{t("aw.allMine")} →</Link></span>
+                  <span className="awtip" role="tooltip">{pinned.why && <span>{pinned.why}</span>}<Link href="/student/progress?tab=awards">{t("aw.allMine")} →</Link></span>
                 </span>
               )}
               {others.length > 0 && (
@@ -71,7 +88,7 @@ export default async function StudentHome() {
                   {others.map((a) => (
                     <span key={a.id} className="awchip" tabIndex={0}>
                       <Medal icon={a.icon} color={a.color} size={22} />{a.name}
-                      <span className="awtip" role="tooltip">{a.why && <span>{a.why}</span>}<Link href="/student/progress#awards">{t("aw.allMine")} →</Link></span>
+                      <span className="awtip" role="tooltip">{a.why && <span>{a.why}</span>}<Link href="/student/progress?tab=awards">{t("aw.allMine")} →</Link></span>
                     </span>
                   ))}
                 </div>
@@ -93,7 +110,22 @@ export default async function StudentHome() {
             </div>
           ) : <div className="tile"><span className="muted">{t("st.noNext")}</span></div>}
 
-          {pa && (
+          {pa && pa.status !== "reviewed" && (
+            <div className="placecard">
+              <div className="flex flex-wrap items-center gap-4">
+                <div className="grow min-w-[220px] flex-1">
+                  <div className="small font-semibold" style={{ color: "#AF52DE" }}>{t("pl.title")}</div>
+                  <h3 className="mt-1 text-[21px]">{pa.status === "active" ? t("pl.cardContinue") : t("pl.cardNew")}</h3>
+                  <p className="small muted mt-1 mb-0">{t("pl.cardSub")}</p>
+                </div>
+                <Link href={`/placement/${pa.id}`} className="btn primary lg">{pa.status === "active" ? t("pl.continue") : t("pl.start")}</Link>
+              </div>
+              <div className="plab mt-4">{t("pl.whyT")}</div>
+              <ul>{(["pl.why1", "pl.why2", "pl.why3", "pl.why4"] as const).map((k) => <li key={k}><Icon name="check" size="sm" /><span>{t(k)}</span></li>)}</ul>
+            </div>
+          )}
+
+          {pa && pa.status === "reviewed" && (
             <div className="tk flex flex-wrap items-center gap-4" style={{ borderColor: "var(--accent)" }}>
               <div className="grow min-w-[220px] flex-1">
                 <div className="small font-semibold text-accent">{t("pl.title")}</div>
@@ -104,15 +136,17 @@ export default async function StudentHome() {
             </div>
           )}
 
+          {/* домашка, которую преподаватель задал после последнего урока: большая кнопка и сколько заданий осталось */}
           {hw && (
-            <div className="tk flex flex-wrap items-center gap-4" style={{ borderColor: "var(--accent)" }}>
-              <div className="grow min-w-[220px] flex-1">
-                <h3>{t("st.finishHw")}</h3>
-                <p className="small muted mt-2 mb-2">{hw.title}: {t("st.doneOf", { n: hw.done, total: hw.total })}</p>
-                <span className="hwbar block max-w-[300px]"><i style={{ width: `${hw.total ? (hw.done / hw.total) * 100 : 0}%` }} /></span>
-              </div>
-              <Link href={`/class/${hw.lesson.id}?tab=homework`} className="btn primary lg">{t("st.doHw")}</Link>
-            </div>
+            <Link href={`/class/${hw.lesson.id}?tab=homework`} className="hwbig">
+              <span className="hwico"><Icon name="clip" size="lg" /></span>
+              <span className="grow min-w-0">
+                <b>{t("st.doHwBig")}</b>
+                <span className="small mt-1 block opacity-90">{hw.title} · {t("st.hwLeft", { n: hw.total - hw.done, total: hw.total })}</span>
+                <span className="hwbar mt-2 block"><i style={{ width: `${hw.total ? (hw.done / hw.total) * 100 : 0}%` }} /></span>
+              </span>
+              <span className="hwgo"><Icon name="right" /></span>
+            </Link>
           )}
 
           {last && (last.studentNote || last.note) && (
@@ -142,6 +176,7 @@ export default async function StudentHome() {
         </div>
       </section>
 
+      {tips && <StartTips tips={tips} />}
       {fresh.length > 0 && <CelebrateAwards items={fresh.map((a) => ({ id: a.id, kind: a.kind, name: a.name, why: a.why, icon: a.icon, color: a.color, until: a.until ? a.until.toLocaleDateString(loc, { day: "numeric", month: "long", timeZone: tz }) : null }))} />}
       <section className="card">
         <NotificationList items={notifications.map((n) => ({ id: n.id, title: n.title, when: ago(n.createdAt), unread: !n.readAt, done: !!n.doneAt, link: n.link, action: n.action }))} />

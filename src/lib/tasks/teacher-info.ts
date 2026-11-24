@@ -1,5 +1,5 @@
 // Блок урока «Для учителя»: уровень, сведения об уроке, цели (общая, лексика, грамматика, навыки), ход урока, заметки.
-// Хранится в LessonTemplate.teacherInfo; ученику не отдаётся никогда.
+// Хранится в LessonTemplate.teacherInfo; ученику не отдаётся — кроме целей «лексика» и «грамматика» пройденных уроков (Мой прогресс → Изученные темы).
 
 export type TInfo = { level?: string; info?: string; aims?: { main?: string; vocabulary?: string; grammar?: string; skills?: string }; overview?: string; notes?: string };
 export const AIM_KEYS = ["main", "vocabulary", "grammar", "skills"] as const;

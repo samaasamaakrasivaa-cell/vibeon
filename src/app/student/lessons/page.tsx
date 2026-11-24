@@ -1,3 +1,4 @@
+import { StudyHead } from "@/components/student/SectionTabs";
 import Link from "next/link";
 import { Icon } from "@/components/Icon";
 import { requireUser } from "@/lib/auth/session";
@@ -6,7 +7,7 @@ import { getT } from "@/lib/i18n/server";
 import { homeworkFor } from "@/lib/homework";
 import { isoDay } from "@/lib/time";
 
-export const metadata = { title: "Мои уроки" };
+export const metadata = { title: "Учёба" };
 export const dynamic = "force-dynamic";
 
 export default async function MyLessons({ searchParams }: { searchParams: Promise<{ c?: string }> }) {
@@ -22,8 +23,8 @@ export default async function MyLessons({ searchParams }: { searchParams: Promis
   });
   const hw = new Map((await homeworkFor({ studentId: s.id })).map((h) => [h.lesson.id, h]));
   // назначенный тест — тоже домашняя работа
-  // тесты ученика: незаконченные и отправленные, а также все, результат которых учитель открыл, — с разбором ответов
-  const tests = await db.placementAttempt.findMany({ where: { studentId: s.id, mode: "student", checkpointId: { not: null }, OR: [{ status: { in: ["new", "active", "submitted"] } }, { status: "reviewed", showResult: true }] }, orderBy: { createdAt: "desc" }, take: 20 });
+  // здесь — только тесты, которые ещё надо пройти или ждут проверки; результаты — в «Мой прогресс → Тесты»
+  const tests = await db.placementAttempt.findMany({ where: { studentId: s.id, mode: "student", checkpointId: { not: null }, status: { in: ["new", "active", "submitted"] } }, orderBy: { createdAt: "desc" }, take: 20 });
   const courses = [...new Map(lessons.map((l) => [l.template!.unit.course.id, l.template!.unit.course])).values()];
   const cid = (await searchParams).c ?? s.courseId ?? courses[0]?.id;
   const inCourse = lessons.filter((l) => l.template!.unit.courseId === cid);
@@ -43,7 +44,7 @@ export default async function MyLessons({ searchParams }: { searchParams: Promis
   };
   return (
     <div className="page">
-      <h1 className="mb-5">{t("nav.lessons")}</h1>
+      <StudyHead active="lessons" />
       {tests.length > 0 && (
         <section className="card mb-6">
           <p className="cardtitle">{t("stl.tests")}</p>

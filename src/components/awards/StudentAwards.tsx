@@ -33,7 +33,7 @@ export function CelebrateAwards({ items: init, inClass = false }: { items: NewAw
         {a.why && <p className="awcele-why">{a.why}</p>}
         {a.until && <span className="small muted">{t("aw.until", { d: a.until })}</span>}
         <div className="flex w-full gap-2">
-          {!inClass && <Link href="/student/progress#awards" className="btn secondary grow" onClick={next}>{t("aw.allMine")}</Link>}
+          {!inClass && <Link href="/student/progress?tab=awards" className="btn secondary grow" onClick={next}>{t("aw.allMine")}</Link>}
           <button type="button" className="btn primary grow" onClick={next}>{t("aw.hooray")}</button>
         </div>
       </div>

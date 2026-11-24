@@ -6,6 +6,8 @@ import { db } from "@/lib/db";
 import { getT } from "@/lib/i18n/server";
 import { packOptions } from "@/lib/billing/engine";
 import { rub } from "@/lib/teacher/data";
+import { roadmapView } from "@/lib/roadmap/progress";
+import { perWeek } from "@/lib/roadmap/math";
 
 export const metadata = { title: "Оплаты" };
 export const dynamic = "force-dynamic";
@@ -27,6 +29,27 @@ export default async function Payments({ searchParams }: { searchParams: Promise
   const details = ((s.teacher.settings as { payDetails?: string })?.payDetails) ?? "";
   const circ = 2 * Math.PI * 50;
   const weekly = await db.lessonInstance.count({ where: { studentId: s.id, status: "PLANNED", startsAt: { gt: new Date(), lt: new Date(Date.now() + 7 * 864e5) } } });
+  // подсказка «Хотите быстрее?»: сколько уроков в неделю нужно по маршруту и на сколько недель раньше с ещё одним уроком
+  const rv = await roadmapView(s.id, me.timezone);
+  const route = rv.r?.approvedAt && "st" in rv ? rv : null;
+  const need = route ? route.paceS.lessons : 0;
+  const faster = route && route.st.left > 0
+    ? Math.round(route.st.left / perWeek({ ...route.paceS, lessons: Math.max(1, weekly) }, route.lessonMin) - route.st.left / perWeek({ ...route.paceS, lessons: Math.max(1, weekly) + 1 }, route.lessonMin))
+    : 0;
+  const moreHint = (
+    <section className="card hintcard mt-5">
+      <Icon name="flame" />
+      <div className="grow">
+        <b>{t("pay.moreT")}</b>
+        <p className="small muted m-0 mt-1">
+          {need > weekly ? t("pay.moreNeed", { need, now: weekly }) : t("pay.moreGen")}
+          {faster > 0 ? ` ${t("pay.moreFaster", { n: faster })}` : ""}
+          {s.payType !== "PACK" && opts.length > 0 ? ` ${t("pay.morePack")}` : ""}
+        </p>
+        <MessageButton label={t("pay.moreAsk")} text={t("pay.moreAskText")} icon="plus" className="btn secondary sm mt-3" />
+      </div>
+    </section>
+  );
   return (
     <div className="page">
       <h1 className="mb-5">{t("nav.payments")}</h1>
@@ -69,6 +92,7 @@ export default async function Payments({ searchParams }: { searchParams: Promise
               </div>
             </section>
           )}
+          {moreHint}
         </>
       ) : (
         <>
@@ -83,6 +107,7 @@ export default async function Payments({ searchParams }: { searchParams: Promise
               <div className="flex flex-wrap gap-3">{opts.map((o) => <div key={o.n} className="offer"><b className="block">{t("pay.lessonsN", { n: o.n })}</b><b className="text-[22px]">{R(o.price)}</b><div className="small muted mb-2">{R(Math.round(o.price / o.n))} {t("pay.perLesson")}{s.price && o.price < s.price * o.n ? ` · ${t("pay.save", { sum: R(s.price * o.n - o.price) })}` : ""}</div><BuyPack n={o.n} label={t("pay.switch")} /></div>)}</div>
             </section>
           )}
+          {moreHint}
         </>
       ))}
 

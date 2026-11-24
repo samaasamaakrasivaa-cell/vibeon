@@ -26,14 +26,13 @@ export function WordsView(p: Props) {
   const dayNames = [t("wd.mon"), t("wd.tue"), t("wd.wed"), t("wd.thu"), t("wd.fri"), t("wd.sat"), t("wd.sun")];
   return (
     <>
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <h1>{t("nav.words")}</h1>
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+        <div className="seg">
+          <Link href="/student/words" aria-current={p.tab === "overview" ? "page" : undefined}>{t("wd.overview")}</Link>
+          <Link href="/student/words?tab=list" aria-current={p.tab === "list" ? "page" : undefined}>{t("wd.myWords")} ({p.words.length})</Link>
+        </div>
         <div className="seg"><button aria-pressed={accent === "en-GB"} onClick={() => setAccent("en-GB")}>{t("wd.british")}</button><button aria-pressed={accent === "en-US"} onClick={() => setAccent("en-US")}>{t("wd.american")}</button></div>
       </div>
-      <nav className="tabsbar fit mb-5">
-        <Link href="/student/words" aria-current={p.tab === "overview" ? "page" : undefined}>{t("wd.overview")}</Link>
-        <Link href="/student/words?tab=list" aria-current={p.tab === "list" ? "page" : undefined}>{t("wd.myWords")} ({p.words.length})</Link>
-      </nav>
       {p.tab === "overview" ? (
         <>
           <section className="card flex flex-wrap items-center gap-6">

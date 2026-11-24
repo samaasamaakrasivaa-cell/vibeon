@@ -1,3 +1,4 @@
+import { ProgressHead } from "@/components/student/SectionTabs";
 import Link from "next/link";
 import { Icon } from "@/components/Icon";
 import { SkillBars } from "@/components/roadmap/RoadmapEditor";
@@ -27,7 +28,7 @@ export default async function MyRoute({ searchParams }: { searchParams: Promise<
   if (!v.r || !v.r.approvedAt) {
     return (
       <div className="page" style={{ maxWidth: 900 }}>
-        <h1 className="mb-4">{t("nav.route")}</h1>
+        <ProgressHead active="route" />
         {openTest && <TestBanner id={openTest.id} entry={openTest.kind === "entry"} t={t} />}
         <section className="card rtempty"><Icon name="route" /><div><b>{t("rt.notYet")}</b><div className="small muted">{t("rt.notYetSub")}</div></div></section>
       </div>
@@ -87,7 +88,7 @@ export default async function MyRoute({ searchParams }: { searchParams: Promise<
 
   return (
     <div className="page" style={{ maxWidth: 980 }}>
-      <h1 className="mb-4">{t("nav.route")}</h1>
+      <ProgressHead active="route" />
       {openTest && <TestBanner id={openTest.id} entry={openTest.kind === "entry"} t={t} />}
       <nav className="tabsbar fit mb-5">{tabLink("ov", t("rt.tab.ov"))}{tabLink("a", t("rt.tab.a"))}{tabLink("now", t("rt.tab.now"))}{tabLink("next", t("rt.tab.next"))}{tabLink("fin", t("rt.tab.fin"))}</nav>
 

@@ -450,7 +450,7 @@ export async function addFeedback(studentId: string, text: string): Promise<Resu
   const body = text.trim().slice(0, 5000);
   if (!body) return { ok: false, error: "empty" };
   await db.feedback.create({ data: { studentId, text: body } });
-  if (st.userId) await notify({ userId: st.userId, kind: "feedback", title: `${teacher.name}: ${body.slice(0, 120)}`, action: "open_profile", link: "/student/progress" });
+  if (st.userId) await notify({ userId: st.userId, kind: "feedback", title: `${teacher.name}: ${body.slice(0, 120)}`, action: "open_profile", link: "/student/progress?tab=feedback" });
   await notifyPayer(studentId, `Отзыв преподавателя (${st.name}):\n${body.slice(0, 1500)}`);
   revalidatePath(`/teacher/students/${studentId}`);
   return { ok: true };

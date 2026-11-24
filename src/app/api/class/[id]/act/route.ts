@@ -343,7 +343,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       if (!text) return bad();
       await db.feedback.create({ data: { studentId: tg.studentId, lessonInstanceId: tg.id, text } });
       await notifyPayer(tg.studentId, `Отзыв преподавателя об уроке (${tg.student?.name ?? ""}):\n${text.slice(0, 1500)}`);
-      if (tg.student?.userId) await notify({ userId: tg.student.userId, kind: "feedback", title: `${user.name}: ${text.slice(0, 120)}`, action: "open_profile", link: "/student/progress" });
+      if (tg.student?.userId) await notify({ userId: tg.student.userId, kind: "feedback", title: `${user.name}: ${text.slice(0, 120)}`, action: "open_profile", link: "/student/progress?tab=feedback" });
       return NextResponse.json({ ok: true });
     }
     // ── учитель подарил «приятность» — ученик сразу видит праздничное окно в классе

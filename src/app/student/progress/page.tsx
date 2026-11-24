@@ -2,26 +2,156 @@ import Link from "next/link";
 import { requireUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { getT } from "@/lib/i18n/server";
+import { Icon } from "@/components/Icon";
 import { Medal } from "@/components/awards/Medal";
+import { ProgressHead, type ProgressTab } from "@/components/student/SectionTabs";
+import { ProgressStats } from "@/components/student/ProgressStats";
+import { cleanInfo } from "@/lib/tasks/teacher-info";
 
-export const metadata = { title: "Прогресс" };
+export const metadata = { title: "Мой прогресс" };
+export const dynamic = "force-dynamic";
 
-export default async function Progress() {
+const TABS: ProgressTab[] = ["topics", "stats", "tests", "awards", "feedback"];
+
+/** Цели урока из конструктора (лексика / грамматика) — по пунктам: строки, маркеры списка, точки с запятой. */
+function points(text?: string) {
+  if (!text) return [];
+  return text
+    .split(/\n|;|•/)
+    .map((x) => x.replace(/^\s*(?:[-*–—]|\d+[.)])\s*/, "").trim().replace(/[.,]$/, ""))
+    .filter((x) => x.length > 1)
+    .slice(0, 12);
+}
+
+export default async function Progress({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
   const { t, lang } = await getT();
   const me = await requireUser("STUDENT");
   const s = await db.student.findUnique({ where: { userId: me.id } });
   if (!s) return null;
-  const [done, feedback, awards] = await Promise.all([
-    db.lessonInstance.findMany({ where: { studentId: s.id, status: "DONE", templateId: { not: null } }, include: { template: { include: { unit: true } } }, orderBy: { startsAt: "desc" } }),
-    db.feedback.findMany({ where: { studentId: s.id }, orderBy: { createdAt: "desc" } }),
-    db.award.findMany({ where: { studentId: s.id }, orderBy: { createdAt: "desc" } }),
-  ]);
-  const now = new Date();
-  const topics = [...new Map(done.map((l) => [l.template!.id, l.template!])).values()];
+  const sp = await searchParams;
+  const tab: ProgressTab = (TABS as string[]).includes(sp.tab ?? "") ? (sp.tab as ProgressTab) : "topics";
+  const tz = me.timezone;
   const loc = lang === "ru" ? "ru-RU" : "en-GB";
+  const fmt = (d: Date, long = false) => d.toLocaleDateString(loc, { day: "numeric", month: long ? "long" : "short", timeZone: tz });
+
   return (
-    <div className="page">
-      <h1 className="mb-5">{t("nav.progressAwards")}</h1>
+    <div className="page" style={{ maxWidth: 980 }}>
+      <ProgressHead active={tab} />
+      {tab === "topics" && <Topics />}
+      {tab === "stats" && <ProgressStats studentId={s.id} tz={tz} lang={lang} t={t} topics={await db.lessonInstance.count({ where: { studentId: s.id, status: "DONE", templateId: { not: null } } })} />}
+      {tab === "tests" && <Tests />}
+      {tab === "awards" && <Awards />}
+      {tab === "feedback" && <Feedback />}
+    </div>
+  );
+
+  // ── Изученные темы: из пройденных уроков — грамматика и лексика (цели урока в конструкторе), сами уроки
+  async function Topics() {
+    const done = await db.lessonInstance.findMany({
+      where: { studentId: s!.id, status: "DONE", templateId: { not: null } },
+      select: { id: true, startsAt: true, template: { select: { id: true, title: true, subtitle: true, teacherInfo: true, unit: { select: { title: true, course: { select: { title: true } } } } } } },
+      orderBy: { startsAt: "desc" },
+    });
+    // один шаблон урока мог идти несколько занятий — берём последнее
+    const lessons = [...new Map(done.map((l) => [l.template!.id, l])).values()];
+    type Pt = { text: string; lessons: { id: string; title: string; at: Date }[] };
+    const collect = (key: "grammar" | "vocabulary") => {
+      const m = new Map<string, Pt>();
+      for (const l of lessons) {
+        // ученику — только цели «лексика» и «грамматика»; заметки и ход урока остаются у учителя
+        const aims = cleanInfo(l.template!.teacherInfo).aims;
+        for (const p of points(aims?.[key])) {
+          const k = p.toLowerCase();
+          const cur = m.get(k) ?? { text: p, lessons: [] };
+          cur.lessons.push({ id: l.id, title: l.template!.title, at: l.startsAt });
+          m.set(k, cur);
+        }
+      }
+      return [...m.values()];
+    };
+    const grammar = collect("grammar"), vocab = collect("vocabulary");
+    if (lessons.length === 0) return <section className="card rtempty"><Icon name="book" /><div><b>{t("pg.noTopics")}</b><div className="small muted">{t("pg.topicsHint")}</div></div></section>;
+    const block = (title: string, color: string, list: Pt[]) => (
+      <div className="blk2 topicblk">
+        <div className="blkh"><i style={{ background: color }} /><b>{title}</b><span className="small muted">{list.length}</span></div>
+        {list.length === 0 ? <p className="small muted m-0 mt-2">{t("pg.noAims")}</p> : list.map((p) => (
+          <div key={p.text} className="can">
+            <Icon name="check" size="sm" />
+            <span className="grow">{p.text}<span className="block small muted">{p.lessons.map((x) => `${x.title} · ${fmt(x.at)}`).join(", ")}</span></span>
+          </div>
+        ))}
+      </div>
+    );
+    return (
+      <div className="flex flex-col gap-5">
+        <div className="blocks topicgrid">
+          {block(t("rm.grammar"), "#007AFF", grammar)}
+          {block(t("rm.vocab"), "#FF9500", vocab)}
+        </div>
+        <section className="card">
+          <h2 className="mb-3">{t("pg.lessonsDone", { n: lessons.length })}</h2>
+          <div className="list">
+            {lessons.map((l) => (
+              <Link key={l.id} href={`/class/${l.id}?tab=homework`} className="row hover:bg-surface2">
+                <div className="min-w-[70px]"><b className="block">{fmt(l.startsAt)}</b></div>
+                <div className="grow"><div className="t">{l.template!.title}{l.template!.subtitle ? ` · ${l.template!.subtitle}` : ""}</div><div className="s">{l.template!.unit.course.title} · {l.template!.unit.title}</div></div>
+                <Icon name="right" size="sm" />
+              </Link>
+            ))}
+          </div>
+        </section>
+      </div>
+    );
+  }
+
+  // ── Тесты: placement test и контрольные срезы маршрута; результаты — когда преподаватель их откроет
+  async function Tests() {
+    const [attempts, cps] = await Promise.all([
+      db.placementAttempt.findMany({ where: { studentId: s!.id, mode: "student", checkpointId: { not: null } }, orderBy: { createdAt: "desc" }, take: 30 }),
+      db.checkpoint.findMany({ where: { studentId: s!.id, kind: { in: ["slice", "final"] } }, orderBy: { assignedAt: "desc" }, take: 30 }),
+    ]);
+    return (
+      <div className="flex flex-col gap-5">
+        <section className="card hintcard">
+          <Icon name="info" />
+          <div><b>{t("pg.testsHowT")}</b><p className="small muted m-0 mt-1">{t("pg.testsHow")}</p></div>
+        </section>
+        <section className="list">
+          {attempts.length + cps.length === 0 && <p className="hint p-5 m-0">{t("pg.noTests")}</p>}
+          {attempts.map((x) => {
+            const open = x.status === "reviewed" && x.showResult;
+            const state = x.status === "reviewed" ? (open ? t("stl.testOpen") : t("pg.testChecked")) : x.status === "submitted" ? t("stl.testSent") : x.status === "active" ? t("stl.testGoOn") : t("stl.testStart");
+            const body = (
+              <>
+                <span className="pill violet"><Icon name="target" size="sm" /></span>
+                <div className="grow"><div className="t">{x.track === "teen" ? "Placement test Teens" : "Placement test"}</div><div className="s">{fmt(x.reviewedAt ?? x.createdAt, true)} · {state}</div></div>
+                {open ? <span className="pill green">{x.level ?? "✓"}</span> : x.status === "reviewed" ? <span className="pill grey">✓</span> : <span className={`pill ${x.status === "submitted" ? "orange" : "red"}`}>{x.status === "submitted" ? t("stl.hwSent") : t("stl.hwTodo")}</span>}
+              </>
+            );
+            // пройденный, но не открытый учителем результат — без ссылки
+            return x.status === "reviewed" && !open
+              ? <div key={x.id} className="row">{body}</div>
+              : <Link key={x.id} href={`/student/test/${x.checkpointId}`} className="row hover:bg-surface2">{body}</Link>;
+          })}
+          {cps.map((c) => {
+            const score = (c.results as { score?: number } | null)?.score;
+            return (
+              <Link key={c.id} href={c.status === "assigned" ? `/student/test/${c.id}` : "/student/route?tab=now"} className="row hover:bg-surface2">
+                <span className="pill blue"><Icon name="route" size="sm" /></span>
+                <div className="grow"><div className="t">{c.kind === "final" ? t("pg.finalTest") : t("pg.sliceTest", { n: (c.stage ?? 0) + 1 })}</div><div className="s">{fmt(c.takenAt ?? c.assignedAt, true)}</div></div>
+                {c.status === "done" ? <span className="pill green">{[c.level, score !== undefined ? `${score}%` : null].filter(Boolean).join(" · ") || "✓"}</span> : <span className="pill red">{t("stl.hwTodo")}</span>}
+              </Link>
+            );
+          })}
+        </section>
+      </div>
+    );
+  }
+
+  async function Awards() {
+    const awards = await db.award.findMany({ where: { studentId: s!.id }, orderBy: { createdAt: "desc" } });
+    const now = new Date();
+    return (
       <section className="card" id="awards">
         <h2 className="mb-1">{t("aw.mine")}</h2>
         <p className="small muted mt-0 mb-4">{t("aw.mineHint")}</p>
@@ -29,12 +159,11 @@ export default async function Progress() {
           <div className="awshelf">
             {awards.map((a) => {
               const off = a.kind === "title" && !!a.until && a.until < now;
-              const fmt = (d: Date) => d.toLocaleDateString(loc, { day: "numeric", month: "long", timeZone: me.timezone });
               return (
                 <div key={a.id} className={`awitem ${a.kind === "title" && a.pinned && !off ? "pinned" : ""}`}>
                   <Medal icon={a.icon} color={a.color} size={72} shape={a.kind === "title" ? "hex" : "circle"} muted={off} />
                   <b>{a.name}</b>
-                  <span className="small muted">{a.kind === "cheer" ? fmt(a.createdAt) : off ? t("aw.wasUntil", { d: fmt(a.until!) }) : a.until ? t("aw.until", { d: fmt(a.until) }) : t("aw.forever")}</span>
+                  <span className="small muted">{a.kind === "cheer" ? fmt(a.createdAt, true) : off ? t("aw.wasUntil", { d: fmt(a.until!, true) }) : a.until ? t("aw.until", { d: fmt(a.until, true) }) : t("aw.forever")}</span>
                   {a.why && <span className="awitem-why">{a.why}</span>}
                 </div>
               );
@@ -42,19 +171,22 @@ export default async function Progress() {
           </div>
         )}
       </section>
-      <section className="card">
-        <h2 className="mb-3">{t("pg.topics")}</h2>
-        {topics.length === 0 ? <p className="hint m-0">{t("pg.noTopics")}</p> : (
-          <div className="flex flex-wrap gap-2">{topics.map((x) => <span key={x.id} className="pill blue">{x.title}{x.subtitle ? ` · ${x.subtitle}` : ""}</span>)}</div>
-        )}
-      </section>
-      <section className="card">
-        <h2 className="mb-3">{t("prof.tab.feedback")}</h2>
-        {feedback.length === 0 ? <p className="hint m-0">{t("pg.noFeedback")}</p> : feedback.map((f) => (
-          <div key={f.id} className="tile mb-2"><div className="small muted mb-1">{f.createdAt.toLocaleDateString(loc, { day: "numeric", month: "long", timeZone: me.timezone })}</div>{f.text}</div>
+    );
+  }
+
+  // ── Фидбэк — как у учителя во вкладке анкеты, только без формы
+  async function Feedback() {
+    const list = await db.feedback.findMany({ where: { studentId: s!.id }, orderBy: { createdAt: "desc" }, include: { lessonInstance: { include: { template: { select: { title: true } } } } } });
+    return (
+      <section className="list">
+        {list.length === 0 && <p className="hint p-5 m-0">{t("pg.noFeedback")}</p>}
+        {list.map((f) => (
+          <div key={f.id} className="qrow"><div className="grow">
+            <div className="flex flex-wrap justify-between gap-2"><span className="small muted">{f.lessonInstance?.template?.title ?? f.period ?? ""}</span><span className="small text-text3">{fmt(f.createdAt, true)}</span></div>
+            <p className="mb-0 mt-1 whitespace-pre-line">{f.text}</p>
+          </div></div>
         ))}
       </section>
-      <Link href="/student/route" className="card flex items-center justify-between gap-3 hover:bg-fill"><span className="muted">{t("pg.soon")}</span><span className="alink whitespace-nowrap">{t("nav.route")} →</span></Link>
-    </div>
-  );
+    );
+  }
 }

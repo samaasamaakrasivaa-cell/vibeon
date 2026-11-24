@@ -161,6 +161,7 @@ model Student {
   avatar          String? // аватарка ученика: «char:owl» — персонаж, «/api/files/…» — фото (своё или из Telegram)
   avatarSrc       String? // char | upload | tg
   avatarNotice    Boolean @default(false) // фото взято из Telegram — спросить ученика «оставить или заменить»
+  tipsDoneAt      DateTime? // новичок закрыл подсказки «С чего начать» на главной
   tgPhotoChecked  Boolean @default(false) // фото из Telegram уже пробовали взять
   awards          Award[]
   events          StudentEvent[]

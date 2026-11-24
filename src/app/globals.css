@@ -2757,3 +2757,30 @@ details.prblock[open] .prchev { transform: rotate(180deg); }
 .sslot { justify-content: flex-start; }
 /* урок и свой слот в одно время: урок — левая половина, слот — правая */
 .daycol .lesson.halfl { right: 50%; }
+.tabcount { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 5px; margin-left: 6px; border-radius: 999px; background: var(--accent); color: #fff; font-size: 11px; font-weight: 700; }
+/* Мой прогресс → Изученные темы: грамматика и лексика рядом */
+.topicgrid { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
+.topicblk { padding: 16px; }
+.topicblk .can { padding: 6px 0; border-top: 1px solid var(--sep); margin-top: 0; }
+.topicblk .blkh + .can { border-top: 0; }
+.hintcard { display: flex; gap: 12px; align-items: flex-start; }
+.hintcard > .i { color: var(--accent); flex: none; margin-top: 2px; }
+/* Главная ученика: подсказки новичку, большая кнопка домашки, карточка placement test */
+.starttips { border: 1.5px solid color-mix(in srgb, var(--accent) 35%, transparent); }
+.tipgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; }
+.tipitem { display: flex; gap: 12px; padding: 14px; border-radius: 14px; background: var(--fill); }
+.tipitem.done { opacity: .6; }
+.tipico { width: 32px; height: 32px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; background: var(--accent-bg); color: var(--accent); flex: none; }
+.tipitem.done .tipico { background: color-mix(in srgb, var(--ok) 16%, transparent); color: var(--ok); }
+.hwbig { display: flex; align-items: center; gap: 16px; padding: 20px 22px; border-radius: 20px; color: #fff; background: linear-gradient(120deg, #FF9F0A, #FF7A00); box-shadow: 0 6px 20px rgba(255, 140, 0, .25); transition: transform .12s, box-shadow .12s; }
+.hwbig:hover { transform: translateY(-1px); box-shadow: 0 10px 26px rgba(255, 140, 0, .32); }
+.hwbig .hwico { width: 52px; height: 52px; border-radius: 16px; background: rgba(255, 255, 255, .22); display: inline-flex; align-items: center; justify-content: center; flex: none; }
+.hwbig b { font-size: 22px; letter-spacing: -.01em; display: block; }
+.hwbig .hwbar { background: rgba(255, 255, 255, .3); max-width: 320px; }
+.hwbig .hwbar i { background: #fff; }
+.hwbig .hwgo { margin-left: auto; width: 40px; height: 40px; border-radius: 50%; background: #fff; color: #FF7A00; display: inline-flex; align-items: center; justify-content: center; flex: none; }
+.placecard { border-radius: 20px; padding: 20px 22px; background: var(--violet-bg, var(--accent-bg)); border: 1.5px solid color-mix(in srgb, #AF52DE 30%, transparent); }
+.placecard ul { margin: 10px 0 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 6px 16px; }
+.placecard li { display: flex; gap: 8px; font-size: 14px; }
+.placecard li .i { color: #AF52DE; flex: none; margin-top: 2px; }
+.feedhead { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
