@@ -46,7 +46,7 @@ export function PictureGenBar({ g }: { g: ReturnType<typeof usePictureGen> }) {
 export function VoiceScript({ script, onSrc }: { script: string; onSrc: (url: string) => void }) {
   const { t } = useT();
   const [speed, setSpeed] = useState(0.95);
-  const [pause, setPause] = useState(700);
+  const [pause, setPause] = useState(600);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -68,7 +68,7 @@ export function VoiceScript({ script, onSrc }: { script: string; onSrc: (url: st
         </select>
         <label className="small muted" htmlFor="tts-pause">{t("tts.pause")}</label>
         <select id="tts-pause" className="select xs" value={pause} onChange={(e) => setPause(Number(e.target.value))}>
-          {[400, 700, 1000, 1500].map((v) => <option key={v} value={v}>{(v / 1000).toFixed(1)} {t("tts.sec")}</option>)}
+          {[300, 600, 1000, 1500].map((v) => <option key={v} value={v}>{(v / 1000).toFixed(1)} {t("tts.sec")}</option>)}
         </select>
       </div>
       <span className="hint">{t("tts.hint")}</span>

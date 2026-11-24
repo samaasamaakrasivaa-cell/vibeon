@@ -64,12 +64,12 @@ export async function voiceScript(script: string, opts: { speed?: number; pause?
     let isMock = false;
     const out = await aiCall("tts-script", await aiCtx(me), `speechkit-v3:${voice}`, async () => {
       const chunks: Buffer[] = [];
-      for (const p of parts) chunks.push(await speechkitV3(`${p.text} sil<[${pause}]>`, { voice, speed, pitchShift: PITCH[p.speaker % PITCH.length] }));
-      return joinMp3(chunks);
+      for (const p of parts) chunks.push(await speechkitV3(p.text, { voice, speed, pitchShift: PITCH[p.speaker % PITCH.length] }));
+      return joinMp3(chunks, pause);
     }, () => { isMock = true; return mockWav(parts.reduce((a, p) => a + p.text.length, 0) / 14); });
     const url = await store(me.id, out, isMock ? "audio/wav" : "audio/mpeg", isMock ? "listening.wav" : "listening.mp3");
-    // длительность mp3 ~ 48 кбит/с (SpeechKit) — для подсказки учителю
-    const seconds = isMock ? Math.round(parts.reduce((a, p) => a + p.text.length, 0) / 14) : Math.round(out.length / 6000);
+    // длительность: SpeechKit отдаёт mp3 64 кбит/с (8000 байт/с) — для подсказки учителю
+    const seconds = isMock ? Math.round(parts.reduce((a, p) => a + p.text.length, 0) / 14) : Math.round(out.length / 8000);
     return { ok: true, url, seconds, speakers: new Set(parts.map((p) => p.speaker)).size };
   } catch (e) { return { ok: false, error: t(`ai.err.${aiCode(e)}`) }; }
 }

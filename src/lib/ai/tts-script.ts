@@ -34,13 +34,31 @@ export function parseScript(script: string): Part[] {
   return res.filter((p) => /[\p{L}\p{N}]/u.test(p.text));
 }
 
-/** Склейка mp3: у всех кусков, кроме первого, убирается заголовок ID3, кадры идут подряд. */
-export function joinMp3(chunks: Buffer[]) {
-  return Buffer.concat(chunks.map((c, i) => {
-    if (i === 0 || c.subarray(0, 3).toString() !== "ID3") return c;
-    const size = ((c[6] & 0x7f) << 21) | ((c[7] & 0x7f) << 14) | ((c[8] & 0x7f) << 7) | (c[9] & 0x7f);
-    return c.subarray(10 + size);
-  }));
+const stripId3 = (c: Buffer) => {
+  if (c.subarray(0, 3).toString() !== "ID3") return c;
+  const size = ((c[6] & 0x7f) << 21) | ((c[7] & 0x7f) << 14) | ((c[8] & 0x7f) << 7) | (c[9] & 0x7f);
+  return c.subarray(10 + size);
+};
+
+const BITRATES = [0, 32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320];
+const RATES = [44100, 48000, 32000];
+
+/** Кадр тишины MP3 с параметрами первого кадра записи (MPEG-1 Layer III): нулевая побочная информация — декодер даёт тишину. */
+function silentFrame(c: Buffer): { frame: Buffer; ms: number } | null {
+  const i = c.findIndex((b, k) => b === 0xff && (c[k + 1] & 0xfe) === 0xfa); // MPEG-1, Layer III
+  if (i < 0) return null;
+  const br = BITRATES[c[i + 2] >> 4], rate = RATES[(c[i + 2] >> 2) & 3];
+  if (!br || !rate) return null;
+  const frame = Buffer.alloc(Math.floor((144 * br * 1000) / rate));
+  frame[0] = 0xff; frame[1] = 0xfb; frame[2] = c[i + 2] & 0xfc; frame[3] = c[i + 3]; // без CRC, без padding
+  return { frame, ms: (1152 / rate) * 1000 };
+}
+
+/** Склейка mp3: заголовки ID3 у кусков (кроме первого) убираются; между кусками — ровно gapMs тишины. */
+export function joinMp3(chunks: Buffer[], gapMs = 0) {
+  const sil = gapMs > 0 && chunks.length ? silentFrame(stripId3(chunks[0])) : null;
+  const gap = sil ? Buffer.concat(Array.from({ length: Math.round(gapMs / sil.ms) }, () => sil.frame)) : Buffer.alloc(0);
+  return Buffer.concat(chunks.flatMap((c, i) => (i === 0 ? [c] : [gap, stripId3(c)])));
 }
 
 /** Заглушка для разработки: тихий WAV нужной длины. */
