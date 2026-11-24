@@ -1,9 +1,27 @@
 # VibeOn — инструкция ИИ для черновика маршрута ученика
 
-> **Как это подключено в VibeOn.** Тексты промптов вынесены в папку `prompts/` (PROMPT маршрута → `prompts/route.md`) — платформа читает их оттуда, правьте там. Модели задаются в `.env`. Qwen3-235B в каталоге Yandex AI Studio оказался недоступен (Access denied), поэтому модели выбраны сравнением на размеченных работах A2–C1 (`scripts/ai-eval.ts`): основная — DeepSeek V4.1 Flash (`deepseek-v4.1-flash/latest`), запасная — DeepSeek V3.2 (`deepseek-v32/latest`).
 
 Используется в анкете ученика → «Маршрут к цели» → «Создать черновик». Учитель правит и нажимает «Утвердить».
-Модель: Qwen3-235B. Один вызов, температура 0.3, ответ — строгий JSON.
+Модель: DeepSeek V4.1 Flash (основная), DeepSeek V3.2 (запасная). Один вызов, температура 0.3, ответ — строгий JSON.
+
+
+## Как это подключено в VibeOn (факты, проверено на каталоге Yandex AI Studio)
+
+- **Модели** выбраны сравнением на размеченных работах A2–C1 (`scripts/ai-eval.ts`, запуск: Actions → deploy → `aieval`):
+  основная — **DeepSeek V4.1 Flash** (`deepseek-v4.1-flash/latest`), запасная — **DeepSeek V3.2** (`deepseek-v32/latest`).
+  Qwen3-235B для каталога закрыт (Access denied). Qwen3.6-35B быстрее всех, но пишет пояснения по-английски на уровнях A2–B2
+  и пропустил ошибки в устном ответе C1; Alice AI — медленнее и тоже по-английски на низких уровнях.
+- **Адрес API:** `https://llm.api.cloud.yandex.net/v1/chat/completions` (OpenAI-совместимый), ключ — `Authorization: Api-Key …`,
+  каталог — заголовок `OpenAI-Project`, модель — `gpt://<каталог>/<имя>/latest`. DeepSeek и Qwen работают только через этот адрес.
+- **«Размышления» выключены** (`reasoning_effort: "none"`): иначе DeepSeek/Qwen тратят все токены на размышления и ответ пустой.
+  Включить для модели — суффикс `#low` в имени (например `deepseek-v32/latest#low`): дольше в 3–6 раз и в 5–10 раз больше токенов.
+- **Строгий JSON-режим (`response_format`) не используется:** на длинной инструкции Alice AI в нём зацикливается.
+  JSON требует сама инструкция, платформа разбирает и проверяет ответ (повтор при невалидном JSON — как описано ниже).
+- **Модели задаются в `.env`** (или GitHub → Variables, затем deploy → `secrets`): `AI_MODEL_CHECK`, `AI_MODEL_CHECK_FALLBACK`,
+  `AI_MODEL_ROUTE`, `AI_MODEL_ROUTE_FALLBACK`; для учеников высокого уровня можно задать свою пару — `AI_MODEL_CHECK_HIGH`,
+  `AI_MODEL_CHECK_HIGH_FALLBACK` (с уровня `AI_CHECK_HIGH_FROM`, по умолчанию B2). Сейчас по сравнению это не нужно.
+- **Тексты промптов** — в папке `prompts/` (их и правьте); здесь — исходная инструкция и пояснения.
+- **Личные данные:** имена, почта и телефоны заменяются перед отправкой в ИИ; позиции правок переводятся обратно в исходный текст.
 
 ---
 
@@ -40,6 +58,7 @@ PRINCIPLES
 7. Weekly study hours = lessons per week × lesson length + daily independent minutes × 7 (assume 5 active days if teacher_notes say the student may slack off). Forecast weeks per stage = stage hours / weekly hours. If a deadline is given, check whether the route fits; if not, say what pace would make it fit.
 8. teacher_notes override generic assumptions.
 9. Tone for the student: warm, competitive, motivating, in Russian, no exaggerated promises.
+10. Language: write ALL text fields in Russian. Keep grammar topic names (Present Perfect, Conditionals 2), English words and phrases, and course unit titles in English, as in the original.
 
 OUTPUT
 Return ONLY valid JSON:
