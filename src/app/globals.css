@@ -3068,3 +3068,12 @@ svg.i { pointer-events: none; }
 
 .pt-ok { flex: none; width: 20px; height: 20px; border-radius: 50%; background: #34C759; color: #fff; font-size: 12px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; }
 .pt-no { flex: none; width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--sep); }
+
+/* Метка задания: тема из справочника */
+.ttag { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; padding: 8px 10px; border-radius: 12px; background: var(--surface2); }
+.ttag-chip { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; padding: 4px 10px; border-radius: 999px; background: var(--accent-bg); color: var(--accent-text); }
+.ttag-chip.none { background: var(--fill); color: var(--text2); }
+.ttag-ai { font-size: 10.5px; font-weight: 700; padding: 1px 6px; border-radius: 999px; background: color-mix(in srgb, #AF52DE 16%, transparent); color: #8E3BBE; margin-left: 4px; }
+.ttag-edit { display: flex; flex-wrap: wrap; gap: 6px; }
+.ttag-edit .select.xs { max-width: 260px; }
+.tchip { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; padding: 1px 8px; border-radius: 999px; background: var(--accent-bg); color: var(--accent-text); white-space: nowrap; max-width: 260px; overflow: hidden; text-overflow: ellipsis; }

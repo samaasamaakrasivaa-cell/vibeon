@@ -9,6 +9,20 @@ import { LangSwitch } from "../LangSwitch";
 import { Brand, LogoMark } from "../Logo";
 import { KeyCtx, TaskCard, type TaskData } from "../tasks/TaskView";
 import { useRun } from "../courses/useRun";
+import { topicLabel } from "@/lib/tasks/tags";
+import { tagLesson } from "@/lib/tasks/tag-actions";
+
+/** «Разметить темы»: ИИ ставит метки заданиям урока без метки. */
+function TagLessonButton({ lessonId }: { lessonId: string }) {
+  const { t } = useT();
+  const { run, pending } = useRun();
+  const [n, setN] = useState<number | null>(null);
+  return (
+    <button className="btn plain sm" disabled={pending} title={t("tg.lessonHint")} aria-label={t("tg.lesson")} onClick={() => run(async () => { const r = await tagLesson(lessonId); if (r.ok) setN(r.n); return r; })}>
+      <Icon name="target" size="sm" /><span className="hide-md">{pending ? t("tg.lessonBusy") : n !== null ? t("tg.lessonDone", { n }) : t("tg.lesson")}</span>
+    </button>
+  );
+}
 import { TaskEditor } from "./TaskEditor";
 import { Catalog } from "./Catalog";
 import { BookDialog, ImportDialog } from "../ai/BookImport";
@@ -100,6 +114,7 @@ export function Builder({ d }: { d: BuilderData }) {
           {/* импорт виден всегда; на узком экране — только значок */}
           <button className="btn plain sm" title={t("bld.import")} aria-label={t("bld.import")} onClick={() => setImp("file")}><Icon name="down" size="sm" /><span className="hide-md">{t("bld.import")}</span></button>
           <button className="btn plain sm" title={t("bld.coursebook")} aria-label={t("bld.coursebook")} onClick={() => setImp("book")}><Icon name="book" size="sm" /><span className="hide-md">{t("bld.coursebook")}</span></button>
+          <TagLessonButton lessonId={d.id} />
           <span className="small hide-md" style={{ color: saved ? "var(--ok)" : "var(--text3)" }}>{saved ? `✓ ${t("common.saved")}` : t("common.saving")}</span>
           {/* превью урока глазами учителя (с ответами и заметками) или ученика */}
           <div className="seg" role="group" aria-label={t("bld.previewAs")}>
@@ -153,6 +168,7 @@ export function Builder({ d }: { d: BuilderData }) {
                     </span>
                   ) : (
                     <span className="bld-acts">
+                      {(task.options?.tags?.topic || task.options?.tags?.topicName) && <span className="tchip" title={t("tg.topic")}>{topicLabel(task.options.tags.topic, task.options.tags.topicName, lang)}</span>}
                       {task.hidden && <span className="pill grey">{t("bld.hidden")}</span>}
                       {task.options?.teacherOnly && <span className="pill violet">{t("bld.notSeen")}</span>}
                       <button className="iconbtn" title={t("bld.editTask")} aria-label={t("bld.editTask")} onClick={() => setEditing({ task })}><Icon name="pencil" size="sm" /></button>

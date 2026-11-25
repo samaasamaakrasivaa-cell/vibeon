@@ -158,7 +158,7 @@ export const SPECS = {
 
   split: {
     json: true, maxTokens: 6000,
-    system: () => `${ROLE} Разложи материал (распознанный из файла) на задания урока. Типы и разметка:\n${typeList()}\nОтветь только JSON: {"tasks": [{"type": "gap", "title": "формулировка задания", "content": "содержание в разметке"}]}`,
+    system: () => `${ROLE} Разложи материал (распознанный из файла) на задания урока. Формулировка задания ("title") — на английском и всегда называет тему, которую тренирует задание (например: "Complete the sentences with the correct form of the verb to be", "Open the brackets: Present Perfect or Present Perfect Continuous"). Типы и разметка:\n${typeList()}\nОтветь только JSON: {"tasks": [{"type": "gap", "title": "формулировка задания", "content": "содержание в разметке"}]}`,
     user: (i) => [{ role: "user", text: i.text.slice(0, 14000) }],
     parse: (t) => ({ tasks: (extractJson<{ tasks: Partial<DraftTask>[] }>(t).tasks ?? []).map(cleanTask).filter((x): x is DraftTask => !!x) }),
     mock: (i) => ({ tasks: mockSplit(i.text) }),
@@ -166,7 +166,7 @@ export const SPECS = {
 
   book: {
     json: true, maxTokens: 8000,
-    system: () => `${ROLE} Тебе дают текст учебника (роль файла указана: student — Student’s Book, workbook — Workbook, teacher — Teacher’s Book). Разложи материал по юнитам и урокам. Задания Workbook — в домашку (section: "homework"), заметки Teacher’s Book — задание type "note" с "teacherOnly": true. Типы и разметка:\n${typeList()}\nОтветь только JSON: {"units": [{"title": "Unit 1 …", "lessons": [{"title": "Lesson 1 …", "tasks": [{"type": "…", "title": "…", "content": "…", "section": "lesson | homework"}]}]}]}`,
+    system: () => `${ROLE} Тебе дают текст учебника (роль файла указана: student — Student’s Book, workbook — Workbook, teacher — Teacher’s Book). Разложи материал по юнитам и урокам. Формулировка задания ("title") — на английском и всегда называет тему, которую тренирует задание (например: "Complete the sentences with the correct form of the verb to be", "Open the brackets: Present Perfect or Present Perfect Continuous"). Задания Workbook — в домашку (section: "homework"), заметки Teacher’s Book — задание type "note" с "teacherOnly": true. Типы и разметка:\n${typeList()}\nОтветь только JSON: {"units": [{"title": "Unit 1 …", "lessons": [{"title": "Lesson 1 …", "tasks": [{"type": "…", "title": "…", "content": "…", "section": "lesson | homework"}]}]}]}`,
     user: (i) => [{ role: "user", text: i.files.map((f) => `=== ${f.role} ===\n${f.text}`).join("\n\n").slice(0, 24000) }],
     parse: (t) => {
       const j = extractJson<{ units: { title: string; lessons: { title: string; tasks: Partial<DraftTask>[] }[] }[] }>(t);

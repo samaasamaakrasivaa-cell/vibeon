@@ -5,7 +5,7 @@ import { HOWTO, isType, TYPES, type TaskType } from "./catalog";
 import { cleanInfo, type TInfo } from "./teacher-info";
 
 /** Опции из файла: Useful phrases, выделение слов, закреплённые строки (0-based). */
-export type ImpOpts = { markable?: boolean; help?: { vocab?: string; grammar?: string }; fixed?: number[]; teacherKey?: string };
+export type ImpOpts = { markable?: boolean; help?: { vocab?: string; grammar?: string }; fixed?: number[]; teacherKey?: string; tags?: import("./tags").TaskTags };
 export type ImpTask = { type: TaskType; title: string; content: string; section?: "lesson" | "homework" | "words"; teacherOnly?: boolean; part?: string; options?: ImpOpts };
 /** Многострочная формулировка: до 1500 знаков, не больше одной пустой строки подряд. */
 export const cleanTitle = (x: string) => x.replace(/\r\n?/g, "\n").replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim().slice(0, 1500);
@@ -18,6 +18,7 @@ export function cleanOpts(o: ImpOpts | undefined, type: string): ImpOpts {
     ...(o.markable === true && type === "text" ? { markable: true } : {}),
     ...(typeof o.teacherKey === "string" && o.teacherKey.trim() ? { teacherKey: o.teacherKey.trim().slice(0, 5000) } : {}),
     ...(h && (h.vocab || h.grammar) ? { help: { ...(h.vocab ? { vocab: h.vocab } : {}), ...(h.grammar ? { grammar: h.grammar } : {}) } } : {}),
+    ...(o.tags ? { tags: o.tags } : {}),
     ...(type === "textorder" && Array.isArray(o.fixed) ? { fixed: [...new Set(o.fixed.filter((v) => Number.isInteger(v) && v >= 0 && v < 200))].sort((a, b) => a - b) } : {}),
   };
 }
@@ -35,6 +36,9 @@ function opts(o: Record<string, unknown>, type: string): ImpOpts | undefined {
     const f = [...new Set(o.fixed.map((v) => (v === "last" ? n : Number(v)) - 1).filter((v) => Number.isInteger(v) && v >= 0 && v < n))].sort((a, b) => a - b);
     if (f.length) r.fixed = f;
   }
+  // тема задания из файла (её потом сверит со справочником «Разметить темы»)
+  const topic = s(o.topic, 120).trim();
+  if (topic) r.tags = { topicName: topic, ...(typeof o.skill === "string" && ["grammar", "vocabulary", "reading", "listening", "writing", "speaking"].includes(o.skill) ? { skill: o.skill as "grammar" } : {}) };
   return Object.keys(r).length ? r : undefined;
 }
 /** meta урока: блок «Для учителя», длительность, подзаголовок — не задания, ученик их не видит. */
@@ -132,7 +136,8 @@ Three places, do not mix them up:
 
 Rules:
 - Keep the order of the original lesson. Do not invent new exercises and do not drop any; keep the original wording and answers.
-- "title" — the task instruction the student sees (in English, as in the material). Tasks with a title get a task number; if a block has no instruction (a question card, a text, a picture), leave "title" empty — it will have no number.
+- "title" — the task instruction the student sees (in English). It must NAME the target topic of the exercise, e.g. "Complete the sentences with the correct form of the verb to be", "Open the brackets: Present Perfect or Present Perfect Continuous" — keep the original meaning, just add the topic if it is missing.
+- "topic" — for every exercise, the grammar or vocabulary topic it trains (short, English), e.g. "Present Perfect vs Past Simple", "Phrasal verbs: travel"; "skill" — grammar | vocabulary | reading | listening | writing | speaking. Tasks with a title get a task number; if a block has no instruction (a question card, a text, a picture), leave "title" empty — it will have no number.
 - "Useful language", "support words", "phrases to help you" and similar boxes → a separate "vocab" task placed right after the task it supports (same "part"); it is shown as a coloured frame with no task number. Put the box heading (if any) into "title".
 - Formatting inside "content" and "title": **bold**, *italic*, __underline__, ==highlight==, and colour {blue}text{/} (blue, red, green, purple, orange). Keep the emphasis of the original material (e.g. key words in bold, examples in italics).
 - "content" — the task body in the platform markup for its type (below). Use \\n for new lines. Answers must be inside the markup, not in a separate key.

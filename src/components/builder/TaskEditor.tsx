@@ -13,6 +13,7 @@ import { fileToTask, helpTask } from "@/lib/ai/actions";
 import { getBuilderPrefs, saveMyTitle } from "@/lib/teacher/courses";
 import { extractFile } from "../ai/BookImport";
 import { PictureGenBar, VoiceScript, usePictureGen } from "./AiMedia";
+import { TopicTag } from "./TopicTag";
 
 const CONTENT_TYPES: TaskType[] = ["gap", "drag", "dropdown", "test", "tf", "pairs", "columns", "picture", "sentence", "textorder", "letters", "essay", "open", "record", "speak", "errors", "mark", "transform", "translate", "dictation", "crossword", "wordset", "vocab", "info", "text", "note"];
 /** Где в содержании работает оформление (жирный, курсив, цвет, маркер): тексты, вопросы, утверждения, строки с пропусками. */
@@ -194,6 +195,7 @@ export function TaskEditor({ lessonId, initial, onSave, onClose, pending, error 
               <span className="flabel">{t("bld.instruction")}</span>
               <textarea ref={tt} className="input ted-title" rows={Math.min(8, Math.max(1, task.title.split("\n").length))} value={task.title} onFocus={() => (lastField.current = "title")} onChange={(e) => setTask({ ...task, title: e.target.value })} placeholder={type === "info" ? t("bld.infoTitlePh") : PRESET[type]?.[0]} autoFocus aria-label={t("bld.instruction")} />
               <span className="hint">{t("bld.titleHint")}</span>
+              {!["divider", "image", "audio", "video", "link", "note"].includes(type) && <TopicTag lessonId={lessonId} task={task} tags={o.tags} onTags={(tg) => setO({ tags: tg })} onTitle={(x) => setTask((v) => ({ ...v, title: x }))} />}
               <div className="flex flex-wrap gap-1.5">
                 {PRESET[type]?.filter(Boolean).map((p) => (
                   <button key={p} type="button" className={`pchip ${task.title === p ? "on" : ""}`} onClick={() => setTask({ ...task, title: p })}>{p}</button>

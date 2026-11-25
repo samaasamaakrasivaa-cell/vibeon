@@ -1,5 +1,6 @@
 "use server";
 import { cleanTitle } from "../tasks/import-json";
+import { cleanTags } from "../tasks/tags";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { randomUUID } from "node:crypto";
@@ -285,6 +286,7 @@ function sanitizeOptions(o: TaskOptions): Prisma.InputJsonObject {
     help: o.help && (clean(o.help.vocab, 3000) || clean(o.help.grammar, 3000)) ? { vocab: clean(o.help.vocab, 3000) || undefined, grammar: clean(o.help.grammar, 3000) || undefined, hidden: !!o.help.hidden || undefined } : undefined,
     teacherKey: clean(o.teacherKey, 5000) || undefined,
     aiTalk: !!o.aiTalk || undefined,
+    tags: cleanTags(o.tags),
     fixed: Array.isArray(o.fixed) && o.fixed.length ? [...new Set(o.fixed.filter((x) => Number.isInteger(x) && x >= 0 && x < 200))].sort((a, b) => a - b) : undefined,
   }));
 }

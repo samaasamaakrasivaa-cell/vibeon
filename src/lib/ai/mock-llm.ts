@@ -105,7 +105,10 @@ export async function mockLlm(model: string, messages: LlmMsg[]): Promise<ChatRe
   const sys = messages.find((m) => m.role === "system")?.content ?? "";
   const user = messages.filter((m) => m.role === "user").map((m) => m.content).join("\n");
   let out: unknown;
-  if (/diagnostician/i.test(sys)) out = insight();
+  if (/You tag exercises/.test(sys)) {
+    const n = (user.match(/"n":\s*\d+/g) ?? []).length || 1;
+    out = { tasks: Array.from({ length: n }, (_, i) => ({ n: i + 1, topic: "g-b1-pp-vs-past", topicName: "", skill: "grammar", level: "B1", items: [], traps: [], words: [], title: "Complete the sentences: use Present Perfect" })) };
+  } else if (/diagnostician/i.test(sys)) out = insight();
   else if (/Suggest what to teach AROUND|suggest 3–5 content THEMES/.test(sys)) out = pointRecs();
   else if (/uploaded an authentic text/.test(sys)) out = article();
   else if (/learning designer|learning route/i.test(sys)) out = route(user);
