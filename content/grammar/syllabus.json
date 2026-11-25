@@ -1,0 +1,2174 @@
+{
+ "version": 1,
+ "levels": [
+  "A1",
+  "A2",
+  "A2+",
+  "B1",
+  "B1+",
+  "B2",
+  "B2+",
+  "C1",
+  "C2"
+ ],
+ "sources": {
+  "CI": "British Council – EAQUALS Core Inventory for General English (Core Curriculum, April 2011; posters 2018 update) — таблица грамматики A1–C1",
+  "KET": "Cambridge A2 Key, Handbook for teachers — Language specifications, Inventory of grammatical areas",
+  "PET": "Cambridge B1 Preliminary, Handbook for teachers — Language specifications, Inventory of grammatical areas",
+  "CB": "Программы распространённых учебников (English File, Headway, Outcomes, Destination, Grammar in Use) — по опыту, требует сверки с English Grammar Profile"
+ },
+ "groups": {
+  "verbs": "Глагол be, have, повелительное",
+  "present": "Настоящее",
+  "past": "Прошедшее",
+  "perfect": "Перфект",
+  "future": "Будущее",
+  "modals": "Модальные",
+  "conditionals": "Условные и нереальность",
+  "passive": "Пассив и каузатив",
+  "reported": "Косвенная речь",
+  "clauses": "Придаточные",
+  "patterns": "Модели глаголов",
+  "questions": "Вопросы",
+  "nouns": "Существительные",
+  "articles": "Артикли",
+  "determiners": "Детерминативы и количество",
+  "pronouns": "Местоимения",
+  "adjectives": "Прилагательные",
+  "adverbs": "Наречия",
+  "comparison": "Сравнение",
+  "prepositions": "Предлоги",
+  "linking": "Связки и дискурс",
+  "emphasis": "Эмфаза и стиль"
+ },
+ "topics": [
+  {
+   "id": "g-a1-to-be",
+   "level": "A1",
+   "en": "Verb to be: am / is / are (+ questions, negatives)",
+   "ru": "Глагол to be: am / is / are (+ вопросы, отрицания)",
+   "core": true,
+   "group": "verbs",
+   "sources": [
+    "CI:A1",
+    "KET"
+   ],
+   "note": "",
+   "order": 1
+  },
+  {
+   "id": "g-a1-pronouns",
+   "level": "A1",
+   "en": "Subject and object pronouns",
+   "ru": "Личные местоимения: именительный и объектный падеж",
+   "core": true,
+   "group": "pronouns",
+   "sources": [
+    "CI:A1",
+    "KET"
+   ],
+   "note": "",
+   "order": 2
+  },
+  {
+   "id": "g-a1-possessives",
+   "level": "A1",
+   "en": "Possessive adjectives and 's",
+   "ru": "Притяжательные местоимения (my, your) и 's",
+   "core": true,
+   "group": "nouns",
+   "sources": [
+    "CI:A1",
+    "KET"
+   ],
+   "note": "",
+   "order": 3
+  },
+  {
+   "id": "g-a1-demonstratives",
+   "level": "A1",
+   "en": "this / that / these / those",
+   "ru": "this / that / these / those",
+   "core": true,
+   "group": "determiners",
+   "sources": [
+    "CI:A1",
+    "KET"
+   ],
+   "note": "",
+   "order": 4
+  },
+  {
+   "id": "g-a1-articles-basic",
+   "level": "A1",
+   "en": "Articles a / an / the (basic use)",
+   "ru": "Артикли a / an / the (базовое употребление)",
+   "core": true,
+   "group": "articles",
+   "sources": [
+    "KET"
+   ],
+   "note": "В Core Inventory артикли появляются только на A2; учебники дают a/an с первых уроков.",
+   "order": 5
+  },
+  {
+   "id": "g-a1-plural-nouns",
+   "level": "A1",
+   "en": "Plural nouns (regular and irregular)",
+   "ru": "Множественное число существительных (правильное и неправильное)",
+   "core": true,
+   "group": "nouns",
+   "sources": [
+    "KET"
+   ],
+   "note": "",
+   "order": 6
+  },
+  {
+   "id": "g-a1-there-is-are",
+   "level": "A1",
+   "en": "there is / there are",
+   "ru": "there is / there are",
+   "core": true,
+   "group": "verbs",
+   "sources": [
+    "CI:A1",
+    "KET"
+   ],
+   "note": "",
+   "order": 7
+  },
+  {
+   "id": "g-a1-have-got",
+   "level": "A1",
+   "en": "have got / have",
+   "ru": "have got / have (обладание)",
+   "core": true,
+   "group": "verbs",
+   "sources": [
+    "KET",
+    "CB"
+   ],
+   "note": "",
+   "order": 8
+  },
+  {
+   "id": "g-a1-present-simple",
+   "level": "A1",
+   "en": "Present simple",
+   "ru": "Present Simple",
+   "core": true,
+   "group": "present",
+   "sources": [
+    "CI:A1",
+    "KET"
+   ],
+   "note": "",
+   "order": 9
+  },
+  {
+   "id": "g-a1-frequency-adverbs",
+   "level": "A1",
+   "en": "Adverbs of frequency",
+   "ru": "Наречия частотности",
+   "core": true,
+   "group": "adverbs",
+   "sources": [
+    "CI:A1",
+    "CI:A2",
+    "KET"
+   ],
+   "note": "",
+   "order": 10
+  },
+  {
+   "id": "g-a1-present-continuous-now",
+   "level": "A1",
+   "en": "Present continuous for now",
+   "ru": "Present Continuous: действие сейчас",
+   "core": true,
+   "group": "present",
+   "sources": [
+    "CI:A1",
+    "KET"
+   ],
+   "note": "",
+   "order": 11
+  },
+  {
+   "id": "g-a1-can",
+   "level": "A1",
+   "en": "can / can't / could / couldn't (ability, requests, permission)",
+   "ru": "can / can't / could / couldn't: умение, просьба, разрешение",
+   "core": true,
+   "group": "modals",
+   "sources": [
+    "CI:A1",
+    "KET"
+   ],
+   "note": "",
+   "order": 12
+  },
+  {
+   "id": "g-a1-imperatives",
+   "level": "A1",
+   "en": "Imperatives (+ / -)",
+   "ru": "Повелительное наклонение (+ / -)",
+   "core": true,
+   "group": "verbs",
+   "sources": [
+    "CI:A1",
+    "KET"
+   ],
+   "note": "",
+   "order": 13
+  },
+  {
+   "id": "g-a1-prepositions-time",
+   "level": "A1",
+   "en": "Prepositions of time: in / on / at",
+   "ru": "Предлоги времени: in / on / at",
+   "core": true,
+   "group": "prepositions",
+   "sources": [
+    "CI:A1",
+    "CI:A2",
+    "KET"
+   ],
+   "note": "",
+   "order": 14
+  },
+  {
+   "id": "g-a1-prepositions-place",
+   "level": "A1",
+   "en": "Prepositions of place",
+   "ru": "Предлоги места",
+   "core": true,
+   "group": "prepositions",
+   "sources": [
+    "CI:A1",
+    "KET"
+   ],
+   "note": "",
+   "order": 15
+  },
+  {
+   "id": "g-a1-some-any",
+   "level": "A1",
+   "en": "Countable and uncountable nouns; some / any; how much / how many",
+   "ru": "Исчисляемые и неисчисляемые; some / any; how much / how many",
+   "core": true,
+   "group": "determiners",
+   "sources": [
+    "CI:A1",
+    "KET"
+   ],
+   "note": "",
+   "order": 16
+  },
+  {
+   "id": "g-a1-question-words",
+   "level": "A1",
+   "en": "Questions and question words",
+   "ru": "Вопросы и вопросительные слова",
+   "core": true,
+   "group": "questions",
+   "sources": [
+    "CI:A1",
+    "KET"
+   ],
+   "note": "",
+   "order": 17
+  },
+  {
+   "id": "g-a1-was-were",
+   "level": "A1",
+   "en": "Past simple of be: was / were",
+   "ru": "Past Simple глагола be: was / were",
+   "core": true,
+   "group": "past",
+   "sources": [
+    "CI:A1"
+   ],
+   "note": "",
+   "order": 18
+  },
+  {
+   "id": "g-a1-past-simple-basic",
+   "level": "A1",
+   "en": "Past simple: regular and common irregular verbs",
+   "ru": "Past Simple: правильные и частые неправильные глаголы",
+   "core": true,
+   "group": "past",
+   "sources": [
+    "CI:A1",
+    "CI:A2",
+    "KET"
+   ],
+   "note": "",
+   "order": 19
+  },
+  {
+   "id": "g-a1-like-ing",
+   "level": "A1",
+   "en": "like / love / hate + -ing",
+   "ru": "like / love / hate + -ing",
+   "core": true,
+   "group": "patterns",
+   "sources": [
+    "CI:A1"
+   ],
+   "note": "",
+   "order": 20
+  },
+  {
+   "id": "g-a1-would-like",
+   "level": "A1",
+   "en": "I'd like",
+   "ru": "I'd like (вежливая просьба)",
+   "core": true,
+   "group": "modals",
+   "sources": [
+    "CI:A1",
+    "KET"
+   ],
+   "note": "",
+   "order": 21
+  },
+  {
+   "id": "g-a1-going-to-plans",
+   "level": "A1",
+   "en": "be going to for plans (intro)",
+   "ru": "be going to: планы (знакомство)",
+   "core": false,
+   "group": "future",
+   "sources": [
+    "CI:A1",
+    "CI:A2",
+    "KET"
+   ],
+   "note": "Core Inventory вводит going to уже на A1; полностью — A2.",
+   "order": 22
+  },
+  {
+   "id": "g-a1-comparatives-intro",
+   "level": "A1",
+   "en": "Comparatives and superlatives (intro)",
+   "ru": "Сравнительная и превосходная степень (знакомство)",
+   "core": false,
+   "group": "comparison",
+   "sources": [
+    "CI:A1",
+    "CI:A2",
+    "KET"
+   ],
+   "note": "Core Inventory ставит степени сравнения уже на A1; большинство учебников — A2.",
+   "order": 23
+  },
+  {
+   "id": "g-a1-intensifiers",
+   "level": "A1",
+   "en": "Very basic intensifiers: very, really",
+   "ru": "Простые усилители: very, really",
+   "core": false,
+   "group": "adverbs",
+   "sources": [
+    "CI:A1"
+   ],
+   "note": "",
+   "order": 24
+  },
+  {
+   "id": "g-a1-conjunctions-basic",
+   "level": "A1",
+   "en": "Conjunctions: and / but / or / because",
+   "ru": "Союзы: and / but / or / because",
+   "core": true,
+   "group": "linking",
+   "sources": [
+    "CI:A1",
+    "KET"
+   ],
+   "note": "",
+   "order": 25
+  },
+  {
+   "id": "g-a2-past-simple",
+   "level": "A2",
+   "en": "Past simple: regular and irregular verbs",
+   "ru": "Past Simple: правильные и неправильные глаголы",
+   "core": true,
+   "group": "past",
+   "sources": [
+    "CI:A2",
+    "KET"
+   ],
+   "note": "",
+   "order": 26
+  },
+  {
+   "id": "g-a2-past-simple-neg-q",
+   "level": "A2",
+   "en": "Past simple: negatives and wh-questions",
+   "ru": "Past Simple: отрицания и вопросы (wh-questions in past)",
+   "core": true,
+   "group": "past",
+   "sources": [
+    "CI:A2",
+    "KET"
+   ],
+   "note": "",
+   "order": 27
+  },
+  {
+   "id": "g-a2-past-continuous",
+   "level": "A2",
+   "en": "Past continuous (interrupted and parallel actions)",
+   "ru": "Past Continuous (прерванное и параллельные действия)",
+   "core": true,
+   "group": "past",
+   "sources": [
+    "CI:A2",
+    "CI:B1",
+    "KET"
+   ],
+   "note": "",
+   "order": 28
+  },
+  {
+   "id": "g-a2-pp-experience",
+   "level": "A2",
+   "en": "Present perfect for experience: ever / never",
+   "ru": "Present Perfect: опыт (ever / never)",
+   "core": true,
+   "group": "perfect",
+   "sources": [
+    "CI:A2",
+    "KET"
+   ],
+   "note": "",
+   "order": 29
+  },
+  {
+   "id": "g-a2-pp-just-already-yet",
+   "level": "A2",
+   "en": "Present perfect with just / already / yet",
+   "ru": "Present Perfect с just / already / yet",
+   "core": true,
+   "group": "perfect",
+   "sources": [
+    "CI:A2",
+    "KET"
+   ],
+   "note": "",
+   "order": 30
+  },
+  {
+   "id": "g-a2-going-to",
+   "level": "A2",
+   "en": "be going to for plans and predictions",
+   "ru": "be going to: планы и предсказания",
+   "core": true,
+   "group": "future",
+   "sources": [
+    "CI:A2",
+    "KET"
+   ],
+   "note": "",
+   "order": 31
+  },
+  {
+   "id": "g-a2-will",
+   "level": "A2",
+   "en": "will / shall for predictions, offers, promises, decisions",
+   "ru": "will / shall: предсказания, предложения, обещания, решения",
+   "core": true,
+   "group": "future",
+   "sources": [
+    "CI:A2",
+    "KET"
+   ],
+   "note": "",
+   "order": 32
+  },
+  {
+   "id": "g-a2-pc-future",
+   "level": "A2",
+   "en": "Present continuous for future arrangements",
+   "ru": "Present Continuous для договорённостей в будущем",
+   "core": true,
+   "group": "future",
+   "sources": [
+    "CI:A2",
+    "KET"
+   ],
+   "note": "",
+   "order": 33
+  },
+  {
+   "id": "g-a2-comparatives",
+   "level": "A2",
+   "en": "Comparative and superlative adjectives (than, the)",
+   "ru": "Степени сравнения прилагательных (than, the)",
+   "core": true,
+   "group": "comparison",
+   "sources": [
+    "CI:A2",
+    "KET"
+   ],
+   "note": "",
+   "order": 34
+  },
+  {
+   "id": "g-a2-as-as",
+   "level": "A2",
+   "en": "(not) as ... as",
+   "ru": "(not) as ... as",
+   "core": true,
+   "group": "comparison",
+   "sources": [
+    "PET",
+    "CB"
+   ],
+   "note": "В спецификации B1 Preliminary; учебники дают на A2.",
+   "order": 35
+  },
+  {
+   "id": "g-a2-too-enough",
+   "level": "A2",
+   "en": "too / enough",
+   "ru": "too / enough",
+   "core": true,
+   "group": "adverbs",
+   "sources": [
+    "CI:B1",
+    "PET",
+    "CB"
+   ],
+   "note": "Core Inventory относит too/enough к B1.",
+   "order": 36
+  },
+  {
+   "id": "g-a2-quantifiers",
+   "level": "A2",
+   "en": "much / many / a lot of / a few / a little",
+   "ru": "much / many / a lot of / a few / a little",
+   "core": true,
+   "group": "determiners",
+   "sources": [
+    "CI:A2",
+    "KET"
+   ],
+   "note": "",
+   "order": 37
+  },
+  {
+   "id": "g-a2-adverbs-manner",
+   "level": "A2",
+   "en": "Adverbs of manner; adverbial phrases of time, place, frequency and word order",
+   "ru": "Наречия образа действия; обстоятельства времени, места, частоты и порядок слов",
+   "core": true,
+   "group": "adverbs",
+   "sources": [
+    "CI:A2",
+    "KET"
+   ],
+   "note": "",
+   "order": 38
+  },
+  {
+   "id": "g-a2-obligation",
+   "level": "A2",
+   "en": "must / have to / don't have to / mustn't",
+   "ru": "must / have to / don't have to / mustn't",
+   "core": true,
+   "group": "modals",
+   "sources": [
+    "CI:A2",
+    "CI:B1",
+    "KET"
+   ],
+   "note": "",
+   "order": 39
+  },
+  {
+   "id": "g-a2-should",
+   "level": "A2",
+   "en": "should / shouldn't for advice",
+   "ru": "should / shouldn't: совет",
+   "core": true,
+   "group": "modals",
+   "sources": [
+    "CI:A2",
+    "KET"
+   ],
+   "note": "",
+   "order": 40
+  },
+  {
+   "id": "g-a2-might-may",
+   "level": "A2",
+   "en": "might / may for possibility",
+   "ru": "might / may: возможность",
+   "core": true,
+   "group": "modals",
+   "sources": [
+    "CI:B1",
+    "KET"
+   ],
+   "note": "Core Inventory: might/may — B1; A2 Key: may уже на A2.",
+   "order": 41
+  },
+  {
+   "id": "g-a2-zero-first-conditional",
+   "level": "A2",
+   "en": "Zero and first conditional",
+   "ru": "Нулевое и первое условное",
+   "core": true,
+   "group": "conditionals",
+   "sources": [
+    "CI:A2",
+    "PET"
+   ],
+   "note": "Core Inventory даёт zero и 1st conditional вместе на A2.",
+   "order": 42,
+   "aliases": [
+    "g-a2-first-conditional",
+    "g-b1-zero-conditional"
+   ],
+   "placementLevel": [
+    "A2",
+    "B1"
+   ]
+  },
+  {
+   "id": "g-a2-verb-patterns-basic",
+   "level": "A2",
+   "en": "Verb + -ing / to-infinitive (like, want, would like, enjoy)",
+   "ru": "Глагол + -ing / to-infinitive (like, want, would like, enjoy)",
+   "core": true,
+   "group": "patterns",
+   "sources": [
+    "CI:A2",
+    "KET"
+   ],
+   "note": "",
+   "order": 43
+  },
+  {
+   "id": "g-a2-gerunds",
+   "level": "A2",
+   "en": "Gerunds as subjects and after prepositions",
+   "ru": "Герундий как подлежащее и после предлогов",
+   "core": false,
+   "group": "patterns",
+   "sources": [
+    "CI:A2",
+    "KET"
+   ],
+   "note": "",
+   "order": 44
+  },
+  {
+   "id": "g-a2-infinitive-purpose",
+   "level": "A2",
+   "en": "Infinitive of purpose",
+   "ru": "Инфинитив цели (to do)",
+   "core": true,
+   "group": "patterns",
+   "sources": [
+    "KET",
+    "PET"
+   ],
+   "note": "",
+   "order": 45
+  },
+  {
+   "id": "g-a2-possessive-pronouns",
+   "level": "A2",
+   "en": "Possessive pronouns: mine / yours; 's and s'",
+   "ru": "Притяжательные местоимения mine / yours; 's и s'",
+   "core": true,
+   "group": "pronouns",
+   "sources": [
+    "CI:A2",
+    "KET"
+   ],
+   "note": "",
+   "order": 46
+  },
+  {
+   "id": "g-a2-indefinite-pronouns",
+   "level": "A2",
+   "en": "something / anyone / nowhere",
+   "ru": "Неопределённые местоимения: something / anyone / nowhere",
+   "core": true,
+   "group": "pronouns",
+   "sources": [
+    "KET"
+   ],
+   "note": "",
+   "order": 47
+  },
+  {
+   "id": "g-a2-prepositions-movement",
+   "level": "A2",
+   "en": "Prepositions of movement; prepositional phrases",
+   "ru": "Предлоги движения; предложные сочетания",
+   "core": true,
+   "group": "prepositions",
+   "sources": [
+    "CI:A2",
+    "KET"
+   ],
+   "note": "",
+   "order": 48
+  },
+  {
+   "id": "g-a2-articles",
+   "level": "A2",
+   "en": "Articles with countable and uncountable nouns; the with unique things",
+   "ru": "Артикли с исчисляемыми и неисчисляемыми; the с уникальными объектами",
+   "core": true,
+   "group": "articles",
+   "sources": [
+    "CI:A2",
+    "KET"
+   ],
+   "note": "",
+   "order": 49
+  },
+  {
+   "id": "g-a2-linkers-sequence",
+   "level": "A2",
+   "en": "Sequencers: first, then, after that, finally",
+   "ru": "Связки последовательности: first, then, after that, finally",
+   "core": true,
+   "group": "linking",
+   "sources": [
+    "CI:A2",
+    "CI:B1",
+    "KET"
+   ],
+   "note": "",
+   "order": 50
+  },
+  {
+   "id": "g-a2-relative-pronouns",
+   "level": "A2",
+   "en": "Relative pronouns who / which / that (simple)",
+   "ru": "Относительные местоимения who / which / that (простые случаи)",
+   "core": false,
+   "group": "clauses",
+   "sources": [
+    "KET",
+    "PET"
+   ],
+   "note": "В A2 Key; полноценно придаточные — B1.",
+   "order": 51
+  },
+  {
+   "id": "g-a2p-could-polite",
+   "level": "A2+",
+   "en": "could / would for polite requests; can / could for permission",
+   "ru": "could / would: вежливые просьбы; can / could: разрешение",
+   "core": true,
+   "group": "modals",
+   "sources": [
+    "CI:A2",
+    "KET"
+   ],
+   "note": "",
+   "order": 52
+  },
+  {
+   "id": "g-a2p-passive-intro",
+   "level": "A2+",
+   "en": "Passive: present and past simple",
+   "ru": "Пассив: Present и Past Simple",
+   "core": true,
+   "group": "passive",
+   "sources": [
+    "KET",
+    "PET",
+    "CI:B1"
+   ],
+   "note": "A2 Key уже включает пассив Present/Past Simple; Core Inventory — B1 («simple passive»).",
+   "order": 53
+  },
+  {
+   "id": "g-a2p-pp-for-since",
+   "level": "A2+",
+   "en": "Present perfect with for / since",
+   "ru": "Present Perfect с for / since",
+   "core": true,
+   "group": "perfect",
+   "sources": [
+    "KET",
+    "PET"
+   ],
+   "note": "A2 Key включает for/since; многие учебники — B1.",
+   "order": 54,
+   "aliases": [
+    "g-b1-pp-for-since"
+   ],
+   "placementLevel": [
+    "B1"
+   ]
+  },
+  {
+   "id": "g-a2p-need-neednt",
+   "level": "A2+",
+   "en": "need / needn't",
+   "ru": "need / needn't",
+   "core": false,
+   "group": "modals",
+   "sources": [
+    "KET",
+    "PET"
+   ],
+   "note": "",
+   "order": 55
+  },
+  {
+   "id": "g-a2p-adjective-order",
+   "level": "A2+",
+   "en": "Order of adjectives",
+   "ru": "Порядок прилагательных",
+   "core": false,
+   "group": "adjectives",
+   "sources": [
+    "KET",
+    "PET"
+   ],
+   "note": "",
+   "order": 56
+  },
+  {
+   "id": "g-a2p-ed-ing",
+   "level": "A2+",
+   "en": "Participles as adjectives: -ed / -ing (bored / boring)",
+   "ru": "Причастия как прилагательные: -ed / -ing",
+   "core": true,
+   "group": "adjectives",
+   "sources": [
+    "KET",
+    "PET"
+   ],
+   "note": "",
+   "order": 57
+  },
+  {
+   "id": "g-a2p-so-because",
+   "level": "A2+",
+   "en": "Clauses with when / if / because / so; that-clauses after think, hope, say",
+   "ru": "Придаточные с when / if / because / so; that после think, hope, say",
+   "core": true,
+   "group": "clauses",
+   "sources": [
+    "KET"
+   ],
+   "note": "",
+   "order": 58
+  },
+  {
+   "id": "g-a2p-double-genitive",
+   "level": "A2+",
+   "en": "Double genitive: a friend of mine",
+   "ru": "Двойной родительный: a friend of mine",
+   "core": false,
+   "group": "nouns",
+   "sources": [
+    "KET"
+   ],
+   "note": "",
+   "order": 59
+  },
+  {
+   "id": "g-b1-pp-vs-past",
+   "level": "B1",
+   "en": "Present perfect vs past simple",
+   "ru": "Present Perfect vs Past Simple",
+   "core": true,
+   "group": "perfect",
+   "sources": [
+    "CI:B1"
+   ],
+   "note": "",
+   "order": 60
+  },
+  {
+   "id": "g-b1-ppc",
+   "level": "B1",
+   "en": "Present perfect continuous",
+   "ru": "Present Perfect Continuous",
+   "core": true,
+   "group": "perfect",
+   "sources": [
+    "CI:B1"
+   ],
+   "note": "",
+   "order": 61
+  },
+  {
+   "id": "g-b1-past-perfect",
+   "level": "B1",
+   "en": "Past perfect",
+   "ru": "Past Perfect",
+   "core": true,
+   "group": "past",
+   "sources": [
+    "CI:B1",
+    "CI:B2"
+   ],
+   "note": "",
+   "order": 62
+  },
+  {
+   "id": "g-b1-used-to",
+   "level": "B1",
+   "en": "used to for past habits and states",
+   "ru": "used to: привычки и состояния в прошлом",
+   "core": true,
+   "group": "past",
+   "sources": [
+    "PET",
+    "CB"
+   ],
+   "note": "Core Inventory даёт only would for past habits на B2; used to — в спецификации B1 Preliminary.",
+   "order": 63
+  },
+  {
+   "id": "g-b1-second-conditional",
+   "level": "B1",
+   "en": "Second conditional (If I were you...)",
+   "ru": "Второе условное (If I were you...)",
+   "core": true,
+   "group": "conditionals",
+   "sources": [
+    "CI:B1",
+    "PET"
+   ],
+   "note": "",
+   "order": 64
+  },
+  {
+   "id": "g-b1-passive-basic",
+   "level": "B1",
+   "en": "Passive: present and past simple, modal passive",
+   "ru": "Пассив: Present / Past Simple, пассив с модальными",
+   "core": true,
+   "group": "passive",
+   "sources": [
+    "CI:B1",
+    "PET"
+   ],
+   "note": "",
+   "order": 65
+  },
+  {
+   "id": "g-b1-defining-relatives",
+   "level": "B1",
+   "en": "Defining relative clauses",
+   "ru": "Определительные придаточные (defining)",
+   "core": true,
+   "group": "clauses",
+   "sources": [
+    "PET",
+    "CI:B2"
+   ],
+   "note": "Core Inventory ставит relative clauses на B2; B1 Preliminary — who/which/that на B1.",
+   "order": 66
+  },
+  {
+   "id": "g-b1-reported-statements",
+   "level": "B1",
+   "en": "Reported speech: statements and commands (say, tell, ask)",
+   "ru": "Косвенная речь: утверждения и просьбы (say, tell, ask)",
+   "core": true,
+   "group": "reported",
+   "sources": [
+    "CI:B1",
+    "PET"
+   ],
+   "note": "",
+   "order": 67
+  },
+  {
+   "id": "g-b1-reported-questions",
+   "level": "B1",
+   "en": "Reported speech: questions",
+   "ru": "Косвенная речь: вопросы",
+   "core": true,
+   "group": "reported",
+   "sources": [
+    "CI:B1",
+    "PET"
+   ],
+   "note": "",
+   "order": 68
+  },
+  {
+   "id": "g-b1-indirect-questions",
+   "level": "B1",
+   "en": "Indirect and embedded questions (Do you know what...?)",
+   "ru": "Косвенные вопросы (Do you know what...?)",
+   "core": true,
+   "group": "questions",
+   "sources": [
+    "PET"
+   ],
+   "note": "",
+   "order": 69
+  },
+  {
+   "id": "g-b1-deduction-present",
+   "level": "B1",
+   "en": "Modals of deduction: must / might / can't (present)",
+   "ru": "Модальные глаголы предположения: must / might / can't (настоящее)",
+   "core": true,
+   "group": "modals",
+   "sources": [
+    "CI:B1"
+   ],
+   "note": "",
+   "order": 70
+  },
+  {
+   "id": "g-b1-modals-possibility",
+   "level": "B1",
+   "en": "Degrees of possibility: might, may, will, probably, perhaps",
+   "ru": "Степени вероятности: might, may, will, probably, perhaps",
+   "core": true,
+   "group": "modals",
+   "sources": [
+    "CI:B1"
+   ],
+   "note": "",
+   "order": 71
+  },
+  {
+   "id": "g-b1-must-have-to",
+   "level": "B1",
+   "en": "must vs have to; ought to",
+   "ru": "must vs have to; ought to",
+   "core": true,
+   "group": "modals",
+   "sources": [
+    "CI:B1",
+    "PET"
+   ],
+   "note": "",
+   "order": 72
+  },
+  {
+   "id": "g-b1-be-able-to",
+   "level": "B1",
+   "en": "be able to / manage to",
+   "ru": "be able to / manage to",
+   "core": false,
+   "group": "modals",
+   "sources": [
+    "CB"
+   ],
+   "note": "",
+   "order": 73
+  },
+  {
+   "id": "g-b1-verb-patterns",
+   "level": "B1",
+   "en": "Verb patterns: -ing vs to-infinitive; verb + object + infinitive",
+   "ru": "Модели глаголов: -ing vs to-infinitive; глагол + дополнение + инфинитив",
+   "core": true,
+   "group": "patterns",
+   "sources": [
+    "PET"
+   ],
+   "note": "",
+   "order": 74
+  },
+  {
+   "id": "g-b1-question-tags",
+   "level": "B1",
+   "en": "Question tags",
+   "ru": "Разделительные вопросы (question tags)",
+   "core": true,
+   "group": "questions",
+   "sources": [
+    "CI:B1"
+   ],
+   "note": "",
+   "order": 75
+  },
+  {
+   "id": "g-b1-so-such",
+   "level": "B1",
+   "en": "so / such (... that)",
+   "ru": "so / such (... that)",
+   "core": true,
+   "group": "adverbs",
+   "sources": [
+    "PET"
+   ],
+   "note": "",
+   "order": 76
+  },
+  {
+   "id": "g-b1-quantifiers-both",
+   "level": "B1",
+   "en": "both / either / neither / each / every",
+   "ru": "both / either / neither / each / every",
+   "core": true,
+   "group": "determiners",
+   "sources": [
+    "PET",
+    "CB"
+   ],
+   "note": "",
+   "order": 77
+  },
+  {
+   "id": "g-b1-future-forms",
+   "level": "B1",
+   "en": "Future forms: will / going to / present continuous; will vs going to for prediction",
+   "ru": "Будущее: will / going to / Present Continuous; will vs going to в предсказаниях",
+   "core": true,
+   "group": "future",
+   "sources": [
+    "CI:B1",
+    "CI:B2"
+   ],
+   "note": "",
+   "order": 78
+  },
+  {
+   "id": "g-b1-time-clauses",
+   "level": "B1",
+   "en": "Future time and condition clauses: when / as soon as / until / unless + present",
+   "ru": "Придаточные времени и условия: when / as soon as / until / unless + present",
+   "core": true,
+   "group": "clauses",
+   "sources": [
+    "PET"
+   ],
+   "note": "",
+   "order": 79
+  },
+  {
+   "id": "g-b1-contrast-basic",
+   "level": "B1",
+   "en": "Linkers of cause, result and contrast: although, while, whereas, so that",
+   "ru": "Связки причины, следствия, контраста: although, while, whereas, so that",
+   "core": true,
+   "group": "linking",
+   "sources": [
+    "CI:B1",
+    "PET"
+   ],
+   "note": "",
+   "order": 80
+  },
+  {
+   "id": "g-b1-articles-general",
+   "level": "B1",
+   "en": "Articles: general vs specific meaning",
+   "ru": "Артикли: общее и конкретное значение",
+   "core": true,
+   "group": "articles",
+   "sources": [
+    "KET",
+    "PET",
+    "CB"
+   ],
+   "note": "",
+   "order": 81
+  },
+  {
+   "id": "g-b1-comparatives",
+   "level": "B1",
+   "en": "Comparatives: modifiers (much, a bit), irregular forms",
+   "ru": "Сравнение: модификаторы (much, a bit), неправильные формы",
+   "core": true,
+   "group": "comparison",
+   "sources": [
+    "CI:B1"
+   ],
+   "note": "",
+   "order": 82
+  },
+  {
+   "id": "g-b1-reflexives",
+   "level": "B1",
+   "en": "Reflexive and emphatic pronouns: myself",
+   "ru": "Возвратные и усилительные местоимения: myself",
+   "core": true,
+   "group": "pronouns",
+   "sources": [
+    "PET"
+   ],
+   "note": "",
+   "order": 83
+  },
+  {
+   "id": "g-b1-so-nor",
+   "level": "B1",
+   "en": "so / neither / nor with auxiliaries (So do I)",
+   "ru": "so / neither / nor с вспомогательными (So do I)",
+   "core": false,
+   "group": "questions",
+   "sources": [
+    "PET"
+   ],
+   "note": "",
+   "order": 84
+  },
+  {
+   "id": "g-b1-past-tense-responses",
+   "level": "B1",
+   "en": "Short answers and past tense responses",
+   "ru": "Краткие ответы и реплики в прошедшем времени",
+   "core": false,
+   "group": "questions",
+   "sources": [
+    "CI:B1",
+    "KET"
+   ],
+   "note": "",
+   "order": 85
+  },
+  {
+   "id": "g-b1p-third-conditional",
+   "level": "B1+",
+   "en": "Third conditional",
+   "ru": "Третье условное",
+   "core": true,
+   "group": "conditionals",
+   "sources": [
+    "CI:B1",
+    "CB"
+   ],
+   "note": "Core Inventory даёт 2nd и 3rd conditional на B1; B1 Preliminary проверяет только Type 0–2.",
+   "order": 86
+  },
+  {
+   "id": "g-b1p-past-modals",
+   "level": "B1+",
+   "en": "should have / might have / could have (past modals)",
+   "ru": "should have / might have / could have (модальные о прошлом)",
+   "core": true,
+   "group": "modals",
+   "sources": [
+    "CI:B1",
+    "CB"
+   ],
+   "note": "Core Inventory: should have / might have — B1; учебники чаще B1+/B2.",
+   "order": 87
+  },
+  {
+   "id": "g-b1p-future-continuous",
+   "level": "B1+",
+   "en": "Future continuous",
+   "ru": "Future Continuous",
+   "core": true,
+   "group": "future",
+   "sources": [
+    "CI:B1",
+    "CI:B2"
+   ],
+   "note": "Core Inventory: future continuous на B1 и B2.",
+   "order": 88
+  },
+  {
+   "id": "g-b1p-causative",
+   "level": "B1+",
+   "en": "Causative have / get something done",
+   "ru": "Каузатив have / get something done",
+   "core": true,
+   "group": "passive",
+   "sources": [
+    "PET",
+    "CB"
+   ],
+   "note": "В спецификации B1 Preliminary; учебники часто B2.",
+   "order": 89
+  },
+  {
+   "id": "g-b1p-was-going-to",
+   "level": "B1+",
+   "en": "was / were going to (plans that changed)",
+   "ru": "was / were going to (несостоявшиеся планы)",
+   "core": false,
+   "group": "future",
+   "sources": [
+    "PET"
+   ],
+   "note": "",
+   "order": 90
+  },
+  {
+   "id": "g-b1p-reported-range",
+   "level": "B1+",
+   "en": "Reported speech: range of tenses, backshift",
+   "ru": "Косвенная речь: согласование времён",
+   "core": true,
+   "group": "reported",
+   "sources": [
+    "CI:B1",
+    "CI:B2"
+   ],
+   "note": "",
+   "order": 91
+  },
+  {
+   "id": "g-b1p-zero-article",
+   "level": "B1+",
+   "en": "Articles: zero article with plural and uncountable nouns in general statements",
+   "ru": "Артикли: нулевой артикль в общих утверждениях",
+   "core": true,
+   "group": "articles",
+   "sources": [
+    "CB"
+   ],
+   "note": "",
+   "order": 92
+  },
+  {
+   "id": "g-b2-third-conditional",
+   "level": "B2",
+   "en": "Third conditional (review) and if only",
+   "ru": "Третье условное (повторение) и if only",
+   "core": false,
+   "group": "conditionals",
+   "sources": [
+    "CI:B1",
+    "CB"
+   ],
+   "note": "",
+   "order": 93
+  },
+  {
+   "id": "g-b2-mixed-conditionals",
+   "level": "B2",
+   "en": "Mixed conditionals",
+   "ru": "Смешанные условные",
+   "core": true,
+   "group": "conditionals",
+   "sources": [
+    "CI:B2",
+    "CI:C1"
+   ],
+   "note": "",
+   "order": 94
+  },
+  {
+   "id": "g-b2-wish",
+   "level": "B2",
+   "en": "wish / if only (present and past)",
+   "ru": "wish / if only (настоящее и прошлое)",
+   "core": true,
+   "group": "conditionals",
+   "sources": [
+    "CI:B2",
+    "CI:C1"
+   ],
+   "note": "",
+   "order": 95
+  },
+  {
+   "id": "g-b2-deduction-past",
+   "level": "B2",
+   "en": "Past modals of deduction: must have / can't have / might have",
+   "ru": "Предположения о прошлом: must have / can't have / might have",
+   "core": true,
+   "group": "modals",
+   "sources": [
+    "CI:B2"
+   ],
+   "note": "",
+   "order": 96
+  },
+  {
+   "id": "g-b2-past-modals-regret",
+   "level": "B2",
+   "en": "needn't have vs didn't need to; should have (criticism)",
+   "ru": "needn't have vs didn't need to; should have (упрёк)",
+   "core": true,
+   "group": "modals",
+   "sources": [
+    "CI:B2"
+   ],
+   "note": "",
+   "order": 97
+  },
+  {
+   "id": "g-b2-passive-advanced",
+   "level": "B2",
+   "en": "Passive with modals, perfect and continuous forms",
+   "ru": "Пассив с модальными, перфектными и длительными формами",
+   "core": true,
+   "group": "passive",
+   "sources": [
+    "CI:B2",
+    "CI:C1"
+   ],
+   "note": "",
+   "order": 98
+  },
+  {
+   "id": "g-b2-causative",
+   "level": "B2",
+   "en": "Causative (review): have / get something done, get someone to do",
+   "ru": "Каузатив (повторение): have / get sth done, get sb to do",
+   "core": false,
+   "group": "passive",
+   "sources": [
+    "PET",
+    "CB"
+   ],
+   "note": "",
+   "order": 99
+  },
+  {
+   "id": "g-b2-reporting-verbs",
+   "level": "B2",
+   "en": "Reporting verbs (suggest, deny, advise, admit...)",
+   "ru": "Глаголы косвенной речи (suggest, deny, advise, admit...)",
+   "core": true,
+   "group": "reported",
+   "sources": [
+    "CI:B2"
+   ],
+   "note": "",
+   "order": 100
+  },
+  {
+   "id": "g-b2-non-defining-relatives",
+   "level": "B2",
+   "en": "Relative clauses: non-defining, whose, where, when",
+   "ru": "Придаточные: неопределительные, whose, where, when",
+   "core": true,
+   "group": "clauses",
+   "sources": [
+    "CI:B2"
+   ],
+   "note": "",
+   "order": 101
+  },
+  {
+   "id": "g-b2-future-perfect-continuous",
+   "level": "B2",
+   "en": "Future perfect simple and continuous",
+   "ru": "Future Perfect Simple и Continuous",
+   "core": true,
+   "group": "future",
+   "sources": [
+    "CI:B2",
+    "CI:C1"
+   ],
+   "note": "",
+   "order": 102
+  },
+  {
+   "id": "g-b2-verb-patterns-meaning",
+   "level": "B2",
+   "en": "Verbs that change meaning: -ing vs to-infinitive (remember, stop, try)",
+   "ru": "Глаголы, меняющие смысл: -ing vs to-infinitive (remember, stop, try)",
+   "core": true,
+   "group": "patterns",
+   "sources": [
+    "CB"
+   ],
+   "note": "",
+   "order": 103
+  },
+  {
+   "id": "g-b2-used-to-be-get",
+   "level": "B2",
+   "en": "be used to / get used to; would for past habits",
+   "ru": "be used to / get used to; would для привычек в прошлом",
+   "core": true,
+   "group": "past",
+   "sources": [
+    "CI:B2"
+   ],
+   "note": "",
+   "order": 104
+  },
+  {
+   "id": "g-b2-linkers-contrast",
+   "level": "B2",
+   "en": "Linkers: despite / in spite of / although / whereas / nevertheless",
+   "ru": "Связки: despite / in spite of / although / whereas / nevertheless",
+   "core": true,
+   "group": "linking",
+   "sources": [
+    "CI:B2"
+   ],
+   "note": "",
+   "order": 105
+  },
+  {
+   "id": "g-b2-linkers-purpose-result",
+   "level": "B2",
+   "en": "Linkers of purpose and result: so that / in order to / consequently / as a result",
+   "ru": "Связки цели и следствия: so that / in order to / consequently / as a result",
+   "core": true,
+   "group": "linking",
+   "sources": [
+    "CI:B2"
+   ],
+   "note": "",
+   "order": 106
+  },
+  {
+   "id": "g-b2-discourse-markers",
+   "level": "B2",
+   "en": "Discourse markers to structure formal speech and writing (firstly, to sum up, regarding)",
+   "ru": "Дискурсивные маркеры для формальной речи и письма",
+   "core": true,
+   "group": "linking",
+   "sources": [
+    "CI:B2",
+    "CI:C1"
+   ],
+   "note": "",
+   "order": 107
+  },
+  {
+   "id": "g-b2-participle-clauses",
+   "level": "B2",
+   "en": "Participle clauses",
+   "ru": "Причастные обороты",
+   "core": true,
+   "group": "clauses",
+   "sources": [
+    "CB"
+   ],
+   "note": "",
+   "order": 108
+  },
+  {
+   "id": "g-b2-would-rather",
+   "level": "B2",
+   "en": "would rather / it's time / had better",
+   "ru": "would rather / it's time / had better",
+   "core": true,
+   "group": "modals",
+   "sources": [
+    "CB"
+   ],
+   "note": "",
+   "order": 109
+  },
+  {
+   "id": "g-b2-impersonal-passive",
+   "level": "B2",
+   "en": "Impersonal passive: it is said that... / he is said to...",
+   "ru": "Безличный пассив: it is said that... / he is said to...",
+   "core": true,
+   "group": "passive",
+   "sources": [
+    "CB"
+   ],
+   "note": "",
+   "order": 110
+  },
+  {
+   "id": "g-b2-narrative-tenses",
+   "level": "B2",
+   "en": "Narrative tenses incl. past perfect continuous",
+   "ru": "Повествовательные времена, включая Past Perfect Continuous",
+   "core": true,
+   "group": "past",
+   "sources": [
+    "CI:B2"
+   ],
+   "note": "",
+   "order": 111
+  },
+  {
+   "id": "g-b2-tense-nuance",
+   "level": "B2",
+   "en": "Tenses: continuous for annoyance (always -ing), stative verbs",
+   "ru": "Нюансы времён: always + -ing (раздражение), глаголы состояния",
+   "core": false,
+   "group": "present",
+   "sources": [
+    "CB"
+   ],
+   "note": "",
+   "order": 112
+  },
+  {
+   "id": "g-b2-articles",
+   "level": "B2",
+   "en": "Articles: abstract nouns, institutions, geography",
+   "ru": "Артикли: абстрактные существительные, учреждения, география",
+   "core": true,
+   "group": "articles",
+   "sources": [
+    "CB"
+   ],
+   "note": "",
+   "order": 113
+  },
+  {
+   "id": "g-b2-comparatives",
+   "level": "B2",
+   "en": "Comparison: the more ... the more, nowhere near as, far / slightly",
+   "ru": "Сравнение: the more ... the more, nowhere near as, far / slightly",
+   "core": true,
+   "group": "comparison",
+   "sources": [
+    "CB"
+   ],
+   "note": "",
+   "order": 114
+  },
+  {
+   "id": "g-b2-adjectives-adverbs",
+   "level": "B2",
+   "en": "Adjectives and adverbs: gradable / extreme, adverb position",
+   "ru": "Прилагательные и наречия: градуируемые / предельные, место наречия",
+   "core": true,
+   "group": "adjectives",
+   "sources": [
+    "CI:B2"
+   ],
+   "note": "",
+   "order": 115
+  },
+  {
+   "id": "g-b2p-cleft-intro",
+   "level": "B2+",
+   "en": "Cleft sentences: What I need is... / It was ... that...",
+   "ru": "Расщеплённые предложения: What I need is... / It was ... that...",
+   "core": true,
+   "group": "emphasis",
+   "sources": [
+    "CB"
+   ],
+   "note": "",
+   "order": 116
+  },
+  {
+   "id": "g-b2p-emphatic-do",
+   "level": "B2+",
+   "en": "Emphatic do / did; so / such for emphasis",
+   "ru": "Усилительное do / did; so / such для эмфазы",
+   "core": false,
+   "group": "emphasis",
+   "sources": [
+    "CB"
+   ],
+   "note": "",
+   "order": 117
+  },
+  {
+   "id": "g-b2p-be-to",
+   "level": "B2+",
+   "en": "be about to / be on the point of / be due to",
+   "ru": "be about to / be on the point of / be due to",
+   "core": false,
+   "group": "future",
+   "sources": [
+    "CB"
+   ],
+   "note": "",
+   "order": 118
+  },
+  {
+   "id": "g-b2p-get-passive",
+   "level": "B2+",
+   "en": "get-passive and passive with two objects",
+   "ru": "get-пассив и пассив с двумя дополнениями",
+   "core": false,
+   "group": "passive",
+   "sources": [
+    "CB"
+   ],
+   "note": "",
+   "order": 119
+  },
+  {
+   "id": "g-b2p-conditionals-alt",
+   "level": "B2+",
+   "en": "Conditional alternatives: unless, provided that, as long as, in case, otherwise",
+   "ru": "Замены if: unless, provided that, as long as, in case, otherwise",
+   "core": true,
+   "group": "conditionals",
+   "sources": [
+    "CB"
+   ],
+   "note": "",
+   "order": 120,
+   "aliases": [
+    "g-c1-conditionals-alternatives"
+   ],
+   "placementLevel": [
+    "C1"
+   ]
+  },
+  {
+   "id": "g-c1-inversion",
+   "level": "C1",
+   "en": "Inversion after negative adverbials (Never have I..., Not only...)",
+   "ru": "Инверсия после отрицательных наречий (Never have I..., Not only...)",
+   "core": true,
+   "group": "emphasis",
+   "sources": [
+    "CI:C1"
+   ],
+   "note": "",
+   "order": 121
+  },
+  {
+   "id": "g-c1-cleft",
+   "level": "C1",
+   "en": "Cleft sentences: It is... that / What... / All...",
+   "ru": "Расщеплённые предложения: It is... that / What... / All...",
+   "core": true,
+   "group": "emphasis",
+   "sources": [
+    "CB"
+   ],
+   "note": "",
+   "order": 122
+  },
+  {
+   "id": "g-c1-inverted-conditionals",
+   "level": "C1",
+   "en": "Inverted conditionals: Had I known / Should you / Were it not for",
+   "ru": "Инверсия в условных: Had I known / Should you / Were it not for",
+   "core": true,
+   "group": "conditionals",
+   "sources": [
+    "CB"
+   ],
+   "note": "",
+   "order": 123
+  },
+  {
+   "id": "g-c1-mixed-conditionals",
+   "level": "C1",
+   "en": "Mixed conditionals in past, present and future",
+   "ru": "Смешанные условные: прошлое, настоящее, будущее",
+   "core": true,
+   "group": "conditionals",
+   "sources": [
+    "CI:C1"
+   ],
+   "note": "",
+   "order": 124
+  },
+  {
+   "id": "g-c1-modals-past",
+   "level": "C1",
+   "en": "Modals in the past: full range (needn't have, would have, could have been -ing)",
+   "ru": "Модальные о прошлом: весь спектр (needn't have, would have, could have been -ing)",
+   "core": true,
+   "group": "modals",
+   "sources": [
+    "CI:C1"
+   ],
+   "note": "",
+   "order": 125
+  },
+  {
+   "id": "g-c1-modal-nuance",
+   "level": "C1",
+   "en": "Modal nuances: may well / might as well / bound to / be likely to",
+   "ru": "Оттенки модальности: may well / might as well / bound to / be likely to",
+   "core": true,
+   "group": "modals",
+   "sources": [
+    "CB"
+   ],
+   "note": "",
+   "order": 126
+  },
+  {
+   "id": "g-c1-wish-regrets",
+   "level": "C1",
+   "en": "wish / if only: regrets and criticism (wish you would)",
+   "ru": "wish / if only: сожаления и упрёк (wish you would)",
+   "core": true,
+   "group": "conditionals",
+   "sources": [
+    "CI:C1"
+   ],
+   "note": "",
+   "order": 127
+  },
+  {
+   "id": "g-c1-subjunctive",
+   "level": "C1",
+   "en": "Subjunctive: It's essential that he be...",
+   "ru": "Сослагательное наклонение: It's essential that he be...",
+   "core": false,
+   "group": "modals",
+   "sources": [
+    "CB"
+   ],
+   "note": "",
+   "order": 128
+  },
+  {
+   "id": "g-c1-unreal-past",
+   "level": "C1",
+   "en": "Unreal past: as if / as though / would rather / suppose",
+   "ru": "Нереальное прошлое: as if / as though / would rather / suppose",
+   "core": true,
+   "group": "conditionals",
+   "sources": [
+    "CB"
+   ],
+   "note": "",
+   "order": 129
+  },
+  {
+   "id": "g-c1-passive-all",
+   "level": "C1",
+   "en": "Passive forms: all (incl. perfect infinitive, gerund passive)",
+   "ru": "Пассив: все формы (включая перфектный инфинитив, пассивный герундий)",
+   "core": true,
+   "group": "passive",
+   "sources": [
+    "CI:C1"
+   ],
+   "note": "",
+   "order": 130
+  },
+  {
+   "id": "g-c1-passive-reporting",
+   "level": "C1",
+   "en": "Advanced passive reporting: is thought to have...",
+   "ru": "Пассивные конструкции сообщения: is thought to have...",
+   "core": true,
+   "group": "passive",
+   "sources": [
+    "CB"
+   ],
+   "note": "",
+   "order": 131
+  },
+  {
+   "id": "g-c1-narrative-passive",
+   "level": "C1",
+   "en": "Narrative tenses for experience, incl. passive",
+   "ru": "Повествовательные времена, включая пассив",
+   "core": true,
+   "group": "past",
+   "sources": [
+    "CI:C1"
+   ],
+   "note": "",
+   "order": 132
+  },
+  {
+   "id": "g-c1-futures-revision",
+   "level": "C1",
+   "en": "Futures (revision): future in the past, was to, was about to",
+   "ru": "Будущее (повторение): future in the past, was to, was about to",
+   "core": true,
+   "group": "future",
+   "sources": [
+    "CI:C1"
+   ],
+   "note": "",
+   "order": 133,
+   "aliases": [
+    "g-c1-future-in-past",
+    "g-c1-tense-nuance"
+   ]
+  },
+  {
+   "id": "g-c1-participle-advanced",
+   "level": "C1",
+   "en": "Advanced participle and reduced relative clauses",
+   "ru": "Сложные причастные и сокращённые придаточные",
+   "core": true,
+   "group": "clauses",
+   "sources": [
+    "CB"
+   ],
+   "note": "",
+   "order": 134
+  },
+  {
+   "id": "g-c1-relatives-prepositions",
+   "level": "C1",
+   "en": "Relative clauses with prepositions: in which / whereby / whose",
+   "ru": "Придаточные с предлогами: in which / whereby / whose",
+   "core": true,
+   "group": "clauses",
+   "sources": [
+    "CB"
+   ],
+   "note": "",
+   "order": 135
+  },
+  {
+   "id": "g-c1-emphasis",
+   "level": "C1",
+   "en": "Emphasis: at all / whatsoever / the very / fronting",
+   "ru": "Эмфаза: at all / whatsoever / the very / вынос в начало",
+   "core": false,
+   "group": "emphasis",
+   "sources": [
+    "CB"
+   ],
+   "note": "",
+   "order": 136
+  },
+  {
+   "id": "g-c1-ellipsis-substitution",
+   "level": "C1",
+   "en": "Ellipsis and substitution (so, not, do so, one)",
+   "ru": "Эллипсис и замещение (so, not, do so, one)",
+   "core": true,
+   "group": "emphasis",
+   "sources": [
+    "CB"
+   ],
+   "note": "",
+   "order": 137
+  },
+  {
+   "id": "g-c1-nominalisation",
+   "level": "C1",
+   "en": "Nominalisation and complex noun phrases",
+   "ru": "Номинализация и сложные именные группы",
+   "core": true,
+   "group": "nouns",
+   "sources": [
+    "PET",
+    "CB"
+   ],
+   "note": "Complex noun phrases упоминаются уже в B1 Preliminary; как отдельная тема — C1.",
+   "order": 138
+  },
+  {
+   "id": "g-c1-linking-formal",
+   "level": "C1",
+   "en": "Linking devices and logical markers in formal speech and writing",
+   "ru": "Связки и логические маркеры в формальной речи и письме",
+   "core": true,
+   "group": "linking",
+   "sources": [
+    "CI:C1"
+   ],
+   "note": "",
+   "order": 139
+  },
+  {
+   "id": "g-c1-vague-language",
+   "level": "C1",
+   "en": "Approximating and hedging: sort of, -ish, it would seem that",
+   "ru": "Приблизительность и смягчение: sort of, -ish, it would seem that",
+   "core": false,
+   "group": "emphasis",
+   "sources": [
+    "CI:C1"
+   ],
+   "note": "В Core Inventory — в лексике (Approximating, vague language).",
+   "order": 140
+  },
+  {
+   "id": "g-c1-articles",
+   "level": "C1",
+   "en": "Articles: generalisation, abstract nouns, fixed cases",
+   "ru": "Артикли: обобщение, абстрактные существительные, устойчивые случаи",
+   "core": true,
+   "group": "articles",
+   "sources": [
+    "CB"
+   ],
+   "note": "",
+   "order": 141
+  },
+  {
+   "id": "g-c1-comparatives",
+   "level": "C1",
+   "en": "Advanced comparison: by far, nothing like as, the sooner the better",
+   "ru": "Продвинутое сравнение: by far, nothing like as, the sooner the better",
+   "core": false,
+   "group": "comparison",
+   "sources": [
+    "CB"
+   ],
+   "note": "",
+   "order": 142
+  },
+  {
+   "id": "g-c1-reported",
+   "level": "C1",
+   "en": "Reported speech: reporting verbs with patterns, impersonal reporting",
+   "ru": "Косвенная речь: модели глаголов сообщения, безличные конструкции",
+   "core": true,
+   "group": "reported",
+   "sources": [
+    "CI:B2",
+    "CB"
+   ],
+   "note": "",
+   "order": 143
+  },
+  {
+   "id": "g-c2-inversion-advanced",
+   "level": "C2",
+   "en": "Advanced inversion: Little did..., Only then..., So ... that..., Such was...",
+   "ru": "Сложная инверсия: Little did..., Only then..., So ... that..., Such was...",
+   "core": true,
+   "group": "emphasis",
+   "sources": [
+    "CB"
+   ],
+   "note": "",
+   "order": 144
+  },
+  {
+   "id": "g-c2-fronting",
+   "level": "C2",
+   "en": "Fronting and concessive clauses: Much as I..., Try as he might..., However much...",
+   "ru": "Вынос и уступительные: Much as I..., Try as he might..., However much...",
+   "core": true,
+   "group": "emphasis",
+   "sources": [
+    "CB"
+   ],
+   "note": "",
+   "order": 145
+  },
+  {
+   "id": "g-c2-formulaic-subjunctive",
+   "level": "C2",
+   "en": "Formulaic subjunctive: be that as it may, come what may, were it not for",
+   "ru": "Устойчивое сослагательное: be that as it may, come what may, were it not for",
+   "core": false,
+   "group": "modals",
+   "sources": [
+    "CB"
+   ],
+   "note": "",
+   "order": 146
+  },
+  {
+   "id": "g-c2-conditional-nuance",
+   "level": "C2",
+   "en": "Conditional nuances: but for, if it hadn't been for, supposing, were ... to",
+   "ru": "Оттенки условности: but for, if it hadn't been for, supposing, were ... to",
+   "core": true,
+   "group": "conditionals",
+   "sources": [
+    "CB"
+   ],
+   "note": "",
+   "order": 147
+  },
+  {
+   "id": "g-c2-modal-perfect-continuous",
+   "level": "C2",
+   "en": "Modal perfect continuous and nuance: must have been -ing, would have been -ing",
+   "ru": "Модальные перфектные длительные: must have been -ing, would have been -ing",
+   "core": true,
+   "group": "modals",
+   "sources": [
+    "CB"
+   ],
+   "note": "",
+   "order": 148
+  },
+  {
+   "id": "g-c2-passive-complex",
+   "level": "C2",
+   "en": "Complex passives: having been told, is to be done, was to have been",
+   "ru": "Сложный пассив: having been told, is to be done, was to have been",
+   "core": true,
+   "group": "passive",
+   "sources": [
+    "CB"
+   ],
+   "note": "",
+   "order": 149
+  },
+  {
+   "id": "g-c2-absolute-clauses",
+   "level": "C2",
+   "en": "Absolute and participle clauses: Weather permitting, All things considered",
+   "ru": "Абсолютные обороты: Weather permitting, All things considered",
+   "core": false,
+   "group": "clauses",
+   "sources": [
+    "CB"
+   ],
+   "note": "",
+   "order": 150
+  },
+  {
+   "id": "g-c2-ellipsis-advanced",
+   "level": "C2",
+   "en": "Advanced ellipsis and substitution in speech and writing",
+   "ru": "Сложный эллипсис и замещение в речи и письме",
+   "core": false,
+   "group": "emphasis",
+   "sources": [
+    "CB"
+   ],
+   "note": "",
+   "order": 151
+  },
+  {
+   "id": "g-c2-hedging",
+   "level": "C2",
+   "en": "Hedging and distancing: it would appear, there is said to be, arguably",
+   "ru": "Смягчение и дистанцирование: it would appear, there is said to be, arguably",
+   "core": true,
+   "group": "emphasis",
+   "sources": [
+    "CB"
+   ],
+   "note": "",
+   "order": 152
+  },
+  {
+   "id": "g-c2-noun-phrases",
+   "level": "C2",
+   "en": "Academic noun phrases and nominal style",
+   "ru": "Академические именные группы и номинативный стиль",
+   "core": false,
+   "group": "nouns",
+   "sources": [
+    "CB"
+   ],
+   "note": "",
+   "order": 153
+  },
+  {
+   "id": "g-c2-comparison",
+   "level": "C2",
+   "en": "Comparison nuance: all the more, none the less, the + comparative",
+   "ru": "Тонкое сравнение: all the more, none the less, the + comparative",
+   "core": false,
+   "group": "comparison",
+   "sources": [
+    "CB"
+   ],
+   "note": "",
+   "order": 154
+  },
+  {
+   "id": "g-c2-determiners",
+   "level": "C2",
+   "en": "Determiner nuance: few vs a few, any number of, whatsoever, such",
+   "ru": "Тонкости детерминативов: few vs a few, any number of, whatsoever, such",
+   "core": false,
+   "group": "determiners",
+   "sources": [
+    "CB"
+   ],
+   "note": "",
+   "order": 155
+  }
+ ]
+}
