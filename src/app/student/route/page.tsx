@@ -82,6 +82,15 @@ export default async function MyRoute({ searchParams }: { searchParams: Promise<
           {st.passed ? <span className="pill green">✓ {t("rt.passed", { n: st.passed.score })}</span> : <StageTestButton stage={i} enabled={reached} final={final} />}
         </div>
         <div className="stbar"><div style={{ width: `${(m.inS / st.hours) * 100}%` }} /></div>
+        {st.checkpoint?.approved && (
+          <div className="cpcard ok mt-3"><div className="cp-h"><span className="cp-ico">⚑</span><b className="grow">{t("rm5.cp")}</b></div>
+            <dl className="cp-dl">
+              {(st.checkpoint.what ?? []).length > 0 && <><dt>{t("rm5.what")}</dt><dd>{st.checkpoint.what!.map((x) => x.replace(/\*\*/g, "")).join(" · ")}</dd></>}
+              {st.checkpoint.format && <><dt>{t("rm5.format")}</dt><dd>{st.checkpoint.format}</dd></>}
+              {st.checkpoint.pass_rule && <><dt>{t("rm5.rule")}</dt><dd><b>{st.checkpoint.pass_rule}</b></dd></>}
+            </dl>
+          </div>
+        )}
         <div className="mgrid">
           <div><b>≈ {lessonsWord(m.lessons, L)}</b><span>{t("rt.left")}</span></div>
           <div><b>{fmtHM(m.self * (2 / 3), L)}</b><span>{t("rt.hwShort")}</span></div>

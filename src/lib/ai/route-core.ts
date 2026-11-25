@@ -66,7 +66,9 @@ export function cleanInsight(raw: Record<string, unknown>): Insight {
 // ───────── маршрут: участки и точки ─────────
 
 export type RoutePoint = { title: string; level: string; hours: number; why: string; focus: string; hours_why: string };
-export type RouteSegment = { title: string; kind: "gaps" | "consolidate" | "level"; summary: string; points: RoutePoint[]; units: string[]; can_do_after: string[]; checkpoint: { tests: string[]; pass_rule: string } | null; hours: number; weeks: number | null };
+export type RouteSegment = { title: string; kind: "gaps" | "consolidate" | "level"; summary: string; points: RoutePoint[]; units: string[]; can_do_after: string[]; checkpoint: Checkpoint | null; hours: number; weeks: number | null };
+/** Контрольный срез участка: что, как, правило прохода; учитель утверждает. */
+export type Checkpoint = { tests: string[]; pass_rule: string; what?: string[]; format?: string; if_not_passed?: string; approved?: boolean };
 /** Что показать ученику кроме карты. */
 export type Share = { gaps: boolean; self: boolean; criteria: boolean; message: boolean };
 export const SHARE_DEFAULT: Share = { gaps: true, self: true, criteria: true, message: true };
@@ -109,7 +111,7 @@ export function cleanRoute(raw: Record<string, unknown>, selfBudgetMin = 0): Rou
       .filter((p) => p.title);
     return {
       title: str(s.title, 80) || `Участок ${i + 1}`, kind: s.kind === "gaps" ? "gaps" as const : s.kind === "consolidate" ? "consolidate" as const : "level" as const, summary: str(s.summary, 600), points,
-      units: list(s.units, 20), can_do_after: list(s.can_do_after, 8), checkpoint: cp ? { tests: list(cp.tests, 6, 40), pass_rule: str(cp.pass_rule) } : null,
+      units: list(s.units, 20), can_do_after: list(s.can_do_after, 8), checkpoint: cp ? { tests: list(cp.tests, 6, 40), pass_rule: str(cp.pass_rule), what: list(cp.what, 10, 200), format: str(cp.format, 400), if_not_passed: str(cp.if_not_passed, 400) } : null,
       hours: points.reduce((a, p) => a + p.hours, 0), weeks: null as number | null,
     };
   }).filter((s) => s.points.length);
@@ -208,7 +210,9 @@ export function cleanArticle(raw: Record<string, unknown>): ArticleRecs {
 }
 
 /** Участки ИИ → этапы маршрута платформы с точками. Подсказки и утверждённое из прежней версии сохраняются (по названию точки). */
-export function toStages(d: RouteDraft, goalLevel: string, prev: { points?: Point[] }[] = []) {
+export function toStages(d: RouteDraft, goalLevel: string, prev: { points?: Point[]; checkpoint?: Checkpoint | null }[] = []) {
+  const cpKey = (c?: Checkpoint | null) => (c ? JSON.stringify([c.tests, c.what, c.format, c.pass_rule]) : "");
+  const okCp = new Set(prev.filter((x) => x.checkpoint?.approved).map((x) => cpKey(x.checkpoint)));
   const old = new Map(prev.flatMap((s) => s.points ?? []).map((p) => [key(p.title), p]));
   let n = 0;
   return d.segments.map((s) => {
@@ -217,7 +221,7 @@ export function toStages(d: RouteDraft, goalLevel: string, prev: { points?: Poin
     return {
       lvl, title: s.title, hours: s.hours, kind: s.kind, summary: s.summary,
       grammar: s.points.map((p) => p.title), vocabulary: [] as string[], skills: s.can_do_after, feel: [] as string[],
-      focus: [] as string[], units: s.units, checkpoint: s.checkpoint, weeks: s.weeks, points,
+      focus: [] as string[], units: s.units, checkpoint: s.checkpoint ? { ...s.checkpoint, approved: okCp.has(cpKey(s.checkpoint)) } : null, weeks: s.weeks, points,
     };
   });
 }

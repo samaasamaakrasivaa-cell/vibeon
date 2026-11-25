@@ -47,7 +47,11 @@ function InsightBlock({ icon, title, tone, items, numbered, edit, value, onChang
     <div className={`ins-blk ${tone}`}>
       <div className="ins-h"><span className="ins-ico">{icon}</span><span>{title}</span>{!edit && items.length > 1 && <span className="ins-n">{items.length}</span>}</div>
       {edit ? <textarea className="textarea" rows={Math.max(3, items.length + 1)} value={value} onChange={(e) => onChange(e.target.value)} aria-label={title} placeholder={t("rm4.linePh")} />
-        : <L className={numbered ? "ins-ol" : "ins-ul"}>{items.map((x, i) => <li key={i}><Rich text={x} /></li>)}</L>}
+        : <>
+          {/* три самых важных — сразу на виду, остальное не урезаем: ниже, по убыванию важности */}
+          <L className={`${numbered ? "ins-ol" : "ins-ul"} top`}>{items.slice(0, 3).map((x, i) => <li key={i}><Rich text={x} /></li>)}</L>
+          {items.length > 3 && <><div className="ins-more">{t("rm5.more")}</div><L className={numbered ? "ins-ol" : "ins-ul"} start={4}>{items.slice(3).map((x, i) => <li key={i}><Rich text={x} /></li>)}</L></>}
+        </>}
     </div>
   );
 }

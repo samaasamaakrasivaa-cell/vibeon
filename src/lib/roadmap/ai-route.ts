@@ -385,4 +385,18 @@ export async function saveMeta(roadmapId: string, patch: { share?: Share; done?:
   return { ok: true };
 }
 
+/** Учитель правит и утверждает контрольный срез участка. */
+export async function saveCheckpoint(roadmapId: string, i: number, cp: { what: string[]; format: string; pass_rule: string; if_not_passed: string; approved: boolean }): Promise<R> {
+  const r = await db.roadmap.findUnique({ where: { id: roadmapId } });
+  if (!r) return { ok: false, error: "not found" };
+  await own(r.studentId);
+  const stages = (r.stages as Stage[]) ?? [];
+  if (!stages[i]) return { ok: false, error: "stage" };
+  const old = stages[i].checkpoint ?? { tests: [], pass_rule: "" };
+  stages[i].checkpoint = { ...old, what: cp.what.map((x) => str(x, 200)).filter(Boolean).slice(0, 12), format: str(cp.format, 400), pass_rule: str(cp.pass_rule, 600), if_not_passed: str(cp.if_not_passed, 400), approved: !!cp.approved };
+  await db.roadmap.update({ where: { id: r.id }, data: { stages: json(stages) } });
+  refresh(r.studentId);
+  return { ok: true };
+}
+
 export type { Point };

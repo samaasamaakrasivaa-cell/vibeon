@@ -3016,3 +3016,14 @@ svg.i { pointer-events: none; }
 .shbox { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 6px; }
 .shrow { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 12px; background: var(--surface2); font-size: 14px; cursor: pointer; border: 2px solid transparent; }
 .shrow.on { border-color: color-mix(in srgb, var(--accent) 45%, transparent); background: var(--accent-bg); }
+
+.ins-ul.top li, .ins-ol.top li { font-size: 14.5px; }
+.ins-more { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--text3, #8E8E93); margin-top: 2px; padding-top: 6px; border-top: 1px dashed var(--sep); }
+/* Контрольный срез */
+.cpcard { margin-top: 10px; padding: 10px 12px; border-radius: 14px; border: 2px dashed color-mix(in srgb, #FF9500 55%, transparent); background: color-mix(in srgb, #FF9500 5%, var(--surface)); display: flex; flex-direction: column; gap: 8px; }
+.cpcard.ok { border-style: solid; border-color: color-mix(in srgb, #34C759 55%, transparent); background: color-mix(in srgb, #34C759 6%, var(--surface)); }
+.cp-h { display: flex; align-items: center; gap: 8px; }
+.cp-ico { width: 24px; height: 24px; border-radius: 8px; background: var(--surface); display: inline-flex; align-items: center; justify-content: center; }
+.cp-dl { margin: 0; display: grid; grid-template-columns: 140px 1fr; gap: 6px 10px; font-size: 13.5px; }
+.cp-dl dt { font-weight: 700; color: var(--text2); } .cp-dl dd { margin: 0; }
+@media (max-width: 560px) { .cp-dl { grid-template-columns: 1fr; } }

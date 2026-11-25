@@ -15,6 +15,7 @@ TASK
 
 STYLE — the teacher must grasp everything at a glance, so NO walls of text:
 - Every item is ONE short line (max ~18 words). No paragraphs.
+- Do NOT cut conclusions to fit a number: list everything that matters, RANKED by importance — the most important first (the first three are what the teacher must see at a glance).
 - Start each item with the key term in **double asterisks** (bold), then a dash and the evidence: "**Артикли** — 4 ошибки из 5, в обе стороны (the Amazon / honesty)".
 - Numbers and scores as digits: "0 из 2", "1/3", "66%".
 
@@ -22,9 +23,9 @@ Language: Russian for all text. Keep grammar topic names, English words and phra
 
 OUTPUT — ONLY valid JSON:
 {
-  "summary": ["3–5 key theses for the teacher, each one short line with a **bold** key term: where the student is, the main blocker, what to do first"],
-  "blockers": ["3–5 items: what prevents moving to the next level, with evidence"],
-  "strengths": ["3–5 items"],
+  "summary": ["key theses for the teacher, ranked by importance (as many as needed), each one short line with a **bold** key term: where the student is, the main blocker, what to do first"],
+  "blockers": ["ranked by importance, as many as needed: what prevents moving to the next level, with evidence"],
+  "strengths": ["ranked by importance, as many as needed"],
   "gaps": [ { "topic": "Articles: abstract nouns, geographical names", "level": "C1", "priority": 1, "why": "short evidence, e.g. 4 ошибки из 5" } ],
   "skills": { "grammar": "one short line with level and the main point", "vocabulary": "…", "reading": "…", "listening": "…", "writing": "…", "speaking": "…" },
   "dynamics": "one short line, or \"Данных пока мало\""

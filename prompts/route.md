@@ -17,7 +17,7 @@ HOW TO BUILD THE ROUTE
 3. Each segment is split into points of 4–12 study hours. A point has ONE main grammar topic (the backbone), named concretely ("Articles with abstract nouns and geographical names", not "Articles"). In the gaps segment, points follow the insight gaps order: global and frequent first, specific and rare last; merge tiny or similar topics. In level segments, take the main grammar of the next sublevel and the skills from brief priorities.
 4. Point hours are what it really takes this student, and you must justify them in "hours_why" in Russian, briefly and from evidence (e.g. "4 ошибки из 5 в тесте, тема C1 → 8 ч", "знает частично: 1 из 3 → 4 ч", "новая тема уровня C1 → 10 ч"): a small gap the student partly knows — 3–5 h; a real gap — 6–10 h; a new topic — 6–12 h. Segment hours = sum of its points. Keep "level" segments near hours_guide (±25%). The gaps segment is usually much shorter than hours_guide.
 5. For each point write "focus": 1–2 sentences on what else is trained around this grammar (vocabulary area, skill) — tuned to brief interests, job and goal.
-6. Each segment ends with a checkpoint test that opens the next segment: what is tested and the pass rule.
+6. Each segment ends with a CHECKPOINT that opens the next segment — the teacher approves it. Be specific: which skills ("tests"), exactly what is checked ("what": the segment's grammar topics, vocabulary, the skills from the student's blockers), the format and length ("format", e.g. "25 заданий на темы участка + монолог 3 мин + письмо 150 слов"), and a measurable pass rule with numbers ("pass_rule", e.g. "грамматика ≥ 80%, говорение и письмо ≥ 2/3 по каждому критерию"). If the rule is not met, the student does not move on: say what happens instead ("if_not_passed", e.g. "повтор слабых тем 4–6 ч и пересдача").
 7. Weekly hours = lessons per week × lesson length + self_study_budget.minutes_per_week (the platform computed the budget from the schedule and CEFR norms: fewer lessons → more self-study). Forecast weeks = hours / weekly hours.
 7a. SELF-STUDY PLAN: distribute self_study_budget.minutes_per_week over activities (sum of times_per_week × minutes ≈ the budget). Prioritise the student's weak skills and the teacher's priorities; with few lessons give more speaking practice outside lessons (speaking clubs, shadowing, recording yourself). Use concrete formats: podcasts and videos for listening, articles/books for reading, a vocabulary trainer on the platform, short writing. For each item give search keywords (English) to find materials — never invent URLs or titles. Activities in Russian. If there is a deadline, check whether the route fits using weeks_until_deadline.
 7b. Segment titles: gaps → "B2+ → C1"; consolidate → "C1" (just the level); level → "C1 → C1+".
@@ -41,13 +41,13 @@ OUTPUT — ONLY valid JSON:
       ],
       "units": ["Unit 3 — …"],
       "can_do_after": ["…"],
-      "checkpoint": { "tests": ["grammar", "writing"], "pass_rule": "…" }
+      "checkpoint": { "tests": ["grammar", "writing"], "what": ["…"], "format": "…", "pass_rule": "…", "if_not_passed": "…" }
     }
   ],
   "deadline_check": { "fits": true, "note": "…" } | null,
   "risks": ["…"],
   "pace_options": [ { "lessons_per_week": 2, "daily_minutes": 20, "forecast_weeks": 40 } ],
-  "teacher_summary": ["3–5 short theses for the teacher, one line each, key term in **bold**"],
+  "teacher_summary": ["short theses for the teacher ranked by importance, one line each, key term in **bold**"],
   "student_message": "2–4 sentences for the student: where they are, where they are going, first goal",
   "share": { "gaps": true, "self_study": true, "criteria": true, "message": true },
   "self_study": {

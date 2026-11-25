@@ -5,8 +5,8 @@ import { useAssignParts } from "../placement/AssignParts";
 import { ExpectField, Steps, TrackField, trackForAge, type PlTrack } from "../placement/PlacementPanel";
 import type { RouteAi } from "@/lib/roadmap/progress";
 import { approveRoadmap, assignTest, deleteCheckpoint, editStage, manualResults, type RoadmapForm } from "@/lib/roadmap/actions";
-import { buildRoadmap, saveMeta, type Brief, type ChatMsg, type InsightSaved, type RoadmapMeta } from "@/lib/roadmap/ai-route";
-import { SHARE_DEFAULT, type Share } from "@/lib/ai/route-core";
+import { buildRoadmap, saveCheckpoint, saveMeta, type Brief, type ChatMsg, type InsightSaved, type RoadmapMeta } from "@/lib/roadmap/ai-route";
+import { SHARE_DEFAULT, type Checkpoint, type Share } from "@/lib/ai/route-core";
 import type { Point } from "@/lib/ai/route-core";
 import { BriefForm, InsightCard, PointCard, Rich, RouteChat, StepHead, toItems, useBrief } from "./RouteBrief";
 import { segName, LEVELS, ROUTE_TYPES, SKILL_COLOR, SKILL_NAME, SKILLS, txt, type Skill } from "@/lib/roadmap/cefr";
@@ -28,7 +28,7 @@ export type EditorData = {
   roadmap: null | {
     id: string; type: string; goal: string; fromLevel: string | null; deadline: string | null; showDate: boolean; pace: string; mood: string; note: string;
     courseIds: string[]; leadCourseId: string | null; approved: boolean; built: boolean; summary: string | null; ai: RouteAi | null;
-    stages: { lvl: string; title: string; hours: number; grammar: string[]; vocabulary: string[]; skills: string[]; passed: boolean; focus: string[]; checkpoint: { tests: string[]; pass_rule: string } | null; weeks: number | null; kind: "gaps" | "consolidate" | "level" | null; sum: string; points: Point[] }[];
+    stages: { lvl: string; title: string; hours: number; grammar: string[]; vocabulary: string[]; skills: string[]; passed: boolean; focus: string[]; checkpoint: Checkpoint | null; weeks: number | null; kind: "gaps" | "consolidate" | "level" | null; sum: string; points: Point[] }[];
     brief: Brief; insight: InsightSaved | null; chat: ChatMsg[]; versions: { at: string; note: string }[]; meta: RoadmapMeta | null;
     criteria: string[]; units: string[]; done: number; ci: number; left: number; lessonMin: number; lateWeeks: number;
   };
@@ -119,6 +119,51 @@ const KIND_PILL: Record<string, string> = { gaps: "orange", consolidate: "blue",
 const KIND_KEY = { gaps: "rm2.segGaps", consolidate: "rm2.segCons", level: "rm2.segLevel" } as const;
 /** Текст ИИ → по предложениям (для списка с точками). */
 const sentences = (x: string) => x.split(/(?<=[.!?])\s+(?=[А-ЯЁA-Z0-9«"(])/).map((y) => y.trim()).filter(Boolean);
+
+const SKILL_RU: Record<string, string> = { grammar: "грамматика", vocabulary: "лексика", grammar_vocab: "грамматика и лексика", reading: "чтение", listening: "аудирование", writing: "письмо", speaking: "говорение" };
+
+/** Контрольный срез участка: что проверяем, формат, правило прохода, что если не прошёл. Учитель правит и утверждает. */
+function CheckpointCard({ id, i, cp, last }: { id: string; i: number; cp: Checkpoint; last: boolean }) {
+  const { t } = useT();
+  const { run, pending, error } = useRun();
+  const [edit, setEdit] = useState(false);
+  const [v, setV] = useState({ what: (cp.what ?? []).join("\n"), format: cp.format ?? "", pass_rule: cp.pass_rule ?? "", if_not_passed: cp.if_not_passed ?? "" });
+  const save = (approved: boolean) => run(() => saveCheckpoint(id, i, { what: v.what.split(/\n+/), format: v.format, pass_rule: v.pass_rule, if_not_passed: v.if_not_passed, approved }), () => setEdit(false));
+  return (
+    <div className={`cpcard ${cp.approved ? "ok" : ""}`}>
+      <div className="cp-h"><span className="cp-ico">⚑</span><b className="grow">{last ? t("rm5.cpFinal") : t("rm5.cp")}</b>
+        {cp.approved ? <span className="pill green"><Icon name="check" size="sm" />{t("rm5.cpOk")}</span> : <span className="pill orange">{t("rm5.cpDraft")}</span>}
+      </div>
+      {cp.tests.length > 0 && <div className="flex flex-wrap gap-1.5">{cp.tests.map((x) => <span key={x} className="pill grey">{SKILL_RU[x] ?? x}</span>)}</div>}
+      {edit ? (
+        <div className="flex flex-col gap-2">
+          <label className="small font-bold">{t("rm5.what")}<textarea className="textarea mt-1" rows={3} value={v.what} placeholder={t("rm4.linePh")} onChange={(e) => setV({ ...v, what: e.target.value })} /></label>
+          <label className="small font-bold">{t("rm5.format")}<input className="input mt-1" value={v.format} onChange={(e) => setV({ ...v, format: e.target.value })} /></label>
+          <label className="small font-bold">{t("rm5.rule")}<input className="input mt-1" value={v.pass_rule} onChange={(e) => setV({ ...v, pass_rule: e.target.value })} /></label>
+          <label className="small font-bold">{t("rm5.ifNot")}<input className="input mt-1" value={v.if_not_passed} onChange={(e) => setV({ ...v, if_not_passed: e.target.value })} /></label>
+        </div>
+      ) : (
+        <dl className="cp-dl">
+          {(cp.what ?? []).length > 0 && <><dt>{t("rm5.what")}</dt><dd><ul className="ins-ul">{cp.what!.map((x, k) => <li key={k}><Rich text={x} /></li>)}</ul></dd></>}
+          {cp.format && <><dt>{t("rm5.format")}</dt><dd>{cp.format}</dd></>}
+          {cp.pass_rule && <><dt>{t("rm5.rule")}</dt><dd><b>{cp.pass_rule}</b></dd></>}
+          {cp.if_not_passed && <><dt>{t("rm5.ifNot")}</dt><dd>{cp.if_not_passed}</dd></>}
+        </dl>
+      )}
+      <div className="flex flex-wrap gap-2">
+        {edit ? <>
+          <button className="btn primary sm" disabled={pending} onClick={() => save(true)}><Icon name="check" size="sm" />{t("rm5.saveOk")}</button>
+          <button className="btn secondary sm" disabled={pending} onClick={() => save(!!cp.approved)}>{t("common.save")}</button>
+        </> : <>
+          {!cp.approved && <button className="btn primary sm" disabled={pending} onClick={() => save(true)}><Icon name="check" size="sm" />{t("rm5.approve")}</button>}
+          <button className="btn plain sm" onClick={() => setEdit(true)}><Icon name="pencil" size="sm" />{t("rm2.fix")}</button>
+          {cp.approved && <button className="btn plain sm" disabled={pending} onClick={() => save(false)}>{t("rm5.unapprove")}</button>}
+        </>}
+      </div>
+      {error && <div className="alert">{error}</div>}
+    </div>
+  );
+}
 
 /** Критерии достижения цели: нумерованный список, учитель отмечает выполненные. */
 function Criteria({ id, items, done }: { id: string; items: string[]; done: number[] }) {
@@ -316,7 +361,7 @@ export function RoadmapEditor({ d }: { d: EditorData }) {
                       </>
                     )}
                     {s.skills.length > 0 && <div className="mt-2 small"><b>{t("rm.can")}:</b> {s.skills.join(" · ")}</div>}
-                    {s.checkpoint && <div className="mt-2 small"><b>{t("rm.aiCheck")}:</b> {s.checkpoint.tests.join(", ")}{s.checkpoint.pass_rule ? ` — ${s.checkpoint.pass_rule}` : ""}</div>}
+                    {s.checkpoint && <CheckpointCard id={r.id} i={i} cp={s.checkpoint} last={i === r.stages.length - 1} />}
                   </details>
                 ))}
               </div>

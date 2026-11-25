@@ -8,7 +8,7 @@ export type Stage = {
   grammar: (L2 | string)[]; vocabulary: (L2 | string)[]; skills: (L2 | string)[]; feel?: (L2 | string)[];
   passed?: { score: number; at: string } | null;
   /** из черновика ИИ: остальной фокус этапа, юниты курса, срез в конце этапа, прогноз недель */
-  focus?: string[]; units?: string[]; checkpoint?: { tests: string[]; pass_rule: string } | null; weeks?: number | null;
+  focus?: string[]; units?: string[]; checkpoint?: import("../ai/route-core").Checkpoint | null; weeks?: number | null;
   /** v2: участок «закрыть пробелы» или новый уровень, кратко о нём, мини-точки (главная грамматика + подсказки + утверждённое) */
   kind?: "gaps" | "consolidate" | "level"; summary?: string; points?: Point[];
 };

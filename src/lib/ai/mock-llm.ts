@@ -55,7 +55,7 @@ function route(user: string) {
     share: { gaps: true, self_study: true, criteria: true, message: true },
     weekly_hours: 4.5,
     segments: [
-      { title: `${from} → ${mid}`, kind: "gaps", summary: "Закрываем пробелы из теста.", points: gapPts, units: [], can_do_after: ["пишет и говорит без системных ошибок в артиклях"], checkpoint: { tests: ["grammar"], pass_rule: "от 80% по темам участка" } },
+      { title: `${from} → ${mid}`, kind: "gaps", summary: "Закрываем пробелы из теста.", points: gapPts, units: [], can_do_after: ["пишет и говорит без системных ошибок в артиклях"], checkpoint: { tests: ["grammar", "speaking"], what: ["Артикли с абстрактными существительными", "Инверсия и смешанные условные в речи"], format: "25 заданий на темы участка + монолог 3 мин", pass_rule: "грамматика ≥ 80%, говорение ≥ 2/3", if_not_passed: "повтор слабых тем 4–6 ч и пересдача" } },
       ...(mid !== goal ? [{ title: `${mid} → ${goal}`, kind: "level", summary: "Новый уровень.", points: [
         { title: "Cleft sentences for emphasis", level: goal, hours: 10, why: "грамматика уровня", focus: "презентации" },
         { title: "Advanced passive structures", level: goal, hours: 10, why: "грамматика уровня", focus: "статьи и отчёты" },
@@ -78,7 +78,7 @@ function route(user: string) {
 function insight() {
   return {
     summary: ["**Уровень B2+** — уверенный, чтение уже C1", "**Главный барьер** — артикли и продвинутая грамматика", "**Начать с** артиклей, затем инверсия"],
-    strengths: ["**Беглая речь** — произношение 3/3", "**Чтение** — C1, 83%"], blockers: ["**Артикли** — 4 ошибки из 5", "**Инверсия** — 0 из 2, не использует"],
+    strengths: ["**Беглая речь** — произношение 3/3", "**Чтение** — C1, 83%"], blockers: ["**Артикли** — 4 ошибки из 5", "**Инверсия** — 0 из 2, не использует", "**Смешанные условные** — 1 из 3", "**Коллокации** — do a decision", "**Связность письма** — 2/3"],
     gaps: [{ topic: "Articles with abstract nouns and geographical names", level: "C1", priority: 1, why: "ошибки в тесте" }, { topic: "Inversion", level: "C1", priority: 2, why: "не использует" }],
     skills: { grammar: "пробелы в артиклях", speaking: "упрощает грамматику" }, dynamics: "Данных пока мало",
     prefill: { goal: "Уверенный C1 для работы: переговоры и презентации", interests: "психология, путешествия, подкасты", background: "Маркетолог в IT-компании" },
