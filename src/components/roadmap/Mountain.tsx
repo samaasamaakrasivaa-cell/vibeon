@@ -1,6 +1,7 @@
 "use client";
 import { useId, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useT } from "@/lib/i18n/client";
+import { segName } from "@/lib/roadmap/cefr";
 
 type MPoint = { id: string; title: string; hours: number; level?: string; ok?: Record<string, unknown> };
 type MStage = { lvl: string; title: string; hours: number; passed?: unknown; points?: MPoint[]; kind?: string | null };
@@ -111,7 +112,7 @@ export function Mountain({ stages, done, start, ini, label, units = [], ci, sel,
           return (
             <g key={i} className={`nd ${st} ${sel === i ? "sel" : ""}`} role={onSelect ? "button" : undefined} tabIndex={onSelect ? 0 : undefined} aria-label={`${s.lvl}: ${s.title}`}
               onClick={onSelect ? () => onSelect(i) : undefined} onKeyDown={onSelect ? (e) => { if (e.key === "Enter" || e.key === " ") onSelect(i); } : undefined}>
-              <title>{`${s.title}${s.kind === "gaps" ? ` (${t("mtn.gaps")})` : s.kind === "consolidate" ? ` (${t("mtn.cons")})` : ""} · ${s.hours} ${t("mtn.h")}`}</title>
+              <title>{`${segName(stages, i, start)}${s.kind === "gaps" ? ` (${t("mtn.gaps")})` : s.kind === "consolidate" ? ` (${t("mtn.cons")})` : ""} · ${s.hours} ${t("mtn.h")}`}</title>
               <ellipse cx={x} cy={y + 2} rx="9" ry="3" className="pinsh" />
               <g transform={`translate(${x},${y})`}>
                 <path d="M0,0 C-4,-8 -16,-14 -16,-27 A16,16 0 1 1 16,-27 C16,-14 4,-8 0,0Z" className="pin" />
@@ -131,7 +132,7 @@ export function Mountain({ stages, done, start, ini, label, units = [], ci, sel,
       {hp && hpos && (
         <div className={`mtip ${hpos[1] < 150 ? "below" : ""}`} style={{ left: `${(hpos[0] / W) * 100}%`, top: `${(hpos[1] / H) * 100}%`, ["--tx" as string]: hpos[0] < W * 0.3 ? "-12%" : hpos[0] > W * 0.7 ? "-88%" : "-50%" }}>
           <b>{hp.p.title}</b>
-          <span className="muted">{stages[hp.si]?.title}{hp.p.level ? ` · ${hp.p.level}` : ""}{studentView ? "" : ` · ${hp.p.hours} ${t("mtn.h")}`}</span>
+          <span className="muted">{stages[hp.si] ? `${segName(stages, hp.si, start)}${stages[hp.si].kind === "gaps" ? ` · ${t("mtn.gaps")}` : stages[hp.si].kind === "consolidate" ? ` · ${t("mtn.cons")}` : ""}` : ""}{hp.p.level ? ` · ${hp.p.level}` : ""}{studentView ? "" : ` · ${hp.p.hours} ${t("mtn.h")}`}</span>
           {hp.p.ok && Object.keys(hp.p.ok).length > 0 && <span className="mtip-ok">{studentView ? t("mtn.okS") : t("mtn.okT")}</span>}
         </div>
       )}

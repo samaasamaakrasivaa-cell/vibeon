@@ -10,7 +10,7 @@ import { llmFor } from "../ai/gateway";
 import { modelLabel, modelsFor } from "../ai/models";
 import { prompt } from "../ai/prompts";
 import { scrubWithMap } from "../ai/check-core";
-import { BRIEF_KEYS, cleanArticle, cleanInsight, cleanRecs, cleanRoute, compactStages, REC_LISTS, REC_TEXTS, ROUTE_TYPE, runJson, settleHours, toStages, type Insight, type Point, type PointOk } from "../ai/route-core";
+import { SHARE_DEFAULT, type Share, BRIEF_KEYS, cleanArticle, cleanInsight, cleanRecs, cleanRoute, compactStages, REC_LISTS, REC_TEXTS, ROUTE_TYPE, runJson, settleHours, toStages, type Insight, type Point, type PointOk } from "../ai/route-core";
 import { aiCode, aiCtx } from "../ai/ctx";
 import { goalLevel, hoursTo, LEVELS, ROUTE_TYPES, type Stage } from "./cefr";
 import { paceKey, PACES, parsePace, selfBudget } from "./math";
@@ -29,6 +29,7 @@ export type Brief = Partial<Record<(typeof BRIEF_KEYS)[number], string>> & {
 };
 export type InsightSaved = Insight & { model?: string; label?: string; at?: string; edited?: boolean; confirmed?: boolean; confirmedAt?: string; extra?: string };
 export type ChatMsg = { role: "teacher" | "ai"; text: string; at: string };
+export type RoadmapMeta = { share: Share; shareSetByTeacher?: boolean; done: number[] };
 
 function cleanBrief(b: Brief): Brief {
   const out: Brief = {};
@@ -130,13 +131,15 @@ export async function routeInsight(studentId: string, f: RoadmapForm, brief: Bri
 }
 
 /** Учитель поправил «Что я понял»: текст вывода и список пробелов (порядок, удаление). */
-export async function saveInsight(studentId: string, patch: { summary: string; gaps: Insight["gaps"]; extra?: string; confirmed?: boolean }): Promise<R> {
+export async function saveInsight(studentId: string, patch: { summary: string; gaps: Insight["gaps"]; blockers?: string[]; strengths?: string[]; extra?: string; confirmed?: boolean }): Promise<R> {
   await own(studentId);
   const r = await db.roadmap.findFirst({ where: { studentId }, orderBy: { createdAt: "desc" } });
   if (!r?.insight) return { ok: false, error: "no insight" };
   const cur = r.insight as InsightSaved;
   const gaps = (patch.gaps ?? []).slice(0, 20).map((g, i) => ({ topic: str(g.topic, 160), level: str(g.level, 8), priority: i + 1, why: str(g.why, 400) })).filter((g) => g.topic);
-  await db.roadmap.update({ where: { id: r.id }, data: { insight: json({ ...cur, summary: str(patch.summary, 3000), gaps, edited: cur.edited || str(patch.summary, 3000) !== cur.summary || JSON.stringify(gaps.map((g) => g.topic)) !== JSON.stringify(cur.gaps.map((g) => g.topic)), extra: str(patch.extra, 4000), confirmed: !!patch.confirmed, confirmedAt: patch.confirmed ? cur.confirmedAt ?? new Date().toISOString() : undefined }) } });
+  await db.roadmap.update({ where: { id: r.id }, data: { insight: json({ ...cur, summary: str(patch.summary, 3000), gaps,
+    ...(patch.blockers ? { blockers: patch.blockers.map((x) => str(x, 400)).filter(Boolean).slice(0, 12) } : {}),
+    ...(patch.strengths ? { strengths: patch.strengths.map((x) => str(x, 400)).filter(Boolean).slice(0, 12) } : {}), edited: cur.edited || str(patch.summary, 3000) !== cur.summary || JSON.stringify(gaps.map((g) => g.topic)) !== JSON.stringify(cur.gaps.map((g) => g.topic)), extra: str(patch.extra, 4000), confirmed: !!patch.confirmed, confirmedAt: patch.confirmed ? cur.confirmedAt ?? new Date().toISOString() : undefined }) } });
   refresh(studentId);
   return { ok: true };
 }
@@ -150,7 +153,14 @@ async function saveDraft(rid: string, run: { data: ReturnType<typeof cleanRoute>
   const stages = toStages(d, gl, prev);
   const lastCp = d.segments[d.segments.length - 1]?.checkpoint?.pass_rule;
   const aiDraft = { model: run.model, label: modelLabel(run.model), fallbackFrom: run.fallbackFrom ?? null, ms: run.ms, start: d.start, goal: d.goal, weekly_hours: d.weekly_hours, total_hours: d.total_hours, forecast_weeks: d.forecast_weeks, deadline_check: d.deadline_check, risks: d.risks, pace_options: d.pace_options, student_message: d.student_message, changes: d.changes, self_study: d.self_study, at: new Date().toISOString(), v: 2 };
-  await db.roadmap.update({ where: { id: rid }, data: { ...extra, stages: json(stages), criteria: json([d.goal.explanation, lastCp].filter(Boolean)), summary: d.teacher_summary || null, aiDraft: json(aiDraft), builtAt: new Date(), approvedAt: null } });
+  const cur = await db.roadmap.findUnique({ where: { id: rid }, select: { meta: true, criteria: true } });
+  const meta = cur?.meta as RoadmapMeta | null;
+  const prevCrit = ((cur?.criteria as unknown[]) ?? []).map((x) => String(x));
+  const doneText = new Set((meta?.done ?? []).map((i) => prevCrit[i]).filter(Boolean));
+  // галочки «показать ученику»: ИИ предлагает, но выбор учителя сохраняется; отметки критериев сбрасываются при новых критериях
+  const crit = d.goal.criteria.length ? d.goal.criteria : [d.goal.explanation, lastCp].filter(Boolean) as string[];
+  const newMeta: RoadmapMeta = { share: meta?.shareSetByTeacher ? meta.share : d.share, shareSetByTeacher: !!meta?.shareSetByTeacher, done: crit.map((c, i) => (doneText.has(c) ? i : -1)).filter((i) => i >= 0) };
+  await db.roadmap.update({ where: { id: rid }, data: { ...extra, meta: json(newMeta), stages: json(stages), criteria: json(crit), summary: d.teacher_summary || null, aiDraft: json(aiDraft), builtAt: new Date(), approvedAt: null } });
   return d;
 }
 
@@ -354,6 +364,23 @@ export async function removeArticle(roadmapId: string, pointId: string, articleI
   if (!p) return { ok: false, error: "point" };
   p.articles = (p.articles ?? []).filter((x) => x.id !== articleId);
   await db.roadmap.update({ where: { id: r.id }, data: { stages: json(stages) } });
+  refresh(r.studentId);
+  return { ok: true };
+}
+
+/** Галочки «что увидит ученик» и отметки выполненных критериев цели. */
+export async function saveMeta(roadmapId: string, patch: { share?: Share; done?: number[] }): Promise<R> {
+  const r = await db.roadmap.findUnique({ where: { id: roadmapId } });
+  if (!r) return { ok: false, error: "not found" };
+  await own(r.studentId);
+  const cur = (r.meta ?? { share: SHARE_DEFAULT, done: [] }) as RoadmapMeta;
+  const n = ((r.criteria as unknown[]) ?? []).length;
+  const next: RoadmapMeta = {
+    share: patch.share ? { gaps: !!patch.share.gaps, self: !!patch.share.self, criteria: !!patch.share.criteria, message: !!patch.share.message } : cur.share ?? SHARE_DEFAULT,
+    shareSetByTeacher: cur.shareSetByTeacher || !!patch.share,
+    done: patch.done ? [...new Set(patch.done.filter((i) => Number.isInteger(i) && i >= 0 && i < n))] : cur.done ?? [],
+  };
+  await db.roadmap.update({ where: { id: r.id }, data: { meta: json(next) } });
   refresh(r.studentId);
   return { ok: true };
 }

@@ -20,6 +20,8 @@ HOW TO BUILD THE ROUTE
 6. Each segment ends with a checkpoint test that opens the next segment: what is tested and the pass rule.
 7. Weekly hours = lessons per week × lesson length + self_study_budget.minutes_per_week (the platform computed the budget from the schedule and CEFR norms: fewer lessons → more self-study). Forecast weeks = hours / weekly hours.
 7a. SELF-STUDY PLAN: distribute self_study_budget.minutes_per_week over activities (sum of times_per_week × minutes ≈ the budget). Prioritise the student's weak skills and the teacher's priorities; with few lessons give more speaking practice outside lessons (speaking clubs, shadowing, recording yourself). Use concrete formats: podcasts and videos for listening, articles/books for reading, a vocabulary trainer on the platform, short writing. For each item give search keywords (English) to find materials — never invent URLs or titles. Activities in Russian. If there is a deadline, check whether the route fits using weeks_until_deadline.
+7b. Segment titles: gaps → "B2+ → C1"; consolidate → "C1" (just the level); level → "C1 → C1+".
+7c. "share": what the student should see besides the map — gaps from the test, the self-study plan, the goal criteria, your message. Set false only with a reason in the brief (e.g. an anxious student, or the teacher asked not to show gaps).
 8. Language: ALL text fields in Russian. Keep grammar topic names, English words and phrases, and course unit titles in English.
 
 If the INPUT contains "current_route" and "teacher_request", this is a revision: change the current route as the teacher asks, keep everything else as it was (same points, same order, same hours) unless the request requires otherwise, and explain the changes in "changes".
@@ -27,7 +29,7 @@ If the INPUT contains "current_route" and "teacher_request", this is a revision:
 OUTPUT — ONLY valid JSON:
 {
   "start": { "overall_level": "B2+", "skills": { "grammar": "B2", "vocabulary": "B2+", "reading": "C1", "listening": "B2+", "writing": "C1", "speaking": "C1" }, "gaps": ["…"] },
-  "goal": { "level": "C1+", "exam": null, "explanation": "what this goal means in practice for this student" },
+  "goal": { "level": "C1+", "exam": null, "explanation": "what this goal means in practice for this student, one sentence", "criteria": ["3–6 concrete, checkable criteria of reaching the goal, each one short line, e.g. «Проводит 30-минутные переговоры без упрощения грамматики»"] },
   "weekly_hours": 4.5,
   "segments": [
     {
@@ -45,8 +47,9 @@ OUTPUT — ONLY valid JSON:
   "deadline_check": { "fits": true, "note": "…" } | null,
   "risks": ["…"],
   "pace_options": [ { "lessons_per_week": 2, "daily_minutes": 20, "forecast_weeks": 40 } ],
-  "teacher_summary": "3–5 sentences for the teacher",
+  "teacher_summary": ["3–5 short theses for the teacher, one line each, key term in **bold**"],
   "student_message": "2–4 sentences for the student: where they are, where they are going, first goal",
+  "share": { "gaps": true, "self_study": true, "criteria": true, "message": true },
   "self_study": {
     "items": [ { "skill": "listening | reading | speaking | writing | vocabulary | grammar", "activity": "Подкасты о психологии", "how": "как именно заниматься", "times_per_week": 3, "minutes": 20, "search": "psychology podcast C1", "why": "зачем этой ученице" } ],
     "tips": ["например: разговорный клуб раз в неделю"]

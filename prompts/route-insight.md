@@ -13,14 +13,19 @@ TASK
 3. Use the account dynamics only if there is data.
 4. Never invent facts about the student.
 
+STYLE — the teacher must grasp everything at a glance, so NO walls of text:
+- Every item is ONE short line (max ~18 words). No paragraphs.
+- Start each item with the key term in **double asterisks** (bold), then a dash and the evidence: "**Артикли** — 4 ошибки из 5, в обе стороны (the Amazon / honesty)".
+- Numbers and scores as digits: "0 из 2", "1/3", "66%".
+
 Language: Russian for all text. Keep grammar topic names, English words and phrases in English.
 
 OUTPUT — ONLY valid JSON:
 {
-  "summary": "4–7 sentences for the teacher: where the student really is, what blocks the next level, what to do first",
-  "strengths": ["..."],
-  "blockers": ["what prevents moving to the next level — concrete, with evidence from the test"],
-  "gaps": [ { "topic": "Articles: abstract nouns, geographical names", "level": "C1", "priority": 1, "why": "4 mistakes of 5: …" } ],
-  "skills": { "grammar": "…", "vocabulary": "…", "reading": "…", "listening": "…", "writing": "…", "speaking": "…" },
-  "dynamics": "1–2 sentences about account dynamics, or \"Данных пока мало\""
+  "summary": ["3–5 key theses for the teacher, each one short line with a **bold** key term: where the student is, the main blocker, what to do first"],
+  "blockers": ["3–5 items: what prevents moving to the next level, with evidence"],
+  "strengths": ["3–5 items"],
+  "gaps": [ { "topic": "Articles: abstract nouns, geographical names", "level": "C1", "priority": 1, "why": "short evidence, e.g. 4 ошибки из 5" } ],
+  "skills": { "grammar": "one short line with level and the main point", "vocabulary": "…", "reading": "…", "listening": "…", "writing": "…", "speaking": "…" },
+  "dynamics": "one short line, or \"Данных пока мало\""
 }

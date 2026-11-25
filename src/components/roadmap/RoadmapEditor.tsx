@@ -5,10 +5,11 @@ import { useAssignParts } from "../placement/AssignParts";
 import { ExpectField, Steps, TrackField, trackForAge, type PlTrack } from "../placement/PlacementPanel";
 import type { RouteAi } from "@/lib/roadmap/progress";
 import { approveRoadmap, assignTest, deleteCheckpoint, editStage, manualResults, type RoadmapForm } from "@/lib/roadmap/actions";
-import { buildRoadmap, type Brief, type ChatMsg, type InsightSaved } from "@/lib/roadmap/ai-route";
+import { buildRoadmap, saveMeta, type Brief, type ChatMsg, type InsightSaved, type RoadmapMeta } from "@/lib/roadmap/ai-route";
+import { SHARE_DEFAULT, type Share } from "@/lib/ai/route-core";
 import type { Point } from "@/lib/ai/route-core";
-import { BriefForm, InsightCard, PointCard, RouteChat, StepHead, useBrief } from "./RouteBrief";
-import { LEVELS, ROUTE_TYPES, SKILL_COLOR, SKILL_NAME, SKILLS, txt, type Skill } from "@/lib/roadmap/cefr";
+import { BriefForm, InsightCard, PointCard, Rich, RouteChat, StepHead, toItems, useBrief } from "./RouteBrief";
+import { segName, LEVELS, ROUTE_TYPES, SKILL_COLOR, SKILL_NAME, SKILLS, txt, type Skill } from "@/lib/roadmap/cefr";
 import { etaRange, fmtHM, PACES, paceKey, paceLabel, parsePace } from "@/lib/roadmap/math";
 import { useRun } from "../courses/useRun";
 import { Dialog } from "../Dialog";
@@ -28,7 +29,7 @@ export type EditorData = {
     id: string; type: string; goal: string; fromLevel: string | null; deadline: string | null; showDate: boolean; pace: string; mood: string; note: string;
     courseIds: string[]; leadCourseId: string | null; approved: boolean; built: boolean; summary: string | null; ai: RouteAi | null;
     stages: { lvl: string; title: string; hours: number; grammar: string[]; vocabulary: string[]; skills: string[]; passed: boolean; focus: string[]; checkpoint: { tests: string[]; pass_rule: string } | null; weeks: number | null; kind: "gaps" | "consolidate" | "level" | null; sum: string; points: Point[] }[];
-    brief: Brief; insight: InsightSaved | null; chat: ChatMsg[]; versions: { at: string; note: string }[];
+    brief: Brief; insight: InsightSaved | null; chat: ChatMsg[]; versions: { at: string; note: string }[]; meta: RoadmapMeta | null;
     criteria: string[]; units: string[]; done: number; ci: number; left: number; lessonMin: number; lateWeeks: number;
   };
 };
@@ -114,8 +115,55 @@ function Checkpoints({ d }: { d: EditorData }) {
   );
 }
 
+const KIND_PILL: Record<string, string> = { gaps: "orange", consolidate: "blue", level: "violet" };
+const KIND_KEY = { gaps: "rm2.segGaps", consolidate: "rm2.segCons", level: "rm2.segLevel" } as const;
 /** Текст ИИ → по предложениям (для списка с точками). */
 const sentences = (x: string) => x.split(/(?<=[.!?])\s+(?=[А-ЯЁA-Z0-9«"(])/).map((y) => y.trim()).filter(Boolean);
+
+/** Критерии достижения цели: нумерованный список, учитель отмечает выполненные. */
+function Criteria({ id, items, done }: { id: string; items: string[]; done: number[] }) {
+  const { t } = useT();
+  const { run } = useRun();
+  const [loc, setLoc] = useState(done);
+  const set = new Set(loc);
+  return (
+    <div className="rsec">
+      <h4>{t("rm.criteria")} <span className="crit-n">{t("rm4.critDone", { a: set.size, b: items.length })}</span></h4>
+      <div className="crit-bar"><span style={{ width: `${items.length ? (set.size / items.length) * 100 : 0}%` }} /></div>
+      <ol className="crit">
+        {items.map((c, i) => (
+          <li key={i} className={set.has(i) ? "on" : ""}>
+            <label><input type="checkbox" checked={set.has(i)} onChange={(e) => { const n = new Set(set); if (e.target.checked) n.add(i); else n.delete(i); setLoc([...n]); run(() => saveMeta(id, { done: [...n] })); }} />
+              <span className="crit-i">{i + 1}</span><span className="grow"><Rich text={c} /></span></label>
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+}
+
+/** «Что увидит ученик»: карта всегда; остальное — галочками (ИИ предлагает, учитель решает). */
+function ShareBox({ id, share, hasSelf, hasMsg }: { id: string; share: Share; hasSelf: boolean; hasMsg: boolean }) {
+  const { t } = useT();
+  const { run, pending } = useRun();
+  const [s, setS] = useState(share);
+  const toggle = (k: keyof Share) => { const n = { ...s, [k]: !s[k] }; setS(n); run(() => saveMeta(id, { share: n })); };
+  const rows: [keyof Share | "map", string, boolean][] = [["map", t("rm4.shMap"), true], ["gaps", t("rm4.shGaps"), true], ["self", t("rm4.shSelf"), hasSelf], ["criteria", t("rm4.shCrit"), true], ["message", t("rm4.shMsg"), hasMsg]];
+  return (
+    <div className="rsec">
+      <h4>{t("rm4.share")}</h4>
+      <div className="shbox">
+        {rows.filter((x) => x[2]).map(([k, label]) => (
+          <label key={k} className={`shrow ${k === "map" || s[k as keyof Share] ? "on" : ""}`}>
+            <input type="checkbox" checked={k === "map" || !!s[k as keyof Share]} disabled={k === "map" || pending} onChange={() => k !== "map" && toggle(k as keyof Share)} />
+            <span>{label}</span>
+          </label>
+        ))}
+      </div>
+      <span className="hint">{t("rm4.shareHint")}</span>
+    </div>
+  );
+}
 
 export function RoadmapEditor({ d }: { d: EditorData }) {
   const { t, lang } = useT();
@@ -213,10 +261,12 @@ export function RoadmapEditor({ d }: { d: EditorData }) {
                 <dt>{t("rm.done")}</dt><dd>{fmtHM(r.done, lang)}</dd>
               </dl>
               {r.ai?.changes && <div className="alert calm mt-3"><b>{t("rm2.changes")}:</b> {r.ai.changes}</div>}
-              {r.summary && <div className="rsec"><h4>{t("rm2.mainIdea")}</h4><ul className="rbul">{sentences(r.summary).map((x, i) => <li key={i}>{x}</li>)}</ul></div>}
+              {r.summary && <div className="rsec"><h4>{t("rm2.mainIdea")}</h4><ol className="rnum">{toItems(r.summary).map((x, i) => <li key={i}><Rich text={x} /></li>)}</ol></div>}
               {r.stages.length > 0 && (
                 <div className="rsec"><h4>{t("rm2.plan")}</h4>
-                  <ol className="rnum">{r.stages.map((s, i) => <li key={i}><b>{s.title}</b>{s.kind && <span className="muted"> — {t(s.kind === "gaps" ? "rm2.segGaps" : s.kind === "consolidate" ? "rm2.segCons" : "rm2.segLevel")}</span>}<span className="muted"> · {s.hours} {t("rm.h")}{s.weeks ? ` · ${t("rm.aiWeeks", { n: s.weeks })}` : ""}</span>{s.points.length > 0 && <div className="small muted">{t("rm2.nPoints", { n: s.points.length })}</div>}</li>)}</ol>
+                  <div className="segtbl">{r.stages.map((s, i) => (
+                    <div key={i} className="segrow"><span className="segn">{i + 1}</span><b className="segname">{segName(r.stages, i, r.fromLevel)}</b><span className={`pill ${KIND_PILL[s.kind ?? "level"]} segkind`}>{t(KIND_KEY[s.kind ?? "level"])}</span><span className="seghrs"><b>{s.hours} {t("rm.h")}</b>{s.weeks ? <span>{t("rm.aiWeeks", { n: s.weeks })}</span> : null}</span><span className="segpts">{s.points.length > 0 ? t("rm2.nPoints", { n: s.points.length }) : ""}</span></div>
+                  ))}</div>
                   {r.ai?.total_hours ? <div className="small mt-1"><b>{t("rm.aiTotal", { h: Math.round(r.ai.total_hours), w: r.ai.forecast_weeks ?? "—" })}</b></div> : null}
                 </div>
               )}
@@ -239,7 +289,7 @@ export function RoadmapEditor({ d }: { d: EditorData }) {
               <div className="flex flex-col gap-2">
                 {r.stages.map((s, i) => (
                   <details key={i} className={`stagerow ${i === r.ci ? "cur" : ""}`} open={sel === i || r.stages.length <= 2} onToggle={(e) => (e.currentTarget as HTMLDetailsElement).open && setSel(i)}>
-                    <summary><span className="lvlbig sm">{s.lvl}</span><b className="grow">{s.title}</b>{s.kind && <span className={`pill ${s.kind === "gaps" ? "orange" : s.kind === "consolidate" ? "blue" : "violet"}`}>{t(s.kind === "gaps" ? "rm2.segGaps" : s.kind === "consolidate" ? "rm2.segCons" : "rm2.segLevel")}</span>}{s.passed && <span className="pill green">✓</span>}<span className="small muted">{s.hours} {t("rm.h")}{s.weeks ? ` · ${t("rm.aiWeeks", { n: s.weeks })}` : ""}</span></summary>
+                    <summary className="segrow"><span className="segn">{i + 1}</span><b className="segname">{segName(r.stages, i, r.fromLevel)}{s.passed && <span className="pill green ml-2">✓</span>}</b><span className={`pill ${KIND_PILL[s.kind ?? "level"]} segkind`}>{t(KIND_KEY[s.kind ?? "level"])}</span><span className="seghrs"><b>{s.hours} {t("rm.h")}</b>{s.weeks ? <span>{t("rm.aiWeeks", { n: s.weeks })}</span> : null}</span></summary>
                     {s.sum && <p className="small mb-0 mt-2">{s.sum}</p>}
                     {s.points.length > 0 ? (
                       <ol className="rpts">
@@ -270,7 +320,8 @@ export function RoadmapEditor({ d }: { d: EditorData }) {
                   </details>
                 ))}
               </div>
-              {r.criteria.length > 0 && <><h4 className="mb-1 mt-4">{t("rm.criteria")}</h4><ul className="m-0 pl-5 small">{r.criteria.map((c, i) => <li key={i}>{c}</li>)}</ul></>}
+              {r.criteria.length > 0 && <Criteria id={r.id} items={r.criteria} done={r.meta?.done ?? []} />}
+              <ShareBox id={r.id} share={r.meta?.share ?? SHARE_DEFAULT} hasSelf={!!r.ai?.self_study} hasMsg={!!r.ai?.student_message} />
               <div className="mt-4 flex flex-wrap gap-2">
                 {r.approved ? <button className="btn secondary" disabled={pending} onClick={() => run(() => approveRoadmap(r.id, false))}>{t("rm.unapprove")}</button>
                   : <button className="btn primary" disabled={pending} onClick={() => run(() => approveRoadmap(r.id))}><Icon name="check" size="sm" />{t("rm.approve")}</button>}

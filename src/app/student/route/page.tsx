@@ -6,7 +6,7 @@ import { PacePicker, RouteMap, StageTestButton } from "@/components/roadmap/Rout
 import { requireUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { getT } from "@/lib/i18n/server";
-import { skillNote, SKILL_COLOR, SKILL_NAME, SKILLS, txt, type Skill, type Stage } from "@/lib/roadmap/cefr";
+import { segName, skillNote, SKILL_COLOR, SKILL_NAME, SKILLS, txt, type Skill, type Stage } from "@/lib/roadmap/cefr";
 import { etaRange, fmtHM, lessonsWord, paceKey, paceLabel, parsePace, selfBudget, stageMath } from "@/lib/roadmap/math";
 import { roadmapView, schedPerWeek, type RouteAi } from "@/lib/roadmap/progress";
 import { SelfPlan } from "@/components/roadmap/SelfPlan";
@@ -39,14 +39,18 @@ export default async function MyRoute({ searchParams }: { searchParams: Promise<
   const L = lang;
   // план самостоятельной работы: минуты подстраиваются под текущее расписание (меньше уроков — больше самостоятельно)
   const aiD = (r.aiDraft ?? null) as RouteAi | null;
+  // что учитель разрешил показать (по умолчанию — всё); отмеченные критерии цели
+  const meta = (r.meta ?? null) as { share?: { gaps?: boolean; self?: boolean; criteria?: boolean; message?: boolean }; done?: number[] } | null;
+  const sh = { gaps: meta?.share?.gaps ?? true, self: meta?.share?.self ?? true, criteria: meta?.share?.criteria ?? true, message: meta?.share?.message ?? true };
+  const doneC = new Set(meta?.done ?? []);
   const selfLessons = (await schedPerWeek(s.id)) ?? parsePace(r.pace).lessons;
-  const selfPlan = aiD?.self_study ? (() => {
+  const selfPlan = sh.self && aiD?.self_study ? (() => {
     const want = selfBudget(selfLessons, v.lessonMin).minPerWeek, had = aiD.self_study!.minutes_per_week || want, k = want / had;
     const items = aiD.self_study!.items.map((x) => ({ ...x, minutes: Math.max(5, Math.round((x.minutes * k) / 5) * 5) }));
     return { ...aiD.self_study!, items, minutes_per_week: items.reduce((a, x) => a + x.minutes * x.times_per_week, 0) };
   })() : null;
   // ученику — только название точки и утверждённое учителем (подсказки ИИ и «почему» не уходят в браузер)
-  const stages = v.stages.map((x) => ({ ...x, title: txt(x.title, L), points: (x.points ?? []).map((p) => ({ id: p.id, title: p.title, level: p.level, hours: p.hours, why: "", focus: "", ok: p.ok ?? {} })) }));
+  const stages = v.stages.map((x, i) => ({ ...x, title: x.kind ? segName(v.stages, i, r.fromLevel) : txt(x.title, L), points: (x.points ?? []).map((p) => ({ id: p.id, title: p.title, level: p.level, hours: p.hours, why: "", focus: "", ok: p.ok ?? {} })) }));
   const tab = sp.tab === "stage" ? "stage" : (TABS as readonly string[]).includes(sp.tab ?? "") ? sp.tab! : "ov";
   const ini = `${s.name[0] ?? ""}${s.lastName?.[0] ?? ""}`.toUpperCase();
   const dated = !!r.deadline && r.showDate;
@@ -148,6 +152,7 @@ export default async function MyRoute({ searchParams }: { searchParams: Promise<
             )}
           </section>
           <div className="mtnwrap"><RouteMap stages={stages} done={v.done} start={r.fromLevel ?? "A"} ini={ini} label={t("rt.youHere")} units={(r.units as { title: string }[]).map((u) => u.title)} ci={v.st.ci} studentView /></div>
+          {sh.message && aiD?.student_message && <section className="card"><div className="mb-2 flex items-center gap-2"><span className="tk-aiico"><Icon name="msg" size="sm" /></span><b>{t("rt.msgT")}</b></div><p className="rquote">{aiD.student_message}</p></section>}
           {selfPlan && <section className="card"><div className="mb-3 flex items-center gap-2"><span className="tk-aiico"><Icon name="clockI" size="sm" /></span><b>{t("ss.title")}</b></div><SelfPlan plan={selfPlan} lessons={selfLessons} lessonMin={v.lessonMin} student /></section>}
 
           <section className="card booster">
@@ -201,7 +206,8 @@ export default async function MyRoute({ searchParams }: { searchParams: Promise<
                   <div key={k} className="blk2"><div className="blkh"><i style={{ background: SKILL_COLOR[k] }} /><b>{txt(SKILL_NAME[k], L)}</b><span className="small muted">{res(entry).skills![k]}%</span></div><div className="small">{txt(skillNote(k, res(entry).skills![k]!), L)}</div></div>
                 ))}
               </section>
-              {(res(entry).weak ?? []).length > 0 && <section className="card"><b>{t("rm.weak")}</b><div className="mt-2 flex flex-wrap gap-1.5">{res(entry).weak!.map((w, i) => <span key={i} className="pill orange">{txt(w, L)}</span>)}</div></section>}
+              {sh.gaps && (aiD?.start?.gaps?.length ?? 0) > 0 && <section className="card"><b>{t("rm.aiGaps")}</b><ol className="rnum mt-2">{aiD!.start!.gaps.map((g, i) => <li key={i}>{g}</li>)}</ol></section>}
+              {sh.gaps && (res(entry).weak ?? []).length > 0 && <section className="card"><b>{t("rm.weak")}</b><div className="mt-2 flex flex-wrap gap-1.5">{res(entry).weak!.map((w, i) => <span key={i} className="pill orange">{txt(w, L)}</span>)}</div></section>}
             </>
           ) : <section className="card"><p className="hint m-0">{t("rt.noEntry", { lvl: r.fromLevel ?? "—" })}</p></section>}
         </div>
@@ -233,7 +239,11 @@ export default async function MyRoute({ searchParams }: { searchParams: Promise<
       {tab === "fin" && (
         <>
           {stageCard(stages.length - 1, true)}
-          {(r.criteria as (string | [string, string])[]).length > 0 && <section className="card mt-4"><h3 className="mt-0">{t("rm.criteria")}</h3>{(r.criteria as (string | [string, string])[]).map((c, i) => <div key={i} className="can"><Icon name="targetI" size="sm" /><span>{txt(c, L)}</span></div>)}</section>}
+          {sh.criteria && (r.criteria as (string | [string, string])[]).length > 0 && (
+            <section className="card mt-4"><h3 className="mt-0">{t("rm.criteria")} <span className="small muted">· {t("rm4.critDone", { a: doneC.size, b: (r.criteria as unknown[]).length })}</span></h3>
+              <ol className="crit">{(r.criteria as (string | [string, string])[]).map((c, i) => <li key={i} className={doneC.has(i) ? "on" : ""}><label><span className="crit-i">{doneC.has(i) ? "✓" : i + 1}</span><span className="grow">{txt(c, L).replace(/\*\*/g, "")}</span></label></li>)}</ol>
+            </section>
+          )}
         </>
       )}
     </div>

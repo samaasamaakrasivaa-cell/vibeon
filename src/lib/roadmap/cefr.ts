@@ -138,3 +138,10 @@ export function skillNote(skill: Skill, v: number): L2 {
   };
   return N[skill][band];
 }
+
+/** Единые названия участков: пробелы «B2+ → C1», закрепление «C1», новый уровень «C1 → C1+». */
+export const segName = (stages: { lvl: string; kind?: string | null }[], i: number, from: string | null | undefined) => {
+  const s = stages[i], prev = i > 0 ? stages[i - 1].lvl : from ?? "";
+  if (!s) return "";
+  return s.kind === "consolidate" ? s.lvl : prev && prev !== s.lvl ? `${prev} → ${s.lvl}` : s.lvl;
+};

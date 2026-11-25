@@ -51,7 +51,8 @@ function route(user: string) {
   if (/говорени|speaking/i.test(req)) gapPts.push({ title: "Speaking: negotiation phrases with modal verbs", level: mid, hours: 6, why: "по просьбе учителя", focus: "переговоры" });
   return {
     start: { overall_level: from, skills: { grammar: from, vocabulary: from, reading: from, listening: from, writing: from, speaking: from }, gaps: ["артикли и продвинутая грамматика"] },
-    goal: { level: goal, exam: null, explanation: "Уверенное общение на рабочие темы, сложные конструкции без ошибок." },
+    goal: { level: goal, exam: null, explanation: "Уверенное общение на рабочие темы, сложные конструкции без ошибок.", criteria: ["Проводит 30-минутные переговоры без упрощения грамматики", "Пишет деловое письмо без ошибок в артиклях", "Понимает подкаст C1 с первого прослушивания"] },
+    share: { gaps: true, self_study: true, criteria: true, message: true },
     weekly_hours: 4.5,
     segments: [
       { title: `${from} → ${mid}`, kind: "gaps", summary: "Закрываем пробелы из теста.", points: gapPts, units: [], can_do_after: ["пишет и говорит без системных ошибок в артиклях"], checkpoint: { tests: ["grammar"], pass_rule: "от 80% по темам участка" } },
@@ -63,7 +64,7 @@ function route(user: string) {
     ],
     deadline_check: null, risks: ["Мало самостоятельной практики — прогноз сдвинется."],
     pace_options: [{ lessons_per_week: 2, daily_minutes: 20, forecast_weeks: 33 }],
-    teacher_summary: "Сначала быстро закрываем пробелы из теста, затем новый уровень.",
+    teacher_summary: ["**Сначала** быстро закрываем пробелы из теста", "**Затем** новый уровень", "**Говорение** — каждый урок"],
     student_message: "Ты уже близко к цели: сначала уберём слабые места, потом — новый уровень.",
     self_study: { items: [
       { skill: "listening", activity: "Подкасты о психологии", how: "Слушать эпизод, выписывать 5 новых выражений", times_per_week: 3, minutes: 20, search: "psychology podcast", why: "аудирование и лексика по интересам" },
@@ -76,8 +77,8 @@ function route(user: string) {
 
 function insight() {
   return {
-    summary: "Уровень уверенный, но системные ошибки в артиклях и продвинутой грамматике мешают выйти на C1.",
-    strengths: ["Беглая речь", "Хорошее чтение"], blockers: ["Артикли с абстрактными существительными", "Нет инверсии"],
+    summary: ["**Уровень B2+** — уверенный, чтение уже C1", "**Главный барьер** — артикли и продвинутая грамматика", "**Начать с** артиклей, затем инверсия"],
+    strengths: ["**Беглая речь** — произношение 3/3", "**Чтение** — C1, 83%"], blockers: ["**Артикли** — 4 ошибки из 5", "**Инверсия** — 0 из 2, не использует"],
     gaps: [{ topic: "Articles with abstract nouns and geographical names", level: "C1", priority: 1, why: "ошибки в тесте" }, { topic: "Inversion", level: "C1", priority: 2, why: "не использует" }],
     skills: { grammar: "пробелы в артиклях", speaking: "упрощает грамматику" }, dynamics: "Данных пока мало",
     prefill: { goal: "Уверенный C1 для работы: переговоры и презентации", interests: "психология, путешествия, подкасты", background: "Маркетолог в IT-компании" },

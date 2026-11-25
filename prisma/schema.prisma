@@ -537,6 +537,7 @@ model Roadmap {
   insight      Json? // «Что я понял»: вывод ИИ по комплекту разбора и аккаунту + предзаполнение анкеты (учитель правит)
   chat         Json         @default("[]") // диалог с ИИ под черновиком: [{ role, text, at }]
   versions     Json         @default("[]") // прежние версии черновика (до 20): [{ at, stages, aiDraft, note }]
+  meta         Json? // что показать ученику { share: { gaps, self, criteria, message } } и отмеченные критерии цели { done: [i] }
   units        Json         @default("[]") // юниты ведущего курса — отметки на карте
   startHours   Float        @default(0) // часы, засчитанные до начала маршрута
   builtAt      DateTime?

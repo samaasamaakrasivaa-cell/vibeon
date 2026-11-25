@@ -1,6 +1,6 @@
 import "server-only";
 import { accountStats, testPack, wsPercent } from "./pack";
-import type { Brief, ChatMsg, InsightSaved } from "./ai-route";
+import type { Brief, ChatMsg, InsightSaved, RoadmapMeta } from "./ai-route";
 import { db } from "../db";
 import { isOwner, TEEN_READY } from "../placement/bank";
 import { addDaysIso, dayStart, isoDay, mondayOf } from "../time";
@@ -112,6 +112,7 @@ export async function editorData(studentId: string, teacherId: string, tz: strin
       summary: r.summary, ai: (r.aiDraft ?? null) as RouteAi | null, stages: v.stages.map((x) => ({ lvl: x.lvl, title: T(x.title), hours: x.hours, grammar: x.grammar.map(T), vocabulary: x.vocabulary.map(T), skills: x.skills.map(T), passed: !!x.passed, focus: x.focus ?? [], checkpoint: x.checkpoint ?? null, weeks: x.weeks ?? null, kind: x.kind ?? null, sum: x.summary ?? "", points: x.points ?? [] })),
       brief: (r.brief ?? {}) as Brief, insight: (r.insight ?? null) as InsightSaved | null, chat: (r.chat ?? []) as ChatMsg[],
       versions: ((r.versions ?? []) as { at: string; note: string }[]).map((x) => ({ at: x.at, note: x.note })),
+      meta: (r.meta ?? null) as RoadmapMeta | null,
       criteria: ((r.criteria as unknown[]) ?? []).map(T), units: ((r.units as { title: string }[]) ?? []).map((u) => u.title),
       done: v.done, ci: v.st.ci, left: v.st.left, lessonMin: v.lessonMin, lateWeeks: v.lateWeeks,
     } : null,

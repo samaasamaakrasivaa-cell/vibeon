@@ -7,6 +7,7 @@ import type { RoadmapForm } from "@/lib/roadmap/actions";
 import { REC_LISTS, REC_TEXTS, type Article, type Point, type PointOk, type Theme } from "@/lib/ai/route-core";
 import { extractFile } from "../ai/BookImport";
 import { SKILL_NAME, SKILLS, txt } from "@/lib/roadmap/cefr";
+const txtL = txt;
 import { useRun } from "../courses/useRun";
 import { Dictate } from "../ai/Dictate";
 import { Icon } from "../Icon";
@@ -26,18 +27,50 @@ export function StepHead({ n, title, sub, right, ai }: { n: number | string; tit
 
 // ───────── «Что я понял» ─────────
 
-export function InsightCard({ studentId, f, brief, insight, hasPack }: { studentId: string; f: RoadmapForm; brief: Brief; insight: InsightSaved | null; hasPack: boolean }) {
+/** Текст ИИ: **жирное** → <b>; строки — пунктами. Старый вывод сплошным текстом режется по предложениям. */
+export function Rich({ text }: { text: string }) {
+  const parts = text.split(/(\*\*[^*]+\*\*)/g);
+  return <>{parts.map((x, i) => (x.startsWith("**") && x.endsWith("**") ? <b key={i}>{x.slice(2, -2)}</b> : <span key={i}>{x}</span>))}</>;
+}
+export const toItems = (text: string) => {
+  const ls = text.split(/\n+/).map((x) => x.replace(/^\s*(?:[-•–*]|\d+[.)])\s+/, "").trim()).filter(Boolean);
+  return ls.length > 1 ? ls : text.split(/(?<=[.!?])\s+(?=[А-ЯЁA-Z«"(*])/).map((x) => x.trim()).filter(Boolean);
+};
+const SK_ORDER = ["grammar", "vocabulary", "reading", "listening", "writing", "speaking"] as const;
+
+/** Блок вывода: заголовок с иконкой, пункты; в режиме правки — по одному пункту на строку. */
+function InsightBlock({ icon, title, tone, items, numbered, edit, value, onChange }: { icon: string; title: string; tone: string; items: string[]; numbered?: boolean; edit: boolean; value: string; onChange: (v: string) => void }) {
   const { t } = useT();
+  if (!edit && !items.length) return null;
+  const L = numbered ? "ol" : "ul";
+  return (
+    <div className={`ins-blk ${tone}`}>
+      <div className="ins-h"><span className="ins-ico">{icon}</span><span>{title}</span>{!edit && items.length > 1 && <span className="ins-n">{items.length}</span>}</div>
+      {edit ? <textarea className="textarea" rows={Math.max(3, items.length + 1)} value={value} onChange={(e) => onChange(e.target.value)} aria-label={title} placeholder={t("rm4.linePh")} />
+        : <L className={numbered ? "ins-ol" : "ins-ul"}>{items.map((x, i) => <li key={i}><Rich text={x} /></li>)}</L>}
+    </div>
+  );
+}
+
+export function InsightCard({ studentId, f, brief, insight, hasPack }: { studentId: string; f: RoadmapForm; brief: Brief; insight: InsightSaved | null; hasPack: boolean }) {
+  const { t, lang } = useT();
   const { run, pending, error } = useRun();
   const [edit, setEdit] = useState(false);
-  const [sum, setSum] = useState(insight?.summary ?? "");
+  const init = (x: InsightSaved | null) => ({ sum: toItems(x?.summary ?? "").join("\n"), blk: (x?.blockers ?? []).join("\n"), str: (x?.strengths ?? []).join("\n") });
+  const [txt3, setTxt3] = useState(init(insight));
   const [gaps, setGaps] = useState(insight?.gaps ?? []);
   const [extra, setExtra] = useState(insight?.extra ?? "");
-  useEffect(() => { setSum(insight?.summary ?? ""); setGaps(insight?.gaps ?? []); setExtra(insight?.extra ?? ""); }, [insight]);
+  useEffect(() => { setTxt3(init(insight)); setGaps(insight?.gaps ?? []); setExtra(insight?.extra ?? ""); }, [insight]);
   // ИИ сам изучает комплект, как только он есть, — до того, как учитель что-то заполнит
   const auto = useRef(false);
   useEffect(() => { if (!insight && hasPack && !auto.current) { auto.current = true; run(() => routeInsight(studentId, f, brief)); } }, [insight, hasPack]); // eslint-disable-line react-hooks/exhaustive-deps
   const move = (i: number, d: -1 | 1) => { const n = [...gaps]; const j = i + d; if (j < 0 || j >= n.length) return; [n[i], n[j]] = [n[j], n[i]]; setGaps(n); };
+  const split = (v: string) => v.split(/\n+/).map((x) => x.trim()).filter(Boolean);
+  const save = (over: { extra?: string; confirmed?: boolean } = {}) => saveInsight(studentId, {
+    summary: txt3.sum, blockers: split(txt3.blk), strengths: split(txt3.str), gaps,
+    extra: over.extra ?? insight?.extra ?? "", confirmed: over.confirmed ?? !!insight?.confirmed,
+  });
+  const skills = insight ? SK_ORDER.filter((k) => insight.skills?.[k]) : [];
   return (
     <section className="card flex flex-col gap-3 rinsight">
       <StepHead n={3} ai title={t("rm2.insight")} sub={t("rm2.insightSub")} right={<>
@@ -49,26 +82,36 @@ export function InsightCard({ studentId, f, brief, insight, hasPack }: { student
           : <><p className="hint m-0">{hasPack ? t("rm2.insightHint") : t("rm2.insightNoPack")}</p><button className="btn tinted self-start" onClick={() => run(() => routeInsight(studentId, f, brief))}><Icon name="spark" size="sm" />{t("rm2.insightGo")}</button></>
       ) : (
         <>
-          {edit ? <textarea className="textarea" rows={6} value={sum} onChange={(e) => setSum(e.target.value)} aria-label={t("rm2.insight")} /> : <p className="m-0" style={{ whiteSpace: "pre-wrap" }}>{insight.summary}</p>}
-          {insight.blockers.length > 0 && <div><div className="small font-bold">{t("rm2.blockers")}</div><ul className="m-0 pl-5 small">{insight.blockers.map((x, i) => <li key={i}>{x}</li>)}</ul></div>}
+          {edit && <p className="hint m-0">{t("rm4.editHint")}</p>}
+          <InsightBlock icon="★" tone="main" title={t("rm4.main")} items={toItems(insight.summary)} edit={edit} value={txt3.sum} onChange={(v) => setTxt3({ ...txt3, sum: v })} />
+          <InsightBlock icon="!" tone="bad" numbered title={t("rm2.blockers")} items={insight.blockers} edit={edit} value={txt3.blk} onChange={(v) => setTxt3({ ...txt3, blk: v })} />
           {gaps.length > 0 && (
-            <div>
-              <div className="small font-bold">{t("rm2.gaps")}</div>
-              <ol className="rgaps">
+            <div className="ins-blk gap">
+              <div className="ins-h"><span className="ins-ico">↗</span><span>{t("rm2.gaps")}</span><span className="ins-n">{gaps.length}</span></div>
+              <ol className="ins-gaps">
                 {gaps.map((g, i) => (
-                  <li key={g.topic + i}><span className="grow"><b>{g.topic}</b>{g.level && <span className="muted"> · {g.level}</span>}{g.why && <div className="small muted">{g.why}</div>}</span>
+                  <li key={g.topic + i}>
+                    <span className="ins-gn">{i + 1}</span>
+                    <span className="grow"><b>{g.topic}</b>{g.why && <span className="block small muted"><Rich text={g.why} /></span>}</span>
+                    {g.level && <span className="pill grey">{g.level}</span>}
                     {edit && <span className="flex gap-1"><button className="iconbtn" aria-label="up" disabled={i === 0} onClick={() => move(i, -1)}>↑</button><button className="iconbtn" aria-label="down" disabled={i === gaps.length - 1} onClick={() => move(i, 1)}>↓</button><button className="iconbtn" aria-label={t("common.delete")} onClick={() => setGaps(gaps.filter((_, k) => k !== i))}><Icon name="close" size="sm" /></button></span>}
                   </li>
                 ))}
               </ol>
             </div>
           )}
-          {insight.strengths.length > 0 && <div className="small"><b>{t("rm2.strengths")}:</b> {insight.strengths.join(" · ")}</div>}
-          {insight.dynamics && <div className="small"><b>{t("rm2.dynamics")}:</b> {insight.dynamics}</div>}
+          <InsightBlock icon="✓" tone="ok" title={t("rm2.strengths")} items={insight.strengths} edit={edit} value={txt3.str} onChange={(v) => setTxt3({ ...txt3, str: v })} />
+          {skills.length > 0 && !edit && (
+            <div className="ins-blk sk">
+              <div className="ins-h"><span className="ins-ico">≡</span><span>{t("rm4.bySkill")}</span></div>
+              <dl className="ins-sk">{skills.map((k) => <div key={k}><dt>{txtL(SKILL_NAME[k], lang)}</dt><dd><Rich text={insight.skills[k]} /></dd></div>)}</dl>
+            </div>
+          )}
+          {insight.dynamics && !edit && <div className="ins-dyn small"><b>{t("rm2.dynamics")}:</b> <Rich text={insight.dynamics} /></div>}
           <div className="flex flex-wrap items-center gap-2">
             {edit ? <>
-              <button className="btn primary sm" disabled={pending} onClick={() => run(() => saveInsight(studentId, { summary: sum, gaps, extra: insight.extra ?? "", confirmed: !!insight.confirmed }), () => setEdit(false))}>{t("common.save")}</button>
-              <button className="btn secondary sm" onClick={() => { setEdit(false); setSum(insight.summary); setGaps(insight.gaps); }}>{t("common.cancel")}</button>
+              <button className="btn primary sm" disabled={pending} onClick={() => run(() => save(), () => setEdit(false))}>{t("common.save")}</button>
+              <button className="btn secondary sm" onClick={() => { setEdit(false); setTxt3(init(insight)); setGaps(insight.gaps); }}>{t("common.cancel")}</button>
             </> : <button className="btn plain sm" disabled={pending} onClick={() => run(() => routeInsight(studentId, f, brief))}><Icon name="spark" size="sm" />{pending ? t("rm2.reading") : t("rm2.insightAgain")}</button>}
             <span className="small muted grow text-right">{insight.label}{insight.edited ? ` · ${t("rm2.edited")}` : ""}</span>
           </div>
@@ -80,8 +123,8 @@ export function InsightCard({ studentId, f, brief, insight, hasPack }: { student
                 <Dictate round onText={(x) => setExtra((v) => add(v, x))} />
               </div>
               <div className="flex flex-wrap gap-2">
-                <button className="btn primary sm" disabled={pending} onClick={() => run(() => saveInsight(studentId, { summary: insight.summary, gaps: insight.gaps, extra, confirmed: true }))}><Icon name="check" size="sm" />{insight.confirmed ? t("rm2.confirmAgain") : t("rm2.confirm")}</button>
-                {extra !== (insight.extra ?? "") && <button className="btn secondary sm" disabled={pending} onClick={() => run(() => saveInsight(studentId, { summary: insight.summary, gaps: insight.gaps, extra, confirmed: !!insight.confirmed }))}>{t("rm2.saveExtra")}</button>}
+                <button className="btn primary sm" disabled={pending} onClick={() => run(() => save({ extra, confirmed: true }))}><Icon name="check" size="sm" />{insight.confirmed ? t("rm2.confirmAgain") : t("rm2.confirm")}</button>
+                {extra !== (insight.extra ?? "") && <button className="btn secondary sm" disabled={pending} onClick={() => run(() => save({ extra }))}>{t("rm2.saveExtra")}</button>}
               </div>
               <span className="hint">{t("rm2.confirmHint")}</span>
             </div>

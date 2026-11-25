@@ -9,6 +9,8 @@ export const ROUTE_TYPE: Record<string, string> = { ge: "general", lvx: "level_p
 const str = (v: unknown, n = 600) => (typeof v === "string" ? v : v == null ? "" : String(v)).trim().slice(0, n);
 const list = (v: unknown, n = 12, len = 300) => (Array.isArray(v) ? v.map((x) => str(x, len)).filter(Boolean).slice(0, n) : []);
 const num = (v: unknown) => { const x = Number(v); return Number.isFinite(x) ? x : null; };
+/** Тезисы: массив строк или текст → строки через перевод строки (так хранится и правится). */
+const lines = (v: unknown, n = 2500) => (Array.isArray(v) ? v.map((x) => str(x, 400)).filter(Boolean).join("\n") : str(v, n)).slice(0, n);
 const obj = (v: unknown) => (v && typeof v === "object" && !Array.isArray(v) ? v as Record<string, unknown> : {});
 
 // ───────── общий запуск: основная модель, при сбое или невалидном JSON (после одного повтора) — запасная ─────────
@@ -51,7 +53,7 @@ export type Insight = {
 export function cleanInsight(raw: Record<string, unknown>): Insight {
   const gaps = (Array.isArray(raw.gaps) ? raw.gaps as Record<string, unknown>[] : []).slice(0, 20).map((g, i) => ({ topic: str(g.topic, 160), level: str(g.level, 8), priority: num(g.priority) ?? i + 1, why: str(g.why, 400) })).filter((g) => g.topic);
   const pf = obj(raw.prefill);
-  const summary = str(raw.summary, 2500);
+  const summary = lines(raw.summary);
   if (!summary && !gaps.length) throw new Error("insight: empty");
   return {
     summary, strengths: list(raw.strengths, 8), blockers: list(raw.blockers, 8), gaps: gaps.sort((a, b) => a.priority - b.priority),
@@ -65,9 +67,13 @@ export function cleanInsight(raw: Record<string, unknown>): Insight {
 
 export type RoutePoint = { title: string; level: string; hours: number; why: string; focus: string; hours_why: string };
 export type RouteSegment = { title: string; kind: "gaps" | "consolidate" | "level"; summary: string; points: RoutePoint[]; units: string[]; can_do_after: string[]; checkpoint: { tests: string[]; pass_rule: string } | null; hours: number; weeks: number | null };
+/** Что показать ученику кроме карты. */
+export type Share = { gaps: boolean; self: boolean; criteria: boolean; message: boolean };
+export const SHARE_DEFAULT: Share = { gaps: true, self: true, criteria: true, message: true };
 export type RouteDraft = {
   start: { overall_level: string; skills: Record<string, string>; gaps: string[] };
-  goal: { level: string; exam: string | null; explanation: string };
+  goal: { level: string; exam: string | null; explanation: string; criteria: string[] };
+  share: Share;
   weekly_hours: number | null; segments: RouteSegment[]; total_hours: number; forecast_weeks: number | null;
   deadline_check: { fits: boolean; note: string } | null; risks: string[];
   pace_options: { lessons_per_week: number; daily_minutes: number; forecast_weeks: number }[];
@@ -111,11 +117,12 @@ export function cleanRoute(raw: Record<string, unknown>, selfBudgetMin = 0): Rou
   const dc = raw.deadline_check && typeof raw.deadline_check === "object" ? raw.deadline_check as Record<string, unknown> : null;
   return {
     start: { overall_level: str(st.overall_level, 20), skills: Object.fromEntries(Object.entries(obj(st.skills)).map(([k, v]) => [k, str(v, 20)])), gaps: list(st.gaps, 8) },
-    goal: { level: str(gl.level, 40), exam: gl.exam ? str(gl.exam, 60) : null, explanation: str(gl.explanation, 800) },
+    goal: { level: str(gl.level, 40), exam: gl.exam ? str(gl.exam, 60) : null, explanation: str(gl.explanation, 800), criteria: list(gl.criteria, 8, 300) },
+    share: (() => { const sh = obj(raw.share); const b = (k: string, d: boolean) => (typeof sh[k] === "boolean" ? sh[k] as boolean : d); return { gaps: b("gaps", true), self: b("self_study", true), criteria: b("criteria", true), message: b("message", true) }; })(),
     weekly_hours: num(raw.weekly_hours), segments: segs, total_hours: 0, forecast_weeks: null,
     deadline_check: dc ? { fits: !!dc.fits, note: str(dc.note, 800) } : null, risks: list(raw.risks, 8),
     pace_options: (Array.isArray(raw.pace_options) ? raw.pace_options as Record<string, unknown>[] : []).slice(0, 5).map((p) => ({ lessons_per_week: num(p.lessons_per_week) ?? 0, daily_minutes: num(p.daily_minutes) ?? 0, forecast_weeks: num(p.forecast_weeks) ?? 0 })).filter((p) => p.lessons_per_week > 0),
-    teacher_summary: str(raw.teacher_summary, 1500), student_message: str(raw.student_message, 1200), changes: str(raw.changes, 1200),
+    teacher_summary: lines(raw.teacher_summary, 1500), student_message: str(raw.student_message, 1200), changes: str(raw.changes, 1200),
     self_study: cleanSelf(raw.self_study, selfBudgetMin),
   };
 }
