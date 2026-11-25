@@ -1,5 +1,6 @@
 import "server-only";
 import { accountStats, testPack, wsPercent } from "./pack";
+import { dossier, lessonsWithoutSummary } from "../lessons/dossier";
 import type { Brief, ChatMsg, InsightSaved, RoadmapMeta } from "./ai-route";
 import { db } from "../db";
 import { isOwner, TEEN_READY } from "../placement/bank";
@@ -98,6 +99,8 @@ export async function editorData(studentId: string, teacherId: string, tz: strin
     teenAvail: TEEN_READY || isOwner((await db.user.findUnique({ where: { id: teacherId }, select: { email: true } }))?.email),
     courses: courses.map((c) => ({ id: c.id, title: c.title, units: c._count.units })),
     schedPerWeek: await schedPerWeek(studentId),
+    dossier: await dossier(studentId, { threshold: ((r?.meta ?? {}) as { threshold?: number }).threshold }),
+    noSummary: (await lessonsWithoutSummary(studentId)).map((l) => ({ id: l.id, date: l.startsAt.toISOString(), title: l.template?.title ?? "" })),
     pack: await testPack(studentId, teacherId).catch((e) => { console.error("[roadmap:pack]", e); return null; }),
     stats: await accountStats(studentId),
     checkpoints: v.checkpoints.map((c) => {

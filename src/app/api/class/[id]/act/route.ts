@@ -1,4 +1,5 @@
 import { cleanFinal, compareEdits, type CheckResult } from "@/lib/ai/check-core";
+import { buildLessonSummary } from "@/lib/lessons/summary";
 import { NextResponse, type NextRequest } from "next/server";
 import { carriedOne, isEmptyPayload } from "@/lib/class/carry";
 import { Prisma } from "@prisma/client";
@@ -417,6 +418,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         if (l.student?.userId)
           await notify({ userId: l.student.userId, kind: "lesson_done", title: hasHw ? (user.lang === "EN" ? "The lesson is over — homework is waiting" : "Урок окончен — тебя ждёт домашка") : (user.lang === "EN" ? "The lesson is over" : "Урок окончен"), action: "review", link: `/class/${l.id}?tab=homework` });
       }
+      // итог урока по каждому ученику — в фоне (разметка тем, проверка сомнительных ответов ИИ), учитель увидит его в досье
+      for (const l of slot) if (l.studentId) void buildLessonSummary(l.id, l.studentId).catch((e) => console.error("[summary]", (e as Error).message));
       publish(ch, "finished", { hasHw: anyHw });
       return NextResponse.json({ ok: true });
     }

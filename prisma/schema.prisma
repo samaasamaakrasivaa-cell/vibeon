@@ -215,6 +215,7 @@ model Student {
   @@index([teacherId, status])
   checkpoints     Checkpoint[]
   placements      PlacementAttempt[]
+  lessonSummaries LessonSummary[]
 }
 
 model Group {
@@ -443,6 +444,7 @@ model LessonInstance {
   @@index([teacherId, startsAt])
   @@index([seriesId])
   @@index([slotId])
+  summaries   LessonSummary[]
 }
 
 enum AnswerStatus {
@@ -1038,4 +1040,24 @@ model AiImage {
   createdAt DateTime @default(now())
 
   @@index([word, style])
+}
+
+/// Итог урока по ученику: статистика по темам (метки заданий), сомнительные ответы (проверка ИИ → решение учителя),
+/// самое трудное и самое долгое задание, слова. Сначала видит учитель; после «Утвердить» — ученик.
+model LessonSummary {
+  id               String         @id @default(cuid())
+  lessonInstanceId String
+  studentId        String
+  topics           Json           @default("[]") // [{ key, topic?, name, skill, items, firstOk, ok, score, ms, tasks }]
+  checks           Json           @default("[]") // [{ id, taskId, key, ctx, expected, given, topicKey, verdict, why, status }]
+  notes            Json           @default("{}") // { hardest, longest, words, points }
+  status           String         @default("draft") // draft | approved
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  approvedAt       DateTime?
+  lessonInstance   LessonInstance @relation(fields: [lessonInstanceId], references: [id], onDelete: Cascade)
+  student          Student        @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([lessonInstanceId, studentId])
+  @@index([studentId])
 }

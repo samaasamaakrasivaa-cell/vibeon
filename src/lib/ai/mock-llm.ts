@@ -105,7 +105,10 @@ export async function mockLlm(model: string, messages: LlmMsg[]): Promise<ChatRe
   const sys = messages.find((m) => m.role === "system")?.content ?? "";
   const user = messages.filter((m) => m.role === "user").map((m) => m.content).join("\n");
   let out: unknown;
-  if (/You tag exercises/.test(sys)) {
+  if (/auto-checked a student's answers/.test(sys)) {
+    const ids = [...user.matchAll(/"id":\s*"([^"]+)"/g)].map((m) => m[1]);
+    out = { items: ids.map((id, i) => ({ id, verdict: i === 0 ? "correct" : "topic_error", why: i === 0 ? "Present Perfect верно, другая лексика — не ошибка" : "ошибка времени" })) };
+  } else if (/You tag exercises/.test(sys)) {
     const n = (user.match(/"n":\s*\d+/g) ?? []).length || 1;
     out = { tasks: Array.from({ length: n }, (_, i) => ({ n: i + 1, topic: "g-b1-pp-vs-past", topicName: "", skill: "grammar", level: "B1", items: [], traps: [], words: [], title: "Complete the sentences: use Present Perfect" })) };
   } else if (/diagnostician/i.test(sys)) out = insight();

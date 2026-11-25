@@ -7,6 +7,8 @@ import { Medal } from "@/components/awards/Medal";
 import { ProgressHead, type ProgressTab } from "@/components/student/SectionTabs";
 import { ProgressStats } from "@/components/student/ProgressStats";
 import { cleanInfo } from "@/lib/tasks/teacher-info";
+import { dossier } from "@/lib/lessons/dossier";
+import { Rich } from "@/components/roadmap/RouteBrief";
 
 export const metadata = { title: "Мой прогресс" };
 export const dynamic = "force-dynamic";
@@ -70,6 +72,10 @@ export default async function Progress({ searchParams }: { searchParams: Promise
       return [...m.values()];
     };
     const grammar = collect("grammar"), vocab = collect("vocabulary");
+    // досье по темам — только из итогов, которые утвердил преподаватель
+    const rm = await db.roadmap.findFirst({ where: { studentId: s!.id }, orderBy: { createdAt: "desc" }, select: { meta: true } });
+    const ds = await dossier(s!.id, { approvedOnly: true, threshold: ((rm?.meta ?? {}) as { threshold?: number }).threshold });
+    const stCls = { own: "green", watch: "orange", gap: "red" } as const;
     if (lessons.length === 0) return <section className="card rtempty"><Icon name="book" /><div><b>{t("pg.noTopics")}</b><div className="small muted">{t("pg.topicsHint")}</div></div></section>;
     const block = (title: string, color: string, list: Pt[]) => (
       <div className="blk2 topicblk">
@@ -84,6 +90,29 @@ export default async function Progress({ searchParams }: { searchParams: Promise
     );
     return (
       <div className="flex flex-col gap-5">
+        {ds.topics.length > 0 && (
+          <section className="card flex flex-col gap-3 dossier">
+            <div><h2 className="m-0">{t("ds.myTitle")}</h2><div className="small muted">{t("ds.mySub")}</div></div>
+            <div className="dtopics">
+              {ds.topics.map((x) => (
+                <div key={x.key} className={`dtopic ${x.status}`}>
+                  <div className="flex items-center gap-2"><b className="grow">{x.name}</b><span className={`pill ${stCls[x.status]}`}>{t(`ds.st.${x.status}`)}</span></div>
+                  <div className="dbar"><span style={{ width: `${x.score}%` }} /><i style={{ left: `${ds.threshold}%` }} /></div>
+                  <div className="small muted">{x.score}%{x.trend !== null && x.trend !== 0 ? ` · ${x.trend > 0 ? "▲" : "▼"}${Math.abs(x.trend)}` : ""} · {t("ds.lessons", { n: x.lessons })}</div>
+                </div>
+              ))}
+            </div>
+            {ds.summaries.slice(0, 5).map((x) => (
+              <details key={x.id} className="dsum">
+                <summary><span className="grow"><b>{x.title || t("ds.lesson")}</b> <span className="small muted">· {fmt(new Date(x.date))}</span></span><Icon name="chevd" size="sm" /></summary>
+                <div className="dsum-body">
+                  {x.notes?.points?.length > 0 && <ul className="rbul">{x.notes.points.map((p, i) => <li key={i}><Rich text={p} /></li>)}</ul>}
+                  {(x.notes?.words?.length ?? 0) > 0 && <div className="small mt-2"><b>{t("ds.words")}:</b> {x.notes.words.join(", ")}</div>}
+                </div>
+              </details>
+            ))}
+          </section>
+        )}
         <div className="blocks topicgrid">
           {block(t("rm.grammar"), "#007AFF", grammar)}
           {block(t("rm.vocab"), "#FF9500", vocab)}

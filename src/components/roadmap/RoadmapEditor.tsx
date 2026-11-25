@@ -17,6 +17,8 @@ import { Icon } from "../Icon";
 import { Mountain } from "./Mountain";
 import { TestPackView } from "./TestPack";
 import { SelfPlan } from "./SelfPlan";
+import { Dossier } from "./Dossier";
+import type { DossierTopic, SummaryView } from "@/lib/lessons/dossier";
 import { selfBudget } from "@/lib/roadmap/math";
 import type { AccountStats, TestPack } from "@/lib/roadmap/pack";
 
@@ -25,6 +27,7 @@ export type EditorData = {
   studentId: string; first: string; ini: string; level: string | null; age?: number | null; teenAvail?: boolean;
   courses: { id: string; title: string; units: number }[];
   pack?: TestPack | null; stats?: AccountStats; schedPerWeek?: number | null;
+  dossier?: { threshold: number; topics: DossierTopic[]; summaries: SummaryView[]; words: string[] }; noSummary?: { id: string; date: string; title: string }[];
   checkpoints: CP[];
   roadmap: null | {
     id: string; type: string; goal: string; fromLevel: string | null; deadline: string | null; showDate: boolean; pace: string; mood: string; note: string;
@@ -293,6 +296,7 @@ export function RoadmapEditor({ d }: { d: EditorData }) {
       <div className="flex flex-col gap-4">
         <Checkpoints d={d} />
         {d.stats && <TestPackView pack={d.pack ?? null} stats={d.stats} />}
+        {d.dossier && (d.dossier.summaries.length > 0 || (d.noSummary?.length ?? 0) > 0) && <Dossier studentId={d.studentId} {...d.dossier} noSummary={d.noSummary ?? []} />}
         {d.stats && <InsightCard studentId={d.studentId} f={{ ...f, goal }} brief={brief} insight={r?.insight ?? null} hasPack={!!d.pack} />}
         <section className="card flex flex-col gap-4">
           <StepHead n={4} title={t("rm.data")} sub={t("rm2.dataSub")} />
