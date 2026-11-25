@@ -178,20 +178,23 @@ const VERD: Record<string, [string, string]> = { own: ["green", "pr.v.own"], par
 function V6Grammar({ v, G, answerRows, extra }: { v: NonNullable<Summary["v6"]>; G: Item[]; answerRows: React.ReactNode[][]; extra: React.ReactNode[][] }) {
   const { t } = useT();
   const topicRow = (x: NonNullable<Summary["v6"]>["topics"][number]) => [
-    <span key="n">{x.name}{x.roots.length > 0 && <span className="small muted block">{t("pr.root", { list: x.roots.join(", ") })}</span>}</span>,
-    <Res key="r" r={[x.c, x.n]} />,
-    x.verdict ? <span key="v" className={`pill ${VERD[x.verdict][0]}`}>{t(VERD[x.verdict][1] as DictKey)}</span> : "—",
+    <span key="n" data-grammar-topic={x.id}>{x.name}{x.roots.length > 0 && <span className="small muted block">{t("pr.root", { list: x.roots.join(", ") })}</span>}</span>,
+    x.n ? <Res key="r" r={[x.c, x.n]} /> : <span key="r" className="muted">—</span>,
+    x.verdict ? <span key="v" className={`pill ${VERD[x.verdict][0]}`}>{t(VERD[x.verdict][1] as DictKey)}</span> : <span key="v" className="muted">{t("pr.v.unchecked")}</span>,
     <span key="f" className="prflags">
-      {x.sureWrong && x.verdict !== "own" && <span className="pill red">{t("pr.f.sureWrong")}</span>}
-      {x.fix === true && x.verdict !== "own" && <span className="pill grey">{t("pr.f.fixOk")}</span>}
-      {x.fix === false && x.verdict !== "gap" && <span className="pill grey">{t("pr.f.fixNo")}</span>}
+      {x.checks.fix + x.checks.typed + x.checks.choice > 0 && <span className="pill grey">{t("pr.topicChecks", x.checks)}</span>}
+      {x.sureWrong && <span className="pill red">{t("pr.f.sureWrong")}</span>}
+      {x.fix === true && <span className="pill grey">{t("pr.f.fixOk")}</span>}
+      {x.fix === false && <span className="pill grey">{t("pr.f.fixNo")}</span>}
       {x.slow && x.verdict === "own" && <span className="pill grey">{t("pr.f.slow")}</span>}
     </span>,
   ];
   const byGroup = [...new Set(v.topics.map((x) => x.groupName))];
   const cnt = (k: string) => v.topics.filter((x) => x.verdict === k).length;
   const gaps = v.topics.filter((x) => x.verdict === "gap").map((x) => x.name);
+  const unchecked = v.topics.filter((x) => x.verdict === null).length;
   const conf = v.conf;
+  const topicHead = [t("pr.topicName"), t("pr.topicCorrect"), t("pr.topicResult"), t("pr.topicFollowup")];
   return (
     <>
       <Sub title={t("pr.path")}>
@@ -209,11 +212,13 @@ function V6Grammar({ v, G, answerRows, extra }: { v: NonNullable<Summary["v6"]>;
       {extra.length > 0 && <Sub title={t("pr.sec.detail")}><Tbl head={[t("pr.col.level"), t("pr.col.easy"), t("pr.col.hard"), t("pr.col.all")]} rows={extra} /></Sub>}
       {v.topics.length > 0 && (
         <Sub title={t("pr.topicsT", { l: v.found ?? "" })}>
-          <p className="small muted m-0">{t("pr.topicsHint")}</p>
+          <p className="small muted m-0">{v.coverageKnown
+            ? t("pr.topicsCoverage", { checked: v.topics.length - unchecked, total: v.topics.length })
+            : t("pr.topicsAnswered", { n: v.topics.length })} {t("pr.topicsHint")}</p>
           {byGroup.map((g) => (
             <div key={g} className="prgrp">
               <div className="small font-semibold">{g}</div>
-              <Tbl rows={v.topics.filter((x) => x.groupName === g).map(topicRow)} />
+              <Tbl head={topicHead} rows={v.topics.filter((x) => x.groupName === g).map(topicRow)} />
             </div>
           ))}
         </Sub>
@@ -221,7 +226,7 @@ function V6Grammar({ v, G, answerRows, extra }: { v: NonNullable<Summary["v6"]>;
       {v.base.length > 0 && (
         <Sub title={t("pr.baseT")}>
           <p className="small muted m-0">{t("pr.baseHint")}</p>
-          <Tbl rows={v.base.map((x) => [<span key="n">{x.name} <span className="pill grey">{x.level}</span></span>, ...topicRow(x).slice(1)])} />
+          <Tbl head={topicHead} rows={v.base.map((x) => [<span key="n" data-grammar-topic={x.id}>{x.name} <span className="pill grey">{x.level}</span></span>, ...topicRow(x).slice(1)])} />
         </Sub>
       )}
       <Sub title={t("pr.analysis")}>
@@ -230,7 +235,7 @@ function V6Grammar({ v, G, answerRows, extra }: { v: NonNullable<Summary["v6"]>;
           ...(conf.sureWrong ? [[t("pr.c.sureWrong"), String(conf.sureWrong)]] : []),
         ]} />
       </Sub>
-      <Mean text={[t("pr.v6Out", { own: cnt("own"), part: cnt("part"), gap: cnt("gap") }), gaps.length ? t("pr.v6Gaps", { list: gaps.slice(0, 4).join(", ") }) : ""].filter(Boolean).join(" ")} />
+      <Mean text={[t("pr.v6Out", { own: cnt("own"), part: cnt("part"), gap: cnt("gap") }), unchecked ? t("pr.topicsUnchecked", { n: unchecked }) : "", gaps.length ? t("pr.v6Gaps", { list: gaps.slice(0, 4).join(", ") }) : ""].filter(Boolean).join(" ")} />
     </>
   );
 }

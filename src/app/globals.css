@@ -1451,6 +1451,10 @@ select.iedit, select.iedit:hover, select.iedit:focus { background-position: righ
 .rpt-tbl { width: 100%; border-collapse: collapse; font-size: 13.5px; }
 .rpt-tbl td { padding: 5px 8px; border-bottom: 1px solid #eee; }
 .rpt-tbl td.r { text-align: right; white-space: nowrap; width: 1%; }
+.rpt-grammar { break-inside: auto; }
+.rpt-topics th { padding: 5px 8px; border-bottom: 1px solid #ddd; text-align: left; }
+.rpt-topics th.r { text-align: right; }
+.rpt-topics tr { break-inside: avoid; }
 .rpt-list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; counter-reset: none; }
 .rpt-list li { display: grid; grid-template-columns: 30px 18px minmax(0, 1fr); gap: 4px; align-items: start; font-size: 13px; break-inside: avoid; }
 .rpt-list li::before { content: attr(value) "."; color: #6e6e73; font-weight: 700; font-size: 12px; padding-top: 1px; }

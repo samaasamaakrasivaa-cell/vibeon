@@ -55,6 +55,7 @@ export type PState = {
   items: Record<string, AnyItem>; // снимок выданных заданий (с ответами)
   core: { id: string; step: number; ph?: Ph }[]; // путь: грамматика (разминка, поиск, проверка, срез выше), затем лексика (vw, vl, vc)
   diag?: number; // уровень подробной проверки (0 = A1 … 4 = C1)
+  diagTopics?: { t: string; g: string }[]; // темы на момент начала подробной проверки v6
   fb?: boolean; // уже переходили на уровень ниже (погорячились)
   up?: boolean; // уже переходили на уровень выше (срез выше сдан уверенно) — после этого вниз не спускаемся
   ups?: number; // сколько раз поднимались: уровень за уровнем, пока ученик уверенно делает задания (B1 → B2 → C1)
@@ -1014,6 +1015,7 @@ function nextCoreV6(st: PState, bank: Bank, rnd: () => number): { item: CoreItem
   const n = st.core.length;
   const last = lastOf(st);
   const tops = topicsAt(bank, D);
+  st.diagTopics ??= tops;
   const cx = new Set(st.cx ?? []);
   // 1. контрольные — по темам с ошибкой или «не уверен», через 5+ заданий; сначала давно ждущие
   const ctrlTopics = [...tops.map((x) => x.t), ...(st.bt ?? [])].filter((t) => !cx.has(t)).map((t) => ({ t, ...needCtrl(st, t) })).filter((x) => x.trigger && x.ctrl < V6.CTRL);
@@ -1086,10 +1088,10 @@ function remainingV6(st: PState, bank: Bank) {
 }
 
 /** Сводка v6 для разбора: лесенка по уровням, итог по каждой теме, пробелы базы, уверенность. */
-export type V6Topic = { id: string; name: string; level: PLevel; group: string; groupName: string; n: number; c: number; score: number | null; verdict: "own" | "part" | "gap" | null; sureWrong: boolean; slow: boolean; fix: boolean | null; typed: number; roots: string[] };
+export type V6Topic = { id: string; name: string; nameEn: string; level: PLevel; group: string; groupName: string; n: number; c: number; score: number | null; verdict: "own" | "part" | "gap" | null; sureWrong: boolean; slow: boolean; fix: boolean | null; typed: number; checks: { fix: number; typed: number; choice: number }; roots: string[] };
 export type V6Summary = {
   ladder: { level: PLevel; series: { c: number; n: number; typed: number }[]; p: number; verdict: "up" | "down" | null }[];
-  found: PLevel | null; topics: V6Topic[]; base: V6Topic[];
+  found: PLevel | null; topics: V6Topic[]; base: V6Topic[]; coverageKnown: boolean;
   conf: { sureRight: number; unsureRight: number; sureWrong: number; unsureWrong: number };
 };
 export function summarizeV6(st: PState, bank: Bank): V6Summary {
@@ -1097,18 +1099,22 @@ export function summarizeV6(st: PState, bank: Bank): V6Summary {
   for (const s of st.ld ?? []) if (order[order.length - 1] !== s.L) order.push(s.L);
   const ladder = [...new Set(order)].map((L) => ({ level: PL_LEVELS[L], ...ladderLevel(st, L), verdict: st.lv?.[L] ?? null })).map(({ level, series, p, verdict }) => ({ level, series, p, verdict }));
   const gName = new Map(bank.groups.map((g) => [g.id, g.name_ru]));
-  const tName = new Map(bank.core.map((x) => [x.topic_id, x.topic_ru]));
-  const topic = (t: string, gid: string): V6Topic => {
+  const byTopic = new Map(bank.core.map((x) => [x.topic_id, x]));
+  const topic = (t: string, gid: string, level?: PLevel): V6Topic => {
     const xs = topicAnswers(st, t);
     const sc = topicScore(xs);
     const okx = xs.filter((x) => x.a.ok);
     const slow = okx.length >= 1 && okx.filter((x) => (x.a.ms ?? 0) > (typedIt(x.it) ? V6.SLOW_T : V6.SLOW_C)).length * 2 > okx.length;
     const fx = xs.find((x) => x.it.type === "fix");
     const first = xs[0]?.it;
-    return { id: t, name: first?.topic_ru ?? tName.get(t) ?? t, level: first?.level ?? "A1", group: gid, groupName: gName.get(gid) ?? "", n: xs.length, c: okx.length, score: sc, verdict: verdictOf(sc), sureWrong: xs.some((x) => !x.a.ok && x.a.cf === 1), slow, fix: fx ? !!fx.a.ok : null, typed: xs.filter((x) => typedIt(x.it)).length, roots: [] };
+    const item = first ?? byTopic.get(t);
+    const checks = { fix: 0, typed: 0, choice: 0 };
+    for (const x of xs) if (x.ph === "c") checks[x.it.type === "fix" ? "fix" : typedIt(x.it) ? "typed" : "choice"]++;
+    return { id: t, name: item?.topic_ru ?? t, nameEn: item?.topic_en ?? t, level: first?.level ?? level ?? item?.level ?? "A1", group: gid, groupName: gName.get(gid) ?? "", n: xs.length, c: okx.length, score: sc, verdict: verdictOf(sc), sureWrong: xs.some((x) => !x.a.ok && x.a.cf === 1), slow, fix: fx ? !!fx.a.ok : null, typed: xs.filter((x) => typedIt(x.it)).length, checks, roots: [] };
   };
   const D = st.diag;
-  const diagnostic = new Map(D === undefined ? [] : topicsAt(bank, D).map((x) => [x.t, x.g]));
+  const found = D === undefined ? null : PL_LEVELS[D];
+  const diagnostic = new Map((st.diagTopics ?? (D === undefined ? [] : topicsAt(bank, D))).map((x) => [x.t, x.g]));
   // Перенос темы между уровнями не должен удалять её из отчёта о пройденном тесте.
   if (D !== undefined) {
     for (const question of st.core) {
@@ -1118,15 +1124,15 @@ export function summarizeV6(st: PState, bank: Bank): V6Summary {
       }
     }
   }
-  const topics = [...diagnostic].map(([id, group]) => topic(id, group)).filter((x) => x.n);
+  const topics = [...diagnostic].map(([id, group]) => topic(id, group, found ?? undefined)).filter((x) => x.n || st.diagTopics);
   const gOf = new Map(bank.groups.flatMap((g) => g.topics.map((t) => [t, g.id] as const)));
   const base = (st.bt ?? []).map((t) => topic(t, gOf.get(t) ?? "")).filter((x) => x.n);
   // корень: тема-основа (уровнем ниже) тоже не даётся
   const weakBase = new Set(base.filter((x) => x.verdict === "gap" || x.verdict === "part").map((x) => x.id));
-  for (const x of topics) if (x.verdict !== "own") x.roots = (bank.prereq?.[x.id] ?? []).filter((t) => weakBase.has(t)).map((t) => tName.get(t) ?? t);
+  for (const x of topics) if (x.verdict === "gap" || x.verdict === "part") x.roots = (bank.prereq?.[x.id] ?? []).filter((t) => weakBase.has(t)).map((t) => byTopic.get(t)?.topic_ru ?? t);
   const conf = { sureRight: 0, unsureRight: 0, sureWrong: 0, unsureWrong: 0 };
   for (const x of st.core) { const a = st.answers[x.id]; if (!a || a.cf === undefined) continue; if (a.ok) a.cf ? conf.sureRight++ : conf.unsureRight++; else a.cf ? conf.sureWrong++ : conf.unsureWrong++; }
-  return { ladder, found: D === undefined ? null : PL_LEVELS[D], topics, base, conf };
+  return { ladder, found, topics, base, coverageKnown: !!st.diagTopics, conf };
 }
 
 /** «Найди и исправь» из заданий с вариантами: в предложение подставлен неверный вариант; span — его слова. */

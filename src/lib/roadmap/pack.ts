@@ -65,7 +65,7 @@ export async function testPack(studentId: string, teacherId: string): Promise<Te
   };
   let grammarTopics: TestPack["grammarTopics"] = [];
   if (st.ld?.length) {
-    try { grammarTopics = summarizeV6(st, bank).topics.map((t) => ({ id: t.id, name: t.name, level: t.level, c: t.c, n: t.n, verdict: t.verdict })); } catch { /* старые попытки без v6 */ }
+    try { grammarTopics = summarizeV6(st, bank).topics.filter((t) => t.n > 0).map((t) => ({ id: t.id, name: t.name, level: t.level, c: t.c, n: t.n, verdict: t.verdict })); } catch { /* старые попытки без v6 */ }
   }
   const text = (kind: "reading" | "listening") => r.d[kind === "reading" ? "reading" : "listening"].map((x) => ({ level: x.level, c: x.questions.filter((q) => q.ok).length, n: x.questions.length }));
   // отчёт: тексты учителя (с правками) поверх черновика системы — вариант «для ученика», русский

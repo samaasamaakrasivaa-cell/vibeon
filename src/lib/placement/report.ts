@@ -1,6 +1,7 @@
 // Конструктор отчёта по placement test: два варианта (ученик — подробный, родитель — простыми словами),
 // русский или английский; английский подстраивается под уровень ученика (до B1 — простые фразы, с B2 — сложнее).
 // Тексты — черновик: учитель правит любой блок, правки хранятся отдельно для каждого варианта и языка.
+import type { V6Topic } from "./engine";
 
 export type RVariant = "student" | "parent";
 export type RLang = "ru" | "en";
@@ -14,10 +15,12 @@ export const R_STUDENT_ONLY: RBlock[] = ["grammar", "writing", "answers"];
 export type RSkill = "core" | "vocab" | "reading" | "listening" | "writing" | "speaking";
 export const R_SKILLS: RSkill[] = ["core", "vocab", "reading", "listening", "writing", "speaking"];
 export type RFamily = { id: string; name: string; c: number; n: number };
+export type RGrammarTopic = Pick<V6Topic, "id" | "name" | "nameEn" | "level" | "c" | "n" | "verdict">;
 export type RInput = {
   name: string; teen: boolean; level: string | null; // итоговый подуровень (A1…C1, с «+») — утверждённый или оценка системы
   skills: Partial<Record<RSkill, string | null>>; families: RFamily[]; vweak: string[]; comment: string;
   gweak?: string[]; // темы грамматики с ошибками (из карты тем)
+  grammarDetail?: { level: string; topics: RGrammarTopic[]; base: RGrammarTopic[]; coverageKnown: boolean };
   wsWeak?: { kind: "writing" | "speaking"; id: string; name: string; v: number }[]; // критерии письма и говорения с низким баллом (0–1 из 3)
 };
 const CRIT_EN: Record<string, string> = { task: "task achievement", coherence: "coherence and organisation", vocabulary: "vocabulary", grammar: "grammar", fluency: "fluency and coherence", pronunciation: "pronunciation" };
@@ -110,6 +113,15 @@ export function draftTexts(x: RInput, v: RVariant, lang: RLang): Record<string, 
   const famStrong = x.families.filter((f) => f.n >= 3 && f.c / f.n >= 0.85);
   const famWeak = x.families.filter((f) => f.n >= 2 && f.c / f.n < 0.5);
   const ru = lang === "ru";
+  const grammar = x.grammarDetail;
+  const topicName = (t: RGrammarTopic) => ru ? t.name : t.nameEn;
+  const topicResults = grammar ? [...grammar.topics, ...grammar.base] : [];
+  const weakTopics = [...new Set(topicResults
+    .filter((t) => t.verdict === "gap" || t.verdict === "part")
+    .sort((a, b) => Number(b.verdict === "gap") - Number(a.verdict === "gap") || a.c / a.n - b.c / b.n)
+    .map(topicName))];
+  const weakGrammar = grammar ? weakTopics : (x.gweak?.length ? x.gweak : famWeak.map((f) => famName(f, lang)));
+  const strongGrammar = grammar ? grammar.topics.filter((t) => t.verdict === "own").map(topicName) : famStrong.map((f) => famName(f, lang));
   const list = (xs: string[]) => xs.map((s) => `• ${s}`).join("\n");
   const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
   const nm = x.name || (ru ? "Ученик" : "The student");
@@ -119,18 +131,17 @@ export function draftTexts(x: RInput, v: RVariant, lang: RLang): Record<string, 
     level = ru ? `${x.teen ? "Твой" : "Ваш"} уровень — ${L} по шкале CEFR. ${can}` : `${enL ? "Your overall level is" : "Your level is"} ${L}. ${can}`;
     const s1 = [
       ...strongSk.map((k) => `${R_SKILL_NAME[lang][k]}: ${x.skills[k]}`),
-      ...(famStrong.length ? [(ru ? "Грамматика: " : "Grammar: ") + famStrong.slice(0, 4).map((f) => famName(f, lang)).join(", ")] : []),
+      ...(strongGrammar.length ? [(ru ? "Грамматика: " : "Grammar: ") + strongGrammar.slice(0, 4).join(", ")] : []),
     ];
     strong = s1.length ? list(s1) : weakSk.length ? (ru ? "Допишите, что получилось лучше всего." : "Add what went best.") : ru ? `Результаты ровные по всем навыкам — хорошая база для уровня ${L}.` : `Your results are even across all skills — a good base for ${L}.`;
     const w1 = [
       ...weakSk.map((k) => `${R_SKILL_NAME[lang][k]}: ${x.skills[k]}`),
-      // грамматика: темы, где были ошибки (из карты тем), иначе — слабые разделы
-      ...((x.gweak?.length ? [(ru ? "Грамматика: " : "Grammar: ") + x.gweak.slice(0, 5).join(", ")] : famWeak.length ? [(ru ? "Грамматика: " : "Grammar: ") + famWeak.slice(0, 4).map((f) => famName(f, lang)).join(", ")] : [])),
+      ...(weakGrammar.length ? [(ru ? "Грамматика: " : "Grammar: ") + weakGrammar.slice(0, 5).join(", ")] : []),
       ...(ru && x.vweak.length ? ["Лексика: " + x.vweak.slice(0, 4).join(", ").toLowerCase()] : []),
       ...wsWork(x, lang),
     ];
-    work = w1.length ? list(w1) : ru ? `Явных пробелов тест не выявил — можно двигаться дальше по программе уровня ${L}.` : `The test found no clear gaps — ${enL ? "you can move on with the" : "you can go on with the"} ${L} programme.`;
-    const focus = [...weakSk.map((k) => R_SKILL_NAME[lang][k].toLowerCase()), ...famWeak.slice(0, 2).map((f) => famName(f, lang))];
+    work = w1.length ? list(w1) : ru ? "В проверенных разделах явных пробелов не обнаружено." : "No clear gaps were found in the sections covered.";
+    const focus = [...weakSk.map((k) => R_SKILL_NAME[lang][k].toLowerCase()), ...(grammar ? weakTopics : famWeak.map((f) => famName(f, lang))).slice(0, 2)];
     plan = ru
       ? `Ближайшая цель — уверенный ${next(x.level)}. ${focus.length ? `На занятиях сделаем упор на: ${focus.join(", ")}.` : "На занятиях будем развивать все навыки равномерно."} Все ошибки из теста разберём вместе на уроке.`
       : enL
@@ -142,7 +153,7 @@ export function draftTexts(x: RInput, v: RVariant, lang: RLang): Record<string, 
       : `${nm}'s current level is ${L} on the international CEFR scale (from A1, beginner, to C2, proficient). ${can}`;
     const s1 = strongSk.map((k) => PLAIN[lang][k][0]);
     strong = s1.length ? list(s1.map(cap)) : weakSk.length ? (ru ? "Допишите, что получилось лучше всего." : "Add what went best.") : ru ? "Результаты ровные по всем навыкам — хорошая основа для дальнейших занятий." : "The results are even across all skills, which is a good foundation for further study.";
-    const w1 = [...weakSk.map((k) => PLAIN[lang][k][1]), ...(x.gweak?.length ? [(ru ? "отдельные темы грамматики: " : "some grammar topics: ") + x.gweak.slice(0, 4).join(", ")] : famWeak.length ? [(ru ? "отдельные темы грамматики: " : "some grammar topics: ") + famWeak.slice(0, 3).map((f) => famName(f, lang)).join(", ")] : []), ...wsWork(x, lang)];
+    const w1 = [...weakSk.map((k) => PLAIN[lang][k][1]), ...(weakGrammar.length ? [(ru ? "отдельные темы грамматики: " : "some grammar topics: ") + weakGrammar.slice(0, 4).join(", ")] : []), ...wsWork(x, lang)];
     work = w1.length ? list(w1.map(cap)) : ru ? "Серьёзных пробелов тест не выявил." : "The test did not reveal any serious gaps.";
     plan = ru
       ? `Рекомендуем регулярные занятия 2–3 раза в неделю и немного английского каждый день: сериалы, книги или игры на английском. Ближайшая цель — уровень ${next(x.level)}; при регулярных занятиях переход на следующий уровень обычно занимает от нескольких месяцев до полугода — точный срок зависит от ученика.`
