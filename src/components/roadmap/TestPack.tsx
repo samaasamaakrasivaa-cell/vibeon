@@ -36,10 +36,10 @@ function Errors({ groups }: { groups: Pack["grammarErrors"] }) {
   );
 }
 
-function Marks({ m }: { m: { name: string; v: number | null; note: string }[] }) {
+function Marks({ m, max = 3 }: { m: { name: string; v: number | null; note: string }[]; max?: number }) {
   return (
     <table className="tpack-tbl"><tbody>
-      {m.map((x) => <tr key={x.name}><td>{x.name}</td><td className="num"><b>{x.v ?? "—"}</b>/3</td><td className="muted">{x.note}</td></tr>)}
+      {m.map((x) => <tr key={x.name}><td>{x.name}</td><td className="num"><b>{x.v ?? "—"}</b>/{max}</td><td className="muted">{x.note}</td></tr>)}
     </tbody></table>
   );
 }
@@ -87,14 +87,14 @@ export function TestPackView({ pack, stats }: { pack: Pack | null; stats: Accoun
           )}
           {pack.writing && (
             <Sec title={t("tp.writing", { l: pack.writing.level })}>
-              <Marks m={pack.writing.marks} />
+              <Marks m={pack.writing.marks} max={pack.max} />
               {pack.writing.note && <p className="small mb-0">{pack.writing.note}</p>}
               {pack.writing.text && <blockquote className="tpack-text">{pack.writing.text}</blockquote>}
             </Sec>
           )}
           {pack.speaking && (
             <Sec title={t("tp.speaking", { l: pack.speaking.level })}>
-              <Marks m={pack.speaking.marks} />
+              <Marks m={pack.speaking.marks} max={pack.max} />
               {pack.speaking.note && <p className="small mb-0">{pack.speaking.note}</p>}
             </Sec>
           )}

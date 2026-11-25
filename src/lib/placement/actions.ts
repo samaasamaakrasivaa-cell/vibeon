@@ -11,7 +11,8 @@ import { notify } from "../notify";
 import { rateLimit } from "../rate-limit";
 import { getLang } from "../i18n/server";
 import { attemptFor, ptCookie } from "./access";
-import { getBank, isOwner, RUBRICS, TEEN_READY, trackOf, type Track } from "./bank";
+import { getBank, isOwner, TEEN_READY, trackOf, type Track } from "./bank";
+import { describe5, rubricOf } from "./rubric";
 import { checkCore, typoOk, emptyState, EXPECT, pickTask, PL_LEVELS, SECTIONS, STEPS, stepIdx, type Section, summarize, words, type CoreItem, type Expect, type ListenItem, type ReadItem, type SpeakItem, type WriteItem } from "./engine";
 import { addNextText, advance, begin, closeSection, doneOf, ensureTasks, enter, goTo, json, LATER, availOf, openOf, partsOf, publicView, stateOf, touch, type Later, type PView } from "./run";
 import { revealedScripts } from "./review";
@@ -415,19 +416,20 @@ export async function closePlacementLink(code: string): Promise<R> {
   return { ok: true };
 }
 
-export type ReviewInput = { writing: Record<string, number>; speaking: Record<string, number>; points: boolean[]; comment: string; lesson?: { level: string; marks: Record<string, number> } | null; wNote?: string; sNote?: string; wc?: Record<string, string>; sc?: Record<string, string> };
+export type ReviewInput = { rubric?: number; writing: Record<string, number>; speaking: Record<string, number>; points: boolean[]; comment: string; lesson?: { level: string; marks: Record<string, number> } | null; wNote?: string; sNote?: string; wc?: Record<string, string>; sc?: Record<string, string> };
 /** Комментарии к критериям: { критерий: текст } — только известные ключи, короткие тексты. */
 const cleanNotes = (m: Record<string, string> | undefined) => Object.fromEntries(Object.entries(m ?? {}).filter(([k, v]) => /^[a-z]{2,20}$/.test(k) && typeof v === "string" && v.trim()).map(([k, v]) => [k, v.slice(0, 1500)]));
-const cleanScores = (m: Record<string, number> | undefined) => Object.fromEntries(Object.entries(m ?? {}).filter(([k, v]) => /^[a-z]{2,20}$/.test(k) && Number.isInteger(v) && v >= 0 && v <= 3));
+const cleanScores = (m: Record<string, number> | undefined, max = 5) => Object.fromEntries(Object.entries(m ?? {}).filter(([k, v]) => /^[a-z]{2,20}$/.test(k) && Number.isInteger(v) && v >= 0 && v <= max));
 
-/** Баллы 0–3 по критериям письма и говорения, пункты задания письма, комментарий (сохраняются по ходу проверки). */
+/** Баллы по критериям письма и говорения (v2 — 0–5 по Cambridge, v1 — прежние 0–3), пункты задания письма, комментарий (сохраняются по ходу проверки). */
 export async function saveReview(id: string, r: ReviewInput): Promise<R> {
   return wrap(async () => {
     const { a } = await teacherAttempt(id);
     const prev = (a.review ?? {}) as Record<string, unknown>;
     const points = Array.isArray(r.points) ? r.points.slice(0, 10).map(Boolean) : [];
-    const lesson = r.lesson && PL_LEVELS.includes(r.lesson.level as never) ? { level: r.lesson.level, marks: cleanScores(r.lesson.marks) } : r.lesson === null ? null : prev.lesson;
-    await db.placementAttempt.update({ where: { id }, data: { review: json({ ...prev, writing: cleanScores(r.writing), speaking: cleanScores(r.speaking), points, comment: str(r.comment, 3000), lesson, wNote: str(r.wNote ?? "", 3000), sNote: str(r.sNote ?? "", 3000), wc: cleanNotes(r.wc), sc: cleanNotes(r.sc) }) } });
+    const set = rubricOf(prev as never), max = set.max;
+    const lesson = r.lesson && PL_LEVELS.includes(r.lesson.level as never) ? { level: r.lesson.level, marks: cleanScores(r.lesson.marks, max) } : r.lesson === null ? null : prev.lesson;
+    await db.placementAttempt.update({ where: { id }, data: { review: json({ ...prev, rubric: set.ver, writing: cleanScores(r.writing, max), speaking: cleanScores(r.speaking, max), points, comment: str(r.comment, 3000), lesson, wNote: str(r.wNote ?? "", 3000), sNote: str(r.sNote ?? "", 3000), wc: cleanNotes(r.wc), sc: cleanNotes(r.sc) }) } });
     revalidatePath(`/teacher/placement/${id}`);
     return { ok: true };
   });
@@ -695,7 +697,8 @@ export async function aiScore(id: string, kind: "writing" | "speaking", transcri
     const it = kind === "writing" ? (st.writing ? (st.items[st.writing.id] as WriteItem) : null) : (st.speaking ? (st.items[st.speaking.id] as SpeakItem) : null);
     if (!it) return { ok: false, error: "task" };
     const level = it.level, below = PL_LEVELS[PL_LEVELS.indexOf(level as never) - 1] ?? "";
-    const crit = (kind === "writing" ? RUBRICS.writing : RUBRICS.speaking).criteria.map((c) => ({ id: c.id, name: c.name_ru, level: c.levels[level] ?? "", below: below ? c.levels[below] ?? "" : "" }));
+    const set = rubricOf(a.review as never);
+    const crit = set[kind].map((c) => ({ id: c.id, name: c.name_ru, en: c.en, level: c.levels?.[level] ?? "", below: below ? c.levels?.[below] ?? "" : "", ...(set.ver === 2 ? { bands: [5, 4, 3, 2, 1, 0].map((v) => `${v} — ${describe5(c, level, v)}`) } : {}) }));
     let task: string, text: string;
     if (it.type === "writing") {
       task = `${it.prompt_en}${it.points?.length ? `\nIn your answer: ${it.points.join("; ")}.` : ""}\n(${it.min_words}–${it.max_words} words)`;
@@ -706,7 +709,7 @@ export async function aiScore(id: string, kind: "writing" | "speaking", transcri
       text = qs.map((q, i) => `${i + 1}. ${str(transcripts[i] ?? "", 3000) || "(нет записи)"}`).join("\n");
     }
     try {
-      const ai = await run("plscore", { kind, level, below, teen: st.track === "teen", task, text, criteria: crit }, await aiCtx(me));
+      const ai = await run("plscore", { kind, level, below, teen: st.track === "teen", task, text, criteria: crit, max: set.max }, await aiCtx(me));
       const prev = (a.review ?? {}) as Record<string, unknown>;
       const prevAi = (prev.ai ?? {}) as Record<string, unknown>;
       await db.placementAttempt.update({ where: { id }, data: { review: json({ ...prev, ai: { ...prevAi, [kind]: { ...ai, level, at: new Date().toISOString(), ...(kind === "speaking" ? { transcripts: transcripts.map((x) => str(x, 3000)) } : {}) } } }) } });

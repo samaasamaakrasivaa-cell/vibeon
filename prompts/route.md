@@ -8,13 +8,14 @@ INPUT (JSON):
 - student: age and the student's questionnaire.
 - route: type, from level, goal level, deadline and weeks_until_deadline (computed by the platform — do not calculate dates yourself), pace.
 - self_study_budget: minutes of self-study per week computed by the platform.
+- level_syllabus: the standard grammar topics between the start and the goal level (id, level, topic, core, mastered).
 - hours_guide: typical study hours between sublevels for an adult (e.g. "B2+ → C1": 100). The platform checks your numbers against it.
 - courses: the leading course and its units (may be empty).
 
 HOW TO BUILD THE ROUTE
 1. Segments are the big parts of the mountain, named by sublevels with arrows: "B2+ → C1", "C1 → C1+". The last segment ends at the goal level. Do not go beyond the goal.
 2. If the student has grammar gaps at or below the start level, the FIRST segment closes them quickly (kind "gaps"): this is usually short — only what the test showed. If the newly reached level needs to be made stable before moving on (typical at C1), you may add a SHORT consolidation segment at that level (kind "consolidate", title like "C1 → C1", at most 40 hours): practise the level in all skills, no new grammar. Then come segments of new-level material (kind "level"). Never repeat a "level" segment for the same sublevels.
-3. Each segment is split into points of 4–12 study hours. A point has ONE main grammar topic (the backbone), named concretely ("Articles with abstract nouns and geographical names", not "Articles"). In the gaps segment, points follow the insight gaps order: global and frequent first, specific and rare last; merge tiny or similar topics. In level segments, take the main grammar of the next sublevel and the skills from brief priorities.
+3. Each segment is split into points of 4–12 study hours. A point has ONE main grammar topic (the backbone), named concretely ("Articles with abstract nouns and geographical names", not "Articles"). In the gaps segment, points follow the insight gaps order: global and frequent first, specific and rare last; merge tiny or similar topics. In level segments, the grammar comes from "level_syllabus" — the platform's standard grammar programme by level (Core Inventory, Cambridge A2 Key / B1 Preliminary specifications, coursebook syllabi): build the points of each level segment from the topics whose level falls inside that segment, core topics first, 1–3 closely related topics per point, in the given order; skip topics with "mastered": true; add non-core topics only if time allows or the goal needs them. Name points by the topics. Every point lists the ids of the syllabus topics it covers in "topics" (gaps and consolidate points may cover syllabus topics too — list them). Also take the skills from brief priorities.
 4. Point hours are what it really takes this student, and you must justify them in "hours_why" in Russian, briefly and from evidence (e.g. "4 ошибки из 5 в тесте, тема C1 → 8 ч", "знает частично: 1 из 3 → 4 ч", "новая тема уровня C1 → 10 ч"): a small gap the student partly knows — 3–5 h; a real gap — 6–10 h; a new topic — 6–12 h. Segment hours = sum of its points. Keep "level" segments near hours_guide (±25%). The gaps segment is usually much shorter than hours_guide.
 5. For each point write "focus": 1–2 sentences on what else is trained around this grammar (vocabulary area, skill) — tuned to brief interests, job and goal.
 6. Each segment ends with a CHECKPOINT that opens the next segment — the teacher approves it. Be specific: which skills ("tests"), exactly what is checked ("what": the segment's grammar topics, vocabulary, the skills from the student's blockers), the format and length ("format", e.g. "25 заданий на темы участка + монолог 3 мин + письмо 150 слов"), and a measurable pass rule with numbers ("pass_rule", e.g. "грамматика ≥ 80%, говорение и письмо ≥ 2/3 по каждому критерию"). If the rule is not met, the student does not move on: say what happens instead ("if_not_passed", e.g. "повтор слабых тем 4–6 ч и пересдача").
@@ -38,7 +39,7 @@ OUTPUT — ONLY valid JSON:
       "kind": "gaps | consolidate | level",
       "summary": "1–2 sentences: what this segment is about",
       "points": [
-        { "title": "Articles with abstract nouns and geographical names", "level": "C1", "hours": 6, "hours_why": "4 ошибки из 5 в тесте → 6 ч", "why": "from the test: …", "focus": "…" }
+        { "title": "Articles with abstract nouns and geographical names", "topics": ["g-b2-articles"], "level": "C1", "hours": 6, "hours_why": "4 ошибки из 5 в тесте → 6 ч", "why": "from the test: …", "focus": "…" }
       ],
       "units": ["Unit 3 — …"],
       "can_do_after": ["…"],

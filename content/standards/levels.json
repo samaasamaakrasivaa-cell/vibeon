@@ -1,0 +1,194 @@
+{
+ "source": "British Council – EAQUALS Core Inventory (2011, постеры 2018) — функции, связки, темы A1–C1; Cambridge A2 Key и B1 Preliminary — функции и темы; английские названия — как в документах.",
+ "functions": {
+  "A1": [
+   "Directions",
+   "Describing habits and routines",
+   "Giving personal information",
+   "Greetings",
+   "Telling the time",
+   "Understanding and using numbers",
+   "Understanding and using prices"
+  ],
+  "A2": [
+   "Describing habits and routines",
+   "Describing past experiences",
+   "Describing people",
+   "Describing places",
+   "Describing things",
+   "Obligation and necessity",
+   "Requests",
+   "Suggestions",
+   "Making and accepting/refusing invitations",
+   "Apologising",
+   "Expressing likes and dislikes"
+  ],
+  "B1": [
+   "Checking understanding",
+   "Describing experiences and events",
+   "Describing feelings and emotions",
+   "Describing places",
+   "Expressing opinions; agreeing and disagreeing",
+   "Initiating and closing conversation",
+   "Managing interaction (interrupting, changing topic, resuming)",
+   "Giving advice",
+   "Criticising and complaining",
+   "Talking about future or imaginary situations",
+   "Describing simple processes",
+   "Drawing simple conclusions and making recommendations",
+   "Persuading"
+  ],
+  "B2": [
+   "Critiquing and reviewing",
+   "Describing experiences",
+   "Describing feelings and emotions",
+   "Describing hopes and plans",
+   "Developing an argument",
+   "Encouraging another speaker to continue / come in",
+   "Expressing abstract ideas",
+   "Expressing agreement and disagreement",
+   "Expressing opinions",
+   "Expressing reaction (indifference, surprise, interest)",
+   "Interacting informally, expressing sympathy",
+   "Opinion and justification",
+   "Speculating"
+  ],
+  "C1": [
+   "Conceding a point",
+   "Critiquing and reviewing constructively",
+   "Defending a point of view persuasively",
+   "Developing an argument systematically",
+   "Emphasizing a point, feeling, issue",
+   "Expressing attitudes and feelings precisely",
+   "Expressing certainty, probability, doubt",
+   "Expressing opinions tentatively, hedging",
+   "Expressing shades of opinion and certainty",
+   "Responding to counterarguments",
+   "Speculating and hypothesising about causes and consequences",
+   "Synthesising, evaluating and glossing information"
+  ]
+ },
+ "linkers": {
+  "A1": [
+   "and",
+   "but",
+   "because"
+  ],
+  "A2": [
+   "first",
+   "then",
+   "after that",
+   "finally",
+   "so",
+   "when"
+  ],
+  "B1": [
+   "cause and effect (so, because of, as a result)",
+   "contrast (although, however, while, whereas)",
+   "sequential past (before, after, as soon as)",
+   "so that, in order to",
+   "unless"
+  ],
+  "B2": [
+   "although, in spite of, despite",
+   "nevertheless, consequently, subsequently",
+   "discourse markers for formal speech (firstly, to sum up, regarding, additionally, in conclusion)"
+  ],
+  "C1": [
+   "linking devices and logical markers (thus, hence, whereby, notwithstanding)",
+   "markers to structure and signpost formal and informal speech and writing"
+  ],
+  "C2": [
+   "full range, used flexibly for style and emphasis"
+  ]
+ },
+ "topics": {
+  "A1": [
+   "Family life",
+   "Hobbies and pastimes",
+   "Holidays",
+   "Leisure activities",
+   "Shopping",
+   "Work and jobs",
+   "Food and drink",
+   "Nationalities and countries",
+   "Personal information",
+   "Things in the town"
+  ],
+  "A2": [
+   "Education",
+   "Hobbies and pastimes",
+   "Holidays",
+   "Leisure activities",
+   "Shopping",
+   "Work and jobs",
+   "Travel and services",
+   "Daily life",
+   "Clothes",
+   "Health",
+   "House and home",
+   "Weather",
+   "Sport",
+   "The natural world"
+  ],
+  "B1": [
+   "Books and literature",
+   "Education",
+   "Film",
+   "Leisure activities",
+   "Media",
+   "News, lifestyles and current affairs",
+   "Travel and services",
+   "Environment",
+   "Relations with other people",
+   "Personal feelings, experiences and opinions",
+   "Entertainment and media"
+  ],
+  "B2": [
+   "Arts",
+   "Books and literature",
+   "Education",
+   "Film",
+   "Media",
+   "News, lifestyles and current affairs"
+  ],
+  "C1": [
+   "Arts",
+   "Books and literature",
+   "Film",
+   "Media",
+   "News, lifestyles and current affairs",
+   "Scientific developments",
+   "Technical and legal language"
+  ]
+ },
+ "vocabulary": {
+  "A2": [
+   "Phrasal verbs — common"
+  ],
+  "B1": [
+   "Collocation",
+   "Colloquial language",
+   "Phrasal verbs — extended"
+  ],
+  "B2": [
+   "Collocation",
+   "Colloquial language",
+   "Phrasal verbs — extended"
+  ],
+  "C1": [
+   "Approximating (vague language)",
+   "Collocation",
+   "Colloquial language",
+   "Differentiated use of vocabulary",
+   "Eliminating false friends",
+   "Formal and informal registers",
+   "Idiomatic expressions",
+   "Phrasal verbs — especially splitting"
+  ]
+ },
+ "exams": {
+  "A2": "A2 Key: письмо — сообщение 25+ слов и рассказ по 3 картинкам 35+ слов; говорение — 8–10 минут в паре.",
+  "B1": "B1 Preliminary: письмо — ответ на письмо около 100 слов и статья или рассказ около 100 слов; говорение — 12–14 минут в паре."
+ }
+}

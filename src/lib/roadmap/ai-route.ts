@@ -16,6 +16,8 @@ import { goalLevel, hoursTo, LEVELS, ROUTE_TYPES, type Stage } from "./cefr";
 import { paceKey, PACES, parsePace, selfBudget } from "./math";
 import { lessonMinOf } from "./progress";
 import { accountStats, testPack } from "./pack";
+import { sylTopic, topicsBetween } from "../grammar/syllabus";
+import { dossier } from "../lessons/dossier";
 import type { RoadmapForm } from "./actions";
 
 type R = { ok: true; id?: string; note?: string } | { ok: false; error: string };
@@ -98,11 +100,42 @@ async function context(studentId: string, teacherId: string, f: RoadmapForm, bri
   };
   const lead = f.leadCourseId ? await db.course.findFirst({ where: { id: f.leadCourseId, teacherId }, select: { title: true, units: { orderBy: { order: "asc" }, select: { title: true, outcomes: true } } } }) : null;
   const self_study_budget = { minutes_per_week: Math.round(selfH * 60), lessons_per_week: pc.lessons, lesson_minutes: lessonMin, active_days: days };
-  const raw = { pack, account, student: { age, form }, route, brief, hours_guide, self_study_budget, courses: lead ? { leading: lead.title, units: lead.units.map((u) => ({ title: u.title, outcomes: u.outcomes.slice(0, 6) })) } : null };
+  // программа уровня: темы справочника грамматики между точкой A и целью; освоенные по тесту и досье — отдельно
+  const mastered = await masteredTopics(studentId, pack);
+  const level_syllabus = topicsBetween(p.from, p.gl).map((t) => ({ id: t.id, level: t.level, topic: t.en, core: t.core, mastered: mastered.has(t.id) || (t.aliases ?? []).some((x) => mastered.has(x)) }));
+  const raw = { pack, account, student: { age, form }, route, brief, hours_guide, self_study_budget, level_syllabus, courses: lead ? { leading: lead.title, units: lead.units.map((u) => ({ title: u.title, outcomes: u.outcomes.slice(0, 6) })) } : null };
   // имена ученика не уходят в ИИ
   const names = [s.name, s.lastName].filter(Boolean) as string[];
   const scrubbed = JSON.parse(scrubWithMap(JSON.stringify(raw), names).text);
-  return { input: scrubbed as Record<string, unknown>, weekly, p: { ...p, pace: `${pc.lessons}:${Math.round((selfH * 60) / 7)}` }, pack, selfMin: Math.round(selfH * 60) };
+  return { input: scrubbed as Record<string, unknown>, weekly, p: { ...p, pace: `${pc.lessons}:${Math.round((selfH * 60) / 7)}` }, pack, selfMin: Math.round(selfH * 60), mastered };
+}
+
+/** Темы, которые ученик уже знает: «знает» по placement test и «освоено» в досье. */
+async function masteredTopics(studentId: string, pack: Awaited<ReturnType<typeof testPack>>) {
+  const own = new Set<string>((pack?.grammarTopics ?? []).filter((t) => t.verdict === "own" && t.id).map((t) => t.id!));
+  try { for (const t of (await dossier(studentId)).topics) if (t.status === "own") own.add(t.key); } catch { /* досье может быть пустым */ }
+  return own;
+}
+
+/** Базовые темы программы: ядро уровня, которое ИИ не разложил по точкам, добавляется точками в участки «новый уровень». */
+function fillSyllabus(d: ReturnType<typeof cleanRoute>, mastered: Set<string>) {
+  const covered = new Set(d.segments.flatMap((s) => s.points.flatMap((p) => p.topics ?? [])));
+  for (const s of d.segments) {
+    if (s.kind !== "level") continue;
+    const m = s.title.match(/([ABC][12]\+?)\s*(?:→|->|—|–)\s*([ABC][12]\+?)/);
+    if (!m) continue;
+    const miss = topicsBetween(m[1], m[2], { coreOnly: true }).filter((t) => !covered.has(t.id) && !mastered.has(t.id) && !(t.aliases ?? []).some((a) => mastered.has(a) || covered.has(a)));
+    // по две темы одного раздела грамматики в точку
+    const byGroup = new Map<string, typeof miss>();
+    for (const t of miss) byGroup.set(t.group, [...(byGroup.get(t.group) ?? []), t]);
+    for (const ts of byGroup.values()) for (let i = 0; i < ts.length; i += 2) {
+      const part = ts.slice(i, i + 2);
+      s.points.push({ title: part.map((t) => t.en).join("; "), level: part[0].level.replace("+", ""), hours: 4 * part.length, why: `Из программы уровня ${part[0].level} (справочник грамматики).`, focus: part.map((t) => t.ru).join("; "), hours_why: `тема программы уровня, в тесте не проверена как освоенная → ${4 * part.length} ч`, topics: part.map((t) => t.id) });
+      part.forEach((t) => covered.add(t.id));
+    }
+    s.hours = s.points.reduce((a, p) => a + p.hours, 0);
+  }
+  return d;
 }
 
 /** Анкета сохраняется сама (с задержкой) — ничего не теряется до «Создать черновик». */
@@ -170,11 +203,12 @@ export async function buildRoadmap(studentId: string, f: RoadmapForm, brief: Bri
   const { t } = await getT();
   const r0 = await roadmapOf(studentId, f);
   const b = cleanBrief(brief);
-  const { input, weekly, p, selfMin } = await context(studentId, me.id, f, b);
+  const { input, weekly, p, selfMin, mastered } = await context(studentId, me.id, f, b);
   const ins = r0.insight as InsightSaved | null;
   if (ins) input.insight = { summary: ins.summary, blockers: ins.blockers, strengths: ins.strengths, gaps: ins.gaps, skills: ins.skills, dynamics: ins.dynamics, confirmed_by_teacher: !!ins.confirmed, teacher_additions: ins.extra ?? "" };
   try {
     const run = await runJson(llmFor("route", await aiCtx(me)), modelsFor("route"), prompt("route"), input, (j) => cleanRoute(j, selfMin), { tag: "route", maxTokens: 10000, timeoutMs: 280000 });
+    fillSyllabus(run.data, mastered);
     const courseIds = (await db.course.findMany({ where: { teacherId: me.id, id: { in: f.courseIds ?? [] } }, select: { id: true } })).map((c) => c.id);
     const lead = f.leadCourseId && courseIds.includes(f.leadCourseId) ? f.leadCourseId : null;
     const units = lead ? await db.unit.findMany({ where: { courseId: lead }, orderBy: { order: "asc" }, select: { title: true, outcomes: true } }) : [];
@@ -256,7 +290,7 @@ export async function suggestPoint(roadmapId: string, pointId: string): Promise<
   if (!p) return { ok: false, error: "point" };
   const b = (r.brief ?? {}) as Brief;
   const input = {
-    point: { title: p.title, level: p.level, why: p.why, focus: p.focus },
+    point: { title: p.title, level: p.level, why: p.why, focus: p.focus, syllabus_topics: (p.topics ?? []).map((id) => sylTopic(id)?.en).filter(Boolean) },
     student: { level: r.fromLevel, goal: r.goal, interests: b.interests ?? "", background: b.background ?? "", goal_details: b.goal ?? "" },
     materials: b.materials ?? "", already_approved: p.ok ?? {},
   };

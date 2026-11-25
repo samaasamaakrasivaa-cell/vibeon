@@ -3,7 +3,8 @@ import "server-only";
 // плюс статистика аккаунта (уроки, домашки, время на платформе, срезы). Его читает учитель (блок «Результаты теста»)
 // и ИИ — первым шагом, до анкеты. Имён и контактов внутри нет.
 import { db } from "../db";
-import { getBank, RUBRICS, trackOf } from "../placement/bank";
+import { getBank, trackOf } from "../placement/bank";
+import { rubricOf } from "../placement/rubric";
 import { summarizeV6 } from "../placement/engine";
 import { draftTexts, R_TEXT, type RSaved } from "../placement/report";
 import { reportData } from "../placement/report-data";
@@ -11,9 +12,10 @@ import { stateOf } from "../placement/run";
 
 type Err = { q: string; given: string; right: string; explain: string };
 export type TestPack = {
+  max?: number;
   attemptId: string; date: string; level: string | null; status: string;
   skills: { key: string; name: string; step: string | null; pct: number | null }[];
-  grammarTopics: { name: string; level: string; c: number; n: number; verdict: "own" | "part" | "gap" | null }[]; // v6: темы с итогом
+  grammarTopics: { id?: string; name: string; level: string; c: number; n: number; verdict: "own" | "part" | "gap" | null }[]; // v6: темы с итогом
   grammarErrors: { topic: string; level: string; items: Err[] }[];
   vocabErrors: { topic: string; level: string; items: Err[] }[];
   families: { name: string; c: number; n: number }[];
@@ -23,14 +25,15 @@ export type TestPack = {
   report: { strong: string; work: string; plan: string; comment: string; level: string; sent: boolean };
 };
 
-const avgPct = (xs: (number | null)[]) => { const v = xs.filter((x): x is number => typeof x === "number"); return v.length ? Math.round((v.reduce((a, b) => a + b, 0) / v.length / 3) * 100) : null; };
+const avgPct = (xs: (number | null)[], max = 3) => { const v = xs.filter((x): x is number => typeof x === "number"); return v.length ? Math.round((v.reduce((a, b) => a + b, 0) / v.length / max) * 100) : null; };
 
-/** Письмо и говорение в процентах — средний балл учителя по критериям 0–3. Для полосок навыков. */
+/** Письмо и говорение в процентах — средний балл учителя по критериям (0–5 или прежние 0–3). Для полосок навыков. */
 export function wsPercent(review: unknown) {
   const rv = (review ?? {}) as { writing?: Record<string, number>; speaking?: Record<string, number>; lesson?: { marks: Record<string, number> } | null };
-  const w = avgPct(RUBRICS.writing.criteria.map((c) => rv.writing?.[c.id] ?? null));
+  const set = rubricOf(rv as never);
+  const w = avgPct(set.writing.map((c) => rv.writing?.[c.id] ?? null), set.max);
   const sm = rv.lesson?.marks ?? rv.speaking;
-  const s = avgPct(RUBRICS.speaking.criteria.map((c) => sm?.[c.id] ?? null));
+  const s = avgPct(set.speaking.map((c) => sm?.[c.id] ?? null), set.max);
   return { ...(w !== null ? { writing: w } : {}), ...(s !== null ? { speaking: s } : {}) };
 }
 
@@ -62,7 +65,7 @@ export async function testPack(studentId: string, teacherId: string): Promise<Te
   };
   let grammarTopics: TestPack["grammarTopics"] = [];
   if (st.ld?.length) {
-    try { grammarTopics = summarizeV6(st, bank).topics.map((t) => ({ name: t.name, level: t.level, c: t.c, n: t.n, verdict: t.verdict })); } catch { /* старые попытки без v6 */ }
+    try { grammarTopics = summarizeV6(st, bank).topics.map((t) => ({ id: t.id, name: t.name, level: t.level, c: t.c, n: t.n, verdict: t.verdict })); } catch { /* старые попытки без v6 */ }
   }
   const text = (kind: "reading" | "listening") => r.d[kind === "reading" ? "reading" : "listening"].map((x) => ({ level: x.level, c: x.questions.filter((q) => q.ok).length, n: x.questions.length }));
   // отчёт: тексты учителя (с правками) поверх черновика системы — вариант «для ученика», русский
@@ -75,6 +78,7 @@ export async function testPack(studentId: string, teacherId: string): Promise<Te
     grammarErrors: group(false), vocabErrors: group(true),
     families: r.input.families.map((f) => ({ name: f.name, c: f.c, n: f.n })),
     reading: text("reading"), listening: text("listening"),
+    max: r.max,
     writing: r.writing ? { level: r.writing.level, marks: r.writing.marks.map((x) => ({ name: x.name, v: x.v, note: x.note })), note: r.writing.note, text: (r.writing.text ?? "").slice(0, 2500) } : null,
     speaking: r.speaking ? { level: r.speaking.level, marks: r.speaking.marks.map((x) => ({ name: x.name, v: x.v, note: x.note })), note: r.speaking.note } : null,
     report: { strong: tx.strong ?? "", work: tx.work ?? "", plan: tx.plan ?? "", comment: (tx.comment || r.input.comment || "").trim(), level: tx.level ?? "", sent: !!saved.sent },

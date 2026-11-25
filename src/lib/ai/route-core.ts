@@ -65,7 +65,7 @@ export function cleanInsight(raw: Record<string, unknown>): Insight {
 
 // ───────── маршрут: участки и точки ─────────
 
-export type RoutePoint = { title: string; level: string; hours: number; why: string; focus: string; hours_why: string };
+export type RoutePoint = { topics?: string[]; title: string; level: string; hours: number; why: string; focus: string; hours_why: string };
 export type RouteSegment = { title: string; kind: "gaps" | "consolidate" | "level"; summary: string; points: RoutePoint[]; units: string[]; can_do_after: string[]; checkpoint: Checkpoint | null; hours: number; weeks: number | null };
 /** Контрольный срез участка: что, как, правило прохода; учитель утверждает. */
 export type Checkpoint = { tests: string[]; pass_rule: string; what?: string[]; format?: string; if_not_passed?: string; approved?: boolean };
@@ -107,7 +107,7 @@ export function cleanRoute(raw: Record<string, unknown>, selfBudgetMin = 0): Rou
   const segs = (Array.isArray(raw.segments) ? raw.segments as Record<string, unknown>[] : []).slice(0, 6).map((s, i) => {
     const cp = s.checkpoint && typeof s.checkpoint === "object" ? s.checkpoint as Record<string, unknown> : null;
     const points = (Array.isArray(s.points) ? s.points as Record<string, unknown>[] : []).slice(0, 30)
-      .map((p) => ({ title: str(p.title, 160), level: str(p.level, 8), hours: clampH(num(p.hours), 2, 16, 6), why: str(p.why, 500), focus: str(p.focus, 500), hours_why: str(p.hours_why, 200) }))
+      .map((p) => ({ title: str(p.title, 160), level: str(p.level, 8), hours: clampH(num(p.hours), 2, 16, 6), why: str(p.why, 500), focus: str(p.focus, 500), hours_why: str(p.hours_why, 200), topics: list(p.topics, 6, 60).filter((x) => /^g-[a-z0-9+-]+$/.test(x)) }))
       .filter((p) => p.title);
     return {
       title: str(s.title, 80) || `Участок ${i + 1}`, kind: s.kind === "gaps" ? "gaps" as const : s.kind === "consolidate" ? "consolidate" as const : "level" as const, summary: str(s.summary, 600), points,
@@ -180,7 +180,7 @@ export const REC_LISTS = ["grammar", "vocabulary", "phrasal_verbs", "idioms"] as
 export const REC_TEXTS = ["reading", "listening", "speaking", "writing"] as const;
 /** Утверждённое учителем (или вписанное своё) — видно ученику. */
 export type PointOk = { theme?: string; materials?: { title: string; url: string }[]; grammar?: string[]; vocabulary?: string[]; phrasal_verbs?: string[]; idioms?: string[]; reading?: string; listening?: string; speaking?: string; writing?: string; note?: string };
-export type Point = { id: string; title: string; level: string; hours: number; why: string; focus: string; hours_why?: string; /** вручную: освоено / не освоено (иначе — по прогрессу) */ done?: boolean; recs?: PointRecs | null; ok?: PointOk; articles?: Article[] };
+export type Point = { id: string; title: string; level: string; hours: number; /** темы справочника грамматики (id) */ topics?: string[]; why: string; focus: string; hours_why?: string; /** вручную: освоено / не освоено (иначе — по прогрессу) */ done?: boolean; recs?: PointRecs | null; ok?: PointOk; articles?: Article[] };
 
 export function cleanRecs(raw: Record<string, unknown>): PointRecs {
   const themes = (Array.isArray(raw.themes) ? raw.themes as Record<string, unknown>[] : []).slice(0, 6).map((x) => ({

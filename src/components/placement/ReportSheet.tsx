@@ -3,11 +3,11 @@ import { LogoMark } from "../Logo";
 import { R_SKILL_NAME, R_SKILLS, R_TITLES, type RBlock, type RLang, type RVariant } from "@/lib/placement/report";
 import type { ReportDataT } from "@/lib/placement/report-data";
 
-const CRIT_EN: Record<string, string> = { task: "Task achievement", coherence: "Coherence and organisation", vocabulary: "Vocabulary", grammar: "Grammar", fluency: "Fluency and coherence", pronunciation: "Pronunciation" };
+const CRIT_EN: Record<string, string> = { task: "Task achievement", coherence: "Coherence and organisation", vocabulary: "Vocabulary", grammar: "Grammar", fluency: "Fluency and coherence", pronunciation: "Pronunciation", content: "Content", achievement: "Communicative Achievement", organisation: "Organisation", language: "Language", discourse: "Discourse Management" };
 
 /** Лист отчёта: он же — PDF (печать) и страница в кабинете ученика. */
 /** answers — отдельный лист «Разбор ответов» (wrongOnly — только ошибки); иначе — отчёт без разбора ответов. */
-export function ReportSheet({ r, v, lang, on, texts, answers, wrongOnly }: { r: Pick<ReportDataT, "input" | "d" | "writing" | "speaking" | "date">; v: RVariant; lang: RLang; on: Record<RBlock, boolean>; texts: Record<string, string>; answers?: boolean; wrongOnly?: boolean }) {
+export function ReportSheet({ r, v, lang, on, texts, answers, wrongOnly }: { r: Pick<ReportDataT, "input" | "d" | "writing" | "speaking" | "date"> & { max?: number }; v: RVariant; lang: RLang; on: Record<RBlock, boolean>; texts: Record<string, string>; answers?: boolean; wrongOnly?: boolean }) {
   const T = R_TITLES[lang], x = r.input, ru = lang === "ru";
   const date = new Date(r.date).toLocaleDateString(ru ? "ru-RU" : "en-GB", { day: "numeric", month: "long", year: "numeric" });
   const txt = (b: RBlock) => on[b] && texts[b]?.trim() && <section className="rpt-b"><h3>{T[b]}</h3><div className="rpt-t">{texts[b]}</div></section>;
@@ -41,11 +41,11 @@ export function ReportSheet({ r, v, lang, on, texts, answers, wrongOnly }: { r: 
         <section className="rpt-b"><h3>{T.writing} · {r.writing.level}</h3>
           <p className="rpt-q">{r.writing.prompt_en}</p>
           {r.writing.text ? <div className="rpt-t rpt-quote">{r.writing.text}</div> : <p className="rpt-muted">{ru ? "Ответа нет" : "No answer"}</p>}
-          {r.writing.marks.some((m) => m.v !== null) && <table className="rpt-tbl"><tbody>{r.writing.marks.map((m) => <tr key={m.id}><td>{ru ? m.name : CRIT_EN[m.id] ?? m.name}{m.note && <div className="rpt-cn">{m.note}</div>}</td><td className="r">{m.v ?? "—"} / 3</td></tr>)}</tbody></table>}
+          {r.writing.marks.some((m) => m.v !== null) && <table className="rpt-tbl"><tbody>{r.writing.marks.map((m) => <tr key={m.id}><td>{ru ? m.name : CRIT_EN[m.id] ?? m.name}{m.note && <div className="rpt-cn">{m.note}</div>}</td><td className="r">{m.v ?? "—"} / {r.max ?? 3}</td></tr>)}</tbody></table>}
           {r.writing.note && <p className="rpt-t rpt-note"><b>{ru ? "Комментарий преподавателя: " : "Teacher's comment: "}</b>{r.writing.note}</p>}
           {r.speaking && r.speaking.marks.some((m) => m.v !== null) && <>
             <h3 className="mt">{ru ? "Говорение" : "Speaking"} · {r.speaking.level}</h3>
-            <table className="rpt-tbl"><tbody>{r.speaking.marks.map((m) => <tr key={m.id}><td>{ru ? m.name : CRIT_EN[m.id] ?? m.name}{m.note && <div className="rpt-cn">{m.note}</div>}</td><td className="r">{m.v ?? "—"} / 3</td></tr>)}</tbody></table>
+            <table className="rpt-tbl"><tbody>{r.speaking.marks.map((m) => <tr key={m.id}><td>{ru ? m.name : CRIT_EN[m.id] ?? m.name}{m.note && <div className="rpt-cn">{m.note}</div>}</td><td className="r">{m.v ?? "—"} / {r.max ?? 3}</td></tr>)}</tbody></table>
             {r.speaking.note && <p className="rpt-t rpt-note"><b>{ru ? "Комментарий преподавателя: " : "Teacher's comment: "}</b>{r.speaking.note}</p>}
           </>}
         </section>

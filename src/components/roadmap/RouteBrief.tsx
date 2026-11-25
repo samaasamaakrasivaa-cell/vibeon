@@ -10,6 +10,7 @@ import { SKILL_NAME, SKILLS, txt } from "@/lib/roadmap/cefr";
 const txtL = txt;
 import { useRun } from "../courses/useRun";
 import { Dictate } from "../ai/Dictate";
+import { sylTopic } from "@/lib/grammar/syllabus";
 import { Icon } from "../Icon";
 
 const add = (a: string | undefined, b: string) => `${a ? `${a.trimEnd()} ` : ""}${b}`.trim();
@@ -257,6 +258,11 @@ export function PointCard({ roadmapId, p, onClose, happiful }: { roadmapId: stri
       </div>
       {p.why && <p className="small m-0 mt-2"><b>{t("rm2.why")}:</b> {p.why}</p>}
       {p.focus && <p className="small m-0 mt-1"><b>{t("rm2.focus")}:</b> {p.focus}</p>}
+      {(p.topics?.length ?? 0) > 0 && (
+        <div className="mt-2 flex flex-wrap items-center gap-1.5 small"><span className="muted">{t("rm7.syl")}:</span>
+          {p.topics!.map((id) => { const x = sylTopic(id); return x ? <span key={id} className="pill grey" title={x.en}>{x.ru} · {x.level}</span> : null; })}
+        </div>
+      )}
       <div className="mt-2 flex items-center gap-2"><label className="small muted" htmlFor="pt-h">{t("rm.hours")}</label><input id="pt-h" className="input xs" style={{ width: 70 }} inputMode="numeric" value={hours} onChange={(e) => setHours(e.target.value.replace(/\D/g, "").slice(0, 2))} />{p.hours_why && <span className="small muted">{t("rm2.hoursWhy")}: {p.hours_why}</span>}</div>
       <p className="hint mb-0 mt-3">{t("rm2.pointHint")}</p>
       {!p.recs && pending && <div className="dict-bar busy mt-2"><span className="dict-spin" /><span>{t("rm2.suggesting")}</span></div>}

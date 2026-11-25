@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import type { RSaved } from "@/lib/placement/report";
 import { getT } from "@/lib/i18n/server";
 import { getBank, RUBRICS, trackOf } from "@/lib/placement/bank";
+import { rubricOf } from "@/lib/placement/rubric";
 import { PL_LEVELS, STEPS, summarize } from "@/lib/placement/engine";
 import { reviewData } from "@/lib/placement/review";
 import { doneOf, partsOf, stateOf } from "@/lib/placement/run";
@@ -76,8 +77,8 @@ export default async function PlacementReviewPage({ params }: { params: Promise<
         <PlacementReview
           parts={partsOf(st)} dates={dates} base={base} who={who} reveal={a.reveal}
           id={id} teen={st.track === "teen"} lessonQs={lessonQs} mode={a.mode} status={a.status} level={a.level} showResult={a.showResult} tgSent={((a.review ?? {}) as { tgSentAt?: string }).tgSentAt ? new Date(((a.review ?? {}) as { tgSentAt: string }).tgSentAt).toLocaleString("ru-RU", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: me.timezone }) : null} sm={sm} d={d}
-          review={(a.review ?? {}) as never} rubrics={{ writing: RUBRICS.writing.criteria, speaking: RUBRICS.speaking.criteria }}
-          howTo={RUBRICS.how_to_decide_ru} sublevels={RUBRICS.sublevels_ru} total={RUBRICS.total_ru}
+          review={(a.review ?? {}) as never} rubricVer={rubricOf(a.review as never).ver}
+          howTo={RUBRICS.how_to_decide_ru} sublevels={RUBRICS.sublevels_ru}
         />
       </div>
     </div>

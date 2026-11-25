@@ -1,6 +1,7 @@
 import "server-only";
-import { getBank, RUBRICS, trackOf } from "./bank";
-import { finalHint, scoreStep, STEPS, summarize, type PLevel, type PState } from "./engine";
+import { getBank, trackOf } from "./bank";
+import { finalHint, STEPS, summarize, type PLevel, type PState } from "./engine";
+import { gateKey, rubricOf, stepBy, weakAt } from "./rubric";
 import { reviewData } from "./review";
 import type { RInput, RSaved, RSkill } from "./report";
 
@@ -13,11 +14,11 @@ export async function reportData(a: Attempt, st: PState) {
   const sm = summarize(st, bank);
   const d = reviewData(a.id, st, true);
   const rv = (a.review ?? {}) as { writing?: Marks; speaking?: Marks; comment?: string; lesson?: { level: string; marks: Marks } | null; report?: RSaved; wNote?: string; sNote?: string; wc?: Record<string, string>; sc?: Record<string, string> };
-  const W = RUBRICS.writing.criteria, S = RUBRICS.speaking.criteria;
+  const set = rubricOf(rv as never), W = set.writing, S = set.speaking, weak = weakAt(set);
   const w = rv.writing ?? {}, s = rv.speaking ?? {};
-  const wStep = d.writing ? scoreStep(W.map((c) => w[c.id]), d.writing.level as PLevel, w.task) : null;
-  const sTask = d.speaking ? scoreStep(S.map((c) => s[c.id]), d.speaking.level as PLevel) : null;
-  const sLesson = rv.lesson ? scoreStep(S.map((c) => rv.lesson!.marks[c.id]), rv.lesson.level as PLevel) : null;
+  const wStep = d.writing ? stepBy(set, W.map((c) => w[c.id]), d.writing.level as PLevel, w[gateKey(set)]) : null;
+  const sTask = d.speaking ? stepBy(set, S.map((c) => s[c.id]), d.speaking.level as PLevel) : null;
+  const sLesson = rv.lesson ? stepBy(set, S.map((c) => rv.lesson!.marks[c.id]), rv.lesson.level as PLevel) : null;
   const sStep = sLesson ?? sTask;
   const parts = [sm.coreStep, sm.vstep, sm.readStep, sm.listenStep, wStep, sStep];
   const hint = finalHint(parts);
@@ -30,13 +31,13 @@ export async function reportData(a: Attempt, st: PState) {
     // темы грамматики с ошибками — больше всего ошибок сначала
     gweak: sm.groups.filter((g) => g.c < g.n && g.c / g.n < 0.8).sort((x, y) => (y.n - y.c) - (x.n - x.c)).map((g) => g.name),
     wsWeak: [
-      ...W.filter((c) => typeof w[c.id] === "number" && w[c.id] <= 1).map((c) => ({ kind: "writing" as const, id: c.id, name: c.name_ru, v: w[c.id] })),
-      ...S.filter((c) => typeof s[c.id] === "number" && s[c.id] <= 1).map((c) => ({ kind: "speaking" as const, id: c.id, name: c.name_ru, v: s[c.id] })),
+      ...W.filter((c) => typeof w[c.id] === "number" && w[c.id] <= weak).map((c) => ({ kind: "writing" as const, id: c.id, name: c.name_ru, v: w[c.id] })),
+      ...S.filter((c) => typeof s[c.id] === "number" && s[c.id] <= weak).map((c) => ({ kind: "speaking" as const, id: c.id, name: c.name_ru, v: s[c.id] })),
     ],
   };
   // комментарий преподавателя к оценке — рядом с баллами в отчёте
   const writing = d.writing && { ...d.writing, note: rv.wNote ?? "", marks: W.map((c) => ({ id: c.id, name: c.name_ru, v: typeof w[c.id] === "number" ? w[c.id] : null, note: rv.wc?.[c.id] ?? "" })) };
   const speaking = d.speaking && { level: d.speaking.level, note: rv.sNote ?? "", marks: S.map((c) => ({ id: c.id, name: c.name_ru, v: typeof s[c.id] === "number" ? s[c.id] : null, note: rv.sc?.[c.id] ?? "" })) };
-  return { input, d, writing, speaking, saved: rv.report ?? {}, finalLevel: a.level, date: (a.submittedAt ?? a.startedAt ?? a.createdAt).toISOString() };
+  return { input, d, writing, speaking, max: set.max, saved: rv.report ?? {}, finalLevel: a.level, date: (a.submittedAt ?? a.startedAt ?? a.createdAt).toISOString() };
 }
 export type ReportDataT = Awaited<ReturnType<typeof reportData>>;
