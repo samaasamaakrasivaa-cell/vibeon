@@ -1,7 +1,7 @@
 "use client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useT } from "@/lib/i18n/client";
-import { addSpeakingToLesson, aiScore, assignExtraWS, deletePlacement, finalizePlacement, saveReview, sendResultTelegram, setShowResult, switchToCambridge, type ReviewInput } from "@/lib/placement/actions";
+import { addSpeakingToLesson, aiScore, assignExtraWS, deletePlacement, finalizePlacement, saveReview, sendResultTelegram, setShowResult, type ReviewInput } from "@/lib/placement/actions";
 import { transcribe } from "../ai/audio";
 import type { PlScore } from "@/lib/ai/tasks";
 import { BASE, finalHint, PL_LEVELS, STEPS, type PLevel, type Summary } from "@/lib/placement/engine";
@@ -16,14 +16,14 @@ import type { DictKey } from "@/lib/i18n/dict";
 
 type Marks = Record<string, number>;
 type LegacyReview = {
-  at: string; level?: string | null; writing?: Marks; speaking?: Marks; wc?: Record<string, string>; sc?: Record<string, string>;
+  at?: string; level?: string | null; writing?: Marks; speaking?: Marks; wc?: Record<string, string>; sc?: Record<string, string>;
   lesson?: { level: string; marks: Marks }; ai?: Partial<Record<"writing" | "speaking", PlScore>>;
 };
 export type ReviewProps = {
   id: string; mode: string; status: string; level: string | null; showResult: boolean; teen?: boolean; tgSent?: string | null;
   sm: Summary; d: ReviewData; review: { legacyReview?: LegacyReview; writing?: Record<string, unknown>; speaking?: Record<string, unknown>; points?: boolean[]; comment?: string; wNote?: string; sNote?: string; wc?: Record<string, string>; sc?: Record<string, string>; lesson?: { level: string; marks: Record<string, unknown> } | null; report?: { student?: unknown; parent?: unknown; sent?: boolean; sentAt?: string }; ai?: Partial<Record<"writing" | "speaking", PlScore & { level?: string; transcripts?: string[] }>> };
   lessonQs: { level: string; questions: string[] }[]; // говорение на уроке: вопросы уровнем выше и ниже
-  canSwitch: boolean; rubricVer: 1 | 2; howTo: string; sublevels: string;
+  regrading: boolean; howTo: string; sublevels: string;
   parts?: string[]; dates?: Record<string, string>; // разделы теста и даты, когда каждый пройден
   base?: { sub: string; from: "test" | "teacher" } | null; // грамматику не проверяли: от какого уровня шли остальные разделы
   who?: string; reveal?: string[]; // имя ученика (для PDF таблицы и списков) и скрипты, открытые ученику
@@ -49,7 +49,7 @@ function CritNote({ v, onChange }: { v: string; onChange: (v: string) => void })
 }
 
 export function PlacementReview(p: ReviewProps) {
-  const RS = p.rubricVer === 1 ? RUB_V1 : RUB_V2, MAX = RS.max, GATE = gateKey(RS);
+  const RS = RUB_V2, MAX = RS.max, GATE = gateKey(RS);
   const SCORES = Array.from({ length: MAX + 1 }, (_, k) => k);
   const { t, lang } = useT();
   const { run, pending, error, setError } = useRun();
@@ -73,7 +73,7 @@ export function PlacementReview(p: ReviewProps) {
           return transcribe(blob).catch((e: Error) => { throw e; });
         }));
       }
-      const r = await aiScore(p.id, kind, tr, RS.ver);
+      const r = await aiScore(p.id, kind, tr, RS.ver, p.regrading);
       if (!r.ok || !r.ai) { const c = (r as { error?: string }).error; setAiErr(t(`pl.aiErr.${c === "off" || c === "limit" || c === "tariff" ? c : "fail"}` as DictKey)); return; }
       const got = Object.fromEntries(Object.entries(r.ai.scores).filter(([, v]) => typeof v === "number")) as Marks;
       if (kind === "writing") setW((x) => ({ ...x, ...got })); else setS((x) => ({ ...x, ...got }));
@@ -94,8 +94,8 @@ export function PlacementReview(p: ReviewProps) {
   const [lesson, setLesson] = useState<{ level: string; marks: Marks } | null>(p.review.lesson ? { level: p.review.lesson.level, marks: nums(p.review.lesson.marks) } : null);
   const [lessonMsg, setLessonMsg] = useState<string | null>(null);
   // Сначала записываем последние правки, даже если учитель нажал кнопку до автосохранения.
-  const draft = useMemo<ReviewInput>(() => ({ rubric: RS.ver, writing: w, speaking: s, points: pts, comment, lesson, wNote, sNote, wc, sc }),
-    [RS.ver, w, s, pts, comment, lesson, wNote, sNote, wc, sc]);
+  const draft = useMemo<ReviewInput>(() => ({ regrading: p.regrading, rubric: RS.ver, writing: w, speaking: s, points: pts, comment, lesson, wNote, sNote, wc, sc }),
+    [p.regrading, RS.ver, w, s, pts, comment, lesson, wNote, sNote, wc, sc]);
   const networkError = t("pl.err.net");
   const lastSaved = useRef(draft);
   const queue = useRef(Promise.resolve<{ ok: true } | { ok: false; error: string }>({ ok: true }));
@@ -112,7 +112,7 @@ export function PlacementReview(p: ReviewProps) {
     const h = setTimeout(() => { void flush(draft).then((r) => { if (!r.ok) setError(r.error); }); }, 800);
     return () => clearTimeout(h);
   }, [draft, flush, setError]);
-  function afterSaving(action: () => ReturnType<typeof switchToCambridge>) {
+  function afterSaving(action: () => ReturnType<typeof saveReview>) {
     run(async () => { const saved = await flush(draft); return saved.ok ? action() : saved; });
   }
   const noteBox = (id: string, v: string, set: (x: string) => void) => (
@@ -227,7 +227,7 @@ export function PlacementReview(p: ReviewProps) {
     const done = p.d.extra?.[kind];
     const give = (dir: number, to: string) => {
       if (!confirm(t(p.mode === "link" ? "pl.extraConfirmGuest" : "pl.extraConfirm", { k: t(`pl.part.${kind}` as DictKey).toLowerCase(), l: to }))) return;
-      run(() => assignExtraWS(p.id, kind, dir));
+      afterSaving(() => assignExtraWS(p.id, kind, dir));
     };
     return (
       <div className="plextra">
@@ -287,12 +287,7 @@ export function PlacementReview(p: ReviewProps) {
     <div className="flex flex-col gap-4">
       {waiting && <div className="alert flex flex-wrap items-center gap-2"><Icon name="hourglass" size="sm" /> <span className="grow">{t(p.mode === "self" ? "pl.inProgressSelf" : "pl.inProgress")}</span>{p.mode === "self" && <a className="btn primary sm" href={`/placement/${p.id}`}>{t("pl.continueSelf")}</a>}</div>}
 
-      {p.canSwitch && <section className="card flex flex-col items-start gap-2">
-        <p className="m-0">{t("pl.switchHint")}</p>
-        <button type="button" className="btn primary sm" disabled={pending || !!aiBusy}
-          onClick={() => afterSaving(() => switchToCambridge(p.id))}>{t("pl.switchCambridge")}</button>
-        {error && <span role="alert" className="small text-bad">{error}</span>}
-      </section>}
+      {p.regrading && <p className="alert m-0">{t("pl.regradeHint")}</p>}
       {p.review.legacyReview && <LegacyMarks review={p.review.legacyReview} />}
 
       <ReviewInsights wsRows={wsRows} status={p.status} mode={p.mode} id={p.id} who={p.who ?? ""} sm={sm} d={p.d} reveal={p.reveal ?? []} has={has} hint={hint} tm={tm} idle={idle} dates={p.dates} base={p.base}
@@ -351,7 +346,7 @@ export function PlacementReview(p: ReviewProps) {
             <div className="field"><label htmlFor="pl-lvl">{t("pl.finalLevel")}</label>
               <select id="pl-lvl" className="select" value={lvl} onChange={(e) => setLvl(e.target.value)}><option value="">—</option>{STEPS.map((x) => <option key={x}>{x}</option>)}</select>
             </div>
-            <button className="btn primary" disabled={pending || !lvl} onClick={() => afterSaving(() => finalizePlacement(p.id, lvl, RS.ver))}>{p.level ? t("pl.updateFinal") : t("pl.saveFinal")}</button>
+            <button className="btn primary" disabled={pending || !lvl} onClick={() => afterSaving(() => finalizePlacement(p.id, lvl, RS.ver, p.regrading))}>{p.regrading ? t(p.showResult ? "pl.applySharedCambridge" : "pl.applyCambridge") : t(p.level ? "pl.updateFinal" : "pl.saveFinal")}</button>
             {p.level && <span className="pill green">✓ {p.level}</span>}
           </div>
           <div className="field">
@@ -394,6 +389,11 @@ export function PlacementReview(p: ReviewProps) {
 
 function LegacyMarks({ review }: { review: LegacyReview }) {
   const { t, lang } = useT();
+  function total(kind: "writing" | "speaking") {
+    const scores = RUB_V1[kind].map((c) => review[kind]?.[c.id]);
+    if (!scores.every((v): v is number => typeof v === "number")) return "";
+    return ` · ${scores.reduce((sum, v) => sum + v, 0)} / ${scores.length * RUB_V1.max}`;
+  }
   const marks = (kind: "writing" | "speaking", values?: Marks, notes?: Record<string, string>, ai?: PlScore) => RUB_V1[kind].map((c) => {
     const score = values?.[c.id], suggested = ai?.scores[c.id];
     if (typeof score !== "number" && !notes?.[c.id] && typeof suggested !== "number" && !ai?.why[c.id]) return null;
@@ -405,9 +405,9 @@ function LegacyMarks({ review }: { review: LegacyReview }) {
   });
   return <details className="card">
     <summary>{t("pl.legacyHistory")}</summary>
-    <p className="small muted">{new Date(review.at).toLocaleDateString(lang === "ru" ? "ru-RU" : "en-GB")}{review.level && ` · ${review.level}`}</p>
+    <p className="small muted">{review.at && new Date(review.at).toLocaleDateString(lang === "ru" ? "ru-RU" : "en-GB")}{review.level && ` · ${review.level}`}</p>
     {(["writing", "speaking"] as const).map((kind) => <div key={kind}>
-      <b>{t(`pl.part.${kind}`)}</b>
+      <b>{t(`pl.part.${kind}`)}{total(kind)}</b>
       <ul>{marks(kind, review[kind], kind === "writing" ? review.wc : review.sc, review.ai?.[kind])}</ul>
       {review.ai?.[kind]?.summary && <p className="small">{review.ai[kind]?.summary}</p>}
     </div>)}

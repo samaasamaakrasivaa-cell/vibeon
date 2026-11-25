@@ -12,10 +12,11 @@ import { rateLimit } from "../rate-limit";
 import { getLang } from "../i18n/server";
 import { attemptFor, ptCookie } from "./access";
 import { getBank, isOwner, TEEN_READY, trackOf, type Track } from "./bank";
-import { describe5, rubricOf } from "./rubric";
+import { describe5, RUB_V2, rubricOf } from "./rubric";
 import { checkCore, typoOk, emptyState, EXPECT, pickTask, PlacementCoverageError, PL_LEVELS, SECTIONS, STEPS, stepIdx, type Section, summarize, words, type CoreItem, type Expect, type ListenItem, type ReadItem, type SpeakItem, type WriteItem } from "./engine";
 import { addNextText, advance, begin, closeSection, doneOf, ensureTasks, enter, goTo, json, LATER, availOf, openOf, partsOf, publicView, stateOf, touch, type Later, type PView } from "./run";
-import { canSwitchToCambridge, revealedScripts } from "./review";
+import { teacherReview, missingReassessment } from "./teacher-review";
+import { revealedScripts } from "./review";
 import { R_BLOCKS, type RCfg, type RSaved, type RVariant } from "./report";
 import { run } from "../ai/gateway";
 import { provider } from "../ai/providers";
@@ -421,7 +422,7 @@ export async function closePlacementLink(code: string): Promise<R> {
   return { ok: true };
 }
 
-export type ReviewInput = { rubric?: number; writing: Record<string, number>; speaking: Record<string, number>; points: boolean[]; comment: string; lesson?: { level: string; marks: Record<string, number> } | null; wNote?: string; sNote?: string; wc?: Record<string, string>; sc?: Record<string, string> };
+export type ReviewInput = { regrading?: boolean; rubric?: number; writing: Record<string, number>; speaking: Record<string, number>; points: boolean[]; comment: string; lesson?: { level: string; marks: Record<string, number> } | null; wNote?: string; sNote?: string; wc?: Record<string, string>; sc?: Record<string, string> };
 /** Комментарии к критериям: { критерий: текст } — только известные ключи, короткие тексты. */
 const cleanNotes = (m: Record<string, string> | undefined) => Object.fromEntries(Object.entries(m ?? {}).filter(([k, v]) => /^[a-z]{2,20}$/.test(k) && typeof v === "string" && v.trim()).map(([k, v]) => [k, v.slice(0, 1500)]));
 const cleanScores = (m: Record<string, number> | undefined, max = 5) => Object.fromEntries(Object.entries(m ?? {}).filter(([k, v]) => /^[a-z]{2,20}$/.test(k) && Number.isInteger(v) && v >= 0 && v <= max));
@@ -430,48 +431,31 @@ const cleanScores = (m: Record<string, number> | undefined, max = 5) => Object.f
 export async function saveReview(id: string, r: ReviewInput): Promise<R> {
   return wrap(async () => {
     const { a } = await teacherAttempt(id);
-    const prev = (a.review ?? {}) as Record<string, unknown>;
+    const draft = teacherReview(a);
+    if ((r.rubric !== undefined && r.rubric !== 2) || (r.rubric !== 2 && (draft.regrading || draft.active.legacyReview)) ||
+        !!r.regrading !== draft.regrading) return changed;
     const points = Array.isArray(r.points) ? r.points.slice(0, 10).map(Boolean) : [];
-    const set = rubricOf(prev as never), max = set.max;
-    if ((r.rubric !== undefined || prev.legacyReview) && r.rubric !== set.ver) return changed;
-    const lesson = r.lesson && PL_LEVELS.includes(r.lesson.level as never) ? { level: r.lesson.level, marks: cleanScores(r.lesson.marks, max) } : r.lesson === null ? null : prev.lesson;
-    const saved = await db.placementAttempt.updateMany({ where: revision(a), data: { review: json({ ...prev, rubric: set.ver, writing: cleanScores(r.writing, max), speaking: cleanScores(r.speaking, max), points, comment: str(r.comment, 3000), lesson, wNote: str(r.wNote ?? "", 3000), sNote: str(r.sNote ?? "", 3000), wc: cleanNotes(r.wc), sc: cleanNotes(r.sc) }) } });
+    const lesson = r.lesson && PL_LEVELS.includes(r.lesson.level as never) ? { level: r.lesson.level, marks: cleanScores(r.lesson.marks) } : r.lesson === null ? null : draft.active.lesson;
+    const review = draft.edit({ writing: cleanScores(r.writing), speaking: cleanScores(r.speaking), points,
+      comment: str(r.comment, 3000), lesson, wNote: str(r.wNote ?? "", 3000), sNote: str(r.sNote ?? "", 3000), wc: cleanNotes(r.wc), sc: cleanNotes(r.sc) });
+    const saved = await db.placementAttempt.updateMany({ where: revision(a), data: { review: json(review) } });
     if (!saved.count) return changed;
     revalidatePath(`/teacher/placement/${id}`);
     return { ok: true };
   });
 }
 
-/** Оценки 0–3 архивируются один раз. Ответы и аудио находятся отдельно, в state. */
-export async function switchToCambridge(id: string): Promise<R> {
-  return wrap(async () => {
-    const { a } = await teacherAttempt(id);
-    if (!(await canSwitchToCambridge(a))) return changed;
-    const { writing, speaking, wc, sc, ai, lesson, ...rest } = (a.review ?? {}) as Record<string, unknown>;
-    const legacyReview = { rubric: 1, at: new Date().toISOString(), level: a.level, reviewedAt: a.reviewedAt, writing, speaking, wc, sc, ai, lesson };
-    const saved = await db.$transaction(async (tx) => {
-      const update = await tx.placementAttempt.updateMany({ where: revision(a), data: {
-        review: json({ ...rest, rubric: 2, legacyReview }), status: "submitted", reviewedAt: null, level: null,
-      } });
-      if (update.count && a.status === "reviewed" && a.checkpointId) {
-        await tx.checkpoint.update({ where: { id: a.checkpointId }, data: { status: "assigned", level: null, results: {} } });
-      }
-      return update.count;
-    });
-    if (!saved) return changed;
-    refreshT(a.studentId);
-    revalidatePath(`/teacher/placement/${id}`);
-    return { ok: true };
-  });
-}
-
 /** Итог выбирает учитель. Для ученика он становится точкой A маршрута. */
-export async function finalizePlacement(id: string, level: string, rubric?: number): Promise<R> {
+export async function finalizePlacement(id: string, level: string, rubric?: number, regrading = false): Promise<R> {
   return wrap(async () => {
     const { a } = await teacherAttempt(id);
     if (stepIdx(level) < 0) return { ok: false, error: "level" };
     if (a.status !== "submitted" && a.status !== "reviewed") return { ok: false, error: "status" };
-    if ((a.review as { legacyReview?: unknown })?.legacyReview && rubric !== 2) return changed;
+    const draft = teacherReview(a);
+    if (regrading !== draft.regrading || ((regrading || draft.active.legacyReview) && rubric !== 2)) return changed;
+    const missing = regrading && missingReassessment(draft.stored, draft.active);
+    if (missing) return { ok: false, error: missing === "writing" ? "Заполните четыре критерия письма по шкале 0–5." : "Заполните четыре критерия говорения по шкале 0–5." };
+    const review = regrading ? { ...draft.active, legacyReview: { ...draft.active.legacyReview, at: new Date().toISOString() } } : a.review;
     let checkpointResults: ReturnType<typeof json> | undefined;
     if (a.checkpointId && a.studentId) {
       const st = stateOf(a.state);
@@ -481,7 +465,7 @@ export async function finalizePlacement(id: string, level: string, rubric?: numb
       const skills = {
         grammar: pct(Object.values(sm.core).map((r) => r.grammar)), vocabulary: pct(Object.values(sm.core).map((r) => r.vocabulary)),
         reading: sm.level && sm.reading[sm.level] ? pct([sm.reading[sm.level]]) : undefined, listening: sm.level && sm.listening[sm.level] ? pct([sm.listening[sm.level]]) : undefined,
-        ...wsPercent(a.review), // письмо и говорение — средний балл учителя по критериям
+        ...wsPercent(review), // письмо и говорение — средний балл учителя по критериям
       };
       const wrong = st.core.map((x) => st.items[x.id] as CoreItem).filter((it) => it && !st.answers[it.id]?.ok);
       const right = st.core.map((x) => st.items[x.id] as CoreItem).filter((it) => it && st.answers[it.id]?.ok && it.level !== "A1");
@@ -489,7 +473,7 @@ export async function finalizePlacement(id: string, level: string, rubric?: numb
       checkpointResults = json({ skills: Object.fromEntries(Object.entries(skills).filter(([, v]) => v !== undefined)), weak: uniq(wrong).slice(0, 8), strong: uniq(right).slice(0, 4), placement: id, shown: a.showResult });
     }
     const finalized = await db.$transaction(async (tx) => {
-      const update = await tx.placementAttempt.updateMany({ where: revision(a), data: { level, status: "reviewed", reviewedAt: new Date() } });
+      const update = await tx.placementAttempt.updateMany({ where: revision(a), data: { level, status: "reviewed", reviewedAt: new Date(), ...(regrading ? { review: json(review) } : {}) } });
       if (update.count && a.checkpointId && a.studentId && checkpointResults) {
         await tx.checkpoint.update({ where: { id: a.checkpointId }, data: { status: "done", level, takenAt: a.submittedAt ?? new Date(), results: checkpointResults } });
         await tx.student.update({ where: { id: a.studentId }, data: { level } });
@@ -587,17 +571,22 @@ export async function assignExtraWS(id: string, kind: "writing" | "speaking", di
     const nx = kind === "writing" ? pickTask(bank.writing, PL_LEVELS[li], false, Math.random, used) : pickTask(bank.speaking, PL_LEVELS[li], false, Math.random, used);
     if (!nx) return { ok: false, error: "task" };
     const review = (a.review ?? {}) as Record<string, unknown>;
-    const rubric = rubricOf(review as never).ver;
+    const draft = teacherReview(a);
+    const revised = draft.stored.cambridgeDraft;
+    const previous = revised?.[kind] && Object.keys(revised[kind]).length ? draft.active : draft.stored;
+    const rubric = draft.regrading && previous === draft.stored ? 1 : rubricOf(previous).ver;
     st.wsPrev = [...(st.wsPrev ?? []), kind === "writing"
-      ? { kind, rubric, id: cur.id, text: (cur as { text: string }).text, marks: review.writing as Record<string, number>, points: review.points as boolean[] }
-      : { kind, rubric, id: cur.id, rec: (cur as { rec: Record<string, string> }).rec, rerec: st.rerec, peek: st.peek, marks: review.speaking as Record<string, number> }];
+      ? { kind, rubric, id: cur.id, text: (cur as { text: string }).text, marks: previous.writing, points: previous.points }
+      : { kind, rubric, id: cur.id, rec: (cur as { rec: Record<string, string> }).rec, rerec: st.rerec, peek: st.peek, marks: previous.speaking }];
     st.items[nx.id] = nx;
     if (kind === "writing") st.writing = { id: nx.id, text: "" };
     else { st.speaking = { id: nx.id, rec: {} }; st.rerec = {}; st.peek = undefined; (st.speaking as { noMic?: boolean }).noMic = undefined; }
     st.wsExtra = { ...(st.wsExtra ?? {}), [kind]: dir > 0 ? 1 : -1 };
     st.closed = LATER.filter((x) => x !== kind);
     st.section = kind; enter(st, kind);
-    const nextReview = { ...review, [kind]: {}, ...(kind === "writing" ? { points: [] } : {}) };
+    const clear = { [kind]: {}, ...(kind === "writing" ? { points: [], wc: {}, wNote: "" } : { sc: {}, sNote: "", lesson: null }) };
+    const nextReview = { ...review, rubric: draft.regrading ? 1 : 2, ...(draft.regrading ? { legacyReview: draft.active.legacyReview } : {}), ...clear,
+      ai: { ...draft.stored.ai, [kind]: undefined }, ...(revised ? { cambridgeDraft: { ...revised, ...clear, ai: { ...revised.ai, [kind]: undefined } } } : {}) };
     if (!(await db.placementAttempt.updateMany({ where: revision(a), data: { state: json(st), review: json(nextReview), status: "active" } })).count) return changed;
     if (a.mode === "student" && a.student?.userId)
       await notify({ userId: a.student.userId, kind: "test", title: kind === "writing" ? "Преподаватель дал дополнительное задание по письму" : "Преподаватель дал дополнительное задание по говорению", action: "decide", link: a.checkpointId ? `/student/test/${a.checkpointId}` : `/placement/${id}` });
@@ -731,7 +720,7 @@ export async function sendReport(id: string, on: boolean): Promise<R> {
 // ───────── ИИ-проверка письма и говорения ─────────
 
 /** ИИ ставит баллы по активной шкале по критериям уровня задания и коротко объясняет; учитель потом правит. transcripts — расшифровки ответов говорения. */
-export async function aiScore(id: string, kind: "writing" | "speaking", transcripts: string[] = [], rubric?: number): Promise<R & { ai?: PlScore }> {
+export async function aiScore(id: string, kind: "writing" | "speaking", transcripts: string[] = [], rubric?: number, regrading = false): Promise<R & { ai?: PlScore }> {
   return wrap(async () => {
     const { me, a } = await teacherAttempt(id);
     // без настоящего ИИ оценка была бы по длине ответа, а расшифровка — шаблонной: честно говорим, что ИИ не подключён
@@ -740,8 +729,8 @@ export async function aiScore(id: string, kind: "writing" | "speaking", transcri
     const it = kind === "writing" ? (st.writing ? (st.items[st.writing.id] as WriteItem) : null) : (st.speaking ? (st.items[st.speaking.id] as SpeakItem) : null);
     if (!it) return { ok: false, error: "task" };
     const level = it.level, below = PL_LEVELS[PL_LEVELS.indexOf(level as never) - 1] ?? "";
-    const set = rubricOf(a.review as never);
-    if ((rubric !== undefined || (a.review as { legacyReview?: unknown })?.legacyReview) && rubric !== set.ver) return changed;
+    const current = teacherReview(a), set = RUB_V2;
+    if (regrading !== current.regrading || ((rubric !== undefined || regrading || current.active.legacyReview) && rubric !== 2)) return changed;
     const crit = set[kind].map((c) => ({ id: c.id, name: c.name_ru, en: c.en, level: c.levels?.[level] ?? "", below: below ? c.levels?.[below] ?? "" : "", ...(set.ver === 2 ? { bands: [5, 4, 3, 2, 1, 0].map((v) => `${v} — ${describe5(c, level, v)}`) } : {}) }));
     let task: string, text: string;
     if (it.type === "writing") {
@@ -755,10 +744,10 @@ export async function aiScore(id: string, kind: "writing" | "speaking", transcri
     try {
       const ai = await run("plscore", { kind, level, below, teen: st.track === "teen", task, text, criteria: crit, max: set.max }, await aiCtx(me));
       const { a: latest } = await teacherAttempt(id);
-      if (rubricOf(latest.review as never).ver !== set.ver || stateOf(latest.state)[kind]?.id !== it.id) return changed;
-      const prev = (latest.review ?? {}) as Record<string, unknown>;
-      const prevAi = (prev.ai ?? {}) as Record<string, unknown>;
-      const saved = await db.placementAttempt.updateMany({ where: revision(latest), data: { review: json({ ...prev, rubric: set.ver, ai: { ...prevAi, [kind]: { ...ai, level, at: new Date().toISOString(), ...(kind === "speaking" ? { transcripts: transcripts.map((x) => str(x, 3000)) } : {}) } } }) } });
+      const draft = teacherReview(latest);
+      if (draft.regrading !== regrading || stateOf(latest.state)[kind]?.id !== it.id) return changed;
+      const review = draft.edit({ ai: { ...draft.active.ai, [kind]: { ...ai, level, at: new Date().toISOString(), ...(kind === "speaking" ? { transcripts: transcripts.map((x) => str(x, 3000)) } : {}) } } });
+      const saved = await db.placementAttempt.updateMany({ where: revision(latest), data: { review: json(review) } });
       if (!saved.count) return changed;
       return { ok: true, ai };
     } catch (e) {

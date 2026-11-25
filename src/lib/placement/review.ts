@@ -1,15 +1,5 @@
 import "server-only";
-import { db } from "../db";
-import { rubricOf } from "./rubric";
 import type { CoreItem, ListenItem, PState, ReadItem, SpeakItem, WriteItem } from "./engine";
-
-/** Только личный черновик. У прежних проверок показ мог сохраниться только в уведомлениях. */
-export async function canSwitchToCambridge(a: { id: string; status: string; showResult: boolean; review: unknown }) {
-  const review = (a.review ?? {}) as { rubric?: number; report?: { sent?: boolean; sentAt?: string }; tgSentAt?: string; shownAt?: string };
-  if (rubricOf(review).ver !== 1 || !["submitted", "reviewed"].includes(a.status) || a.showResult ||
-      review.report?.sent || review.report?.sentAt || review.tgSentAt || review.shownAt) return false;
-  return !(await db.notification.findUnique({ where: { dedupe: `pl-shown:${a.id}` }, select: { id: true } }));
-}
 
 // Данные для разбора: задания из снимка, ответ ученика, правильный ответ, объяснение.
 // Скрипты аудирования ученику не отдаются — только учителю (или после «глазика», отдельным запросом).

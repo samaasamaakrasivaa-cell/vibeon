@@ -32,7 +32,7 @@ export function wsPercent(review: unknown) {
   const rv = (review ?? {}) as { writing?: Record<string, number>; speaking?: Record<string, number>; lesson?: { marks: Record<string, number> } | null };
   const set = rubricOf(rv as never);
   const w = avgPct(set.writing.map((c) => rv.writing?.[c.id] ?? null), set.max);
-  const sm = rv.lesson?.marks ?? rv.speaking;
+  const sm = set.speaking.every((c) => typeof rv.lesson?.marks[c.id] === "number") ? rv.lesson!.marks : rv.speaking ?? rv.lesson?.marks;
   const s = avgPct(set.speaking.map((c) => sm?.[c.id] ?? null), set.max);
   return { ...(w !== null ? { writing: w } : {}), ...(s !== null ? { speaking: s } : {}) };
 }
