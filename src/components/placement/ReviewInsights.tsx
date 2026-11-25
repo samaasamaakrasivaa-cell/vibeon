@@ -209,6 +209,20 @@ function V6Grammar({ v, G, answerRows, extra }: { v: NonNullable<Summary["v6"]>;
         </ul>
         {v.found && <p className="m-0"><b>{t("pr.l.found", { l: v.found })}</b></p>}
       </Sub>
+      {v.samples.length > 0 && (
+        <Sub title={t("pr.l.sample")}>
+          {v.samples.map((sample) => (
+            <details key={sample.level} className="prgrp">
+              <summary>{t("pr.l.sampleLevel", { level: sample.level })}</summary>
+              <Tbl head={[t("pr.topicName"), t("pr.topicCorrect")]} rows={sample.checked.map((x) => [
+                <span key={x.id} data-ladder-topic={x.id}>{x.name}</span>,
+                <Res key="r" r={[x.c, x.n]} />,
+              ])} />
+              {!!sample.unchecked?.length && <p className="small muted m-0">{t("pr.l.sampleUnchecked", { list: sample.unchecked.map((x) => x.name).join(", ") })}</p>}
+            </details>
+          ))}
+        </Sub>
+      )}
       {extra.length > 0 && <Sub title={t("pr.sec.detail")}><Tbl head={[t("pr.col.level"), t("pr.col.easy"), t("pr.col.hard"), t("pr.col.all")]} rows={extra} /></Sub>}
       {v.topics.length > 0 && (
         <Sub title={t("pr.topicsT", { l: v.found ?? "" })}>

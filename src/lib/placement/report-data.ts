@@ -32,7 +32,7 @@ export async function reportData(a: Attempt, st: PState) {
   const input: RInput = {
     name, teen: st.track === "teen", level: a.level ?? sub(hint), skills, vweak: sm.vweak, comment: rv.comment ?? "",
     families: sm.families.map((f) => { const r = f.lvl[1] >= 2 ? f.lvl : f.all; return { id: f.id, name: f.name, c: r[0], n: r[1] }; }),
-    grammarDetail: sm.v6?.found ? { level: sm.v6.found, topics: sm.v6.topics.map(reportTopic), base: sm.v6.base.map(reportTopic), coverageKnown: sm.v6.coverageKnown } : undefined,
+    grammarDetail: sm.v6?.found ? { level: sm.v6.found, topics: sm.v6.topics.map(reportTopic), base: sm.v6.base.map(reportTopic), coverageKnown: sm.v6.coverageKnown, samples: sm.v6.samples } : undefined,
     // Для прежнего формата теста доступны итоги по группам.
     gweak: sm.v6?.found ? undefined : sm.groups.filter((g) => g.c < g.n && g.c / g.n < 0.8).sort((x, y) => (y.n - y.c) - (x.n - x.c)).map((g) => g.name),
     wsWeak: [

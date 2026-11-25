@@ -63,6 +63,17 @@ export function ReportSheet({ r, v, lang, on, texts, answers, wrongOnly }: { r: 
             <h4>{ru ? "Дополнительная проверка тем ниже уровня" : "Additional checks below the level"}</h4>
             <GrammarTopics topics={grammar.base} lang={lang} showLevel />
           </>}
+          {grammar.samples.map((sample) => (
+            <div key={sample.level} className="rpt-ladder-sample">
+              <h4>{sample.level} · {ru ? "Выборочная проверка на лесенке" : "Topics sampled in the ladder"}</h4>
+              <p className="rpt-muted mt-0">{sample.unchecked
+                ? (ru ? `Проверено тем: ${sample.checked.length}. Остались без проверки: ${sample.unchecked.length}.` : `Topics checked: ${sample.checked.length}. Topics not checked: ${sample.unchecked.length}.`)
+                : (ru ? "Приведены только темы, на которые были ответы на лесенке." : "Only topics answered in the ladder are listed.")}</p>
+              <ul>{sample.checked.map((topic) => (
+                <li key={topic.id} data-ladder-topic={topic.id}>{ru ? topic.name : topic.nameEn} · {topic.c}/{topic.n}</li>
+              ))}</ul>
+            </div>
+          ))}
         </section>
       )}
       {on.grammar && !grammar?.topics.length && x.families.length > 0 && (

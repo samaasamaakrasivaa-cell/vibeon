@@ -13,7 +13,7 @@ import { getLang } from "../i18n/server";
 import { attemptFor, ptCookie } from "./access";
 import { getBank, isOwner, TEEN_READY, trackOf, type Track } from "./bank";
 import { describe5, rubricOf } from "./rubric";
-import { checkCore, typoOk, emptyState, EXPECT, pickTask, PL_LEVELS, SECTIONS, STEPS, stepIdx, type Section, summarize, words, type CoreItem, type Expect, type ListenItem, type ReadItem, type SpeakItem, type WriteItem } from "./engine";
+import { checkCore, typoOk, emptyState, EXPECT, pickTask, PlacementCoverageError, PL_LEVELS, SECTIONS, STEPS, stepIdx, type Section, summarize, words, type CoreItem, type Expect, type ListenItem, type ReadItem, type SpeakItem, type WriteItem } from "./engine";
 import { addNextText, advance, begin, closeSection, doneOf, ensureTasks, enter, goTo, json, LATER, availOf, openOf, partsOf, publicView, stateOf, touch, type Later, type PView } from "./run";
 import { revealedScripts } from "./review";
 import { R_BLOCKS, type RCfg, type RSaved, type RVariant } from "./report";
@@ -40,6 +40,7 @@ async function save(id: string, st: ReturnType<typeof stateOf>, extra: Record<st
 const wrap = async (fn: () => Promise<R>): Promise<R> => {
   try { return await fn(); } catch (e) {
     if (!(e instanceof Error && (e.message === "done" || e.message === "not found"))) console.error("[placement]", e instanceof Error ? e.stack : e);
+    if (e instanceof PlacementCoverageError) return { ok: false, error: "coverage" };
     return { ok: false, error: e instanceof Error && e.message === "done" ? "done" : "not found" };
   }
 };

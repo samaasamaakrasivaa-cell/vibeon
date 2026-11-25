@@ -56,6 +56,7 @@ export type PState = {
   core: { id: string; step: number; ph?: Ph }[]; // путь: грамматика (разминка, поиск, проверка, срез выше), затем лексика (vw, vl, vc)
   diag?: number; // уровень подробной проверки (0 = A1 … 4 = C1)
   diagTopics?: { t: string; g: string }[]; // темы на момент начала подробной проверки v6
+  ladderTopicIds?: Partial<Record<number, string[]>>; // темы ступеней, на которые заходила лесенка v6
   fb?: boolean; // уже переходили на уровень ниже (погорячились)
   up?: boolean; // уже переходили на уровень выше (срез выше сдан уверенно) — после этого вниз не спускаемся
   ups?: number; // сколько раз поднимались: уровень за уровнем, пока ученик уверенно делает задания (B1 → B2 → C1)
@@ -914,6 +915,18 @@ const famMap = (bank: Bank) => new Map((bank.families ?? []).flatMap((f) => f.to
 /** Задание для серии лесенки: группа, которой ещё не было на этом уровне, другая тема и раздел; 1–2 из 3 — «вписать самому». */
 function seriesPick(st: PState, bank: Bank, L: number, ser: { L: number; ids: string[] }, rnd: () => number): CoreItem | null {
   const used = new Set(st.core.map((x) => x.id));
+  // Сохраняем один письменный вариант и основу одного «найди и исправь» на каждую тему.
+  const level = PL_LEVELS[L];
+  const reserve = new Map<string, string>();
+  for (const x of bank.core) {
+    if (x.level === level && isGram(x) && typedIt(x) && !used.has(x.id) && !reserve.has(x.topic_id)) reserve.set(x.topic_id, x.id);
+  }
+  const reserveFix = new Map<string, string>();
+  for (const x of bank.fix ?? []) {
+    const source = x.id.replace(/^F-/, "");
+    if (x.level === level && !used.has(source) && !reserveFix.has(x.topic_id)) reserveFix.set(x.topic_id, source);
+  }
+  const reserved = new Set([...reserve.values(), ...reserveFix.values()]);
   const atL = (st.ld ?? []).filter((s) => s.L === L);
   const k = atL.length - 1; // какая по счёту серия на уровне
   const ladIds = atL.flatMap((s) => s.ids);
@@ -931,6 +944,7 @@ function seriesPick(st: PState, bank: Bank, L: number, ser: { L: number; ids: st
   if (!pool.length) pool = bank.core.filter((x) => isGram(x) && x.level === PL_LEVELS[L] && !used.has(x.id));
   if (!pool.length) return null;
   const pref = (f: (x: CoreItem) => boolean) => { const q = pool.filter(f); if (q.length) pool = q; };
+  pref((x) => !reserved.has(x.id));
   pref((x) => !st.seen?.includes(x.id));
   pref((x) => !gUsed.has(x.group));
   pref((x) => !tUsed.has(x.topic_id));
@@ -947,7 +961,11 @@ function ladderStep(st: PState, bank: Bank, rnd: () => number): { item: CoreItem
     const cur: { L: number; ids: string[] } | undefined = st.ld[st.ld.length - 1];
     if (cur && cur.ids.length < 3) {
       const it = seriesPick(st, bank, cur.L, cur, rnd);
-      if (it) { cur.ids.push(it.id); return { item: it, ph: "q" }; }
+      if (it) {
+        (st.ladderTopicIds ??= {})[cur.L] ??= topicsAt(bank, cur.L).map((topic) => topic.t);
+        cur.ids.push(it.id);
+        return { item: it, ph: "q" };
+      }
       if (!cur.ids.length) { st.ld.pop(); st.lv[cur.L] = "down"; } // на уровне нет заданий
     }
     const L = cur ? cur.L : st.start ?? 1;
@@ -973,6 +991,7 @@ function topicAnswers(st: PState, topic: string) {
   st.core.forEach((x, i) => { const it = gItem(st, x.id); const a = st.answers[x.id]; if (isGram(it) && it!.topic_id === topic && a && !x.ph?.startsWith("v") && x.ph !== "z") out.push({ i, it: it!, a, ph: x.ph }); });
   return out;
 }
+const hasTypedTopic = (st: PState, topic: string) => topicAnswers(st, topic).some((answer) => typedIt(answer.it));
 /** Балл темы: верно и уверен — 1, верно, но не уверен — 0,5, неверно — 0. */
 export function topicScore(xs: { a: Ans }[]) {
   if (!xs.length) return null;
@@ -981,15 +1000,22 @@ export function topicScore(xs: { a: Ans }[]) {
 export const verdictOf = (score: number | null) => (score === null ? null : score >= 0.75 ? "own" : score >= 0.5 ? "part" : "gap");
 
 /** Задание по теме: сначала «вписать самому» (или prefer), не использованное; fix — «найди и исправь». */
-function topicPick(st: PState, bank: Bank, topic: string, prefer: "typed" | "fix" | "mcq" | "hard", rnd: () => number): CoreItem | null {
+function topicPick(st: PState, bank: Bank, topic: string, prefer: "typed" | "required-typed" | "fix" | "mcq" | "hard", rnd: () => number): CoreItem | null {
   const used = new Set(st.core.map((x) => x.id));
   const all = bank.core.filter((x) => isGram(x) && x.topic_id === topic && !used.has(x.id) && !used.has(`F-${x.id}`));
   const fixes = (bank.fix ?? []).filter((x) => x.topic_id === topic && !used.has(x.id) && !used.has(x.id.replace(/^F-/, "")));
   const unseen = <T extends CoreItem>(xs: T[]) => { const u = xs.filter((x) => !st.seen?.includes(x.id)); return u.length ? u : xs; };
   const one = (xs: CoreItem[]) => (xs.length ? unseen(xs)[Math.floor(rnd() * unseen(xs).length)] : null);
-  if (prefer === "fix") return one(fixes) ?? one(all.filter(typedIt)) ?? one(all);
-  if (prefer === "typed") return one(all.filter(typedIt)) ?? one(all);
-  if (prefer === "hard") return one(all.filter((x) => x.band > 1)) ?? one(all);
+  const typed = all.filter(typedIt);
+  if (prefer === "fix") return one(fixes) ?? one(typed) ?? one(all);
+  if (prefer === "required-typed") return one(typed);
+  if (prefer === "typed") return one(typed) ?? one(all);
+  if (prefer === "hard") {
+    const reserveFix = fixes[0]?.id.replace(/^F-/, "");
+    const reserveTyped = typed[0]?.id;
+    const spare = all.filter((x) => x.id !== reserveTyped && x.id !== reserveFix);
+    return one(spare.filter((x) => x.band > 1)) ?? one(spare);
+  }
   return one(all.filter((x) => !typedIt(x))) ?? one(all);
 }
 
@@ -1005,7 +1031,6 @@ function needCtrl(st: PState, topic: string) {
 }
 
 function nextCoreV6(st: PState, bank: Bank, rnd: () => number): { item: CoreItem; ph: Ph } | null {
-  if (st.core.filter((x) => !x.ph?.startsWith("v")).length >= V6.CAP) return null;
   if (st.diag === undefined) {
     const r = ladderStep(st, bank, rnd);
     if (typeof r !== "number") return r;
@@ -1014,8 +1039,7 @@ function nextCoreV6(st: PState, bank: Bank, rnd: () => number): { item: CoreItem
   const D = st.diag!;
   const n = st.core.length;
   const last = lastOf(st);
-  const tops = topicsAt(bank, D);
-  st.diagTopics ??= tops;
+  const tops = st.diagTopics ??= topicsAt(bank, D);
   const cx = new Set(st.cx ?? []);
   // 1. контрольные — по темам с ошибкой или «не уверен», через 5+ заданий; сначала давно ждущие
   const ctrlTopics = [...tops.map((x) => x.t), ...(st.bt ?? [])].filter((t) => !cx.has(t)).map((t) => ({ t, ...needCtrl(st, t) })).filter((x) => x.trigger && x.ctrl < V6.CTRL);
@@ -1025,27 +1049,30 @@ function nextCoreV6(st: PState, bank: Bank, rnd: () => number): { item: CoreItem
     if (it) return { item: it, ph: "c" };
     st.cx = [...(st.cx ?? []), x.t];
   }
-  // 2. темы уровня без единого ответа: сначала разделы, где уже были ошибки; первое задание — «вписать самому»
+  // 2. На найденном уровне каждая тема требует самостоятельного ответа. Подбор на лесенке мог дать только варианты.
   const fam = famMap(bank);
   const errFam = new Set(st.core.filter((y) => st.answers[y.id] && !st.answers[y.id].ok).map((y) => fam.get(gItem(st, y.id)?.topic_id ?? "")).filter(Boolean));
-  const fresh = shuffle(tops.filter((x) => !topicAnswers(st, x.t).length), rnd).sort((a, b) => Number(errFam.has(fam.get(b.t))) - Number(errFam.has(fam.get(a.t))));
+  const fresh = shuffle(tops.filter((x) => !hasTypedTopic(st, x.t)), rnd).sort((a, b) => Number(errFam.has(fam.get(b.t))) - Number(errFam.has(fam.get(a.t))));
   const fr = [...fresh.filter((x) => x.g !== last.group), ...fresh.filter((x) => x.g === last.group)];
-  for (const x of fr) { const it = topicPick(st, bank, x.t, "typed", rnd); if (it) return { item: it, ph: "t" }; }
+  for (const x of fr) { const it = topicPick(st, bank, x.t, "required-typed", rnd); if (it) return { item: it, ph: "t" }; }
+  if (fr.length) throw new PlacementCoverageError(fr.map((topic) => topic.t));
+  // Лимит выключает добор заданий, но не прерывает проверку тем уровня и назначенные перепроверки.
+  const canExtend = st.core.filter((x) => !x.ph?.startsWith("v")).length < V6.CAP;
   // 3. каждая группа уровня — минимум 3 задания: тема группы, где ответов меньше всего; лучше сложное
   const gCount = (gid: string) => st.core.filter((y) => { const it = gItem(st, y.id); return isGram(it) && it!.level === PL_LEVELS[D] && it!.group === gid && st.answers[y.id] && y.ph !== "g"; }).length;
-  const thin = shuffle(groupsOf(bank, D).filter((g) => gCount(g.id) < PER_GROUP), rnd);
+  const thin = canExtend ? shuffle(groupsOf(bank, D).filter((g) => gCount(g.id) < PER_GROUP), rnd) : [];
   for (const g of [...thin.filter((x) => x.id !== last.group), ...thin.filter((x) => x.id === last.group)]) {
     const ts = [...g.topics].sort((a, b) => topicAnswers(st, a).length - topicAnswers(st, b).length);
     for (const t of ts) { const it = topicPick(st, bank, t, "hard", rnd); if (it) return { item: it, ph: "t" }; }
   }
   // 4. пробелы базы уровнем ниже: ошибки лесенки на уровне ниже и темы-основы тем, которые не даются
-  if (D > 0 && st.bt === undefined) {
+  if (canExtend && D > 0 && st.bt === undefined) {
     const below = new Set(bank.core.filter((x) => isGram(x) && PL_LEVELS.indexOf(x.level) < D).map((x) => x.topic_id));
     const ladErr = (st.ld ?? []).filter((s) => s.L < D).flatMap((s) => s.ids).filter((id) => st.answers[id] && !st.answers[id].ok).map((id) => gItem(st, id)!.topic_id);
     const weak = tops.filter((x) => { const v = verdictOf(topicScore(topicAnswers(st, x.t))); return v === "gap" || v === "part"; }).flatMap((x) => bank.prereq?.[x.t] ?? []).filter((t) => below.has(t));
     st.bt = [...new Set([...ladErr, ...weak])].slice(0, V6.BASE_T);
   }
-  for (const t of st.bt ?? []) {
+  for (const t of canExtend ? st.bt ?? [] : []) {
     const asked = st.core.filter((y) => y.ph === "g" && gItem(st, y.id)?.topic_id === t).length;
     if (asked >= V6.BASE_Q || t === last.topic) continue;
     const it = topicPick(st, bank, t, asked === 0 ? "typed" : "fix", rnd);
@@ -1081,17 +1108,28 @@ function remainingV6(st: PState, bank: Bank) {
     const L = st.ld?.[st.ld.length - 1]?.L ?? st.start ?? 1;
     return 12 + topicsAt(bank, Math.min(4, L + 1)).length * 1.6;
   }
-  const tops = topicsAt(bank, st.diag);
-  const untested = tops.filter((x) => !topicAnswers(st, x.t).length).length;
+  const tops = st.diagTopics ?? topicsAt(bank, st.diag);
+  const untested = tops.filter((x) => !hasTypedTopic(st, x.t)).length;
   const ctrl = tops.reduce((a, x) => { const c = needCtrl(st, x.t); return a + (c.trigger ? Math.max(0, V6.CTRL - c.ctrl) : 0); }, 0);
   return untested + ctrl + 3;
 }
 
 /** Сводка v6 для разбора: лесенка по уровням, итог по каждой теме, пробелы базы, уверенность. */
 export type V6Topic = { id: string; name: string; nameEn: string; level: PLevel; group: string; groupName: string; n: number; c: number; score: number | null; verdict: "own" | "part" | "gap" | null; sureWrong: boolean; slow: boolean; fix: boolean | null; typed: number; checks: { fix: number; typed: number; choice: number }; roots: string[] };
+export type V6LadderSample = {
+  level: PLevel;
+  checked: { id: string; name: string; nameEn: string; c: number; n: number }[];
+  unchecked: { name: string; nameEn: string }[] | null;
+};
+export class PlacementCoverageError extends Error {
+  constructor(ids: string[]) {
+    super(`Placement grammar bank is missing unused tasks for: ${ids.join(", ")}`);
+  }
+}
 export type V6Summary = {
   ladder: { level: PLevel; series: { c: number; n: number; typed: number }[]; p: number; verdict: "up" | "down" | null }[];
   found: PLevel | null; topics: V6Topic[]; base: V6Topic[]; coverageKnown: boolean;
+  samples: V6LadderSample[];
   conf: { sureRight: number; unsureRight: number; sureWrong: number; unsureWrong: number };
 };
 export function summarizeV6(st: PState, bank: Bank): V6Summary {
@@ -1114,6 +1152,23 @@ export function summarizeV6(st: PState, bank: Bank): V6Summary {
   };
   const D = st.diag;
   const found = D === undefined ? null : PL_LEVELS[D];
+  const samples: V6LadderSample[] = [...new Set(order)].filter((L) => L !== D).flatMap((L) => {
+    const checked = new Map<string, V6LadderSample["checked"][number]>();
+    for (const question of st.core) {
+      const item = gItem(st, question.id), answer = st.answers[question.id];
+      if (question.ph !== "q" || item?.level !== PL_LEVELS[L] || item.skill !== "grammar" || !answer) continue;
+      const row = checked.get(item.topic_id) ?? { id: item.topic_id, name: item.topic_ru, nameEn: item.topic_en, c: 0, n: 0 };
+      row.n++;
+      if (answer.ok) row.c++;
+      checked.set(item.topic_id, row);
+    }
+    if (!checked.size) return [];
+    const unchecked = st.ladderTopicIds?.[L]?.filter((id) => !checked.has(id)).map((id) => {
+      const item = byTopic.get(id);
+      return { name: item?.topic_ru ?? id, nameEn: item?.topic_en ?? id };
+    }) ?? null;
+    return [{ level: PL_LEVELS[L], checked: [...checked.values()], unchecked }];
+  });
   const diagnostic = new Map((st.diagTopics ?? (D === undefined ? [] : topicsAt(bank, D))).map((x) => [x.t, x.g]));
   // Перенос темы между уровнями не должен удалять её из отчёта о пройденном тесте.
   if (D !== undefined) {
@@ -1132,7 +1187,7 @@ export function summarizeV6(st: PState, bank: Bank): V6Summary {
   for (const x of topics) if (x.verdict === "gap" || x.verdict === "part") x.roots = (bank.prereq?.[x.id] ?? []).filter((t) => weakBase.has(t)).map((t) => byTopic.get(t)?.topic_ru ?? t);
   const conf = { sureRight: 0, unsureRight: 0, sureWrong: 0, unsureWrong: 0 };
   for (const x of st.core) { const a = st.answers[x.id]; if (!a || a.cf === undefined) continue; if (a.ok) a.cf ? conf.sureRight++ : conf.unsureRight++; else a.cf ? conf.sureWrong++ : conf.unsureWrong++; }
-  return { ladder, found, topics, base, coverageKnown: !!st.diagTopics, conf };
+  return { ladder, found, topics, base, coverageKnown: !!st.diagTopics, samples, conf };
 }
 
 /** «Найди и исправь» из заданий с вариантами: в предложение подставлен неверный вариант; span — его слова. */

@@ -1,7 +1,7 @@
 // Конструктор отчёта по placement test: два варианта (ученик — подробный, родитель — простыми словами),
 // русский или английский; английский подстраивается под уровень ученика (до B1 — простые фразы, с B2 — сложнее).
 // Тексты — черновик: учитель правит любой блок, правки хранятся отдельно для каждого варианта и языка.
-import type { V6Topic } from "./engine";
+import type { V6LadderSample, V6Topic } from "./engine";
 
 export type RVariant = "student" | "parent";
 export type RLang = "ru" | "en";
@@ -20,7 +20,7 @@ export type RInput = {
   name: string; teen: boolean; level: string | null; // итоговый подуровень (A1…C1, с «+») — утверждённый или оценка системы
   skills: Partial<Record<RSkill, string | null>>; families: RFamily[]; vweak: string[]; comment: string;
   gweak?: string[]; // темы грамматики с ошибками (из карты тем)
-  grammarDetail?: { level: string; topics: RGrammarTopic[]; base: RGrammarTopic[]; coverageKnown: boolean };
+  grammarDetail?: { level: string; topics: RGrammarTopic[]; base: RGrammarTopic[]; coverageKnown: boolean; samples: V6LadderSample[] };
   wsWeak?: { kind: "writing" | "speaking"; id: string; name: string; v: number }[]; // критерии письма и говорения с низким баллом (0–1 из 3)
 };
 const CRIT_EN: Record<string, string> = { task: "task achievement", coherence: "coherence and organisation", vocabulary: "vocabulary", grammar: "grammar", fluency: "fluency and coherence", pronunciation: "pronunciation" };

@@ -66,7 +66,7 @@ export function PlacementRunner({ id, initial, sample, done, home, canFlag = fal
     start(async () => {
       setErr(null);
       const r = await fn().catch(() => ({ ok: false, error: "net" }) as const);
-      if (!r.ok) { setErr(r.error === "done" ? t("pl.err.done") : r.error === "plays" ? t("pl.err.plays") : r.error === "empty" ? t("pl.err.empty") : t("pl.err.net")); if (r.error === "done") location.reload(); return; }
+      if (!r.ok) { setErr(r.error === "done" ? t("pl.err.done") : r.error === "plays" ? t("pl.err.plays") : r.error === "empty" ? t("pl.err.empty") : r.error === "coverage" ? t("pl.err.coverage") : t("pl.err.net")); if (r.error === "done") location.reload(); return; }
       if (!r.view) return;
       const from = v.section, to = r.view.section;
       setV(r.view); shownAt.current = Date.now();
