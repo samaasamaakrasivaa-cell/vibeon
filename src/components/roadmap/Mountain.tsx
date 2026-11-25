@@ -1,5 +1,6 @@
 "use client";
-import { useId, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { Icon } from "../Icon";
 import { useT } from "@/lib/i18n/client";
 import { segName } from "@/lib/roadmap/cefr";
 
@@ -60,9 +61,16 @@ export function Mountain({ stages, done, start, ini, label, units = [], ci, sel,
   const yw = Math.max(96, label.length * 7.4 + 24);
   const trees = [[40, 372], [110, 380], [190, 366], [560, 376], [630, 362], [690, 372], [20, 350], [660, 336]];
   const hp = hov !== null ? marks.pts[hov] : null;
+  // увеличенная карта поверх страницы: точки крупнее, в них легко попасть
+  const [big, setBig] = useState(false);
+  useEffect(() => { if (!big) return; const k = (e: KeyboardEvent) => { if (e.key === "Escape") setBig(false); }; window.addEventListener("keydown", k); return () => window.removeEventListener("keydown", k); }, [big]);
+  // участки красят саму дорогу: пробелы / закрепление / новый уровень; пройденное — зелёным поверх
+  const starts = [0, ...marks.flags.slice(0, -1)];
   const hpos = hp ? at(hp.f) : null;
   return (
-    <div className="mtnbox">
+    <div className={big ? "mtnfull" : undefined} onClick={big ? (e) => { if (e.target === e.currentTarget) setBig(false); } : undefined}>
+    <div className={`mtnbox ${big ? "big" : ""}`}>
+      <button type="button" className="mtnzoom" onClick={() => setBig((b) => !b)} aria-label={big ? t("common.close") : t("mtn.zoom")} title={big ? t("common.close") : t("mtn.zoom")}><Icon name={big ? "close" : "search"} size="sm" /></button>
       <svg viewBox={`0 0 ${W} ${H}`} className="mtn" role="img" aria-label={label} style={{ ["--to" as string]: String(100 - frac * 100) }}>
         <defs>
           <linearGradient id={`sk${id}`} x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#DDEBFF" /><stop offset=".7" stopColor="#F4F8FF" /><stop offset="1" stopColor="#FFFFFF" /></linearGradient>
@@ -83,7 +91,8 @@ export function Mountain({ stages, done, start, ini, label, units = [], ci, sel,
           <g key={i} transform={`translate(${x},${y}) scale(${0.8 + (i % 3) * 0.2})`}><path d="M0,-26 L10,-6 L5,-6 L13,8 L-13,8 L-5,-6 L-10,-6Z" fill={i % 2 ? "#7FB79A" : "#9CCBB0"} /><rect x="-1.5" y="8" width="3" height="5" fill="#B39B84" /></g>
         ))}
         <path d={PATH} className="road" ref={ref} /><path d={PATH} className="roadc" />
-        <path d={PATH} className="trk" stroke={`url(#tr${id})`} pathLength={100} />
+        {stages.map((st, i) => { const a = starts[i] * 100, b = marks.flags[i] * 100; return <path key={i} d={PATH} className={`seg ${st.kind ?? "level"}`} pathLength={100} strokeDasharray={`${Math.max(0, b - a - 0.4)} 200`} strokeDashoffset={-a} />; })}
+        <path d={PATH} className="trk" pathLength={100} />
         <g transform={`translate(${ROAD[0][0]},${ROAD[0][1]})`}>
           <title>{start}</title>
           <circle r="19" className="astart" /><text y="7" textAnchor="middle" className="atext">A</text>
@@ -102,7 +111,7 @@ export function Mountain({ stages, done, start, ini, label, units = [], ci, sel,
             <g key={m.p.id} className={cls} transform={`translate(${x},${y})`} role={onPoint ? "button" : undefined} tabIndex={onPoint ? 0 : undefined} aria-label={m.p.title}
               onMouseEnter={() => setHov(k)} onMouseLeave={() => setHov((h) => (h === k ? null : h))} onFocus={() => setHov(k)} onBlur={() => setHov(null)}
               onClick={onPoint ? () => onPoint(m.p.id) : undefined} onKeyDown={onPoint ? (e) => { if (e.key === "Enter" || e.key === " ") onPoint(m.p.id); } : undefined}>
-              <circle r="11" fill="transparent" /><circle r="5.5" className="mpd" />
+              <circle r="14" fill="transparent" /><circle r="6.5" className="mpd" />
             </g>
           );
         })}
@@ -117,9 +126,6 @@ export function Mountain({ stages, done, start, ini, label, units = [], ci, sel,
               <g transform={`translate(${x},${y})`}>
                 <path d="M0,0 C-4,-8 -16,-14 -16,-27 A16,16 0 1 1 16,-27 C16,-14 4,-8 0,0Z" className="pin" />
                 <text y="-23" textAnchor="middle" className="pint">{s.kind === "gaps" ? `→${s.lvl}` : s.lvl.length > 5 ? s.lvl.slice(0, 5) : s.lvl}</text>
-                {(s.kind === "gaps" || s.kind === "consolidate") && (() => { const tx = s.kind === "gaps" ? t("mtn.gaps") : t("mtn.cons"); const w = tx.length * 6.2 + 14; return (
-                  <g transform="translate(0,14)"><rect x={-w / 2} y="-9" width={w} height="18" rx="9" className={`ptag ${s.kind}`} /><text y="4" textAnchor="middle" className="ptagt">{tx}</text></g>
-                ); })()}
                 {st === "done" && <g transform="translate(12,-40)"><circle r="7" fill="#34C759" stroke="#FFFFFF" strokeWidth="2" /><path d="M-3,0 l2,2 l4,-4.5" stroke="#FFFFFF" strokeWidth="1.8" fill="none" strokeLinecap="round" /></g>}
               </g>
             </g>
@@ -136,6 +142,11 @@ export function Mountain({ stages, done, start, ini, label, units = [], ci, sel,
           {hp.p.ok && Object.keys(hp.p.ok).length > 0 && <span className="mtip-ok">{studentView ? t("mtn.okS") : t("mtn.okT")}</span>}
         </div>
       )}
+    </div>
+    <div className="mtnleg small">
+      {(["gaps", "consolidate", "level"] as const).filter((k) => stages.some((x) => (x.kind ?? "level") === k)).map((k) => <span key={k}><i className={`lg ${k}`} />{t(k === "gaps" ? "mtn.lgGaps" : k === "consolidate" ? "mtn.lgCons" : "mtn.lgLevel")}</span>)}
+      <span><i className="lg done" />{t("mtn.lgDone")}</span>
+    </div>
     </div>
   );
 }

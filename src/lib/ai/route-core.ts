@@ -192,7 +192,7 @@ export function cleanRecs(raw: Record<string, unknown>): PointRecs {
     grammar: list(raw.grammar, 6, 200), vocabulary: list(raw.vocabulary, 16, 80), phrasal_verbs: list(raw.phrasal_verbs, 10, 80), idioms: list(raw.idioms, 6, 120),
     reading: str(raw.reading, 500), listening: str(raw.listening, 500), speaking: str(raw.speaking, 500), writing: str(raw.writing, 500),
   };
-  if (!r.vocabulary.length && !r.grammar.length && !r.reading) throw new Error("recs: empty");
+  if (!r.grammar.length && !r.themes.length) throw new Error("recs: empty");
   return r;
 }
 

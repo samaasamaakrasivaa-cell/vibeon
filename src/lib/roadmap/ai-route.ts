@@ -28,7 +28,7 @@ export type Brief = Partial<Record<(typeof BRIEF_KEYS)[number], string>> & {
   marks?: Record<string, "strong" | "norm" | "weak">; order?: string[]; breaks?: string; variant?: "br" | "am" | "any"; exam?: string;
 };
 export type InsightSaved = Insight & { model?: string; label?: string; at?: string; edited?: boolean; confirmed?: boolean; confirmedAt?: string; extra?: string };
-export type ChatMsg = { role: "teacher" | "ai"; text: string; at: string };
+export type ChatMsg = { role: "teacher" | "ai"; text: string; at: string; files?: string[] };
 export type RoadmapMeta = { share: Share; shareSetByTeacher?: boolean; done: number[] };
 
 function cleanBrief(b: Brief): Brief {
@@ -191,12 +191,14 @@ export async function buildRoadmap(studentId: string, f: RoadmapForm, brief: Bri
 }
 
 /** Диалог под черновиком: учитель просит изменить — ИИ обновляет маршрут и пишет, что изменил. Прежняя версия сохраняется. */
-export async function refineRoadmap(roadmapId: string, text: string): Promise<R> {
+/** Диалог с ИИ по готовому маршруту. Вложения (скрин, фото разворота учебника, PDF) приходят текстом после распознавания. */
+export async function refineRoadmap(roadmapId: string, text: string, files: { name: string; text: string }[] = []): Promise<R> {
   const r = await db.roadmap.findUnique({ where: { id: roadmapId } });
   if (!r) return { ok: false, error: "not found" };
   const { me } = await own(r.studentId);
   const { t } = await getT();
-  const msg = str(text, 3000);
+  const att = (Array.isArray(files) ? files : []).slice(0, 4).map((x) => ({ name: str(x?.name, 120) || "file", text: str(x?.text, 15000) })).filter((x) => x.text);
+  const msg = str(text, 3000) || (att.length ? t("rm2.useFiles") : "");
   if (!msg) return { ok: false, error: t("rm2.emptyMsg") };
   const f: RoadmapForm = { type: r.type, goal: r.goal, fromLevel: r.fromLevel ?? "", courseIds: r.courseIds, leadCourseId: r.leadCourseId, deadline: r.deadline ? r.deadline.toISOString().slice(0, 7) : null, showDate: r.showDate, pace: r.pace ?? "2:20", mood: r.mood ?? "plan", note: r.note ?? "" };
   const { input, weekly, p, selfMin } = await context(r.studentId, me.id, f, (r.brief ?? {}) as Brief);
@@ -206,18 +208,20 @@ export async function refineRoadmap(roadmapId: string, text: string): Promise<R>
   input.current_route = compactStages((r.stages as Stage[]) ?? []);
   input.dialog = chat.slice(-8).map((m) => ({ role: m.role, text: m.text.slice(0, 800) }));
   input.teacher_request = msg;
+  if (att.length) input.attachments = att;
+  const names = att.length ? { files: att.map((x) => x.name) } : {};
   const now = new Date().toISOString();
   try {
     const run = await runJson(llmFor("route", await aiCtx(me)), modelsFor("route"), prompt("route"), input, (j) => cleanRoute(j, selfMin), { tag: "route-refine", maxTokens: 10000, timeoutMs: 280000 });
     const d = await saveDraft(r.id, run, weekly, p.gl, (r.stages as Stage[]) ?? [], {
       versions: json(pushVersion(r.versions, r, msg.slice(0, 120))),
-      chat: json([...chat, { role: "teacher", text: msg, at: now }, { role: "ai", text: run.data.changes || t("rm2.updated"), at: new Date().toISOString() }].slice(-60)),
+      chat: json([...chat, { role: "teacher", text: msg, at: now, ...names }, { role: "ai", text: run.data.changes || t("rm2.updated"), at: new Date().toISOString() }].slice(-60)),
     });
     refresh(r.studentId);
     return { ok: true, note: d.changes };
   } catch (e) {
     console.error("[ai:route-refine]", e);
-    await db.roadmap.update({ where: { id: r.id }, data: { chat: json([...chat, { role: "teacher", text: msg, at: now }].slice(-60)) } });
+    await db.roadmap.update({ where: { id: r.id }, data: { chat: json([...chat, { role: "teacher", text: msg, at: now, ...names }].slice(-60)) } });
     return { ok: false, error: t(`ai.err.${aiCode(e)}`) };
   }
 }

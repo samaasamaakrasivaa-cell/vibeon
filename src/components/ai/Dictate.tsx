@@ -30,7 +30,7 @@ async function recognize(pcm: Int16Array, lang: string) {
 type St = "idle" | "rec" | "busy";
 
 /** Кнопка «Надиктовать»: текст приходит кусками через onText (по порядку). */
-export function Dictate({ onText, lang = "ru-RU", label, className = "", round }: { onText: (text: string) => void; lang?: "ru-RU" | "en-US"; label?: string; className?: string; round?: boolean }) {
+export function Dictate({ onText, lang = "ru-RU", label, className = "", round, onBusy }: { onText: (text: string) => void; lang?: "ru-RU" | "en-US"; label?: string; className?: string; round?: boolean; /** идёт запись или распознавание — родитель не отправляет текст, пока не придёт последний кусок */ onBusy?: (busy: boolean) => void }) {
   const { t } = useT();
   const [st, setSt] = useState<St>("idle");
   const [sec, setSec] = useState(0);
@@ -38,6 +38,8 @@ export function Dictate({ onText, lang = "ru-RU", label, className = "", round }
   const [err, setErr] = useState<string | null>(null);
   const r = useRef<{ ctx: AudioContext; stream: MediaStream; node: ScriptProcessorNode; buf: number[]; t0: number; timer: number; queue: Promise<void>; pending: number } | null>(null);
   const cb = useRef(onText); cb.current = onText;
+  const busyCb = useRef(onBusy); busyCb.current = onBusy;
+  useEffect(() => { busyCb.current?.(st !== "idle"); }, [st]);
 
   const send = (samples: number[]) => {
     const x = r.current; if (!x || samples.length < RATE * 0.4) return;

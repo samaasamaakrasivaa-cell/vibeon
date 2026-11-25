@@ -94,9 +94,8 @@ function pointRecs() {
   return {
     themes: [{ title: "Perfectionism", why: "Ученица интересуется психологией; в теме много абстрактных существительных.", keywords: ["perfectionism", "self-criticism"], article: "Статьи о перфекционизме и самокритике", article_query: "perfectionism wellbeing", podcast_query: "perfectionism podcast", video_query: "perfectionism TED talk" },
       { title: "Travel and mental health", why: "Путешествия + география с артиклями.", keywords: ["travel", "wellbeing"], article: "Статьи о путешествиях ради ментального здоровья", article_query: "travel mental health", podcast_query: "travel wellbeing podcast", video_query: "travel mental health" }],
-    grammar: ["zero article with abstract nouns", "the + mountain ranges, rivers"], vocabulary: ["continent", "landscape", "border", "coastline", "landlocked", "heritage", "itinerary", "destination"],
-    phrasal_verbs: ["set off", "stop over", "look around", "get away"], idioms: ["the world is your oyster", "off the beaten track"],
-    reading: "Статья о путешествиях: ищите в журнале материалы о местах и travel wellbeing", listening: "Подкаст о путешествиях", speaking: "Describe a place you'd like to visit", writing: "A short travel review (150 words)",
+    grammar: ["zero article with abstract nouns", "the + mountain ranges, rivers"], vocabulary: [], phrasal_verbs: [], idioms: [],
+    reading: "", listening: "", speaking: "", writing: "",
   };
 }
 
@@ -104,6 +103,7 @@ export async function mockLlm(model: string, messages: LlmMsg[]): Promise<ChatRe
   await new Promise((r) => setTimeout(r, 120));
   const sys = messages.find((m) => m.role === "system")?.content ?? "";
   const user = messages.filter((m) => m.role === "user").map((m) => m.content).join("\n");
+  if (/speech-recognition transcript/.test(sys)) return { text: user.replace(/презент перфект/gi, "Present Perfect").replace(/фрейзал вербс/gi, "phrasal verbs"), model: `mock:${model}`, tokensIn: 50, tokensOut: 50 };
   let out: unknown;
   if (/auto-checked a student's answers/.test(sys)) {
     const ids = [...user.matchAll(/"id":\s*"([^"]+)"/g)].map((m) => m[1]);

@@ -25,6 +25,7 @@ HOW TO BUILD THE ROUTE
 8. Language: ALL text fields in Russian. Keep grammar topic names, English words and phrases, and course unit titles in English.
 
 If the INPUT contains "current_route" and "teacher_request", this is a revision: change the current route as the teacher asks, keep everything else as it was (same points, same order, same hours) unless the request requires otherwise, and explain the changes in "changes".
+If the revision INPUT contains "attachments" (text recognised from the teacher's screenshot, photo of a textbook spread or PDF), the teacher refers to it in "teacher_request" — e.g. "take all grammar topics from this spread and distribute them across the points". Read it carefully, take exactly what the teacher asks for (topic names as in the source, in English), place them into the right points by level and logic, and say in "changes" which topics went where. OCR text may be messy: ignore page numbers, headers and noise.
 
 OUTPUT — ONLY valid JSON:
 {

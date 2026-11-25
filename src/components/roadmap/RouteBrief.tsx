@@ -63,8 +63,11 @@ export function InsightCard({ studentId, f, brief, insight, hasPack }: { student
   const init = (x: InsightSaved | null) => ({ sum: toItems(x?.summary ?? "").join("\n"), blk: (x?.blockers ?? []).join("\n"), str: (x?.strengths ?? []).join("\n") });
   const [txt3, setTxt3] = useState(init(insight));
   const [gaps, setGaps] = useState(insight?.gaps ?? []);
-  const [extra, setExtra] = useState(insight?.extra ?? "");
-  useEffect(() => { setTxt3(init(insight)); setGaps(insight?.gaps ?? []); setExtra(insight?.extra ?? ""); }, [insight]);
+  // «Не учтено»: сохранённые дополнения — списком, поле — только для нового (после отправки очищается)
+  const [extra, setExtra] = useState("");
+  const [dictBusy, setDictBusy] = useState(false);
+  const notes = (insight?.extra ?? "").split(/\n+/).map((x) => x.trim()).filter(Boolean);
+  useEffect(() => { setTxt3(init(insight)); setGaps(insight?.gaps ?? []); }, [insight]);
   // ИИ сам изучает комплект, как только он есть, — до того, как учитель что-то заполнит
   const auto = useRef(false);
   useEffect(() => { if (!insight && hasPack && !auto.current) { auto.current = true; run(() => routeInsight(studentId, f, brief)); } }, [insight, hasPack]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -133,13 +136,19 @@ export function InsightCard({ studentId, f, brief, insight, hasPack }: { student
           {!edit && (
             <div className="rconf">
               <div className="small font-bold">{t("rm2.extraT")}</div>
+              {notes.length > 0 && (
+                <ul className="rnotes">
+                  {notes.map((n, i) => <li key={i}><span className="grow">{n}</span><button className="iconbtn" aria-label={t("common.delete")} disabled={pending} onClick={() => run(() => save({ extra: notes.filter((_, k) => k !== i).join("\n") }))}><Icon name="close" size="sm" /></button></li>)}
+                </ul>
+              )}
               <div className="dictbox">
-                <textarea className="textarea" rows={2} value={extra} placeholder={t("rm2.extraPh")} aria-label={t("rm2.extraT")} onChange={(e) => setExtra(e.target.value)} />
-                <Dictate round onText={(x) => setExtra((v) => add(v, x))} />
+                <textarea className="textarea" rows={2} value={extra} placeholder={notes.length ? t("rm2.extraMorePh") : t("rm2.extraPh")} aria-label={t("rm2.extraT")} onChange={(e) => setExtra(e.target.value)} disabled={pending} />
+                <Dictate round onText={(x) => setExtra((v) => add(v, x))} onBusy={setDictBusy} />
               </div>
               <div className="flex flex-wrap gap-2">
-                <button className="btn primary sm" disabled={pending} onClick={() => run(() => save({ extra, confirmed: true }))}><Icon name="check" size="sm" />{insight.confirmed ? t("rm2.confirmAgain") : t("rm2.confirm")}</button>
-                {extra !== (insight.extra ?? "") && <button className="btn secondary sm" disabled={pending} onClick={() => run(() => save({ extra }))}>{t("rm2.saveExtra")}</button>}
+                <button className="btn primary sm" disabled={pending || dictBusy} onClick={() => { const v = extra.trim(); setExtra(""); run(() => save({ extra: [...notes, ...(v ? [v] : [])].join("\n"), confirmed: true }), undefined); }}><Icon name="check" size="sm" />{insight.confirmed && !extra.trim() ? t("rm2.confirmAgain") : t("rm2.confirm")}</button>
+                {extra.trim() && <button className="btn secondary sm" disabled={pending || dictBusy} onClick={() => { const v = extra.trim(); setExtra(""); run(() => save({ extra: [...notes, v].join("\n") })); }}>{t("rm2.saveExtra")}</button>}
+                {dictBusy && <span className="small muted">{t("dict.wait")}</span>}
               </div>
               <span className="hint">{t("rm2.confirmHint")}</span>
             </div>
@@ -260,30 +269,39 @@ export function PointCard({ roadmapId, p, onClose, happiful }: { roadmapId: stri
         <div className="flex gap-2"><input className="input xs grow" value={(p.recs?.themes ?? []).some((x) => x.title === ok.theme) ? "" : ok.theme ?? ""} placeholder={t("rm3.ownTheme")} onChange={(e) => setOk((o) => ({ ...o, theme: e.target.value || undefined }))} /></div>
       </div>
       <ArticleBox roadmapId={roadmapId} pointId={p.id} articles={p.articles ?? []} ok={ok} setOk={setOk} />
-      {REC_LISTS.map((k) => {
-        const recs = p.recs?.[k] ?? [];
-        const mine = (ok[k] ?? []).filter((x) => !recs.includes(x));
-        return (
-          <div key={k} className="rrec">
-            <div className="small font-bold">{t(`rm2.k.${k}`)}</div>
-            <div className="flex flex-wrap gap-1.5">
-              {[...recs, ...mine].map((x) => { const on = (ok[k] ?? []).includes(x); return <button key={x} type="button" className={`pchip ${on ? "on" : ""}`} aria-pressed={on} title={on ? t("rm2.okOn") : t("rm2.okOff")} onClick={() => toggle(k, x)}>{on && "✓ "}{x}</button>; })}
+      {/* точка — грамматическая: ИИ предлагает только подтемы грамматики. Лексику, фразовые глаголы и задания
+          учитель при желании дописывает сам (обычно — при раскрытии юнита) */}
+      {(() => {
+        const listRow = (k: (typeof REC_LISTS)[number], ai: boolean) => {
+          const recs = ai ? p.recs?.[k] ?? [] : [];
+          const mine = (ok[k] ?? []).filter((x) => !recs.includes(x));
+          return (
+            <div key={k} className="rrec">
+              <div className="small font-bold">{t(`rm2.k.${k}`)}</div>
+              {recs.length + mine.length > 0 && <div className="flex flex-wrap gap-1.5">
+                {[...recs, ...mine].map((x) => { const on = (ok[k] ?? []).includes(x); return <button key={x} type="button" className={`pchip ${on ? "on" : ""}`} aria-pressed={on} title={on ? t("rm2.okOn") : t("rm2.okOff")} onClick={() => toggle(k, x)}>{on && "✓ "}{x}</button>; })}
+              </div>}
+              <div className="mt-1 flex gap-2"><input className="input xs grow" value={own[k] ?? ""} placeholder={t("rm2.ownPh")} onChange={(e) => setOwn((s) => ({ ...s, [k]: e.target.value }))} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addOwn(k); } }} /><button type="button" className="btn plain sm" onClick={() => addOwn(k)}>{t("rm2.addOwn")}</button></div>
             </div>
-            <div className="mt-1 flex gap-2"><input className="input xs grow" value={own[k] ?? ""} placeholder={t("rm2.ownPh")} onChange={(e) => setOwn((s) => ({ ...s, [k]: e.target.value }))} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addOwn(k); } }} /><button type="button" className="btn plain sm" onClick={() => addOwn(k)}>{t("rm2.addOwn")}</button></div>
-          </div>
-        );
-      })}
-      {REC_TEXTS.map((k) => {
-        const rec = p.recs?.[k] ?? "";
-        const v = ok[k] ?? "";
+          );
+        };
+        const extraFilled = REC_LISTS.some((k) => k !== "grammar" && (ok[k]?.length ?? 0) > 0) || REC_TEXTS.some((k) => !!ok[k]);
         return (
-          <div key={k} className="rrec">
-            <div className="small font-bold">{t(`rm2.k.${k}`)}</div>
-            {rec && rec !== v && <div className="rpf"><span className="small">{rec}</span><button type="button" className="btn plain sm" onClick={() => setOk((o) => ({ ...o, [k]: rec }))}>{t("rm2.okIt")}</button></div>}
-            <textarea className="textarea" rows={2} value={v} placeholder={t("rm2.ownText")} onChange={(e) => setOk((o) => ({ ...o, [k]: e.target.value }))} />
-          </div>
+          <>
+            {listRow("grammar", true)}
+            <details className="tpack-sec" open={extraFilled}>
+              <summary><span className="grow">{t("rm7.extraT")}</span><span className="small muted">{t("rm7.extraSub")}</span><Icon name="chevd" size="sm" /></summary>
+              {REC_LISTS.filter((k) => k !== "grammar").map((k) => listRow(k, false))}
+              {REC_TEXTS.map((k) => (
+                <div key={k} className="rrec">
+                  <div className="small font-bold">{t(`rm2.k.${k}`)}</div>
+                  <textarea className="textarea" rows={2} value={ok[k] ?? ""} placeholder={t("rm2.ownText")} onChange={(e) => setOk((o) => ({ ...o, [k]: e.target.value }))} />
+                </div>
+              ))}
+            </details>
+          </>
         );
-      })}
+      })()}
       <div className="rrec">
         <div className="small font-bold">{t("rm2.note")}</div>
         <div className="dictbox">
@@ -389,16 +407,35 @@ export function RouteChat({ roadmapId, chat, versions }: { roadmapId: string; ch
   const { run, pending, error } = useRun();
   const [msg, setMsg] = useState("");
   const [sent, setSent] = useState<string | null>(null);
+  const [files, setFiles] = useState<{ name: string; text: string }[]>([]);
+  const [reading, setReading] = useState(false);
+  const [ferr, setFerr] = useState<string | null>(null);
+  const [dictBusy, setDictBusy] = useState(false);
+  const attach = async (list: FileList | null) => {
+    if (!list?.length) return;
+    setFerr(null); setReading(true);
+    for (const f of [...list].slice(0, 4 - files.length)) {
+      try { const text = await extractFile(f); if (text.trim()) setFiles((x) => [...x, { name: f.name, text }]); else setFerr(t("rm3.fileFail")); }
+      catch { setFerr(t("rm3.fileFail")); }
+    }
+    setReading(false);
+  };
   const end = useRef<HTMLDivElement>(null);
   useEffect(() => { end.current?.scrollIntoView({ block: "nearest" }); }, [chat.length, pending]);
   const loc = lang === "ru" ? "ru-RU" : "en-GB";
-  const send = () => { const m = msg.trim(); if (!m) return; setSent(m); run(() => refineRoadmap(roadmapId, m), () => { setMsg(""); setSent(null); }); };
+  // поле очищается сразу; если ИИ не ответил — текст и вложения возвращаются в поле
+  const send = () => {
+    const m = msg.trim(), fs = files;
+    if ((!m && !fs.length) || dictBusy || reading) return;
+    setSent(m || fs.map((x) => x.name).join(", ")); setMsg(""); setFiles([]);
+    run(async () => { const r = await refineRoadmap(roadmapId, m, fs); if (!r.ok) { setMsg((cur) => cur || m); setFiles((cur) => (cur.length ? cur : fs)); } return r; }, () => setSent(null));
+  };
   return (
     <section className="card flex flex-col gap-3 rchat">
       <StepHead n="↻" ai title={t("rm2.chat")} sub={t("rm2.chatHint")} />
       {(chat.length > 0 || pending) && (
         <div className="rchat-list">
-          {chat.map((m, i) => <div key={i} className={`rmsg ${m.role}`}><div>{m.text}</div><span className="muted">{new Date(m.at).toLocaleString(loc, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</span></div>)}
+          {chat.map((m, i) => <div key={i} className={`rmsg ${m.role}`}><div>{m.text}</div>{m.files?.length ? <div className="rfiles">{m.files.map((f) => <span key={f} className="chip"><Icon name="clip" size="sm" />{f}</span>)}</div> : null}<span className="muted">{new Date(m.at).toLocaleString(loc, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</span></div>)}
           {pending && sent && <div className="rmsg teacher"><div>{sent}</div></div>}
           {pending && sent && <div className="rmsg ai"><div className="flex items-center gap-2"><span className="dict-spin" />{t("rm2.updating")}</div></div>}
           <div ref={end} />
@@ -406,10 +443,16 @@ export function RouteChat({ roadmapId, chat, versions }: { roadmapId: string; ch
       )}
       <div className="dictbox">
         <textarea className="textarea" rows={3} value={msg} placeholder={t("rm2.chatPh")} onChange={(e) => setMsg(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) send(); }} disabled={pending} />
-        <Dictate round onText={(x) => setMsg((m) => add(m, x))} />
+        <Dictate round onText={(x) => setMsg((m) => add(m, x))} onBusy={setDictBusy} />
       </div>
-      <button className="btn primary sm self-start" disabled={pending || !msg.trim()} onClick={send}><Icon name="send" size="sm" />{t("rm2.send")}</button>
-      {error && <div className="alert">{error}</div>}
+      {files.length > 0 && <div className="rfiles">{files.map((f, i) => <span key={i} className="chip on"><Icon name="clip" size="sm" />{f.name}<span className="muted">· {t("rm2.fileWords", { n: f.text.split(/\s+/).filter(Boolean).length })}</span><button type="button" className="iconbtn" aria-label={t("common.delete")} onClick={() => setFiles((x) => x.filter((_, k) => k !== i))}><Icon name="close" size="sm" /></button></span>)}</div>}
+      {reading && <div className="dict-bar busy"><span className="dict-spin" /><span>{t("rm3.reading")}</span></div>}
+      <div className="flex flex-wrap items-center gap-2">
+        <button className="btn primary sm" disabled={pending || dictBusy || reading || (!msg.trim() && !files.length)} onClick={send}><Icon name="send" size="sm" />{t("rm2.send")}</button>
+        <label className={`btn secondary sm ${pending || files.length >= 4 ? "disabled" : ""}`} title={t("rm2.attachHint")}><Icon name="clip" size="sm" />{t("rm2.attach")}<input type="file" hidden multiple accept=".pdf,.docx,.txt,.md,image/png,image/jpeg,image/webp" disabled={pending || files.length >= 4} onChange={(e) => { attach(e.target.files); e.target.value = ""; }} /></label>
+        {dictBusy && <span className="small muted">{t("dict.wait")}</span>}
+      </div>
+      {(ferr || error) && <div className="alert">{ferr || error}</div>}
       {versions.length > 0 && (
         <details className="tpack-sec">
           <summary><span className="grow">{t("rm2.versions")}</span><span className="pill grey">{versions.length}</span><Icon name="chevd" size="sm" /></summary>

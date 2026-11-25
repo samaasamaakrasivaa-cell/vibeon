@@ -3093,3 +3093,21 @@ svg.i { pointer-events: none; }
 .dsum-body { padding: 0 12px 12px; }
 .dchk { margin-top: 10px; padding: 10px; border-radius: 12px; border: 2px dashed color-mix(in srgb, #FF9500 55%, transparent); display: flex; flex-direction: column; gap: 8px; }
 .dchk-row { display: flex; flex-direction: column; gap: 4px; padding: 8px; border-radius: 10px; background: var(--surface); }
+
+.rnotes { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.rnotes li { display: flex; align-items: flex-start; gap: 6px; padding: 6px 10px; border-radius: 10px; background: var(--surface); font-size: 13.5px; }
+.rfiles { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.rfiles .chip { display: inline-flex; align-items: center; gap: 4px; }
+
+/* карта: участки красят дорогу, пройденное — зелёным; увеличенная карта поверх страницы */
+.mtn .seg { fill: none; stroke-width: 7; stroke-linecap: round; opacity: .85; }
+.mtn .seg.gaps { stroke: #FF9500; } .mtn .seg.consolidate { stroke: #AF52DE; } .mtn .seg.level { stroke: #0A84FF; }
+.mtn .trk { stroke: #34C759; stroke-width: 9; }
+.mtnleg { display: flex; flex-wrap: wrap; gap: 6px 14px; padding: 8px 14px 10px; color: var(--text2); }
+.mtnleg span { display: inline-flex; align-items: center; gap: 6px; }
+.mtnleg .lg { width: 18px; height: 6px; border-radius: 3px; display: inline-block; }
+.mtnleg .lg.gaps { background: #FF9500; } .mtnleg .lg.consolidate { background: #AF52DE; } .mtnleg .lg.level { background: #0A84FF; } .mtnleg .lg.done { background: #34C759; }
+.mtnzoom { position: absolute; right: 10px; top: 10px; z-index: 2; width: 34px; height: 34px; border-radius: 50%; border: 0; background: rgba(255,255,255,.92); box-shadow: 0 1px 4px rgba(0,0,0,.15); display: grid; place-items: center; cursor: pointer; color: #1C1C1E; }
+.mtnfull { position: fixed; inset: 0; z-index: 90; background: rgba(0,0,0,.55); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 16px; }
+.mtnfull .mtnbox { width: min(96vw, calc((100vh - 90px) * 1.8)); border-radius: 22px 22px 0 0; overflow: hidden; background: #F4F8FF; }
+.mtnfull .mtnleg { background: var(--surface); border-radius: 0 0 22px 22px; width: min(96vw, calc((100vh - 90px) * 1.8)); }
