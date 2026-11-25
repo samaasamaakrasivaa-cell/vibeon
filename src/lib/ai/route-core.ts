@@ -139,7 +139,16 @@ export function settleHours(d: RouteDraft, weekly: number, hoursTo: (l: string) 
     if (guide) {
       const lo = s.kind === "gaps" ? 0 : guide * 0.75, hi = s.kind === "gaps" ? guide * 0.6 : guide * 1.25;
       const target = sum < lo ? lo : sum > hi ? hi : sum;
-      if (target !== sum && sum > 0) { const k = target / sum; for (const p of s.points) p.hours = Math.max(2, Math.round(p.hours * k)); sum = s.points.reduce((a, p) => a + p.hours, 0); }
+      if (target !== sum && sum > 0) {
+        const k = target / sum;
+        for (const p of s.points) {
+          const h = Math.max(2, Math.round(p.hours * k));
+          // пояснение часов — с поправкой платформы, чтобы не расходилось с цифрой
+          if (h !== p.hours) p.hours_why = `${(p.hours_why || "").replace(/\s*→\s*~?\d+\s*ч\.?\s*$/, "")} → ${h} ч (${k > 1 ? "добавлено" : "сокращено"} по норме уровня ${s.title}: ${guide} ч)`.trim();
+          p.hours = h;
+        }
+        sum = s.points.reduce((a, p) => a + p.hours, 0);
+      }
     }
     if (!guide && s.kind === "consolidate" && sum > 40) { const k = 40 / sum; for (const p of s.points) p.hours = Math.max(2, Math.round(p.hours * k)); sum = s.points.reduce((a, p) => a + p.hours, 0); }
     s.hours = sum;
