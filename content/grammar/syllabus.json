@@ -109,7 +109,8 @@
     "KET"
    ],
    "note": "В Core Inventory артикли появляются только на A2; учебники дают a/an с первых уроков.",
-   "order": 5
+   "order": 5,
+   "decision": "Решено: на A1 — базово, как ядро; полноценно — A2."
   },
   {
    "id": "g-a1-plural-nouns",
@@ -340,7 +341,7 @@
    "level": "A1",
    "en": "be going to for plans (intro)",
    "ru": "be going to: планы (знакомство)",
-   "core": false,
+   "core": true,
    "group": "future",
    "sources": [
     "CI:A1",
@@ -348,14 +349,15 @@
     "KET"
    ],
    "note": "Core Inventory вводит going to уже на A1; полностью — A2.",
-   "order": 22
+   "order": 22,
+   "decision": "Решено: значение плана — уже на A1."
   },
   {
    "id": "g-a1-comparatives-intro",
    "level": "A1",
    "en": "Comparatives and superlatives (intro)",
    "ru": "Сравнительная и превосходная степень (знакомство)",
-   "core": false,
+   "core": true,
    "group": "comparison",
    "sources": [
     "CI:A1",
@@ -363,7 +365,8 @@
     "KET"
    ],
    "note": "Core Inventory ставит степени сравнения уже на A1; большинство учебников — A2.",
-   "order": 23
+   "order": 23,
+   "decision": "Решено: базовые степени сравнения — на A1."
   },
   {
    "id": "g-a1-intensifiers",
@@ -520,20 +523,6 @@
    "order": 34
   },
   {
-   "id": "g-a2-as-as",
-   "level": "A2",
-   "en": "(not) as ... as",
-   "ru": "(not) as ... as",
-   "core": true,
-   "group": "comparison",
-   "sources": [
-    "PET",
-    "CB"
-   ],
-   "note": "В спецификации B1 Preliminary; учебники дают на A2.",
-   "order": 35
-  },
-  {
    "id": "g-a2-too-enough",
    "level": "A2",
    "en": "too / enough",
@@ -546,7 +535,8 @@
     "CB"
    ],
    "note": "Core Inventory относит too/enough к B1.",
-   "order": 36
+   "order": 36,
+   "decision": "Решено: A2."
   },
   {
    "id": "g-a2-quantifiers",
@@ -606,20 +596,6 @@
    "order": 40
   },
   {
-   "id": "g-a2-might-may",
-   "level": "A2",
-   "en": "might / may for possibility",
-   "ru": "might / may: возможность",
-   "core": true,
-   "group": "modals",
-   "sources": [
-    "CI:B1",
-    "KET"
-   ],
-   "note": "Core Inventory: might/may — B1; A2 Key: may уже на A2.",
-   "order": 41
-  },
-  {
    "id": "g-a2-zero-first-conditional",
    "level": "A2",
    "en": "Zero and first conditional",
@@ -639,7 +615,8 @@
    "placementLevel": [
     "A2",
     "B1"
-   ]
+   ],
+   "decision": "Решено: нулевое и первое — A2."
   },
   {
    "id": "g-a2-verb-patterns-basic",
@@ -765,7 +742,8 @@
     "PET"
    ],
    "note": "В A2 Key; полноценно придаточные — B1.",
-   "order": 51
+   "order": 51,
+   "decision": "Решено: who/which/that — A2 (A2 Key), полноценные придаточные — B1."
   },
   {
    "id": "g-a2p-could-polite",
@@ -794,7 +772,8 @@
     "CI:B1"
    ],
    "note": "A2 Key уже включает пассив Present/Past Simple; Core Inventory — B1 («simple passive»).",
-   "order": 53
+   "order": 53,
+   "decision": "Решено: A2+."
   },
   {
    "id": "g-a2p-pp-for-since",
@@ -814,7 +793,8 @@
    ],
    "placementLevel": [
     "B1"
-   ]
+   ],
+   "decision": "Решено: A2+, ядро."
   },
   {
    "id": "g-a2p-need-neednt",
@@ -885,6 +865,36 @@
    "order": 59
   },
   {
+   "id": "g-a2-as-as",
+   "level": "B1",
+   "en": "(not) as ... as",
+   "ru": "(not) as ... as",
+   "core": true,
+   "group": "comparison",
+   "sources": [
+    "PET",
+    "CB"
+   ],
+   "note": "В спецификации B1 Preliminary; учебники дают на A2.",
+   "order": 35,
+   "decision": "Решено: по B1 Preliminary — B1."
+  },
+  {
+   "id": "g-a2-might-may",
+   "level": "B1",
+   "en": "might / may for possibility",
+   "ru": "might / may: возможность",
+   "core": true,
+   "group": "modals",
+   "sources": [
+    "CI:B1",
+    "KET"
+   ],
+   "note": "Core Inventory: might/may — B1; A2 Key: may уже на A2.",
+   "order": 41,
+   "decision": "Решено: ближе к B1 (как в Core Inventory)."
+  },
+  {
    "id": "g-b1-pp-vs-past",
    "level": "B1",
    "en": "Present perfect vs past simple",
@@ -936,7 +946,8 @@
     "CB"
    ],
    "note": "Core Inventory даёт only would for past habits на B2; used to — в спецификации B1 Preliminary.",
-   "order": 63
+   "order": 63,
+   "decision": "Решено: used to — B1; would для привычек — B2."
   },
   {
    "id": "g-b1-second-conditional",
@@ -978,7 +989,8 @@
     "CI:B2"
    ],
    "note": "Core Inventory ставит relative clauses на B2; B1 Preliminary — who/which/that на B1.",
-   "order": 66
+   "order": 66,
+   "decision": "Решено: B1."
   },
   {
    "id": "g-b1-reported-statements",
@@ -1248,7 +1260,8 @@
     "CB"
    ],
    "note": "Core Inventory даёт 2nd и 3rd conditional на B1; B1 Preliminary проверяет только Type 0–2.",
-   "order": 86
+   "order": 86,
+   "decision": "Решено: B1+."
   },
   {
    "id": "g-b1p-past-modals",
@@ -1262,7 +1275,8 @@
     "CB"
    ],
    "note": "Core Inventory: should have / might have — B1; учебники чаще B1+/B2.",
-   "order": 87
+   "order": 87,
+   "decision": "Решено: B1+."
   },
   {
    "id": "g-b1p-future-continuous",
@@ -1276,7 +1290,8 @@
     "CI:B2"
    ],
    "note": "Core Inventory: future continuous на B1 и B2.",
-   "order": 88
+   "order": 88,
+   "decision": "Решено: B1+."
   },
   {
    "id": "g-b1p-causative",
@@ -1290,7 +1305,8 @@
     "CB"
    ],
    "note": "В спецификации B1 Preliminary; учебники часто B2.",
-   "order": 89
+   "order": 89,
+   "decision": "Решено: B1+."
   },
   {
    "id": "g-b1p-was-going-to",
@@ -1946,7 +1962,8 @@
     "CB"
    ],
    "note": "Complex noun phrases упоминаются уже в B1 Preliminary; как отдельная тема — C1.",
-   "order": 138
+   "order": 138,
+   "decision": "Решено: C1."
   },
   {
    "id": "g-c1-linking-formal",
@@ -1972,7 +1989,8 @@
     "CI:C1"
    ],
    "note": "В Core Inventory — в лексике (Approximating, vague language).",
-   "order": 140
+   "order": 140,
+   "decision": "Решено: C1."
   },
   {
    "id": "g-c1-articles",
