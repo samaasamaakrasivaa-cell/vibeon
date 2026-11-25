@@ -3,6 +3,20 @@
 export type Pace = { lessons: number; min: number };
 export const PACES: Pace[] = [{ lessons: 1, min: 20 }, { lessons: 1, min: 30 }, { lessons: 2, min: 20 }, { lessons: 2, min: 30 }, { lessons: 3, min: 30 }, { lessons: 3, min: 45 }];
 export const paceKey = (p: Pace) => `${p.lessons}:${p.min}`;
+/**
+ * Сколько заниматься самостоятельно. Ориентир — нормы Cambridge / CEFR: около 180–200 учебных часов на уровень
+ * и 4–5 часов в неделю всего для устойчивого прогресса. Чем меньше уроков, тем больше самостоятельной работы:
+ * 1 урок → всего ~4 ч в неделю, 2 → ~4,5 ч, 3 → ~5 ч, 4+ → уроки + 1 ч. Если есть срок — не меньше, чем нужно к сроку.
+ */
+export function selfBudget(lessons: number, lessonMin: number, totalHours?: number | null, weeksLeft?: number | null) {
+  const lessonH = (Math.max(0, lessons) * lessonMin) / 60;
+  const base = lessons <= 1 ? 4 : lessons === 2 ? 4.5 : lessons === 3 ? 5 : lessonH + 1;
+  let week = Math.max(base, lessonH + 1);
+  if (weeksLeft && weeksLeft > 0 && totalHours) week = Math.max(week, totalHours / weeksLeft);
+  const selfH = Math.max(1, Math.round((week - lessonH) * 4) / 4);
+  return { lessonH, selfH, weekH: lessonH + selfH, minPerWeek: Math.round(selfH * 60), minPerDay: Math.round((selfH * 60) / 7) };
+}
+
 export function parsePace(s?: string | null): Pace {
   const [a, b] = (s ?? "").split(":").map(Number);
   return a > 0 && b >= 0 ? { lessons: a, min: b } : { lessons: 2, min: 20 };

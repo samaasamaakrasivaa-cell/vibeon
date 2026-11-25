@@ -30,7 +30,7 @@ async function recognize(pcm: Int16Array, lang: string) {
 type St = "idle" | "rec" | "busy";
 
 /** Кнопка «Надиктовать»: текст приходит кусками через onText (по порядку). */
-export function Dictate({ onText, lang = "ru-RU", label, className = "" }: { onText: (text: string) => void; lang?: "ru-RU" | "en-US"; label?: string; className?: string }) {
+export function Dictate({ onText, lang = "ru-RU", label, className = "", round }: { onText: (text: string) => void; lang?: "ru-RU" | "en-US"; label?: string; className?: string; round?: boolean }) {
   const { t } = useT();
   const [st, setSt] = useState<St>("idle");
   const [sec, setSec] = useState(0);
@@ -97,6 +97,12 @@ export function Dictate({ onText, lang = "ru-RU", label, className = "" }: { onT
   useEffect(() => () => { const x = r.current; if (x) { clearInterval(x.timer); x.stream.getTracks().forEach((tr) => tr.stop()); x.ctx.close().catch(() => {}); } }, []);
 
   const mm = `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}`;
+  if (st === "idle" && round) return (
+    <span className={`dict round ${className}`}>
+      <button type="button" className="dict-mic" onClick={start} aria-label={label ?? t("dict.go")} title={label ?? t("dict.go")}><Icon name="mic" /></button>
+      {err && <span className="small text-bad dict-err">{err}</span>}
+    </span>
+  );
   if (st === "idle") return (
     <span className={`dict ${className}`}>
       <button type="button" className="btn plain sm" onClick={start}><Icon name="mic" size="sm" />{label ?? t("dict.go")}</button>

@@ -4,6 +4,7 @@
 import { useT } from "@/lib/i18n/client";
 import type { AccountStats, TestPack as Pack } from "@/lib/roadmap/pack";
 import { Icon } from "../Icon";
+import { StepHead } from "./RouteBrief";
 
 const VERDICT: Record<string, string> = { gap: "red", part: "orange", own: "green" };
 
@@ -51,9 +52,7 @@ export function TestPackView({ pack, stats }: { pack: Pack | null; stats: Accoun
   const hwPct = stats.homework.assigned8w ? Math.round((stats.homework.done8w / stats.homework.assigned8w) * 100) : null;
   return (
     <section className="card tpack">
-      <div className="mb-2 flex items-center gap-2"><Icon name="archive" size="sm" /><h3 className="m-0 grow">{t("tp.title")}</h3>
-        {pack && <span className="small muted">{t("tp.from", { d: new Date(pack.date).toLocaleDateString("ru-RU", { day: "numeric", month: "long" }) })}</span>}</div>
-      <p className="hint mt-0">{t("tp.hint")}</p>
+      <StepHead n={2} title={t("tp.title")} sub={t("tp.hint")} right={pack && <span className="small muted">{t("tp.from", { d: new Date(pack.date).toLocaleDateString("ru-RU", { day: "numeric", month: "long" }) })}</span>} />
       {!pack ? <p className="hint">{t("tp.none")}</p> : (
         <>
           <Sec title={t("tp.skills")} open>

@@ -3,7 +3,7 @@ import { useId, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useT } from "@/lib/i18n/client";
 
 type MPoint = { id: string; title: string; hours: number; level?: string; ok?: Record<string, unknown> };
-type MStage = { lvl: string; title: string; hours: number; passed?: unknown; points?: MPoint[] };
+type MStage = { lvl: string; title: string; hours: number; passed?: unknown; points?: MPoint[]; kind?: string | null };
 
 // Сцена 720×400: дорога всегда идёт серпантином ВВЕРХ по склону горы и заканчивается на вершине —
 // при любом числе участков. Флажки участков и мини-точки ставятся по часам вдоль дороги.
@@ -111,11 +111,14 @@ export function Mountain({ stages, done, start, ini, label, units = [], ci, sel,
           return (
             <g key={i} className={`nd ${st} ${sel === i ? "sel" : ""}`} role={onSelect ? "button" : undefined} tabIndex={onSelect ? 0 : undefined} aria-label={`${s.lvl}: ${s.title}`}
               onClick={onSelect ? () => onSelect(i) : undefined} onKeyDown={onSelect ? (e) => { if (e.key === "Enter" || e.key === " ") onSelect(i); } : undefined}>
-              <title>{`${s.title} · ${s.hours} h`}</title>
+              <title>{`${s.title}${s.kind === "gaps" ? ` (${t("mtn.gaps")})` : s.kind === "consolidate" ? ` (${t("mtn.cons")})` : ""} · ${s.hours} ${t("mtn.h")}`}</title>
               <ellipse cx={x} cy={y + 2} rx="9" ry="3" className="pinsh" />
               <g transform={`translate(${x},${y})`}>
                 <path d="M0,0 C-4,-8 -16,-14 -16,-27 A16,16 0 1 1 16,-27 C16,-14 4,-8 0,0Z" className="pin" />
-                <text y="-23" textAnchor="middle" className="pint">{s.lvl.length > 5 ? s.lvl.slice(0, 5) : s.lvl}</text>
+                <text y="-23" textAnchor="middle" className="pint">{s.kind === "gaps" ? `→${s.lvl}` : s.lvl.length > 5 ? s.lvl.slice(0, 5) : s.lvl}</text>
+                {(s.kind === "gaps" || s.kind === "consolidate") && (() => { const tx = s.kind === "gaps" ? t("mtn.gaps") : t("mtn.cons"); const w = tx.length * 6.2 + 14; return (
+                  <g transform="translate(0,14)"><rect x={-w / 2} y="-9" width={w} height="18" rx="9" className={`ptag ${s.kind}`} /><text y="4" textAnchor="middle" className="ptagt">{tx}</text></g>
+                ); })()}
                 {st === "done" && <g transform="translate(12,-40)"><circle r="7" fill="#34C759" stroke="#FFFFFF" strokeWidth="2" /><path d="M-3,0 l2,2 l4,-4.5" stroke="#FFFFFF" strokeWidth="1.8" fill="none" strokeLinecap="round" /></g>}
               </g>
             </g>
@@ -126,7 +129,7 @@ export function Mountain({ stages, done, start, ini, label, units = [], ci, sel,
         <g transform={`translate(${me[0]},${me[1] + 36})`}><rect x={-yw / 2} y="-12" width={yw} height="24" rx="12" fill="#1C1C1E" /><text y="4" textAnchor="middle" className="metx">{label}</text></g>
       </svg>
       {hp && hpos && (
-        <div className="mtip" style={{ left: `${(hpos[0] / W) * 100}%`, top: `${(hpos[1] / H) * 100}%`, ["--tx" as string]: hpos[0] < W * 0.3 ? "-12%" : hpos[0] > W * 0.7 ? "-88%" : "-50%" }}>
+        <div className={`mtip ${hpos[1] < 150 ? "below" : ""}`} style={{ left: `${(hpos[0] / W) * 100}%`, top: `${(hpos[1] / H) * 100}%`, ["--tx" as string]: hpos[0] < W * 0.3 ? "-12%" : hpos[0] > W * 0.7 ? "-88%" : "-50%" }}>
           <b>{hp.p.title}</b>
           <span className="muted">{stages[hp.si]?.title}{hp.p.level ? ` · ${hp.p.level}` : ""}{studentView ? "" : ` · ${hp.p.hours} ${t("mtn.h")}`}</span>
           {hp.p.ok && Object.keys(hp.p.ok).length > 0 && <span className="mtip-ok">{studentView ? t("mtn.okS") : t("mtn.okT")}</span>}

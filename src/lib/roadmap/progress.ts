@@ -71,8 +71,18 @@ export type RouteAi = {
   label: string; fallbackFrom: string | null; start?: { overall_level: string; gaps: string[] }; goal?: { explanation: string };
   weekly_hours: number | null; total_hours: number | null; forecast_weeks: number | null;
   deadline_check: { fits: boolean; note: string } | null; risks: string[];
-  pace_options: { lessons_per_week: number; daily_minutes: number; forecast_weeks: number }[]; student_message: string; changes?: string; v?: number;
+  pace_options: { lessons_per_week: number; daily_minutes: number; forecast_weeks: number }[]; student_message: string; changes?: string; v?: number; self_study?: import("../ai/route-core").SelfStudy | null;
 };
+
+/** Сколько занятий в неделю по расписанию: ближайшие 4 недели (если пусто — прошедшие 4), личные и групповые. */
+export async function schedPerWeek(studentId: string) {
+  const groups = (await db.groupMember.findMany({ where: { studentId }, select: { groupId: true } })).map((g) => g.groupId);
+  const who = { OR: [{ studentId }, ...(groups.length ? [{ groupId: { in: groups } }] : [])] };
+  const now = Date.now(), W4 = 28 * 864e5;
+  const next = await db.lessonInstance.count({ where: { ...who, isTrial: false, status: { not: "CANCELLED" }, startsAt: { gte: new Date(now), lt: new Date(now + W4) } } });
+  const n = next || await db.lessonInstance.count({ where: { ...who, isTrial: false, status: "DONE", startsAt: { gte: new Date(now - W4), lt: new Date(now) } } });
+  return n ? Math.max(1, Math.round(n / 4)) : null;
+}
 
 export async function editorData(studentId: string, teacherId: string, tz: string, lang: "ru" | "en") {
   const s = await db.student.findUniqueOrThrow({ where: { id: studentId } });
@@ -87,6 +97,7 @@ export async function editorData(studentId: string, teacherId: string, tz: strin
     age: s.birthday ? (() => { const n = new Date(), b = s.birthday!; let a = n.getFullYear() - b.getFullYear(); if (n.getMonth() < b.getMonth() || (n.getMonth() === b.getMonth() && n.getDate() < b.getDate())) a--; return a; })() : null,
     teenAvail: TEEN_READY || isOwner((await db.user.findUnique({ where: { id: teacherId }, select: { email: true } }))?.email),
     courses: courses.map((c) => ({ id: c.id, title: c.title, units: c._count.units })),
+    schedPerWeek: await schedPerWeek(studentId),
     pack: await testPack(studentId, teacherId).catch((e) => { console.error("[roadmap:pack]", e); return null; }),
     stats: await accountStats(studentId),
     checkpoints: v.checkpoints.map((c) => {

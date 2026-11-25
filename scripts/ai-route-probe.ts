@@ -3,7 +3,7 @@ import { mkdirSync, rmSync, writeFileSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { studioChat } from "../src/lib/ai/providers";
 import { modelsFor, modelLabel } from "../src/lib/ai/models";
-import { cleanInsight, cleanRecs, cleanRoute, compactStages, runJson, settleHours, toStages } from "../src/lib/ai/route-core";
+import { cleanArticle, cleanInsight, cleanRecs, cleanRoute, compactStages, runJson, settleHours, toStages } from "../src/lib/ai/route-core";
 import { hoursTo } from "../src/lib/roadmap/cefr";
 
 const OUT = "/tmp/aiout";
@@ -38,6 +38,7 @@ const base = {
   student: { age: 29, form: { goal: "Уверенный английский для работы", job: "Маркетолог в IT-компании" } },
   route: { type: "general", goal: "C1+", goal_level: "C1+", from_level: "B2+", deadline: null, weeks_until_deadline: null, pace: { lessons_per_week: 2, lesson_minutes: 60, daily_minutes: 20, active_days: 7 }, teacher_notes: "" },
   hours_guide: { "B2+ → C1": 100, "C1 → C1+": 120 }, courses: null,
+  self_study_budget: { minutes_per_week: 150, lessons_per_week: 2, lesson_minutes: 60, active_days: 7 },
 };
 const brief = {
   goal: "С B2+ быстро закрыть пробелы и выйти на уверенный C1, затем C1+. Цель — переговоры и презентации на работе без грамматических ошибок.",
@@ -55,18 +56,25 @@ export async function run() {
   console.log("INSIGHT " + JSON.stringify(ins.data));
   t0 = Date.now();
   const input = { ...base, brief, insight: { summary: ins.data.summary, blockers: ins.data.blockers, gaps: ins.data.gaps } };
-  const rt = await runJson(llm, models, P("route"), input, cleanRoute, { tag: "route", maxTokens: 9000, timeoutMs: 280000 });
+  const rt = await runJson(llm, models, P("route"), { ...input, insight: { ...input.insight, confirmed_by_teacher: true, teacher_additions: "В разговоре делает больше ошибок, чем показал тест." } }, (j) => cleanRoute(j, 150), { tag: "route", maxTokens: 9000, timeoutMs: 280000 });
   const d = settleHours(rt.data, weekly, hoursTo);
   console.log(`ROUTE ${modelLabel(rt.model)} · ${Math.round((Date.now() - t0) / 1000)} s · tokens ${rt.tokensIn}/${rt.tokensOut} · retries ${rt.retries}`);
   for (const s of d.segments) { console.log(`SEG ${s.title} [${s.kind}] ${s.hours} h · ${s.weeks} wk`); for (const p of s.points) console.log(`  · ${p.title} (${p.level}) ${p.hours} h — ${p.focus}`); }
   console.log(`TOTAL ${d.total_hours} h · ${d.forecast_weeks} wk`);
+  for (const s of d.segments) for (const p of s.points) console.log(`  hours_why: ${p.title} — ${p.hours_why}`);
+  console.log("SELF " + JSON.stringify(d.self_study));
   const stages = toStages(d, "C1+");
   t0 = Date.now();
   const p0 = stages[0].points[0];
   const recs = await runJson(llm, models, P("route-point"), { point: { title: p0.title, level: p0.level, why: p0.why, focus: p0.focus }, student: { level: "B2+", goal: "C1+", interests: brief.interests }, materials: brief.materials, already_approved: {} }, cleanRecs, { tag: "point", maxTokens: 2500 });
   console.log(`POINT ${Math.round((Date.now() - t0) / 1000)} s · ` + JSON.stringify(recs.data));
+  console.log("THEMES " + JSON.stringify(recs.data.themes));
   t0 = Date.now();
-  const ref = await runJson(llm, models, P("route"), { ...input, current_route: compactStages(stages), teacher_request: "Добавь отдельную точку на говорение для переговоров, а инверсию поставь после условных." }, cleanRoute, { tag: "refine", maxTokens: 9000, timeoutMs: 280000 });
+  const artText = "Perfectionism is often seen as a positive trait. Many of us take pride in setting high standards, and we tend to believe that the harder we push ourselves, the more successful we will be. Yet research suggests that perfectionism can take its toll on our wellbeing. Had I known this earlier, I would have stopped beating myself up over small mistakes. Perfectionists often burn out because they cannot switch off; they keep going over every detail and find it hard to let go. The key, psychologists say, is to aim for excellence rather than perfection: to set realistic goals, celebrate progress and accept that, at the end of the day, nobody is flawless. Self-compassion is not the same as giving up — it is what allows us to bounce back after setbacks.";
+  const art = await runJson(llm, models, P("route-article"), { point: { title: p0.title, level: p0.level }, student: { level: "B2+", goal: "C1+", interests: brief.interests }, article: { title: "Perfectionism", text: artText } }, cleanArticle, { tag: "article", maxTokens: 3000 });
+  console.log(`ARTICLE ${Math.round((Date.now() - t0) / 1000)} s · ` + JSON.stringify(art.data));
+  t0 = Date.now();
+  const ref = await runJson(llm, models, P("route"), { ...input, current_route: compactStages(stages), teacher_request: "Добавь отдельную точку на говорение для переговоров, а инверсию поставь после условных." }, (j) => cleanRoute(j, 150), { tag: "refine", maxTokens: 9000, timeoutMs: 280000 });
   const d2 = settleHours(ref.data, weekly, hoursTo);
   console.log(`REFINE ${Math.round((Date.now() - t0) / 1000)} s · changes: ${d2.changes}`);
   for (const s of d2.segments) { console.log(`SEG2 ${s.title} ${s.hours} h`); for (const p of s.points) console.log(`  · ${p.title} ${p.hours} h`); }

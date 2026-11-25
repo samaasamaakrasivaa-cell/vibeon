@@ -7,7 +7,7 @@ import type { RouteAi } from "@/lib/roadmap/progress";
 import { approveRoadmap, assignTest, deleteCheckpoint, editStage, manualResults, type RoadmapForm } from "@/lib/roadmap/actions";
 import { buildRoadmap, type Brief, type ChatMsg, type InsightSaved } from "@/lib/roadmap/ai-route";
 import type { Point } from "@/lib/ai/route-core";
-import { BriefForm, InsightCard, PointCard, RouteChat, useBrief } from "./RouteBrief";
+import { BriefForm, InsightCard, PointCard, RouteChat, StepHead, useBrief } from "./RouteBrief";
 import { LEVELS, ROUTE_TYPES, SKILL_COLOR, SKILL_NAME, SKILLS, txt, type Skill } from "@/lib/roadmap/cefr";
 import { etaRange, fmtHM, PACES, paceKey, paceLabel, parsePace } from "@/lib/roadmap/math";
 import { useRun } from "../courses/useRun";
@@ -15,18 +15,19 @@ import { Dialog } from "../Dialog";
 import { Icon } from "../Icon";
 import { Mountain } from "./Mountain";
 import { TestPackView } from "./TestPack";
+import { SelfPlan } from "./SelfPlan";
 import type { AccountStats, TestPack } from "@/lib/roadmap/pack";
 
 export type CP = { id: string; kind: string; status: string; source: string; level: string | null; skills: Partial<Record<Skill, number>>; weak: [string, string][]; takenAt: string | null; assignedAt: string; stage: number | null; placement?: string | null; pstatus?: string | null };
 export type EditorData = {
   studentId: string; first: string; ini: string; level: string | null; age?: number | null; teenAvail?: boolean;
   courses: { id: string; title: string; units: number }[];
-  pack?: TestPack | null; stats?: AccountStats;
+  pack?: TestPack | null; stats?: AccountStats; schedPerWeek?: number | null;
   checkpoints: CP[];
   roadmap: null | {
     id: string; type: string; goal: string; fromLevel: string | null; deadline: string | null; showDate: boolean; pace: string; mood: string; note: string;
     courseIds: string[]; leadCourseId: string | null; approved: boolean; built: boolean; summary: string | null; ai: RouteAi | null;
-    stages: { lvl: string; title: string; hours: number; grammar: string[]; vocabulary: string[]; skills: string[]; passed: boolean; focus: string[]; checkpoint: { tests: string[]; pass_rule: string } | null; weeks: number | null; kind: "gaps" | "level" | null; sum: string; points: Point[] }[];
+    stages: { lvl: string; title: string; hours: number; grammar: string[]; vocabulary: string[]; skills: string[]; passed: boolean; focus: string[]; checkpoint: { tests: string[]; pass_rule: string } | null; weeks: number | null; kind: "gaps" | "consolidate" | "level" | null; sum: string; points: Point[] }[];
     brief: Brief; insight: InsightSaved | null; chat: ChatMsg[]; versions: { at: string; note: string }[];
     criteria: string[]; units: string[]; done: number; ci: number; left: number; lessonMin: number; lateWeeks: number;
   };
@@ -67,14 +68,11 @@ function Checkpoints({ d }: { d: EditorData }) {
   const loc = lang === "ru" ? "ru-RU" : "en-GB";
   return (
     <section className="card">
-      <div className="mb-3 flex items-center gap-2">
-        <h3 className="m-0 grow">{c ? (c.kind === "entry" ? t("rm.entry") : t("rm.slice")) : t("rm.entry")}</h3>
-        {doneList.length > 1 && <>
+      <StepHead n={1} title={c ? (c.kind === "entry" ? t("rm.entry") : t("rm.slice")) : t("rm.entry")} sub={t("rm2.resSub")} right={doneList.length > 1 && <>
           <button className="iconbtn" disabled={doneList.indexOf(c) === 0} onClick={() => setI(doneList.indexOf(c) - 1)} aria-label={t("rm.prevTest")}><Icon name="chevl" size="sm" /></button>
           <span className="small muted">{doneList.indexOf(c) + 1} / {doneList.length}</span>
           <button className="iconbtn" disabled={doneList.indexOf(c) === doneList.length - 1} onClick={() => setI(doneList.indexOf(c) + 1)} aria-label={t("rm.nextTest")}><Icon name="right" size="sm" /></button>
-        </>}
-      </div>
+        </>} />
       {c ? (
         <>
           <div className="mb-3 flex flex-wrap items-center gap-2"><span className="lvlbig">{c.level}</span><span className="small muted">{c.takenAt ? new Date(c.takenAt).toLocaleDateString(loc, { day: "numeric", month: "long" }) : ""} · {c.source === "manual" ? t("rm.manual") : t("rm.byTest")}</span></div>
@@ -116,6 +114,9 @@ function Checkpoints({ d }: { d: EditorData }) {
   );
 }
 
+/** Текст ИИ → по предложениям (для списка с точками). */
+const sentences = (x: string) => x.split(/(?<=[.!?])\s+(?=[А-ЯЁA-Z0-9«"(])/).map((y) => y.trim()).filter(Boolean);
+
 export function RoadmapEditor({ d }: { d: EditorData }) {
   const { t, lang } = useT();
   const { run, pending, error } = useRun();
@@ -124,7 +125,7 @@ export function RoadmapEditor({ d }: { d: EditorData }) {
   const [f, setF] = useState<RoadmapForm>({
     type: r?.type ?? "ge", goal: r?.goal ?? "", fromLevel: r?.fromLevel ?? lastTest?.level ?? d.level?.match(/[ABC][12]\+?/)?.[0] ?? "",
     courseIds: r?.courseIds ?? [], leadCourseId: r?.leadCourseId ?? null, deadline: r?.deadline ?? null, showDate: r?.showDate ?? false,
-    pace: r?.pace ?? "2:20", mood: r?.mood ?? "plan", note: r?.note ?? "",
+    pace: r?.pace ?? (d.schedPerWeek ? `${Math.min(5, d.schedPerWeek)}:20` : "2:20"), mood: r?.mood ?? "plan", note: r?.note ?? "",
   });
   const goals = ROUTE_TYPES[f.type]?.goals ?? [];
   const goal = goals.includes(f.goal) ? f.goal : goals[Math.min(goals.length - 1, f.type === "ge" ? 5 : 0)];
@@ -140,27 +141,33 @@ export function RoadmapEditor({ d }: { d: EditorData }) {
       <div className="flex flex-col gap-4">
         <Checkpoints d={d} />
         {d.stats && <TestPackView pack={d.pack ?? null} stats={d.stats} />}
+        {d.stats && <InsightCard studentId={d.studentId} f={{ ...f, goal }} brief={brief} insight={r?.insight ?? null} hasPack={!!d.pack} />}
         <section className="card flex flex-col gap-4">
-          <div className="flex items-center gap-2"><span className="tk-aiico"><Icon name="spark" size="sm" /></span><h3 className="m-0">{t("rm.data")}</h3></div>
+          <StepHead n={4} title={t("rm.data")} sub={t("rm2.dataSub")} />
           {blk(t("rm.type"), <div className="flex flex-wrap gap-1.5">{Object.entries(ROUTE_TYPES).map(([k, v]) => <button key={k} type="button" className={`pchip ${f.type === k ? "on" : ""}`} aria-pressed={f.type === k} onClick={() => setF({ ...f, type: k, goal: "" })}>{txt(v.name, lang)}</button>)}</div>)}
           <div className="grid grid-cols-2 gap-3">
             <div className="field"><label htmlFor="rm-from">{t("rm.from")}</label><select id="rm-from" className="select" value={f.fromLevel} onChange={(e) => setF({ ...f, fromLevel: e.target.value })}><option value="">{t("rm.fromTest")}</option>{LEVELS.map((l) => <option key={l}>{l}</option>)}</select></div>
             <div className="field"><label htmlFor="rm-goal">{t("rm.goal")}</label><select id="rm-goal" className="select" value={goal} onChange={(e) => setF({ ...f, goal: e.target.value })}>{goals.map((g) => <option key={g}>{g}</option>)}</select></div>
           </div>
-          {blk(t("rm.courses"), d.courses.length ? (
-            <div className="flex flex-col gap-1">
-              {d.courses.map((c) => {
-                const on = f.courseIds.includes(c.id);
-                return (
-                  <div key={c.id} className="flex items-center gap-2">
-                    <label className="flex grow items-center gap-2"><input type="checkbox" checked={on} onChange={(e) => setF({ ...f, courseIds: e.target.checked ? [...f.courseIds, c.id] : f.courseIds.filter((x) => x !== c.id), leadCourseId: !e.target.checked && f.leadCourseId === c.id ? null : f.leadCourseId })} />{c.title} <span className="small muted">· {t("rm.nUnits", { n: c.units })}</span></label>
-                    {on && <label className="small flex items-center gap-1"><input type="radio" name="lead" checked={f.leadCourseId === c.id} onChange={() => setF({ ...f, leadCourseId: c.id })} />{t("rm.lead")}</label>}
-                  </div>
-                );
-              })}
-              <span className="hint">{f.leadCourseId ? t("rm.leadOn", { n: d.courses.find((c) => c.id === f.leadCourseId)?.units ?? 0 }) : t("rm.leadOff")}</span>
+          <details className="rrub rcourses">
+            <summary><span className="grow"><span className="small font-bold text-text2">{t("rm.courses")}</span><span className="block font-normal">{f.courseIds.length ? `${d.courses.find((c) => c.id === f.leadCourseId)?.title ?? d.courses.find((c) => c.id === f.courseIds[0])?.title ?? ""}${f.leadCourseId ? ` · ${t("rm.lead")}` : ""}${f.courseIds.length > 1 ? ` +${f.courseIds.length - 1}` : ""}` : <span className="muted">{t("rm2.noCourse")}</span>}</span></span><Icon name="chevd" size="sm" /></summary>
+            <div className="rrub-body">
+              {d.courses.length ? (
+                <div className="flex flex-col gap-1">
+                  {d.courses.map((c) => {
+                    const on = f.courseIds.includes(c.id);
+                    return (
+                      <div key={c.id} className="flex items-center gap-2">
+                        <label className="flex grow items-center gap-2"><input type="checkbox" checked={on} onChange={(e) => setF({ ...f, courseIds: e.target.checked ? [...f.courseIds, c.id] : f.courseIds.filter((x) => x !== c.id), leadCourseId: !e.target.checked && f.leadCourseId === c.id ? null : f.leadCourseId })} />{c.title} <span className="small muted">· {t("rm.nUnits", { n: c.units })}</span></label>
+                        {on && <label className="small flex items-center gap-1"><input type="radio" name="lead" checked={f.leadCourseId === c.id} onChange={() => setF({ ...f, leadCourseId: c.id })} />{t("rm.lead")}</label>}
+                      </div>
+                    );
+                  })}
+                  <span className="hint">{f.leadCourseId ? t("rm.leadOn", { n: d.courses.find((c) => c.id === f.leadCourseId)?.units ?? 0 }) : t("rm.leadOff")}</span>
+                </div>
+              ) : <span className="hint">{t("rm.noCourses")}</span>}
             </div>
-          ) : <span className="hint">{t("rm.noCourses")}</span>)}
+          </details>
           {blk(t("rm.deadline"), (
             <div className="flex flex-col gap-2">
               <label className="setting"><span>{t("rm.useDate")}</span><span className="switch"><input type="checkbox" checked={!!f.deadline} onChange={(e) => { const d2 = new Date(); d2.setMonth(d2.getMonth() + 6); setF({ ...f, deadline: e.target.checked ? d2.toISOString().slice(0, 7) : null }); }} /><span /></span></label>
@@ -172,14 +179,17 @@ export function RoadmapEditor({ d }: { d: EditorData }) {
             </div>
           ))}
           <div className="grid grid-cols-1 gap-3">
-            <div className="field"><label htmlFor="rm-pace">{t("rm.pace")}</label><select id="rm-pace" className="select" value={f.pace} onChange={(e) => setF({ ...f, pace: e.target.value })}>{PACES.map((p) => <option key={paceKey(p)} value={paceKey(p)}>{paceLabel(p, lang)}</option>)}</select></div>
+            <div className="field">
+              <span className="flabel">{t("rm2.perWeek")}</span>
+              <div className="seg" role="group" aria-label={t("rm2.perWeek")}>{[1, 2, 3, 4, 5].map((n) => <button key={n} type="button" aria-pressed={parsePace(f.pace).lessons === n} onClick={() => setF({ ...f, pace: `${n}:${parsePace(f.pace).min}` })}>{n}</button>)}</div>
+              <span className="hint">{d.schedPerWeek ? t("rm2.bySched", { n: d.schedPerWeek }) : t("rm2.noSched")}</span>
+            </div>
             <div className="field"><span className="flabel">{t("rm.mood")}</span><div className="seg">{(["plan", "more", "slack"] as const).map((k) => <button key={k} type="button" aria-pressed={f.mood === k} onClick={() => setF({ ...f, mood: k })}>{t(`rm.mood.${k}`)}</button>)}</div></div>
           </div>
-          {error && <div className="alert">{error}</div>}
-          </section>
-        {d.stats && <InsightCard studentId={d.studentId} f={{ ...f, goal }} brief={brief} insight={r?.insight ?? null} hasPack={!!d.pack} />}
-        <BriefForm brief={brief} setBrief={setBrief} prefill={r?.insight?.prefill ?? {}} saved={saved} />
+        </section>
+        <BriefForm brief={brief} setBrief={setBrief} saved={saved} />
         <section className="card flex flex-col gap-2">
+          <StepHead n={6} title={t("rm2.buildT")} sub={t("rm2.buildSub")} />
           {error && <div className="alert">{error}</div>}
           <button className="btn primary lg w-full" disabled={pending} onClick={() => run(() => buildRoadmap(d.studentId, { ...f, goal }, brief))}><Icon name="spark" />{pending ? t("rm2.building") : r?.built ? t("rm.rebuild") : t("rm2.build")}</button>
           {pending && <span className="hint text-center">{t("rm2.buildWait")}</span>}
@@ -192,39 +202,44 @@ export function RoadmapEditor({ d }: { d: EditorData }) {
         ) : (
           <>
             <section className="card">
-              <div className="mb-3 flex flex-wrap items-center gap-2">
-                <h3 className="m-0 grow">{r.fromLevel} → {r.goal}</h3>
+              <StepHead n="★" ai title={t("rm2.preTitle")} sub={`${r.fromLevel ?? ""} → ${r.goal}`} right={<>
                 {r.approved ? <span className="pill green"><Icon name="check" size="sm" />{t("rm.approved")}</span> : <span className="pill orange"><Icon name="spark" size="sm" />{t("rm.draft")}</span>}
                 {r.approved && r.lateWeeks > 0 && <span className="pill red">{t("rm.late", { n: r.lateWeeks })}</span>}
-              </div>
-              <dl className="kv">
-                <dt>{t("rm.pace")}</dt><dd>{paceLabel(parsePace(r.pace), lang)}</dd>
+              </>} />
+              <dl className="kv mt-3">
+                <dt>{t("rm2.perWeek")}</dt><dd>{parsePace(r.pace).lessons}</dd>
                 <dt>{t("rm.eta")}</dt><dd><b>{r.deadline && r.showDate ? etaRange(r.left, parsePace(r.pace), lang, r.lessonMin) : t("rm.hoursLeft", { n: Math.round(r.left) })}</b>{r.deadline && !r.showDate && <> · {etaRange(r.left, parsePace(r.pace), lang, r.lessonMin)} <span className="pill grey">{t("rm.onlyYou")}</span></>}{!r.deadline && <span className="small muted"> · ≈ {etaRange(r.left, parsePace(r.pace), lang, r.lessonMin)}</span>}</dd>
                 <dt>{t("rm.course")}</dt><dd>{r.leadCourseId ? `${d.courses.find((c) => c.id === r.leadCourseId)?.title ?? "—"}, ${t("rm.nUnits", { n: r.units.length })}` : <span className="muted">{t("rm.noLead")}</span>}</dd>
                 <dt>{t("rm.done")}</dt><dd>{fmtHM(r.done, lang)}</dd>
               </dl>
-              {r.summary && <div className="aianswer mt-3"><span className="tk-aiico"><Icon name="spark" size="sm" /></span><p className="m-0">{r.summary}</p></div>}
-              {/* черновик ИИ: срок, риски, варианты темпа, сообщение ученику */}
-              {r.ai && (
-                <div className="rtai mt-3">
-                  <div className="small muted">{t("rm.aiBy", { m: r.ai.label })}{r.ai.fallbackFrom ? ` · ${t("air.fallback")}` : ""}{r.ai.total_hours ? ` · ${t("rm.aiTotal", { h: Math.round(r.ai.total_hours), w: r.ai.forecast_weeks ?? "—" })}` : ""}</div>
-                  {r.ai.deadline_check && <div className={`alert ${r.ai.deadline_check.fits ? "ok" : ""} mt-2`}><b>{r.ai.deadline_check.fits ? t("rm.aiFits") : t("rm.aiNoFit")}</b>{r.ai.deadline_check.note ? ` ${r.ai.deadline_check.note}` : ""}</div>}
-                  {(r.ai.start?.gaps?.length ?? 0) > 0 && <><h4 className="mb-1 mt-3">{t("rm.aiGaps")}</h4><ul className="m-0 pl-5 small">{r.ai.start!.gaps.map((x, i) => <li key={i}>{x}</li>)}</ul></>}
-                  {r.ai.risks.length > 0 && <><h4 className="mb-1 mt-3">{t("rm.aiRisks")}</h4><ul className="m-0 pl-5 small">{r.ai.risks.map((x, i) => <li key={i}>{x}</li>)}</ul></>}
-                  {r.ai.pace_options.length > 0 && <><h4 className="mb-1 mt-3">{t("rm.aiPace")}</h4><div className="flex flex-wrap gap-2">{r.ai.pace_options.map((p, i) => <span key={i} className="pill grey">{t("rm.aiPaceOpt", { l: p.lessons_per_week, m: p.daily_minutes, w: p.forecast_weeks })}</span>)}</div></>}
-                  {r.ai.changes && <div className="alert calm mt-2"><b>{t("rm2.changes")}:</b> {r.ai.changes}</div>}
-                  {r.ai.student_message && <><h4 className="mb-1 mt-3">{t("rm.aiStudentMsg")}</h4><p className="m-0 small">{r.ai.student_message}</p></>}
+              {r.ai?.changes && <div className="alert calm mt-3"><b>{t("rm2.changes")}:</b> {r.ai.changes}</div>}
+              {r.summary && <div className="rsec"><h4>{t("rm2.mainIdea")}</h4><ul className="rbul">{sentences(r.summary).map((x, i) => <li key={i}>{x}</li>)}</ul></div>}
+              {r.stages.length > 0 && (
+                <div className="rsec"><h4>{t("rm2.plan")}</h4>
+                  <ol className="rnum">{r.stages.map((s, i) => <li key={i}><b>{s.title}</b>{s.kind && <span className="muted"> — {t(s.kind === "gaps" ? "rm2.segGaps" : s.kind === "consolidate" ? "rm2.segCons" : "rm2.segLevel")}</span>}<span className="muted"> · {s.hours} {t("rm.h")}{s.weeks ? ` · ${t("rm.aiWeeks", { n: s.weeks })}` : ""}</span>{s.points.length > 0 && <div className="small muted">{t("rm2.nPoints", { n: s.points.length })}</div>}</li>)}</ol>
+                  {r.ai?.total_hours ? <div className="small mt-1"><b>{t("rm.aiTotal", { h: Math.round(r.ai.total_hours), w: r.ai.forecast_weeks ?? "—" })}</b></div> : null}
                 </div>
+              )}
+              {r.ai && (
+                <>
+                  {r.ai.deadline_check && <div className={`alert ${r.ai.deadline_check.fits ? "ok" : ""} mt-3`}><b>{r.ai.deadline_check.fits ? t("rm.aiFits") : t("rm.aiNoFit")}</b>{r.ai.deadline_check.note ? ` ${r.ai.deadline_check.note}` : ""}</div>}
+                  {(r.ai.start?.gaps?.length ?? 0) > 0 && <div className="rsec"><h4>{t("rm.aiGaps")}</h4><ol className="rnum">{r.ai.start!.gaps.map((x, i) => <li key={i}>{x}</li>)}</ol></div>}
+                  {r.ai.risks.length > 0 && <div className="rsec"><h4>{t("rm.aiRisks")}</h4><ul className="rbul">{r.ai.risks.map((x, i) => <li key={i}>{x}</li>)}</ul></div>}
+                  {r.ai.pace_options.length > 0 && <div className="rsec"><h4>{t("rm.aiPace")}</h4><ul className="rbul">{r.ai.pace_options.map((p, i) => <li key={i}>{t("rm.aiPaceOpt", { l: p.lessons_per_week, m: p.daily_minutes, w: p.forecast_weeks })}</li>)}</ul></div>}
+                  {r.ai.self_study && <div className="rsec"><h4>{t("ss.title")}</h4><SelfPlan plan={r.ai.self_study} lessons={parsePace(r.pace).lessons} lessonMin={r.lessonMin} /></div>}
+                  {r.ai.student_message && <div className="rsec"><h4>{t("rm.aiStudentMsg")}</h4><p className="rquote">{r.ai.student_message}</p></div>}
+                  <div className="small muted mt-3">{t("rm.aiBy", { m: r.ai.label })}{r.ai.fallbackFrom ? ` · ${t("air.fallback")}` : ""}</div>
+                </>
               )}
             </section>
             <div className="mtnwrap"><Mountain stages={r.stages} done={r.done} start={r.fromLevel ?? "A"} ini={d.ini} label={t("rm.isHere", { name: d.first })} units={r.units} ci={r.ci} sel={sel} onSelect={setSel} onPoint={(id) => setPt(id)} selPoint={pt} /></div>
-            {point && <PointCard key={point.id} roadmapId={r.id} p={point} onClose={() => setPt(null)} />}
+            {point && <PointCard key={point.id} roadmapId={r.id} p={point} onClose={() => setPt(null)} happiful={/happ?[iy]ful/i.test(brief.materials ?? "")} />}
             <section className="card">
               <h3 className="mt-0">{t("rm.stages")}</h3>
               <div className="flex flex-col gap-2">
                 {r.stages.map((s, i) => (
                   <details key={i} className={`stagerow ${i === r.ci ? "cur" : ""}`} open={sel === i || r.stages.length <= 2} onToggle={(e) => (e.currentTarget as HTMLDetailsElement).open && setSel(i)}>
-                    <summary><span className="lvlbig sm">{s.lvl}</span><b className="grow">{s.title}</b>{s.kind && <span className={`pill ${s.kind === "gaps" ? "orange" : "violet"}`}>{t(s.kind === "gaps" ? "rm2.segGaps" : "rm2.segLevel")}</span>}{s.passed && <span className="pill green">✓</span>}<span className="small muted">{s.hours} {t("rm.h")}{s.weeks ? ` · ${t("rm.aiWeeks", { n: s.weeks })}` : ""}</span></summary>
+                    <summary><span className="lvlbig sm">{s.lvl}</span><b className="grow">{s.title}</b>{s.kind && <span className={`pill ${s.kind === "gaps" ? "orange" : s.kind === "consolidate" ? "blue" : "violet"}`}>{t(s.kind === "gaps" ? "rm2.segGaps" : s.kind === "consolidate" ? "rm2.segCons" : "rm2.segLevel")}</span>}{s.passed && <span className="pill green">✓</span>}<span className="small muted">{s.hours} {t("rm.h")}{s.weeks ? ` · ${t("rm.aiWeeks", { n: s.weeks })}` : ""}</span></summary>
                     {s.sum && <p className="small mb-0 mt-2">{s.sum}</p>}
                     {s.points.length > 0 ? (
                       <ol className="rpts">
@@ -233,7 +248,7 @@ export function RoadmapEditor({ d }: { d: EditorData }) {
                             <button type="button" onClick={() => setPt(p.id)}>
                               <span className="grow"><b>{p.title}</b>{p.focus && <span className="small muted block">{p.focus}</span>}</span>
                               {p.ok && Object.keys(p.ok).length > 0 && <span className="pill green" title={t("mtn.okT")}>✓</span>}
-                              <span className="small muted nowrap">{p.hours} {t("rm.h")}</span>
+                              <span className="small muted nowrap text-right">{p.hours} {t("rm.h")}{p.hours_why && <span className="block hwhy">{p.hours_why}</span>}</span>
                             </button>
                           </li>
                         ))}

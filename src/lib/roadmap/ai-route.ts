@@ -10,10 +10,10 @@ import { llmFor } from "../ai/gateway";
 import { modelLabel, modelsFor } from "../ai/models";
 import { prompt } from "../ai/prompts";
 import { scrubWithMap } from "../ai/check-core";
-import { BRIEF_KEYS, cleanInsight, cleanRecs, cleanRoute, compactStages, REC_LISTS, REC_TEXTS, ROUTE_TYPE, runJson, settleHours, toStages, type Insight, type Point, type PointOk } from "../ai/route-core";
+import { BRIEF_KEYS, cleanArticle, cleanInsight, cleanRecs, cleanRoute, compactStages, REC_LISTS, REC_TEXTS, ROUTE_TYPE, runJson, settleHours, toStages, type Insight, type Point, type PointOk } from "../ai/route-core";
 import { aiCode, aiCtx } from "../ai/ctx";
 import { goalLevel, hoursTo, LEVELS, ROUTE_TYPES, type Stage } from "./cefr";
-import { paceKey, PACES, parsePace } from "./math";
+import { paceKey, PACES, parsePace, selfBudget } from "./math";
 import { lessonMinOf } from "./progress";
 import { accountStats, testPack } from "./pack";
 import type { RoadmapForm } from "./actions";
@@ -27,7 +27,7 @@ const refresh = (sid: string) => { revalidatePath(`/teacher/students/${sid}`); r
 export type Brief = Partial<Record<(typeof BRIEF_KEYS)[number], string>> & {
   marks?: Record<string, "strong" | "norm" | "weak">; order?: string[]; breaks?: string; variant?: "br" | "am" | "any"; exam?: string;
 };
-export type InsightSaved = Insight & { model?: string; label?: string; at?: string; edited?: boolean };
+export type InsightSaved = Insight & { model?: string; label?: string; at?: string; edited?: boolean; confirmed?: boolean; confirmedAt?: string; extra?: string };
 export type ChatMsg = { role: "teacher" | "ai"; text: string; at: string };
 
 function cleanBrief(b: Brief): Brief {
@@ -63,7 +63,7 @@ function routeParams(f: RoadmapForm, fallbackFrom: string) {
   const type = ROUTE_TYPES[f.type] ? f.type : "ge";
   const goal = str(f.goal, 80) || ROUTE_TYPES[type].goals[0];
   const from = (LEVELS as readonly string[]).includes(f.fromLevel) ? f.fromLevel : fallbackFrom;
-  const pace = PACES.some((p) => paceKey(p) === f.pace) ? f.pace : "2:20";
+  const pace = /^[1-7]:\d{1,3}$/.test(f.pace) || PACES.some((p) => paceKey(p) === f.pace) ? f.pace : "2:20";
   return { type, goal, from, pace, gl: goalLevel(type, goal) };
 }
 
@@ -74,7 +74,12 @@ async function context(studentId: string, teacherId: string, f: RoadmapForm, bri
   const p = routeParams(f, pack?.level?.match(/[ABC][12]\+?/)?.[0] ?? s.level?.match(/[ABC][12]\+?/)?.[0] ?? "B1");
   const pc = parsePace(p.pace);
   const days = f.mood === "slack" ? 5 : 7;
-  const weekly = (pc.lessons * lessonMin + pc.min * days) / 60;
+  const weeksLeft = f.deadline ? Math.max(1, Math.round((new Date(`${f.deadline}-01T00:00:00Z`).getTime() - Date.now()) / (7 * 864e5))) : null;
+  // самостоятельная работа считается от уроков по расписанию и норм (см. selfBudget); «может лениться» — 5 дней из 7
+  const normTotal = Math.max(0, hoursTo(goalLevel(p.type, p.goal)) - hoursTo(p.from));
+  const budget = selfBudget(pc.lessons, lessonMin, normTotal, weeksLeft);
+  const selfH = f.mood === "slack" ? budget.selfH * (5 / 7) : f.mood === "more" ? budget.selfH * 1.2 : budget.selfH;
+  const weekly = budget.lessonH + selfH;
   const form = Object.fromEntries(Object.entries((s.form ?? {}) as Record<string, unknown>)
     .filter(([k, v]) => typeof v === "string" && v.trim() && !/phone|mail|tel|contact|parent|payer|name|birth|source|price|nick|tg|telegram/i.test(k))
     .map(([k, v]) => [k, String(v).slice(0, 400)]));
@@ -87,15 +92,16 @@ async function context(studentId: string, teacherId: string, f: RoadmapForm, bri
     type: ROUTE_TYPE[p.type] ?? "general", goal: p.goal, goal_level: p.gl, from_level: p.from,
     deadline: f.deadline ?? null,
     weeks_until_deadline: f.deadline ? Math.max(0, Math.round((new Date(`${f.deadline}-01T00:00:00Z`).getTime() - Date.now()) / (7 * 864e5))) : null,
-    pace: { lessons_per_week: pc.lessons, lesson_minutes: lessonMin, daily_minutes: pc.min, active_days: days },
+    pace: { lessons_per_week: pc.lessons, lesson_minutes: lessonMin, self_study_minutes_per_week: Math.round(selfH * 60), active_days: days },
     teacher_notes: str(f.note, 1500),
   };
   const lead = f.leadCourseId ? await db.course.findFirst({ where: { id: f.leadCourseId, teacherId }, select: { title: true, units: { orderBy: { order: "asc" }, select: { title: true, outcomes: true } } } }) : null;
-  const raw = { pack, account, student: { age, form }, route, brief, hours_guide, courses: lead ? { leading: lead.title, units: lead.units.map((u) => ({ title: u.title, outcomes: u.outcomes.slice(0, 6) })) } : null };
+  const self_study_budget = { minutes_per_week: Math.round(selfH * 60), lessons_per_week: pc.lessons, lesson_minutes: lessonMin, active_days: days };
+  const raw = { pack, account, student: { age, form }, route, brief, hours_guide, self_study_budget, courses: lead ? { leading: lead.title, units: lead.units.map((u) => ({ title: u.title, outcomes: u.outcomes.slice(0, 6) })) } : null };
   // имена ученика не уходят в ИИ
   const names = [s.name, s.lastName].filter(Boolean) as string[];
   const scrubbed = JSON.parse(scrubWithMap(JSON.stringify(raw), names).text);
-  return { input: scrubbed as Record<string, unknown>, weekly, p, pack };
+  return { input: scrubbed as Record<string, unknown>, weekly, p: { ...p, pace: `${pc.lessons}:${Math.round((selfH * 60) / 7)}` }, pack, selfMin: Math.round(selfH * 60) };
 }
 
 /** Анкета сохраняется сама (с задержкой) — ничего не теряется до «Создать черновик». */
@@ -124,13 +130,13 @@ export async function routeInsight(studentId: string, f: RoadmapForm, brief: Bri
 }
 
 /** Учитель поправил «Что я понял»: текст вывода и список пробелов (порядок, удаление). */
-export async function saveInsight(studentId: string, patch: { summary: string; gaps: Insight["gaps"] }): Promise<R> {
+export async function saveInsight(studentId: string, patch: { summary: string; gaps: Insight["gaps"]; extra?: string; confirmed?: boolean }): Promise<R> {
   await own(studentId);
   const r = await db.roadmap.findFirst({ where: { studentId }, orderBy: { createdAt: "desc" } });
   if (!r?.insight) return { ok: false, error: "no insight" };
   const cur = r.insight as InsightSaved;
   const gaps = (patch.gaps ?? []).slice(0, 20).map((g, i) => ({ topic: str(g.topic, 160), level: str(g.level, 8), priority: i + 1, why: str(g.why, 400) })).filter((g) => g.topic);
-  await db.roadmap.update({ where: { id: r.id }, data: { insight: json({ ...cur, summary: str(patch.summary, 3000), gaps, edited: true }) } });
+  await db.roadmap.update({ where: { id: r.id }, data: { insight: json({ ...cur, summary: str(patch.summary, 3000), gaps, edited: cur.edited || str(patch.summary, 3000) !== cur.summary || JSON.stringify(gaps.map((g) => g.topic)) !== JSON.stringify(cur.gaps.map((g) => g.topic)), extra: str(patch.extra, 4000), confirmed: !!patch.confirmed, confirmedAt: patch.confirmed ? cur.confirmedAt ?? new Date().toISOString() : undefined }) } });
   refresh(studentId);
   return { ok: true };
 }
@@ -143,7 +149,7 @@ async function saveDraft(rid: string, run: { data: ReturnType<typeof cleanRoute>
   const d = settleHours(run.data, weekly, hoursTo);
   const stages = toStages(d, gl, prev);
   const lastCp = d.segments[d.segments.length - 1]?.checkpoint?.pass_rule;
-  const aiDraft = { model: run.model, label: modelLabel(run.model), fallbackFrom: run.fallbackFrom ?? null, ms: run.ms, start: d.start, goal: d.goal, weekly_hours: d.weekly_hours, total_hours: d.total_hours, forecast_weeks: d.forecast_weeks, deadline_check: d.deadline_check, risks: d.risks, pace_options: d.pace_options, student_message: d.student_message, changes: d.changes, at: new Date().toISOString(), v: 2 };
+  const aiDraft = { model: run.model, label: modelLabel(run.model), fallbackFrom: run.fallbackFrom ?? null, ms: run.ms, start: d.start, goal: d.goal, weekly_hours: d.weekly_hours, total_hours: d.total_hours, forecast_weeks: d.forecast_weeks, deadline_check: d.deadline_check, risks: d.risks, pace_options: d.pace_options, student_message: d.student_message, changes: d.changes, self_study: d.self_study, at: new Date().toISOString(), v: 2 };
   await db.roadmap.update({ where: { id: rid }, data: { ...extra, stages: json(stages), criteria: json([d.goal.explanation, lastCp].filter(Boolean)), summary: d.teacher_summary || null, aiDraft: json(aiDraft), builtAt: new Date(), approvedAt: null } });
   return d;
 }
@@ -154,11 +160,11 @@ export async function buildRoadmap(studentId: string, f: RoadmapForm, brief: Bri
   const { t } = await getT();
   const r0 = await roadmapOf(studentId, f);
   const b = cleanBrief(brief);
-  const { input, weekly, p } = await context(studentId, me.id, f, b);
+  const { input, weekly, p, selfMin } = await context(studentId, me.id, f, b);
   const ins = r0.insight as InsightSaved | null;
-  if (ins) input.insight = { summary: ins.summary, blockers: ins.blockers, strengths: ins.strengths, gaps: ins.gaps, skills: ins.skills, dynamics: ins.dynamics };
+  if (ins) input.insight = { summary: ins.summary, blockers: ins.blockers, strengths: ins.strengths, gaps: ins.gaps, skills: ins.skills, dynamics: ins.dynamics, confirmed_by_teacher: !!ins.confirmed, teacher_additions: ins.extra ?? "" };
   try {
-    const run = await runJson(llmFor("route", await aiCtx(me)), modelsFor("route"), prompt("route"), input, cleanRoute, { tag: "route", maxTokens: 9000, timeoutMs: 280000 });
+    const run = await runJson(llmFor("route", await aiCtx(me)), modelsFor("route"), prompt("route"), input, (j) => cleanRoute(j, selfMin), { tag: "route", maxTokens: 10000, timeoutMs: 280000 });
     const courseIds = (await db.course.findMany({ where: { teacherId: me.id, id: { in: f.courseIds ?? [] } }, select: { id: true } })).map((c) => c.id);
     const lead = f.leadCourseId && courseIds.includes(f.leadCourseId) ? f.leadCourseId : null;
     const units = lead ? await db.unit.findMany({ where: { courseId: lead }, orderBy: { order: "asc" }, select: { title: true, outcomes: true } }) : [];
@@ -183,16 +189,16 @@ export async function refineRoadmap(roadmapId: string, text: string): Promise<R>
   const msg = str(text, 3000);
   if (!msg) return { ok: false, error: t("rm2.emptyMsg") };
   const f: RoadmapForm = { type: r.type, goal: r.goal, fromLevel: r.fromLevel ?? "", courseIds: r.courseIds, leadCourseId: r.leadCourseId, deadline: r.deadline ? r.deadline.toISOString().slice(0, 7) : null, showDate: r.showDate, pace: r.pace ?? "2:20", mood: r.mood ?? "plan", note: r.note ?? "" };
-  const { input, weekly, p } = await context(r.studentId, me.id, f, (r.brief ?? {}) as Brief);
+  const { input, weekly, p, selfMin } = await context(r.studentId, me.id, f, (r.brief ?? {}) as Brief);
   const ins = r.insight as InsightSaved | null;
-  if (ins) input.insight = { summary: ins.summary, blockers: ins.blockers, gaps: ins.gaps };
+  if (ins) input.insight = { summary: ins.summary, blockers: ins.blockers, gaps: ins.gaps, teacher_additions: ins.extra ?? "" };
   const chat = (r.chat as ChatMsg[]) ?? [];
   input.current_route = compactStages((r.stages as Stage[]) ?? []);
   input.dialog = chat.slice(-8).map((m) => ({ role: m.role, text: m.text.slice(0, 800) }));
   input.teacher_request = msg;
   const now = new Date().toISOString();
   try {
-    const run = await runJson(llmFor("route", await aiCtx(me)), modelsFor("route"), prompt("route"), input, cleanRoute, { tag: "route-refine", maxTokens: 9000, timeoutMs: 280000 });
+    const run = await runJson(llmFor("route", await aiCtx(me)), modelsFor("route"), prompt("route"), input, (j) => cleanRoute(j, selfMin), { tag: "route-refine", maxTokens: 10000, timeoutMs: 280000 });
     const d = await saveDraft(r.id, run, weekly, p.gl, (r.stages as Stage[]) ?? [], {
       versions: json(pushVersion(r.versions, r, msg.slice(0, 120))),
       chat: json([...chat, { role: "teacher", text: msg, at: now }, { role: "ai", text: run.data.changes || t("rm2.updated"), at: new Date().toISOString() }].slice(-60)),
@@ -263,12 +269,90 @@ export async function savePoint(roadmapId: string, pointId: string, patch: { ok?
     for (const k of REC_LISTS) { const v = (patch.ok[k] ?? []).map((x) => str(x, 160)).filter(Boolean).slice(0, 30); if (v.length) o[k] = v; }
     for (const k of REC_TEXTS) { const v = str(patch.ok[k], 800); if (v) o[k] = v; }
     if (str(patch.ok.note, 2000)) ok.note = str(patch.ok.note, 2000);
+    if (str(patch.ok.theme, 120)) ok.theme = str(patch.ok.theme, 120);
+    const mats = (patch.ok.materials ?? []).map((m) => ({ title: str(m.title, 200), url: safeUrl(m.url) })).filter((m) => m.title || m.url).slice(0, 10);
+    if (mats.length) ok.materials = mats;
     p.ok = ok;
   }
   if (patch.title !== undefined && str(patch.title, 160)) p.title = str(patch.title, 160);
   if (patch.hours !== undefined && patch.hours >= 1 && patch.hours <= 60) p.hours = Math.round(patch.hours);
   // часы участка = сумма точек
   for (const s of stages) if (s.points?.length) { s.hours = s.points.reduce((a, x) => a + x.hours, 0); s.grammar = s.points.map((x) => x.title); }
+  await db.roadmap.update({ where: { id: r.id }, data: { stages: json(stages) } });
+  refresh(r.studentId);
+  return { ok: true };
+}
+
+const safeUrl = (u: unknown) => { const x = str(u, 1000); return /^https?:\/\//i.test(x) ? x : ""; };
+
+/** Публичный ли адрес: внутренние сети, localhost и служебные диапазоны — нельзя. */
+function publicIp(ip: string) {
+  if (ip.includes(":")) return !/^(::1?|fe80:|fc|fd|::ffff:(10|127|169\.254|192\.168|172\.(1[6-9]|2\d|3[01]))\.)/i.test(ip);
+  const [a, b] = ip.split(".").map(Number);
+  return !(a === 10 || a === 127 || a === 0 || (a === 169 && b === 254) || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168) || (a === 100 && b >= 64 && b <= 127) || a >= 224);
+}
+
+/** Текст страницы по ссылке учителя: только http(s) на публичные адреса (проверка после DNS, и на каждом редиректе), до 2 МБ, 12 с. */
+async function fetchArticle(url: string) {
+  const { lookup } = await import("node:dns/promises");
+  let u = new URL(url), r: Response | null = null;
+  for (let hop = 0; hop < 4; hop++) {
+    if (!/^https?:$/.test(u.protocol)) throw new Error("url");
+    const addrs = await lookup(u.hostname, { all: true });
+    if (!addrs.length || addrs.some((x) => !publicIp(x.address))) throw new Error("url");
+    r = await fetch(u, { redirect: "manual", signal: AbortSignal.timeout(12000), headers: { "User-Agent": "Mozilla/5.0 (compatible; VibeOn reader)", Accept: "text/html,text/plain" } });
+    const loc = r.status >= 300 && r.status < 400 ? r.headers.get("location") : null;
+    if (!loc) break;
+    u = new URL(loc, u);
+  }
+  if (!r || !r.ok) throw new Error(`http ${r?.status}`);
+  const html = (await r.text()).slice(0, 2_000_000);
+  const title = html.match(/<title[^>]*>([^<]{1,200})<\/title>/i)?.[1]?.trim() ?? "";
+  const body = (html.match(/<article[\s\S]*?<\/article>/i)?.[0] ?? html)
+    .replace(/<(script|style|nav|header|footer|aside|form|noscript)[\s\S]*?<\/\1>/gi, " ")
+    .replace(/<\/(p|h\d|li|div|br)>/gi, "\n").replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#39;|&rsquo;/g, "'").replace(/&[a-z]+;/g, " ")
+    .replace(/[ \t]+/g, " ").replace(/\n\s*\n+/g, "\n\n").trim();
+  return { title, text: body };
+}
+
+/** «Моя статья»: учитель даёт файл (текст извлекается на клиенте), текст или ссылку — ИИ выбирает из неё лексику, фразовые глаголы, идиомы, примеры грамматики, вопросы и задания. */
+export async function analyzeArticle(roadmapId: string, pointId: string, a: { title?: string; url?: string; text?: string }): Promise<R> {
+  const r = await db.roadmap.findUnique({ where: { id: roadmapId } });
+  if (!r) return { ok: false, error: "not found" };
+  const { me } = await own(r.studentId);
+  const { t } = await getT();
+  const stages = (r.stages as Stage[]) ?? [];
+  const p = findPoint(stages, pointId);
+  if (!p) return { ok: false, error: "point" };
+  let text = str(a.text, 60000), title = str(a.title, 200);
+  const url = safeUrl(a.url);
+  if (!text && url) {
+    try { const f = await fetchArticle(url); text = f.text.slice(0, 60000); title = title || f.title; }
+    catch (e) { console.error("[route-article] fetch", (e as Error).message); return { ok: false, error: t("rm3.urlFail") }; }
+  }
+  if (text.split(/\s+/).length < 60) return { ok: false, error: t("rm3.tooShort") };
+  const b = (r.brief ?? {}) as Brief;
+  try {
+    const run = await runJson(llmFor("route", await aiCtx(me)), modelsFor("route"), prompt("route-article"),
+      { point: { title: p.title, level: p.level }, student: { level: r.fromLevel, goal: r.goal, interests: b.interests ?? "" }, article: { title, text: text.slice(0, 24000) } },
+      cleanArticle, { tag: "route-article", maxTokens: 3000 });
+    const art = { id: `a${Date.now().toString(36)}`, title: title || url || t("rm3.myArticle"), url, excerpt: text.slice(0, 400), at: new Date().toISOString(), recs: run.data };
+    p.articles = [art, ...(p.articles ?? [])].slice(0, 6);
+    await db.roadmap.update({ where: { id: r.id }, data: { stages: json(stages) } });
+    refresh(r.studentId);
+    return { ok: true, id: art.id };
+  } catch (e) { console.error("[ai:route-article]", e); return { ok: false, error: t(`ai.err.${aiCode(e)}`) }; }
+}
+
+export async function removeArticle(roadmapId: string, pointId: string, articleId: string): Promise<R> {
+  const r = await db.roadmap.findUnique({ where: { id: roadmapId } });
+  if (!r) return { ok: false, error: "not found" };
+  await own(r.studentId);
+  const stages = (r.stages as Stage[]) ?? [];
+  const p = findPoint(stages, pointId);
+  if (!p) return { ok: false, error: "point" };
+  p.articles = (p.articles ?? []).filter((x) => x.id !== articleId);
   await db.roadmap.update({ where: { id: r.id }, data: { stages: json(stages) } });
   refresh(r.studentId);
   return { ok: true };

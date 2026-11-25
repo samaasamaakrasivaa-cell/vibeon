@@ -44,7 +44,7 @@ function route(user: string) {
   const L = ["A1", "A1+", "A2", "A2+", "B1", "B1+", "B2", "B2+", "C1", "C1+", "C2"];
   const mid = L[Math.min(L.length - 1, L.indexOf(from) + 1)] ?? `${from}+`;
   const gapPts = [
-    { title: "Articles with abstract nouns and geographical names", level: mid, hours: 6, why: "ошибки в тесте: артикли", focus: "лексика путешествий и стран" },
+    { title: "Articles with abstract nouns and geographical names", level: mid, hours: 6, hours_why: "4 ошибки из 5 в тесте → 6 ч", why: "ошибки в тесте: артикли", focus: "лексика путешествий и стран" },
     { title: "Inversion after negative adverbials", level: mid, hours: 5, why: "инверсия не используется", focus: "формальная речь, презентации" },
     { title: "Mixed conditionals", level: mid, hours: 5, why: "ошибки в смешанных условных", focus: "обсуждение решений и сожалений" },
   ];
@@ -65,6 +65,11 @@ function route(user: string) {
     pace_options: [{ lessons_per_week: 2, daily_minutes: 20, forecast_weeks: 33 }],
     teacher_summary: "Сначала быстро закрываем пробелы из теста, затем новый уровень.",
     student_message: "Ты уже близко к цели: сначала уберём слабые места, потом — новый уровень.",
+    self_study: { items: [
+      { skill: "listening", activity: "Подкасты о психологии", how: "Слушать эпизод, выписывать 5 новых выражений", times_per_week: 3, minutes: 20, search: "psychology podcast", why: "аудирование и лексика по интересам" },
+      { skill: "speaking", activity: "Разговорный клуб или запись себя", how: "Пересказ статьи за 2 минуты", times_per_week: 2, minutes: 20, search: "english speaking club online", why: "больше говорения между уроками" },
+      { skill: "vocabulary", activity: "Тренажёр слов на платформе", how: "Повторение слов урока", times_per_week: 4, minutes: 10, search: "", why: "закрепление лексики" },
+    ], tips: ["Разговорный клуб раз в неделю"] },
     changes: req ? `Учёл просьбу: «${req.slice(0, 80)}».` : "",
   };
 }
@@ -79,8 +84,15 @@ function insight() {
   };
 }
 
+function article() {
+  return { summary: "Статья о перфекционизме и его влиянии на благополучие.", vocabulary: ["self-criticism", "high standards", "burnout", "to set boundaries", "resilience"], phrasal_verbs: ["give up", "burn out"], idioms: ["at the end of the day"],
+    grammar_examples: ["Perfectionism is often linked to anxiety."], grammar_note: "", reading_questions: ["What is perfectionism, according to the author?", "Do you agree with the author? Why?"], speaking: "Talk about a time you set yourself too high standards.", writing: "Write a short advice column for a perfectionist (150 words)." };
+}
+
 function pointRecs() {
   return {
+    themes: [{ title: "Perfectionism", why: "Ученица интересуется психологией; в теме много абстрактных существительных.", keywords: ["perfectionism", "self-criticism"], article: "Статьи о перфекционизме и самокритике", article_query: "perfectionism wellbeing", podcast_query: "perfectionism podcast", video_query: "perfectionism TED talk" },
+      { title: "Travel and mental health", why: "Путешествия + география с артиклями.", keywords: ["travel", "wellbeing"], article: "Статьи о путешествиях ради ментального здоровья", article_query: "travel mental health", podcast_query: "travel wellbeing podcast", video_query: "travel mental health" }],
     grammar: ["zero article with abstract nouns", "the + mountain ranges, rivers"], vocabulary: ["continent", "landscape", "border", "coastline", "landlocked", "heritage", "itinerary", "destination"],
     phrasal_verbs: ["set off", "stop over", "look around", "get away"], idioms: ["the world is your oyster", "off the beaten track"],
     reading: "Статья о путешествиях: ищите в журнале материалы о местах и travel wellbeing", listening: "Подкаст о путешествиях", speaking: "Describe a place you'd like to visit", writing: "A short travel review (150 words)",
@@ -93,7 +105,8 @@ export async function mockLlm(model: string, messages: LlmMsg[]): Promise<ChatRe
   const user = messages.filter((m) => m.role === "user").map((m) => m.content).join("\n");
   let out: unknown;
   if (/diagnostician/i.test(sys)) out = insight();
-  else if (/Suggest what to teach AROUND/.test(sys)) out = pointRecs();
+  else if (/Suggest what to teach AROUND|suggest 3–5 content THEMES/.test(sys)) out = pointRecs();
+  else if (/uploaded an authentic text/.test(sys)) out = article();
   else if (/learning designer|learning route/i.test(sys)) out = route(user);
   else if (/reviewing a colleague/i.test(sys)) {
     // самопроверка: черновик без «лишней» правки

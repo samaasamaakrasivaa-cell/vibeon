@@ -10,7 +10,7 @@ export type Stage = {
   /** из черновика ИИ: остальной фокус этапа, юниты курса, срез в конце этапа, прогноз недель */
   focus?: string[]; units?: string[]; checkpoint?: { tests: string[]; pass_rule: string } | null; weeks?: number | null;
   /** v2: участок «закрыть пробелы» или новый уровень, кратко о нём, мини-точки (главная грамматика + подсказки + утверждённое) */
-  kind?: "gaps" | "level"; summary?: string; points?: Point[];
+  kind?: "gaps" | "consolidate" | "level"; summary?: string; points?: Point[];
 };
 export const txt = (x: L2 | string, lang: "ru" | "en") => (typeof x === "string" ? x : lang === "en" ? x[0] : x[1]);
 

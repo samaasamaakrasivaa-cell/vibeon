@@ -7,8 +7,9 @@ import { requireUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { getT } from "@/lib/i18n/server";
 import { skillNote, SKILL_COLOR, SKILL_NAME, SKILLS, txt, type Skill, type Stage } from "@/lib/roadmap/cefr";
-import { etaRange, fmtHM, lessonsWord, paceKey, paceLabel, stageMath } from "@/lib/roadmap/math";
-import { roadmapView } from "@/lib/roadmap/progress";
+import { etaRange, fmtHM, lessonsWord, paceKey, paceLabel, parsePace, selfBudget, stageMath } from "@/lib/roadmap/math";
+import { roadmapView, schedPerWeek, type RouteAi } from "@/lib/roadmap/progress";
+import { SelfPlan } from "@/components/roadmap/SelfPlan";
 
 export const metadata = { title: "Мой маршрут" };
 const TABS = ["ov", "a", "now", "next", "fin"] as const;
@@ -36,6 +37,14 @@ export default async function MyRoute({ searchParams }: { searchParams: Promise<
   }
   const r = v.r;
   const L = lang;
+  // план самостоятельной работы: минуты подстраиваются под текущее расписание (меньше уроков — больше самостоятельно)
+  const aiD = (r.aiDraft ?? null) as RouteAi | null;
+  const selfLessons = (await schedPerWeek(s.id)) ?? parsePace(r.pace).lessons;
+  const selfPlan = aiD?.self_study ? (() => {
+    const want = selfBudget(selfLessons, v.lessonMin).minPerWeek, had = aiD.self_study!.minutes_per_week || want, k = want / had;
+    const items = aiD.self_study!.items.map((x) => ({ ...x, minutes: Math.max(5, Math.round((x.minutes * k) / 5) * 5) }));
+    return { ...aiD.self_study!, items, minutes_per_week: items.reduce((a, x) => a + x.minutes * x.times_per_week, 0) };
+  })() : null;
   // ученику — только название точки и утверждённое учителем (подсказки ИИ и «почему» не уходят в браузер)
   const stages = v.stages.map((x) => ({ ...x, title: txt(x.title, L), points: (x.points ?? []).map((p) => ({ id: p.id, title: p.title, level: p.level, hours: p.hours, why: "", focus: "", ok: p.ok ?? {} })) }));
   const tab = sp.tab === "stage" ? "stage" : (TABS as readonly string[]).includes(sp.tab ?? "") ? sp.tab! : "ov";
@@ -87,12 +96,14 @@ export default async function MyRoute({ searchParams }: { searchParams: Promise<
                 const texts = (["reading", "listening", "speaking", "writing"] as const).filter((k) => typeof ok[k] === "string" && ok[k]);
                 return (
                   <li key={p.id}><details>
-                    <summary><b className="grow">{p.title}</b>{(lists.length > 0 || texts.length > 0 || ok.note) ? <span className="pill green">{t("rt.planReady")}</span> : null}</summary>
+                    <summary><b className="grow">{p.title}</b>{(lists.length > 0 || texts.length > 0 || ok.note || ok.theme) ? <span className="pill green">{t("rt.planReady")}</span> : null}</summary>
                     <div className="small mt-1 flex flex-col gap-1">
+                      {typeof ok.theme === "string" && ok.theme && <div><b>{t("rt.theme")}:</b> {ok.theme}</div>}
+                      {Array.isArray(ok.materials) && (ok.materials as { title: string; url: string }[]).length > 0 && <div><b>{t("rt.materials")}:</b> {(ok.materials as { title: string; url: string }[]).map((m, j) => <span key={j}>{j > 0 && " · "}{m.url ? <a className="alink" href={m.url} target="_blank" rel="noopener noreferrer">{m.title || m.url}</a> : m.title}</span>)}</div>}
                       {lists.map((k) => <div key={k}><b>{t(`rm2.k.${k}`)}:</b> {(ok[k] as string[]).join(", ")}</div>)}
                       {texts.map((k) => <div key={k}><b>{t(`rm2.k.${k}`)}:</b> {ok[k] as string}</div>)}
                       {typeof ok.note === "string" && ok.note && <div>{ok.note}</div>}
-                      {!lists.length && !texts.length && !ok.note && <span className="muted">{t("rt.planSoon")}</span>}
+                      {!lists.length && !texts.length && !ok.note && !ok.theme && <span className="muted">{t("rt.planSoon")}</span>}
                     </div>
                   </details></li>
                 );
@@ -137,6 +148,7 @@ export default async function MyRoute({ searchParams }: { searchParams: Promise<
             )}
           </section>
           <div className="mtnwrap"><RouteMap stages={stages} done={v.done} start={r.fromLevel ?? "A"} ini={ini} label={t("rt.youHere")} units={(r.units as { title: string }[]).map((u) => u.title)} ci={v.st.ci} studentView /></div>
+          {selfPlan && <section className="card"><div className="mb-3 flex items-center gap-2"><span className="tk-aiico"><Icon name="clockI" size="sm" /></span><b>{t("ss.title")}</b></div><SelfPlan plan={selfPlan} lessons={selfLessons} lessonMin={v.lessonMin} student /></section>}
 
           <section className="card booster">
             <Rocket power={power} parts={[[W.les / Math.max(0.01, N.les), "#0A84FF"], [W.hw / Math.max(0.01, N.hw), "#34C759"], [W.wd / Math.max(0.01, N.wd), "#AF52DE"]]} />

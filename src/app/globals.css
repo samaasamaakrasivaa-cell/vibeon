@@ -2914,3 +2914,53 @@ svg.i { pointer-events: none; }
 .rpts.stud li details { background: var(--fill); border-radius: 10px; padding: 8px 12px; }
 .rpts.stud li summary { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; list-style: none; }
 .rpts.stud li summary::-webkit-details-marker { display: none; }
+
+.mtip.below { transform: translate(var(--tx, -50%), 16px); }
+.mtn .ptag { fill: #FFFFFF; stroke: #D1D1D6; stroke-width: 1; }
+.mtn .ptag.gaps { fill: #FFF4E5; stroke: #FF9500; }
+.mtn .ptag.consolidate { fill: #EEF6FF; stroke: #0A84FF; }
+.mtn .ptagt { font-size: 10px; font-weight: 700; fill: #1C1C1E; }
+.rpts .hwhy { font-size: 11px; max-width: 160px; white-space: normal; }
+
+/* Диктовка как в мессенджерах: круглая кнопка микрофона в углу поля */
+.dictbox { position: relative; display: flex; flex-direction: column; gap: 6px; }
+.dictbox > textarea { padding-right: 52px; }
+.dictbox > .dict.round { position: absolute; right: 8px; bottom: 8px; }
+.dictbox > .dict-bar { margin-top: 0; }
+.dict-mic { width: 36px; height: 36px; border-radius: 50%; border: 0; background: var(--accent); color: var(--on-accent); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 8px color-mix(in srgb, var(--accent) 35%, transparent); transition: transform .12s; }
+.dict-mic:hover { transform: scale(1.06); }
+.dict-mic .i { width: 18px; height: 18px; }
+.dict.round .dict-err { position: absolute; right: 0; bottom: 42px; white-space: nowrap; }
+/* Шаги маршрута: чёткие заголовки блоков */
+.stephead { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 4px; }
+.stephead .stepn { flex: none; width: 30px; height: 30px; border-radius: 10px; background: var(--accent-bg); color: var(--accent-text); display: inline-flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; }
+.stephead .stepn.ai { background: color-mix(in srgb, #AF52DE 14%, transparent); color: #8E3BBE; }
+.stephead h3 { margin: 0; font-size: 17px; line-height: 1.25; }
+.stephead .stepsub { font-size: 12.5px; color: var(--text2); margin-top: 2px; }
+.stephead .stepright { margin-left: auto; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.rconf { display: flex; flex-direction: column; gap: 8px; padding-top: 10px; border-top: 1px solid var(--sep); }
+
+/* «Предпостроенный маршрут»: читаемые списки */
+.rsec { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--sep); }
+.rsec h4 { margin: 0 0 6px; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--text2); }
+.rbul, .rnum { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; font-size: 14px; line-height: 1.45; }
+.rbul li::marker { color: var(--accent); }
+.rnum li::marker { color: var(--accent); font-weight: 800; }
+.rquote { margin: 0; padding: 10px 14px; border-radius: 12px; background: var(--fill); font-size: 14px; line-height: 1.5; }
+
+.rthemes { display: grid; gap: 8px; }
+.rtheme { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border-radius: 12px; background: var(--fill); border: 2px solid transparent; }
+.rtheme.on { border-color: var(--accent); background: var(--accent-bg); }
+.rlinks { display: flex; flex-wrap: wrap; gap: 12px; }
+.rlinks a { color: var(--accent); font-weight: 600; text-decoration: none; }
+.rart { padding: 12px; border-radius: 14px; border: 1px dashed var(--sep); }
+.rartc { display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; border-radius: 12px; background: var(--surface2); }
+.ssbar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px; }
+.ssbar > div { background: var(--fill); border-radius: 12px; padding: 8px 10px; display: flex; flex-direction: column; }
+.ssbar b { font-size: 15px; } .ssbar span { font-size: 11.5px; color: var(--text2); }
+.sslist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.sslist li { display: flex; gap: 10px; align-items: flex-start; padding: 8px 10px; border-radius: 12px; background: var(--surface2); }
+.sslist li > i { width: 4px; align-self: stretch; border-radius: 2px; flex: none; }
+.ssfreq { display: flex; flex-direction: column; align-items: flex-end; flex: none; font-size: 12px; color: var(--text2); }
+.ssfreq b { font-size: 16px; color: var(--text); }
+@media (max-width: 520px) { .ssbar { grid-template-columns: 1fr 1fr; } }
