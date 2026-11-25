@@ -15,7 +15,7 @@ import { getBank, isOwner, TEEN_READY, trackOf, type Track } from "./bank";
 import { describe5, rubricOf } from "./rubric";
 import { checkCore, typoOk, emptyState, EXPECT, pickTask, PlacementCoverageError, PL_LEVELS, SECTIONS, STEPS, stepIdx, type Section, summarize, words, type CoreItem, type Expect, type ListenItem, type ReadItem, type SpeakItem, type WriteItem } from "./engine";
 import { addNextText, advance, begin, closeSection, doneOf, ensureTasks, enter, goTo, json, LATER, availOf, openOf, partsOf, publicView, stateOf, touch, type Later, type PView } from "./run";
-import { revealedScripts } from "./review";
+import { canSwitchToCambridge, revealedScripts } from "./review";
 import { R_BLOCKS, type RCfg, type RSaved, type RVariant } from "./report";
 import { run } from "../ai/gateway";
 import { provider } from "../ai/providers";
@@ -290,6 +290,10 @@ async function teacherAttempt(id: string) {
   if (!a || a.teacherId !== me.id) throw new Error("not found");
   return { me, a };
 }
+// Не позволяем открытой ранее вкладке перезаписать новую версию проверки.
+const revision = (a: { id: string; updatedAt: Date; review: unknown; status: string; showResult: boolean }) =>
+  ({ id: a.id, updatedAt: a.updatedAt, review: { equals: json(a.review) }, status: a.status, showResult: a.showResult });
+const changed = { ok: false as const, error: "Проверка изменилась. Обновите страницу и повторите действие." };
 const refreshT = (studentId?: string | null) => {
   revalidatePath("/teacher/courses");
   if (studentId) { revalidatePath(`/teacher/students/${studentId}`); revalidatePath("/student/route"); revalidatePath("/student"); }
@@ -429,20 +433,46 @@ export async function saveReview(id: string, r: ReviewInput): Promise<R> {
     const prev = (a.review ?? {}) as Record<string, unknown>;
     const points = Array.isArray(r.points) ? r.points.slice(0, 10).map(Boolean) : [];
     const set = rubricOf(prev as never), max = set.max;
+    if ((r.rubric !== undefined || prev.legacyReview) && r.rubric !== set.ver) return changed;
     const lesson = r.lesson && PL_LEVELS.includes(r.lesson.level as never) ? { level: r.lesson.level, marks: cleanScores(r.lesson.marks, max) } : r.lesson === null ? null : prev.lesson;
-    await db.placementAttempt.update({ where: { id }, data: { review: json({ ...prev, rubric: set.ver, writing: cleanScores(r.writing, max), speaking: cleanScores(r.speaking, max), points, comment: str(r.comment, 3000), lesson, wNote: str(r.wNote ?? "", 3000), sNote: str(r.sNote ?? "", 3000), wc: cleanNotes(r.wc), sc: cleanNotes(r.sc) }) } });
+    const saved = await db.placementAttempt.updateMany({ where: revision(a), data: { review: json({ ...prev, rubric: set.ver, writing: cleanScores(r.writing, max), speaking: cleanScores(r.speaking, max), points, comment: str(r.comment, 3000), lesson, wNote: str(r.wNote ?? "", 3000), sNote: str(r.sNote ?? "", 3000), wc: cleanNotes(r.wc), sc: cleanNotes(r.sc) }) } });
+    if (!saved.count) return changed;
+    revalidatePath(`/teacher/placement/${id}`);
+    return { ok: true };
+  });
+}
+
+/** Оценки 0–3 архивируются один раз. Ответы и аудио находятся отдельно, в state. */
+export async function switchToCambridge(id: string): Promise<R> {
+  return wrap(async () => {
+    const { a } = await teacherAttempt(id);
+    if (!(await canSwitchToCambridge(a))) return changed;
+    const { writing, speaking, wc, sc, ai, lesson, ...rest } = (a.review ?? {}) as Record<string, unknown>;
+    const legacyReview = { rubric: 1, at: new Date().toISOString(), level: a.level, reviewedAt: a.reviewedAt, writing, speaking, wc, sc, ai, lesson };
+    const saved = await db.$transaction(async (tx) => {
+      const update = await tx.placementAttempt.updateMany({ where: revision(a), data: {
+        review: json({ ...rest, rubric: 2, legacyReview }), status: "submitted", reviewedAt: null, level: null,
+      } });
+      if (update.count && a.status === "reviewed" && a.checkpointId) {
+        await tx.checkpoint.update({ where: { id: a.checkpointId }, data: { status: "assigned", level: null, results: {} } });
+      }
+      return update.count;
+    });
+    if (!saved) return changed;
+    refreshT(a.studentId);
     revalidatePath(`/teacher/placement/${id}`);
     return { ok: true };
   });
 }
 
 /** Итог выбирает учитель. Для ученика он становится точкой A маршрута. */
-export async function finalizePlacement(id: string, level: string): Promise<R> {
+export async function finalizePlacement(id: string, level: string, rubric?: number): Promise<R> {
   return wrap(async () => {
     const { a } = await teacherAttempt(id);
     if (stepIdx(level) < 0) return { ok: false, error: "level" };
     if (a.status !== "submitted" && a.status !== "reviewed") return { ok: false, error: "status" };
-    await db.placementAttempt.update({ where: { id }, data: { level, status: "reviewed", reviewedAt: new Date() } });
+    if ((a.review as { legacyReview?: unknown })?.legacyReview && rubric !== 2) return changed;
+    let checkpointResults: ReturnType<typeof json> | undefined;
     if (a.checkpointId && a.studentId) {
       const st = stateOf(a.state);
       const { bank } = await getBank(trackOf(st.track));
@@ -456,12 +486,17 @@ export async function finalizePlacement(id: string, level: string): Promise<R> {
       const wrong = st.core.map((x) => st.items[x.id] as CoreItem).filter((it) => it && !st.answers[it.id]?.ok);
       const right = st.core.map((x) => st.items[x.id] as CoreItem).filter((it) => it && st.answers[it.id]?.ok && it.level !== "A1");
       const uniq = (xs: CoreItem[]) => [...new Map(xs.map((x) => [x.topic_id, [x.topic_en, x.topic_ru]])).values()];
-      await db.checkpoint.update({
-        where: { id: a.checkpointId },
-        data: { status: "done", level, takenAt: a.submittedAt ?? new Date(), results: json({ skills: Object.fromEntries(Object.entries(skills).filter(([, v]) => v !== undefined)), weak: uniq(wrong).slice(0, 8), strong: uniq(right).slice(0, 4), placement: id, shown: a.showResult }) },
-      });
-      await db.student.update({ where: { id: a.studentId }, data: { level } });
+      checkpointResults = json({ skills: Object.fromEntries(Object.entries(skills).filter(([, v]) => v !== undefined)), weak: uniq(wrong).slice(0, 8), strong: uniq(right).slice(0, 4), placement: id, shown: a.showResult });
     }
+    const finalized = await db.$transaction(async (tx) => {
+      const update = await tx.placementAttempt.updateMany({ where: revision(a), data: { level, status: "reviewed", reviewedAt: new Date() } });
+      if (update.count && a.checkpointId && a.studentId && checkpointResults) {
+        await tx.checkpoint.update({ where: { id: a.checkpointId }, data: { status: "done", level, takenAt: a.submittedAt ?? new Date(), results: checkpointResults } });
+        await tx.student.update({ where: { id: a.studentId }, data: { level } });
+      }
+      return update.count;
+    });
+    if (!finalized) return changed;
     refreshT(a.studentId);
     revalidatePath(`/teacher/placement/${id}`);
     return { ok: true };
@@ -476,12 +511,12 @@ export async function sendResultTelegram(id: string): Promise<R> {
     if (!a.level) return { ok: false, error: "Сначала выставьте итоговый уровень" };
     const u = a.student?.userId ? await db.user.findUnique({ where: { id: a.student.userId }, select: { telegramChatId: true } }) : null;
     if (!u?.telegramChatId || !tgEnabled()) return { ok: false, error: "Ученик ещё не подключил Telegram-бот — попросите его подключить (в анкете, у значка бота)" };
-    if (!a.showResult) await setShowResult(id, true);
+    if (!a.showResult) { const shown = await setShowResult(id, true); if (!shown.ok) return shown; }
     const comment = String(((a.review ?? {}) as { comment?: string }).comment ?? "").trim();
     const name = a.student?.name ?? "";
     const text = `${name ? name + ", " : ""}${a.track === "teen" ? "результат твоего Placement test" : "результат вашего placement test"}: уровень ${a.level}.${comment ? `\n\n${comment.slice(0, 1500)}` : ""}`;
     await tgSend(u.telegramChatId, text, `${env.appUrl}/student/test/${a.checkpointId}`, "Подробный результат");
-    await db.placementAttempt.update({ where: { id }, data: { review: json({ ...((a.review ?? {}) as object), tgSentAt: new Date().toISOString() }) } });
+    await db.$executeRaw`UPDATE "PlacementAttempt" SET review = review || jsonb_build_object('tgSentAt', ${new Date().toISOString()}::text), "updatedAt" = now() WHERE id = ${id}`;
     revalidatePath(`/teacher/placement/${id}`);
     return { ok: true };
   });
@@ -491,7 +526,10 @@ export async function sendResultTelegram(id: string): Promise<R> {
 export async function setShowResult(id: string, on: boolean): Promise<R> {
   return wrap(async () => {
     const { a } = await teacherAttempt(id);
-    await db.placementAttempt.update({ where: { id }, data: { showResult: !!on } });
+    const review = (a.review ?? {}) as Record<string, unknown>;
+    if (on && review.legacyReview && a.status !== "reviewed") return { ok: false, error: "Сначала утвердите итоговый уровень" };
+    const saved = await db.placementAttempt.updateMany({ where: revision(a), data: { showResult: !!on, ...(on && !review.shownAt ? { review: json({ ...review, shownAt: new Date().toISOString() }) } : {}) } });
+    if (!saved.count) return changed;
     if (a.checkpointId) {
       const c = await db.checkpoint.findUnique({ where: { id: a.checkpointId } });
       if (c) await db.checkpoint.update({ where: { id: c.id }, data: { results: json({ ...((c.results ?? {}) as object), shown: !!on }) } });
@@ -549,9 +587,10 @@ export async function assignExtraWS(id: string, kind: "writing" | "speaking", di
     const nx = kind === "writing" ? pickTask(bank.writing, PL_LEVELS[li], false, Math.random, used) : pickTask(bank.speaking, PL_LEVELS[li], false, Math.random, used);
     if (!nx) return { ok: false, error: "task" };
     const review = (a.review ?? {}) as Record<string, unknown>;
+    const rubric = rubricOf(review as never).ver;
     st.wsPrev = [...(st.wsPrev ?? []), kind === "writing"
-      ? { kind, id: cur.id, text: (cur as { text: string }).text, marks: review.writing as Record<string, number>, points: review.points as boolean[] }
-      : { kind, id: cur.id, rec: (cur as { rec: Record<string, string> }).rec, rerec: st.rerec, peek: st.peek, marks: review.speaking as Record<string, number> }];
+      ? { kind, rubric, id: cur.id, text: (cur as { text: string }).text, marks: review.writing as Record<string, number>, points: review.points as boolean[] }
+      : { kind, rubric, id: cur.id, rec: (cur as { rec: Record<string, string> }).rec, rerec: st.rerec, peek: st.peek, marks: review.speaking as Record<string, number> }];
     st.items[nx.id] = nx;
     if (kind === "writing") st.writing = { id: nx.id, text: "" };
     else { st.speaking = { id: nx.id, rec: {} }; st.rerec = {}; st.peek = undefined; (st.speaking as { noMic?: boolean }).noMic = undefined; }
@@ -559,7 +598,7 @@ export async function assignExtraWS(id: string, kind: "writing" | "speaking", di
     st.closed = LATER.filter((x) => x !== kind);
     st.section = kind; enter(st, kind);
     const nextReview = { ...review, [kind]: {}, ...(kind === "writing" ? { points: [] } : {}) };
-    await db.placementAttempt.update({ where: { id }, data: { state: json(st), review: json(nextReview), status: "active" } });
+    if (!(await db.placementAttempt.updateMany({ where: revision(a), data: { state: json(st), review: json(nextReview), status: "active" } })).count) return changed;
     if (a.mode === "student" && a.student?.userId)
       await notify({ userId: a.student.userId, kind: "test", title: kind === "writing" ? "Преподаватель дал дополнительное задание по письму" : "Преподаватель дал дополнительное задание по говорению", action: "decide", link: a.checkpointId ? `/student/test/${a.checkpointId}` : `/placement/${id}` });
     refreshT(a.studentId);
@@ -662,11 +701,14 @@ export async function saveReport(id: string, v: RVariant, cfg: RCfg): Promise<R>
   return wrap(async () => {
     const { a } = await teacherAttempt(id);
     if (v !== "student" && v !== "parent") return { ok: false, error: "variant" };
-    const prev = (a.review ?? {}) as Record<string, unknown> & { report?: RSaved };
     const on = Object.fromEntries(R_BLOCKS.filter((b) => typeof cfg?.on?.[b] === "boolean").map((b) => [b, !!cfg.on[b]]));
     const texts = Object.fromEntries(Object.entries(cfg?.texts ?? {}).filter(([k, t]) => /^(ru|en):(level|strong|work|plan|comment)$/.test(k) && typeof t === "string").map(([k, t]) => [k, str(t, 5000)]));
-    const report: RSaved = { ...(prev.report ?? {}), [v]: { lang: cfg?.lang === "en" ? "en" : "ru", on, texts } };
-    await db.placementAttempt.update({ where: { id }, data: { review: json({ ...prev, report }) } });
+    const cfgJson = JSON.stringify({ lang: cfg?.lang === "en" ? "en" : "ru", on, texts });
+    // Варианты ученика и родителя сохраняются параллельно. Обновляем только свой ключ.
+    await db.$executeRaw`UPDATE "PlacementAttempt"
+      SET review = jsonb_set(review, '{report}', COALESCE(review->'report', '{}'::jsonb) || jsonb_build_object(${v}::text, ${cfgJson}::jsonb)),
+          "updatedAt" = now()
+      WHERE id = ${id} AND "teacherId" = ${a.teacherId}`;
     return { ok: true };
   });
 }
@@ -679,7 +721,7 @@ export async function sendReport(id: string, on: boolean): Promise<R> {
     if (on && (!a.level || a.status !== "reviewed")) return { ok: false, error: "level" }; // ученик видит результат только после утверждения уровня
     const prev = (a.review ?? {}) as Record<string, unknown> & { report?: RSaved };
     const report: RSaved = { ...(prev.report ?? {}), sent: !!on, ...(on ? { sentAt: new Date().toISOString() } : {}) };
-    await db.placementAttempt.update({ where: { id }, data: { review: json({ ...prev, report }) } });
+    if (!(await db.placementAttempt.updateMany({ where: revision(a), data: { review: json({ ...prev, report }) } })).count) return changed;
     if (on && !a.showResult) return setShowResult(id, true);
     revalidatePath(`/teacher/placement/${id}`);
     return { ok: true };
@@ -688,8 +730,8 @@ export async function sendReport(id: string, on: boolean): Promise<R> {
 
 // ───────── ИИ-проверка письма и говорения ─────────
 
-/** ИИ ставит баллы 0–3 по критериям уровня задания и коротко объясняет; учитель потом правит. transcripts — расшифровки ответов говорения. */
-export async function aiScore(id: string, kind: "writing" | "speaking", transcripts: string[] = []): Promise<R & { ai?: PlScore }> {
+/** ИИ ставит баллы по активной шкале по критериям уровня задания и коротко объясняет; учитель потом правит. transcripts — расшифровки ответов говорения. */
+export async function aiScore(id: string, kind: "writing" | "speaking", transcripts: string[] = [], rubric?: number): Promise<R & { ai?: PlScore }> {
   return wrap(async () => {
     const { me, a } = await teacherAttempt(id);
     // без настоящего ИИ оценка была бы по длине ответа, а расшифровка — шаблонной: честно говорим, что ИИ не подключён
@@ -699,6 +741,7 @@ export async function aiScore(id: string, kind: "writing" | "speaking", transcri
     if (!it) return { ok: false, error: "task" };
     const level = it.level, below = PL_LEVELS[PL_LEVELS.indexOf(level as never) - 1] ?? "";
     const set = rubricOf(a.review as never);
+    if ((rubric !== undefined || (a.review as { legacyReview?: unknown })?.legacyReview) && rubric !== set.ver) return changed;
     const crit = set[kind].map((c) => ({ id: c.id, name: c.name_ru, en: c.en, level: c.levels?.[level] ?? "", below: below ? c.levels?.[below] ?? "" : "", ...(set.ver === 2 ? { bands: [5, 4, 3, 2, 1, 0].map((v) => `${v} — ${describe5(c, level, v)}`) } : {}) }));
     let task: string, text: string;
     if (it.type === "writing") {
@@ -711,9 +754,12 @@ export async function aiScore(id: string, kind: "writing" | "speaking", transcri
     }
     try {
       const ai = await run("plscore", { kind, level, below, teen: st.track === "teen", task, text, criteria: crit, max: set.max }, await aiCtx(me));
-      const prev = (a.review ?? {}) as Record<string, unknown>;
+      const { a: latest } = await teacherAttempt(id);
+      if (rubricOf(latest.review as never).ver !== set.ver || stateOf(latest.state)[kind]?.id !== it.id) return changed;
+      const prev = (latest.review ?? {}) as Record<string, unknown>;
       const prevAi = (prev.ai ?? {}) as Record<string, unknown>;
-      await db.placementAttempt.update({ where: { id }, data: { review: json({ ...prev, ai: { ...prevAi, [kind]: { ...ai, level, at: new Date().toISOString(), ...(kind === "speaking" ? { transcripts: transcripts.map((x) => str(x, 3000)) } : {}) } } }) } });
+      const saved = await db.placementAttempt.updateMany({ where: revision(latest), data: { review: json({ ...prev, rubric: set.ver, ai: { ...prevAi, [kind]: { ...ai, level, at: new Date().toISOString(), ...(kind === "speaking" ? { transcripts: transcripts.map((x) => str(x, 3000)) } : {}) } } }) } });
+      if (!saved.count) return changed;
       return { ok: true, ai };
     } catch (e) {
       return { ok: false, error: aiCode(e) };

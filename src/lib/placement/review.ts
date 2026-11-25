@@ -1,5 +1,15 @@
 import "server-only";
+import { db } from "../db";
+import { rubricOf } from "./rubric";
 import type { CoreItem, ListenItem, PState, ReadItem, SpeakItem, WriteItem } from "./engine";
+
+/** Только личный черновик. У прежних проверок показ мог сохраниться только в уведомлениях. */
+export async function canSwitchToCambridge(a: { id: string; status: string; showResult: boolean; review: unknown }) {
+  const review = (a.review ?? {}) as { rubric?: number; report?: { sent?: boolean; sentAt?: string }; tgSentAt?: string; shownAt?: string };
+  if (rubricOf(review).ver !== 1 || !["submitted", "reviewed"].includes(a.status) || a.showResult ||
+      review.report?.sent || review.report?.sentAt || review.tgSentAt || review.shownAt) return false;
+  return !(await db.notification.findUnique({ where: { dedupe: `pl-shown:${a.id}` }, select: { id: true } }));
+}
 
 // Данные для разбора: задания из снимка, ответ ученика, правильный ответ, объяснение.
 // Скрипты аудирования ученику не отдаются — только учителю (или после «глазика», отдельным запросом).
@@ -45,7 +55,7 @@ export function reviewData(id: string, st: PState, forTeacher: boolean) {
     prev: (st.wsPrev ?? []).map((x, pi) => {
       const it = st.items[x.id] as WriteItem | SpeakItem | undefined;
       return {
-        kind: x.kind, level: it?.level ?? "", marks: x.marks ?? {},
+        kind: x.kind, rubric: x.rubric, level: it?.level ?? "", marks: x.marks ?? {},
         prompt: it?.type === "writing" ? it.prompt_en : "", text: x.text ?? "", points: x.points ?? [], pointsList: it?.type === "writing" ? it.points ?? [] : [],
         questions: it?.type === "speaking" ? it.questions.map((q, i) => ({ q: q.q, url: x.rec?.[String(i + 1)] ? `/api/placement/${id}/rec/p${pi}-${i + 1}` : null, rerec: x.rerec?.[String(i + 1)] ?? 0, peek: (x.peek ?? []).includes(String(i + 1)) })) : [],
       };

@@ -72,7 +72,7 @@ export type PState = {
   writing?: { id: string; text: string };
   speaking?: { id: string; rec: Record<string, string> }; // номер вопроса → ключ записи
   // дополнительное задание письма/говорения уровнем выше или ниже (даёт учитель): прошлые задания с ответами и оценками
-  wsPrev?: { kind: "writing" | "speaking"; id: string; text?: string; rec?: Record<string, string>; rerec?: Record<string, number>; peek?: string[]; marks?: Record<string, number>; points?: boolean[] }[];
+  wsPrev?: { rubric?: 1 | 2; kind: "writing" | "speaking"; id: string; text?: string; rec?: Record<string, string>; rerec?: Record<string, number>; peek?: string[]; marks?: Record<string, number>; points?: boolean[] }[];
   wsExtra?: { writing?: number; speaking?: number }; // направление: 1 — выше, -1 — ниже (одно на навык)
   level?: PLevel; step?: number; // level — уровень текстов (меньший из грамматики и лексики), step — итог грамматики
   vstep?: number; // итог лексики
