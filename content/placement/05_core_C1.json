@@ -213,25 +213,6 @@
     "explain_ru": "Собирались вот-вот (в прошлом) — were about to."
   },
   {
-    "id": "G-C1-13",
-    "skill": "grammar",
-    "level": "C1",
-    "band": 1,
-    "topic_id": "g-c1-conditionals-alternatives",
-    "topic_en": "provided that / as long as / unless / otherwise",
-    "topic_ru": "provided that / as long as / unless / otherwise",
-    "type": "mcq",
-    "q": "You can borrow my car ___ you bring it back by Sunday.",
-    "options": [
-      "unless",
-      "provided",
-      "in case",
-      "otherwise"
-    ],
-    "answer": 1,
-    "explain_ru": "Provided (that) — «при условии, что»."
-  },
-  {
     "id": "G-C1-14",
     "skill": "grammar",
     "level": "C1",
@@ -960,44 +941,6 @@
     ],
     "answer": 0,
     "explain_ru": "Замещение глаголом-помощником: and he did."
-  },
-  {
-    "id": "G-C1-34",
-    "skill": "grammar",
-    "level": "C1",
-    "band": 2,
-    "topic_id": "g-c1-conditionals-alternatives",
-    "topic_en": "provided that / as long as / unless / otherwise",
-    "topic_ru": "provided that / as long as / unless / otherwise",
-    "type": "mcq",
-    "q": "Take a map with you ___ your phone battery dies.",
-    "options": [
-      "unless",
-      "provided",
-      "in case",
-      "as long as"
-    ],
-    "answer": 2,
-    "explain_ru": "На случай, если — in case."
-  },
-  {
-    "id": "G-C1-35",
-    "skill": "grammar",
-    "level": "C1",
-    "band": 3,
-    "topic_id": "g-c1-conditionals-alternatives",
-    "topic_en": "provided that / as long as / unless / otherwise",
-    "topic_ru": "provided that / as long as / unless / otherwise",
-    "type": "mcq",
-    "q": "I'll lend you the money ___ you pay me back by the end of the month.",
-    "options": [
-      "in case",
-      "otherwise",
-      "unless",
-      "as long as"
-    ],
-    "answer": 3,
-    "explain_ru": "При условии, что — as long as."
   },
   {
     "id": "G-C1-36",
@@ -1854,44 +1797,6 @@
     "explain_ru": "После the … of — существительное: appointment (назначение)."
   },
   {
-    "id": "G-C1-71",
-    "skill": "grammar",
-    "level": "C1",
-    "band": 1,
-    "topic_id": "g-c1-conditionals-alternatives",
-    "topic_en": "provided that / as long as / unless / otherwise",
-    "topic_ru": "provided that / as long as / unless / otherwise",
-    "type": "mcq",
-    "q": "Hurry up, ___ we'll miss the beginning of the film.",
-    "options": [
-      "otherwise",
-      "unless",
-      "provided",
-      "in case"
-    ],
-    "answer": 0,
-    "explain_ru": "Иначе — otherwise."
-  },
-  {
-    "id": "G-C1-72",
-    "skill": "grammar",
-    "level": "C1",
-    "band": 1,
-    "topic_id": "g-c1-conditionals-alternatives",
-    "topic_en": "provided that / as long as / unless / otherwise",
-    "topic_ru": "provided that / as long as / unless / otherwise",
-    "type": "mcq",
-    "q": "I won't go to the party ___ you come with me.",
-    "options": [
-      "otherwise",
-      "unless",
-      "whereas",
-      "as long"
-    ],
-    "answer": 1,
-    "explain_ru": "Если не — unless."
-  },
-  {
     "id": "G-C1-73",
     "skill": "grammar",
     "level": "C1",
@@ -2437,22 +2342,6 @@
     "hint_ru": "замещение: so / not"
   },
   {
-    "id": "G-C1-T05",
-    "skill": "grammar",
-    "level": "C1",
-    "band": 1,
-    "topic_id": "g-c1-conditionals-alternatives",
-    "topic_en": "provided that / as long as / unless / otherwise",
-    "topic_ru": "provided that / as long as / unless / otherwise",
-    "type": "gap",
-    "q": "You can borrow my bike as ___ as you bring it back by Sunday.",
-    "accept": [
-      "long"
-    ],
-    "explain_ru": "При условии, что — as long as.",
-    "hint_ru": "as long as / provided"
-  },
-  {
     "id": "G-C1-T06",
     "skill": "grammar",
     "level": "C1",
@@ -2516,5 +2405,802 @@
     ],
     "explain_ru": "Чем..., тем... — the + сравнительная степень, the + сравнительная степень.",
     "hint_ru": "the ..., the ..."
+  },
+  {
+    "id": "G-C1-101",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-mixed-conditionals",
+    "topic_en": "Mixed conditionals in past, present and future",
+    "topic_ru": "Смешанные условные: прошлое, настоящее, будущее",
+    "type": "mcq",
+    "q": "If I'd accepted the transfer, I would ___ living in Lisbon now instead of Leeds.",
+    "options": [
+      "be",
+      "been",
+      "being",
+      "am"
+    ],
+    "answer": 0,
+    "explain_ru": "Смешанное условное связывает причины и результаты из разных времён. Прошлому условию соответствует had + причастие, нынешнему результату — would + начальная форма."
+  },
+  {
+    "id": "G-C1-102",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-mixed-conditionals",
+    "topic_en": "Mixed conditionals in past, present and future",
+    "topic_ru": "Смешанные условные: прошлое, настоящее, будущее",
+    "type": "mcq",
+    "q": "If the instructions were clearer, we wouldn't have ___ so many mistakes on yesterday's run.",
+    "options": [
+      "making",
+      "made",
+      "make",
+      "makes"
+    ],
+    "answer": 1,
+    "explain_ru": "Смешанное условное связывает причины и результаты из разных времён. Прошлому условию соответствует had + причастие, нынешнему результату — would + начальная форма."
+  },
+  {
+    "id": "G-C1-103",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-mixed-conditionals",
+    "topic_en": "Mixed conditionals in past, present and future",
+    "topic_ru": "Смешанные условные: прошлое, настоящее, будущее",
+    "type": "transform",
+    "q": "I failed to renew the licence in time, so I have to deal with this paperwork now.",
+    "key": "WOULD",
+    "frame": "If I'd renewed the licence in time, I ___ deal with this paperwork now.",
+    "accept": [
+      "would not have to"
+    ],
+    "explain_ru": "Смешанное условное связывает причины и результаты из разных времён. Прошлому условию соответствует had + причастие, нынешнему результату — would + начальная форма."
+  },
+  {
+    "id": "G-C1-104",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-mixed-conditionals",
+    "topic_en": "Mixed conditionals in past, present and future",
+    "topic_ru": "Смешанные условные: прошлое, настоящее, будущее",
+    "type": "transform",
+    "q": "I am allergic to nuts, so I didn't try the cake last night.",
+    "key": "WOULD",
+    "frame": "If I weren't allergic to nuts, I ___ the cake last night.",
+    "accept": [
+      "would have tried",
+      "would've tried"
+    ],
+    "explain_ru": "Смешанное условное связывает причины и результаты из разных времён. Прошлому условию соответствует had + причастие, нынешнему результату — would + начальная форма."
+  },
+  {
+    "id": "G-C1-105",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-modals-past",
+    "topic_en": "Modals in the past: full range (needn't have, would have, could have been -ing)",
+    "topic_ru": "Модальные о прошлом: весь спектр (needn't have, would have, could have been -ing)",
+    "type": "mcq",
+    "q": "You needn't ___ printed a hard copy. I already had the PDF.",
+    "options": [
+      "having",
+      "has",
+      "have",
+      "had"
+    ],
+    "answer": 2,
+    "explain_ru": "После модального глагола о прошлом используется have + причастие. Форма needn't have означает, что действие оказалось лишним."
+  },
+  {
+    "id": "G-C1-106",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-modals-past",
+    "topic_en": "Modals in the past: full range (needn't have, would have, could have been -ing)",
+    "topic_ru": "Модальные о прошлом: весь спектр (needn't have, would have, could have been -ing)",
+    "type": "mcq",
+    "q": "When I rang, she might have ___ talking a client through the demo.",
+    "options": [
+      "being",
+      "be",
+      "was",
+      "been"
+    ],
+    "answer": 3,
+    "explain_ru": "После модального глагола о прошлом используется have + причастие. Форма needn't have означает, что действие оказалось лишним."
+  },
+  {
+    "id": "G-C1-107",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-modals-past",
+    "topic_en": "Modals in the past: full range (needn't have, would have, could have been -ing)",
+    "topic_ru": "Модальные о прошлом: весь спектр (needn't have, would have, could have been -ing)",
+    "type": "brackets",
+    "q": "The spare key was in the drawer all along. You ___ (need not / call) a locksmith.",
+    "accept": [
+      "needn't have called",
+      "need not have called"
+    ],
+    "explain_ru": "После модального глагола о прошлом используется have + причастие. Форма needn't have означает, что действие оказалось лишним."
+  },
+  {
+    "id": "G-C1-108",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-modals-past",
+    "topic_en": "Modals in the past: full range (needn't have, would have, could have been -ing)",
+    "topic_ru": "Модальные о прошлом: весь спектр (needn't have, would have, could have been -ing)",
+    "type": "transform",
+    "q": "Perhaps Kai was working from home when the alarm went off.",
+    "key": "COULD",
+    "frame": "Kai ___ from home when the alarm went off.",
+    "accept": [
+      "could have been working",
+      "could've been working"
+    ],
+    "explain_ru": "После модального глагола о прошлом используется have + причастие. Форма needn't have означает, что действие оказалось лишним."
+  },
+  {
+    "id": "G-C1-109",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-wish-regrets",
+    "topic_en": "wish / if only: regrets and criticism (wish you would)",
+    "topic_ru": "wish / if only: сожаления и упрёк (wish you would)",
+    "type": "mcq",
+    "q": "I wish I'd ___ a copy of the email before I cleared my inbox.",
+    "options": [
+      "keeps",
+      "kept",
+      "keep",
+      "keeping"
+    ],
+    "answer": 1,
+    "explain_ru": "О сожалении о прошлом говорят с wish / if only + Past Perfect. Wish + would выражает желание изменить поведение или ситуацию."
+  },
+  {
+    "id": "G-C1-110",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-wish-regrets",
+    "topic_en": "wish / if only: regrets and criticism (wish you would)",
+    "topic_ru": "wish / if only: сожаления и упрёк (wish you would)",
+    "type": "mcq",
+    "q": "I wish the neighbours would ___ us before throwing a party.",
+    "options": [
+      "warning",
+      "warns",
+      "warn",
+      "warned"
+    ],
+    "answer": 2,
+    "explain_ru": "О сожалении о прошлом говорят с wish / if only + Past Perfect. Wish + would выражает желание изменить поведение или ситуацию."
+  },
+  {
+    "id": "G-C1-111",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-wish-regrets",
+    "topic_en": "wish / if only: regrets and criticism (wish you would)",
+    "topic_ru": "wish / if only: сожаления и упрёк (wish you would)",
+    "type": "brackets",
+    "q": "If only we ___ (take) a screenshot before the page went offline.",
+    "accept": [
+      "had taken",
+      "'d taken"
+    ],
+    "explain_ru": "О сожалении о прошлом говорят с wish / if only + Past Perfect. Wish + would выражает желание изменить поведение или ситуацию."
+  },
+  {
+    "id": "G-C1-112",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-wish-regrets",
+    "topic_en": "wish / if only: regrets and criticism (wish you would)",
+    "topic_ru": "wish / if only: сожаления и упрёк (wish you would)",
+    "type": "transform",
+    "q": "It bothers me that the supplier keeps changing the delivery date.",
+    "key": "WOULD",
+    "frame": "I wish the supplier ___ the delivery date.",
+    "accept": [
+      "would stop changing",
+      "would not keep changing"
+    ],
+    "explain_ru": "О сожалении о прошлом говорят с wish / if only + Past Perfect. Wish + would выражает желание изменить поведение или ситуацию."
+  },
+  {
+    "id": "G-C1-113",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-passive-all",
+    "topic_en": "Passive forms: all (incl. perfect infinitive, gerund passive)",
+    "topic_ru": "Пассив: все формы (включая перфектный инфинитив, пассивный герундий)",
+    "type": "mcq",
+    "q": "The tenant objected to ___ filmed without notice.",
+    "options": [
+      "been",
+      "be",
+      "was",
+      "being"
+    ],
+    "answer": 3,
+    "explain_ru": "В пассивном инфинитиве употребляется be или have been, а в пассивной форме на -ing — being или having been."
+  },
+  {
+    "id": "G-C1-114",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-passive-all",
+    "topic_en": "Passive forms: all (incl. perfect infinitive, gerund passive)",
+    "topic_ru": "Пассив: все формы (включая перфектный инфинитив, пассивный герундий)",
+    "type": "mcq",
+    "q": "The documents appear to have ___ altered before we received them.",
+    "options": [
+      "been",
+      "being",
+      "be",
+      "were"
+    ],
+    "answer": 0,
+    "explain_ru": "В пассивном инфинитиве употребляется be или have been, а в пассивной форме на -ing — being или having been."
+  },
+  {
+    "id": "G-C1-115",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-passive-all",
+    "topic_en": "Passive forms: all (incl. perfect infinitive, gerund passive)",
+    "topic_ru": "Пассив: все формы (включая перфектный инфинитив, пассивный герундий)",
+    "type": "brackets",
+    "q": "After ___ (notify) of the change by email, I booked a different train.",
+    "accept": [
+      "being notified",
+      "having been notified"
+    ],
+    "explain_ru": "В пассивном инфинитиве употребляется be или have been, а в пассивной форме на -ing — being или having been."
+  },
+  {
+    "id": "G-C1-116",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-passive-all",
+    "topic_en": "Passive forms: all (incl. perfect infinitive, gerund passive)",
+    "topic_ru": "Пассив: все формы (включая перфектный инфинитив, пассивный герундий)",
+    "type": "transform",
+    "q": "It seems someone removed the watermark before we got the file.",
+    "key": "BEEN",
+    "frame": "The watermark seems ___ before we got the file.",
+    "accept": [
+      "to have been removed"
+    ],
+    "explain_ru": "В пассивном инфинитиве употребляется be или have been, а в пассивной форме на -ing — being или having been."
+  },
+  {
+    "id": "G-C1-117",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-narrative-passive",
+    "topic_en": "Narrative tenses for experience, incl. passive",
+    "topic_ru": "Повествовательные времена, включая пассив",
+    "type": "mcq",
+    "q": "When we got to the studio, the lighting was still ___ adjusted for the next shoot.",
+    "options": [
+      "be",
+      "is",
+      "being",
+      "been"
+    ],
+    "answer": 2,
+    "explain_ru": "В рассказе пассив показывает, что важно событие. Past Perfect Passive отмечает то, что случилось раньше, а Past Continuous Passive — то, что происходило в тот момент."
+  },
+  {
+    "id": "G-C1-118",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-narrative-passive",
+    "topic_en": "Narrative tenses for experience, incl. passive",
+    "topic_ru": "Повествовательные времена, включая пассив",
+    "type": "mcq",
+    "q": "By the time the team arrived, the room had already been ___.",
+    "options": [
+      "booking",
+      "book",
+      "books",
+      "booked"
+    ],
+    "answer": 3,
+    "explain_ru": "В рассказе пассив показывает, что важно событие. Past Perfect Passive отмечает то, что случилось раньше, а Past Continuous Passive — то, что происходило в тот момент."
+  },
+  {
+    "id": "G-C1-119",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-narrative-passive",
+    "topic_en": "Narrative tenses for experience, incl. passive",
+    "topic_ru": "Повествовательные времена, включая пассив",
+    "type": "brackets",
+    "q": "We couldn't use the front entrance because it ___ (paint) when we arrived.",
+    "accept": [
+      "was being painted"
+    ],
+    "explain_ru": "В рассказе пассив показывает, что важно событие. Past Perfect Passive отмечает то, что случилось раньше, а Past Continuous Passive — то, что происходило в тот момент."
+  },
+  {
+    "id": "G-C1-120",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-narrative-passive",
+    "topic_en": "Narrative tenses for experience, incl. passive",
+    "topic_ru": "Повествовательные времена, включая пассив",
+    "type": "transform",
+    "q": "They'd backed up the recordings by the time the server failed.",
+    "key": "BEEN",
+    "frame": "The recordings ___ by the time the server failed.",
+    "accept": [
+      "had been backed up",
+      "'d been backed up"
+    ],
+    "explain_ru": "В рассказе пассив показывает, что важно событие. Past Perfect Passive отмечает то, что случилось раньше, а Past Continuous Passive — то, что происходило в тот момент."
+  },
+  {
+    "id": "G-C1-121",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-linking-formal",
+    "topic_en": "Linking devices and logical markers in formal speech and writing",
+    "topic_ru": "Связки и логические маркеры в формальной речи и письме",
+    "type": "mcq",
+    "q": "___ the initial delays, we delivered the project on time.",
+    "options": [
+      "Notwithstanding",
+      "Although",
+      "Whereas",
+      "However"
+    ],
+    "answer": 0,
+    "explain_ru": "Формальные связки требуют устойчивых конструкций. Notwithstanding стоит перед именной группой, in light требует of, а insofar употребляется с as."
+  },
+  {
+    "id": "G-C1-122",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-linking-formal",
+    "topic_en": "Linking devices and logical markers in formal speech and writing",
+    "topic_ru": "Связки и логические маркеры в формальной речи и письме",
+    "type": "mcq",
+    "q": "In light ___ the new evidence, the board agreed to reopen the case.",
+    "options": [
+      "by",
+      "of",
+      "on",
+      "at"
+    ],
+    "answer": 1,
+    "explain_ru": "Формальные связки требуют устойчивых конструкций. Notwithstanding стоит перед именной группой, in light требует of, а insofar употребляется с as."
+  },
+  {
+    "id": "G-C1-123",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-linking-formal",
+    "topic_en": "Linking devices and logical markers in formal speech and writing",
+    "topic_ru": "Связки и логические маркеры в формальной речи и письме",
+    "type": "gap",
+    "q": "The scheme is useful only insofar ___ it helps people stay in work.",
+    "accept": [
+      "as"
+    ],
+    "explain_ru": "Формальные связки требуют устойчивых конструкций. Notwithstanding стоит перед именной группой, in light требует of, а insofar употребляется с as."
+  },
+  {
+    "id": "G-C1-124",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-linking-formal",
+    "topic_en": "Linking devices and logical markers in formal speech and writing",
+    "topic_ru": "Связки и логические маркеры в формальной речи и письме",
+    "type": "transform",
+    "q": "Despite its limitations, the study raised an important question.",
+    "key": "NOTWITHSTANDING",
+    "frame": "___, the study raised an important question.",
+    "accept": [
+      "its limitations notwithstanding",
+      "notwithstanding its limitations"
+    ],
+    "explain_ru": "Формальные связки требуют устойчивых конструкций. Notwithstanding стоит перед именной группой, in light требует of, а insofar употребляется с as."
+  },
+  {
+    "id": "G-C1-125",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-vague-language",
+    "topic_en": "Approximating and hedging: sort of, -ish, it would seem that",
+    "topic_ru": "Приблизительность и смягчение: sort of, -ish, it would seem that",
+    "type": "mcq",
+    "q": "We had twenty people or ___ at the rehearsal. It was hard to count everyone.",
+    "options": [
+      "such",
+      "about",
+      "rough",
+      "so"
+    ],
+    "answer": 3,
+    "explain_ru": "For приблизительного числа используется or so после числа. Конструкция it would appear that смягчает вывод."
+  },
+  {
+    "id": "G-C1-126",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-vague-language",
+    "topic_en": "Approximating and hedging: sort of, -ish, it would seem that",
+    "topic_ru": "Приблизительность и смягчение: sort of, -ish, it would seem that",
+    "type": "mcq",
+    "q": "From the audit trail, it would ___ that the edit was made after the deadline.",
+    "options": [
+      "appear",
+      "appears",
+      "appearing",
+      "appeared"
+    ],
+    "answer": 0,
+    "explain_ru": "For приблизительного числа используется or so после числа. Конструкция it would appear that смягчает вывод."
+  },
+  {
+    "id": "G-C1-127",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-vague-language",
+    "topic_en": "Approximating and hedging: sort of, -ish, it would seem that",
+    "topic_ru": "Приблизительность и смягчение: sort of, -ish, it would seem that",
+    "type": "transform",
+    "q": "The booking took approximately ten minutes.",
+    "key": "SO",
+    "frame": "The booking took ___ altogether.",
+    "accept": [
+      "ten minutes or so",
+      "10 minutes or so"
+    ],
+    "explain_ru": "For приблизительного числа используется or so после числа. Конструкция it would appear that смягчает вывод."
+  },
+  {
+    "id": "G-C1-128",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-vague-language",
+    "topic_en": "Approximating and hedging: sort of, -ish, it would seem that",
+    "topic_ru": "Приблизительность и смягчение: sort of, -ish, it would seem that",
+    "type": "brackets",
+    "q": "It would ___ (seem) that both invoices refer to the same repair.",
+    "accept": [
+      "seem"
+    ],
+    "explain_ru": "For приблизительного числа используется or so после числа. Конструкция it would appear that смягчает вывод."
+  },
+  {
+    "id": "G-C1-129",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-articles",
+    "topic_en": "Articles: generalisation, abstract nouns, fixed cases",
+    "topic_ru": "Артикли: обобщение, абстрактные существительные, устойчивые случаи",
+    "type": "mcq",
+    "q": "The panel chose what it considered ___ lesser of the two risks.",
+    "options": [
+      "some",
+      "the",
+      "an",
+      "any"
+    ],
+    "answer": 1,
+    "explain_ru": "Артикль выбирается по определённости и по звуку в начале следующего слова."
+  },
+  {
+    "id": "G-C1-130",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-articles",
+    "topic_en": "Articles: generalisation, abstract nouns, fixed cases",
+    "topic_ru": "Артикли: обобщение, абстрактные существительные, устойчивые случаи",
+    "type": "mcq",
+    "q": "The agreement remains in force for ___ duration of the review.",
+    "options": [
+      "every",
+      "many",
+      "the",
+      "an"
+    ],
+    "answer": 2,
+    "explain_ru": "Артикль выбирается по определённости и по звуку в начале следующего слова."
+  },
+  {
+    "id": "G-C1-131",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-inverted-conditionals",
+    "topic_en": "Inverted conditionals: Had I known / Should you",
+    "topic_ru": "Условные с инверсией: Had I known / Should you",
+    "type": "transform",
+    "q": "If we had known about the roadworks, we'd have come by train.",
+    "key": "HAD",
+    "frame": "___ the roadworks, we'd have come by train.",
+    "accept": [
+      "had we known about"
+    ],
+    "explain_ru": "В формальном условии if можно опустить, поставив had перед подлежащим."
+  },
+  {
+    "id": "G-C1-132",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-unreal-past",
+    "topic_en": "Unreal past: as if / would rather / suppose",
+    "topic_ru": "Нереальное прошлое: as if / would rather / suppose",
+    "type": "transform",
+    "q": "I want you to raise this at the next meeting instead.",
+    "key": "RATHER",
+    "frame": "I ___ this at the next meeting instead.",
+    "accept": [
+      "would rather you raised",
+      "'d rather you raised"
+    ],
+    "explain_ru": "После would rather с другим подлежащим форма Past Simple выражает пожелание."
+  },
+  {
+    "id": "G-C1-133",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-modal-nuance",
+    "topic_en": "Modal nuances: may well / might as well / bound to",
+    "topic_ru": "Оттенки модальности: may well / might as well / bound to",
+    "type": "transform",
+    "q": "There's no good reason to keep waiting here. We can leave now.",
+    "key": "WELL",
+    "frame": "We ___ now.",
+    "accept": [
+      "might as well leave",
+      "may as well leave"
+    ],
+    "explain_ru": "Might as well и may as well подходят, когда нет смысла выбирать другой вариант."
+  },
+  {
+    "id": "G-C1-134",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-subjunctive",
+    "topic_en": "Subjunctive: It's essential that he be...",
+    "topic_ru": "Сослагательное наклонение: It's essential that he be...",
+    "type": "brackets",
+    "q": "It is essential that the applicant ___ (be) available for interview on Friday. Use the formal subjunctive.",
+    "accept": [
+      "be"
+    ],
+    "explain_ru": "В формальном сослагательном после it is essential that используется начальная форма be."
+  },
+  {
+    "id": "G-C1-135",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-participle-advanced",
+    "topic_en": "Advanced participle and reduced relative clauses",
+    "topic_ru": "Сложные причастные обороты",
+    "type": "transform",
+    "q": "After the applicants had been interviewed, they were asked for references.",
+    "key": "HAVING",
+    "frame": "___, the applicants were asked for references.",
+    "accept": [
+      "having been interviewed"
+    ],
+    "explain_ru": "Having been + причастие образует пассивный оборот о предшествующем действии."
+  },
+  {
+    "id": "G-C1-136",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-emphasis",
+    "topic_en": "Emphasis: do / at all / whatsoever",
+    "topic_ru": "Усиление: do / at all / whatsoever",
+    "type": "transform",
+    "q": "The revised figures made no difference to the outcome.",
+    "key": "WHATSOEVER",
+    "frame": "The revised figures made ___ to the outcome.",
+    "accept": [
+      "no difference whatsoever"
+    ],
+    "explain_ru": "Whatsoever усиливает отрицание после no difference."
+  },
+  {
+    "id": "G-C1-137",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-ellipsis-substitution",
+    "topic_en": "Ellipsis and substitution",
+    "topic_ru": "Эллипсис и замещение",
+    "type": "transform",
+    "q": "You can amend the booking online. If you amend it today, there's no fee.",
+    "key": "SO",
+    "frame": "You can amend the booking online. If you ___ today, there's no fee.",
+    "accept": [
+      "do so"
+    ],
+    "explain_ru": "Do so заменяет упомянутое действие."
+  },
+  {
+    "id": "G-C1-138",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-future-in-past",
+    "topic_en": "Future in the past: was about to / was to",
+    "topic_ru": "Будущее в прошлом: was about to / was to",
+    "type": "transform",
+    "q": "I was on the point of closing the file when a new comment appeared.",
+    "key": "ABOUT",
+    "frame": "I ___ the file when a new comment appeared.",
+    "accept": [
+      "was about to close"
+    ],
+    "explain_ru": "Was about to описывает действие, которое должно было вот-вот произойти."
+  },
+  {
+    "id": "G-C1-139",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-relatives-prepositions",
+    "topic_en": "Relative clauses with prepositions: in which / whereby",
+    "topic_ru": "Придаточные с предлогами: in which / whereby",
+    "type": "transform",
+    "q": "We reached a compromise. Both sides could live with it.",
+    "key": "WHICH",
+    "frame": "We reached a compromise ___ both sides could live.",
+    "accept": [
+      "with which"
+    ],
+    "explain_ru": "В формальной речи предлог можно поставить прямо перед which."
+  },
+  {
+    "id": "G-C1-140",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-nominalisation",
+    "topic_en": "Nominalisation and complex noun phrases",
+    "topic_ru": "Номинализация и сложные именные группы",
+    "type": "wordform",
+    "q": "The abrupt ___ of the pilot surprised the team. The board had decided to end it without warning.",
+    "base": "TERMINATE",
+    "accept": [
+      "termination"
+    ],
+    "explain_ru": "Termination образует именную группу, описывающую прекращение программы."
+  },
+  {
+    "id": "G-C1-141",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-tense-nuance",
+    "topic_en": "Tenses: sequence of tenses, future in the past, distancing past",
+    "topic_ru": "Времена: согласование, будущее в прошедшем, дистанцирующее прошедшее",
+    "type": "transform",
+    "q": "I intended to send the form sooner, but I lost the link.",
+    "key": "GOING",
+    "frame": "I ___ the form sooner, but I lost the link.",
+    "accept": [
+      "was going to send"
+    ],
+    "explain_ru": "Was going to выражает намерение из прошлого, которое не сбылось."
+  },
+  {
+    "id": "G-C1-142",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-articles",
+    "topic_en": "Articles: generalisation, abstract nouns, fixed cases",
+    "topic_ru": "Артикли: обобщение, абстрактные существительные, устойчивые случаи",
+    "type": "transform",
+    "q": "I don't mean work in general. I mean the work you did for the housing charity.",
+    "key": "THE",
+    "frame": "I mean ___ for the housing charity.",
+    "accept": [
+      "the work you did"
+    ],
+    "explain_ru": "Определённый артикль выделяет конкретную работу, о которой идёт речь."
+  },
+  {
+    "id": "G-C1-143",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-comparatives",
+    "topic_en": "Advanced comparison: by far, nothing like as, the sooner the better",
+    "topic_ru": "Сложные сравнения: by far, nothing like as, the sooner the better",
+    "type": "transform",
+    "q": "The results were much less reliable than we'd expected.",
+    "key": "NOTHING",
+    "frame": "The results were ___ we'd expected.",
+    "accept": [
+      "nothing like as reliable as"
+    ],
+    "explain_ru": "Nothing like as ... as подчёркивает большое различие."
+  },
+  {
+    "id": "G-C1-144",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-reported",
+    "topic_en": "Reported speech: reporting verbs, sequence of tenses, was to",
+    "topic_ru": "Косвенная речь: глаголы (urge, insist on, accuse of), согласование времён, was to",
+    "type": "transform",
+    "q": "Lena admitted that she'd forwarded the message without asking.",
+    "key": "HAVING",
+    "frame": "Lena admitted to ___ without asking.",
+    "accept": [
+      "having forwarded the message",
+      "having forwarded it"
+    ],
+    "explain_ru": "После admitted to возможна перфектная форма на -ing для более раннего действия."
+  },
+  {
+    "id": "G-C1-145",
+    "skill": "grammar",
+    "level": "C1",
+    "band": 1,
+    "topic_id": "g-c1-reported",
+    "topic_en": "Reported speech: reporting verbs, sequence of tenses, was to",
+    "topic_ru": "Косвенная речь: глаголы (urge, insist on, accuse of), согласование времён, was to",
+    "type": "transform",
+    "q": "‘I didn't approve the final version,’ said Nina.",
+    "key": "DENIED",
+    "frame": "Nina ___ the final version.",
+    "accept": [
+      "denied approving",
+      "denied having approved",
+      "denied that she'd approved",
+      "denied that she approved"
+    ],
+    "explain_ru": "Deny можно употребить с формой на -ing или с придаточным с that."
   }
 ]

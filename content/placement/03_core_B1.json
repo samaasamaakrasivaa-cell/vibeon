@@ -1,38 +1,113 @@
 [
   {
-    "id": "G-B1-01",
+    "id": "G-A2-12",
     "skill": "grammar",
     "level": "B1",
     "band": 1,
-    "topic_id": "g-b1-pp-for-since",
-    "topic_en": "Present perfect with for / since",
-    "topic_ru": "Present Perfect с for / since",
-    "type": "gap",
-    "q": "We've lived in this flat ___ 2021, and we still love it.",
-    "accept": [
-      "since"
+    "topic_id": "g-a2-as-as",
+    "topic_en": "(not) as ... as",
+    "topic_ru": "Сравнение (not) as ... as",
+    "type": "mcq",
+    "q": "My new job isn't ___ my old one, and the people are nicer.",
+    "options": [
+      "as stressful as",
+      "so stressful than",
+      "stressful as",
+      "as stressful than"
     ],
-    "explain_ru": "С моментом начала (год) в Present Perfect используется since.",
-    "hint_ru": "предлог времени"
+    "answer": 0,
+    "explain_ru": "Сравнение «не такой ... как» строится по схеме not as ... as."
   },
   {
-    "id": "G-B1-02",
+    "id": "G-A2-18",
     "skill": "grammar",
     "level": "B1",
-    "band": 2,
-    "topic_id": "g-b1-pp-for-since",
-    "topic_en": "Present perfect with for / since",
-    "topic_ru": "Present Perfect с for / since",
+    "band": 1,
+    "topic_id": "g-a2-might-may",
+    "topic_en": "might / may for possibility",
+    "topic_ru": "might / may: возможность",
     "type": "mcq",
-    "q": "I've known my best friend ___ we were at university together.",
+    "q": "Take your jacket. It ___ get cold later.",
     "options": [
-      "until",
-      "from",
-      "when",
-      "since"
+      "is",
+      "should to",
+      "won't",
+      "might"
     ],
     "answer": 3,
-    "explain_ru": "После since может стоять целое придаточное: since we were at university."
+    "explain_ru": "Возможность, но не уверенность, — might."
+  },
+  {
+    "id": "G-A2-55",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-a2-as-as",
+    "topic_en": "(not) as ... as",
+    "topic_ru": "Сравнение (not) as ... as",
+    "type": "mcq",
+    "q": "The new phone is ___ the old one. It's exactly the same size.",
+    "options": [
+      "as bigger as",
+      "so big than",
+      "as big as",
+      "bigger as"
+    ],
+    "answer": 2,
+    "explain_ru": "Одинаковые — as + прилагательное + as: as big as."
+  },
+  {
+    "id": "G-A2-58",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-a2-might-may",
+    "topic_en": "might / may for possibility",
+    "topic_ru": "might / may: возможность",
+    "type": "mcq",
+    "q": "I'm not sure, but I ___ go to the party. It depends on my work.",
+    "options": [
+      "must",
+      "might",
+      "should",
+      "have to"
+    ],
+    "answer": 1,
+    "explain_ru": "Не уверен, возможно — might."
+  },
+  {
+    "id": "G-A2-T06",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-a2-as-as",
+    "topic_en": "(not) as ... as",
+    "topic_ru": "Сравнение (not) as ... as",
+    "type": "gap",
+    "q": "My brother is ___ tall as my dad now.",
+    "accept": [
+      "as"
+    ],
+    "explain_ru": "Равенство — as + прилагательное + as.",
+    "hint_ru": "as / so / than"
+  },
+  {
+    "id": "G-A2-T13",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-a2-might-may",
+    "topic_en": "might / may for possibility",
+    "topic_ru": "might / may: возможность",
+    "type": "gap",
+    "q": "Take an umbrella. It ___ rain later.",
+    "accept": [
+      "might",
+      "may",
+      "could"
+    ],
+    "explain_ru": "Возможность (не уверены) — might / may.",
+    "hint_ru": "might / may"
   },
   {
     "id": "G-B1-03",
@@ -109,21 +184,6 @@
     ],
     "answer": 0,
     "explain_ru": "Привычка в прошлом, которой больше нет, — used to + глагол."
-  },
-  {
-    "id": "G-B1-07",
-    "skill": "grammar",
-    "level": "B1",
-    "band": 1,
-    "topic_id": "g-b1-zero-conditional",
-    "topic_en": "Zero conditional",
-    "topic_ru": "Условные предложения нулевого типа",
-    "type": "brackets",
-    "q": "If you ___ (give) plants too much water, they die.",
-    "accept": [
-      "give"
-    ],
-    "explain_ru": "Общая истина (нулевой тип) — Present Simple в обеих частях."
   },
   {
     "id": "G-B1-08",
@@ -934,21 +994,6 @@
     "explain_ru": "После would love нужен инфинитив с to; у can нет инфинитива — to be able to."
   },
   {
-    "id": "G-B1-36",
-    "skill": "grammar",
-    "level": "B1",
-    "band": 2,
-    "topic_id": "g-b1-zero-conditional",
-    "topic_en": "Zero conditional",
-    "topic_ru": "Условные предложения нулевого типа",
-    "type": "brackets",
-    "q": "If you ___ (mix) red and white, you get pink.",
-    "accept": [
-      "mix"
-    ],
-    "explain_ru": "Нулевой тип — общая истина: if + Present Simple, Present Simple."
-  },
-  {
     "id": "G-B1-37",
     "skill": "grammar",
     "level": "B1",
@@ -1453,25 +1498,6 @@
     "group": "b1-v5"
   },
   {
-    "id": "G-B1-52",
-    "skill": "grammar",
-    "level": "B1",
-    "band": 1,
-    "topic_id": "g-b1-pp-for-since",
-    "topic_en": "Present perfect with for / since",
-    "topic_ru": "Present Perfect с for / since",
-    "type": "mcq",
-    "q": "I've worked at this company ___ three years.",
-    "options": [
-      "since",
-      "during",
-      "from",
-      "for"
-    ],
-    "answer": 3,
-    "explain_ru": "Период времени (three years) — for; точка отсчёта — since."
-  },
-  {
     "id": "G-B1-53",
     "skill": "grammar",
     "level": "B1",
@@ -1710,25 +1736,6 @@
     ],
     "answer": 3,
     "explain_ru": "Нереальное условие сейчас (2 тип): if + Past Simple, would + глагол."
-  },
-  {
-    "id": "G-B1-66",
-    "skill": "grammar",
-    "level": "B1",
-    "band": 1,
-    "topic_id": "g-b1-zero-conditional",
-    "topic_en": "Zero conditional",
-    "topic_ru": "Условные предложения нулевого типа",
-    "type": "mcq",
-    "q": "If you ___ water to 100 degrees, it boils.",
-    "options": [
-      "heat",
-      "will heat",
-      "heated",
-      "would heat"
-    ],
-    "answer": 0,
-    "explain_ru": "Общая истина (0 тип) — Present Simple в обеих частях."
   },
   {
     "id": "G-B1-67",
@@ -2517,5 +2524,1426 @@
     ],
     "explain_ru": "Конкретная дверь, понятно какая, — the.",
     "hint_ru": "a / an / the"
+  },
+  {
+    "id": "G-B1-101",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-a2-as-as",
+    "topic_en": "(not) as ... as",
+    "topic_ru": "Сравнение (not) as ... as",
+    "type": "mcq",
+    "q": "My new commute isn't as ___ as my old one.",
+    "options": [
+      "long",
+      "longer",
+      "longest",
+      "length"
+    ],
+    "answer": 0,
+    "explain_ru": "Для сравнения по степени используется as + обычная форма прилагательного + as."
+  },
+  {
+    "id": "G-B1-102",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-a2-as-as",
+    "topic_en": "(not) as ... as",
+    "topic_ru": "Сравнение (not) as ... as",
+    "type": "mcq",
+    "q": "The refurbished laptop is just as ___ as the new model.",
+    "options": [
+      "the fastest",
+      "fast",
+      "faster",
+      "fastest"
+    ],
+    "answer": 1,
+    "explain_ru": "Для сравнения по степени используется as + обычная форма прилагательного + as."
+  },
+  {
+    "id": "G-B1-103",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-a2-as-as",
+    "topic_en": "(not) as ... as",
+    "topic_ru": "Сравнение (not) as ... as",
+    "type": "transform",
+    "q": "The 8 a.m. train is expensive. The 9 a.m. train is equally expensive.",
+    "key": "AS",
+    "frame": "The 8 a.m. train is ___ the 9 a.m. train.",
+    "accept": [
+      "as expensive as"
+    ],
+    "explain_ru": "Для сравнения по степени используется as + обычная форма прилагательного + as."
+  },
+  {
+    "id": "G-B1-104",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-a2-as-as",
+    "topic_en": "(not) as ... as",
+    "topic_ru": "Сравнение (not) as ... as",
+    "type": "gap",
+    "q": "This bag is just as heavy ___ the one we left at home.",
+    "accept": [
+      "as"
+    ],
+    "explain_ru": "Для сравнения по степени используется as + обычная форма прилагательного + as."
+  },
+  {
+    "id": "G-B1-105",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-a2-might-may",
+    "topic_en": "might / may for possibility",
+    "topic_ru": "might / may: возможность",
+    "type": "mcq",
+    "q": "The café might ___ early today. Let's call before we go.",
+    "options": [
+      "closing",
+      "to close",
+      "close",
+      "closes"
+    ],
+    "answer": 2,
+    "explain_ru": "May и might выражают возможность. После них нужна начальная форма глагола без to."
+  },
+  {
+    "id": "G-B1-106",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-a2-might-may",
+    "topic_en": "might / may for possibility",
+    "topic_ru": "might / may: возможность",
+    "type": "mcq",
+    "q": "Your parcel may ___ a day late because of the weather.",
+    "options": [
+      "arrives",
+      "arriving",
+      "to arrive",
+      "arrive"
+    ],
+    "answer": 3,
+    "explain_ru": "May и might выражают возможность. После них нужна начальная форма глагола без to."
+  },
+  {
+    "id": "G-B1-107",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-a2-might-may",
+    "topic_en": "might / may for possibility",
+    "topic_ru": "might / may: возможность",
+    "type": "transform",
+    "q": "It's possible that I'll need a lift after work.",
+    "key": "MIGHT",
+    "frame": "I ___ a lift after work.",
+    "accept": [
+      "might need"
+    ],
+    "explain_ru": "May и might выражают возможность. После них нужна начальная форма глагола без to."
+  },
+  {
+    "id": "G-B1-108",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-a2-might-may",
+    "topic_en": "might / may for possibility",
+    "topic_ru": "might / may: возможность",
+    "type": "transform",
+    "q": "It's possible that the shop is closed on Monday.",
+    "key": "MAY",
+    "frame": "The shop ___ on Monday.",
+    "accept": [
+      "may be closed"
+    ],
+    "explain_ru": "May и might выражают возможность. После них нужна начальная форма глагола без to."
+  },
+  {
+    "id": "G-B1-109",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-b1-modals-possibility",
+    "topic_en": "Degrees of possibility: might, may, will, probably, perhaps",
+    "topic_ru": "Степени вероятности: might, may, will, probably, perhaps",
+    "type": "mcq",
+    "q": "Maya hasn't replied yet. She'll ___ us when she gets home.",
+    "options": [
+      "call probably to",
+      "probably call",
+      "probably to call",
+      "call probably with"
+    ],
+    "answer": 1,
+    "explain_ru": "В этом предложении probably стоит после will и перед смысловым глаголом. После will используется инфинитив без to."
+  },
+  {
+    "id": "G-B1-110",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-b1-modals-possibility",
+    "topic_en": "Degrees of possibility: might, may, will, probably, perhaps",
+    "topic_ru": "Степени вероятности: might, may, will, probably, perhaps",
+    "type": "mcq",
+    "q": "I've checked my inbox and spam folder. Perhaps you ___ the file to the wrong address yesterday.",
+    "options": [
+      "will send",
+      "will have been sending",
+      "sent",
+      "send"
+    ],
+    "answer": 2,
+    "explain_ru": "Perhaps выражает предположение. Для возможного события в закончившемся прошлом, обозначенного yesterday, подходит Past Simple."
+  },
+  {
+    "id": "G-B1-111",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-b1-modals-possibility",
+    "topic_en": "Degrees of possibility: might, may, will, probably, perhaps",
+    "topic_ru": "Степени вероятности: might, may, will, probably, perhaps",
+    "type": "transform",
+    "q": "I'm fairly sure the repairs won't take more than a day.",
+    "key": "PROBABLY",
+    "frame": "The repairs ___ more than a day.",
+    "accept": [
+      "probably won't take",
+      "probably will not take",
+      "will probably not take"
+    ],
+    "explain_ru": "Probably в утвердительном предложении обычно стоит после will, а в отрицательном — перед won't. Perhaps может вводить всё предложение и не является глаголом."
+  },
+  {
+    "id": "G-B1-112",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-b1-modals-possibility",
+    "topic_en": "Degrees of possibility: might, may, will, probably, perhaps",
+    "topic_ru": "Степени вероятности: might, may, will, probably, perhaps",
+    "type": "transform",
+    "q": "Maybe the meeting starts at ten.",
+    "key": "PERHAPS",
+    "frame": "___ at ten.",
+    "accept": [
+      "perhaps the meeting starts",
+      "perhaps it starts"
+    ],
+    "explain_ru": "Probably в утвердительном предложении обычно стоит после will, а в отрицательном — перед won't. Perhaps может вводить всё предложение и не является глаголом."
+  },
+  {
+    "id": "G-B1-113",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-b1-must-have-to",
+    "topic_en": "must vs have to; ought to",
+    "topic_ru": "must vs have to; ought to",
+    "type": "mcq",
+    "q": "We didn't ___ pay for the replacement. It was under warranty.",
+    "options": [
+      "had to",
+      "must to",
+      "needed to",
+      "have to"
+    ],
+    "answer": 3,
+    "explain_ru": "После did / didn't используется have to. После ought в этой конструкции нужен инфинитив с to, а после must — без to."
+  },
+  {
+    "id": "G-B1-114",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-b1-must-have-to",
+    "topic_en": "must vs have to; ought to",
+    "topic_ru": "must vs have to; ought to",
+    "type": "mcq",
+    "q": "You ought ___ the venue before you order the invitations.",
+    "options": [
+      "to book",
+      "book",
+      "booking",
+      "to booking"
+    ],
+    "answer": 0,
+    "explain_ru": "После did / didn't используется have to. После ought в этой конструкции нужен инфинитив с to, а после must — без to."
+  },
+  {
+    "id": "G-B1-115",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-b1-must-have-to",
+    "topic_en": "must vs have to; ought to",
+    "topic_ru": "must vs have to; ought to",
+    "type": "brackets",
+    "q": "The lift was out of order yesterday, so we ___ (have to / take) the stairs.",
+    "accept": [
+      "had to take"
+    ],
+    "explain_ru": "После did / didn't используется have to. После ought в этой конструкции нужен инфинитив с to, а после must — без to."
+  },
+  {
+    "id": "G-B1-116",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-b1-must-have-to",
+    "topic_en": "must vs have to; ought to",
+    "topic_ru": "must vs have to; ought to",
+    "type": "transform",
+    "q": "It's a good idea to back up these files.",
+    "key": "OUGHT",
+    "frame": "You ___ these files.",
+    "accept": [
+      "ought to back up"
+    ],
+    "explain_ru": "После did / didn't используется have to. После ought в этой конструкции нужен инфинитив с to, а после must — без to."
+  },
+  {
+    "id": "G-B1-117",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-b1-time-clauses",
+    "topic_en": "Future time and condition clauses: when / as soon as / until / unless + present",
+    "topic_ru": "Придаточные времени и условия: when / as soon as / until / unless + present",
+    "type": "mcq",
+    "q": "I'll send you the link as soon as the recording ___ available online.",
+    "options": [
+      "will be",
+      "was",
+      "is",
+      "would be"
+    ],
+    "answer": 2,
+    "explain_ru": "Речь о будущем, но в придаточном времени после as soon as здесь используется Present Simple."
+  },
+  {
+    "id": "G-B1-118",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-b1-time-clauses",
+    "topic_en": "Future time and condition clauses: when / as soon as / until / unless + present",
+    "topic_ru": "Придаточные времени и условия: when / as soon as / until / unless + present",
+    "type": "mcq",
+    "q": "I'll keep the files private until the client ___ the design at tomorrow's meeting.",
+    "options": [
+      "will approve",
+      "approved",
+      "would approve",
+      "approves"
+    ],
+    "answer": 3,
+    "explain_ru": "Встреча ещё впереди. После until употребляется форма настоящего: approves. Если важно, что согласование уже завершилось к этому моменту, также подходит has approved."
+  },
+  {
+    "id": "G-B1-119",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-b1-time-clauses",
+    "topic_en": "Future time and condition clauses: when / as soon as / until / unless + present",
+    "topic_ru": "Придаточные времени и условия: when / as soon as / until / unless + present",
+    "type": "brackets",
+    "q": "I'll put the kettle on when Jo ___ (get) home.",
+    "accept": [
+      "gets",
+      "has got",
+      "has gotten"
+    ],
+    "explain_ru": "После when здесь подходит Present Simple. Present Perfect тоже возможен, если подчеркнуть, что Джо уже добрался домой."
+  },
+  {
+    "id": "G-B1-120",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-b1-time-clauses",
+    "topic_en": "Future time and condition clauses: when / as soon as / until / unless + present",
+    "topic_ru": "Придаточные времени и условия: when / as soon as / until / unless + present",
+    "type": "brackets",
+    "q": "We can eat outside unless it ___ (start) to rain.",
+    "accept": [
+      "starts"
+    ],
+    "explain_ru": "В придаточном времени или условия после when, until, as soon as и unless будущее обычно выражается формой настоящего."
+  },
+  {
+    "id": "G-B1-121",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-b1-reflexives",
+    "topic_en": "Reflexive and emphatic pronouns: myself",
+    "topic_ru": "Возвратные и усилительные местоимения: myself",
+    "type": "mcq",
+    "q": "I cut ___ while slicing an onion.",
+    "options": [
+      "myself",
+      "yourself",
+      "himself",
+      "themselves"
+    ],
+    "answer": 0,
+    "explain_ru": "Возвратное местоимение соотносится с подлежащим. Для усиления оно тоже должно совпадать с ним по лицу и числу."
+  },
+  {
+    "id": "G-B1-122",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-b1-reflexives",
+    "topic_en": "Reflexive and emphatic pronouns: myself",
+    "topic_ru": "Возвратные и усилительные местоимения: myself",
+    "type": "mcq",
+    "q": "The two children made the costumes ___. Their parents didn't help.",
+    "options": [
+      "itself",
+      "themselves",
+      "herself",
+      "himself"
+    ],
+    "answer": 1,
+    "explain_ru": "Возвратное местоимение соотносится с подлежащим. Для усиления оно тоже должно совпадать с ним по лицу и числу."
+  },
+  {
+    "id": "G-B1-123",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-b1-reflexives",
+    "topic_en": "Reflexive and emphatic pronouns: myself",
+    "topic_ru": "Возвратные и усилительные местоимения: myself",
+    "type": "gap",
+    "q": "Our neighbours painted the whole flat by ___, without hiring anyone.",
+    "accept": [
+      "themselves"
+    ],
+    "explain_ru": "Возвратное местоимение соотносится с подлежащим. Для усиления оно тоже должно совпадать с ним по лицу и числу."
+  },
+  {
+    "id": "G-B1-124",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-b1-reflexives",
+    "topic_en": "Reflexive and emphatic pronouns: myself",
+    "topic_ru": "Возвратные и усилительные местоимения: myself",
+    "type": "transform",
+    "q": "Eva, what happened wasn't your fault.",
+    "key": "YOURSELF",
+    "frame": "Eva, don't ___ for what happened.",
+    "accept": [
+      "blame yourself",
+      "hold yourself responsible"
+    ],
+    "explain_ru": "Возвратное местоимение соотносится с подлежащим. Для усиления оно тоже должно совпадать с ним по лицу и числу."
+  },
+  {
+    "id": "G-B1-125",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-b1-so-nor",
+    "topic_en": "so / neither / nor with auxiliaries (So do I)",
+    "topic_ru": "so / neither / nor с вспомогательными (So do I)",
+    "type": "mcq",
+    "q": "‘I've already signed up.’ ‘So ___ I.’",
+    "options": [
+      "has",
+      "do",
+      "am",
+      "have"
+    ],
+    "answer": 3,
+    "explain_ru": "После so или neither вспомогательный глагол стоит перед подлежащим и соответствует исходной реплике."
+  },
+  {
+    "id": "G-B1-126",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-b1-so-nor",
+    "topic_en": "so / neither / nor with auxiliaries (So do I)",
+    "topic_ru": "so / neither / nor с вспомогательными (So do I)",
+    "type": "mcq",
+    "q": "‘I can't see the screen.’ ‘Neither ___ I.’",
+    "options": [
+      "can",
+      "couldn't",
+      "do",
+      "am"
+    ],
+    "answer": 0,
+    "explain_ru": "После so или neither вспомогательный глагол стоит перед подлежащим и соответствует исходной реплике."
+  },
+  {
+    "id": "G-B1-127",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-b1-so-nor",
+    "topic_en": "so / neither / nor with auxiliaries (So do I)",
+    "topic_ru": "so / neither / nor с вспомогательными (So do I)",
+    "type": "gap",
+    "q": "‘I work from home on Fridays.’ ‘So ___ I.’",
+    "accept": [
+      "do"
+    ],
+    "explain_ru": "После so или neither вспомогательный глагол стоит перед подлежащим и соответствует исходной реплике."
+  },
+  {
+    "id": "G-B1-128",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-b1-so-nor",
+    "topic_en": "so / neither / nor with auxiliaries (So do I)",
+    "topic_ru": "so / neither / nor с вспомогательными (So do I)",
+    "type": "gap",
+    "q": "‘I didn't get a confirmation email.’ ‘Neither ___ I.’",
+    "accept": [
+      "did"
+    ],
+    "explain_ru": "После so или neither вспомогательный глагол стоит перед подлежащим и соответствует исходной реплике."
+  },
+  {
+    "id": "G-B1-129",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-b1-past-tense-responses",
+    "topic_en": "Short answers and past tense responses",
+    "topic_ru": "Краткие ответы и реплики в прошедшем времени",
+    "type": "mcq",
+    "q": "‘Did you save my number?’ ‘Yes, I ___.’",
+    "options": [
+      "was",
+      "did",
+      "do",
+      "does"
+    ],
+    "answer": 1,
+    "explain_ru": "В кратком ответе повторяется вспомогательный глагол вопроса. После did основному глаголу нужна начальная форма, если он произносится."
+  },
+  {
+    "id": "G-B1-130",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-b1-past-tense-responses",
+    "topic_en": "Short answers and past tense responses",
+    "topic_ru": "Краткие ответы и реплики в прошедшем времени",
+    "type": "mcq",
+    "q": "‘Were you at the office this morning?’ ‘No, I ___.’",
+    "options": [
+      "didn't",
+      "haven't",
+      "wasn't",
+      "weren't"
+    ],
+    "answer": 2,
+    "explain_ru": "В кратком ответе повторяется вспомогательный глагол вопроса. После did основному глаголу нужна начальная форма, если он произносится."
+  },
+  {
+    "id": "G-B1-131",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-b1-past-tense-responses",
+    "topic_en": "Short answers and past tense responses",
+    "topic_ru": "Краткие ответы и реплики в прошедшем времени",
+    "type": "gap",
+    "q": "‘Did Leo pick up the keys?’ ‘Yes, he ___.’",
+    "accept": [
+      "did"
+    ],
+    "explain_ru": "В кратком ответе повторяется вспомогательный глагол вопроса. После did основному глаголу нужна начальная форма, если он произносится."
+  },
+  {
+    "id": "G-B1-132",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-b1-past-tense-responses",
+    "topic_en": "Short answers and past tense responses",
+    "topic_ru": "Краткие ответы и реплики в прошедшем времени",
+    "type": "gap",
+    "q": "‘Was the café open at eight?’ ‘Yes, it ___.’",
+    "accept": [
+      "was"
+    ],
+    "explain_ru": "В кратком ответе повторяется вспомогательный глагол вопроса. После did основному глаголу нужна начальная форма, если он произносится."
+  },
+  {
+    "id": "G-B1-133",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-b1-pp-vs-past",
+    "topic_en": "Present perfect vs past simple",
+    "topic_ru": "Present Perfect или Past Simple",
+    "type": "brackets",
+    "q": "We ___ (send) the final version at 4 p.m. yesterday.",
+    "accept": [
+      "sent"
+    ],
+    "explain_ru": "Для завершённого действия с указанием конкретного времени используется Past Simple."
+  },
+  {
+    "id": "G-B1-134",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "g-b1p-third-conditional",
+    "topic_en": "Third conditional",
+    "topic_ru": "Третье условное",
+    "type": "mcq",
+    "q": "The hotel sold out last night while we were on the train. If we'd seen the message in time, we ___ a room before we arrived.",
+    "options": [
+      "booked",
+      "would have booked",
+      "will already have booked",
+      "would be booking"
+    ],
+    "answer": 1,
+    "explain_ru": "Номер не забронировали. Предложение описывает, что произошло бы в прошлом при другом условии. После if + Past Perfect здесь используется would have + причастие."
+  },
+  {
+    "id": "G-B1-135",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "g-b1p-third-conditional",
+    "topic_en": "Third conditional",
+    "topic_ru": "Третье условное",
+    "type": "mcq",
+    "q": "She missed the deadline because she got the dates mixed up. If she ___ the dates first, she wouldn't have missed it.",
+    "options": [
+      "would have checked",
+      "had checked",
+      "will have checked",
+      "checks"
+    ],
+    "answer": 1,
+    "explain_ru": "Она не проверила даты до истечения срока. В нереальном условии о прошлом после if используется Past Perfect."
+  },
+  {
+    "id": "G-B1-136",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "g-b1p-third-conditional",
+    "topic_en": "Third conditional",
+    "topic_ru": "Третье условное",
+    "type": "brackets",
+    "q": "If we'd caught the earlier train, we ___ (arrive) in time for the talk.",
+    "accept": [
+      "would have arrived",
+      "could have arrived",
+      "might have arrived",
+      "would've arrived",
+      "could've arrived",
+      "might've arrived",
+      "'d have arrived"
+    ],
+    "explain_ru": "В третьем условном if + had + причастие описывает нереальное условие в прошлом. В результате используется would have + причастие."
+  },
+  {
+    "id": "G-B1-137",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "g-b1p-third-conditional",
+    "topic_en": "Third conditional",
+    "topic_ru": "Третье условное",
+    "type": "brackets",
+    "q": "My phone was dead, so I couldn't show my ticket. If I ___ (charge) my phone before leaving home, I could have shown my ticket.",
+    "accept": [
+      "had charged",
+      "'d charged"
+    ],
+    "explain_ru": "Телефон не зарядили до выхода из дома. Чтобы описать невыполненное условие в прошлом, после if используется Past Perfect: had + причастие."
+  },
+  {
+    "id": "G-B1-138",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "g-b1p-past-modals",
+    "topic_en": "should have / might have / could have (past modals)",
+    "topic_ru": "should have / might have / could have (модальные о прошлом)",
+    "type": "mcq",
+    "q": "I didn't look at the timetable and missed the last train. I ___ it before I left. That was my mistake.",
+    "options": [
+      "should still check",
+      "will have checked",
+      "should have checked",
+      "checked"
+    ],
+    "answer": 2,
+    "explain_ru": "Речь о том, что стоило сделать до выхода из дома. Для такого сожаления употребляется should have + причастие."
+  },
+  {
+    "id": "G-B1-139",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "g-b1p-past-modals",
+    "topic_en": "should have / might have / could have (past modals)",
+    "topic_ru": "should have / might have / could have (модальные о прошлом)",
+    "type": "mcq",
+    "q": "I never saw the receipt from yesterday. It ___ to my spam folder when the shop sent it. I'll check there first.",
+    "options": [
+      "will be going",
+      "goes",
+      "might still go",
+      "might have gone"
+    ],
+    "answer": 3,
+    "explain_ru": "Письмо уже отправили. Для предположения о прошлом используется might, may или could + have + причастие."
+  },
+  {
+    "id": "G-B1-140",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "g-b1p-past-modals",
+    "topic_en": "should have / might have / could have (past modals)",
+    "topic_ru": "should have / might have / could have (модальные о прошлом)",
+    "type": "brackets",
+    "q": "I regret not checking the train times yesterday. I ___ (check) them before we left.",
+    "accept": [
+      "should have checked",
+      "ought to have checked",
+      "should really have checked",
+      "really should have checked"
+    ],
+    "explain_ru": "О действии, которое стоило выполнить в прошлом, можно сказать should have checked или ought to have checked."
+  },
+  {
+    "id": "G-B1-141",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "g-b1p-past-modals",
+    "topic_en": "should have / might have / could have (past modals)",
+    "topic_ru": "should have / might have / could have (модальные о прошлом)",
+    "type": "brackets",
+    "q": "The app says the parcel was delivered an hour ago, but I can't find it. The courier ___ (leave) it next door, but I'm not sure.",
+    "accept": [
+      "might have left",
+      "may have left",
+      "could have left",
+      "might possibly have left"
+    ],
+    "explain_ru": "Для предположения о том, что курьер мог сделать час назад, подходит might, may или could + have + причастие."
+  },
+  {
+    "id": "G-B1-142",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "g-b1p-future-continuous",
+    "topic_en": "Future continuous",
+    "topic_ru": "Future Continuous",
+    "type": "mcq",
+    "q": "This time tomorrow our flight will be halfway to Rome. We ___ over the Alps.",
+    "options": [
+      "had already flown",
+      "will be flying",
+      "flew",
+      "have just flown"
+    ],
+    "answer": 1,
+    "explain_ru": "Речь о перелёте, который будет в процессе в указанное время завтра. Для этого подходит Future Continuous."
+  },
+  {
+    "id": "G-B1-143",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "g-b1p-future-continuous",
+    "topic_en": "Future continuous",
+    "topic_ru": "Future Continuous",
+    "type": "mcq",
+    "q": "At three tomorrow I'll be halfway through a job interview. I ___ a candidate, so I won't be able to take your call.",
+    "options": [
+      "interviewed",
+      "have already interviewed",
+      "will be interviewing",
+      "had been interviewing"
+    ],
+    "answer": 2,
+    "explain_ru": "В три часа интервью уже будет идти. Future Continuous показывает действие в процессе в этот момент."
+  },
+  {
+    "id": "G-B1-144",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "g-b1p-future-continuous",
+    "topic_en": "Future continuous",
+    "topic_ru": "Future Continuous",
+    "type": "brackets",
+    "q": "At noon tomorrow, we ___ (still / drive) to the coast. We'll get there at about two.",
+    "accept": [
+      "will still be driving",
+      "'ll still be driving",
+      "will be still driving",
+      "are still driving"
+    ],
+    "explain_ru": "Future Continuous — will be + форма на -ing. Он описывает действие в процессе в определённый момент в будущем."
+  },
+  {
+    "id": "G-B1-145",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "g-b1p-future-continuous",
+    "topic_en": "Future continuous",
+    "topic_ru": "Future Continuous",
+    "type": "brackets",
+    "q": "Maya's shift runs from six to ten tomorrow evening. At eight, she ___ (work), so don't call her then.",
+    "accept": [
+      "will be working",
+      "will still be working",
+      "'ll be working",
+      "'ll still be working",
+      "is working",
+      "'s working",
+      "is still working"
+    ],
+    "explain_ru": "В восемь смена будет в самом разгаре. Здесь подходят Future Continuous и Present Continuous для запланированного действия."
+  },
+  {
+    "id": "G-B1-146",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "g-b1p-causative",
+    "topic_en": "Causative have / get something done",
+    "topic_ru": "Каузатив have / get something done",
+    "type": "mcq",
+    "q": "I had my phone ___ at the shop yesterday.",
+    "options": [
+      "repair",
+      "repairing",
+      "repairs",
+      "repaired"
+    ],
+    "answer": 3,
+    "explain_ru": "Have или get + предмет + причастие означает, что работу выполняет другой человек."
+  },
+  {
+    "id": "G-B1-147",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "g-b1p-causative",
+    "topic_en": "Causative have / get something done",
+    "topic_ru": "Каузатив have / get something done",
+    "type": "mcq",
+    "q": "I'm getting my eyes ___ on Friday.",
+    "options": [
+      "tested",
+      "test",
+      "tests",
+      "testing"
+    ],
+    "answer": 0,
+    "explain_ru": "Have или get + предмет + причастие означает, что работу выполняет другой человек."
+  },
+  {
+    "id": "G-B1-148",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "g-b1p-causative",
+    "topic_en": "Causative have / get something done",
+    "topic_ru": "Каузатив have / get something done",
+    "type": "brackets",
+    "q": "Yesterday Mei took her coat to a tailor and ___ (have / the sleeves / shorten).",
+    "accept": [
+      "had the sleeves shortened"
+    ],
+    "explain_ru": "Have или get + предмет + причастие означает, что работу выполняет другой человек."
+  },
+  {
+    "id": "G-B1-149",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "g-b1p-causative",
+    "topic_en": "Causative have / get something done",
+    "topic_ru": "Каузатив have / get something done",
+    "type": "transform",
+    "q": "A technician is going to replace my laptop screen.",
+    "key": "HAVING",
+    "frame": "I'm ___ by a technician.",
+    "accept": [
+      "having my laptop screen replaced",
+      "having my screen replaced"
+    ],
+    "explain_ru": "Have или get + предмет + причастие означает, что работу выполняет другой человек."
+  },
+  {
+    "id": "G-B1-150",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "g-b1p-was-going-to",
+    "topic_en": "was / were going to (plans that changed)",
+    "topic_ru": "was / were going to (несостоявшиеся планы)",
+    "type": "mcq",
+    "q": "We ___ outside, but it started to snow before dinner, so we ate indoors instead.",
+    "options": [
+      "ate",
+      "will be eating",
+      "were going to eat",
+      "are still going to eat"
+    ],
+    "answer": 2,
+    "explain_ru": "План поужинать на улице был в прошлом и сорвался. Для этого подходит were going to + инфинитив."
+  },
+  {
+    "id": "G-B1-151",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "g-b1p-was-going-to",
+    "topic_en": "was / were going to (plans that changed)",
+    "topic_ru": "was / were going to (несостоявшиеся планы)",
+    "type": "mcq",
+    "q": "I ___ to work that morning, but my bike had a flat tyre, so I took the bus instead.",
+    "options": [
+      "am going to cycle",
+      "cycled",
+      "will have cycled",
+      "was going to cycle"
+    ],
+    "answer": 3,
+    "explain_ru": "Поездка на велосипеде осталась планом, потому что спустило колесо. Was going to описывает такой план в прошлом."
+  },
+  {
+    "id": "G-B1-152",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "g-b1p-was-going-to",
+    "topic_en": "was / were going to (plans that changed)",
+    "topic_ru": "was / were going to (несостоявшиеся планы)",
+    "type": "brackets",
+    "q": "They ___ (take) the bus, but in the end a friend gave them a lift.",
+    "accept": [
+      "were going to take",
+      "were planning to take",
+      "had planned to take",
+      "meant to take",
+      "intended to take",
+      "wanted to take",
+      "were about to take"
+    ],
+    "explain_ru": "Прошлый план можно передать через were going to, were planning to или had planned to с подходящей формой смыслового глагола."
+  },
+  {
+    "id": "G-B1-153",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "g-b1p-was-going-to",
+    "topic_en": "was / were going to (plans that changed)",
+    "topic_ru": "was / were going to (несостоявшиеся планы)",
+    "type": "brackets",
+    "q": "I ___ (call) you last night, but I fell asleep before I could do it.",
+    "accept": [
+      "was going to call",
+      "had planned to call",
+      "was planning to call",
+      "meant to call",
+      "intended to call",
+      "wanted to call",
+      "was about to call"
+    ],
+    "explain_ru": "Звонок был в планах, но не состоялся. Was going to call и близкие по смыслу выражения передают это намерение."
+  },
+  {
+    "id": "G-B1-154",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "g-b1p-reported-range",
+    "topic_en": "Reported speech: range of tenses, backshift",
+    "topic_ru": "Косвенная речь: согласование времён",
+    "type": "mcq",
+    "q": "On Friday, Leo promised he ___ the keys the following morning. It's Monday now, and he still hasn't brought them.",
+    "options": [
+      "would bring",
+      "brings",
+      "will be bringing",
+      "had already brought"
+    ],
+    "answer": 0,
+    "explain_ru": "Субботнее утро было будущим для пятничного обещания. В пересказе will обычно меняется на would."
+  },
+  {
+    "id": "G-B1-155",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "g-b1p-reported-range",
+    "topic_en": "Reported speech: range of tenses, backshift",
+    "topic_ru": "Косвенная речь: согласование времён",
+    "type": "mcq",
+    "q": "Liv paid the bill on Friday. When we called on Sunday, she told us she ___ it two days earlier.",
+    "options": [
+      "will have paid",
+      "had already paid",
+      "would still have to pay",
+      "pays"
+    ],
+    "answer": 1,
+    "explain_ru": "Оплата произошла раньше воскресного звонка. Past Perfect выражает это предшествование, а явное two days earlier позволяет также сказать paid."
+  },
+  {
+    "id": "G-B1-156",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "g-b1p-reported-range",
+    "topic_en": "Reported speech: range of tenses, backshift",
+    "topic_ru": "Косвенная речь: согласование времён",
+    "type": "transform",
+    "q": "Ben said, ‘I'll send the invoice tomorrow.’",
+    "key": "SEND",
+    "frame": "Ben said he ___ the invoice the following day.",
+    "accept": [
+      "would send",
+      "was going to send"
+    ],
+    "explain_ru": "Когда речь передаётся из более поздней точки, will обычно становится would, а предшествующее действие можно передать через had + причастие."
+  },
+  {
+    "id": "G-B1-157",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "g-b1p-reported-range",
+    "topic_en": "Reported speech: range of tenses, backshift",
+    "topic_ru": "Косвенная речь: согласование времён",
+    "type": "brackets",
+    "q": "Noor told me on Monday that she ___ (already / send) the link the previous Friday.",
+    "accept": [
+      "had already sent",
+      "already sent",
+      "'d already sent"
+    ],
+    "explain_ru": "Отправка произошла до разговора. Had already sent подчёркивает порядок событий. С явным the previous Friday допустимо и already sent."
+  },
+  {
+    "id": "G-B1-158",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "g-b1p-zero-article",
+    "topic_en": "Articles: zero article with plural and uncountable nouns in general statements",
+    "topic_ru": "Артикли: нулевой артикль в общих утверждениях",
+    "type": "mcq",
+    "q": "Good ___ is more useful than a list of rules.",
+    "options": [
+      "advices",
+      "an advice",
+      "the advices",
+      "advice"
+    ],
+    "answer": 3,
+    "explain_ru": "С множественным числом и неисчисляемыми существительными в обобщениях артикль обычно не нужен."
+  },
+  {
+    "id": "G-B1-159",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "g-b1p-zero-article",
+    "topic_en": "Articles: zero article with plural and uncountable nouns in general statements",
+    "topic_ru": "Артикли: нулевой артикль в общих утверждениях",
+    "type": "mcq",
+    "q": "___ need light and water to grow.",
+    "options": [
+      "Plants",
+      "Plant",
+      "A plants",
+      "An plants"
+    ],
+    "answer": 0,
+    "explain_ru": "С множественным числом и неисчисляемыми существительными в обобщениях артикль обычно не нужен."
+  },
+  {
+    "id": "G-B1-160",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "g-b1p-zero-article",
+    "topic_en": "Articles: zero article with plural and uncountable nouns in general statements",
+    "topic_ru": "Артикли: нулевой артикль в общих утверждениях",
+    "type": "transform",
+    "q": "Physical activity in general helps you stay healthy.",
+    "key": "EXERCISE",
+    "frame": "___ you stay healthy.",
+    "accept": [
+      "exercise helps"
+    ],
+    "explain_ru": "С множественным числом и неисчисляемыми существительными в обобщениях артикль обычно не нужен."
+  },
+  {
+    "id": "G-B1-161",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 2,
+    "topic_id": "g-b1p-zero-article",
+    "topic_en": "Articles: zero article with plural and uncountable nouns in general statements",
+    "topic_ru": "Артикли: нулевой артикль в общих утверждениях",
+    "type": "transform",
+    "q": "All dogs need daily exercise.",
+    "key": "DOGS",
+    "frame": "___ exercise every day.",
+    "accept": [
+      "dogs need",
+      "all dogs need"
+    ],
+    "explain_ru": "С множественным числом и неисчисляемыми существительными в обобщениях артикль обычно не нужен."
+  },
+  {
+    "id": "G-B1-162",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-b1-second-conditional",
+    "topic_en": "Second conditional",
+    "topic_ru": "Условные предложения второго типа",
+    "type": "mcq",
+    "q": "My kitchen is tiny. If I had more counter space, I ___ at home more often.",
+    "options": [
+      "would cook",
+      "cooked",
+      "would have cooked",
+      "will be cooking"
+    ],
+    "answer": 0,
+    "explain_ru": "Речь о нынешней кухне и воображаемом изменении привычки. Во втором условном здесь используется would + инфинитив."
+  },
+  {
+    "id": "G-B1-163",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-b1-second-conditional",
+    "topic_en": "Second conditional",
+    "topic_ru": "Условные предложения второго типа",
+    "type": "mcq",
+    "q": "I don't know the door code. If I ___ it, I'd let us in.",
+    "options": [
+      "would know",
+      "had known",
+      "knew",
+      "know"
+    ],
+    "answer": 2,
+    "explain_ru": "Условие относится к настоящему. После if во втором условном используется Past Simple."
+  },
+  {
+    "id": "G-B1-164",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-b1-passive-basic",
+    "topic_en": "Passive: present and past simple",
+    "topic_ru": "Пассивный залог: Present и Past Simple",
+    "type": "mcq",
+    "q": "The invoices must be ___ to the finance team by Friday.",
+    "options": [
+      "sent",
+      "send",
+      "sending",
+      "sends"
+    ],
+    "answer": 0,
+    "explain_ru": "В пассиве после формы be или после модального глагола с be требуется причастие прошедшего времени."
+  },
+  {
+    "id": "G-B1-165",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-b1-passive-basic",
+    "topic_en": "Passive: present and past simple",
+    "topic_ru": "Пассивный залог: Present и Past Simple",
+    "type": "mcq",
+    "q": "All the tables were ___ before we arrived.",
+    "options": [
+      "reserves",
+      "reserved",
+      "reserve",
+      "reserving"
+    ],
+    "answer": 1,
+    "explain_ru": "В пассиве после формы be или после модального глагола с be требуется причастие прошедшего времени."
+  },
+  {
+    "id": "G-B1-166",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-b1-past-perfect",
+    "topic_en": "Past perfect",
+    "topic_ru": "Past Perfect",
+    "type": "transform",
+    "q": "The parcel arrived before I got home.",
+    "key": "ARRIVED",
+    "frame": "By the time I got home, the parcel ___.",
+    "accept": [
+      "had arrived",
+      "had already arrived",
+      "had arrived already"
+    ],
+    "explain_ru": "Past Perfect показывает, что посылка пришла раньше другого события в прошлом."
+  },
+  {
+    "id": "G-B1-167",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-b1-used-to",
+    "topic_en": "used to for past habits",
+    "topic_ru": "used to: привычки в прошлом",
+    "type": "transform",
+    "q": "I regularly borrowed DVDs from the library when I was a teenager, but I don't any more.",
+    "key": "USED",
+    "frame": "I ___ DVDs from the library when I was a teenager.",
+    "accept": [
+      "used to borrow"
+    ],
+    "explain_ru": "Used to описывает регулярное действие в прошлом, которое больше не происходит."
+  },
+  {
+    "id": "G-B1-168",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-b1-second-conditional",
+    "topic_en": "Second conditional",
+    "topic_ru": "Условные предложения второго типа",
+    "type": "brackets",
+    "q": "I don't have a bike. If I had one, I ___ (cycle) to work every day, but for now I take the bus.",
+    "accept": [
+      "would cycle",
+      "could cycle",
+      "might cycle",
+      "'d cycle"
+    ],
+    "explain_ru": "При нереальном условии в настоящем можно использовать would, could или might с инфинитивом в зависимости от степени уверенности."
+  },
+  {
+    "id": "G-B1-169",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-b1-defining-relatives",
+    "topic_en": "Defining relative clauses",
+    "topic_ru": "Определительные придаточные (who / which / that)",
+    "type": "transform",
+    "q": "This is Sam. He designs our newsletters.",
+    "key": "WHO",
+    "frame": "This is Sam, the person ___ our newsletters.",
+    "accept": [
+      "who designs"
+    ],
+    "explain_ru": "Who вводит определительное придаточное о человеке."
+  },
+  {
+    "id": "G-B1-170",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-b1-reported-statements",
+    "topic_en": "Reported speech: statements",
+    "topic_ru": "Косвенная речь: утверждения",
+    "type": "transform",
+    "q": "‘Please leave the boxes by the front door,’ Nora said to me.",
+    "key": "ASKED",
+    "frame": "Nora ___ the boxes by the front door.",
+    "accept": [
+      "asked me to leave"
+    ],
+    "explain_ru": "Просьбу можно передать через asked + кого попросили + инфинитив с to."
+  },
+  {
+    "id": "G-B1-171",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-b1-reported-questions",
+    "topic_en": "Reported speech: questions",
+    "topic_ru": "Косвенная речь: вопросы",
+    "type": "transform",
+    "q": "‘Are you free that evening?’ Max asked me later.",
+    "key": "WHETHER",
+    "frame": "Max ___ free that evening.",
+    "accept": [
+      "asked whether i was",
+      "asked me whether i was"
+    ],
+    "explain_ru": "В косвенном общем вопросе используется whether, а подлежащее стоит перед глаголом."
+  },
+  {
+    "id": "G-B1-172",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-b1-indirect-questions",
+    "topic_en": "Indirect questions",
+    "topic_ru": "Косвенные вопросы (Could you tell me...)",
+    "type": "transform",
+    "q": "What time does the café close?",
+    "key": "TELL",
+    "frame": "Could you ___ time the café closes?",
+    "accept": [
+      "tell me what",
+      "tell me the exact"
+    ],
+    "explain_ru": "В косвенном вопросе используется прямой порядок слов."
+  },
+  {
+    "id": "G-B1-173",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-b1-deduction-present",
+    "topic_en": "Modals of deduction: must / might / can't (present)",
+    "topic_ru": "Модальные глаголы предположения в настоящем",
+    "type": "transform",
+    "q": "I'm sure Alex is at home. His bike is outside and I can hear him talking inside.",
+    "key": "MUST",
+    "frame": "Alex ___ home.",
+    "accept": [
+      "must be at",
+      "must be"
+    ],
+    "explain_ru": "Must + инфинитив выражает уверенную догадку по признакам."
+  },
+  {
+    "id": "G-B1-174",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-b1-be-able-to",
+    "topic_en": "be able to / manage to",
+    "topic_ru": "be able to / manage to",
+    "type": "transform",
+    "q": "After three calls, I succeeded in getting a refund.",
+    "key": "MANAGED",
+    "frame": "I ___ a refund after three calls.",
+    "accept": [
+      "managed to get"
+    ],
+    "explain_ru": "Managed to обозначает, что действие удалось выполнить."
+  },
+  {
+    "id": "G-B1-175",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-b1-verb-patterns",
+    "topic_en": "Verb patterns: -ing vs to-infinitive",
+    "topic_ru": "Глагол + -ing или инфинитив",
+    "type": "brackets",
+    "q": "My manager let me ___ (leave) early to pick up my son.",
+    "accept": [
+      "leave"
+    ],
+    "explain_ru": "После let + дополнение нужен инфинитив без to."
+  },
+  {
+    "id": "G-B1-176",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-b1-quantifiers-both",
+    "topic_en": "both / either / neither / each / every",
+    "topic_ru": "both / either / neither / each / every",
+    "type": "transform",
+    "q": "The first room isn't free and the second room isn't free.",
+    "key": "NEITHER",
+    "frame": "___ free.",
+    "accept": [
+      "neither room is",
+      "neither is"
+    ],
+    "explain_ru": "Neither охватывает два варианта с отрицательным смыслом."
+  },
+  {
+    "id": "G-B1-177",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-b1-future-forms",
+    "topic_en": "Future forms: will / going to / present continuous",
+    "topic_ru": "Способы выражения будущего",
+    "type": "transform",
+    "q": "The last bus is scheduled to leave at eleven tonight.",
+    "key": "LEAVES",
+    "frame": "The last bus ___ tonight.",
+    "accept": [
+      "leaves at eleven",
+      "leaves at 11"
+    ],
+    "explain_ru": "Для расписания используется Present Simple."
+  },
+  {
+    "id": "G-B1-178",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-b1-articles-general",
+    "topic_en": "Articles: general vs specific meaning",
+    "topic_ru": "Артикли: общее и конкретное значение",
+    "type": "gap",
+    "q": "I like tea, but I didn't like ___ tea you made yesterday.",
+    "accept": [
+      "the"
+    ],
+    "explain_ru": "Здесь речь о конкретном чае, который приготовили вчера, поэтому нужен the."
+  },
+  {
+    "id": "G-B1-179",
+    "skill": "grammar",
+    "level": "B1",
+    "band": 1,
+    "topic_id": "g-b1-pp-vs-past",
+    "topic_en": "Present perfect vs past simple",
+    "topic_ru": "Present Perfect или Past Simple",
+    "type": "transform",
+    "q": "This is my first time flying on my own.",
+    "key": "NEVER",
+    "frame": "I ___ on my own before.",
+    "accept": [
+      "have never flown",
+      "'ve never flown"
+    ],
+    "explain_ru": "Речь об опыте до настоящего момента, поэтому используется Present Perfect."
   }
 ]

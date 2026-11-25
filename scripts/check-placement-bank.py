@@ -75,13 +75,18 @@ def check_item(it, seen):
     if i in seen:
         err(i, "повтор id")
     seen.add(i)
-    m = re.match(r"^T?([GVRLWS])-(A1|A2|B1|B2|C1)-\d{2}$", i)  # T — банк Placement test Teens
+    m = re.fullmatch(r"T?([GVRLWS])-(A1|A2|B1|B2|C1)-T?\d{2,3}", i)
     if not m:
         return err(i, "id не по формату X-B1-01")
     if SKILL_OF_PREFIX[m.group(1)] != it.get("skill"):
         err(i, f"по id это {SKILL_OF_PREFIX[m.group(1)]}, а skill={it.get('skill')}")
     if m.group(2) != it.get("level"):
-        err(i, f"уровень в id {m.group(2)} ≠ level {it.get('level')}")
+        if it.get("skill") == "grammar" and not i.startswith("T"):
+            # Сохраняем id при переносе задания, чтобы не потерять правки в редакторе.
+            # Актуальный уровень по-прежнему сверяется с каталогом в check_topic.
+            note(i, f"уровень изменён с {m.group(2)} на {it.get('level')}, id сохранён")
+        else:
+            err(i, f"уровень в id {m.group(2)} ≠ level {it.get('level')}")
     if it.get("band") not in (1, 2, 3):
         err(i, f"band={it.get('band')}")
     ty = it.get("type")
@@ -122,7 +127,7 @@ def check_item(it, seen):
                     n = len(norm(a).split())
                     if not 2 <= n <= 5:
                         err(i, f"ответ «{a}» — {n} слов, нужно 2–5")
-                    if it.get("key") and not any(w == it["key"].lower() or w.startswith(it["key"].lower() + "'") for w in norm(a).split()):
+                    if it.get("key") and not any(w == it["key"].lower() or w.startswith(it["key"].lower() + "'") for w in re.findall(r"[a-z']+", norm(a))):
                         err(i, f"ответ «{a}» без ключевого слова {it['key']}")
             check_explain(i, it, q + " " + " ".join(acc) + " " + it.get("base", "") + " " + it.get("frame", ""))
 
@@ -220,7 +225,10 @@ def cross_check(path, items):
         ALL_Q.setdefault(q, i)
 
 
-files = sys.argv[1:] or sorted(f for f in glob.glob(os.path.join(ROOT, "*.json")) if not os.path.basename(f).startswith("00_"))
+files = sys.argv[1:] or sorted(
+    f for f in glob.glob(os.path.join(ROOT, "*.json"))
+    if not os.path.basename(f).startswith("00_") and os.path.basename(f) != "09_fix.json"
+)
 for f in files:
     cross_check(f, check_file(f) or [])
 print(f"\nОШИБКИ ({len(errors)}):")

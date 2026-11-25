@@ -2461,5 +2461,868 @@
     ],
     "explain_ru": "Горные цепи — с the: the Alps.",
     "hint_ru": "a / an / the"
+  },
+  {
+    "id": "G-C1-13",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "g-c1-conditionals-alternatives",
+    "topic_en": "provided that / as long as / unless / otherwise",
+    "topic_ru": "provided that / as long as / unless / otherwise",
+    "type": "mcq",
+    "q": "You can borrow my car ___ you bring it back by Sunday.",
+    "options": [
+      "unless",
+      "provided",
+      "in case",
+      "otherwise"
+    ],
+    "answer": 1,
+    "explain_ru": "Provided (that) — «при условии, что»."
+  },
+  {
+    "id": "G-C1-34",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "g-c1-conditionals-alternatives",
+    "topic_en": "provided that / as long as / unless / otherwise",
+    "topic_ru": "provided that / as long as / unless / otherwise",
+    "type": "mcq",
+    "q": "Take a map with you ___ your phone battery dies.",
+    "options": [
+      "unless",
+      "provided",
+      "in case",
+      "as long as"
+    ],
+    "answer": 2,
+    "explain_ru": "На случай, если — in case."
+  },
+  {
+    "id": "G-C1-35",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "g-c1-conditionals-alternatives",
+    "topic_en": "provided that / as long as / unless / otherwise",
+    "topic_ru": "provided that / as long as / unless / otherwise",
+    "type": "mcq",
+    "q": "I'll lend you the money ___ you pay me back by the end of the month.",
+    "options": [
+      "in case",
+      "otherwise",
+      "unless",
+      "as long as"
+    ],
+    "answer": 3,
+    "explain_ru": "При условии, что — as long as."
+  },
+  {
+    "id": "G-C1-71",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "g-c1-conditionals-alternatives",
+    "topic_en": "provided that / as long as / unless / otherwise",
+    "topic_ru": "provided that / as long as / unless / otherwise",
+    "type": "mcq",
+    "q": "Hurry up, ___ we'll miss the beginning of the film.",
+    "options": [
+      "otherwise",
+      "unless",
+      "provided",
+      "in case"
+    ],
+    "answer": 0,
+    "explain_ru": "Иначе — otherwise."
+  },
+  {
+    "id": "G-C1-72",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "g-c1-conditionals-alternatives",
+    "topic_en": "provided that / as long as / unless / otherwise",
+    "topic_ru": "provided that / as long as / unless / otherwise",
+    "type": "mcq",
+    "q": "I won't go to the party ___ you come with me.",
+    "options": [
+      "otherwise",
+      "unless",
+      "whereas",
+      "as long"
+    ],
+    "answer": 1,
+    "explain_ru": "Если не — unless."
+  },
+  {
+    "id": "G-C1-T05",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "g-c1-conditionals-alternatives",
+    "topic_en": "provided that / as long as / unless / otherwise",
+    "topic_ru": "provided that / as long as / unless / otherwise",
+    "type": "gap",
+    "q": "You can borrow my bike as ___ as you bring it back by Sunday.",
+    "accept": [
+      "long"
+    ],
+    "explain_ru": "При условии, что — as long as.",
+    "hint_ru": "as long as / provided"
+  },
+  {
+    "id": "G-B2-101",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-discourse-markers",
+    "topic_en": "Discourse markers to structure formal speech and writing (firstly, to sum up, regarding)",
+    "topic_ru": "Дискурсивные маркеры для формальной речи и письма",
+    "type": "mcq",
+    "q": "To ___ up, the trial worked well, but we need more feedback.",
+    "options": [
+      "sum",
+      "summing",
+      "summed",
+      "sums"
+    ],
+    "answer": 0,
+    "explain_ru": "В формальной речи устойчивые связки помогают вводить тему, нумеровать аргументы и подводить итог."
+  },
+  {
+    "id": "G-B2-102",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-discourse-markers",
+    "topic_en": "Discourse markers to structure formal speech and writing (firstly, to sum up, regarding)",
+    "topic_ru": "Дискурсивные маркеры для формальной речи и письма",
+    "type": "mcq",
+    "q": "With regard ___ your request, we can offer a later appointment.",
+    "options": [
+      "on",
+      "to",
+      "at",
+      "in"
+    ],
+    "answer": 1,
+    "explain_ru": "В формальной речи устойчивые связки помогают вводить тему, нумеровать аргументы и подводить итог."
+  },
+  {
+    "id": "G-B2-103",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-discourse-markers",
+    "topic_en": "Discourse markers to structure formal speech and writing (firstly, to sum up, regarding)",
+    "topic_ru": "Дискурсивные маркеры для формальной речи и письма",
+    "type": "transform",
+    "q": "First of all, I'll explain the problem.",
+    "key": "FIRSTLY",
+    "frame": "___ explain the problem.",
+    "accept": [
+      "firstly, i'll",
+      "firstly, i will",
+      "firstly i'll",
+      "firstly i will"
+    ],
+    "explain_ru": "В формальной речи устойчивые связки помогают вводить тему, нумеровать аргументы и подводить итог."
+  },
+  {
+    "id": "G-B2-104",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-discourse-markers",
+    "topic_en": "Discourse markers to structure formal speech and writing (firstly, to sum up, regarding)",
+    "topic_ru": "Дискурсивные маркеры для формальной речи и письма",
+    "type": "transform",
+    "q": "In short, both approaches have advantages.",
+    "key": "SUM",
+    "frame": "To ___, both approaches have advantages.",
+    "accept": [
+      "sum up"
+    ],
+    "explain_ru": "В формальной речи устойчивые связки помогают вводить тему, нумеровать аргументы и подводить итог."
+  },
+  {
+    "id": "G-B2-105",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-adjectives-adverbs",
+    "topic_en": "Adjectives and adverbs: gradable / extreme, adverb position",
+    "topic_ru": "Прилагательные и наречия: градуируемые / предельные, место наречия",
+    "type": "mcq",
+    "q": "By the time we got there, the venue was completely ___. There was no one inside.",
+    "options": [
+      "emptiness",
+      "emptying",
+      "empty",
+      "emptily"
+    ],
+    "answer": 2,
+    "explain_ru": "Quite и very по-разному сочетаются с прилагательными. Completely подходит к значению полного состояния, а наречие образа действия описывает глагол."
+  },
+  {
+    "id": "G-B2-106",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-adjectives-adverbs",
+    "topic_en": "Adjectives and adverbs: gradable / extreme, adverb position",
+    "topic_ru": "Прилагательные и наречия: градуируемые / предельные, место наречия",
+    "type": "mcq",
+    "q": "The receptionist explained the new sign-in process ___.",
+    "options": [
+      "clear",
+      "clearness",
+      "cleared",
+      "clearly"
+    ],
+    "answer": 3,
+    "explain_ru": "Quite и very по-разному сочетаются с прилагательными. Completely подходит к значению полного состояния, а наречие образа действия описывает глагол."
+  },
+  {
+    "id": "G-B2-107",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-adjectives-adverbs",
+    "topic_en": "Adjectives and adverbs: gradable / extreme, adverb position",
+    "topic_ru": "Прилагательные и наречия: градуируемые / предельные, место наречия",
+    "type": "wordform",
+    "q": "The meal was absolutely ___. I'd go back just for the dessert.",
+    "base": "DELIGHT",
+    "accept": [
+      "delightful"
+    ],
+    "explain_ru": "Quite и very по-разному сочетаются с прилагательными. Completely подходит к значению полного состояния, а наречие образа действия описывает глагол."
+  },
+  {
+    "id": "G-B2-108",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-adjectives-adverbs",
+    "topic_en": "Adjectives and adverbs: gradable / extreme, adverb position",
+    "topic_ru": "Прилагательные и наречия: градуируемые / предельные, место наречия",
+    "type": "transform",
+    "q": "She gave a clear explanation of the new rules.",
+    "key": "CLEARLY",
+    "frame": "She ___ to us.",
+    "accept": [
+      "explained the new rules clearly"
+    ],
+    "explain_ru": "Quite и very по-разному сочетаются с прилагательными. Completely подходит к значению полного состояния, а наречие образа действия описывает глагол."
+  },
+  {
+    "id": "G-B2-109",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "g-b2p-cleft-intro",
+    "topic_en": "Cleft sentences: What I need is... / It was ... that...",
+    "topic_ru": "Расщеплённые предложения: What I need is... / It was ... that...",
+    "type": "mcq",
+    "q": "What I need most ___ a quiet place to work.",
+    "options": [
+      "been",
+      "is",
+      "be",
+      "being"
+    ],
+    "answer": 1,
+    "explain_ru": "В выделительных предложениях What ... is и It was ... that первая часть выделяет нужную информацию."
+  },
+  {
+    "id": "G-B2-110",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "g-b2p-cleft-intro",
+    "topic_en": "Cleft sentences: What I need is... / It was ... that...",
+    "topic_ru": "Расщеплённые предложения: What I need is... / It was ... that...",
+    "type": "mcq",
+    "q": "It was the booking reference ___ I mistyped, rather than my name.",
+    "options": [
+      "where",
+      "whose",
+      "that",
+      "when"
+    ],
+    "answer": 2,
+    "explain_ru": "В выделительных предложениях What ... is и It was ... that первая часть выделяет нужную информацию."
+  },
+  {
+    "id": "G-B2-111",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "g-b2p-cleft-intro",
+    "topic_en": "Cleft sentences: What I need is... / It was ... that...",
+    "topic_ru": "Расщеплённые предложения: What I need is... / It was ... that...",
+    "type": "transform",
+    "q": "I enjoy the flexibility most.",
+    "key": "WHAT",
+    "frame": "___ most is the flexibility.",
+    "accept": [
+      "what i enjoy"
+    ],
+    "explain_ru": "В выделительных предложениях What ... is и It was ... that первая часть выделяет нужную информацию."
+  },
+  {
+    "id": "G-B2-112",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "g-b2p-cleft-intro",
+    "topic_en": "Cleft sentences: What I need is... / It was ... that...",
+    "topic_ru": "Расщеплённые предложения: What I need is... / It was ... that...",
+    "type": "transform",
+    "q": "I met Ana in Bristol, rather than in Bath.",
+    "key": "THAT",
+    "frame": "It was ___ I met Ana.",
+    "accept": [
+      "in bristol that"
+    ],
+    "explain_ru": "В выделительных предложениях What ... is и It was ... that первая часть выделяет нужную информацию."
+  },
+  {
+    "id": "G-B2-113",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "g-b2p-emphatic-do",
+    "topic_en": "Emphatic do / did; so / such for emphasis",
+    "topic_ru": "Усилительное do / did; so / such для эмфазы",
+    "type": "mcq",
+    "q": "I did ___ the invoice. Check the junk folder.",
+    "options": [
+      "sent",
+      "sending",
+      "sends",
+      "send"
+    ],
+    "answer": 3,
+    "explain_ru": "Для усиления утверждения используются do, does или did с начальной формой глагола. So стоит перед прилагательным, а such — перед группой с существительным."
+  },
+  {
+    "id": "G-B2-114",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "g-b2p-emphatic-do",
+    "topic_en": "Emphatic do / did; so / such for emphasis",
+    "topic_ru": "Усилительное do / did; so / such для эмфазы",
+    "type": "mcq",
+    "q": "It was ___ a useful workshop that I booked the next one.",
+    "options": [
+      "such",
+      "so",
+      "enough",
+      "too"
+    ],
+    "answer": 0,
+    "explain_ru": "Для усиления утверждения используются do, does или did с начальной формой глагола. So стоит перед прилагательным, а such — перед группой с существительным."
+  },
+  {
+    "id": "G-B2-115",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "g-b2p-emphatic-do",
+    "topic_en": "Emphatic do / did; so / such for emphasis",
+    "topic_ru": "Усилительное do / did; so / such для эмфазы",
+    "type": "brackets",
+    "q": "The council does ___ (offer) discounts. They're listed at the bottom of the page.",
+    "accept": [
+      "offer"
+    ],
+    "explain_ru": "Для усиления утверждения используются do, does или did с начальной формой глагола. So стоит перед прилагательным, а such — перед группой с существительным."
+  },
+  {
+    "id": "G-B2-116",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "g-b2p-emphatic-do",
+    "topic_en": "Emphatic do / did; so / such for emphasis",
+    "topic_ru": "Усилительное do / did; so / such для эмфазы",
+    "type": "transform",
+    "q": "The guide was extremely helpful, so I saved it for later.",
+    "key": "SO",
+    "frame": "The guide ___ I saved it for later.",
+    "accept": [
+      "was so helpful that"
+    ],
+    "explain_ru": "Для усиления утверждения используются do, does или did с начальной формой глагола. So стоит перед прилагательным, а such — перед группой с существительным."
+  },
+  {
+    "id": "G-B2-117",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "g-b2p-be-to",
+    "topic_en": "be about to / be on the point of / be due to",
+    "topic_ru": "be about to / be on the point of / be due to",
+    "type": "mcq",
+    "q": "The train is due ___ arrive at 8:40.",
+    "options": [
+      "at",
+      "of",
+      "to",
+      "for"
+    ],
+    "answer": 2,
+    "explain_ru": "Be about to + начальная форма указывает на то, что должно случиться вот-вот. Be on the point of требует формы на -ing, а be due to — инфинитива."
+  },
+  {
+    "id": "G-B2-118",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "g-b2p-be-to",
+    "topic_en": "be about to / be on the point of / be due to",
+    "topic_ru": "be about to / be on the point of / be due to",
+    "type": "mcq",
+    "q": "We were on the point of ___ when the courier rang.",
+    "options": [
+      "leave",
+      "left",
+      "leaves",
+      "leaving"
+    ],
+    "answer": 3,
+    "explain_ru": "Be about to + начальная форма указывает на то, что должно случиться вот-вот. Be on the point of требует формы на -ing, а be due to — инфинитива."
+  },
+  {
+    "id": "G-B2-119",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "g-b2p-be-to",
+    "topic_en": "be about to / be on the point of / be due to",
+    "topic_ru": "be about to / be on the point of / be due to",
+    "type": "brackets",
+    "q": "I was just about to ___ (send) the email when I spotted a typo.",
+    "accept": [
+      "send"
+    ],
+    "explain_ru": "Be about to + начальная форма указывает на то, что должно случиться вот-вот. Be on the point of требует формы на -ing, а be due to — инфинитива."
+  },
+  {
+    "id": "G-B2-120",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "g-b2p-be-to",
+    "topic_en": "be about to / be on the point of / be due to",
+    "topic_ru": "be about to / be on the point of / be due to",
+    "type": "transform",
+    "q": "The delivery is scheduled to arrive on Tuesday.",
+    "key": "DUE",
+    "frame": "The delivery ___ on Tuesday.",
+    "accept": [
+      "is due to arrive"
+    ],
+    "explain_ru": "Be about to + начальная форма указывает на то, что должно случиться вот-вот. Be on the point of требует формы на -ing, а be due to — инфинитива."
+  },
+  {
+    "id": "G-B2-121",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "g-b2p-get-passive",
+    "topic_en": "get-passive and passive with two objects",
+    "topic_ru": "get-пассив и пассив с двумя дополнениями",
+    "type": "mcq",
+    "q": "My bike got ___ while I was at the cinema.",
+    "options": [
+      "stolen",
+      "stole",
+      "steal",
+      "stealing"
+    ],
+    "answer": 0,
+    "explain_ru": "Пассив с get строится с причастием. Если у глагола два дополнения, получателя часто можно сделать подлежащим пассива."
+  },
+  {
+    "id": "G-B2-122",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "g-b2p-get-passive",
+    "topic_en": "get-passive and passive with two objects",
+    "topic_ru": "get-пассив и пассив с двумя дополнениями",
+    "type": "mcq",
+    "q": "We were ___ a full refund within a week.",
+    "options": [
+      "giving",
+      "given",
+      "gave",
+      "give"
+    ],
+    "answer": 1,
+    "explain_ru": "Пассив с get строится с причастием. Если у глагола два дополнения, получателя часто можно сделать подлежащим пассива."
+  },
+  {
+    "id": "G-B2-123",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "g-b2p-get-passive",
+    "topic_en": "get-passive and passive with two objects",
+    "topic_ru": "get-пассив и пассив с двумя дополнениями",
+    "type": "brackets",
+    "q": "Her luggage got ___ (damage) on the flight.",
+    "accept": [
+      "damaged"
+    ],
+    "explain_ru": "Пассив с get строится с причастием. Если у глагола два дополнения, получателя часто можно сделать подлежащим пассива."
+  },
+  {
+    "id": "G-B2-124",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "g-b2p-get-passive",
+    "topic_en": "get-passive and passive with two objects",
+    "topic_ru": "get-пассив и пассив с двумя дополнениями",
+    "type": "transform",
+    "q": "They offered Mia a room on the ground floor.",
+    "key": "OFFERED",
+    "frame": "Mia ___ on the ground floor.",
+    "accept": [
+      "was offered a room"
+    ],
+    "explain_ru": "Пассив с get строится с причастием. Если у глагола два дополнения, получателя часто можно сделать подлежащим пассива."
+  },
+  {
+    "id": "G-B2-125",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "g-c1-conditionals-alternatives",
+    "topic_en": "provided that / as long as / unless / otherwise",
+    "topic_ru": "provided that / as long as / unless / otherwise",
+    "type": "mcq",
+    "q": "You can borrow my tablet provided ___ you bring it back tonight.",
+    "options": [
+      "whether",
+      "which",
+      "what",
+      "that"
+    ],
+    "answer": 3,
+    "explain_ru": "Provided that и as long as вводят условие. In case описывает меру предосторожности, unless — исключение, а otherwise — последствие при невыполнении условия."
+  },
+  {
+    "id": "G-B2-126",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "g-c1-conditionals-alternatives",
+    "topic_en": "provided that / as long as / unless / otherwise",
+    "topic_ru": "provided that / as long as / unless / otherwise",
+    "type": "mcq",
+    "q": "Take a charger in ___ your battery runs out.",
+    "options": [
+      "case",
+      "event",
+      "cause",
+      "fact"
+    ],
+    "answer": 0,
+    "explain_ru": "Provided that и as long as вводят условие. In case описывает меру предосторожности, unless — исключение, а otherwise — последствие при невыполнении условия."
+  },
+  {
+    "id": "G-B2-127",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "g-c1-conditionals-alternatives",
+    "topic_en": "provided that / as long as / unless / otherwise",
+    "topic_ru": "provided that / as long as / unless / otherwise",
+    "type": "transform",
+    "q": "I'll send a copy only if you keep it private.",
+    "key": "LONG",
+    "frame": "I'll send a copy ___ it private.",
+    "accept": [
+      "as long as you keep"
+    ],
+    "explain_ru": "Provided that и as long as вводят условие. In case описывает меру предосторожности, unless — исключение, а otherwise — последствие при невыполнении условия."
+  },
+  {
+    "id": "G-B2-128",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 2,
+    "topic_id": "g-c1-conditionals-alternatives",
+    "topic_en": "provided that / as long as / unless / otherwise",
+    "topic_ru": "provided that / as long as / unless / otherwise",
+    "type": "transform",
+    "q": "You have to confirm today. If you don't, we'll offer the slot to someone else.",
+    "key": "OTHERWISE",
+    "frame": "Confirm today. ___ offer the slot to someone else.",
+    "accept": [
+      "otherwise, we'll",
+      "otherwise we'll",
+      "otherwise, we will",
+      "otherwise we will"
+    ],
+    "explain_ru": "Provided that и as long as вводят условие. In case описывает меру предосторожности, unless — исключение, а otherwise — последствие при невыполнении условия."
+  },
+  {
+    "id": "G-B2-129",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-used-to-be-get",
+    "topic_en": "be used to / get used to",
+    "topic_ru": "be used to / get used to",
+    "type": "brackets",
+    "q": "I'm getting used to ___ (work) with two monitors.",
+    "accept": [
+      "working"
+    ],
+    "explain_ru": "После get used to требуется форма глагола на -ing."
+  },
+  {
+    "id": "G-B2-130",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-deduction-past",
+    "topic_en": "Past modals of deduction: must have / can't have",
+    "topic_ru": "Модальные глаголы предположения о прошлом",
+    "type": "transform",
+    "q": "I'm sure Lee didn't walk here. His car is outside.",
+    "key": "CAN'T",
+    "frame": "Lee ___ here.",
+    "accept": [
+      "can't have walked"
+    ],
+    "explain_ru": "Can't have + причастие выражает уверенный вывод о том, чего не произошло."
+  },
+  {
+    "id": "G-B2-131",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-passive-advanced",
+    "topic_en": "Passive with modals and perfect forms",
+    "topic_ru": "Пассив с модальными глаголами и перфектом",
+    "type": "transform",
+    "q": "Someone must check these figures before we send the report.",
+    "key": "BE",
+    "frame": "These figures ___ before we send the report.",
+    "accept": [
+      "must be checked"
+    ],
+    "explain_ru": "В пассиве после модального глагола ставится be + причастие."
+  },
+  {
+    "id": "G-B2-132",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-reporting-verbs",
+    "topic_en": "Reporting verbs (suggest, deny, advise...)",
+    "topic_ru": "Глаголы косвенной речи (suggest, deny, advise...)",
+    "type": "brackets",
+    "q": "The mechanic advised us ___ (book) a service before the trip.",
+    "accept": [
+      "to book"
+    ],
+    "explain_ru": "После advise + дополнение употребляется инфинитив с to."
+  },
+  {
+    "id": "G-B2-133",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-non-defining-relatives",
+    "topic_en": "Non-defining relative clauses",
+    "topic_ru": "Неопределительные придаточные",
+    "type": "transform",
+    "q": "Mina has just moved. Her brother works with me.",
+    "key": "WHOSE",
+    "frame": "Mina, ___ with me, has just moved.",
+    "accept": [
+      "whose brother works"
+    ],
+    "explain_ru": "Whose указывает на принадлежность. Неопределительное придаточное выделяется запятыми."
+  },
+  {
+    "id": "G-B2-134",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-future-perfect-continuous",
+    "topic_en": "Future continuous and future perfect",
+    "topic_ru": "Future Continuous и Future Perfect",
+    "type": "transform",
+    "q": "At the end of May, it will be ten years since I started teaching here.",
+    "key": "BEEN",
+    "frame": "By the end of May, I ___ here for ten years.",
+    "accept": [
+      "will have been teaching",
+      "'ll have been teaching"
+    ],
+    "explain_ru": "Future Perfect Continuous описывает длительность действия к моменту в будущем."
+  },
+  {
+    "id": "G-B2-135",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-verb-patterns-meaning",
+    "topic_en": "Verbs that change meaning: -ing vs to-infinitive",
+    "topic_ru": "Глаголы с разным значением: -ing и инфинитив",
+    "type": "brackets",
+    "q": "On my way home, I stopped ___ (buy) some milk.",
+    "accept": [
+      "to buy"
+    ],
+    "explain_ru": "Stopped to buy означает, что человек остановился, чтобы что-то купить."
+  },
+  {
+    "id": "G-B2-136",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-linkers-contrast",
+    "topic_en": "despite / in spite of / whereas",
+    "topic_ru": "despite / in spite of / whereas",
+    "type": "transform",
+    "q": "Although the internet connection was poor, we finished the call.",
+    "key": "SPITE",
+    "frame": "We finished the call in ___ connection.",
+    "accept": [
+      "spite of the poor"
+    ],
+    "explain_ru": "In spite of вводит именную группу, обозначающую препятствие."
+  },
+  {
+    "id": "G-B2-137",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-participle-clauses",
+    "topic_en": "Participle clauses",
+    "topic_ru": "Причастные обороты",
+    "type": "transform",
+    "q": "After Jo read the contract, she signed it.",
+    "key": "HAVING",
+    "frame": "___ the contract, Jo signed it.",
+    "accept": [
+      "having read"
+    ],
+    "explain_ru": "Having + причастие подчёркивает, что первое действие произошло раньше второго."
+  },
+  {
+    "id": "G-B2-138",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-would-rather",
+    "topic_en": "would rather / it's time",
+    "topic_ru": "would rather / it's time",
+    "type": "brackets",
+    "q": "I'd rather you ___ (not / share) my number with the group.",
+    "accept": [
+      "didn't share",
+      "did not share"
+    ],
+    "explain_ru": "После I'd rather + другое подлежащее для пожелания о настоящем нужна форма Past Simple."
+  },
+  {
+    "id": "G-B2-139",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-impersonal-passive",
+    "topic_en": "Impersonal passive: it is said that...",
+    "topic_ru": "Безличный пассив: it is said that...",
+    "type": "transform",
+    "q": "People say the house belonged to a film director.",
+    "key": "SAID",
+    "frame": "The house ___ to a film director.",
+    "accept": [
+      "is said to have belonged"
+    ],
+    "explain_ru": "В конструкции is said to have + причастие событие предшествует сообщению."
+  },
+  {
+    "id": "G-B2-140",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-narrative-tenses",
+    "topic_en": "Narrative tenses",
+    "topic_ru": "Времена для рассказа о прошлом",
+    "type": "transform",
+    "q": "Before I reached the car, the rain started.",
+    "key": "HAD",
+    "frame": "By the time I reached the car, it ___ raining.",
+    "accept": [
+      "had started"
+    ],
+    "explain_ru": "Past Perfect отмечает более раннее событие в рассказе."
+  },
+  {
+    "id": "G-B2-141",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-tense-nuance",
+    "topic_en": "Tenses: continuous for annoyance, perfect continuous and result",
+    "topic_ru": "Времена: Continuous для раздражения, Perfect Continuous и результат",
+    "type": "transform",
+    "q": "His repeated habit of interrupting annoys me.",
+    "key": "ALWAYS",
+    "frame": "He ___ me. It drives me mad.",
+    "accept": [
+      "is always interrupting",
+      "'s always interrupting"
+    ],
+    "explain_ru": "Continuous с always может передавать раздражение из-за повторяющегося действия."
+  },
+  {
+    "id": "G-B2-142",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-articles",
+    "topic_en": "Articles: abstract nouns, institutions, geography",
+    "topic_ru": "Артикли: абстрактные понятия, институты, география",
+    "type": "gap",
+    "q": "They spent two weeks sailing around ___ Mediterranean.",
+    "accept": [
+      "the"
+    ],
+    "explain_ru": "Перед названием моря используется the."
+  },
+  {
+    "id": "G-B2-143",
+    "skill": "grammar",
+    "level": "B2",
+    "band": 1,
+    "topic_id": "g-b2-comparatives",
+    "topic_en": "Comparatives: the more … the more, nowhere near as, late / lately, adjective order",
+    "topic_ru": "Сравнения: the more … the more, nowhere near as, late / lately, порядок прилагательных",
+    "type": "transform",
+    "q": "As I practise more, the exercise gets easier.",
+    "key": "MORE",
+    "frame": "The ___ easier the exercise gets.",
+    "accept": [
+      "more i practise, the",
+      "more i practice, the"
+    ],
+    "explain_ru": "Пара the more ..., the ... показывает зависимость двух изменений."
   }
 ]

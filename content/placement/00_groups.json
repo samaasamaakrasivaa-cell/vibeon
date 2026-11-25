@@ -16,11 +16,12 @@
     "level": "A1",
     "kind": "grammar",
     "anchor": false,
-    "name_ru": "Present Simple",
-    "what_ru": "he works / does he work / he doesn't work; наречия always, usually, never",
+    "name_ru": "Present Simple и наречия",
+    "what_ru": "he works / does he work; always, usually, never; very, really",
     "topics": [
       "g-a1-present-simple",
-      "g-a1-frequency-adverbs"
+      "g-a1-frequency-adverbs",
+      "g-a1-intensifiers"
     ]
   },
   {
@@ -79,12 +80,13 @@
     "kind": "grammar",
     "anchor": false,
     "name_ru": "Модальные и устойчивые конструкции",
-    "what_ru": "can / can't; have got; would like; повелительное наклонение",
+    "what_ru": "can, have got, would like, императивы и планы с going to",
     "topics": [
       "g-a1-can",
       "g-a1-have-got",
       "g-a1-would-like",
-      "g-a1-imperatives"
+      "g-a1-imperatives",
+      "g-a1-going-to-plans"
     ]
   },
   {
@@ -92,13 +94,14 @@
     "level": "A1",
     "kind": "grammar",
     "anchor": false,
-    "name_ru": "Предлоги, вопросы и союзы",
-    "what_ru": "in / on / at; предлоги места; what / where / how much; and / but / because",
+    "name_ru": "Предлоги, вопросы, союзы и сравнения",
+    "what_ru": "Предлоги времени и места, слова для вопросов, простые союзы и степени сравнения",
     "topics": [
       "g-a1-prepositions-time",
       "g-a1-prepositions-place",
       "g-a1-question-words",
-      "g-a1-conjunctions-basic"
+      "g-a1-conjunctions-basic",
+      "g-a1-comparatives-intro"
     ]
   },
   {
@@ -129,11 +132,12 @@
     "level": "A2",
     "kind": "grammar",
     "anchor": false,
-    "name_ru": "Present Perfect: опыт и результат",
-    "what_ru": "ever / never; just / already / yet",
+    "name_ru": "Present Perfect: опыт, результат и длительность",
+    "what_ru": "ever / never, just / already / yet, for / since",
     "topics": [
       "g-a2-pp-experience",
-      "g-a2-pp-just-already-yet"
+      "g-a2-pp-just-already-yet",
+      "g-b1-pp-for-since"
     ]
   },
   {
@@ -158,9 +162,9 @@
     "what_ru": "bigger / the biggest; as … as; too / enough; carefully",
     "topics": [
       "g-a2-comparatives",
-      "g-a2-as-as",
       "g-a2-too-enough",
-      "g-a2-adverbs-manner"
+      "g-a2-adverbs-manner",
+      "g-a2p-ed-ing"
     ]
   },
   {
@@ -168,12 +172,13 @@
     "level": "A2",
     "kind": "grammar",
     "anchor": false,
-    "name_ru": "Модальные глаголы",
-    "what_ru": "must / have to / don't have to; should; might / may",
+    "name_ru": "Модальные глаголы и вежливые просьбы",
+    "what_ru": "must, have to, should, need, could / would в просьбах",
     "topics": [
       "g-a2-obligation",
       "g-a2-should",
-      "g-a2-might-may"
+      "g-a2p-could-polite",
+      "g-a2p-need-neednt"
     ]
   },
   {
@@ -181,13 +186,16 @@
     "level": "A2",
     "kind": "grammar",
     "anchor": false,
-    "name_ru": "Артикли, количество, местоимения",
-    "what_ru": "a / the: первое и повторное упоминание; much / many / a few; something / anyone; mine / yours",
+    "name_ru": "Именная группа и местоимения",
+    "what_ru": "Артикли, количество, местоимения, порядок прилагательных и двойной генитив",
     "topics": [
       "g-a2-articles",
       "g-a2-quantifiers",
       "g-a2-indefinite-pronouns",
-      "g-a2-possessive-pronouns"
+      "g-a2-possessive-pronouns",
+      "g-a2-relative-pronouns",
+      "g-a2p-adjective-order",
+      "g-a2p-double-genitive"
     ]
   },
   {
@@ -195,13 +203,18 @@
     "level": "A2",
     "kind": "grammar",
     "anchor": false,
-    "name_ru": "Условия, глагольные модели, предлоги движения",
-    "what_ru": "if + Present, will; want to / enjoy -ing; to + глагол для цели; across / through / along",
+    "name_ru": "Связь предложений и формы глагола",
+    "what_ru": "Условия, герундий, простой пассив, связки и предлоги движения",
     "topics": [
       "g-a2-first-conditional",
       "g-a2-verb-patterns-basic",
       "g-a2-infinitive-purpose",
-      "g-a2-prepositions-movement"
+      "g-a2-prepositions-movement",
+      "g-a2-gerunds",
+      "g-a2-linkers-sequence",
+      "g-a2p-passive-intro",
+      "g-a2p-so-because",
+      "g-b1-zero-conditional"
     ]
   },
   {
@@ -210,9 +223,8 @@
     "kind": "grammar",
     "anchor": true,
     "name_ru": "Present Perfect или Past Simple",
-    "what_ru": "for / since; I've lived / I lived; Present Perfect Continuous",
+    "what_ru": "Present Perfect, Present Perfect Continuous и выбор между Present Perfect и Past Simple",
     "topics": [
-      "g-b1-pp-for-since",
       "g-b1-pp-vs-past",
       "g-b1-ppc"
     ]
@@ -226,7 +238,8 @@
     "what_ru": "Past Perfect, Past Continuous в рассказе, used to",
     "topics": [
       "g-b1-past-perfect",
-      "g-b1-used-to"
+      "g-b1-used-to",
+      "g-b1-past-tense-responses"
     ]
   },
   {
@@ -237,7 +250,10 @@
     "name_ru": "Будущее",
     "what_ru": "will / going to / Present Continuous / Present Simple для расписаний",
     "topics": [
-      "g-b1-future-forms"
+      "g-b1-future-forms",
+      "g-b1-time-clauses",
+      "g-b1p-future-continuous",
+      "g-b1p-was-going-to"
     ]
   },
   {
@@ -249,7 +265,11 @@
     "what_ru": "must / can't / might be; be able to / manage to",
     "topics": [
       "g-b1-deduction-present",
-      "g-b1-be-able-to"
+      "g-b1-be-able-to",
+      "g-a2-might-may",
+      "g-b1-modals-possibility",
+      "g-b1-must-have-to",
+      "g-b1p-past-modals"
     ]
   },
   {
@@ -257,11 +277,11 @@
     "level": "B1",
     "kind": "grammar",
     "anchor": false,
-    "name_ru": "Условные предложения 0, 1 и 2 типа",
-    "what_ru": "If you heat ice, it melts; If I had more time, I'd…",
+    "name_ru": "Условные предложения 2 и 3 типа",
+    "what_ru": "Нереальные условия в настоящем и прошлом",
     "topics": [
-      "g-b1-zero-conditional",
-      "g-b1-second-conditional"
+      "g-b1-second-conditional",
+      "g-b1p-third-conditional"
     ]
   },
   {
@@ -272,7 +292,8 @@
     "name_ru": "Пассив",
     "what_ru": "Present и Past Simple Passive: was built, is made",
     "topics": [
-      "g-b1-passive-basic"
+      "g-b1-passive-basic",
+      "g-b1p-causative"
     ]
   },
   {
@@ -285,7 +306,8 @@
     "topics": [
       "g-b1-reported-statements",
       "g-b1-reported-questions",
-      "g-b1-indirect-questions"
+      "g-b1-indirect-questions",
+      "g-b1p-reported-range"
     ]
   },
   {
@@ -297,7 +319,9 @@
     "what_ru": "общее и конкретное значение (dogs / the dogs); both / either / neither / each",
     "topics": [
       "g-b1-articles-general",
-      "g-b1-quantifiers-both"
+      "g-b1-quantifiers-both",
+      "g-b1-reflexives",
+      "g-b1p-zero-article"
     ]
   },
   {
@@ -312,7 +336,8 @@
       "g-b1-verb-patterns",
       "g-b1-contrast-basic",
       "g-b1-so-such",
-      "g-b1-question-tags"
+      "g-b1-question-tags",
+      "g-b1-so-nor"
     ]
   },
   {
@@ -323,7 +348,8 @@
     "name_ru": "Сравнения и наречия",
     "what_ru": "much / far cheaper; not as … as; better / worst; hard / hardly",
     "topics": [
-      "g-b1-comparatives"
+      "g-b1-comparatives",
+      "g-a2-as-as"
     ]
   },
   {
@@ -335,7 +361,8 @@
     "what_ru": "Perfect Continuous, Future Continuous / Future Perfect; He's always leaving… (раздражение)",
     "topics": [
       "g-b2-future-perfect-continuous",
-      "g-b2-tense-nuance"
+      "g-b2-tense-nuance",
+      "g-b2p-be-to"
     ]
   },
   {
@@ -360,7 +387,8 @@
     "topics": [
       "g-b2-third-conditional",
       "g-b2-mixed-conditionals",
-      "g-b2-wish"
+      "g-b2-wish",
+      "g-c1-conditionals-alternatives"
     ]
   },
   {
@@ -385,7 +413,8 @@
     "topics": [
       "g-b2-passive-advanced",
       "g-b2-causative",
-      "g-b2-impersonal-passive"
+      "g-b2-impersonal-passive",
+      "g-b2p-get-passive"
     ]
   },
   {
@@ -410,7 +439,9 @@
       "g-b2-non-defining-relatives",
       "g-b2-participle-clauses",
       "g-b2-linkers-contrast",
-      "g-b2-linkers-purpose-result"
+      "g-b2-linkers-purpose-result",
+      "g-b2-discourse-markers",
+      "g-b2p-cleft-intro"
     ]
   },
   {
@@ -444,7 +475,9 @@
     "name_ru": "Сравнения и наречия на уровне B2",
     "what_ru": "the more …, the better; nowhere near as; late / lately; порядок прилагательных",
     "topics": [
-      "g-b2-comparatives"
+      "g-b2-comparatives",
+      "g-b2-adjectives-adverbs",
+      "g-b2p-emphatic-do"
     ]
   },
   {
@@ -456,7 +489,8 @@
     "what_ru": "согласование времён в сложных предложениях; будущее в прошедшем; «вежливое» прошедшее (I was wondering…)",
     "topics": [
       "g-c1-future-in-past",
-      "g-c1-tense-nuance"
+      "g-c1-tense-nuance",
+      "g-c1-narrative-passive"
     ]
   },
   {
@@ -493,7 +527,10 @@
     "topics": [
       "g-c1-modal-nuance",
       "g-c1-unreal-past",
-      "g-c1-subjunctive"
+      "g-c1-subjunctive",
+      "g-c1-modals-past",
+      "g-c1-wish-regrets",
+      "g-c1-vague-language"
     ]
   },
   {
@@ -504,7 +541,8 @@
     "name_ru": "Сложный пассив",
     "what_ru": "is thought to have…; is believed to be…",
     "topics": [
-      "g-c1-passive-reporting"
+      "g-c1-passive-reporting",
+      "g-c1-passive-all"
     ]
   },
   {
@@ -525,11 +563,12 @@
     "level": "C1",
     "kind": "grammar",
     "anchor": false,
-    "name_ru": "Условия и придаточные",
-    "what_ru": "provided that / as long as / otherwise; in which / whereby",
+    "name_ru": "Условия, придаточные и формальные связки",
+    "what_ru": "Смешанные условия, относительные придаточные и связки формального текста",
     "topics": [
-      "g-c1-conditionals-alternatives",
-      "g-c1-relatives-prepositions"
+      "g-c1-relatives-prepositions",
+      "g-c1-mixed-conditionals",
+      "g-c1-linking-formal"
     ]
   },
   {

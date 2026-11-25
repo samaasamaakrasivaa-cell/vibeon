@@ -31,7 +31,9 @@
       "g-b1-past-perfect",
       "g-b1-used-to",
       "g-b2-narrative-tenses",
-      "g-c1-tense-nuance"
+      "g-c1-tense-nuance",
+      "g-b1-past-tense-responses",
+      "g-c1-narrative-passive"
     ]
   },
   {
@@ -44,7 +46,11 @@
       "g-a2-pc-future",
       "g-b1-future-forms",
       "g-b2-future-perfect-continuous",
-      "g-c1-future-in-past"
+      "g-c1-future-in-past",
+      "g-a1-going-to-plans",
+      "g-b1p-future-continuous",
+      "g-b1p-was-going-to",
+      "g-b2p-be-to"
     ]
   },
   {
@@ -62,7 +68,15 @@
       "g-b1-be-able-to",
       "g-b2-deduction-past",
       "g-b2-past-modals-regret",
-      "g-c1-modal-nuance"
+      "g-c1-modal-nuance",
+      "g-b1-modals-possibility",
+      "g-b1-must-have-to",
+      "g-c1-modals-past",
+      "g-c1-wish-regrets",
+      "g-c1-vague-language",
+      "g-a2p-could-polite",
+      "g-a2p-need-neednt",
+      "g-b1p-past-modals"
     ]
   },
   {
@@ -80,7 +94,8 @@
       "g-c1-inverted-conditionals",
       "g-c1-unreal-past",
       "g-c1-subjunctive",
-      "g-c1-conditionals-alternatives"
+      "g-c1-conditionals-alternatives",
+      "g-b1p-third-conditional"
     ]
   },
   {
@@ -92,7 +107,11 @@
       "g-b2-passive-advanced",
       "g-b2-causative",
       "g-b2-impersonal-passive",
-      "g-c1-passive-reporting"
+      "g-c1-passive-reporting",
+      "g-c1-passive-all",
+      "g-a2p-passive-intro",
+      "g-b1p-causative",
+      "g-b2p-get-passive"
     ]
   },
   {
@@ -104,7 +123,8 @@
       "g-b1-reported-questions",
       "g-b1-indirect-questions",
       "g-b2-reporting-verbs",
-      "g-c1-reported"
+      "g-c1-reported",
+      "g-b1p-reported-range"
     ]
   },
   {
@@ -119,7 +139,12 @@
       "g-b1-comparatives",
       "g-b1-so-such",
       "g-b2-comparatives",
-      "g-c1-comparatives"
+      "g-c1-comparatives",
+      "g-a1-comparatives-intro",
+      "g-a1-intensifiers",
+      "g-b2-adjectives-adverbs",
+      "g-a2p-adjective-order",
+      "g-a2p-ed-ing"
     ]
   },
   {
@@ -136,7 +161,8 @@
       "g-b1-quantifiers-both",
       "g-b2-articles",
       "g-c1-articles",
-      "g-c1-nominalisation"
+      "g-c1-nominalisation",
+      "g-b1p-zero-article"
     ]
   },
   {
@@ -153,7 +179,9 @@
       "g-a2-possessive-pronouns",
       "g-a2-indefinite-pronouns",
       "g-a2-prepositions-movement",
-      "g-b1-question-tags"
+      "g-b1-question-tags",
+      "g-b1-reflexives",
+      "g-a2p-double-genitive"
     ]
   },
   {
@@ -170,7 +198,15 @@
       "g-b2-participle-clauses",
       "g-c1-participle-advanced",
       "g-c1-ellipsis-substitution",
-      "g-c1-relatives-prepositions"
+      "g-c1-relatives-prepositions",
+      "g-a2-linkers-sequence",
+      "g-a2-relative-pronouns",
+      "g-b1-time-clauses",
+      "g-b1-so-nor",
+      "g-b2-discourse-markers",
+      "g-c1-mixed-conditionals",
+      "g-c1-linking-formal",
+      "g-a2p-so-because"
     ]
   },
   {
@@ -183,7 +219,8 @@
       "g-a2-infinitive-purpose",
       "g-b1-verb-patterns",
       "g-b2-verb-patterns-meaning",
-      "g-b2-used-to-be-get"
+      "g-b2-used-to-be-get",
+      "g-a2-gerunds"
     ]
   },
   {
@@ -193,7 +230,9 @@
     "topics": [
       "g-c1-inversion",
       "g-c1-cleft",
-      "g-c1-emphasis"
+      "g-c1-emphasis",
+      "g-b2p-cleft-intro",
+      "g-b2p-emphatic-do"
     ]
   }
 ]

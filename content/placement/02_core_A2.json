@@ -201,25 +201,6 @@
     "hint_ru": "слово для превосходной степени"
   },
   {
-    "id": "G-A2-12",
-    "skill": "grammar",
-    "level": "A2",
-    "band": 2,
-    "topic_id": "g-a2-as-as",
-    "topic_en": "(not) as ... as",
-    "topic_ru": "Сравнение (not) as ... as",
-    "type": "mcq",
-    "q": "My new job isn't ___ my old one, and the people are nicer.",
-    "options": [
-      "as stressful as",
-      "so stressful than",
-      "stressful as",
-      "as stressful than"
-    ],
-    "answer": 0,
-    "explain_ru": "Сравнение «не такой ... как» строится по схеме not as ... as."
-  },
-  {
     "id": "G-A2-13",
     "skill": "grammar",
     "level": "A2",
@@ -310,25 +291,6 @@
     ],
     "answer": 0,
     "explain_ru": "Совет даётся с помощью should, после него глагол без to."
-  },
-  {
-    "id": "G-A2-18",
-    "skill": "grammar",
-    "level": "A2",
-    "band": 3,
-    "topic_id": "g-a2-might-may",
-    "topic_en": "might / may for possibility",
-    "topic_ru": "might / may: возможность",
-    "type": "mcq",
-    "q": "Take your jacket. It ___ get cold later.",
-    "options": [
-      "is",
-      "should to",
-      "won't",
-      "might"
-    ],
-    "answer": 3,
-    "explain_ru": "Возможность, но не уверенность, — might."
   },
   {
     "id": "G-A2-19",
@@ -1518,25 +1480,6 @@
     "explain_ru": "Сравнение двух людей + than — сравнительная степень: older."
   },
   {
-    "id": "G-A2-55",
-    "skill": "grammar",
-    "level": "A2",
-    "band": 1,
-    "topic_id": "g-a2-as-as",
-    "topic_en": "(not) as ... as",
-    "topic_ru": "Сравнение (not) as ... as",
-    "type": "mcq",
-    "q": "The new phone is ___ the old one. It's exactly the same size.",
-    "options": [
-      "as bigger as",
-      "so big than",
-      "as big as",
-      "bigger as"
-    ],
-    "answer": 2,
-    "explain_ru": "Одинаковые — as + прилагательное + as: as big as."
-  },
-  {
     "id": "G-A2-56",
     "skill": "grammar",
     "level": "A2",
@@ -1573,25 +1516,6 @@
     ],
     "answer": 0,
     "explain_ru": "Необходимость из-за обстоятельств — have to (с I — have to, без -s)."
-  },
-  {
-    "id": "G-A2-58",
-    "skill": "grammar",
-    "level": "A2",
-    "band": 1,
-    "topic_id": "g-a2-might-may",
-    "topic_en": "might / may for possibility",
-    "topic_ru": "might / may: возможность",
-    "type": "mcq",
-    "q": "I'm not sure, but I ___ go to the party. It depends on my work.",
-    "options": [
-      "must",
-      "might",
-      "should",
-      "have to"
-    ],
-    "answer": 1,
-    "explain_ru": "Не уверен, возможно — might."
   },
   {
     "id": "G-A2-59",
@@ -2020,22 +1944,6 @@
     "explain_ru": "Договорённость на будущее — Present Continuous: I'm flying."
   },
   {
-    "id": "G-A2-T06",
-    "skill": "grammar",
-    "level": "A2",
-    "band": 1,
-    "topic_id": "g-a2-as-as",
-    "topic_en": "(not) as ... as",
-    "topic_ru": "Сравнение (not) as ... as",
-    "type": "gap",
-    "q": "My brother is ___ tall as my dad now.",
-    "accept": [
-      "as"
-    ],
-    "explain_ru": "Равенство — as + прилагательное + as.",
-    "hint_ru": "as / so / than"
-  },
-  {
     "id": "G-A2-T07",
     "skill": "grammar",
     "level": "A2",
@@ -2131,24 +2039,6 @@
     ],
     "explain_ru": "Совет «не стоит» — shouldn't + глагол.",
     "hint_ru": "should в отрицании"
-  },
-  {
-    "id": "G-A2-T13",
-    "skill": "grammar",
-    "level": "A2",
-    "band": 1,
-    "topic_id": "g-a2-might-may",
-    "topic_en": "might / may for possibility",
-    "topic_ru": "might / may: возможность",
-    "type": "gap",
-    "q": "Take an umbrella. It ___ rain later.",
-    "accept": [
-      "might",
-      "may",
-      "could"
-    ],
-    "explain_ru": "Возможность (не уверены) — might / may.",
-    "hint_ru": "might / may"
   },
   {
     "id": "G-A2-T14",
@@ -2275,5 +2165,1155 @@
     ],
     "explain_ru": "Первое упоминание — a.",
     "hint_ru": "a / an / the"
+  },
+  {
+    "id": "G-B1-01",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "g-b1-pp-for-since",
+    "topic_en": "Present perfect with for / since",
+    "topic_ru": "Present Perfect с for / since",
+    "type": "gap",
+    "q": "We've lived in this flat ___ 2021, and we still love it.",
+    "accept": [
+      "since"
+    ],
+    "explain_ru": "С моментом начала (год) в Present Perfect используется since.",
+    "hint_ru": "предлог времени"
+  },
+  {
+    "id": "G-B1-02",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "g-b1-pp-for-since",
+    "topic_en": "Present perfect with for / since",
+    "topic_ru": "Present Perfect с for / since",
+    "type": "mcq",
+    "q": "I've known my best friend ___ we were at university together.",
+    "options": [
+      "until",
+      "from",
+      "when",
+      "since"
+    ],
+    "answer": 3,
+    "explain_ru": "После since может стоять целое придаточное: since we were at university."
+  },
+  {
+    "id": "G-B1-07",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-b1-zero-conditional",
+    "topic_en": "Zero conditional",
+    "topic_ru": "Условные предложения нулевого типа",
+    "type": "brackets",
+    "q": "If you ___ (give) plants too much water, they die.",
+    "accept": [
+      "give"
+    ],
+    "explain_ru": "Общая истина (нулевой тип) — Present Simple в обеих частях."
+  },
+  {
+    "id": "G-B1-36",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-b1-zero-conditional",
+    "topic_en": "Zero conditional",
+    "topic_ru": "Условные предложения нулевого типа",
+    "type": "brackets",
+    "q": "If you ___ (mix) red and white, you get pink.",
+    "accept": [
+      "mix"
+    ],
+    "explain_ru": "Нулевой тип — общая истина: if + Present Simple, Present Simple."
+  },
+  {
+    "id": "G-B1-52",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "g-b1-pp-for-since",
+    "topic_en": "Present perfect with for / since",
+    "topic_ru": "Present Perfect с for / since",
+    "type": "mcq",
+    "q": "I've worked at this company ___ three years.",
+    "options": [
+      "since",
+      "during",
+      "from",
+      "for"
+    ],
+    "answer": 3,
+    "explain_ru": "Период времени (three years) — for; точка отсчёта — since."
+  },
+  {
+    "id": "G-B1-66",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-b1-zero-conditional",
+    "topic_en": "Zero conditional",
+    "topic_ru": "Условные предложения нулевого типа",
+    "type": "mcq",
+    "q": "If you ___ water to 100 degrees, it boils.",
+    "options": [
+      "heat",
+      "will heat",
+      "heated",
+      "would heat"
+    ],
+    "answer": 0,
+    "explain_ru": "Общая истина (0 тип) — Present Simple в обеих частях."
+  },
+  {
+    "id": "G-A2-101",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-gerunds",
+    "topic_en": "Gerunds as subjects and after prepositions",
+    "topic_ru": "Герундий как подлежащее и после предлогов",
+    "type": "mcq",
+    "q": "Thanks for ___ me find my keys.",
+    "options": [
+      "helping",
+      "help",
+      "helped",
+      "helps"
+    ],
+    "answer": 0,
+    "explain_ru": "Форма на -ing может быть подлежащим и используется после предлога."
+  },
+  {
+    "id": "G-A2-102",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-gerunds",
+    "topic_en": "Gerunds as subjects and after prepositions",
+    "topic_ru": "Герундий как подлежащее и после предлогов",
+    "type": "mcq",
+    "q": "___ online saves me a trip to the shops.",
+    "options": [
+      "Am shopping",
+      "Shopping",
+      "Shopped",
+      "Shops"
+    ],
+    "answer": 1,
+    "explain_ru": "Форма на -ing может быть подлежащим и используется после предлога."
+  },
+  {
+    "id": "G-A2-103",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-gerunds",
+    "topic_en": "Gerunds as subjects and after prepositions",
+    "topic_ru": "Герундий как подлежащее и после предлогов",
+    "type": "brackets",
+    "q": "Turn off the oven before ___ (leave) the kitchen.",
+    "accept": [
+      "leaving"
+    ],
+    "explain_ru": "Форма на -ing может быть подлежащим и используется после предлога."
+  },
+  {
+    "id": "G-A2-104",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-gerunds",
+    "topic_en": "Gerunds as subjects and after prepositions",
+    "topic_ru": "Герундий как подлежащее и после предлогов",
+    "type": "brackets",
+    "q": "___ (walk) to work takes me twenty minutes.",
+    "accept": [
+      "walking"
+    ],
+    "explain_ru": "Форма на -ing может быть подлежащим и используется после предлога."
+  },
+  {
+    "id": "G-A2-105",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-linkers-sequence",
+    "topic_en": "Sequencers: first, then, after that, finally",
+    "topic_ru": "Связки последовательности: first, then, after that, finally",
+    "type": "mcq",
+    "q": "The first step is to sign in. The ___ step is to choose a date.",
+    "options": [
+      "two",
+      "twice",
+      "second",
+      "seconds"
+    ],
+    "answer": 2,
+    "explain_ru": "First начинает последовательность действий, then и after that связывают шаги, finally вводит последний шаг."
+  },
+  {
+    "id": "G-A2-106",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-linkers-sequence",
+    "topic_en": "Sequencers: first, then, after that, finally",
+    "topic_ru": "Связки последовательности: first, then, after that, finally",
+    "type": "mcq",
+    "q": "Download the form. After ___, fill in your name and address.",
+    "options": [
+      "then",
+      "after",
+      "next",
+      "that"
+    ],
+    "answer": 3,
+    "explain_ru": "First начинает последовательность действий, then и after that связывают шаги, finally вводит последний шаг."
+  },
+  {
+    "id": "G-A2-107",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-linkers-sequence",
+    "topic_en": "Sequencers: first, then, after that, finally",
+    "topic_ru": "Связки последовательности: first, then, after that, finally",
+    "type": "transform",
+    "q": "First, save the file. Then close the app.",
+    "key": "AFTER",
+    "frame": "Close the app ___ the file.",
+    "accept": [
+      "after saving",
+      "after you save",
+      "after you've saved",
+      "after you have saved"
+    ],
+    "explain_ru": "First начинает последовательность действий, then и after that связывают шаги, finally вводит последний шаг."
+  },
+  {
+    "id": "G-A2-108",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-linkers-sequence",
+    "topic_en": "Sequencers: first, then, after that, finally",
+    "topic_ru": "Связки последовательности: first, then, after that, finally",
+    "type": "transform",
+    "q": "Pay for your tickets first. The last step is to print them.",
+    "key": "FINALLY",
+    "frame": "Pay for your tickets. ___ them.",
+    "accept": [
+      "finally, print",
+      "finally print"
+    ],
+    "explain_ru": "First начинает последовательность действий, then и after that связывают шаги, finally вводит последний шаг."
+  },
+  {
+    "id": "G-A2-109",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-relative-pronouns",
+    "topic_en": "Relative pronouns who / which / that (simple)",
+    "topic_ru": "Относительные местоимения who / which / that (простые случаи)",
+    "type": "mcq",
+    "q": "That's the nurse ___ helped my dad.",
+    "options": [
+      "what",
+      "who",
+      "whose",
+      "where"
+    ],
+    "answer": 1,
+    "explain_ru": "Who и that могут указывать на человека. Which и that могут указывать на предмет."
+  },
+  {
+    "id": "G-A2-110",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-relative-pronouns",
+    "topic_en": "Relative pronouns who / which / that (simple)",
+    "topic_ru": "Относительные местоимения who / which / that (простые случаи)",
+    "type": "mcq",
+    "q": "I need a charger ___ works with this phone.",
+    "options": [
+      "where",
+      "whose",
+      "which",
+      "who"
+    ],
+    "answer": 2,
+    "explain_ru": "Who и that могут указывать на человека. Which и that могут указывать на предмет."
+  },
+  {
+    "id": "G-A2-111",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-relative-pronouns",
+    "topic_en": "Relative pronouns who / which / that (simple)",
+    "topic_ru": "Относительные местоимения who / which / that (простые случаи)",
+    "type": "gap",
+    "q": "The woman ___ runs the café lives above it.",
+    "accept": [
+      "who",
+      "that"
+    ],
+    "explain_ru": "Who и that могут указывать на человека. Which и that могут указывать на предмет."
+  },
+  {
+    "id": "G-A2-112",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-relative-pronouns",
+    "topic_en": "Relative pronouns who / which / that (simple)",
+    "topic_ru": "Относительные местоимения who / which / that (простые случаи)",
+    "type": "gap",
+    "q": "Is this the cable ___ came with your laptop?",
+    "accept": [
+      "which",
+      "that"
+    ],
+    "explain_ru": "Who и that могут указывать на человека. Which и that могут указывать на предмет."
+  },
+  {
+    "id": "G-A2-113",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "g-a2p-could-polite",
+    "topic_en": "could / would for polite requests; can / could for permission",
+    "topic_ru": "could / would: вежливые просьбы; can / could: разрешение",
+    "type": "mcq",
+    "q": "Could you ___ me the Wi-Fi password, please?",
+    "options": [
+      "tells",
+      "telling",
+      "told",
+      "tell"
+    ],
+    "answer": 3,
+    "explain_ru": "В вежливой просьбе could или would ставится перед подлежащим, а смысловой глагол остаётся в начальной форме без to."
+  },
+  {
+    "id": "G-A2-114",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "g-a2p-could-polite",
+    "topic_en": "could / would for polite requests; can / could for permission",
+    "topic_ru": "could / would: вежливые просьбы; can / could: разрешение",
+    "type": "mcq",
+    "q": "Would you ___ the door open for me, please?",
+    "options": [
+      "hold",
+      "holds",
+      "held",
+      "holding"
+    ],
+    "answer": 0,
+    "explain_ru": "В вежливой просьбе could или would ставится перед подлежащим, а смысловой глагол остаётся в начальной форме без to."
+  },
+  {
+    "id": "G-A2-115",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "g-a2p-could-polite",
+    "topic_en": "could / would for polite requests; can / could for permission",
+    "topic_ru": "could / would: вежливые просьбы; can / could: разрешение",
+    "type": "transform",
+    "q": "Please send me the receipt.",
+    "key": "COULD",
+    "frame": "___ me the receipt, please?",
+    "accept": [
+      "could you send"
+    ],
+    "explain_ru": "В вежливой просьбе could или would ставится перед подлежащим, а смысловой глагол остаётся в начальной форме без to."
+  },
+  {
+    "id": "G-A2-116",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "g-a2p-could-polite",
+    "topic_en": "could / would for polite requests; can / could for permission",
+    "topic_ru": "could / would: вежливые просьбы; can / could: разрешение",
+    "type": "transform",
+    "q": "Please wait here for a moment.",
+    "key": "WOULD",
+    "frame": "___ here for a moment, please?",
+    "accept": [
+      "would you wait"
+    ],
+    "explain_ru": "В вежливой просьбе could или would ставится перед подлежащим, а смысловой глагол остаётся в начальной форме без to."
+  },
+  {
+    "id": "G-A2-117",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "g-a2p-passive-intro",
+    "topic_en": "Passive: present and past simple",
+    "topic_ru": "Пассив: Present и Past Simple",
+    "type": "mcq",
+    "q": "The bins are ___ every Tuesday.",
+    "options": [
+      "empty",
+      "empties",
+      "emptied",
+      "emptying"
+    ],
+    "answer": 2,
+    "explain_ru": "В пассиве Present Simple — am / is / are + причастие, в Past Simple — was / were + причастие."
+  },
+  {
+    "id": "G-A2-118",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "g-a2p-passive-intro",
+    "topic_en": "Passive: present and past simple",
+    "topic_ru": "Пассив: Present и Past Simple",
+    "type": "mcq",
+    "q": "These photos were ___ on a phone.",
+    "options": [
+      "took",
+      "take",
+      "takes",
+      "taken"
+    ],
+    "answer": 3,
+    "explain_ru": "В пассиве Present Simple — am / is / are + причастие, в Past Simple — was / were + причастие."
+  },
+  {
+    "id": "G-A2-119",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "g-a2p-passive-intro",
+    "topic_en": "Passive: present and past simple",
+    "topic_ru": "Пассив: Present и Past Simple",
+    "type": "brackets",
+    "q": "Our office ___ (clean) every evening by the same team.",
+    "accept": [
+      "is cleaned"
+    ],
+    "explain_ru": "В пассиве Present Simple — am / is / are + причастие, в Past Simple — was / were + причастие."
+  },
+  {
+    "id": "G-A2-120",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "g-a2p-passive-intro",
+    "topic_en": "Passive: present and past simple",
+    "topic_ru": "Пассив: Present и Past Simple",
+    "type": "brackets",
+    "q": "The library ___ (close) by the council last year.",
+    "accept": [
+      "was closed"
+    ],
+    "explain_ru": "В пассиве Present Simple — am / is / are + причастие, в Past Simple — was / were + причастие."
+  },
+  {
+    "id": "G-A2-121",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "g-b1-pp-for-since",
+    "topic_en": "Present perfect with for / since",
+    "topic_ru": "Present Perfect с for / since",
+    "type": "mcq",
+    "q": "I've had this phone ___ three years now.",
+    "options": [
+      "for",
+      "since",
+      "during",
+      "until"
+    ],
+    "answer": 0,
+    "explain_ru": "В Present Perfect for вводит длительность, а since — момент начала."
+  },
+  {
+    "id": "G-A2-122",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "g-b1-pp-for-since",
+    "topic_en": "Present perfect with for / since",
+    "topic_ru": "Present Perfect с for / since",
+    "type": "mcq",
+    "q": "We've lived here ever ___ I started my new job.",
+    "options": [
+      "from",
+      "since",
+      "for",
+      "during"
+    ],
+    "answer": 1,
+    "explain_ru": "В Present Perfect for вводит длительность, а since — момент начала."
+  },
+  {
+    "id": "G-A2-123",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "g-b1-pp-for-since",
+    "topic_en": "Present perfect with for / since",
+    "topic_ru": "Present Perfect с for / since",
+    "type": "transform",
+    "q": "I met Zoe in 2020 and I still know her.",
+    "key": "SINCE",
+    "frame": "I've ___ 2020.",
+    "accept": [
+      "known zoe since",
+      "known her since"
+    ],
+    "explain_ru": "В Present Perfect for вводит длительность, а since — момент начала."
+  },
+  {
+    "id": "G-A2-124",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "g-b1-pp-for-since",
+    "topic_en": "Present perfect with for / since",
+    "topic_ru": "Present Perfect с for / since",
+    "type": "transform",
+    "q": "We moved here six years ago and still live here.",
+    "key": "FOR",
+    "frame": "We've ___ six years.",
+    "accept": [
+      "lived here for",
+      "been living here for"
+    ],
+    "explain_ru": "В Present Perfect for вводит длительность, а since — момент начала."
+  },
+  {
+    "id": "G-A2-125",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "g-a2p-need-neednt",
+    "topic_en": "need / needn't",
+    "topic_ru": "need / needn't",
+    "type": "mcq",
+    "q": "You need ___ the form before Friday.",
+    "options": [
+      "sends",
+      "sent",
+      "sending",
+      "to send"
+    ],
+    "answer": 3,
+    "explain_ru": "После need в значении необходимости используется to. После модального needn't глагол ставится без to."
+  },
+  {
+    "id": "G-A2-126",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "g-a2p-need-neednt",
+    "topic_en": "need / needn't",
+    "topic_ru": "need / needn't",
+    "type": "mcq",
+    "q": "You needn't ___ a towel. The gym gives you one.",
+    "options": [
+      "bring",
+      "brings",
+      "bringing",
+      "brought"
+    ],
+    "answer": 0,
+    "explain_ru": "После need в значении необходимости используется to. После модального needn't глагол ставится без to."
+  },
+  {
+    "id": "G-A2-127",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "g-a2p-need-neednt",
+    "topic_en": "need / needn't",
+    "topic_ru": "need / needn't",
+    "type": "brackets",
+    "q": "We ___ (need / buy) tickets before we get on the train.",
+    "accept": [
+      "need to buy"
+    ],
+    "explain_ru": "После need в значении необходимости используется to. После модального needn't глагол ставится без to."
+  },
+  {
+    "id": "G-A2-128",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "g-a2p-need-neednt",
+    "topic_en": "need / needn't",
+    "topic_ru": "need / needn't",
+    "type": "transform",
+    "q": "You don't have to print the ticket.",
+    "key": "NEEDN'T",
+    "frame": "You ___ the ticket.",
+    "accept": [
+      "needn't print"
+    ],
+    "explain_ru": "После need в значении необходимости используется to. После модального needn't глагол ставится без to."
+  },
+  {
+    "id": "G-A2-129",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "g-a2p-adjective-order",
+    "topic_en": "Order of adjectives",
+    "topic_ru": "Порядок прилагательных",
+    "type": "mcq",
+    "q": "Maya put the spare keys in a ___ blue box.",
+    "options": [
+      "smallly",
+      "small",
+      "smaller than",
+      "smallest"
+    ],
+    "answer": 1,
+    "explain_ru": "В обычном порядке описания размер стоит перед цветом, возраст — перед цветом, цвет — перед материалом."
+  },
+  {
+    "id": "G-A2-130",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "g-a2p-adjective-order",
+    "topic_en": "Order of adjectives",
+    "topic_ru": "Порядок прилагательных",
+    "type": "mcq",
+    "q": "We saw an ___ red bus outside the station.",
+    "options": [
+      "oldest",
+      "oldly",
+      "old",
+      "older than"
+    ],
+    "answer": 2,
+    "explain_ru": "В обычном порядке описания размер стоит перед цветом, возраст — перед цветом, цвет — перед материалом."
+  },
+  {
+    "id": "G-A2-131",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "g-a2p-adjective-order",
+    "topic_en": "Order of adjectives",
+    "topic_ru": "Порядок прилагательных",
+    "type": "transform",
+    "q": "The bag is made of leather. It is black.",
+    "key": "LEATHER",
+    "frame": "It's a ___.",
+    "accept": [
+      "black leather bag"
+    ],
+    "explain_ru": "В обычном порядке описания размер стоит перед цветом, возраст — перед цветом, цвет — перед материалом."
+  },
+  {
+    "id": "G-A2-132",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "g-a2p-adjective-order",
+    "topic_en": "Order of adjectives",
+    "topic_ru": "Порядок прилагательных",
+    "type": "transform",
+    "q": "The coat is long and blue.",
+    "key": "BLUE",
+    "frame": "It's a ___.",
+    "accept": [
+      "long blue coat"
+    ],
+    "explain_ru": "В обычном порядке описания размер стоит перед цветом, возраст — перед цветом, цвет — перед материалом."
+  },
+  {
+    "id": "G-A2-133",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "g-a2p-ed-ing",
+    "topic_en": "Participles as adjectives: -ed / -ing (bored / boring)",
+    "topic_ru": "Причастия как прилагательные: -ed / -ing",
+    "type": "mcq",
+    "q": "I'm ___ with this game. Let's play something else.",
+    "options": [
+      "bored",
+      "boring",
+      "bore",
+      "bores"
+    ],
+    "answer": 0,
+    "explain_ru": "Форма на -ed описывает чувство человека, а форма на -ing — то, что вызывает это чувство."
+  },
+  {
+    "id": "G-A2-134",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "g-a2p-ed-ing",
+    "topic_en": "Participles as adjectives: -ed / -ing (bored / boring)",
+    "topic_ru": "Причастия как прилагательные: -ed / -ing",
+    "type": "mcq",
+    "q": "The news about the missing dog was ___.",
+    "options": [
+      "worries",
+      "worrying",
+      "worried",
+      "worry"
+    ],
+    "answer": 1,
+    "explain_ru": "Форма на -ed описывает чувство человека, а форма на -ing — то, что вызывает это чувство."
+  },
+  {
+    "id": "G-A2-135",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "g-a2p-ed-ing",
+    "topic_en": "Participles as adjectives: -ed / -ing (bored / boring)",
+    "topic_ru": "Причастия как прилагательные: -ed / -ing",
+    "type": "wordform",
+    "q": "I was really ___ about my first visit to London.",
+    "base": "EXCITE",
+    "accept": [
+      "excited"
+    ],
+    "explain_ru": "Форма на -ed описывает чувство человека, а форма на -ing — то, что вызывает это чувство."
+  },
+  {
+    "id": "G-A2-136",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "g-a2p-ed-ing",
+    "topic_en": "Participles as adjectives: -ed / -ing (bored / boring)",
+    "topic_ru": "Причастия как прилагательные: -ed / -ing",
+    "type": "wordform",
+    "q": "The film was so ___ that half the class fell asleep.",
+    "base": "BORE",
+    "accept": [
+      "boring"
+    ],
+    "explain_ru": "Форма на -ed описывает чувство человека, а форма на -ing — то, что вызывает это чувство."
+  },
+  {
+    "id": "G-A2-137",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "g-a2p-so-because",
+    "topic_en": "Clauses with when / if / because / so; that-clauses after think, hope, say",
+    "topic_ru": "Придаточные с when / if / because / so; that после think, hope, say",
+    "type": "mcq",
+    "q": "The train was cancelled, and ___ we had to book a taxi.",
+    "options": [
+      "although",
+      "unless",
+      "so",
+      "because"
+    ],
+    "answer": 2,
+    "explain_ru": "Because вводит причину, so — следствие. После think, hope и say придаточное может начинаться с that."
+  },
+  {
+    "id": "G-A2-138",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "g-a2p-so-because",
+    "topic_en": "Clauses with when / if / because / so; that-clauses after think, hope, say",
+    "topic_ru": "Придаточные с when / if / because / so; that после think, hope, say",
+    "type": "mcq",
+    "q": "I think ___ the meeting starts at nine.",
+    "options": [
+      "what",
+      "which",
+      "whose",
+      "that"
+    ],
+    "answer": 3,
+    "explain_ru": "Because вводит причину, so — следствие. После think, hope и say придаточное может начинаться с that."
+  },
+  {
+    "id": "G-A2-139",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "g-a2p-so-because",
+    "topic_en": "Clauses with when / if / because / so; that-clauses after think, hope, say",
+    "topic_ru": "Придаточные с when / if / because / so; that после think, hope, say",
+    "type": "transform",
+    "q": "We went inside. It started to rain.",
+    "key": "BECAUSE",
+    "frame": "We ___ to rain.",
+    "accept": [
+      "went inside because it started"
+    ],
+    "explain_ru": "Because вводит причину, so — следствие. После think, hope и say придаточное может начинаться с that."
+  },
+  {
+    "id": "G-A2-140",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "g-a2p-so-because",
+    "topic_en": "Clauses with when / if / because / so; that-clauses after think, hope, say",
+    "topic_ru": "Придаточные с when / if / because / so; that после think, hope, say",
+    "type": "transform",
+    "q": "I want our parcel to arrive on Friday.",
+    "key": "HOPE",
+    "frame": "I ___ on Friday.",
+    "accept": [
+      "hope it arrives",
+      "hope it will arrive",
+      "hope that it arrives",
+      "hope that it will arrive"
+    ],
+    "explain_ru": "Because вводит причину, so — следствие. После think, hope и say придаточное может начинаться с that."
+  },
+  {
+    "id": "G-A2-141",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "g-a2p-double-genitive",
+    "topic_en": "Double genitive: a friend of mine",
+    "topic_ru": "Двойной родительный: a friend of mine",
+    "type": "mcq",
+    "q": "A friend of ___ recommended this café to me.",
+    "options": [
+      "I",
+      "mine",
+      "my",
+      "me"
+    ],
+    "answer": 1,
+    "explain_ru": "После a friend of или a photo of для принадлежности используется самостоятельное притяжательное местоимение или имя с апострофом."
+  },
+  {
+    "id": "G-A2-142",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "g-a2p-double-genitive",
+    "topic_en": "Double genitive: a friend of mine",
+    "topic_ru": "Двойной родительный: a friend of mine",
+    "type": "mcq",
+    "q": "That's a photo of ___, isn't it? The one you took at the beach.",
+    "options": [
+      "you took",
+      "yourself took",
+      "yours",
+      "your"
+    ],
+    "answer": 2,
+    "explain_ru": "После a friend of или a photo of для принадлежности используется самостоятельное притяжательное местоимение или имя с апострофом."
+  },
+  {
+    "id": "G-A2-143",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "g-a2p-double-genitive",
+    "topic_en": "Double genitive: a friend of mine",
+    "topic_ru": "Двойной родительный: a friend of mine",
+    "type": "transform",
+    "q": "This is one of my drawings.",
+    "key": "MINE",
+    "frame": "This is a ___.",
+    "accept": [
+      "drawing of mine"
+    ],
+    "explain_ru": "После a friend of или a photo of для принадлежности используется самостоятельное притяжательное местоимение или имя с апострофом."
+  },
+  {
+    "id": "G-A2-144",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 2,
+    "topic_id": "g-a2p-double-genitive",
+    "topic_en": "Double genitive: a friend of mine",
+    "topic_ru": "Двойной родительный: a friend of mine",
+    "type": "transform",
+    "q": "Sam is one of Ben's friends.",
+    "key": "BEN'S",
+    "frame": "Sam is a ___.",
+    "accept": [
+      "friend of ben's"
+    ],
+    "explain_ru": "После a friend of или a photo of для принадлежности используется самостоятельное притяжательное местоимение или имя с апострофом."
+  },
+  {
+    "id": "G-A2-145",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-b1-zero-conditional",
+    "topic_en": "Zero conditional",
+    "topic_ru": "Условные предложения нулевого типа",
+    "type": "mcq",
+    "q": "If you ___ this button, the screen lights up.",
+    "options": [
+      "presses",
+      "pressing",
+      "pressed",
+      "press"
+    ],
+    "answer": 3,
+    "explain_ru": "В нулевом условном речь об общем правиле или повторяющейся ситуации. В обеих частях обычно используется Present Simple."
+  },
+  {
+    "id": "G-A2-146",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-b1-zero-conditional",
+    "topic_en": "Zero conditional",
+    "topic_ru": "Условные предложения нулевого типа",
+    "type": "brackets",
+    "q": "If the temperature ___ (drop) below zero, water freezes.",
+    "accept": [
+      "drops"
+    ],
+    "explain_ru": "В нулевом условном речь об общем правиле или повторяющейся ситуации. В обеих частях обычно используется Present Simple."
+  },
+  {
+    "id": "G-A2-147",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-past-simple",
+    "topic_en": "Past simple: regular and irregular verbs",
+    "topic_ru": "Past Simple: правильные и неправильные глаголы",
+    "type": "brackets",
+    "q": "Our train ___ (leave) the station at ten yesterday morning.",
+    "accept": [
+      "left"
+    ],
+    "explain_ru": "Для завершённого действия вчера используется Past Simple. Форма leave — left."
+  },
+  {
+    "id": "G-A2-148",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-pp-just-already-yet",
+    "topic_en": "Present perfect with just / already / yet",
+    "topic_ru": "Present Perfect с just / already / yet",
+    "type": "transform",
+    "q": "I haven't chosen a seat so far.",
+    "key": "YET",
+    "frame": "I ___ a seat.",
+    "accept": [
+      "haven't yet chosen",
+      "have not yet chosen"
+    ],
+    "explain_ru": "Yet может стоять перед причастием или в конце предложения."
+  },
+  {
+    "id": "G-A2-149",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-going-to",
+    "topic_en": "be going to for plans and predictions",
+    "topic_ru": "be going to: планы и прогнозы",
+    "type": "brackets",
+    "q": "I've bought the ingredients. I ___ (be / go) to make soup tonight.",
+    "accept": [
+      "am going",
+      "'m going"
+    ],
+    "explain_ru": "Для запланированного действия am going to дополняется начальной формой глагола."
+  },
+  {
+    "id": "G-A2-150",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-will",
+    "topic_en": "will for predictions, offers and decisions",
+    "topic_ru": "will: прогнозы, предложения, спонтанные решения",
+    "type": "transform",
+    "q": "I can carry that bag for you. Let me do it.",
+    "key": "WILL",
+    "frame": "I ___ that bag for you.",
+    "accept": [
+      "will carry"
+    ],
+    "explain_ru": "С will можно сделать предложение помощи."
+  },
+  {
+    "id": "G-A2-151",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-pc-future",
+    "topic_en": "Present continuous for future arrangements",
+    "topic_ru": "Present Continuous для договорённостей о будущем",
+    "type": "transform",
+    "q": "I've arranged to meet the electrician at nine tomorrow.",
+    "key": "MEETING",
+    "frame": "I ___ the electrician at nine tomorrow.",
+    "accept": [
+      "am meeting",
+      "'m meeting"
+    ],
+    "explain_ru": "Present Continuous используется для уже оговорённой встречи."
+  },
+  {
+    "id": "G-A2-152",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-comparatives",
+    "topic_en": "Comparative and superlative adjectives",
+    "topic_ru": "Сравнительная и превосходная степень",
+    "type": "brackets",
+    "q": "This seat is ___ (comfortable) than the one by the door.",
+    "accept": [
+      "more comfortable"
+    ],
+    "explain_ru": "С длинным прилагательным используется more + прилагательное."
+  },
+  {
+    "id": "G-A2-153",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-too-enough",
+    "topic_en": "too / enough",
+    "topic_ru": "too / enough",
+    "type": "transform",
+    "q": "The hall is too small for the class.",
+    "key": "ENOUGH",
+    "frame": "The hall ___ for the class.",
+    "accept": [
+      "isn't big enough"
+    ],
+    "explain_ru": "Enough ставится после прилагательного."
+  },
+  {
+    "id": "G-A2-154",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-obligation",
+    "topic_en": "must / have to / don't have to",
+    "topic_ru": "must / have to / don't have to",
+    "type": "transform",
+    "q": "It's against the rules to park here.",
+    "key": "MUST",
+    "frame": "Drivers ___ here.",
+    "accept": [
+      "must not park"
+    ],
+    "explain_ru": "Must not выражает запрет."
+  },
+  {
+    "id": "G-A2-155",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-should",
+    "topic_en": "should / shouldn't for advice",
+    "topic_ru": "should / shouldn't: совет",
+    "type": "transform",
+    "q": "My advice is to take a short break.",
+    "key": "SHOULD",
+    "frame": "You ___ a short break.",
+    "accept": [
+      "should take"
+    ],
+    "explain_ru": "Для совета используется should с начальной формой глагола."
+  },
+  {
+    "id": "G-A2-156",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-first-conditional",
+    "topic_en": "First conditional",
+    "topic_ru": "Условные предложения первого типа",
+    "type": "brackets",
+    "q": "If my train ___ (arrive) on time this evening, I'll cook dinner.",
+    "accept": [
+      "arrives"
+    ],
+    "explain_ru": "В первом условном после if используется Present Simple."
+  },
+  {
+    "id": "G-A2-157",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-verb-patterns-basic",
+    "topic_en": "Verb + to-infinitive / -ing (want to, enjoy -ing)",
+    "topic_ru": "Глагол + инфинитив / -ing (want to, enjoy -ing)",
+    "type": "brackets",
+    "q": "Sam wants ___ (join) the walking club.",
+    "accept": [
+      "to join"
+    ],
+    "explain_ru": "После want используется инфинитив с to."
+  },
+  {
+    "id": "G-A2-158",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-prepositions-movement",
+    "topic_en": "Prepositions of movement",
+    "topic_ru": "Предлоги движения",
+    "type": "gap",
+    "q": "We walked ___ the bridge from one side of the river to the other.",
+    "accept": [
+      "across",
+      "over"
+    ],
+    "explain_ru": "Across и over подходят для движения по мосту с одной стороны на другую."
+  },
+  {
+    "id": "G-A2-159",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-articles",
+    "topic_en": "Articles: first and second mention, the with unique things",
+    "topic_ru": "Артикли: первое и повторное упоминание, the с уникальными предметами",
+    "type": "gap",
+    "q": "We watched ___ moon rise above the rooftops.",
+    "accept": [
+      "the"
+    ],
+    "explain_ru": "С moon в этом значении используется определённый артикль."
+  },
+  {
+    "id": "G-A2-160",
+    "skill": "grammar",
+    "level": "A2",
+    "band": 1,
+    "topic_id": "g-a2-past-continuous",
+    "topic_en": "Past continuous",
+    "topic_ru": "Past Continuous",
+    "type": "brackets",
+    "q": "At eight last night, I ___ (cook) dinner when the lights went out.",
+    "accept": [
+      "was cooking"
+    ],
+    "explain_ru": "Past Continuous описывает действие, которое шло в момент другого события."
   }
 ]

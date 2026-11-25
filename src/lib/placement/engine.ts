@@ -982,7 +982,7 @@ export const verdictOf = (score: number | null) => (score === null ? null : scor
 /** Задание по теме: сначала «вписать самому» (или prefer), не использованное; fix — «найди и исправь». */
 function topicPick(st: PState, bank: Bank, topic: string, prefer: "typed" | "fix" | "mcq" | "hard", rnd: () => number): CoreItem | null {
   const used = new Set(st.core.map((x) => x.id));
-  const all = bank.core.filter((x) => isGram(x) && x.topic_id === topic && !used.has(x.id));
+  const all = bank.core.filter((x) => isGram(x) && x.topic_id === topic && !used.has(x.id) && !used.has(`F-${x.id}`));
   const fixes = (bank.fix ?? []).filter((x) => x.topic_id === topic && !used.has(x.id) && !used.has(x.id.replace(/^F-/, "")));
   const unseen = <T extends CoreItem>(xs: T[]) => { const u = xs.filter((x) => !st.seen?.includes(x.id)); return u.length ? u : xs; };
   const one = (xs: CoreItem[]) => (xs.length ? unseen(xs)[Math.floor(rnd() * unseen(xs).length)] : null);
@@ -1104,11 +1104,21 @@ export function summarizeV6(st: PState, bank: Bank): V6Summary {
     const okx = xs.filter((x) => x.a.ok);
     const slow = okx.length >= 1 && okx.filter((x) => (x.a.ms ?? 0) > (typedIt(x.it) ? V6.SLOW_T : V6.SLOW_C)).length * 2 > okx.length;
     const fx = xs.find((x) => x.it.type === "fix");
-    const lv = (bank.core.find((x) => x.topic_id === t)?.level ?? "A1") as PLevel;
-    return { id: t, name: tName.get(t) ?? t, level: lv, group: gid, groupName: gName.get(gid) ?? "", n: xs.length, c: okx.length, score: sc, verdict: verdictOf(sc), sureWrong: xs.some((x) => !x.a.ok && x.a.cf === 1), slow, fix: fx ? !!fx.a.ok : null, typed: xs.filter((x) => typedIt(x.it)).length, roots: [] };
+    const first = xs[0]?.it;
+    return { id: t, name: first?.topic_ru ?? tName.get(t) ?? t, level: first?.level ?? "A1", group: gid, groupName: gName.get(gid) ?? "", n: xs.length, c: okx.length, score: sc, verdict: verdictOf(sc), sureWrong: xs.some((x) => !x.a.ok && x.a.cf === 1), slow, fix: fx ? !!fx.a.ok : null, typed: xs.filter((x) => typedIt(x.it)).length, roots: [] };
   };
   const D = st.diag;
-  const topics = D === undefined ? [] : topicsAt(bank, D).map((x) => topic(x.t, x.g)).filter((x) => x.n);
+  const diagnostic = new Map(D === undefined ? [] : topicsAt(bank, D).map((x) => [x.t, x.g]));
+  // Перенос темы между уровнями не должен удалять её из отчёта о пройденном тесте.
+  if (D !== undefined) {
+    for (const question of st.core) {
+      const item = gItem(st, question.id);
+      if (item?.skill === "grammar" && item.level === PL_LEVELS[D] && question.ph !== "g" && question.ph !== "z" && !diagnostic.has(item.topic_id)) {
+        diagnostic.set(item.topic_id, item.group ?? "");
+      }
+    }
+  }
+  const topics = [...diagnostic].map(([id, group]) => topic(id, group)).filter((x) => x.n);
   const gOf = new Map(bank.groups.flatMap((g) => g.topics.map((t) => [t, g.id] as const)));
   const base = (st.bt ?? []).map((t) => topic(t, gOf.get(t) ?? "")).filter((x) => x.n);
   // корень: тема-основа (уровнем ниже) тоже не даётся

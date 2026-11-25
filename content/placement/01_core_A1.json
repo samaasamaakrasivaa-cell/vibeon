@@ -2319,5 +2319,485 @@
     ],
     "explain_ru": "Вопрос о месте — Where.",
     "hint_ru": "вопросительное слово"
+  },
+  {
+    "id": "G-A1-101",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-going-to-plans",
+    "topic_en": "be going to for plans (intro)",
+    "topic_ru": "be going to: планы (знакомство)",
+    "type": "mcq",
+    "q": "I ___ going to cook dinner tonight.",
+    "options": [
+      "am",
+      "is",
+      "are",
+      "be"
+    ],
+    "answer": 0,
+    "explain_ru": "Для плана используется am / is / are + going to + начальная форма глагола."
+  },
+  {
+    "id": "G-A1-102",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-going-to-plans",
+    "topic_en": "be going to for plans (intro)",
+    "topic_ru": "be going to: планы (знакомство)",
+    "type": "mcq",
+    "q": "We're going to ___ a film at home tonight.",
+    "options": [
+      "watches",
+      "watch",
+      "watching",
+      "watched"
+    ],
+    "answer": 1,
+    "explain_ru": "Для плана используется am / is / are + going to + начальная форма глагола."
+  },
+  {
+    "id": "G-A1-103",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-going-to-plans",
+    "topic_en": "be going to for plans (intro)",
+    "topic_ru": "be going to: планы (знакомство)",
+    "type": "brackets",
+    "q": "Mia ___ (be) going to make lunch at home.",
+    "accept": [
+      "is"
+    ],
+    "explain_ru": "Для плана используется am / is / are + going to + начальная форма глагола."
+  },
+  {
+    "id": "G-A1-104",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-going-to-plans",
+    "topic_en": "be going to for plans (intro)",
+    "topic_ru": "be going to: планы (знакомство)",
+    "type": "brackets",
+    "q": "I'm going to ___ (visit) my sister on Sunday.",
+    "accept": [
+      "visit"
+    ],
+    "explain_ru": "Для плана используется am / is / are + going to + начальная форма глагола."
+  },
+  {
+    "id": "G-A1-105",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-comparatives-intro",
+    "topic_en": "Comparatives and superlatives (intro)",
+    "topic_ru": "Сравнительная и превосходная степень (знакомство)",
+    "type": "mcq",
+    "q": "This bag is ___ than that one.",
+    "options": [
+      "the lightest",
+      "more lighter",
+      "lighter",
+      "lightest"
+    ],
+    "answer": 2,
+    "explain_ru": "У коротких прилагательных сравнительная форма обычно оканчивается на -er, превосходная — на -est. Для good формы better и best."
+  },
+  {
+    "id": "G-A1-106",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-comparatives-intro",
+    "topic_en": "Comparatives and superlatives (intro)",
+    "topic_ru": "Сравнительная и превосходная степень (знакомство)",
+    "type": "mcq",
+    "q": "Of our three rooms, this one is the ___.",
+    "options": [
+      "smaller",
+      "most small",
+      "more smaller",
+      "smallest"
+    ],
+    "answer": 3,
+    "explain_ru": "У коротких прилагательных сравнительная форма обычно оканчивается на -er, превосходная — на -est. Для good формы better и best."
+  },
+  {
+    "id": "G-A1-107",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-comparatives-intro",
+    "topic_en": "Comparatives and superlatives (intro)",
+    "topic_ru": "Сравнительная и превосходная степень (знакомство)",
+    "type": "brackets",
+    "q": "This street is ___ (wide) than our street.",
+    "accept": [
+      "wider"
+    ],
+    "explain_ru": "У коротких прилагательных сравнительная форма обычно оканчивается на -er, превосходная — на -est. Для good формы better и best."
+  },
+  {
+    "id": "G-A1-108",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-comparatives-intro",
+    "topic_en": "Comparatives and superlatives (intro)",
+    "topic_ru": "Сравнительная и превосходная степень (знакомство)",
+    "type": "brackets",
+    "q": "Of the four cafés near my flat, this one has the ___ (good) coffee.",
+    "accept": [
+      "best"
+    ],
+    "explain_ru": "У коротких прилагательных сравнительная форма обычно оканчивается на -er, превосходная — на -est. Для good формы better и best."
+  },
+  {
+    "id": "G-A1-109",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-intensifiers",
+    "topic_en": "Very basic intensifiers: very, really",
+    "topic_ru": "Простые усилители: very, really",
+    "type": "mcq",
+    "q": "The bus was ___ full, so we waited for the next one.",
+    "options": [
+      "lots",
+      "very",
+      "many",
+      "much"
+    ],
+    "answer": 1,
+    "explain_ru": "Very усиливает прилагательное или наречие. Перед глаголом like для усиления можно поставить really."
+  },
+  {
+    "id": "G-A1-110",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-intensifiers",
+    "topic_en": "Very basic intensifiers: very, really",
+    "topic_ru": "Простые усилители: very, really",
+    "type": "mcq",
+    "q": "I ___ like this song. Can you play it again?",
+    "options": [
+      "many",
+      "lot",
+      "really",
+      "very"
+    ],
+    "answer": 2,
+    "explain_ru": "Very усиливает прилагательное или наречие. Перед глаголом like для усиления можно поставить really."
+  },
+  {
+    "id": "G-A1-111",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-intensifiers",
+    "topic_en": "Very basic intensifiers: very, really",
+    "topic_ru": "Простые усилители: very, really",
+    "type": "wordform",
+    "q": "My new phone is ___ easy to use.",
+    "base": "REAL",
+    "accept": [
+      "really"
+    ],
+    "explain_ru": "Very усиливает прилагательное или наречие. Перед глаголом like для усиления можно поставить really."
+  },
+  {
+    "id": "G-A1-112",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-intensifiers",
+    "topic_en": "Very basic intensifiers: very, really",
+    "topic_ru": "Простые усилители: very, really",
+    "type": "transform",
+    "q": "It's a really small flat.",
+    "key": "VERY",
+    "frame": "The flat is ___.",
+    "accept": [
+      "very small"
+    ],
+    "explain_ru": "Very усиливает прилагательное или наречие. Перед глаголом like для усиления можно поставить really."
+  },
+  {
+    "id": "G-A1-113",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-pronouns",
+    "topic_en": "Subject and object pronouns",
+    "topic_ru": "Личные и объектные местоимения",
+    "type": "gap",
+    "q": "My friends are outside. Can you see ___?",
+    "accept": [
+      "them"
+    ],
+    "explain_ru": "Them — объектное местоимение для нескольких людей или предметов."
+  },
+  {
+    "id": "G-A1-114",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-like-ing",
+    "topic_en": "like / love / hate + -ing",
+    "topic_ru": "like / love / hate + -ing",
+    "type": "brackets",
+    "q": "I enjoy the whole process and love ___ (make) bread at weekends.",
+    "accept": [
+      "making",
+      "to make"
+    ],
+    "explain_ru": "После love для регулярного увлечения возможна форма на -ing, а также инфинитив с to."
+  },
+  {
+    "id": "G-A1-115",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-possessives",
+    "topic_en": "Possessive adjectives and 's",
+    "topic_ru": "Притяжательные местоимения и 's",
+    "type": "transform",
+    "q": "My sister is called Sophie.",
+    "key": "HER",
+    "frame": "___ Sophie.",
+    "accept": [
+      "her name is"
+    ],
+    "explain_ru": "Перед существительным name используется her, поскольку речь о сестре."
+  },
+  {
+    "id": "G-A1-116",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-demonstratives",
+    "topic_en": "this / that / these / those",
+    "topic_ru": "this / that / these / those",
+    "type": "transform",
+    "q": "Two benches are over there. The benches are new.",
+    "key": "THOSE",
+    "frame": "___ new.",
+    "accept": [
+      "those benches are"
+    ],
+    "explain_ru": "Для нескольких предметов на расстоянии используется those."
+  },
+  {
+    "id": "G-A1-117",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-articles-basic",
+    "topic_en": "Articles a / an / the (basic use)",
+    "topic_ru": "Артикли a / an / the (базовое употребление)",
+    "type": "gap",
+    "q": "Could I have ___ egg with my toast, please?",
+    "accept": [
+      "an"
+    ],
+    "explain_ru": "Перед единственным исчисляемым существительным egg, начинающимся с гласного звука, используется an."
+  },
+  {
+    "id": "G-A1-118",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-plural-nouns",
+    "topic_en": "Plural nouns (regular and irregular)",
+    "topic_ru": "Множественное число существительных",
+    "type": "wordform",
+    "q": "The school bus can carry twenty ___.",
+    "base": "CHILD",
+    "accept": [
+      "children"
+    ],
+    "explain_ru": "Множественное число child — children."
+  },
+  {
+    "id": "G-A1-119",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-there-is-are",
+    "topic_en": "there is / there are",
+    "topic_ru": "Оборот there is / there are",
+    "type": "brackets",
+    "q": "There ___ (be) three clean cups in the cupboard.",
+    "accept": [
+      "are"
+    ],
+    "explain_ru": "Для перечисления нескольких предметов здесь нужна форма there are."
+  },
+  {
+    "id": "G-A1-120",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-frequency-adverbs",
+    "topic_en": "Adverbs of frequency",
+    "topic_ru": "Наречия частотности",
+    "type": "transform",
+    "q": "Lena is late every day.",
+    "key": "ALWAYS",
+    "frame": "Lena ___ late.",
+    "accept": [
+      "is always"
+    ],
+    "explain_ru": "Наречие частотности always ставится после формы be."
+  },
+  {
+    "id": "G-A1-121",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-present-continuous-now",
+    "topic_en": "Present continuous for now",
+    "topic_ru": "Present Continuous (действие сейчас)",
+    "type": "brackets",
+    "q": "Look! The dog ___ (sleep) under your desk.",
+    "accept": [
+      "is sleeping",
+      "'s sleeping"
+    ],
+    "explain_ru": "Сейчас собака спит. Для действия в процессе нужна форма is sleeping."
+  },
+  {
+    "id": "G-A1-122",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-can",
+    "topic_en": "can / can't for ability and permission",
+    "topic_ru": "can / can't: умение и разрешение",
+    "type": "transform",
+    "q": "I know how to swim.",
+    "key": "CAN",
+    "frame": "I ___.",
+    "accept": [
+      "can swim"
+    ],
+    "explain_ru": "Для умения используется can с начальной формой глагола."
+  },
+  {
+    "id": "G-A1-123",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-prepositions-time",
+    "topic_en": "Prepositions of time: in / on / at",
+    "topic_ru": "Предлоги времени: in / on / at",
+    "type": "gap",
+    "q": "Our lesson starts ___ half past six.",
+    "accept": [
+      "at"
+    ],
+    "explain_ru": "С конкретным временем используется at."
+  },
+  {
+    "id": "G-A1-124",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-would-like",
+    "topic_en": "would like",
+    "topic_ru": "Конструкция would like",
+    "type": "transform",
+    "q": "I'd like a seat by the window, please.",
+    "key": "WOULD",
+    "frame": "I ___ a seat by the window, please.",
+    "accept": [
+      "would like"
+    ],
+    "explain_ru": "Полная форма I'd like — I would like."
+  },
+  {
+    "id": "G-A1-125",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-prepositions-place",
+    "topic_en": "Prepositions of place",
+    "topic_ru": "Предлоги места",
+    "type": "gap",
+    "q": "The spare key is ___ the flowerpot. Lift the pot and take it.",
+    "accept": [
+      "under",
+      "underneath",
+      "beneath"
+    ],
+    "explain_ru": "Ключ находится под горшком, поэтому нужно under."
+  },
+  {
+    "id": "G-A1-126",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-some-any",
+    "topic_en": "Countable and uncountable nouns with some / any",
+    "topic_ru": "Исчисляемые и неисчисляемые с some / any",
+    "type": "transform",
+    "q": "There are no clean glasses left.",
+    "key": "ANY",
+    "frame": "There ___ clean glasses left.",
+    "accept": [
+      "aren't any",
+      "are not any"
+    ],
+    "explain_ru": "В отрицании при неопределённом количестве используется any."
+  },
+  {
+    "id": "G-A1-127",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-was-were",
+    "topic_en": "Past simple of be: was / were",
+    "topic_ru": "Прошедшее время to be: was / were",
+    "type": "brackets",
+    "q": "My parents ___ (be) at home last night.",
+    "accept": [
+      "were"
+    ],
+    "explain_ru": "С подлежащим во множественном числе в прошедшем используется were."
+  },
+  {
+    "id": "G-A1-128",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-past-simple-basic",
+    "topic_en": "Past simple: regular and common irregular verbs",
+    "topic_ru": "Past Simple: правильные и частые неправильные глаголы",
+    "type": "brackets",
+    "q": "I ___ (lose) my bus ticket yesterday.",
+    "accept": [
+      "lost"
+    ],
+    "explain_ru": "Неправильная форма Past Simple от lose — lost."
+  },
+  {
+    "id": "G-A1-129",
+    "skill": "grammar",
+    "level": "A1",
+    "band": 1,
+    "topic_id": "g-a1-to-be",
+    "topic_en": "Verb to be: am / is / are",
+    "topic_ru": "Глагол to be: am / is / are",
+    "type": "brackets",
+    "q": "My brother and I ___ (be) in the same class.",
+    "accept": [
+      "are"
+    ],
+    "explain_ru": "С подлежащим my brother and I используется are."
   }
 ]

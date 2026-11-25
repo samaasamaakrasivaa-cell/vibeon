@@ -219,7 +219,7 @@
   {
     "topic_id": "g-a2-as-as",
     "skill": "grammar",
-    "level": "A2",
+    "level": "B1",
     "topic_en": "(not) as ... as",
     "topic_ru": "Сравнение (not) as ... as"
   },
@@ -261,7 +261,7 @@
   {
     "topic_id": "g-a2-might-may",
     "skill": "grammar",
-    "level": "A2",
+    "level": "B1",
     "topic_en": "might / may for possibility",
     "topic_ru": "might / may: возможность"
   },
@@ -317,7 +317,7 @@
   {
     "topic_id": "g-b1-pp-for-since",
     "skill": "grammar",
-    "level": "B1",
+    "level": "A2",
     "topic_en": "Present perfect with for / since",
     "topic_ru": "Present Perfect с for / since"
   },
@@ -352,7 +352,7 @@
   {
     "topic_id": "g-b1-zero-conditional",
     "skill": "grammar",
-    "level": "B1",
+    "level": "A2",
     "topic_en": "Zero conditional",
     "topic_ru": "Условные предложения нулевого типа"
   },
@@ -688,7 +688,7 @@
   {
     "topic_id": "g-c1-conditionals-alternatives",
     "skill": "grammar",
-    "level": "C1",
+    "level": "B2",
     "topic_en": "provided that / as long as / unless / otherwise",
     "topic_ru": "provided that / as long as / unless / otherwise"
   },
@@ -1223,5 +1223,278 @@
     "level": null,
     "topic_en": "Speaker's attitude",
     "topic_ru": "Отношение говорящего"
+  },
+  {
+    "topic_id": "g-a1-going-to-plans",
+    "skill": "grammar",
+    "level": "A1",
+    "topic_en": "be going to for plans (intro)",
+    "topic_ru": "be going to: планы (знакомство)"
+  },
+  {
+    "topic_id": "g-a1-comparatives-intro",
+    "skill": "grammar",
+    "level": "A1",
+    "topic_en": "Comparatives and superlatives (intro)",
+    "topic_ru": "Сравнительная и превосходная степень (знакомство)"
+  },
+  {
+    "topic_id": "g-a1-intensifiers",
+    "skill": "grammar",
+    "level": "A1",
+    "topic_en": "Very basic intensifiers: very, really",
+    "topic_ru": "Простые усилители: very, really"
+  },
+  {
+    "topic_id": "g-a2-gerunds",
+    "skill": "grammar",
+    "level": "A2",
+    "topic_en": "Gerunds as subjects and after prepositions",
+    "topic_ru": "Герундий как подлежащее и после предлогов"
+  },
+  {
+    "topic_id": "g-a2-linkers-sequence",
+    "skill": "grammar",
+    "level": "A2",
+    "topic_en": "Sequencers: first, then, after that, finally",
+    "topic_ru": "Связки последовательности: first, then, after that, finally"
+  },
+  {
+    "topic_id": "g-a2-relative-pronouns",
+    "skill": "grammar",
+    "level": "A2",
+    "topic_en": "Relative pronouns who / which / that (simple)",
+    "topic_ru": "Относительные местоимения who / which / that (простые случаи)"
+  },
+  {
+    "topic_id": "g-b1-modals-possibility",
+    "skill": "grammar",
+    "level": "B1",
+    "topic_en": "Degrees of possibility: might, may, will, probably, perhaps",
+    "topic_ru": "Степени вероятности: might, may, will, probably, perhaps"
+  },
+  {
+    "topic_id": "g-b1-must-have-to",
+    "skill": "grammar",
+    "level": "B1",
+    "topic_en": "must vs have to; ought to",
+    "topic_ru": "must vs have to; ought to"
+  },
+  {
+    "topic_id": "g-b1-time-clauses",
+    "skill": "grammar",
+    "level": "B1",
+    "topic_en": "Future time and condition clauses: when / as soon as / until / unless + present",
+    "topic_ru": "Придаточные времени и условия: when / as soon as / until / unless + present"
+  },
+  {
+    "topic_id": "g-b1-reflexives",
+    "skill": "grammar",
+    "level": "B1",
+    "topic_en": "Reflexive and emphatic pronouns: myself",
+    "topic_ru": "Возвратные и усилительные местоимения: myself"
+  },
+  {
+    "topic_id": "g-b1-so-nor",
+    "skill": "grammar",
+    "level": "B1",
+    "topic_en": "so / neither / nor with auxiliaries (So do I)",
+    "topic_ru": "so / neither / nor с вспомогательными (So do I)"
+  },
+  {
+    "topic_id": "g-b1-past-tense-responses",
+    "skill": "grammar",
+    "level": "B1",
+    "topic_en": "Short answers and past tense responses",
+    "topic_ru": "Краткие ответы и реплики в прошедшем времени"
+  },
+  {
+    "topic_id": "g-b2-discourse-markers",
+    "skill": "grammar",
+    "level": "B2",
+    "topic_en": "Discourse markers to structure formal speech and writing (firstly, to sum up, regarding)",
+    "topic_ru": "Дискурсивные маркеры для формальной речи и письма"
+  },
+  {
+    "topic_id": "g-b2-adjectives-adverbs",
+    "skill": "grammar",
+    "level": "B2",
+    "topic_en": "Adjectives and adverbs: gradable / extreme, adverb position",
+    "topic_ru": "Прилагательные и наречия: градуируемые / предельные, место наречия"
+  },
+  {
+    "topic_id": "g-c1-mixed-conditionals",
+    "skill": "grammar",
+    "level": "C1",
+    "topic_en": "Mixed conditionals in past, present and future",
+    "topic_ru": "Смешанные условные: прошлое, настоящее, будущее"
+  },
+  {
+    "topic_id": "g-c1-modals-past",
+    "skill": "grammar",
+    "level": "C1",
+    "topic_en": "Modals in the past: full range (needn't have, would have, could have been -ing)",
+    "topic_ru": "Модальные о прошлом: весь спектр (needn't have, would have, could have been -ing)"
+  },
+  {
+    "topic_id": "g-c1-wish-regrets",
+    "skill": "grammar",
+    "level": "C1",
+    "topic_en": "wish / if only: regrets and criticism (wish you would)",
+    "topic_ru": "wish / if only: сожаления и упрёк (wish you would)"
+  },
+  {
+    "topic_id": "g-c1-passive-all",
+    "skill": "grammar",
+    "level": "C1",
+    "topic_en": "Passive forms: all (incl. perfect infinitive, gerund passive)",
+    "topic_ru": "Пассив: все формы (включая перфектный инфинитив, пассивный герундий)"
+  },
+  {
+    "topic_id": "g-c1-narrative-passive",
+    "skill": "grammar",
+    "level": "C1",
+    "topic_en": "Narrative tenses for experience, incl. passive",
+    "topic_ru": "Повествовательные времена, включая пассив"
+  },
+  {
+    "topic_id": "g-c1-linking-formal",
+    "skill": "grammar",
+    "level": "C1",
+    "topic_en": "Linking devices and logical markers in formal speech and writing",
+    "topic_ru": "Связки и логические маркеры в формальной речи и письме"
+  },
+  {
+    "topic_id": "g-c1-vague-language",
+    "skill": "grammar",
+    "level": "C1",
+    "topic_en": "Approximating and hedging: sort of, -ish, it would seem that",
+    "topic_ru": "Приблизительность и смягчение: sort of, -ish, it would seem that"
+  },
+  {
+    "topic_id": "g-a2p-could-polite",
+    "skill": "grammar",
+    "level": "A2",
+    "topic_en": "could / would for polite requests; can / could for permission",
+    "topic_ru": "could / would: вежливые просьбы; can / could: разрешение"
+  },
+  {
+    "topic_id": "g-a2p-passive-intro",
+    "skill": "grammar",
+    "level": "A2",
+    "topic_en": "Passive: present and past simple",
+    "topic_ru": "Пассив: Present и Past Simple"
+  },
+  {
+    "topic_id": "g-a2p-need-neednt",
+    "skill": "grammar",
+    "level": "A2",
+    "topic_en": "need / needn't",
+    "topic_ru": "need / needn't"
+  },
+  {
+    "topic_id": "g-a2p-adjective-order",
+    "skill": "grammar",
+    "level": "A2",
+    "topic_en": "Order of adjectives",
+    "topic_ru": "Порядок прилагательных"
+  },
+  {
+    "topic_id": "g-a2p-ed-ing",
+    "skill": "grammar",
+    "level": "A2",
+    "topic_en": "Participles as adjectives: -ed / -ing (bored / boring)",
+    "topic_ru": "Причастия как прилагательные: -ed / -ing"
+  },
+  {
+    "topic_id": "g-a2p-so-because",
+    "skill": "grammar",
+    "level": "A2",
+    "topic_en": "Clauses with when / if / because / so; that-clauses after think, hope, say",
+    "topic_ru": "Придаточные с when / if / because / so; that после think, hope, say"
+  },
+  {
+    "topic_id": "g-a2p-double-genitive",
+    "skill": "grammar",
+    "level": "A2",
+    "topic_en": "Double genitive: a friend of mine",
+    "topic_ru": "Двойной родительный: a friend of mine"
+  },
+  {
+    "topic_id": "g-b1p-third-conditional",
+    "skill": "grammar",
+    "level": "B1",
+    "topic_en": "Third conditional",
+    "topic_ru": "Третье условное"
+  },
+  {
+    "topic_id": "g-b1p-past-modals",
+    "skill": "grammar",
+    "level": "B1",
+    "topic_en": "should have / might have / could have (past modals)",
+    "topic_ru": "should have / might have / could have (модальные о прошлом)"
+  },
+  {
+    "topic_id": "g-b1p-future-continuous",
+    "skill": "grammar",
+    "level": "B1",
+    "topic_en": "Future continuous",
+    "topic_ru": "Future Continuous"
+  },
+  {
+    "topic_id": "g-b1p-causative",
+    "skill": "grammar",
+    "level": "B1",
+    "topic_en": "Causative have / get something done",
+    "topic_ru": "Каузатив have / get something done"
+  },
+  {
+    "topic_id": "g-b1p-was-going-to",
+    "skill": "grammar",
+    "level": "B1",
+    "topic_en": "was / were going to (plans that changed)",
+    "topic_ru": "was / were going to (несостоявшиеся планы)"
+  },
+  {
+    "topic_id": "g-b1p-reported-range",
+    "skill": "grammar",
+    "level": "B1",
+    "topic_en": "Reported speech: range of tenses, backshift",
+    "topic_ru": "Косвенная речь: согласование времён"
+  },
+  {
+    "topic_id": "g-b1p-zero-article",
+    "skill": "grammar",
+    "level": "B1",
+    "topic_en": "Articles: zero article with plural and uncountable nouns in general statements",
+    "topic_ru": "Артикли: нулевой артикль в общих утверждениях"
+  },
+  {
+    "topic_id": "g-b2p-cleft-intro",
+    "skill": "grammar",
+    "level": "B2",
+    "topic_en": "Cleft sentences: What I need is... / It was ... that...",
+    "topic_ru": "Расщеплённые предложения: What I need is... / It was ... that..."
+  },
+  {
+    "topic_id": "g-b2p-emphatic-do",
+    "skill": "grammar",
+    "level": "B2",
+    "topic_en": "Emphatic do / did; so / such for emphasis",
+    "topic_ru": "Усилительное do / did; so / such для эмфазы"
+  },
+  {
+    "topic_id": "g-b2p-be-to",
+    "skill": "grammar",
+    "level": "B2",
+    "topic_en": "be about to / be on the point of / be due to",
+    "topic_ru": "be about to / be on the point of / be due to"
+  },
+  {
+    "topic_id": "g-b2p-get-passive",
+    "skill": "grammar",
+    "level": "B2",
+    "topic_en": "get-passive and passive with two objects",
+    "topic_ru": "get-пассив и пассив с двумя дополнениями"
   }
 ]

@@ -1265,5 +1265,692 @@
     "accept": [
       "for arriving"
     ]
+  },
+  {
+    "from": "G-A1-101",
+    "wrong": 1,
+    "accept": [
+      "am"
+    ]
+  },
+  {
+    "from": "G-A1-102",
+    "wrong": 2,
+    "accept": [
+      "watch"
+    ]
+  },
+  {
+    "from": "G-A1-105",
+    "wrong": 3,
+    "accept": [
+      "lighter"
+    ]
+  },
+  {
+    "from": "G-A1-106",
+    "wrong": 0,
+    "accept": [
+      "smallest"
+    ]
+  },
+  {
+    "from": "G-A1-109",
+    "wrong": 2,
+    "accept": [
+      "very"
+    ]
+  },
+  {
+    "from": "G-A1-110",
+    "wrong": 3,
+    "accept": [
+      "really"
+    ]
+  },
+  {
+    "from": "G-A2-101",
+    "wrong": 1,
+    "accept": [
+      "helping"
+    ]
+  },
+  {
+    "from": "G-A2-102",
+    "wrong": 2,
+    "accept": [
+      "shopping"
+    ]
+  },
+  {
+    "from": "G-A2-105",
+    "wrong": 3,
+    "accept": [
+      "second"
+    ]
+  },
+  {
+    "from": "G-A2-106",
+    "wrong": 0,
+    "accept": [
+      "that"
+    ]
+  },
+  {
+    "from": "G-A2-109",
+    "wrong": 2,
+    "accept": [
+      "who"
+    ]
+  },
+  {
+    "from": "G-A2-110",
+    "wrong": 3,
+    "accept": [
+      "which"
+    ]
+  },
+  {
+    "from": "G-B1-101",
+    "wrong": 1,
+    "accept": [
+      "long"
+    ]
+  },
+  {
+    "from": "G-B1-102",
+    "wrong": 2,
+    "accept": [
+      "fast"
+    ]
+  },
+  {
+    "from": "G-B1-105",
+    "wrong": 3,
+    "accept": [
+      "close"
+    ]
+  },
+  {
+    "from": "G-B1-106",
+    "wrong": 0,
+    "accept": [
+      "arrive"
+    ]
+  },
+  {
+    "from": "G-B1-109",
+    "wrong": 2,
+    "accept": [
+      "probably call"
+    ]
+  },
+  {
+    "from": "G-B1-110",
+    "wrong": 3,
+    "accept": [
+      "sent"
+    ]
+  },
+  {
+    "from": "G-B1-113",
+    "wrong": 0,
+    "accept": [
+      "have to"
+    ]
+  },
+  {
+    "from": "G-B1-114",
+    "wrong": 1,
+    "accept": [
+      "to book"
+    ]
+  },
+  {
+    "from": "G-B1-117",
+    "wrong": 1,
+    "accept": [
+      "is",
+      "becomes"
+    ]
+  },
+  {
+    "from": "G-B1-118",
+    "wrong": 1,
+    "accept": [
+      "approves",
+      "has approved"
+    ]
+  },
+  {
+    "from": "G-B1-121",
+    "wrong": 1,
+    "accept": [
+      "myself"
+    ]
+  },
+  {
+    "from": "G-B1-122",
+    "wrong": 2,
+    "accept": [
+      "themselves"
+    ]
+  },
+  {
+    "from": "G-B1-125",
+    "wrong": 0,
+    "accept": [
+      "have"
+    ]
+  },
+  {
+    "from": "G-B1-126",
+    "wrong": 1,
+    "accept": [
+      "can"
+    ]
+  },
+  {
+    "from": "G-B1-129",
+    "wrong": 2,
+    "accept": [
+      "did"
+    ]
+  },
+  {
+    "from": "G-B1-130",
+    "wrong": 3,
+    "accept": [
+      "wasn't"
+    ]
+  },
+  {
+    "from": "G-B2-101",
+    "wrong": 1,
+    "accept": [
+      "sum"
+    ]
+  },
+  {
+    "from": "G-B2-102",
+    "wrong": 2,
+    "accept": [
+      "to"
+    ]
+  },
+  {
+    "from": "G-B2-105",
+    "wrong": 3,
+    "accept": [
+      "empty"
+    ]
+  },
+  {
+    "from": "G-B2-106",
+    "wrong": 0,
+    "accept": [
+      "clearly"
+    ]
+  },
+  {
+    "from": "G-C1-101",
+    "wrong": 1,
+    "accept": [
+      "be"
+    ]
+  },
+  {
+    "from": "G-C1-102",
+    "wrong": 2,
+    "accept": [
+      "made"
+    ]
+  },
+  {
+    "from": "G-C1-105",
+    "wrong": 3,
+    "accept": [
+      "have"
+    ]
+  },
+  {
+    "from": "G-C1-106",
+    "wrong": 0,
+    "accept": [
+      "been"
+    ]
+  },
+  {
+    "from": "G-C1-109",
+    "wrong": 2,
+    "accept": [
+      "kept"
+    ]
+  },
+  {
+    "from": "G-C1-110",
+    "wrong": 3,
+    "accept": [
+      "warn"
+    ]
+  },
+  {
+    "from": "G-C1-113",
+    "wrong": 0,
+    "accept": [
+      "being"
+    ]
+  },
+  {
+    "from": "G-C1-114",
+    "wrong": 1,
+    "accept": [
+      "been"
+    ]
+  },
+  {
+    "from": "G-C1-117",
+    "wrong": 3,
+    "accept": [
+      "being"
+    ]
+  },
+  {
+    "from": "G-C1-118",
+    "wrong": 0,
+    "accept": [
+      "booked"
+    ]
+  },
+  {
+    "from": "G-C1-121",
+    "wrong": 1,
+    "accept": [
+      "notwithstanding"
+    ]
+  },
+  {
+    "from": "G-C1-122",
+    "wrong": 2,
+    "accept": [
+      "of"
+    ]
+  },
+  {
+    "from": "G-C1-125",
+    "wrong": 0,
+    "accept": [
+      "so"
+    ]
+  },
+  {
+    "from": "G-C1-126",
+    "wrong": 1,
+    "accept": [
+      "appear"
+    ]
+  },
+  {
+    "from": "G-A2-113",
+    "wrong": 0,
+    "accept": [
+      "tell"
+    ]
+  },
+  {
+    "from": "G-A2-114",
+    "wrong": 1,
+    "accept": [
+      "hold"
+    ]
+  },
+  {
+    "from": "G-A2-117",
+    "wrong": 3,
+    "accept": [
+      "emptied"
+    ]
+  },
+  {
+    "from": "G-A2-118",
+    "wrong": 0,
+    "accept": [
+      "taken"
+    ]
+  },
+  {
+    "from": "G-A2-121",
+    "wrong": 1,
+    "accept": [
+      "for"
+    ]
+  },
+  {
+    "from": "G-A2-122",
+    "wrong": 2,
+    "accept": [
+      "since"
+    ]
+  },
+  {
+    "from": "G-A2-125",
+    "wrong": 0,
+    "accept": [
+      "to send"
+    ]
+  },
+  {
+    "from": "G-A2-126",
+    "wrong": 1,
+    "accept": [
+      "bring"
+    ]
+  },
+  {
+    "from": "G-A2-129",
+    "wrong": 2,
+    "accept": [
+      "small"
+    ]
+  },
+  {
+    "from": "G-A2-130",
+    "wrong": 3,
+    "accept": [
+      "old"
+    ]
+  },
+  {
+    "from": "G-A2-133",
+    "wrong": 1,
+    "accept": [
+      "bored"
+    ]
+  },
+  {
+    "from": "G-A2-134",
+    "wrong": 2,
+    "accept": [
+      "worrying"
+    ]
+  },
+  {
+    "from": "G-A2-137",
+    "wrong": 3,
+    "accept": [
+      "so"
+    ]
+  },
+  {
+    "from": "G-A2-138",
+    "wrong": 0,
+    "accept": [
+      "that"
+    ]
+  },
+  {
+    "from": "G-A2-141",
+    "wrong": 2,
+    "accept": [
+      "mine"
+    ]
+  },
+  {
+    "from": "G-A2-142",
+    "wrong": 3,
+    "accept": [
+      "yours"
+    ]
+  },
+  {
+    "from": "G-B1-134",
+    "wrong": 0,
+    "accept": [
+      "would have booked",
+      "could have booked",
+      "might have booked",
+      "'d have booked"
+    ]
+  },
+  {
+    "from": "G-B1-135",
+    "wrong": 3,
+    "accept": [
+      "had checked",
+      "'d checked"
+    ]
+  },
+  {
+    "from": "G-B1-138",
+    "wrong": 3,
+    "accept": [
+      "should have checked",
+      "ought to have checked",
+      "could have checked",
+      "didn't check",
+      "did not check"
+    ]
+  },
+  {
+    "from": "G-B1-139",
+    "wrong": 1,
+    "accept": [
+      "might have gone",
+      "may have gone",
+      "could have gone",
+      "went",
+      "probably went"
+    ]
+  },
+  {
+    "from": "G-B1-142",
+    "wrong": 2,
+    "accept": [
+      "will be flying",
+      "will still be flying",
+      "are flying",
+      "will fly"
+    ]
+  },
+  {
+    "from": "G-B1-143",
+    "wrong": 0,
+    "accept": [
+      "will be interviewing",
+      "will still be interviewing",
+      "am interviewing"
+    ]
+  },
+  {
+    "from": "G-B1-146",
+    "wrong": 0,
+    "accept": [
+      "repaired"
+    ]
+  },
+  {
+    "from": "G-B1-147",
+    "wrong": 1,
+    "accept": [
+      "tested"
+    ]
+  },
+  {
+    "from": "G-B1-150",
+    "wrong": 0,
+    "accept": [
+      "were going to eat",
+      "were planning to eat",
+      "had planned to eat",
+      "wanted to eat",
+      "meant to eat"
+    ]
+  },
+  {
+    "from": "G-B1-151",
+    "wrong": 1,
+    "accept": [
+      "was going to cycle",
+      "was planning to cycle",
+      "had planned to cycle",
+      "meant to cycle",
+      "wanted to cycle"
+    ]
+  },
+  {
+    "from": "G-B1-154",
+    "wrong": 1,
+    "accept": [
+      "would bring",
+      "'d bring",
+      "was going to bring",
+      "would be bringing"
+    ]
+  },
+  {
+    "from": "G-B1-155",
+    "wrong": 3,
+    "accept": [
+      "had already paid",
+      "had paid",
+      "paid",
+      "already paid"
+    ]
+  },
+  {
+    "from": "G-B1-158",
+    "wrong": 0,
+    "accept": [
+      "advice"
+    ]
+  },
+  {
+    "from": "G-B1-159",
+    "wrong": 1,
+    "accept": [
+      "plants"
+    ]
+  },
+  {
+    "from": "G-B2-109",
+    "wrong": 2,
+    "accept": [
+      "is"
+    ]
+  },
+  {
+    "from": "G-B2-110",
+    "wrong": 3,
+    "accept": [
+      "that"
+    ]
+  },
+  {
+    "from": "G-B2-113",
+    "wrong": 0,
+    "accept": [
+      "send"
+    ]
+  },
+  {
+    "from": "G-B2-114",
+    "wrong": 1,
+    "accept": [
+      "such"
+    ]
+  },
+  {
+    "from": "G-B2-117",
+    "wrong": 3,
+    "accept": [
+      "to"
+    ]
+  },
+  {
+    "from": "G-B2-118",
+    "wrong": 0,
+    "accept": [
+      "leaving"
+    ]
+  },
+  {
+    "from": "G-B2-121",
+    "wrong": 1,
+    "accept": [
+      "stolen"
+    ]
+  },
+  {
+    "from": "G-B2-122",
+    "wrong": 2,
+    "accept": [
+      "given"
+    ]
+  },
+  {
+    "from": "G-B2-125",
+    "wrong": 0,
+    "accept": [
+      "that"
+    ]
+  },
+  {
+    "from": "G-B2-126",
+    "wrong": 1,
+    "accept": [
+      "case"
+    ]
+  },
+  {
+    "from": "G-A2-145",
+    "wrong": 0,
+    "accept": [
+      "press"
+    ]
+  },
+  {
+    "from": "G-C1-129",
+    "wrong": 2,
+    "accept": [
+      "the"
+    ]
+  },
+  {
+    "from": "G-C1-130",
+    "wrong": 3,
+    "accept": [
+      "the"
+    ]
+  },
+  {
+    "from": "G-B1-162",
+    "wrong": 1,
+    "accept": [
+      "would cook",
+      "could cook",
+      "might cook",
+      "'d cook"
+    ]
+  },
+  {
+    "from": "G-B1-163",
+    "wrong": 3,
+    "accept": [
+      "knew"
+    ]
+  },
+  {
+    "from": "G-B1-164",
+    "wrong": 1,
+    "accept": [
+      "sent"
+    ]
+  },
+  {
+    "from": "G-B1-165",
+    "wrong": 2,
+    "accept": [
+      "reserved"
+    ]
   }
 ]
