@@ -38,21 +38,52 @@ function check(user: string) {
 }
 
 function route(user: string) {
-  const from = /"overall_level"\s*:\s*"([^"]+)"/.exec(user)?.[1] ?? /placement[^\n]*?([ABC][12]\+?)/.exec(user)?.[1] ?? "B1";
-  const goal = /"goal"\s*:\s*"([^"]+)"/.exec(user)?.[1] ?? "B2";
+  const from = /"from_level"\s*:\s*"([^"]+)"/.exec(user)?.[1] ?? /"overall_level"\s*:\s*"([^"]+)"/.exec(user)?.[1] ?? "B1";
+  const goal = /"goal_level"\s*:\s*"([^"]+)"/.exec(user)?.[1] ?? "B2";
+  const req = /"teacher_request"\s*:\s*"([^"]*)"/.exec(user)?.[1] ?? "";
+  const L = ["A1", "A1+", "A2", "A2+", "B1", "B1+", "B2", "B2+", "C1", "C1+", "C2"];
+  const mid = L[Math.min(L.length - 1, L.indexOf(from) + 1)] ?? `${from}+`;
+  const gapPts = [
+    { title: "Articles with abstract nouns and geographical names", level: mid, hours: 6, why: "ошибки в тесте: артикли", focus: "лексика путешествий и стран" },
+    { title: "Inversion after negative adverbials", level: mid, hours: 5, why: "инверсия не используется", focus: "формальная речь, презентации" },
+    { title: "Mixed conditionals", level: mid, hours: 5, why: "ошибки в смешанных условных", focus: "обсуждение решений и сожалений" },
+  ];
+  if (/говорени|speaking/i.test(req)) gapPts.push({ title: "Speaking: negotiation phrases with modal verbs", level: mid, hours: 6, why: "по просьбе учителя", focus: "переговоры" });
   return {
-    start: { overall_level: from, skills: { grammar_vocab: from, reading: from, listening: from, writing: from, speaking: from }, gaps: ["listening ниже остальных — приоритет первого этапа"] },
-    goal: { level: goal, exam: null, explanation: "Уверенное общение на большинство тем, понимание речи в обычном темпе." },
-    weekly_hours: 5.5,
-    stages: [
-      { id: 1, title: `${from} → ${from}+`, study_hours: 80, forecast_weeks: 15, focus: ["listening: короткие подкасты", "grammar: Present Perfect vs Past Simple", "vocabulary: путешествия, работа"], units: [], can_do_after: ["понимает основное в подкастах о знакомых темах"], checkpoint: { tests: ["listening", "grammar_vocab"], pass_rule: "от 70% по аудированию и грамматике" } },
-      { id: 2, title: `${from}+ → ${goal}`, study_hours: 100, forecast_weeks: 18, focus: ["speaking: рассуждение", "grammar: условные предложения", "vocabulary: абстрактные темы"], units: [], can_do_after: ["может аргументировать мнение"], checkpoint: { tests: ["speaking", "writing"], pass_rule: "от 70% по говорению и письму" } },
+    start: { overall_level: from, skills: { grammar: from, vocabulary: from, reading: from, listening: from, writing: from, speaking: from }, gaps: ["артикли и продвинутая грамматика"] },
+    goal: { level: goal, exam: null, explanation: "Уверенное общение на рабочие темы, сложные конструкции без ошибок." },
+    weekly_hours: 4.5,
+    segments: [
+      { title: `${from} → ${mid}`, kind: "gaps", summary: "Закрываем пробелы из теста.", points: gapPts, units: [], can_do_after: ["пишет и говорит без системных ошибок в артиклях"], checkpoint: { tests: ["grammar"], pass_rule: "от 80% по темам участка" } },
+      ...(mid !== goal ? [{ title: `${mid} → ${goal}`, kind: "level", summary: "Новый уровень.", points: [
+        { title: "Cleft sentences for emphasis", level: goal, hours: 10, why: "грамматика уровня", focus: "презентации" },
+        { title: "Advanced passive structures", level: goal, hours: 10, why: "грамматика уровня", focus: "статьи и отчёты" },
+        { title: "Discourse markers and hedging", level: goal, hours: 12, why: "письмо и говорение", focus: "аргументация" },
+      ], units: [], can_do_after: ["аргументирует позицию в переговорах"], checkpoint: { tests: ["speaking", "writing"], pass_rule: "от 75%" } }] : []),
     ],
-    total_hours: 180, forecast_weeks: 33, deadline_check: null,
-    risks: ["Мало самостоятельной практики — прогноз сдвинется."],
-    pace_options: [{ lessons_per_week: 2, daily_minutes: 20, forecast_weeks: 33 }, { lessons_per_week: 3, daily_minutes: 20, forecast_weeks: 25 }],
-    teacher_summary: "Главный приоритет — аудирование. Рекомендуемый темп — 2 урока в неделю и 20 минут в день.",
-    student_message: "Ты уверенно стоишь на своём уровне. Впереди — путь к цели; первая точка — свободнее понимать речь на слух.",
+    deadline_check: null, risks: ["Мало самостоятельной практики — прогноз сдвинется."],
+    pace_options: [{ lessons_per_week: 2, daily_minutes: 20, forecast_weeks: 33 }],
+    teacher_summary: "Сначала быстро закрываем пробелы из теста, затем новый уровень.",
+    student_message: "Ты уже близко к цели: сначала уберём слабые места, потом — новый уровень.",
+    changes: req ? `Учёл просьбу: «${req.slice(0, 80)}».` : "",
+  };
+}
+
+function insight() {
+  return {
+    summary: "Уровень уверенный, но системные ошибки в артиклях и продвинутой грамматике мешают выйти на C1.",
+    strengths: ["Беглая речь", "Хорошее чтение"], blockers: ["Артикли с абстрактными существительными", "Нет инверсии"],
+    gaps: [{ topic: "Articles with abstract nouns and geographical names", level: "C1", priority: 1, why: "ошибки в тесте" }, { topic: "Inversion", level: "C1", priority: 2, why: "не использует" }],
+    skills: { grammar: "пробелы в артиклях", speaking: "упрощает грамматику" }, dynamics: "Данных пока мало",
+    prefill: { goal: "Уверенный C1 для работы: переговоры и презентации", interests: "психология, путешествия, подкасты", background: "Маркетолог в IT-компании" },
+  };
+}
+
+function pointRecs() {
+  return {
+    grammar: ["zero article with abstract nouns", "the + mountain ranges, rivers"], vocabulary: ["continent", "landscape", "border", "coastline", "landlocked", "heritage", "itinerary", "destination"],
+    phrasal_verbs: ["set off", "stop over", "look around", "get away"], idioms: ["the world is your oyster", "off the beaten track"],
+    reading: "Статья о путешествиях: ищите в журнале материалы о местах и travel wellbeing", listening: "Подкаст о путешествиях", speaking: "Describe a place you'd like to visit", writing: "A short travel review (150 words)",
   };
 }
 
@@ -61,7 +92,9 @@ export async function mockLlm(model: string, messages: LlmMsg[]): Promise<ChatRe
   const sys = messages.find((m) => m.role === "system")?.content ?? "";
   const user = messages.filter((m) => m.role === "user").map((m) => m.content).join("\n");
   let out: unknown;
-  if (/learning designer|learning route/i.test(sys)) out = route(user);
+  if (/diagnostician/i.test(sys)) out = insight();
+  else if (/Suggest what to teach AROUND/.test(sys)) out = pointRecs();
+  else if (/learning designer|learning route/i.test(sys)) out = route(user);
   else if (/reviewing a colleague/i.test(sys)) {
     // самопроверка: черновик без «лишней» правки
     const a = user.indexOf("DRAFT JSON:\n");

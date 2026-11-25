@@ -1,4 +1,6 @@
 import "server-only";
+import { accountStats, testPack, wsPercent } from "./pack";
+import type { Brief, ChatMsg, InsightSaved } from "./ai-route";
 import { db } from "../db";
 import { isOwner, TEEN_READY } from "../placement/bank";
 import { addDaysIso, dayStart, isoDay, mondayOf } from "../time";
@@ -69,7 +71,7 @@ export type RouteAi = {
   label: string; fallbackFrom: string | null; start?: { overall_level: string; gaps: string[] }; goal?: { explanation: string };
   weekly_hours: number | null; total_hours: number | null; forecast_weeks: number | null;
   deadline_check: { fits: boolean; note: string } | null; risks: string[];
-  pace_options: { lessons_per_week: number; daily_minutes: number; forecast_weeks: number }[]; student_message: string;
+  pace_options: { lessons_per_week: number; daily_minutes: number; forecast_weeks: number }[]; student_message: string; changes?: string; v?: number;
 };
 
 export async function editorData(studentId: string, teacherId: string, tz: string, lang: "ru" | "en") {
@@ -78,21 +80,27 @@ export async function editorData(studentId: string, teacherId: string, tz: strin
   const courses = await db.course.findMany({ where: { teacherId }, orderBy: { order: "asc" }, include: { _count: { select: { units: true } } } });
   const T = (x: unknown) => (typeof x === "string" ? x : Array.isArray(x) ? String(lang === "en" ? x[0] : x[1]) : "");
   const r = v.r;
-  const pas = await db.placementAttempt.findMany({ where: { studentId, checkpointId: { not: null } }, select: { id: true, checkpointId: true, status: true } });
+  const pas = await db.placementAttempt.findMany({ where: { studentId, checkpointId: { not: null } }, select: { id: true, checkpointId: true, status: true, review: true } });
   const paOf = new Map(pas.map((p) => [p.checkpointId!, p]));
   return {
     studentId, first: s.name, ini: `${s.name[0] ?? ""}${s.lastName?.[0] ?? ""}`.toUpperCase(), level: s.level,
     age: s.birthday ? (() => { const n = new Date(), b = s.birthday!; let a = n.getFullYear() - b.getFullYear(); if (n.getMonth() < b.getMonth() || (n.getMonth() === b.getMonth() && n.getDate() < b.getDate())) a--; return a; })() : null,
     teenAvail: TEEN_READY || isOwner((await db.user.findUnique({ where: { id: teacherId }, select: { email: true } }))?.email),
     courses: courses.map((c) => ({ id: c.id, title: c.title, units: c._count.units })),
+    pack: await testPack(studentId, teacherId).catch((e) => { console.error("[roadmap:pack]", e); return null; }),
+    stats: await accountStats(studentId),
     checkpoints: v.checkpoints.map((c) => {
       const res = (c.results ?? {}) as { skills?: Record<string, number>; weak?: [string, string][] };
-      return { id: c.id, kind: c.kind, status: c.status, source: c.source, level: c.level, skills: res.skills ?? {}, weak: res.weak ?? [], takenAt: c.takenAt?.toISOString() ?? null, assignedAt: c.assignedAt.toISOString(), stage: c.stage, placement: paOf.get(c.id)?.id ?? null, pstatus: paOf.get(c.id)?.status ?? null };
+      // письмо и говорение — из оценок учителя по критериям (раньше в маршрут не попадали)
+      const pa = paOf.get(c.id);
+      return { id: c.id, kind: c.kind, status: c.status, source: c.source, level: c.level, skills: { ...(res.skills ?? {}), ...(pa ? wsPercent(pa.review) : {}) }, weak: res.weak ?? [], takenAt: c.takenAt?.toISOString() ?? null, assignedAt: c.assignedAt.toISOString(), stage: c.stage, placement: paOf.get(c.id)?.id ?? null, pstatus: paOf.get(c.id)?.status ?? null };
     }),
     roadmap: r && "stages" in v ? {
       id: r.id, type: r.type, goal: r.goal, fromLevel: r.fromLevel, deadline: r.deadline ? r.deadline.toISOString().slice(0, 7) : null, showDate: r.showDate,
       pace: r.pace ?? "2:20", mood: r.mood ?? "plan", note: r.note ?? "", courseIds: r.courseIds, leadCourseId: r.leadCourseId, approved: !!r.approvedAt, built: !!r.builtAt,
-      summary: r.summary, ai: (r.aiDraft ?? null) as RouteAi | null, stages: v.stages.map((x) => ({ lvl: x.lvl, title: T(x.title), hours: x.hours, grammar: x.grammar.map(T), vocabulary: x.vocabulary.map(T), skills: x.skills.map(T), passed: !!x.passed, focus: x.focus ?? [], checkpoint: x.checkpoint ?? null, weeks: x.weeks ?? null })),
+      summary: r.summary, ai: (r.aiDraft ?? null) as RouteAi | null, stages: v.stages.map((x) => ({ lvl: x.lvl, title: T(x.title), hours: x.hours, grammar: x.grammar.map(T), vocabulary: x.vocabulary.map(T), skills: x.skills.map(T), passed: !!x.passed, focus: x.focus ?? [], checkpoint: x.checkpoint ?? null, weeks: x.weeks ?? null, kind: x.kind ?? null, sum: x.summary ?? "", points: x.points ?? [] })),
+      brief: (r.brief ?? {}) as Brief, insight: (r.insight ?? null) as InsightSaved | null, chat: (r.chat ?? []) as ChatMsg[],
+      versions: ((r.versions ?? []) as { at: string; note: string }[]).map((x) => ({ at: x.at, note: x.note })),
       criteria: ((r.criteria as unknown[]) ?? []).map(T), units: ((r.units as { title: string }[]) ?? []).map((u) => u.title),
       done: v.done, ci: v.st.ci, left: v.st.left, lessonMin: v.lessonMin, lateWeeks: v.lateWeeks,
     } : null,

@@ -1,5 +1,6 @@
 "use server";
 import { revalidatePath } from "next/cache";
+import { wsPercent } from "../roadmap/pack";
 import { cookies } from "next/headers";
 import { db } from "../db";
 import { requireUser } from "../auth/session";
@@ -447,6 +448,7 @@ export async function finalizePlacement(id: string, level: string): Promise<R> {
       const skills = {
         grammar: pct(Object.values(sm.core).map((r) => r.grammar)), vocabulary: pct(Object.values(sm.core).map((r) => r.vocabulary)),
         reading: sm.level && sm.reading[sm.level] ? pct([sm.reading[sm.level]]) : undefined, listening: sm.level && sm.listening[sm.level] ? pct([sm.listening[sm.level]]) : undefined,
+        ...wsPercent(a.review), // письмо и говорение — средний балл учителя по критериям
       };
       const wrong = st.core.map((x) => st.items[x.id] as CoreItem).filter((it) => it && !st.answers[it.id]?.ok);
       const right = st.core.map((x) => st.items[x.id] as CoreItem).filter((it) => it && st.answers[it.id]?.ok && it.level !== "A1");

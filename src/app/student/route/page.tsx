@@ -36,7 +36,8 @@ export default async function MyRoute({ searchParams }: { searchParams: Promise<
   }
   const r = v.r;
   const L = lang;
-  const stages = v.stages.map((x) => ({ ...x, title: txt(x.title, L) }));
+  // ученику — только название точки и утверждённое учителем (подсказки ИИ и «почему» не уходят в браузер)
+  const stages = v.stages.map((x) => ({ ...x, title: txt(x.title, L), points: (x.points ?? []).map((p) => ({ id: p.id, title: p.title, level: p.level, hours: p.hours, why: "", focus: "", ok: p.ok ?? {} })) }));
   const tab = sp.tab === "stage" ? "stage" : (TABS as readonly string[]).includes(sp.tab ?? "") ? sp.tab! : "ov";
   const ini = `${s.name[0] ?? ""}${s.lastName?.[0] ?? ""}`.toUpperCase();
   const dated = !!r.deadline && r.showDate;
@@ -76,6 +77,29 @@ export default async function MyRoute({ searchParams }: { searchParams: Promise<
         </div>
         <p className="small muted mb-0">{t("rt.recalc")}</p>
         {(st.feel ?? []).length > 0 && <div className="feel"><div className="plab">{t("rt.feel")}</div>{st.feel!.map((g, k) => <div key={k} className="can"><Icon name="check" size="sm" /><span>{txt(g, L)}</span></div>)}</div>}
+        {st.points.length > 0 && (
+          <>
+            <div className="plab mt-4">{t("rt.points")}</div>
+            <ol className="rpts stud">
+              {st.points.map((p) => {
+                const ok = p.ok as Record<string, unknown>;
+                const lists = (["grammar", "vocabulary", "phrasal_verbs", "idioms"] as const).filter((k) => Array.isArray(ok[k]) && (ok[k] as string[]).length);
+                const texts = (["reading", "listening", "speaking", "writing"] as const).filter((k) => typeof ok[k] === "string" && ok[k]);
+                return (
+                  <li key={p.id}><details>
+                    <summary><b className="grow">{p.title}</b>{(lists.length > 0 || texts.length > 0 || ok.note) ? <span className="pill green">{t("rt.planReady")}</span> : null}</summary>
+                    <div className="small mt-1 flex flex-col gap-1">
+                      {lists.map((k) => <div key={k}><b>{t(`rm2.k.${k}`)}:</b> {(ok[k] as string[]).join(", ")}</div>)}
+                      {texts.map((k) => <div key={k}><b>{t(`rm2.k.${k}`)}:</b> {ok[k] as string}</div>)}
+                      {typeof ok.note === "string" && ok.note && <div>{ok.note}</div>}
+                      {!lists.length && !texts.length && !ok.note && <span className="muted">{t("rt.planSoon")}</span>}
+                    </div>
+                  </details></li>
+                );
+              })}
+            </ol>
+          </>
+        )}
         <div className="plab mt-4">{t("rt.inside")}</div>
         <div className="blocks">
           {([["rm.grammar", st.grammar, "#007AFF"], ["rm.vocab", st.vocabulary, "#FF9500"], ["rm.canYou", st.skills, "#AF52DE"]] as const).map(([k, list, c]) => list.length > 0 && (
@@ -112,7 +136,7 @@ export default async function MyRoute({ searchParams }: { searchParams: Promise<
               </div></div>
             )}
           </section>
-          <div className="mtnwrap"><RouteMap stages={stages} done={v.done} start={r.fromLevel ?? "A"} ini={ini} label={t("rt.youHere")} units={(r.units as { title: string }[]).map((u) => u.title)} ci={v.st.ci} /></div>
+          <div className="mtnwrap"><RouteMap stages={stages} done={v.done} start={r.fromLevel ?? "A"} ini={ini} label={t("rt.youHere")} units={(r.units as { title: string }[]).map((u) => u.title)} ci={v.st.ci} studentView /></div>
 
           <section className="card booster">
             <Rocket power={power} parts={[[W.les / Math.max(0.01, N.les), "#0A84FF"], [W.hw / Math.max(0.01, N.hw), "#34C759"], [W.wd / Math.max(0.01, N.wd), "#AF52DE"]]} />

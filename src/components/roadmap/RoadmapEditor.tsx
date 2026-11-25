@@ -1,27 +1,33 @@
 "use client";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { useT } from "@/lib/i18n/client";
 import { useAssignParts } from "../placement/AssignParts";
 import { ExpectField, Steps, TrackField, trackForAge, type PlTrack } from "../placement/PlacementPanel";
 import type { RouteAi } from "@/lib/roadmap/progress";
-import { approveRoadmap, assignTest, buildRoadmap, deleteCheckpoint, editStage, manualResults, type RoadmapForm } from "@/lib/roadmap/actions";
+import { approveRoadmap, assignTest, deleteCheckpoint, editStage, manualResults, type RoadmapForm } from "@/lib/roadmap/actions";
+import { buildRoadmap, type Brief, type ChatMsg, type InsightSaved } from "@/lib/roadmap/ai-route";
+import type { Point } from "@/lib/ai/route-core";
+import { BriefForm, InsightCard, PointCard, RouteChat, useBrief } from "./RouteBrief";
 import { LEVELS, ROUTE_TYPES, SKILL_COLOR, SKILL_NAME, SKILLS, txt, type Skill } from "@/lib/roadmap/cefr";
 import { etaRange, fmtHM, PACES, paceKey, paceLabel, parsePace } from "@/lib/roadmap/math";
 import { useRun } from "../courses/useRun";
 import { Dialog } from "../Dialog";
 import { Icon } from "../Icon";
-import { makeRecorder, transcribe } from "../ai/audio";
 import { Mountain } from "./Mountain";
+import { TestPackView } from "./TestPack";
+import type { AccountStats, TestPack } from "@/lib/roadmap/pack";
 
 export type CP = { id: string; kind: string; status: string; source: string; level: string | null; skills: Partial<Record<Skill, number>>; weak: [string, string][]; takenAt: string | null; assignedAt: string; stage: number | null; placement?: string | null; pstatus?: string | null };
 export type EditorData = {
   studentId: string; first: string; ini: string; level: string | null; age?: number | null; teenAvail?: boolean;
   courses: { id: string; title: string; units: number }[];
+  pack?: TestPack | null; stats?: AccountStats;
   checkpoints: CP[];
   roadmap: null | {
     id: string; type: string; goal: string; fromLevel: string | null; deadline: string | null; showDate: boolean; pace: string; mood: string; note: string;
     courseIds: string[]; leadCourseId: string | null; approved: boolean; built: boolean; summary: string | null; ai: RouteAi | null;
-    stages: { lvl: string; title: string; hours: number; grammar: string[]; vocabulary: string[]; skills: string[]; passed: boolean; focus: string[]; checkpoint: { tests: string[]; pass_rule: string } | null; weeks: number | null }[];
+    stages: { lvl: string; title: string; hours: number; grammar: string[]; vocabulary: string[]; skills: string[]; passed: boolean; focus: string[]; checkpoint: { tests: string[]; pass_rule: string } | null; weeks: number | null; kind: "gaps" | "level" | null; sum: string; points: Point[] }[];
+    brief: Brief; insight: InsightSaved | null; chat: ChatMsg[]; versions: { at: string; note: string }[];
     criteria: string[]; units: string[]; done: number; ci: number; left: number; lessonMin: number; lateWeeks: number;
   };
 };
@@ -90,7 +96,6 @@ function Checkpoints({ d }: { d: EditorData }) {
         <button className="btn plain sm" onClick={() => setManual(true)}>{t("rm.enterManual")}</button>
         {c && <button className="btn plain sm" onClick={() => { if (confirm(t("rm.delTest"))) run(() => deleteCheckpoint(c.id)); }}>{t("common.delete")}</button>}
       </div>
-      <p className="hint mb-0 mt-3">{t("rm.testHint")}</p>
       <Dialog open={asg} onClose={() => setAsg(false)} title={t("rm.assignEntry")}>
         {ap.ui}
         {d.teenAvail && !ap.useInto && <TrackField value={track} onChange={setTrack} age={d.age} />}
@@ -123,23 +128,18 @@ export function RoadmapEditor({ d }: { d: EditorData }) {
   });
   const goals = ROUTE_TYPES[f.type]?.goals ?? [];
   const goal = goals.includes(f.goal) ? f.goal : goals[Math.min(goals.length - 1, f.type === "ge" ? 5 : 0)];
-  const [rec, setRec] = useState<"idle" | "rec" | "busy">("idle");
-  const recorder = useRef<ReturnType<typeof makeRecorder> | null>(null);
   const [sel, setSel] = useState<number | undefined>(undefined);
-  const dictate = async () => {
-    if (rec === "rec") {
-      setRec("busy");
-      try { const text = await transcribe(await recorder.current!.stop(), "ru-RU"); setF((x) => ({ ...x, note: `${x.note ? `${x.note} ` : ""}${text}`.trim() })); } catch { /* микрофон недоступен */ }
-      setRec("idle"); return;
-    }
-    try { recorder.current = makeRecorder(); await recorder.current.start(); setRec("rec"); } catch { setRec("idle"); }
-  };
+  const [pt, setPt] = useState<string | null>(null);
+  const { brief, setBrief, saved } = useBrief(d.studentId, { ...f, goal }, r?.brief ?? {});
+  const allPoints = (r?.stages ?? []).flatMap((s) => s.points);
+  const point = pt ? allPoints.find((p) => p.id === pt) ?? null : null;
   const blk = (title: string, children: React.ReactNode) => <div className="dblk"><div className="small mb-2 font-bold text-text2">{title}</div>{children}</div>;
 
   return (
     <div className="rmgrid">
       <div className="flex flex-col gap-4">
         <Checkpoints d={d} />
+        {d.stats && <TestPackView pack={d.pack ?? null} stats={d.stats} />}
         <section className="card flex flex-col gap-4">
           <div className="flex items-center gap-2"><span className="tk-aiico"><Icon name="spark" size="sm" /></span><h3 className="m-0">{t("rm.data")}</h3></div>
           {blk(t("rm.type"), <div className="flex flex-wrap gap-1.5">{Object.entries(ROUTE_TYPES).map(([k, v]) => <button key={k} type="button" className={`pchip ${f.type === k ? "on" : ""}`} aria-pressed={f.type === k} onClick={() => setF({ ...f, type: k, goal: "" })}>{txt(v.name, lang)}</button>)}</div>)}
@@ -175,13 +175,14 @@ export function RoadmapEditor({ d }: { d: EditorData }) {
             <div className="field"><label htmlFor="rm-pace">{t("rm.pace")}</label><select id="rm-pace" className="select" value={f.pace} onChange={(e) => setF({ ...f, pace: e.target.value })}>{PACES.map((p) => <option key={paceKey(p)} value={paceKey(p)}>{paceLabel(p, lang)}</option>)}</select></div>
             <div className="field"><span className="flabel">{t("rm.mood")}</span><div className="seg">{(["plan", "more", "slack"] as const).map((k) => <button key={k} type="button" aria-pressed={f.mood === k} onClick={() => setF({ ...f, mood: k })}>{t(`rm.mood.${k}`)}</button>)}</div></div>
           </div>
-          <div className="field">
-            <label htmlFor="rm-note">{t("rm.note")}</label>
-            <textarea id="rm-note" className="textarea" value={f.note} placeholder={t("rm.notePh")} onChange={(e) => setF({ ...f, note: e.target.value })} />
-            <button type="button" className={`btn ${rec === "rec" ? "danger" : "plain"} sm self-start`} disabled={rec === "busy"} onClick={dictate}><Icon name="mic" size="sm" />{rec === "rec" ? t("rm.stopDictate") : rec === "busy" ? t("ai.thinking") : t("rm.dictate")}</button>
-          </div>
           {error && <div className="alert">{error}</div>}
-          <button className="btn primary lg w-full" disabled={pending} onClick={() => run(() => buildRoadmap(d.studentId, { ...f, goal }))}><Icon name="spark" />{pending ? t("ai.thinking") : r?.built ? t("rm.rebuild") : t("rm.build")}</button>
+          </section>
+        {d.stats && <InsightCard studentId={d.studentId} f={{ ...f, goal }} brief={brief} insight={r?.insight ?? null} hasPack={!!d.pack} />}
+        <BriefForm brief={brief} setBrief={setBrief} prefill={r?.insight?.prefill ?? {}} saved={saved} />
+        <section className="card flex flex-col gap-2">
+          {error && <div className="alert">{error}</div>}
+          <button className="btn primary lg w-full" disabled={pending} onClick={() => run(() => buildRoadmap(d.studentId, { ...f, goal }, brief))}><Icon name="spark" />{pending ? t("rm2.building") : r?.built ? t("rm.rebuild") : t("rm2.build")}</button>
+          {pending && <span className="hint text-center">{t("rm2.buildWait")}</span>}
         </section>
       </div>
 
@@ -211,27 +212,46 @@ export function RoadmapEditor({ d }: { d: EditorData }) {
                   {(r.ai.start?.gaps?.length ?? 0) > 0 && <><h4 className="mb-1 mt-3">{t("rm.aiGaps")}</h4><ul className="m-0 pl-5 small">{r.ai.start!.gaps.map((x, i) => <li key={i}>{x}</li>)}</ul></>}
                   {r.ai.risks.length > 0 && <><h4 className="mb-1 mt-3">{t("rm.aiRisks")}</h4><ul className="m-0 pl-5 small">{r.ai.risks.map((x, i) => <li key={i}>{x}</li>)}</ul></>}
                   {r.ai.pace_options.length > 0 && <><h4 className="mb-1 mt-3">{t("rm.aiPace")}</h4><div className="flex flex-wrap gap-2">{r.ai.pace_options.map((p, i) => <span key={i} className="pill grey">{t("rm.aiPaceOpt", { l: p.lessons_per_week, m: p.daily_minutes, w: p.forecast_weeks })}</span>)}</div></>}
+                  {r.ai.changes && <div className="alert calm mt-2"><b>{t("rm2.changes")}:</b> {r.ai.changes}</div>}
                   {r.ai.student_message && <><h4 className="mb-1 mt-3">{t("rm.aiStudentMsg")}</h4><p className="m-0 small">{r.ai.student_message}</p></>}
                 </div>
               )}
             </section>
-            <div className="mtnwrap"><Mountain stages={r.stages} done={r.done} start={r.fromLevel ?? "A"} ini={d.ini} label={t("rm.isHere", { name: d.first })} units={r.units} ci={r.ci} sel={sel} onSelect={setSel} h={400} /></div>
+            <div className="mtnwrap"><Mountain stages={r.stages} done={r.done} start={r.fromLevel ?? "A"} ini={d.ini} label={t("rm.isHere", { name: d.first })} units={r.units} ci={r.ci} sel={sel} onSelect={setSel} onPoint={(id) => setPt(id)} selPoint={pt} /></div>
+            {point && <PointCard key={point.id} roadmapId={r.id} p={point} onClose={() => setPt(null)} />}
             <section className="card">
               <h3 className="mt-0">{t("rm.stages")}</h3>
               <div className="flex flex-col gap-2">
                 {r.stages.map((s, i) => (
-                  <details key={i} className={`stagerow ${i === r.ci ? "cur" : ""}`} open={sel === i} onToggle={(e) => (e.currentTarget as HTMLDetailsElement).open && setSel(i)}>
-                    <summary><span className="lvlbig sm">{s.lvl}</span><b className="grow">{s.title}</b>{s.passed && <span className="pill green">✓</span>}<span className="small muted">{s.hours} {t("rm.h")}</span></summary>
-                    <div className="mt-2 grid gap-3 sm:grid-cols-2">
-                      <div className="field"><label className="small muted" htmlFor={`st-t-${i}`}>{t("crs.title")}</label><input id={`st-t-${i}`} className="input" defaultValue={s.title} onBlur={(e) => e.target.value !== s.title && run(() => editStage(r.id, i, { title: e.target.value }))} /></div>
-                      <div className="field"><label className="small muted" htmlFor={`st-h-${i}`}>{t("rm.hours")}</label><input id={`st-h-${i}`} className="input" inputMode="numeric" defaultValue={s.hours} onBlur={(e) => Number(e.target.value) !== s.hours && run(() => editStage(r.id, i, { hours: Number(e.target.value) }))} /></div>
-                    </div>
-                    {[["rm.grammar", s.grammar], ["rm.vocab", s.vocabulary], ["rm.can", s.skills]].map(([k, list]) => (list as string[]).length > 0 && (
-                      <div key={k as string} className="mt-2 small"><b>{t(k as "rm.grammar")}:</b> {(list as string[]).join(" · ")}</div>
-                    ))}
-                    {s.focus.length > 0 && <div className="mt-2 small"><b>{t("rm.aiFocus")}:</b> {s.focus.join(" · ")}</div>}
+                  <details key={i} className={`stagerow ${i === r.ci ? "cur" : ""}`} open={sel === i || r.stages.length <= 2} onToggle={(e) => (e.currentTarget as HTMLDetailsElement).open && setSel(i)}>
+                    <summary><span className="lvlbig sm">{s.lvl}</span><b className="grow">{s.title}</b>{s.kind && <span className={`pill ${s.kind === "gaps" ? "orange" : "violet"}`}>{t(s.kind === "gaps" ? "rm2.segGaps" : "rm2.segLevel")}</span>}{s.passed && <span className="pill green">✓</span>}<span className="small muted">{s.hours} {t("rm.h")}{s.weeks ? ` · ${t("rm.aiWeeks", { n: s.weeks })}` : ""}</span></summary>
+                    {s.sum && <p className="small mb-0 mt-2">{s.sum}</p>}
+                    {s.points.length > 0 ? (
+                      <ol className="rpts">
+                        {s.points.map((p) => (
+                          <li key={p.id} className={pt === p.id ? "sel" : ""}>
+                            <button type="button" onClick={() => setPt(p.id)}>
+                              <span className="grow"><b>{p.title}</b>{p.focus && <span className="small muted block">{p.focus}</span>}</span>
+                              {p.ok && Object.keys(p.ok).length > 0 && <span className="pill green" title={t("mtn.okT")}>✓</span>}
+                              <span className="small muted nowrap">{p.hours} {t("rm.h")}</span>
+                            </button>
+                          </li>
+                        ))}
+                      </ol>
+                    ) : (
+                      <>
+                        <div className="mt-2 grid gap-3 sm:grid-cols-2">
+                          <div className="field"><label className="small muted" htmlFor={`st-t-${i}`}>{t("crs.title")}</label><input id={`st-t-${i}`} className="input" defaultValue={s.title} onBlur={(e) => e.target.value !== s.title && run(() => editStage(r.id, i, { title: e.target.value }))} /></div>
+                          <div className="field"><label className="small muted" htmlFor={`st-h-${i}`}>{t("rm.hours")}</label><input id={`st-h-${i}`} className="input" inputMode="numeric" defaultValue={s.hours} onBlur={(e) => Number(e.target.value) !== s.hours && run(() => editStage(r.id, i, { hours: Number(e.target.value) }))} /></div>
+                        </div>
+                        {[["rm.grammar", s.grammar], ["rm.vocab", s.vocabulary]].map(([k, list]) => (list as string[]).length > 0 && (
+                          <div key={k as string} className="mt-2 small"><b>{t(k as "rm.grammar")}:</b> {(list as string[]).join(" · ")}</div>
+                        ))}
+                        {s.focus.length > 0 && <div className="mt-2 small"><b>{t("rm.aiFocus")}:</b> {s.focus.join(" · ")}</div>}
+                      </>
+                    )}
+                    {s.skills.length > 0 && <div className="mt-2 small"><b>{t("rm.can")}:</b> {s.skills.join(" · ")}</div>}
                     {s.checkpoint && <div className="mt-2 small"><b>{t("rm.aiCheck")}:</b> {s.checkpoint.tests.join(", ")}{s.checkpoint.pass_rule ? ` — ${s.checkpoint.pass_rule}` : ""}</div>}
-                    {s.weeks ? <div className="mt-1 small muted">{t("rm.aiWeeks", { n: s.weeks })}</div> : null}
                   </details>
                 ))}
               </div>
@@ -242,6 +262,7 @@ export function RoadmapEditor({ d }: { d: EditorData }) {
               </div>
               <p className="hint mb-0 mt-3">{t("rm.approveHint")}</p>
             </section>
+            <RouteChat roadmapId={r.id} chat={r.chat} versions={r.versions} />
           </>
         )}
       </div>

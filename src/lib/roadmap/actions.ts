@@ -8,7 +8,6 @@ import { llmFor, run } from "../ai/gateway";
 import { modelLabel, modelsFor } from "../ai/models";
 import { prompt } from "../ai/prompts";
 import { scrubWithMap } from "../ai/check-core";
-import { ROUTE_TYPE, runRoute, toStages, type RouteInput, type RouteRun } from "../ai/route-core";
 import { aiCode, aiCtx } from "../ai/ctx";
 import { goalLevel, LEVELS, ROUTE_TYPES, SKILLS, type Stage } from "./cefr";
 import { grade, itemsFor, WRITING_PROMPT } from "./testbank";
@@ -97,66 +96,6 @@ export async function submitTest(id: string, answers: Record<string, number>, wr
 // ───────── Маршрут ─────────
 
 export type RoadmapForm = { type: string; goal: string; fromLevel: string; courseIds: string[]; leadCourseId: string | null; deadline: string | null; showDate: boolean; pace: string; mood: string; note: string };
-
-/** «Построить маршрут с ИИ» / «Пересобрать»: черновик ИИ (этапы CEFR, прогноз, критерии). Ученик увидит его только после «Утвердить». */
-export async function buildRoadmap(studentId: string, f: RoadmapForm): Promise<R> {
-  const { me, s } = await own(studentId);
-  const { t } = await getT();
-  const type = ROUTE_TYPES[f.type] ? f.type : "ge";
-  const goal = str(f.goal, 80) || ROUTE_TYPES[type].goals[0];
-  const entry = await db.checkpoint.findFirst({ where: { studentId, status: "done" }, orderBy: { takenAt: "desc" } });
-  const from = (LEVELS as readonly string[]).includes(f.fromLevel) ? f.fromLevel : entry?.level ?? s.level?.match(/[ABC][12]\+?/)?.[0] ?? "A2";
-  const courses = await db.course.findMany({ where: { teacherId: me.id, id: { in: f.courseIds ?? [] } }, select: { id: true } });
-  const courseIds = courses.map((c) => c.id);
-  const lead = f.leadCourseId && courseIds.includes(f.leadCourseId) ? f.leadCourseId : null;
-  const units = lead ? (await db.unit.findMany({ where: { courseId: lead }, orderBy: { order: "asc" }, select: { title: true, outcomes: true } })) : [];
-  const pace = PACES.some((p) => paceKey(p) === f.pace) ? f.pace : "2:20";
-  const res = (entry?.results ?? {}) as { skills?: Record<string, number>; weak?: [string, string][] };
-  // вход по инструкции docs/ai/VibeOn_AI_маршрут_ученика.md: анкета, тип маршрута, цель, срок, тест, срезы, темп, курсы, заметки
-  const pc = parsePace(pace);
-  const [slices, others, lessonMin] = await Promise.all([
-    db.checkpoint.findMany({ where: { studentId, status: "done", kind: { not: "entry" } }, orderBy: { takenAt: "asc" }, select: { kind: true, stage: true, level: true, results: true, takenAt: true } }),
-    db.course.findMany({ where: { id: { in: courseIds.filter((x) => x !== lead) } }, select: { title: true } }),
-    lessonMinOf(studentId),
-  ]);
-  const names = [s.name, s.lastName];
-  const sc = (x: string) => scrubWithMap(x, names).text;
-  // анкета — без контактов и имён
-  const form = Object.fromEntries(Object.entries((s.form ?? {}) as Record<string, unknown>)
-    .filter(([k, v]) => typeof v === "string" && v.trim() && !/phone|mail|tel|contact|parent|payer|name|birth|source|price|nick|tg|telegram/i.test(k))
-    .map(([k, v]) => [k, sc(String(v)).slice(0, 400)]));
-  const age = s.birthday ? Math.floor((Date.now() - s.birthday.getTime()) / (365.25 * 864e5)) : null;
-  const moodNote = f.mood === "more" ? "Много занимается самостоятельно." : f.mood === "slack" ? "Может лениться — закладывай 5 активных дней в неделю." : "";
-  const input: RouteInput = {
-    student: { age, form }, route_type: ROUTE_TYPE[type] ?? "general", goal, deadline: f.deadline ?? null,
-    weeks_until_deadline: f.deadline ? Math.max(0, Math.round((new Date(`${f.deadline}-01T00:00:00Z`).getTime() - Date.now()) / (7 * 864e5))) : null,
-    placement: entry ? { overall_level: entry.level, skills: res.skills ?? {}, weak: (res.weak ?? []).map((w) => w[1]).slice(0, 12), date: entry.takenAt?.toISOString().slice(0, 10) ?? null } : from ? { overall_level: from, skills: {}, weak: [], date: null } : null,
-    checkpoints: slices.map((c) => ({ kind: c.kind, stage: c.stage, level: c.level, score: (c.results as { score?: number } | null)?.score ?? null, date: c.takenAt?.toISOString().slice(0, 10) ?? null })),
-    pace: { lessons_per_week: pc.lessons, lesson_minutes: lessonMin, daily_minutes: pc.min },
-    courses: { leading: lead ? (await db.course.findUnique({ where: { id: lead }, select: { title: true } }))?.title ?? null : null, others: others.map((c) => c.title), units: units.map((u) => ({ title: u.title, outcomes: u.outcomes.slice(0, 8) })) },
-    teacher_notes: sc([str(f.note, 1500), moodNote].filter(Boolean).join("\n")), today: new Date().toISOString().slice(0, 10),
-  };
-  let run1: RouteRun;
-  try {
-    run1 = await runRoute(llmFor("route", { ...(await aiCtx(me)) }), modelsFor("route"), input, prompt("route"));
-  } catch (e) { console.error("[ai:route]", e); return { ok: false, error: t(`ai.err.${aiCode(e)}`) }; }
-  const d = run1.draft;
-  const stages = toStages(d, goalLevel(type, goal));
-  const lastCp = d.stages[d.stages.length - 1]?.checkpoint?.pass_rule;
-  const draft = { stages, criteria: [d.goal.explanation, lastCp].filter(Boolean) as string[], summary: d.teacher_summary || null };
-  const aiDraft = { model: run1.model, label: modelLabel(run1.model), fallbackFrom: run1.fallbackFrom ?? null, ms: run1.ms, start: d.start, goal: d.goal, weekly_hours: d.weekly_hours, total_hours: d.total_hours, forecast_weeks: d.forecast_weeks, deadline_check: d.deadline_check, risks: d.risks, pace_options: d.pace_options, student_message: d.student_message, at: new Date().toISOString() };
-  const data = {
-    type, goal, fromLevel: from, deadline: f.deadline ? new Date(`${f.deadline}-01T00:00:00Z`) : null, showDate: !!f.deadline && !!f.showDate, pace,
-    mood: ["plan", "more", "slack"].includes(f.mood) ? f.mood : "plan", note: str(f.note, 2000) || null, courseIds, leadCourseId: lead,
-    stages: json(draft.stages), criteria: json(draft.criteria), summary: draft.summary, aiDraft: json(aiDraft), units: json(units.map((u) => ({ title: u.title, outcomes: u.outcomes }))),
-    builtAt: new Date(), approvedAt: null,
-  };
-  const cur = await db.roadmap.findFirst({ where: { studentId }, orderBy: { createdAt: "desc" } });
-  const r = cur ? await db.roadmap.update({ where: { id: cur.id }, data }) : await db.roadmap.create({ data: { studentId, ...data } });
-  await db.checkpoint.updateMany({ where: { studentId, roadmapId: null }, data: { roadmapId: r.id } });
-  refresh(studentId);
-  return { ok: true, id: r.id };
-}
 
 /** Учитель правит этап: название и часы. */
 export async function editStage(roadmapId: string, i: number, patch: { title?: string; hours?: number }): Promise<R> {

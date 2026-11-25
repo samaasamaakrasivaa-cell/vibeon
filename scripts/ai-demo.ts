@@ -4,7 +4,8 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { studioChat } from "../src/lib/ai/providers";
 import { checkWith, type CheckInput } from "../src/lib/ai/check-core";
-import { runRoute, toStages, type RouteInput } from "../src/lib/ai/route-core";
+import { cleanRoute, runJson, settleHours, toStages } from "../src/lib/ai/route-core";
+import { hoursTo } from "../src/lib/roadmap/cefr";
 import { modelsFor, modelLabel } from "../src/lib/ai/models";
 
 const P = (n: string) => readFileSync(path.join(process.cwd(), "prompts", `${n}.md`), "utf8").trim();
@@ -26,7 +27,7 @@ const check: CheckInput = {
   student_text: ESSAY,
 };
 
-const route: RouteInput = {
+const route = {
   student: { age: 24, form: { goal: "Хочу свободно говорить на работе и пройти собеседование в международную компанию", experience: "Учила английский в школе и университете, потом перерыв 3 года", strengths: "Читаю статьи по работе", difficulties: "Плохо понимаю на слух, боюсь говорить" } },
   route_type: "general", goal: "B2", deadline: "2027-09", weeks_until_deadline: Math.round((Date.UTC(2027, 8, 1) - Date.now()) / (7 * 864e5)),
   placement: { overall_level: "B1", skills: { grammar: 68, vocabulary: 72, reading: 74, listening: 52, writing: 63, speaking: 55 }, weak: ["Present Perfect vs Past Simple", "Conditionals 2", "Listening: natural speed"], date: "2026-11-20" },
@@ -57,6 +58,7 @@ async function raw(model: string, tag: string, extra: Record<string, unknown>) {
 }
 
 (async () => {
+  if (process.argv[2] === "route2") { const m = await import("./ai-route-probe"); await m.run(); return; }
   if (process.argv[2] === "media") { const m = await import("./ai-media-probe"); await m.run(); return; }
   if (process.argv[2] === "tts") { const m = await import("./ai-tts"); await m.run(); return; }
   if (process.argv[2] === "probe2images") { process.argv[3] = "images"; const m = await import("./ai-probe2"); await m.run(); return; }
@@ -88,7 +90,8 @@ async function raw(model: string, tag: string, extra: Record<string, unknown>) {
   if (only) return;
   console.log("\n=== ROUTE ===");
   try {
-    const r = await runRoute(llm, modelsFor("route"), route, P("route"));
+    const r0 = await runJson(llm, modelsFor("route"), P("route"), { ...route, route: { from_level: "B1", goal_level: "B2", pace: route.pace }, hours_guide: { "B1 → B1+": 100, "B1+ → B2": 100 } }, cleanRoute, { tag: "route", maxTokens: 9000, timeoutMs: 280000 });
+    const r = { ...r0, draft: settleHours(r0.data, 4.5, hoursTo) };
     console.log(`meta: ${modelLabel(r.model)} · ${Math.round(r.ms / 1000)} s · tokens ${r.tokensIn}/${r.tokensOut} · retries ${r.retries}${r.fallbackFrom ? ` · fallback from ${r.fallbackFrom}` : ""}`);
     console.log("ROUTE " + JSON.stringify(r.draft));
     console.log("STAGES " + JSON.stringify(toStages(r.draft, "B2")));
