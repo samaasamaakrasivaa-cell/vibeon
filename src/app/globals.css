@@ -3027,3 +3027,44 @@ svg.i { pointer-events: none; }
 .cp-dl { margin: 0; display: grid; grid-template-columns: 140px 1fr; gap: 6px 10px; font-size: 13.5px; }
 .cp-dl dt { font-weight: 700; color: var(--text2); } .cp-dl dd { margin: 0; }
 @media (max-width: 560px) { .cp-dl { grid-template-columns: 1fr; } }
+
+/* Списки маршрута: точка в начале пункта, тонкая линия между пунктами; нумерованные — номер в кружке */
+.ins-ul, .rbul, .rrub-hints { list-style: none !important; padding-left: 0 !important; gap: 0 !important; }
+.ins-ul > li, .rbul > li, .rrub-hints > li { position: relative; padding: 7px 0 7px 18px; border-top: 1px solid color-mix(in srgb, var(--text) 8%, transparent); }
+.ins-ul > li:first-child, .rbul > li:first-child, .rrub-hints > li:first-child { border-top: 0; padding-top: 2px; }
+.ins-ul > li::before, .rbul > li::before, .rrub-hints > li::before { content: ""; position: absolute; left: 3px; top: calc(7px + .62em); width: 7px; height: 7px; border-radius: 50%; background: var(--dot, var(--accent)); }
+.ins-ul > li:first-child::before, .rbul > li:first-child::before, .rrub-hints > li:first-child::before { top: calc(2px + .62em); }
+.rrub-hints > li { padding-top: 5px; padding-bottom: 5px; }
+.ins-blk.main { --dot: #AF52DE; } .ins-blk.ok { --dot: #34C759; } .ins-blk.bad { --dot: var(--bad); } .rrub-hints { --dot: var(--text3, #8E8E93); }
+.ins-ol, .rnum { list-style: none !important; padding-left: 0 !important; gap: 0 !important; counter-reset: li; }
+.ins-ol > li, .rnum > li { position: relative; padding: 7px 0 7px 30px; border-top: 1px solid color-mix(in srgb, var(--text) 8%, transparent); counter-increment: li; }
+.ins-ol > li:first-child, .rnum > li:first-child { border-top: 0; padding-top: 2px; }
+.ins-ol > li::before, .rnum > li::before { content: counter(li); position: absolute; left: 0; top: 6px; width: 20px; height: 20px; border-radius: 50%; background: var(--dot, var(--accent)); color: #fff; font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+.ins-ol > li:first-child::before, .rnum > li:first-child::before { top: 1px; }
+.ins-ol[start="4"] { counter-reset: li 3; }
+
+.ins-gaps li { cursor: grab; padding: 6px 4px; border-radius: 10px; border-top: 1px solid color-mix(in srgb, var(--text) 8%, transparent); }
+.ins-gaps li:first-child { border-top: 0; }
+.ins-gaps li.drag { opacity: .45; }
+.ins-gaps li.over { box-shadow: inset 0 2px 0 #FF9500; background: color-mix(in srgb, #FF9500 8%, transparent); }
+.ins-grip { color: var(--text3, #8E8E93); font-size: 12px; letter-spacing: -2px; padding-top: 3px; user-select: none; }
+
+.paceopts { display: flex; flex-direction: column; gap: 6px; }
+.paceopt { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 4px 10px; text-align: left; padding: 8px 12px; border-radius: 12px; background: var(--surface2); border: 2px solid transparent; font: inherit; cursor: pointer; }
+.paceopt.on { border-color: #34C759; background: color-mix(in srgb, #34C759 8%, var(--surface)); }
+.paceopt .po-a { font-weight: 700; font-size: 14px; } .paceopt .po-b { grid-column: 1; font-size: 12.5px; color: var(--text2); }
+.rpts li { display: flex; align-items: center; gap: 8px; }
+.rpts li > button { flex: 1; }
+.rpts li.done > button b { text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--text) 35%, transparent); }
+.pt-chk { flex: none; width: 18px; height: 18px; accent-color: #34C759; }
+.cancheck { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.cancheck label { display: flex; gap: 8px; align-items: flex-start; font-size: 13.5px; padding: 6px 8px; border-radius: 10px; background: var(--surface2); cursor: pointer; }
+.cancheck li.on label { background: color-mix(in srgb, #34C759 10%, var(--surface)); }
+.cancheck input { margin-top: 3px; accent-color: #34C759; }
+
+.ssedit { display: flex; flex-direction: column; gap: 8px; }
+.ssrow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 8px; border-radius: 12px; background: var(--surface2); }
+.ssrow .ssfull { flex-basis: 100%; }
+
+.pt-ok { flex: none; width: 20px; height: 20px; border-radius: 50%; background: #34C759; color: #fff; font-size: 12px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; }
+.pt-no { flex: none; width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--sep); }

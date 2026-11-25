@@ -180,7 +180,7 @@ export const REC_LISTS = ["grammar", "vocabulary", "phrasal_verbs", "idioms"] as
 export const REC_TEXTS = ["reading", "listening", "speaking", "writing"] as const;
 /** Утверждённое учителем (или вписанное своё) — видно ученику. */
 export type PointOk = { theme?: string; materials?: { title: string; url: string }[]; grammar?: string[]; vocabulary?: string[]; phrasal_verbs?: string[]; idioms?: string[]; reading?: string; listening?: string; speaking?: string; writing?: string; note?: string };
-export type Point = { id: string; title: string; level: string; hours: number; why: string; focus: string; hours_why?: string; recs?: PointRecs | null; ok?: PointOk; articles?: Article[] };
+export type Point = { id: string; title: string; level: string; hours: number; why: string; focus: string; hours_why?: string; /** вручную: освоено / не освоено (иначе — по прогрессу) */ done?: boolean; recs?: PointRecs | null; ok?: PointOk; articles?: Article[] };
 
 export function cleanRecs(raw: Record<string, unknown>): PointRecs {
   const themes = (Array.isArray(raw.themes) ? raw.themes as Record<string, unknown>[] : []).slice(0, 6).map((x) => ({
@@ -217,7 +217,7 @@ export function toStages(d: RouteDraft, goalLevel: string, prev: { points?: Poin
   let n = 0;
   return d.segments.map((s) => {
     const lvl = s.title.split(/→|->|—/).pop()?.trim().match(/[ABC][12][+\-−]?/)?.[0]?.replace("−", "-") ?? goalLevel;
-    const points: Point[] = s.points.map((p) => { const o = old.get(key(p.title)); return { id: o?.id ?? pid(p.title, n++), ...p, recs: o?.recs ?? null, ok: o?.ok ?? {}, articles: o?.articles ?? [] }; });
+    const points: Point[] = s.points.map((p) => { const o = old.get(key(p.title)); return { id: o?.id ?? pid(p.title, n++), ...p, recs: o?.recs ?? null, ok: o?.ok ?? {}, articles: o?.articles ?? [], ...(o?.done !== undefined ? { done: o.done } : {}) }; });
     return {
       lvl, title: s.title, hours: s.hours, kind: s.kind, summary: s.summary,
       grammar: s.points.map((p) => p.title), vocabulary: [] as string[], skills: s.can_do_after, feel: [] as string[],

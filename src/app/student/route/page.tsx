@@ -9,7 +9,7 @@ import { getT } from "@/lib/i18n/server";
 import { segName, skillNote, SKILL_COLOR, SKILL_NAME, SKILLS, txt, type Skill, type Stage } from "@/lib/roadmap/cefr";
 import { etaRange, fmtHM, lessonsWord, paceKey, paceLabel, parsePace, selfBudget, stageMath } from "@/lib/roadmap/math";
 import { roadmapView, schedPerWeek, type RouteAi } from "@/lib/roadmap/progress";
-import { SelfPlan } from "@/components/roadmap/SelfPlan";
+import { SelfPlan, StudentSelfControls } from "@/components/roadmap/SelfPlan";
 
 export const metadata = { title: "Мой маршрут" };
 const TABS = ["ov", "a", "now", "next", "fin"] as const;
@@ -44,13 +44,16 @@ export default async function MyRoute({ searchParams }: { searchParams: Promise<
   const sh = { gaps: meta?.share?.gaps ?? true, self: meta?.share?.self ?? true, criteria: meta?.share?.criteria ?? true, message: meta?.share?.message ?? true };
   const doneC = new Set(meta?.done ?? []);
   const selfLessons = (await schedPerWeek(s.id)) ?? parsePace(r.pace).lessons;
+  // минуты в день: выбор ученика, иначе выбор учителя
+  const selfMinDay = parsePace(r.paceStudent ?? r.pace).min;
+  const selfRec = selfBudget(selfLessons, v.lessonMin).minPerDay;
   const selfPlan = sh.self && aiD?.self_study ? (() => {
-    const want = selfBudget(selfLessons, v.lessonMin).minPerWeek, had = aiD.self_study!.minutes_per_week || want, k = want / had;
+    const want = selfMinDay * 7, had = aiD.self_study!.minutes_per_week || want, k = want / had;
     const items = aiD.self_study!.items.map((x) => ({ ...x, minutes: Math.max(5, Math.round((x.minutes * k) / 5) * 5) }));
     return { ...aiD.self_study!, items, minutes_per_week: items.reduce((a, x) => a + x.minutes * x.times_per_week, 0) };
   })() : null;
   // ученику — только название точки и утверждённое учителем (подсказки ИИ и «почему» не уходят в браузер)
-  const stages = v.stages.map((x, i) => ({ ...x, title: x.kind ? segName(v.stages, i, r.fromLevel) : txt(x.title, L), points: (x.points ?? []).map((p) => ({ id: p.id, title: p.title, level: p.level, hours: p.hours, why: "", focus: "", ok: p.ok ?? {} })) }));
+  const stages = v.stages.map((x, i) => ({ ...x, title: x.kind ? segName(v.stages, i, r.fromLevel) : txt(x.title, L), points: (x.points ?? []).map((p) => ({ id: p.id, title: p.title, level: p.level, hours: p.hours, why: "", focus: "", ok: p.ok ?? {}, ...(p.done !== undefined ? { done: p.done } : {}) })) }));
   const tab = sp.tab === "stage" ? "stage" : (TABS as readonly string[]).includes(sp.tab ?? "") ? sp.tab! : "ov";
   const ini = `${s.name[0] ?? ""}${s.lastName?.[0] ?? ""}`.toUpperCase();
   const dated = !!r.deadline && r.showDate;
@@ -103,13 +106,13 @@ export default async function MyRoute({ searchParams }: { searchParams: Promise<
           <>
             <div className="plab mt-4">{t("rt.points")}</div>
             <ol className="rpts stud">
-              {st.points.map((p) => {
+              {(() => { let c = stages.slice(0, i).reduce((a, x) => a + x.hours, 0); return st.points.map((p) => { c += p.hours; return { ...p, mastered: p.done ?? v.done >= c - 0.01 }; }); })().map((p) => {
                 const ok = p.ok as Record<string, unknown>;
                 const lists = (["grammar", "vocabulary", "phrasal_verbs", "idioms"] as const).filter((k) => Array.isArray(ok[k]) && (ok[k] as string[]).length);
                 const texts = (["reading", "listening", "speaking", "writing"] as const).filter((k) => typeof ok[k] === "string" && ok[k]);
                 return (
                   <li key={p.id}><details>
-                    <summary><b className="grow">{p.title}</b>{(lists.length > 0 || texts.length > 0 || ok.note || ok.theme) ? <span className="pill green">{t("rt.planReady")}</span> : null}</summary>
+                    <summary>{p.mastered ? <span className="pt-ok" title={t("rm6.mastered")}>✓</span> : <span className="pt-no" />}<b className="grow">{p.title}</b>{(lists.length > 0 || texts.length > 0 || ok.note || ok.theme) ? <span className="pill green">{t("rt.planReady")}</span> : null}</summary>
                     <div className="small mt-1 flex flex-col gap-1">
                       {typeof ok.theme === "string" && ok.theme && <div><b>{t("rt.theme")}:</b> {ok.theme}</div>}
                       {Array.isArray(ok.materials) && (ok.materials as { title: string; url: string }[]).length > 0 && <div><b>{t("rt.materials")}:</b> {(ok.materials as { title: string; url: string }[]).map((m, j) => <span key={j}>{j > 0 && " · "}{m.url ? <a className="alink" href={m.url} target="_blank" rel="noopener noreferrer">{m.title || m.url}</a> : m.title}</span>)}</div>}
@@ -162,7 +165,7 @@ export default async function MyRoute({ searchParams }: { searchParams: Promise<
           </section>
           <div className="mtnwrap"><RouteMap stages={stages} done={v.done} start={r.fromLevel ?? "A"} ini={ini} label={t("rt.youHere")} units={(r.units as { title: string }[]).map((u) => u.title)} ci={v.st.ci} studentView /></div>
           {sh.message && aiD?.student_message && <section className="card"><div className="mb-2 flex items-center gap-2"><span className="tk-aiico"><Icon name="msg" size="sm" /></span><b>{t("rt.msgT")}</b></div><p className="rquote">{aiD.student_message}</p></section>}
-          {selfPlan && <section className="card"><div className="mb-3 flex items-center gap-2"><span className="tk-aiico"><Icon name="clockI" size="sm" /></span><b>{t("ss.title")}</b></div><SelfPlan plan={selfPlan} lessons={selfLessons} lessonMin={v.lessonMin} student /></section>}
+          {selfPlan && <section className="card"><div className="mb-3 flex items-center gap-2"><span className="tk-aiico"><Icon name="clockI" size="sm" /></span><b>{t("ss.title")}</b></div><SelfPlan plan={selfPlan} lessons={selfLessons} lessonMin={v.lessonMin} student /><div className="mt-4"><StudentSelfControls lessons={selfLessons} lessonMin={v.lessonMin} cur={selfMinDay} rec={selfRec} left={v.st.left} /></div></section>}
 
           <section className="card booster">
             <Rocket power={power} parts={[[W.les / Math.max(0.01, N.les), "#0A84FF"], [W.hw / Math.max(0.01, N.hw), "#34C759"], [W.wd / Math.max(0.01, N.wd), "#AF52DE"]]} />

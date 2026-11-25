@@ -109,7 +109,7 @@ export async function editorData(studentId: string, teacherId: string, tz: strin
     roadmap: r && "stages" in v ? {
       id: r.id, type: r.type, goal: r.goal, fromLevel: r.fromLevel, deadline: r.deadline ? r.deadline.toISOString().slice(0, 7) : null, showDate: r.showDate,
       pace: r.pace ?? "2:20", mood: r.mood ?? "plan", note: r.note ?? "", courseIds: r.courseIds, leadCourseId: r.leadCourseId, approved: !!r.approvedAt, built: !!r.builtAt,
-      summary: r.summary, ai: (r.aiDraft ?? null) as RouteAi | null, stages: v.stages.map((x) => ({ lvl: x.lvl, title: T(x.title), hours: x.hours, grammar: x.grammar.map(T), vocabulary: x.vocabulary.map(T), skills: x.skills.map(T), passed: !!x.passed, focus: x.focus ?? [], checkpoint: x.checkpoint ?? null, weeks: x.weeks ?? null, kind: x.kind ?? null, sum: x.summary ?? "", points: x.points ?? [] })),
+      summary: r.summary, ai: (r.aiDraft ?? null) as RouteAi | null, stages: v.stages.map((x) => ({ lvl: x.lvl, title: T(x.title), hours: x.hours, grammar: x.grammar.map(T), vocabulary: x.vocabulary.map(T), skills: x.skills.map(T), passed: !!x.passed, focus: x.focus ?? [], checkpoint: x.checkpoint ?? null, weeks: x.weeks ?? null, kind: x.kind ?? null, sum: x.summary ?? "", points: x.points ?? [], canDone: x.canDone ?? [] })),
       brief: (r.brief ?? {}) as Brief, insight: (r.insight ?? null) as InsightSaved | null, chat: (r.chat ?? []) as ChatMsg[],
       versions: ((r.versions ?? []) as { at: string; note: string }[]).map((x) => ({ at: x.at, note: x.note })),
       meta: (r.meta ?? null) as RoadmapMeta | null,

@@ -69,9 +69,18 @@ export function InsightCard({ studentId, f, brief, insight, hasPack }: { student
   const auto = useRef(false);
   useEffect(() => { if (!insight && hasPack && !auto.current) { auto.current = true; run(() => routeInsight(studentId, f, brief)); } }, [insight, hasPack]); // eslint-disable-line react-hooks/exhaustive-deps
   const move = (i: number, d: -1 | 1) => { const n = [...gaps]; const j = i + d; if (j < 0 || j >= n.length) return; [n[i], n[j]] = [n[j], n[i]]; setGaps(n); };
+  // перетаскивание пробелов мышью: новый порядок сохраняется сразу
+  const [drag, setDrag] = useState<number | null>(null);
+  const [over, setOver] = useState<number | null>(null);
+  const drop = (to: number) => {
+    if (drag === null || drag === to) { setDrag(null); setOver(null); return; }
+    const n = [...gaps]; const [x] = n.splice(drag, 1); n.splice(to, 0, x);
+    setGaps(n); setDrag(null); setOver(null);
+    if (!edit) run(() => save({ gaps: n }));
+  };
   const split = (v: string) => v.split(/\n+/).map((x) => x.trim()).filter(Boolean);
-  const save = (over: { extra?: string; confirmed?: boolean } = {}) => saveInsight(studentId, {
-    summary: txt3.sum, blockers: split(txt3.blk), strengths: split(txt3.str), gaps,
+  const save = (over: { extra?: string; confirmed?: boolean; gaps?: typeof gaps } = {}) => saveInsight(studentId, {
+    summary: txt3.sum, blockers: split(txt3.blk), strengths: split(txt3.str), gaps: over.gaps ?? gaps,
     extra: over.extra ?? insight?.extra ?? "", confirmed: over.confirmed ?? !!insight?.confirmed,
   });
   const skills = insight ? SK_ORDER.filter((k) => insight.skills?.[k]) : [];
@@ -94,7 +103,9 @@ export function InsightCard({ studentId, f, brief, insight, hasPack }: { student
               <div className="ins-h"><span className="ins-ico">↗</span><span>{t("rm2.gaps")}</span><span className="ins-n">{gaps.length}</span></div>
               <ol className="ins-gaps">
                 {gaps.map((g, i) => (
-                  <li key={g.topic + i}>
+                  <li key={g.topic + i} draggable className={`${drag === i ? "drag" : ""} ${over === i && drag !== i ? "over" : ""}`} title={t("rm6.dragHint")}
+                    onDragStart={(e) => { setDrag(i); e.dataTransfer.effectAllowed = "move"; }} onDragOver={(e) => { e.preventDefault(); setOver(i); }} onDragLeave={() => setOver((o) => (o === i ? null : o))} onDrop={(e) => { e.preventDefault(); drop(i); }} onDragEnd={() => { setDrag(null); setOver(null); }}>
+                    <span className="ins-grip" aria-hidden>⋮⋮</span>
                     <span className="ins-gn">{i + 1}</span>
                     <span className="grow"><b>{g.topic}</b>{g.why && <span className="block small muted"><Rich text={g.why} /></span>}</span>
                     {g.level && <span className="pill grey">{g.level}</span>}

@@ -129,11 +129,47 @@ export async function approveRoadmap(id: string, on = true): Promise<R> {
 export async function setStudentPace(pace: string): Promise<R> {
   const user = await requireUser("STUDENT");
   const s = await db.student.findUnique({ where: { userId: user.id } });
-  if (!s || !PACES.some((p) => paceKey(p) === pace)) return { ok: false, error: "pace" };
+  if (!s || !(PACES.some((p) => paceKey(p) === pace) || /^[1-7]:\d{1,3}$/.test(pace))) return { ok: false, error: "pace" };
   const r = await db.roadmap.findFirst({ where: { studentId: s.id, approvedAt: { not: null } }, orderBy: { createdAt: "desc" } });
   if (!r) return { ok: false, error: "no roadmap" };
   await db.roadmap.update({ where: { id: r.id }, data: { paceStudent: pace } });
   refresh(s.id);
+  return { ok: true };
+}
+
+/**
+ * «Распределить в расписании»: рекомендации по самостоятельной работе (под выбранный темп) — слотами на неделю.
+ * Каждое занятие ставится в свои дни, равномерно по неделе, вечером одно за другим; ученик потом двигает сам.
+ * Прежние слоты, поставленные этой кнопкой, заканчиваются сегодня (история не теряется).
+ */
+export async function selfToSchedule(): Promise<R> {
+  const user = await requireUser("STUDENT");
+  const s = await db.student.findUnique({ where: { userId: user.id } });
+  if (!s) return { ok: false, error: "no student" };
+  const r = await db.roadmap.findFirst({ where: { studentId: s.id, approvedAt: { not: null } }, orderBy: { createdAt: "desc" } });
+  const plan = (r?.aiDraft as { self_study?: { items: { skill: string; activity: string; times_per_week: number; minutes: number }[]; minutes_per_week: number } } | null)?.self_study;
+  if (!r || !plan?.items.length) return { ok: false, error: "no plan" };
+  const want = parsePace(r.paceStudent ?? r.pace).min * 7, had = plan.minutes_per_week || want, k = want / had;
+  const KIND: Record<string, string> = { listening: "podcast", reading: "reading", speaking: "speaking", writing: "homework", vocabulary: "homework", grammar: "grammar" };
+  const today = new Date().toLocaleDateString("sv-SE", { timeZone: s.timezone });
+  const meta = (r.meta ?? {}) as { slotIds?: string[] };
+  if (meta.slotIds?.length) await db.studySlot.updateMany({ where: { id: { in: meta.slotIds }, studentId: s.id, until: null }, data: { until: today } });
+  const dayLoad = Array(7).fill(0), ids: { kind: string; title: string; wd: number; start: number; dur: number }[] = [];
+  plan.items.forEach((x, n) => {
+    const times = Math.max(1, Math.min(7, x.times_per_week)), dur = Math.max(5, Math.min(240, Math.round((x.minutes * k) / 5) * 5));
+    for (let j = 0; j < times; j++) {
+      const wd = Math.floor((j * 7) / times + n) % 7;
+      const start = 19 * 60 + dayLoad[wd];
+      dayLoad[wd] += dur + 5;
+      ids.push({ kind: KIND[x.skill] ?? "homework", title: x.activity, wd, start, dur });
+    }
+  });
+  const created = [];
+  for (const it of ids) {
+    created.push(await db.studySlot.create({ data: { studentId: s.id, kind: it.kind, title: it.title.slice(0, 80), repeat: true, weekday: it.wd, startMin: Math.min(23 * 60, it.start), durMin: it.dur, remind: true, from: today } }));
+  }
+  await db.roadmap.update({ where: { id: r.id }, data: { meta: json({ ...meta, slotIds: created.map((c) => c.id) }) } });
+  refresh(s.id); revalidatePath("/student/schedule");
   return { ok: true };
 }
 

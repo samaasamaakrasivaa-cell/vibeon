@@ -10,7 +10,7 @@ import { llmFor } from "../ai/gateway";
 import { modelLabel, modelsFor } from "../ai/models";
 import { prompt } from "../ai/prompts";
 import { scrubWithMap } from "../ai/check-core";
-import { SHARE_DEFAULT, type Share, BRIEF_KEYS, cleanArticle, cleanInsight, cleanRecs, cleanRoute, compactStages, REC_LISTS, REC_TEXTS, ROUTE_TYPE, runJson, settleHours, toStages, type Insight, type Point, type PointOk } from "../ai/route-core";
+import { SHARE_DEFAULT, type Share, type SelfStudy, cleanSelf, BRIEF_KEYS, cleanArticle, cleanInsight, cleanRecs, cleanRoute, compactStages, REC_LISTS, REC_TEXTS, ROUTE_TYPE, runJson, settleHours, toStages, type Insight, type Point, type PointOk } from "../ai/route-core";
 import { aiCode, aiCtx } from "../ai/ctx";
 import { goalLevel, hoursTo, LEVELS, ROUTE_TYPES, type Stage } from "./cefr";
 import { paceKey, PACES, parsePace, selfBudget } from "./math";
@@ -394,6 +394,72 @@ export async function saveCheckpoint(roadmapId: string, i: number, cp: { what: s
   if (!stages[i]) return { ok: false, error: "stage" };
   const old = stages[i].checkpoint ?? { tests: [], pass_rule: "" };
   stages[i].checkpoint = { ...old, what: cp.what.map((x) => str(x, 200)).filter(Boolean).slice(0, 12), format: str(cp.format, 400), pass_rule: str(cp.pass_rule, 600), if_not_passed: str(cp.if_not_passed, 400), approved: !!cp.approved };
+  await db.roadmap.update({ where: { id: r.id }, data: { stages: json(stages) } });
+  refresh(r.studentId);
+  return { ok: true };
+}
+
+const scaleSelf = (plan: SelfStudy | null | undefined, minPerWeek: number): SelfStudy | null => {
+  if (!plan || !plan.items.length) return plan ?? null;
+  const had = plan.items.reduce((a, x) => a + x.minutes * x.times_per_week, 0) || minPerWeek, k = minPerWeek / had;
+  const items = plan.items.map((x) => ({ ...x, minutes: Math.max(5, Math.round((x.minutes * k) / 5) * 5) }));
+  return { ...plan, items, minutes_per_week: items.reduce((a, x) => a + x.minutes * x.times_per_week, 0) };
+};
+
+/** Учитель выбирает темп (уроков в неделю : минут в день самостоятельно) — рекомендации пересчитываются под эти минуты. */
+export async function savePace(roadmapId: string, pace: string): Promise<R> {
+  const r = await db.roadmap.findUnique({ where: { id: roadmapId } });
+  if (!r) return { ok: false, error: "not found" };
+  await own(r.studentId);
+  if (!/^[1-7]:\d{1,3}$/.test(pace)) return { ok: false, error: "pace" };
+  const ai = (r.aiDraft ?? {}) as { self_study?: SelfStudy | null };
+  await db.roadmap.update({ where: { id: r.id }, data: { pace, aiDraft: json({ ...ai, self_study: scaleSelf(ai.self_study, parsePace(pace).min * 7) }) } });
+  refresh(r.studentId);
+  return { ok: true };
+}
+
+/** Учитель правит рекомендации по самостоятельной работе (добавить, убрать, изменить). */
+export async function saveSelf(roadmapId: string, items: SelfStudy["items"], tips: string[]): Promise<R> {
+  const r = await db.roadmap.findUnique({ where: { id: roadmapId } });
+  if (!r) return { ok: false, error: "not found" };
+  await own(r.studentId);
+  const plan = cleanSelf({ items, tips }, 0);
+  const ai = (r.aiDraft ?? {}) as Record<string, unknown>;
+  await db.roadmap.update({ where: { id: r.id }, data: { aiDraft: json({ ...ai, self_study: plan }) } });
+  refresh(r.studentId);
+  return { ok: true };
+}
+
+/** Правка любого блока предпостроенного маршрута: главное, пробелы, риски, сообщение ученику, критерии цели. */
+export async function saveDraftFields(roadmapId: string, f: { summary?: string; gaps?: string[]; risks?: string[]; message?: string; criteria?: string[] }): Promise<R> {
+  const r = await db.roadmap.findUnique({ where: { id: roadmapId } });
+  if (!r) return { ok: false, error: "not found" };
+  await own(r.studentId);
+  const ai = (r.aiDraft ?? {}) as Record<string, unknown> & { start?: Record<string, unknown> };
+  const L = (x: string[]) => x.map((y) => str(y, 400)).filter(Boolean).slice(0, 20);
+  const next = { ...ai,
+    ...(f.gaps ? { start: { ...(ai.start ?? {}), gaps: L(f.gaps) } } : {}),
+    ...(f.risks ? { risks: L(f.risks) } : {}),
+    ...(f.message !== undefined ? { student_message: str(f.message, 1500) } : {}) };
+  await db.roadmap.update({ where: { id: r.id }, data: {
+    aiDraft: json(next),
+    ...(f.summary !== undefined ? { summary: str(f.summary, 3000) || null } : {}),
+    ...(f.criteria ? { criteria: json(L(f.criteria)), meta: json({ ...((r.meta ?? {}) as object), done: [] }) } : {}),
+  } });
+  refresh(r.studentId);
+  return { ok: true };
+}
+
+/** Отметки внутри участка: точка (тема) освоена — авто по прогрессу или вручную; «сможет после участка» — вручную. */
+export async function markStage(roadmapId: string, i: number, m: { pointId?: string; done?: boolean | null; can?: number[] }): Promise<R> {
+  const r = await db.roadmap.findUnique({ where: { id: roadmapId } });
+  if (!r) return { ok: false, error: "not found" };
+  await own(r.studentId);
+  const stages = (r.stages as Stage[]) ?? [];
+  const st = stages[i];
+  if (!st) return { ok: false, error: "stage" };
+  if (m.pointId) { const p = (st.points ?? []).find((x) => x.id === m.pointId); if (p) { if (m.done === null || m.done === undefined) delete p.done; else p.done = m.done; } }
+  if (m.can) st.canDone = [...new Set(m.can.filter((k) => Number.isInteger(k) && k >= 0 && k < (st.skills ?? []).length))];
   await db.roadmap.update({ where: { id: r.id }, data: { stages: json(stages) } });
   refresh(r.studentId);
   return { ok: true };
