@@ -1269,6 +1269,11 @@ select.iedit, select.iedit:hover, select.iedit:focus { background-position: righ
 .plscore button { width: 38px; height: 32px; border-radius: 8px; font-weight: 700; color: var(--text2); }
 .plscore button.on { background: var(--seg-on); color: var(--accent-text); box-shadow: 0 1px 3px rgba(0, 0, 0, .12); }
 .plai { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border-radius: 12px; background: var(--violet-bg); }
+.pl-review-fieldset { min-inline-size: 0; margin: 0; padding: 0; border: 0; }
+.pl-annotated { display: grid; gap: .5rem; }
+.pl-error-mark { display: inline; padding: 0; border: 0; border-radius: 3px; color: inherit; font: inherit; background: color-mix(in srgb, var(--bad, #c43640) 14%, transparent); text-decoration: underline wavy var(--bad, #c43640); text-underline-offset: 3px; cursor: pointer; }
+.pl-error-mark:is(:hover, :focus-visible, [aria-pressed="true"]) { outline: 2px solid var(--bad, #c43640); }
+.pl-correction { display: grid; gap: .3rem; border-inline-start: 3px solid var(--bad, #c43640); padding: .4rem .75rem; overflow-wrap: anywhere; }
 .plai-why { color: var(--text2); display: flex; gap: 6px; align-items: flex-start; }
 .plscale { display: flex; flex-direction: column; gap: 2px; margin-top: 4px; }
 .plscrow { display: flex; align-items: flex-start; gap: 10px; text-align: left; padding: 6px 8px; border-radius: 8px; font-size: 13px; line-height: 1.4; color: var(--text2); }

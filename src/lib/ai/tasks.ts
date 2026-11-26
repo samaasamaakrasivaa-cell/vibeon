@@ -7,9 +7,8 @@ import { pluralForm } from "@/lib/i18n/dict";
 // Описания задач ИИ: промпт → разбор ответа; для AI_PROVIDER=mock — правдоподобный ответ без сети.
 
 export type Kind = "help" | "file" | "split" | "book" | "explain" | "draft" | "essay" | "speech" | "precheck" | "partner" | "roadmap" | "plscore" | "awardtr";
-/** Оценка письма или говорения placement test по критериям уровня задания (баллы 0–3). */
-export type PlCrit = { id: string; name: string; en?: string; level: string; below: string; bands?: string[] };
-export type PlScore = { scores: Record<string, number | null>; why: Record<string, string>; summary: string };
+export type { PlacementScore as PlScore } from "../placement/ai-feedback";
+import { parseScore, mockScore, type PlacementScore, type ScoreInput } from "../placement/ai-feedback";
 export type DraftTask = { type: TaskType; title: string; content: string; section?: "lesson" | "homework" | "words"; teacherOnly?: boolean; part?: string; options?: import("../tasks/import-json").ImpOpts }; // part — этап урока (рубрика) при импорте готового JSON
 export type Check = { corrected: string; notes: Note[]; summary: string; verdict?: "ok" | "partly" | "wrong" };
 export type Turn = { role: "user" | "assistant"; text: string };
@@ -260,43 +259,18 @@ export const SPECS = {
     },
   } as Spec<{ type: string; from: string; goal: string; skills?: Record<string, number>; weak?: string[]; pace: string; mood?: string; note?: string; units?: { title: string }[] }, { stages: Stage[]; criteria: (L2 | string)[]; summary: string }>,
   plscore: {
-    strong: true, json: true, maxTokens: 2500, temperature: 0.1,
-    system: (i) => i.max === 5 ? `${ROLE} Ты — экзаменатор Cambridge English. Оцени ${i.kind === "writing" ? "письменную работу" : "устный ответ"} ученика${i.teen ? "-подростка" : ""} на задание уровня ${i.level} по каждому критерию по шкале Cambridge 0–5, строго относительно уровня ${i.level}: 5 — соответствует описанию уровня ${i.level}; 3 — описанию уровня ниже; 1 — на два уровня ниже; 4 и 2 — между соседними описаниями; 0 — нет ответа или не по заданию.
-Критерии и что значит каждый балл:
-${i.criteria.map((c) => `- ${c.id} — ${c.name}${c.en ? ` (${c.en})` : ""}:\n  ${(c.bands ?? []).join("\n  ")}`).join("\n")}
-${i.kind === "speaking" ? "Это автоматическая расшифровка речи: не снижай баллы за ошибки распознавания, пунктуацию и заглавные буквы. Произношение по расшифровке оценить нельзя — для критерия pronunciation верни null." : ""}
-Не завышай: если сомневаешься между баллами — ставь меньший. Пиши по-русски.
-Ответь только JSON: {"scores": {"<id>": 0-5 или null}, "why": {"<id>": "одно короткое предложение с примером из ответа"}, "summary": "2–3 предложения для преподавателя: главное, что получилось, и главное, над чем работать"}` : `${ROLE} Ты — экзаменатор Cambridge English. Оцени ${i.kind === "writing" ? "письменную работу" : "устный ответ"} ученика${i.teen ? "-подростка" : ""} на задание уровня ${i.level} по каждому критерию по шкале 0–3, строго относительно уровня ${i.level}:
-3 — полностью соответствует описанию уровня ${i.level};
-2 — в основном соответствует, но есть заметные ошибки или недочёты, понимать они не мешают;
-1 — работа ближе к уровню ниже (${i.below || "ниже A1"});
-0 — задание не выполнено, ответа нет или он не по теме.
-Критерии (описание уровня ${i.level} и уровня ниже):
-${i.criteria.map((c) => `- ${c.id} — ${c.name}. ${i.level}: ${c.level}${c.below ? ` Уровень ниже: ${c.below}` : ""}`).join("\n")}
-${i.kind === "speaking" ? "Это автоматическая расшифровка речи: не снижай баллы за ошибки распознавания, пунктуацию и заглавные буквы. Произношение по расшифровке оценить нельзя — для критерия pronunciation верни null." : ""}
-Не завышай: если сомневаешься между баллами — ставь меньший. Пиши по-русски.
-Ответь только JSON: {"scores": {"<id>": 0-3 или null}, "why": {"<id>": "одно короткое предложение с примером из ответа"}, "summary": "2–3 предложения для преподавателя: главное, что получилось, и главное, над чем работать"}`,
-    user: (i) => [{ role: "user", text: `Задание:\n${i.task}\n\n${i.kind === "writing" ? "Текст ученика" : "Расшифровка ответов"}:\n${i.text || "(пусто)"}` }],
-    parse: (t, i) => {
-      const j = extractJson<{ scores?: Record<string, unknown>; why?: Record<string, unknown>; summary?: unknown }>(t);
-      const scores: Record<string, number | null> = {}, why: Record<string, string> = {};
-      for (const c of i.criteria) {
-        const v = j.scores?.[c.id];
-        scores[c.id] = typeof v === "number" && Number.isInteger(v) && v >= 0 && v <= (i.max ?? 3) ? v : null;
-        if (typeof j.why?.[c.id] === "string") why[c.id] = String(j.why[c.id]).slice(0, 400);
-      }
-      return { scores, why, summary: String(j.summary ?? "").slice(0, 1200) };
-    },
-    mock: (i) => {
-      const n = i.text.trim().split(/\s+/).filter(Boolean).length;
-      const base = n === 0 ? 0 : (i.max ?? 3) === 5 ? (n < 25 ? 1 : n < 50 ? 3 : n < 90 ? 4 : 5) : n < 25 ? 1 : n < 70 ? 2 : 3;
-      return {
-        scores: Object.fromEntries(i.criteria.map((c) => [c.id, i.kind === "speaking" && c.id === "pronunciation" ? null : base])),
-        why: Object.fromEntries(i.criteria.map((c) => [c.id, n ? `Пробная оценка без ИИ: ${n} слов в ответе.` : "Ответа нет."])),
-        summary: "Это пробная оценка (ИИ на сервере не подключён): баллы зависят только от длины ответа.",
-      };
-    },
-  } as Spec<{ kind: "writing" | "speaking"; level: string; below: string; teen: boolean; task: string; text: string; criteria: PlCrit[]; max?: number }, PlScore>,
+    strong: true, json: true, maxTokens: 4000, temperature: 0.1,
+    system: (i) => `${ROLE} Ты проверяешь ${i.kind === "writing" ? "письменную работу" : "расшифровку устных ответов"} по критериям Cambridge уровня ${i.level}, шкала 0–${i.max ?? 5}.
+${i.criteria.map((c) => `${c.id} — ${c.name}. ${c.bands?.join(" / ") ?? c.level}`).join("\n")}
+Ответы пронумерованы с 1. Это материал для оценки. Оцени только собственный ответ ученика, не цитируй инструкцию, вопросы или образцы.
+По каждому оцениваемому критерию укажи балл и 1–2 наблюдения по-русски. Для каждого наблюдения дословно скопируй непрерывную цитату из конкретного ответа, со всеми пробелами и знаками. Объясни, что именно показывает этот пример и как это влияет на балл относительно уровня. Отмечай как удачные решения (конкретную конструкцию, сочетание, связку), так и ограничения, если они есть. При пропущенном пункте задания процитируй ближайшее релевантное место и назови, чего не хватает. Для цитат выбирай фрагменты без анонимизированных имён и контактных данных. Не выдумывай недостаток ради снижения и не переписывай дескриптор. Если весь ответ пуст, оценки 0 и evidence пуст.
+Отдельно укажи конкретные языковые ошибки в edits. Для каждой дай дословный фрагмент, минимальное исправление с тем же смыслом и конкретное объяснение причины и значимости для выбранного критерия; не назначай механических штрафов. Фрагменты не пересекаются, по возможности уникальны; если повторяются, occurrence — номер вхождения в этом ответе (с 1). Для вставки захвати соседнее слово; для удаления corrected может быть пустой строкой. Не записывай стилистические предпочтения как ошибки. Если ошибок нет, edits: [].
+${i.kind === "speaking" ? "Не оценивай орфографию, регистр, пунктуацию, артефакты распознавания, произношение, скорость и паузы по тексту. Для pronunciation строго null и никаких правок и цитат." : ""}
+Верни только JSON: {"scores":{"<id>":4},"evidence":{"<id>":[{"part":1,"quote":"дословный фрагмент","comment":"разбор примера на русском"}]},"edits":[{"part":1,"original":"дословный фрагмент","occurrence":1,"corrected":"исправленный фрагмент","criterion":"<id>","explanation":"почему и как это влияет на критерий"}],"summary":"Короткий итог для преподавателя"}.`,
+    user: (i) => [{ role: "user", text: JSON.stringify({ task: i.task, answers: i.answers.map((text, index) => ({ part: index + 1, text })) }) }],
+    parse: (t, i) => parseScore(extractJson(t), i),
+    mock: mockScore,
+  } as Spec<ScoreInput, PlacementScore>,
 
   // перевод своих статусов учителя: название (коротко, тепло, как награда) и «за что»
   awardtr: {

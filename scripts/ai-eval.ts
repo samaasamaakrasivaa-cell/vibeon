@@ -3,7 +3,9 @@
 // «ловушки» (правильные сложные конструкции, которые нельзя исправлять), язык пояснений по инструкции, время, токены.
 import { readFileSync } from "node:fs";
 import path from "node:path";
-import { studioChat, type LlmMsg, type LlmOpts } from "../src/lib/ai/providers";
+import { chat, studioChat, type LlmMsg, type LlmOpts } from "../src/lib/ai/providers";
+import { SPECS } from "../src/lib/ai/tasks";
+import { describe5, RUB_V2 } from "../src/lib/placement/rubric";
 import { checkWith, type CheckInput, type CheckTaskType, type Edit } from "../src/lib/ai/check-core";
 
 const P = (n: string) => readFileSync(path.join(process.cwd(), "prompts", `${n}.md`), "utf8").trim();
@@ -145,6 +147,20 @@ async function runCase(cfg: Cfg, c: Case) {
 }
 
 (async () => {
+  if (process.argv[2] === "placement") {
+    for (const kind of ["writing", "speaking"] as const) {
+      const input = { kind, level: "B1", below: "A2", max: 5,
+        task: kind === "writing" ? CASES[1].prompt : "Where did you go last weekend? Would you recommend it and why?",
+        answers: kind === "writing" ? [CASES[1].text] : ["Last weekend I go to the cinema with my friends and the actors was excellent.", "I would recommend the film because the plot kept me guessing."],
+        criteria: RUB_V2[kind].map((c) => ({ id: c.id, name: c.name_ru, level: "B1", below: "A2", bands: [5,4,3,2,1,0].map((n) => `${n} — ${describe5(c, "B1", n)}`) })) };
+      const spec = SPECS.plscore;
+      const res = await chat({ system: spec.system(input), messages: spec.user(input), strong: spec.strong, maxTokens: spec.maxTokens, json: true, temperature: spec.temperature });
+      const score = spec.parse(res.text, input);
+      if (!score.edits?.length || (kind === "speaking" && score.scores.pronunciation !== null)) throw new Error(`Incomplete ${kind} evaluation`);
+      console.log(`Placement ${kind}: ${Object.keys(score.why).length} evidenced criteria, ${score.edits.length} anchored corrections, ${score.unplaced} unmatched (${res.model})`);
+    }
+    return;
+  }
   const only = (process.argv[2] || "").split(",").filter(Boolean);
   const cfgs = only.length ? CFGS.filter((c) => only.some((o) => c.name.includes(o) || c.model.includes(o))) : CFGS;
   console.log(`EVAL configs: ${cfgs.map((c) => c.name).join(" | ")}`);

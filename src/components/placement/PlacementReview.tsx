@@ -1,7 +1,8 @@
 "use client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useT } from "@/lib/i18n/client";
-import { addSpeakingToLesson, aiScore, assignExtraWS, deletePlacement, finalizePlacement, saveReview, sendResultTelegram, setShowResult, type ReviewInput } from "@/lib/placement/actions";
+import { addSpeakingToLesson, aiScore, assignExtraWS, deletePlacement, finalizePlacement, saveReview, saveSpeechTranscript, sendResultTelegram, setShowResult, type ReviewInput } from "@/lib/placement/actions";
+import { AnnotatedResponse } from "./AnnotatedResponse";
 import { transcribe } from "../ai/audio";
 import type { PlScore } from "@/lib/ai/tasks";
 import { BASE, finalHint, PL_LEVELS, STEPS, type PLevel, type Summary } from "@/lib/placement/engine";
@@ -23,7 +24,7 @@ export type ReviewProps = {
   id: string; mode: string; status: string; level: string | null; showResult: boolean; teen?: boolean; tgSent?: string | null;
   sm: Summary; d: ReviewData; review: { legacyReview?: LegacyReview; writing?: Record<string, unknown>; speaking?: Record<string, unknown>; points?: boolean[]; comment?: string; wNote?: string; sNote?: string; wc?: Record<string, string>; sc?: Record<string, string>; lesson?: { level: string; marks: Record<string, unknown> } | null; report?: { student?: unknown; parent?: unknown; sent?: boolean; sentAt?: string }; ai?: Partial<Record<"writing" | "speaking", PlScore & { level?: string; transcripts?: string[] }>> };
   lessonQs: { level: string; questions: string[] }[]; // говорение на уроке: вопросы уровнем выше и ниже
-  regrading: boolean; howTo: string; sublevels: string;
+  transcript: { source: string; texts: string[] }; regrading: boolean; howTo: string; sublevels: string;
   parts?: string[]; dates?: Record<string, string>; // разделы теста и даты, когда каждый пройден
   base?: { sub: string; from: "test" | "teacher" } | null; // грамматику не проверяли: от какого уровня шли остальные разделы
   who?: string; reveal?: string[]; // имя ученика (для PDF таблицы и списков) и скрипты, открытые ученику
@@ -57,30 +58,50 @@ export function PlacementReview(p: ReviewProps) {
   const [s, setS] = useState<Marks>(nums(p.review.speaking));
   // ИИ-проверка: баллы-подсказки по критериям уровня задания (учитель правит), обоснования и вывод
   const [ai, setAi] = useState(p.review.ai ?? {});
-  const [aiBusy, setAiBusy] = useState<"" | "writing" | "speaking">("");
-  const [aiErr, setAiErr] = useState<string | null>(null);
-  const runAi = async (kind: "writing" | "speaking") => {
+  const [aiBusy, setAiBusy] = useState<"" | "writing" | "speaking" | "transcript">("");
+  const [aiErr, setAiErr] = useState<{ kind: string; msg: string } | null>(null);
+  const [texts, setTexts] = useState(p.transcript.texts);
+  const [showScript, setShowScript] = useState(false);
+  const speechQuestions = p.d.speaking?.questions ?? [];
+  const needsTranscript = speechQuestions.some((q, i) => q.url && !texts[i]?.trim());
+  const getTexts = async () => {
+    if (!needsTranscript && texts.some((x) => x.trim())) return texts;
+    const responses = await Promise.allSettled(speechQuestions.map(async (q, i) => {
+      if (texts[i] || !q.url) return texts[i] ?? "";
+      const audio = await fetch(q.url);
+      if (!audio.ok) throw new Error("fail");
+      return transcribe(await audio.blob());
+    }));
+    const result = responses.map((r) => r.status === "fulfilled" ? r.value : "");
+    if (result.some((x) => x.trim())) {
+      const saved = await saveSpeechTranscript(p.id, p.transcript.source, result);
+      if (!saved.ok) throw new Error(saved.error);
+      setTexts(result);
+    }
+    const failure = responses.find((r) => r.status === "rejected");
+    if (failure?.status === "rejected") throw failure.reason;
+    if (speechQuestions.some((q, i) => q.url && !result[i]?.trim())) throw new Error("emptySpeech");
+    return result;
+  };
+  const runAi = async (kind: "writing" | "speaking" | "transcript") => {
     const cur = kind === "writing" ? w : s;
-    if (Object.keys(cur).length && !confirm(t("pl.aiOverwrite"))) return;
+    if (kind !== "transcript" && Object.keys(cur).length && !confirm(t("pl.aiOverwrite"))) return;
     setAiBusy(kind); setAiErr(null);
     try {
-      let tr: string[] = [];
-      if (kind === "speaking") {
-        // записи → WAV в браузере → распознавание речи; пустая запись — пустая строка
-        tr = await Promise.all((p.d.speaking?.questions ?? []).map(async (q) => {
-          if (!q.url) return "";
-          const blob = await (await fetch(q.url)).blob();
-          return transcribe(blob).catch((e: Error) => { throw e; });
-        }));
-      }
-      const r = await aiScore(p.id, kind, tr, RS.ver, p.regrading);
-      if (!r.ok || !r.ai) { const c = (r as { error?: string }).error; setAiErr(t(`pl.aiErr.${c === "off" || c === "limit" || c === "tariff" ? c : "fail"}` as DictKey)); return; }
-      const got = Object.fromEntries(Object.entries(r.ai.scores).filter(([, v]) => typeof v === "number")) as Marks;
-      if (kind === "writing") setW((x) => ({ ...x, ...got })); else setS((x) => ({ ...x, ...got }));
-      setAi((x) => ({ ...x, [kind]: { ...r.ai!, transcripts: tr } }));
+      const saved = await flush(draft);
+      if (!saved.ok) throw new Error(saved.error);
+      const tr = kind === "writing" ? [] : await getTexts();
+      if (kind === "transcript") { setShowScript(true); return; }
+      const result = await aiScore(p.id, kind, tr, RS.ver, p.regrading, p.transcript.source);
+      if (!result.ok) throw new Error(result.error);
+      if (!result.ai || !result.marks || !result.comments) throw new Error("fail");
+      (kind === "writing" ? setW : setS)(result.marks);
+      (kind === "writing" ? setWc : setSc)(result.comments);
+      setAi((x) => ({ ...x, [kind]: { ...result.ai!, transcripts: tr } }));
     } catch (e) {
-      const c = (e as Error).message;
-      setAiErr(t(`pl.aiErr.${c === "off" || c === "limit" || c === "tariff" ? c : "fail"}` as DictKey));
+      const code = e instanceof Error ? e.message : "";
+      const msg = t(`pl.aiErr.${["off","limit","tariff","emptySpeech"].includes(code) ? code : "fail"}` as DictKey);
+      setAiErr({ kind: kind === "writing" ? kind : "speaking", msg: code.startsWith("Проверка изменилась") ? code : msg });
     } finally { setAiBusy(""); }
   };
   const [pts, setPts] = useState<boolean[]>(p.review.points ?? []);
@@ -174,17 +195,6 @@ export function PlacementReview(p: ReviewProps) {
     return (
       <div className="plrub">
         <p className="small muted m-0">{t("pl.scRemind", { l: level, ex: (p.teen ? EXAM_TEEN : EXAM)[level] ?? `CEFR ${level}`, max: MAX, how: t(MAX === 5 ? "pl.scHow5" : "pl.scHow3") })}</p>
-        {aiKind && (
-          <div className="plai">
-            <div className="flex flex-wrap items-center gap-2">
-              <button type="button" className="btn secondary sm" disabled={!!aiBusy} onClick={() => runAi(aiKind)}><Icon name="spark" size="sm" />{aiBusy === aiKind ? t(aiKind === "speaking" ? "pl.aiListening" : "pl.aiChecking") : A ? t("pl.aiAgain") : t("pl.aiCheck")}</button>
-              <span className="small muted grow">{t(aiKind === "speaking" ? "pl.aiHintS" : "pl.aiHintW")}</span>
-            </div>
-            {aiErr && aiBusy === "" && <div className="small text-bad">{aiErr}</div>}
-            {A?.summary && <div className="small"><b>{t("pl.aiSummary")}:</b> {A.summary}</div>}
-            {aiKind === "speaking" && A?.transcripts?.some(Boolean) && <details><summary className="small">{t("pl.aiTranscript")}</summary><ol className="small mt-1 mb-0">{A.transcripts.map((x, i) => <li key={i}>{x || "—"}</li>)}</ol></details>}
-          </div>
-        )}
         <div className="flex flex-wrap items-center gap-2"><b className="grow">{t("pl.scTitle", { l: level, max: MAX })}</b>
           {done.length === list.length ? <span className="pill">{t("pl.scSum", { s: sum, m: list.length * MAX })} → {h !== null ? STEPS[h] : "—"}</span> : <span className="small muted">{t("pl.scLeft", { n: list.length - done.length })}</span>}
         </div>
@@ -196,7 +206,7 @@ export function PlacementReview(p: ReviewProps) {
                 {SCORES.map((v) => <button key={v} type="button" role="radio" aria-checked={m[c.id] === v} className={m[c.id] === v ? "on" : ""} title={descr(c, level, v)} onClick={() => pick(c, v)}>{v}</button>)}
               </div>
             </div>
-            {A?.why?.[c.id] && <div className="small plai-why"><Icon name="spark" size="sm" /> {A.why[c.id]}</div>}
+            {A?.why?.[c.id] && A.why[c.id] !== (aiKind === "writing" ? wc : sc)[c.id] && <div className="small plai-why"><Icon name="spark" size="sm" /> {A.why[c.id]}</div>}
             {/* шкала видна сразу: что значит каждый балл для этого уровня; строку можно нажать вместо кнопки */}
             <div className="plscale">
               {[...SCORES].reverse().map((v) => (
@@ -212,6 +222,37 @@ export function PlacementReview(p: ReviewProps) {
         <details><summary className="small">{t("pl.scHow")}</summary><p className="small mt-2 mb-0">{RS.total}</p></details>
       </div>
     );
+  };
+
+  const aiPanel = (kind: "writing" | "speaking") => {
+    const speech = kind === "speaking", result = ai[kind], parts = speech ? texts : [p.d.writing?.text ?? ""];
+    const hasScript = texts.some((x) => x.trim());
+    const available = !speech || hasScript || p.d.speaking?.questions.some((q) => q.url);
+    if (!available) return null;
+    return <div className="plai">
+      <div className="flex flex-wrap items-center gap-2">
+        <button type="button" className="btn secondary sm" onClick={() => void runAi(kind)}><Icon name="spark" size="sm" />
+          {aiBusy === kind ? t(speech ? "pl.aiListening" : "pl.aiChecking") : t(result ? "pl.aiAgain" : "pl.aiCheck")}</button>
+        {speech && needsTranscript && <button type="button" className="btn plain sm" onClick={() => void runAi("transcript")}>
+          {t(aiBusy === "transcript" ? "pl.aiListening" : "pl.getTranscript")}</button>}
+      </div>
+      <span className="small muted">{t(speech ? "pl.aiHintS" : "pl.aiHintW")}</span>
+      {aiErr?.kind === kind && <div role="alert" className="small text-bad">{aiErr.msg}</div>}
+      {speech && hasScript && <details open={showScript} onToggle={(e) => setShowScript(e.currentTarget.open)}>
+        <summary>{t("pl.aiTranscript")}</summary>
+        {parts.map((x, i) => <div key={i}><b className="small">{p.d.speaking?.questions[i]?.q}</b><div className="tpassage plpassage">{x || t(p.d.speaking?.questions[i]?.url ? "pl.noTranscript" : "pl.noAnswer")}</div></div>)}
+      </details>}
+      {result?.edits && <section className="flex flex-col gap-2">
+        <b>{t("pl.checkedText")}</b>
+        <span className="small muted">{t(result.edits.length ? "pl.markHint" : (result.unplaced ? "pl.unplacedEdits" : "pl.noTextEdits"))}</span>
+        {result.edits.length > 0 && !!result.unplaced && <span className="small muted">{t("pl.unplacedEdits")}</span>}
+        {parts.map((x, i) => x && <div key={i}>
+          {speech && <span className="small">{p.d.speaking?.questions[i]?.q}</span>}
+          <AnnotatedResponse key={JSON.stringify(result.edits)} text={x} criteria={RS[kind]} edits={result.edits!.filter((e) => e.part === i && x.slice(e.start, e.end) === e.original)} />
+        </div>)}
+      </section>}
+      {result?.summary && <div className="small"><b>{t("pl.aiSummary")}</b> · {result.summary}</div>}
+    </div>;
   };
 
   // письмо и говорение: подсказка «дать задание уровнем выше/ниже» и кнопки (решение — за учителем)
@@ -284,7 +325,7 @@ export function PlacementReview(p: ReviewProps) {
   );
 
   return (
-    <div className="flex flex-col gap-4">
+    <fieldset disabled={!!aiBusy} className="pl-review-fieldset flex flex-col gap-4">
       {waiting && <div className="alert flex flex-wrap items-center gap-2"><Icon name="hourglass" size="sm" /> <span className="grow">{t(p.mode === "self" ? "pl.inProgressSelf" : "pl.inProgress")}</span>{p.mode === "self" && <a className="btn primary sm" href={`/placement/${p.id}`}>{t("pl.continueSelf")}</a>}</div>}
 
       {p.regrading && <p className="alert m-0">{t("pl.regradeHint")}</p>}
@@ -299,6 +340,7 @@ export function PlacementReview(p: ReviewProps) {
           <p className="small muted m-0">{t("pr.wsTaskLevel", { l: p.d.writing.level })}</p>
           <p className="m-0">{p.d.writing.prompt_en}</p>
           <div className="tpassage plpassage">{p.d.writing.text || <span className="muted">{t("pl.noAnswer")}</span>}</div>
+          {aiPanel("writing")}
           <div className="small muted">{t("pl.wordsOf", { n: p.d.writing.text.trim() ? p.d.writing.text.trim().split(/\s+/).length : 0, a: p.d.writing.min, b: p.d.writing.max })}</div>
           {p.d.writing.points.length > 0 && (
             <div className="plrub"><b className="small">{t("pl.pointsTitle")}</b>
@@ -327,7 +369,8 @@ export function PlacementReview(p: ReviewProps) {
             </div>
           ))}
           <details><summary className="small">{t("pl.expects")}</summary><ul className="small mt-2">{p.d.speaking.expects.map((e) => <li key={e}>{e}</li>)}</ul></details>
-          {rubric(t("pl.part.speaking"), RS.speaking, s, setS, sTask, p.d.speaking.level, p.d.speaking.questions.some((q) => q.url) ? "speaking" : undefined)}
+          {aiPanel("speaking")}
+          {rubric(t("pl.part.speaking"), RS.speaking, s, setS, sTask, p.d.speaking.level, "speaking")}
           {noteBox("pl-snote", sNote, setSNote)}
           {extraBox("speaking", p.d.speaking.level, s, RS.speaking)}
           {prevBlock("speaking")}
@@ -383,7 +426,7 @@ export function PlacementReview(p: ReviewProps) {
       )}
       {/* удаление — для пробных и случайных прохождений (например, ссылку открыл не тот человек); у ученика пропадёт и результат в кабинете */}
       <div className="flex flex-wrap items-center justify-end gap-2"><span className="small muted">{t("pl.deleteHint")}</span><button className="btn plain sm" onClick={() => { if (confirm(t("pl.delConfirm"))) run(() => deletePlacement(p.id), () => location.assign("/teacher/courses?tab=tests"), true); }}><Icon name="close" size="sm" />{t("pl.delete")}</button></div>
-    </div>
+    </fieldset>
   );
 }
 

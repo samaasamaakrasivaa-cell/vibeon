@@ -16,6 +16,8 @@ import { describe5, RUB_V2, rubricOf } from "./rubric";
 import { checkCore, typoOk, emptyState, EXPECT, pickTask, PlacementCoverageError, PL_LEVELS, SECTIONS, STEPS, stepIdx, type Section, summarize, words, type CoreItem, type Expect, type ListenItem, type ReadItem, type SpeakItem, type WriteItem } from "./engine";
 import { addNextText, advance, begin, closeSection, doneOf, ensureTasks, enter, goTo, json, LATER, availOf, openOf, partsOf, publicView, stateOf, touch, type Later, type PView } from "./run";
 import { teacherReview, missingReassessment } from "./teacher-review";
+import { applyScore } from "./ai-feedback";
+import { speechSource } from "./speech-transcript";
 import { revealedScripts } from "./review";
 import { R_BLOCKS, type RCfg, type RSaved, type RVariant } from "./report";
 import { run } from "../ai/gateway";
@@ -719,8 +721,23 @@ export async function sendReport(id: string, on: boolean): Promise<R> {
 
 // ───────── ИИ-проверка письма и говорения ─────────
 
+/** Расшифровка принадлежит конкретным записям и доступна до выставления баллов. */
+export async function saveSpeechTranscript(id: string, source: string, texts: string[]): Promise<R> {
+  return wrap(async () => {
+    const { a } = await teacherAttempt(id), st = stateOf(a.state);
+    const item = st.speaking && st.items[st.speaking.id] as SpeakItem | undefined;
+    if (!item || source !== speechSource(st)) return changed;
+    if (!Array.isArray(texts) || texts.length !== item.questions.length || texts.some((v, i) =>
+      typeof v !== "string" || v.length > 20000 || (!st.speaking?.rec?.[String(i + 1)] && v !== ""))) return changed;
+    if (!texts.some((v) => v.trim())) return { ok: false, error: "emptySpeech" };
+    const review = { ...(a.review as object), speechTranscript: { source, texts } };
+    const saved = await db.placementAttempt.updateMany({ where: revision(a), data: { review: json(review) } });
+    return saved.count ? { ok: true } : changed;
+  });
+}
+
 /** ИИ ставит баллы по активной шкале по критериям уровня задания и коротко объясняет; учитель потом правит. transcripts — расшифровки ответов говорения. */
-export async function aiScore(id: string, kind: "writing" | "speaking", transcripts: string[] = [], rubric?: number, regrading = false): Promise<R & { ai?: PlScore }> {
+export async function aiScore(id: string, kind: "writing" | "speaking", transcripts: string[] = [], rubric?: number, regrading = false, source?: string): Promise<R & { ai?: PlScore; marks?: Record<string, number>; comments?: Record<string, string> }> {
   return wrap(async () => {
     const { me, a } = await teacherAttempt(id);
     // без настоящего ИИ оценка была бы по длине ответа, а расшифровка — шаблонной: честно говорим, что ИИ не подключён
@@ -732,24 +749,37 @@ export async function aiScore(id: string, kind: "writing" | "speaking", transcri
     const current = teacherReview(a), set = RUB_V2;
     if (regrading !== current.regrading || ((rubric !== undefined || regrading || current.active.legacyReview) && rubric !== 2)) return changed;
     const crit = set[kind].map((c) => ({ id: c.id, name: c.name_ru, en: c.en, level: c.levels?.[level] ?? "", below: below ? c.levels?.[below] ?? "" : "", ...(set.ver === 2 ? { bands: [5, 4, 3, 2, 1, 0].map((v) => `${v} — ${describe5(c, level, v)}`) } : {}) }));
-    let task: string, text: string;
+    if (source !== undefined && kind === "speaking" && source !== speechSource(st)) return changed;
+    let task: string, answers: string[];
     if (it.type === "writing") {
       task = `${it.prompt_en}${it.points?.length ? `\nIn your answer: ${it.points.join("; ")}.` : ""}\n(${it.min_words}–${it.max_words} words)`;
-      text = st.writing?.text ?? "";
+      answers = [st.writing?.text ?? ""];
     } else {
       const qs = (it as SpeakItem).questions;
       task = qs.map((q, i) => `${i + 1}. ${q.q}`).join("\n");
-      text = qs.map((q, i) => `${i + 1}. ${str(transcripts[i] ?? "", 3000) || "(нет записи)"}`).join("\n");
+      if (!Array.isArray(transcripts) || transcripts.some((x) => typeof x !== "string" || x.length > 20000)) return changed;
+      answers = qs.map((_, i) => st.speaking?.rec?.[String(i + 1)] ? transcripts[i] ?? "" : "");
+      if (!answers.some((x) => x.trim()) || answers.some((x, i) => st.speaking?.rec?.[String(i + 1)] && !x.trim())) return { ok: false, error: "emptySpeech" };
     }
     try {
-      const ai = await run("plscore", { kind, level, below, teen: st.track === "teen", task, text, criteria: crit, max: set.max }, await aiCtx(me));
+      const ctx = await aiCtx(me);
+      ctx.names = [...(ctx.names ?? []), a.student?.name, a.student?.lastName, a.guestName];
+      const ai = await run("plscore", { kind, level, below, teen: st.track === "teen", task, answers, criteria: crit, max: set.max }, ctx);
       const { a: latest } = await teacherAttempt(id);
       const draft = teacherReview(latest);
-      if (draft.regrading !== regrading || stateOf(latest.state)[kind]?.id !== it.id) return changed;
-      const review = draft.edit({ ai: { ...draft.active.ai, [kind]: { ...ai, level, at: new Date().toISOString(), ...(kind === "speaking" ? { transcripts: transcripts.map((x) => str(x, 3000)) } : {}) } } });
+      const now = stateOf(latest.state);
+      if (draft.regrading !== regrading || now[kind]?.id !== it.id ||
+          (kind === "speaking" ? speechSource(now) !== speechSource(st) : now.writing?.text !== st.writing?.text)) return changed;
+      const noteKey = kind === "speaking" ? "sc" : "wc";
+      if (JSON.stringify(current.active[kind]) !== JSON.stringify(draft.active[kind])) return changed;
+      const { marks, comments } = applyScore(kind, level, ai, draft.active[kind], draft.active[noteKey], draft.active.ai?.[kind]);
+      const review = draft.edit({ [kind]: marks, [noteKey]: comments, ai: { ...draft.active.ai, [kind]: {
+        ...ai, level, at: new Date().toISOString(), ...(kind === "speaking" ? { transcripts: answers, source: speechSource(st) } : {}),
+      } } });
       const saved = await db.placementAttempt.updateMany({ where: revision(latest), data: { review: json(review) } });
       if (!saved.count) return changed;
-      return { ok: true, ai };
+      revalidatePath(`/teacher/placement/${id}`);
+      return { ok: true, ai, marks, comments };
     } catch (e) {
       return { ok: false, error: aiCode(e) };
     }

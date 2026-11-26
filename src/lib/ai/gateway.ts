@@ -65,11 +65,19 @@ export async function run<K extends Kind>(kind: K, input: SpecIn<K>, ctx: Ctx): 
       out = spec.mock(input);
       await log(kind, ctx, { model: "mock", ms: Date.now() - t0 });
     } else {
-      const res = await chat({
+      const request = {
         system: spec.system(input), strong: spec.strong, json: spec.json, maxTokens: spec.maxTokens, temperature: spec.temperature,
         messages: spec.user(input).map((m) => ({ role: m.role, text: scrub(m.text, ctx.names) })),
-      });
-      out = spec.parse(res.text, input);
+      };
+      let res = await chat(request);
+      try {
+        out = spec.parse(res.text, input);
+      } catch (error) {
+        if (kind !== "plscore") throw error;
+        await log(kind, ctx, { ok: false, model: res.model, tokensIn: res.tokensIn, tokensOut: res.tokensOut, ms: Date.now() - t0 });
+        res = await chat({ ...request, system: request.system + "\nПроверь формат JSON и каждый критерий. Для каждого балла нужна цитата, дословно скопированная из указанного ответа. Если языковых правок нет, верни edits: []." });
+        out = spec.parse(res.text, input);
+      }
       await log(kind, ctx, { model: res.model, tokensIn: res.tokensIn, tokensOut: res.tokensOut, ms: Date.now() - t0 });
     }
   } catch (e) {

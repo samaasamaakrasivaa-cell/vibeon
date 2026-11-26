@@ -8,6 +8,7 @@ import { getT } from "@/lib/i18n/server";
 import { getBank, RUBRICS, trackOf } from "@/lib/placement/bank";
 import { teacherReview } from "@/lib/placement/teacher-review";
 import { PL_LEVELS, STEPS, summarize } from "@/lib/placement/engine";
+import { speechTranscript } from "@/lib/placement/speech-transcript";
 import { reviewData } from "@/lib/placement/review";
 import { doneOf, partsOf, stateOf } from "@/lib/placement/run";
 import { PlacementParts } from "@/components/placement/AssignParts";
@@ -39,6 +40,7 @@ export default async function PlacementReviewPage({ params }: { params: Promise<
   // отчёт уже собран (сохранён) или отправлен ученику — «Редактировать отчёт» вместо «Сгенерировать»
   const rep = ((a.review ?? {}) as { report?: RSaved }).report;
   const draft = teacherReview(a);
+  const transcript = speechTranscript(st, draft);
   const hasRep = !!(rep && (rep.sent || rep.student || rep.parent));
   const dates = Object.fromEntries(Object.entries(st.sdates ?? {}).map(([k, v]) => [k, dfmt(v as number)]));
   // даты прохождения: один день — «пройден 18 ноября»; разные — какие разделы когда и общий промежуток «18–20 ноября»
@@ -75,7 +77,7 @@ export default async function PlacementReviewPage({ params }: { params: Promise<
       {/* список разделов не нужен — даты выше; остаётся только «Добавить разделы» */}
       {a.mode === "student" && (a.status === "submitted" || a.status === "reviewed") && <div className="mb-5"><PlacementParts id={id} parts={partsOf(st)} done={doneOf(st)} dates={dates} canAdd compact /></div>}
       <div className="flex flex-col gap-6">
-        <PlacementReview key={`${id}-${draft.regrading}-${st.writing?.id}-${st.speaking?.id}`} regrading={draft.regrading}
+        <PlacementReview key={`${id}-${draft.regrading}-${st.writing?.id}-${transcript.source}`} transcript={transcript} regrading={draft.regrading}
           parts={partsOf(st)} dates={dates} base={base} who={who} reveal={a.reveal}
           id={id} teen={st.track === "teen"} lessonQs={lessonQs} mode={a.mode} status={a.status} level={a.level} showResult={a.showResult} tgSent={((a.review ?? {}) as { tgSentAt?: string }).tgSentAt ? new Date(((a.review ?? {}) as { tgSentAt: string }).tgSentAt).toLocaleString("ru-RU", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: me.timezone }) : null} sm={sm} d={d}
           review={draft.active as never}
