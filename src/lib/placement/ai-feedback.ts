@@ -15,10 +15,19 @@ export type ScoreInput = {
 const object = (x: unknown): Record<string, unknown> => x && typeof x === "object" && !Array.isArray(x) ? x as Record<string, unknown> : {};
 const short = (x: unknown, max: number) => typeof x === "string" ? x.trim().slice(0, max) : "";
 
+/** Стабильная ссылка на дословную фразу. Работает и для расшифровки без пунктуации. */
+export function answerPassages(answers: string[]) {
+  return answers.map((text, i) => {
+    const chunks = (text.match(/[^.!?\n]+[.!?]*|[.!?]+/g) ?? []).flatMap((s) => s.match(/\S+(?:[^\S\n]+\S+){0,23}/g) ?? []);
+    return chunks.map((text, j) => ({ id: `A${i + 1}S${j + 1}`, text }));
+  });
+}
+
 // The model quotes a numbered answer. Resolve its position against the original, including whitespace and punctuation.
 export function parseScore(raw: unknown, input: ScoreInput): PlacementScore {
   const result = object(raw), scores: PlacementScore["scores"] = {}, why: PlacementScore["why"] = {};
   const edits: ResponseEdit[] = [];
+  const references = new Map(answerPassages(input.answers).flat().map((p) => [p.id, p.text]));
   const answered = input.answers.some((a) => a.trim());
   for (const c of input.criteria) {
     if (input.kind === "speaking" && c.id === "pronunciation") {
@@ -31,10 +40,15 @@ export function parseScore(raw: unknown, input: ScoreInput): PlacementScore {
     if (!answered) { why[c.id] = "Ответ отсутствует."; continue; }
     const rows = object(result.evidence)[c.id];
     const comments: string[] = [];
-    for (const value of Array.isArray(rows) ? rows.slice(0, 3) : []) {
+    const feedback = Array.isArray(rows) ? rows : [rows];
+    for (const value of feedback.slice(0, 3)) {
       const row = object(value), source = input.answers[Number(row.part) - 1];
-      const quote = short(row.quote, 400), comment = short(row.comment, 580);
-      if (source && quote && comment && source.includes(quote)) comments.push(`«${quote}» — ${comment}`);
+      const passage = references.get(short(row.source, 32).toUpperCase());
+      const candidate = short(row.quote, 400), comment = short(row.comment, 580);
+      // При неточно переписанной цитате берём оригинал по ссылке, которую выбрала модель.
+      const quoted = candidate && (passage ?? source ? (passage ?? source).includes(candidate) : input.answers.some((a) => a.includes(candidate)));
+      const quote = quoted ? candidate : passage;
+      if (quote && comment) comments.push(`«${quote}» — ${comment}`);
     }
     if (!comments.length) throw new Error("Missing evidence for " + c.id);
     why[c.id] = comments.join("\n").slice(0, 1500);
