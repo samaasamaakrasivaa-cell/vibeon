@@ -785,6 +785,12 @@ model Note {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+enum PaymentDocumentKind {
+  PROOF
+  RECEIPT
+  QUARANTINED
+}
+
 // Загруженные файлы (картинки, аудио, видео, PDF, чеки). Хранилище: локальная папка или S3.
 model Upload {
   id        String   @id @default(cuid())
@@ -794,6 +800,8 @@ model Upload {
   mime      String
   size      Int
   createdAt DateTime @default(now())
+  paymentKind      PaymentDocumentKind?
+  paymentInvoiceId String? // назначение загрузки сохраняется после замены или удаления счёта
 
   @@index([ownerId])
 }

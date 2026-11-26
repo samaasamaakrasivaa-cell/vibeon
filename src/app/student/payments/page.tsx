@@ -5,6 +5,8 @@ import { requireUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { getT } from "@/lib/i18n/server";
 import { packOptions } from "@/lib/billing/engine";
+import { invoiceDocumentLinks } from "@/lib/billing/documents";
+import { PaymentDocumentUpload } from "@/components/finance/PaymentDocumentUpload";
 import { rub } from "@/lib/teacher/data";
 import { roadmapView } from "@/lib/roadmap/progress";
 import { perWeek } from "@/lib/roadmap/math";
@@ -23,6 +25,20 @@ export default async function Payments({ searchParams }: { searchParams: Promise
   const date = (d: Date) => d.toLocaleDateString(loc, { day: "numeric", month: "long", year: "numeric", timeZone: me.timezone });
   const open = s.invoices.filter((i) => i.status === "SENT" || i.status === "PROOF_SENT");
   const history = s.invoices.filter((i) => i.status === "PAID");
+  const documentLink = await invoiceDocumentLinks(tab === "bills" ? [...open, ...history].map((i) => ({ ...i, student: s })) : []);
+  const paymentDocuments = (i: typeof open[number]) => {
+    if (!i.proofFile && !i.receiptFile) return null;
+    const proof = documentLink({ ...i, student: s }, "proof");
+    const receipt = documentLink({ ...i, student: s }, "receipt");
+    return (
+      <div className="flex flex-wrap items-center gap-2">
+        {proof && <a className="btn tinted sm" href={proof} download>{t("pay.proofDocument")}</a>}
+        {!proof && i.proofFile && <PaymentDocumentUpload id={i.id} kind="proof" />}
+        {receipt ? <a className="btn tinted sm" href={receipt} download>{t("pay.yourReceipt")}</a>
+          : i.receiptFile && <span className="small">{t("pay.receiptAskAgain")}</span>}
+      </div>
+    );
+  };
   const pack = s.packs.find((p) => p.lessonsLeft > 0) ?? s.packs[0];
   const left = s.packs.reduce((a, p) => a + p.lessonsLeft, 0);
   const opts = packOptions(s);
@@ -127,6 +143,7 @@ export default async function Payments({ searchParams }: { searchParams: Promise
                 {i.status === "SENT" ? <PaidButton id={i.id} amount={R(i.amount)} /> : <span className="btn light lg" aria-disabled="true" style={{ opacity: 0.8 }}>✓ {t("pay.proofSent")}</span>}
                 <MessageButton label={t("pay.needReceipt")} icon="note" text={t("pay.receiptText", { title: i.title ?? "", amount: R(i.amount) })} />
               </div>
+              {paymentDocuments(i)}
             </section>
           ))}
           <h2 className="mb-3 mt-8">{t("pay.history")}</h2>
@@ -136,7 +153,7 @@ export default async function Payments({ searchParams }: { searchParams: Promise
               <div key={i.id} className="row">
                 <span className="pill green">✓ {t("pay.paid")}</span>
                 <div className="grow"><div className="t">{i.title}</div><div className="s">{i.paidAt ? date(i.paidAt) : ""}</div></div>
-                {i.receiptFile && <a className="btn tinted sm" href={i.receiptFile} target="_blank" rel="noreferrer"><Icon name="note" size="sm" />{t("pay.yourReceipt")}</a>}
+                {paymentDocuments(i)}
                 <b>{R(i.amount)}</b>
               </div>
             ))}

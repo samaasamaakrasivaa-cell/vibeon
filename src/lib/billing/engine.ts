@@ -1,12 +1,13 @@
 import { weeklyMoments } from "../teacher/moment-digest";
 import "server-only";
 import { backfillTelegram } from "../notify/bot";
-import type { Invoice, Student } from "@prisma/client";
+import type { Invoice, Prisma, Student, User } from "@prisma/client";
 import { db } from "../db";
 import { mailInvoice } from "../mail";
 import { env } from "../env";
 import { publish } from "../live/bus";
-import { readStored } from "../storage";
+import { fileUrl } from "../storage";
+import { invoiceDocumentAccess, invoiceForDocumentWrite, paymentUploadForWrite, readPaymentDocument } from "./documents";
 import { ocr } from "../ai/gateway";
 import { weeklyReports } from "../roadmap/jobs";
 import { notify, notifyPayer } from "../notify";
@@ -93,21 +94,23 @@ export async function notifyInvoice(s: Student, inv: Invoice, reminder: boolean)
 }
 
 /** Принять оплату: счёт оплачен; для абонемента — новый абонемент. */
-export async function acceptInvoice(inv: Invoice, auto: boolean) {
-  await db.$transaction(async (tx) => {
-    await tx.invoice.update({ where: { id: inv.id }, data: { status: "PAID", paidAt: new Date(), autoAccepted: auto, closedAt: auto ? null : new Date() } });
-    if (inv.kind === "pack" && inv.packLessons && !(await tx.pack.findUnique({ where: { invoiceId: inv.id } }))) {
-      await tx.pack.create({ data: { studentId: inv.studentId, lessonsTotal: inv.packLessons, lessonsLeft: inv.packLessons, price: inv.amount, invoiceId: inv.id } });
-      // уроки, проведённые «в долг» после окончания прошлого абонемента, списываются из нового
-      // урок, который учитель «вернул» в абонемент (charged = false), повторно не списывается
-      const owed = await tx.lessonInstance.findMany({ where: { studentId: inv.studentId, deductedAt: null, isTrial: false, charged: true, status: { in: ["DONE", "MISSED"] } }, orderBy: { startsAt: "asc" }, take: inv.packLessons });
-      if (owed.length) {
-        const p = await tx.pack.findUnique({ where: { invoiceId: inv.id } });
-        await tx.pack.update({ where: { id: p!.id }, data: { lessonsLeft: { decrement: owed.length } } });
-        await tx.lessonInstance.updateMany({ where: { id: { in: owed.map((l) => l.id) } }, data: { deductedAt: new Date() } });
-      }
+async function acceptInvoiceInTransaction(tx: Prisma.TransactionClient, inv: Invoice, auto: boolean) {
+  await tx.invoice.update({ where: { id: inv.id }, data: { status: "PAID", paidAt: new Date(), autoAccepted: auto, closedAt: auto ? null : new Date() } });
+  if (inv.kind === "pack" && inv.packLessons && !(await tx.pack.findUnique({ where: { invoiceId: inv.id } }))) {
+    await tx.pack.create({ data: { studentId: inv.studentId, lessonsTotal: inv.packLessons, lessonsLeft: inv.packLessons, price: inv.amount, invoiceId: inv.id } });
+    // уроки, проведённые «в долг» после окончания прошлого абонемента, списываются из нового
+    // урок, который учитель «вернул» в абонемент (charged = false), повторно не списывается
+    const owed = await tx.lessonInstance.findMany({ where: { studentId: inv.studentId, deductedAt: null, isTrial: false, charged: true, status: { in: ["DONE", "MISSED"] } }, orderBy: { startsAt: "asc" }, take: inv.packLessons });
+    if (owed.length) {
+      const p = await tx.pack.findUnique({ where: { invoiceId: inv.id } });
+      await tx.pack.update({ where: { id: p!.id }, data: { lessonsLeft: { decrement: owed.length } } });
+      await tx.lessonInstance.updateMany({ where: { id: { in: owed.map((l) => l.id) } }, data: { deductedAt: new Date() } });
     }
-  });
+  }
+}
+
+export async function acceptInvoice(inv: Invoice, auto: boolean) {
+  await db.$transaction((tx) => acceptInvoiceInTransaction(tx, inv, auto));
 }
 
 /** Отменить приём оплаты (кнопка «Отменить» у автоприёма): счёт снова ждёт проверки. */
@@ -120,37 +123,61 @@ export async function undoAccept(inv: Invoice) {
 }
 
 /** Ученик прислал подтверждение. Текст или скриншот (сумму читает ИИ-распознавание): совпала сумма — автоприём, иначе — на проверку учителю. */
-export async function submitProof(inv: Invoice, proof: { text?: string; file?: string }) {
+export async function submitProof(id: string, actor: Pick<User, "id" | "role">, proof: { text?: string; file?: string }) {
+  const inv = await invoiceForDocumentWrite(id, "proof", actor);
+  if (!inv || inv.status === "PAID" || inv.status === "CANCELLED") return { ok: false, error: "not found" } as const;
   const text = proof.text?.trim().slice(0, 1000) || null;
+
+  const upload = proof.file ? await paymentUploadForWrite(proof.file, id, "proof", actor.id) : null;
+  if (proof.file && !upload) return { ok: false, error: "file" } as const;
+  const content = upload ? await readPaymentDocument(upload) : null;
+  if (upload && !content) return { ok: false, error: "file" } as const;
+
+  const writable = {
+    id,
+    ...invoiceDocumentAccess(actor),
+    studentId: inv.studentId,
+    status: inv.status,
+    amount: inv.amount,
+    proofFile: inv.proofFile,
+    proofAt: inv.proofAt,
+  };
   let read: { source: string; amounts: number[]; matches: boolean; text?: string; failed?: boolean };
-  if (text) { const found = amountsIn(text); read = { source: "text", amounts: found, matches: found.includes(inv.amount) }; }
-  else {
+  if (text) {
+    const found = amountsIn(text);
+    read = { source: "text", amounts: found, matches: found.includes(inv.amount) };
+  } else {
+    if (!content) return { ok: false, error: "file" } as const;
+    const current = await db.invoice.findFirst({ where: writable, select: { student: { select: { teacherId: true } } } });
+    if (!current) return { ok: false, error: "not found" } as const;
     read = { source: "screenshot", amounts: [], matches: false };
     try {
-      const key = proof.file!.replace(/^\/api\/files\//, "");
-      const file = await readStored(key);
-      const st = await db.student.findUnique({ where: { id: inv.studentId }, select: { teacherId: true, userId: true } });
-      if (file && st) {
-        const mime = key.endsWith(".png") ? "image/png" : key.endsWith(".pdf") ? "application/pdf" : "image/jpeg";
-        const seen = await ocr(file.buf, mime, { userId: st.userId ?? "", teacherId: st.teacherId });
-        const found = amountsIn(seen);
-        read = { source: "screenshot", amounts: found, matches: found.includes(inv.amount), text: seen.slice(0, 400) };
-      }
+      const seen = await ocr(content.buf, content.mime, { userId: actor.id, teacherId: current.student.teacherId });
+      const found = amountsIn(seen);
+      read = { source: "screenshot", amounts: found, matches: found.includes(inv.amount), text: seen.slice(0, 400) };
     } catch { read.failed = true; }
   }
+
   const matches = read.matches;
-  await db.invoice.update({
-    where: { id: inv.id },
-    data: { status: "PROOF_SENT", proofKind: proof.file ? "screenshot" : "text", proofFile: proof.file ?? null, proofText: text, proofAt: new Date(), aiRead: read },
-  });
-  const fresh = await db.invoice.findUniqueOrThrow({ where: { id: inv.id }, include: { student: true } });
-  if (matches) await acceptInvoice(fresh, true);
-  await notify({
-      userId: fresh.student.teacherId, kind: "payment",
-      title: `${fresh.student.name} ${matches ? "оплатил(а)" : "прислал(а) подтверждение оплаты"}: ${new Intl.NumberFormat("ru-RU").format(inv.amount)} ₽`,
-      action: matches ? "review" : "check_screenshot", link: "/teacher/finance?tab=check",
+  const fresh = await db.$transaction(async (tx) => {
+    const change = await tx.invoice.updateMany({
+      where: writable,
+      data: {
+        status: "PROOF_SENT", proofKind: upload ? "screenshot" : "text",
+        proofFile: upload ? fileUrl(upload.path) : null, proofText: text, proofAt: new Date(), aiRead: read,
+      },
     });
-  return matches;
+    if (!change.count) return null;
+    if (matches) await acceptInvoiceInTransaction(tx, inv, true);
+    return tx.invoice.findUniqueOrThrow({ where: { id }, include: { student: true } });
+  });
+  if (!fresh) return { ok: false, error: "not found" } as const;
+  await notify({
+    userId: fresh.student.teacherId, kind: "payment",
+    title: `${fresh.student.name} ${matches ? "оплатил(а)" : "прислал(а) подтверждение оплаты"}: ${new Intl.NumberFormat("ru-RU").format(inv.amount)} ₽`,
+    action: matches ? "review" : "check_screenshot", link: "/teacher/finance?tab=check",
+  });
+  return { ok: true, auto: matches } as const;
 }
 
 // ───────── Плановые задачи (раз в минуту) ─────────

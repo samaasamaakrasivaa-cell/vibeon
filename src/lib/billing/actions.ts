@@ -4,6 +4,8 @@ import type { Invoice } from "@prisma/client";
 import { db } from "../db";
 import { requireUser } from "../auth/session";
 import { getT } from "../i18n/server";
+import { fileUrl } from "../storage";
+import { invoiceDocumentAccess, invoiceDocumentLinks, invoiceForDocumentWrite, paymentUploadForWrite, readPaymentDocument } from "./documents";
 import { acceptInvoice, createInvoice, notifyInvoice, packOptions, submitProof, undoAccept } from "./engine";
 import { sendMessage } from "../student/actions";
 import { completeNotes, notify, notifyPayer } from "../notify";
@@ -248,10 +250,19 @@ export async function manualInvoice(studentId: string, amount: number, title: st
 }
 
 /** Чек («Мой налог») к оплате. */
-export async function attachReceipt(id: string, url: string): Promise<R> {
-  const inv = await teacherInvoice(id);
-  if (!url.startsWith("/api/files/")) return { ok: false, error: "file" };
-  await db.invoice.update({ where: { id }, data: { receiptFile: url } });
+export async function attachReceipt(id: string, uploadId: string): Promise<R> {
+  const actor = await requireUser("TEACHER");
+  if (typeof id !== "string" || typeof uploadId !== "string" || !uploadId) return { ok: false, error: "file" };
+  const inv = await invoiceForDocumentWrite(id, "receipt", actor);
+  if (!inv) return { ok: false, error: "not found" };
+  const upload = await paymentUploadForWrite(uploadId, id, "receipt", actor.id);
+  if (!upload || !await readPaymentDocument(upload)) return { ok: false, error: "file" };
+
+  const change = await db.invoice.updateMany({
+    where: { id, ...invoiceDocumentAccess(actor), studentId: inv.studentId, receiptFile: inv.receiptFile },
+    data: { receiptFile: fileUrl(upload.path) },
+  });
+  if (!change.count) return { ok: false, error: "not found" };
   if (inv.student.userId) await notify({ userId: inv.student.userId, kind: "receipt", title: "Преподаватель прикрепил чек к оплате", link: "/student/payments?tab=bills" });
   refresh();
   return { ok: true };
@@ -270,16 +281,35 @@ export async function savePayDetails(text: string): Promise<R> {
 
 /** «Я оплатил(а)»: скриншот или текст. Совпала сумма — оплата принимается сразу. */
 export async function iPaid(id: string, proof: { text?: string; file?: string }): Promise<R> {
+  const actor = await requireUser("STUDENT");
   const { t } = await getT();
-  const { s } = await me();
-  const inv = await db.invoice.findUnique({ where: { id } });
-  if (!inv || inv.studentId !== s.id || inv.status === "PAID" || inv.status === "CANCELLED") return { ok: false, error: "not found" };
+  if (typeof id !== "string" || !proof ||
+      (proof.text !== undefined && typeof proof.text !== "string") ||
+      (proof.file !== undefined && typeof proof.file !== "string")) return { ok: false, error: t("pay.documentError") };
   if (!proof.text?.trim() && !proof.file) return { ok: false, error: t("pay.err.proof") };
-  if (proof.file && !proof.file.startsWith("/api/files/")) return { ok: false, error: "file" };
-  const auto = await submitProof(inv, proof);
-  // Без revalidatePath: он обновил бы и эту страницу, и карточка счёта исчезла бы вместе с сообщением «Оплата принята».
-  // Страницу ученика обновляет окно после закрытия; страницы учителя динамические и покажут новое при открытии.
-  return { ok: true, auto };
+  const result = await submitProof(id, actor, proof);
+  // Окно успешной отправки закрывается до обновления списка счетов.
+  return !result.ok && result.error === "file" ? { ok: false, error: t("pay.documentError") } : result;
+}
+
+/** Восстановить недоступное подтверждение без перерасчёта платежа или OCR. */
+export async function replacePaymentProof(id: string, uploadId: string): Promise<R> {
+  const actor = await requireUser("STUDENT");
+  if (typeof id !== "string" || typeof uploadId !== "string" || !uploadId) return { ok: false, error: "file" };
+  const inv = await invoiceForDocumentWrite(id, "proof", actor);
+  if (!inv?.proofFile) return { ok: false, error: "not found" };
+  const currentLink = await invoiceDocumentLinks([inv]);
+  if (currentLink(inv, "proof")) return { ok: false, error: "file" };
+  const upload = await paymentUploadForWrite(uploadId, id, "proof", actor.id);
+  if (!upload || !await readPaymentDocument(upload)) return { ok: false, error: "file" };
+
+  const change = await db.invoice.updateMany({
+    where: { id, ...invoiceDocumentAccess(actor), studentId: inv.studentId, proofFile: inv.proofFile },
+    data: { proofFile: fileUrl(upload.path) },
+  });
+  if (!change.count) return { ok: false, error: "not found" };
+  refresh();
+  return { ok: true };
 }
 
 /** «Продлить» / «Перейти на абонемент»: счёт за выбранный абонемент. */
