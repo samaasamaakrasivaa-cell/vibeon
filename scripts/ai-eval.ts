@@ -157,6 +157,14 @@ async function runCase(cfg: Cfg, c: Case) {
       const res = await chat({ system: spec.system(input), messages: spec.user(input), strong: spec.strong, maxTokens: spec.maxTokens, json: true, temperature: spec.temperature });
       const score = spec.parse(res.text, input);
       if (!score.edits?.length || (kind === "speaking" && score.scores.pronunciation !== null)) throw new Error(`Incomplete ${kind} evaluation`);
+      if (kind === "writing") {
+        const text = input.answers[0];
+        const hits = CASES[1].gold.filter((g) => {
+          const start = text.indexOf(g.frag);
+          return start >= 0 && score.edits!.some((e) => e.start < start + g.frag.length && e.end > start);
+        }).length;
+        console.log(`Placement writing: ${hits}/${CASES[1].gold.length} known errors located`);
+      }
       console.log(`Placement ${kind}: ${Object.keys(score.why).length} evidenced criteria, ${score.edits.length} anchored corrections, ${score.unplaced} unmatched (${res.model})`);
     }
     return;
