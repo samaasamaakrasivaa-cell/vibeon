@@ -4,6 +4,8 @@
 
 **Стек:** Next.js 15 (App Router) + TypeScript · PostgreSQL 16 + Prisma 6 · Redis · Tailwind CSS 4 · Docker Compose · Nginx.
 
+[Документация проекта](docs/README_НАЧНИТЕ_ЗДЕСЬ.md) · [Правила Codex](AGENTS.md) · [Выпуск и восстановление](docs/RELEASE_RUNBOOK.md)
+
 ## Состояние по этапам (План_разработки.md)
 
 | № | Этап | Статус |
