@@ -8,13 +8,14 @@
 | Аккаунты, инфраструктура, общие файлы, оболочки и доставка | Platform & Access | `src/lib/auth/`, `src/lib/admin/access.ts`, `src/middleware.ts`, `src/lib/{storage,db,env,rate-limit,mail}.ts`, `src/lib/{notify,i18n}/`, `src/app/api/{auth,upload,files,telegram,health,version}/`, `prisma/`, `deploy/`, `.github/workflows/`. Также общие стили и механизм запуска фоновых задач. |
 | Финансы, подписка, поддержка и администрирование | Finance & Admin | `src/lib/billing/`, `src/lib/admin/{actions,data,features}.ts`, `src/app/admin/`, `src/app/teacher/{finance,plan,platform,support}/`, `src/app/student/{payments,help}/`. Platform согласует права и доставку. |
 | Кабинет преподавателя, ученики, расписание, группы и правила наград | Teacher | `src/app/teacher/{students,schedule,profile,awards}/`, `src/lib/teacher/{actions,data,groups,demo,moments}.ts`, `src/lib/awards/`. Расписание используется Student, Classroom, Finance и Roadmap. |
-| Кабинет ученика, личное общение, самостоятельная работа и слова | Student | `src/app/student/{schedule,profile,messages,questions,words,welcome}/`, `src/components/student/`, `src/lib/{student,study}/`, `src/app/api/{chat,activity}/`, `src/components/Thread.tsx`. Ведёт личный чат и вопросы с обеих сторон. Teacher проверяет их в кабинете преподавателя. |
+| Кабинет ученика, личное общение, самостоятельная работа | Student | `src/app/student/{schedule,profile,messages,questions,welcome}/`, компоненты оболочки и самостоятельной работы в `src/components/student/`, `src/lib/{student,study}/`, `src/app/api/{chat,activity}/`, `src/components/Thread.tsx`. Ведёт личный чат и вопросы с обеих сторон и встраивает карточку «Слова» на главную. Метрики и операции словаря ведёт Vocabulary. |
 | Курсы, материалы и формат заданий | Builder | `src/app/{builder,share}/`, `src/app/teacher/courses/`, `src/components/{builder,courses,tasks}/`, `src/lib/tasks/`, `src/lib/teacher/{courses,builder-data}.ts`. Формат заданий потребляют Classroom, Homework и AI. |
 | Индивидуальное и групповое занятие | Live Classroom | `src/app/{class,api/class}/`, `src/components/class/`, `src/lib/{class,live}/`. Ведёт транспорт событий, доску, совместный чат и завершение. Согласует выдачу ДЗ, фиксацию прогресса, уведомления и финансовые последствия. |
 | Назначение, сдача, проверка и повтор ДЗ | Homework | `src/lib/{homework,review-counts}.ts`, `src/app/teacher/homework/`, `src/app/student/lessons/` и операции ДЗ в классе. В очереди преподавателя получает статусы диагностики от Placement и вопросы от Student. |
 | Вводная диагностика | Placement Test | `src/lib/placement/`, `src/components/placement/`, `src/app/{placement,t}/`, `src/app/teacher/placement/`, `src/app/api/placement/`, `content/placement/` и скрипты банка. Согласует передачу результатов с Roadmap и вызовы моделей с AI. |
-| Учебный маршрут, контрольные срезы и прогресс | Roadmap & Progress | `src/lib/roadmap/`, `src/components/roadmap/`, `src/app/student/{route,progress,test}/` и блок маршрута в карточке ученика. Источники — Placement, Classroom, Homework и самостоятельная работа. |
+| Учебный маршрут, контрольные срезы и прогресс | Roadmap & Progress | `src/lib/roadmap/`, `src/components/roadmap/`, `src/app/student/{route,progress,test}/` и блок маршрута в карточке ученика. Источники — Placement, Classroom, Homework, Vocabulary и самостоятельная работа. |
 | Модели, промпты, лимиты и качество | AI & Quality | `src/lib/ai/`, `src/components/ai/`, `src/app/api/ai/`, `src/app/teacher/ai-quality/`, `prompts/`, профильные проверки в `scripts/`. Учебные функции вызывают шлюз со своим предметным контекстом. |
+| Личный словарь, тренировки и показатели по лексике | Vocabulary & Training | `src/app/student/words/`, `src/components/student/WordsView.tsx` и операции со словами в `src/lib/student/actions.ts`. Ведёт правила переноса в личный словарь, интервалы, дневные цели и освоение. |
 
 ## Placement и Roadmap
 
@@ -31,6 +32,23 @@ Live Classroom ведёт общий обработчик `src/app/api/class/[id
 ## AI и учебные модули
 
 AI & Quality отвечает за состав данных, передаваемых моделям, и работу ИИ-провайдеров. Предметный модуль отвечает за необходимость передачи данных и использование результата. Передачу частных заметок преподавателя и других чувствительных данных нельзя расширять без отдельного утверждения владельца продукта. Маскирование имён и контактов сохраняет остальной текст заметки. При изменении запроса фиксируй назначение каждого поля, получателя, хранения и ручной путь при сбое. Platform проверяет правила доступа и обработки данных. [Формирование запроса](../src/lib/ai/review.ts#L88-L103)
+
+## Словарь и тренировки
+
+**Vocabulary & Training** ведёт личный словарь, правила приёма слов из источников и сохранения результата тренировки. Student ведёт главную, навигацию и самостоятельное расписание. Builder ведёт `wordset`, `vocab` и разметку учебного материала. Live Classroom ведёт участие, события класса и завершение урока, Homework — назначение и статус задания. Локальные карточки класса и ДЗ сейчас не записывают личный прогресс.
+
+**Общий источник данных.** `Word` хранит личную запись и уровень 0–4, `WordPractice` — число обработанных карточек за день, настройки цели находятся в `Student`. `Homework.wordTraining` фиксирует назначение, `Task` — учебное содержимое. Vocabulary определяет смысл очереди, уровня, дневного счётчика и серии. Student и Teacher показывают показатели в кабинетах, Roadmap & Progress применяет их к маршруту, Platform доставляет напоминания. Изменение формулы и часового пояса проверяют все затронутые потребители. Лексические результаты Placement остаются результатами диагностики.
+
+| Общий файл или контракт | Владелец файла | Кто проверяет стык |
+|---|---|---|
+| `src/lib/student/actions.ts`, главная и `src/lib/study/` | Student | Vocabulary ведёт действия словаря и согласует показатели карточки на главной, `setWordGoal` и `setWordsTime`. |
+| `src/lib/tasks/parse.ts`, `wordset`, `vocab`, редактор, `TaskView` и печать | Builder | Vocabulary проверяет перенос, старые наборы и общую оценку диктанта. AI & Quality проверяет разметку генерируемых наборов. |
+| `ClassRoom.tsx`, страница класса и общий `api/class/[id]/act` | Live Classroom | Vocabulary проверяет `word` и сохранение слов в `finish`. Homework и Vocabulary проверяют `training` и карточки ДЗ. Classroom проверяет участников, события и завершение. |
+| `src/lib/teacher/moments.ts` и `src/lib/roadmap/progress.ts` | Teacher и Roadmap соответственно | Vocabulary проверяет исходный дневной счётчик и критерий «выучено». Roadmap проверяет применение к прогнозу и отсутствие двойного учёта. |
+| `src/lib/notify/reminders.ts`, схема и правила доступа | Platform & Access | Vocabulary согласует условие напоминания, поля словаря и сохранность записей. Platform проверяет доставку и права. |
+| Провайдеры, промпты и генерация словарных подсказок | AI & Quality | Vocabulary определяет предметную необходимость подсказок и их включение в словарь. Builder проверяет их использование в учебных наборах. |
+
+У одной правки общего файла один автор. Изменения формата, прав, источника слова, шкалы, порядка записи и смысла показателей согласуются с Tech Lead и затронутыми владельцами. Проверяй сохранность `Word.id`, источника, перевода, собственного примера, уровней, дат повторения и дневных итогов. При переносе и повторном вызове сверяй число записей и отметок. Для старых наборов, отличающихся значений одного слова и активных заданий правила определяются до изменения данных. Границы и проверки роли описаны в [паспорте](agents/11-vocabulary-training.md), наблюдения записаны [кандидатами в бэклог](VOCABULARY_BACKLOG.md).
 
 ## Общие файлы и события
 

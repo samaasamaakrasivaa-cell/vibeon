@@ -15,6 +15,23 @@
 | 08 | [Placement Test](agents/08-placement-test.md) | `vibeon_placement_test` |
 | 09 | [Roadmap & Progress](agents/09-roadmap-progress.md) | `vibeon_roadmap_progress` |
 | 10 | [AI & Quality](agents/10-ai-quality.md) | `vibeon_ai_quality` |
+| 11 | [Vocabulary & Training](agents/11-vocabulary-training.md) | `vibeon_vocabulary_training` |
+
+## Подключение Vocabulary & Training
+
+Открой чат `VibeOn · 11 Vocabulary & Training`. Для проверки в режиме чтения используй ветку `codex/team-vocabulary-training` либо согласованный коммит после объединения PR. Для будущих изменений создай отдельную ветку или worktree по [правилам разработки](DEVELOPMENT_RULES.md). Для делегирования из другой задачи используй имя профиля `vibeon_vocabulary_training`.
+
+> Ты работаешь в VibeOn как Vocabulary & Training. Прочитай AGENTS.md, docs/agents/11-vocabulary-training.md, docs/MODULES.md и docs/DEVELOPMENT_RULES.md. Назови базовый SHA, рабочую ветку, свою зону и зоны Student, Classroom и Homework. Объясни, где хранится личный прогресс и чем отличаются локальные карточки класса и ДЗ. Назови владельцев student/actions.ts и общего обработчика класса, а также рецензентов правки. Это проверка контекста в режиме чтения. Покажи статус рабочих файлов до и после.
+
+Прими проверку, если исполнитель указал `Word` и `WordPractice` как источники личного прогресса, отнёс главную и расписание к Student, завершение урока к Classroom, назначение ДЗ к Homework и подтвердил состояние рабочих файлов.
+
+### Актуализация уже подключённых чатов
+
+Перешли затронутым исполнителям это сообщение, указав принятый коммит или ветку с документами.
+
+> Обнови контекст своей текущей роли. На указанном коммите перечитай AGENTS.md, свой паспорт, раздел «Словарь и тренировки» в docs/MODULES.md и строку 11 в docs/CODEX_TEAM.md. Назови базовый SHA, свою границу с Vocabulary & Training, общий файл или показатель и необходимое ревью. Работай в режиме чтения. Для активной ветки сначала сверь документацию отдельно и продолжай текущую задачу после проверки пересечений.
+
+Student подтверждает передачу словаря и личной тренировки. Teacher, Builder, Classroom, Homework, Roadmap, AI и Platform подтверждают только свой стык. Tech Lead сверяет владельцев и порядок PR.
 
 ## Пилот Teacher и Placement Test
 
