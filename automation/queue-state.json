@@ -10,36 +10,25 @@
     16,
     18
   ],
-  "lease": {
-    "token": "4d598b2bdae24cc791017049061b5ebc",
-    "started_at": "2026-11-27T14:46:13.928023Z",
-    "expires_at": "2026-11-27T17:49:44.741098Z"
-  },
-  "checkpoint": {
-    "phase": "close_test_pr",
-    "branch": "codex/automation/review-probe",
-    "reviewed_sha": "11a67fe63b5ba03598b20cac4ce0a54e9757f13b",
+  "lease": null,
+  "checkpoint": null,
+  "last_probe": {
+    "type": "background_native_review",
+    "checked_at": "2026-11-27T14:50:04.829802Z",
+    "tests_passed": 12,
+    "runtime": "Python 3.13.5",
+    "github_write": "passed",
+    "contender_ref_preserved": true,
+    "contender_error": "UNKNOWN: Error code: UNKNOWN; Error: GithubGraphQLAPIError; Something went wrong while executing your query on 2026-11-27T14:46:35Z. Actual ref remained A.",
+    "independent_review": "passed",
     "review_pr": 22,
     "request_comment_id": 7221238848,
     "review_summary_id": 7221245216,
     "review_receipt_id": 7221271521,
-    "independent_review": "passed"
-  },
-  "last_probe": {
-    "type": "inline_coordination",
-    "execution": "run_now returned inline_run in current chat",
-    "checked_at": "2026-11-27T14:39:44.835Z",
-    "tests_passed": 12,
-    "runtime": "Python 3.12.14",
-    "independent_review": "passed",
-    "review_evidence": "Separate collaboration followup: /root/release_final_review; 12 tests and policy checked",
-    "github_write": "passed",
-    "contender_ref_preserved": true,
-    "contender_error": "GithubGraphQLAPIError / UNKNOWN; actual ref unchanged",
-    "origin_sha": "9b75e31c4788ea9db07422cb77fdd986186890dd",
-    "claim_sha": "5616748d511f9561573c4b31ddda2f88dc90091b",
-    "renew_sha": "f1575c3cab7b91d9d4305238a8591e80ba525866",
-    "background_write": "not_verified",
-    "background_delegation": "not_verified"
+    "reviewed_sha": "11a67fe63b5ba03598b20cac4ce0a54e9757f13b",
+    "origin_sha": "11a67fe63b5ba03598b20cac4ce0a54e9757f13b",
+    "claim_sha": "1968e7849ba35f7600351f4d58b787b4205ff4ca",
+    "renew_sha": "174962abcd80cbfa48cc12d8e795e37b65fd0992",
+    "evidence": "Native bot summary completed on exact SHA; has_any_findings=false; has_unresolved_findings=false; receipt 7221271521; no inline comments; PR 22 confirmed closed/unmerged."
   }
 }
