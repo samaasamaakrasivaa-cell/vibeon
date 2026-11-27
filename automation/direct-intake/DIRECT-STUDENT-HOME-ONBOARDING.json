@@ -1,10 +1,15 @@
 {
   "claim_id": "f0672552851048ff87e1c4d2e652f729",
   "handoff": null,
-  "issue": null,
+  "issue": 66,
   "key": "DIRECT-STUDENT-HOME-ONBOARDING",
   "owner": "student",
-  "progress": null,
+  "progress": {
+    "base_sha": "58ead57015f67ea5281af520fe7fcf46d68219d5",
+    "branch": "codex/student/home-onboarding",
+    "next": "Обновить главную и профиль ученика",
+    "stage": "implementation"
+  },
   "release": null,
   "source": "direct",
   "version": 1
