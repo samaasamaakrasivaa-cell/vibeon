@@ -187,7 +187,7 @@ export async function buildLessonSummary(lessonInstanceId: string, studentId: st
     ...(long && long.ms ? { longest: { taskId: long.taskId, title: long.title, ms: long.ms } } : {}),
     words: [...words].slice(0, 80), points, other, typos,
   };
-  // Preserve the separately approved report even when a legacy summary rebuild races with publication.
+  // Preserve private observations and the approved report across summary rebuilds.
   await db.$executeRaw`
     INSERT INTO "LessonSummary" ("id", "lessonInstanceId", "studentId", "topics", "checks", "notes", "updatedAt")
     VALUES (${randomUUID()}, ${lessonInstanceId}, ${studentId}, ${JSON.stringify(topics)}::jsonb,
@@ -197,5 +197,7 @@ export async function buildLessonSummary(lessonInstanceId: string, studentId: st
       "status" = CASE WHEN "LessonSummary"."status" = 'analysis-only' THEN 'draft' ELSE "LessonSummary"."status" END,
       "notes" = EXCLUDED."notes" || CASE WHEN "LessonSummary"."notes" ? 'lessonAnalysisV1'
         THEN jsonb_build_object('lessonAnalysisV1', "LessonSummary"."notes" -> 'lessonAnalysisV1') ELSE '{}'::jsonb END
+        || CASE WHEN "LessonSummary"."notes" ? 'lessonObservationV1'
+        THEN jsonb_build_object('lessonObservationV1', "LessonSummary"."notes" -> 'lessonObservationV1') ELSE '{}'::jsonb END
   `;
 }
