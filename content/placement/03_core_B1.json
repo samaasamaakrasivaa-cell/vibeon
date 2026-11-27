@@ -2361,7 +2361,8 @@
       "the museum closes"
     ],
     "explain_ru": "После what time в косвенном вопросе используется порядок «подлежащее + глагол»: the museum closes.",
-    "hint_ru": "косвенный вопрос — прямой порядок слов"
+    "hint_ru": "косвенный вопрос — прямой порядок слов",
+    "instruction_en": "Complete the indirect question. Use the words in brackets in the correct order and form."
   },
   {
     "id": "G-B1-T06",
