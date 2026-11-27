@@ -1,7 +1,8 @@
 import type { Practice } from "@/lib/ai/lesson-analysis-plan";
-import { hasRecordedWork, lessonEvidenceTotals, type LessonTaskEvidence } from "@/lib/lessons/analysis-facts";
+import { hasRecordedWork, lessonEvidenceTotals, lessonItemTopics, lessonPresentForms, type LessonTaskEvidence } from "@/lib/lessons/analysis-facts";
 import { TYPES } from "@/lib/tasks/catalog";
 import { topicLabel } from "@/lib/tasks/tags";
+import { focusDetails, type ObservationFocus } from "@/lib/lessons/observation-focus";
 
 const labels = {
   ru: {
@@ -18,6 +19,9 @@ const labels = {
     recall: "Вспомнить правило или слова без подсказки и привести 2 своих примера.",
     withoutTopic: "Выбрать один пункт, который вызвал затруднение, разобрать его и попробовать похожий пример.",
     consolidate: "Вспомнить одно задание без подсказки и объяснить свой ответ на похожем примере.",
+    teacherFocus: "Устная проверка по наблюдению преподавателя", studentFocus: "Что потренировать устно",
+    byTopic: "Результаты проверенных пунктов по темам",
+    forms: { questions: "Вопросы с do / does", negatives: "Отрицания с don’t / doesn’t", affirmatives: "Утвердительные фразы" },
   },
   en: {
     work: "What we worked on", finished: "tasks with answers or a teacher mark", correct: "matched the answer key",
@@ -33,15 +37,20 @@ const labels = {
     recall: "Recall the rule or vocabulary without notes and give 2 examples of your own.",
     withoutTopic: "Pick an item that was difficult, review it and try a similar example.",
     consolidate: "Recall one task without notes and explain your answer to a similar example.",
+    teacherFocus: "Speaking check based on the teacher’s observation", studentFocus: "What to practise aloud",
+    byTopic: "Checked answers by topic",
+    forms: { questions: "Questions with do / does", negatives: "Negatives with don’t / doesn’t", affirmatives: "Affirmative sentences" },
   },
 };
 
-export function LessonAnalysisReport({ tasks, practice, lang, teacher = false }: {
-  tasks: LessonTaskEvidence[]; practice: Practice[]; lang: "ru" | "en"; teacher?: boolean;
+export function LessonAnalysisReport({ tasks, practice, focus, lang, teacher = false }: {
+  tasks: LessonTaskEvidence[]; practice: Practice[]; focus?: ObservationFocus | null; lang: "ru" | "en"; teacher?: boolean;
 }) {
-  if (!tasks.length) return null;
   const t = labels[lang];
   const totals = lessonEvidenceTotals(tasks);
+  const itemTopics = lessonItemTopics(tasks);
+  const presentForms = lessonPresentForms(tasks);
+  const problemForm = presentForms.find((row) => row.incorrect > 0 && row.form !== "affirmatives");
   const work = tasks.filter(hasRecordedWork);
   const longest = [...tasks].filter((task) => task.activityMinutes !== null)
     .sort((a, b) => b.activityMinutes! - a.activityMinutes!).slice(0, teacher ? 2 : 1);
@@ -51,10 +60,15 @@ export function LessonAnalysisReport({ tasks, practice, lang, teacher = false }:
   const strength = [...work].filter((task) => task.correct > 0 && !task.incorrect).sort((a, b) => b.correct - a.correct)[0];
   const challenge = [...work].filter((task) => task.incorrect > 0).sort((a, b) => b.incorrect - a.incorrect)[0];
   const highlight = (task?: LessonTaskEvidence) => task && (topic(task.topicId, teacher ? task.topicName : null) || (teacher ? title(task) : null));
-  if (!totals.worked && !longest.length) return null;
+  if (!totals.worked && !longest.length && !focus) return null;
 
   return (
     <div className="flex flex-col gap-4">
+      {focus && <section className="card flex flex-col gap-2">
+        <h2 className="m-0">{teacher ? t.teacherFocus : t.studentFocus}</h2>
+        <p className="m-0"><b>{focusDetails(focus).label[lang]}</b></p>
+        <p className="m-0">{focusDetails(focus)[teacher ? "prompt" : "practice"][lang]}</p>
+      </section>}
       {totals.worked > 0 && <section className="card flex flex-col gap-2">
         <h2 className="m-0">{t.work}</h2>
         <p className="m-0">{totals.worked} {t.finished}</p>
@@ -77,6 +91,20 @@ export function LessonAnalysisReport({ tasks, practice, lang, teacher = false }:
             ].filter(Boolean).join(" · ")}</span>
           </li>)}
         </ul>}
+      </section>}
+      {itemTopics.length > 0 && <section className="card flex flex-col gap-2">
+        <h2 className="m-0">{t.byTopic}</h2>
+        <ul className="m-0 pl-5">{itemTopics.map((row) => <li key={row.code}>
+          <b>{topic(row.code)}</b> · {row.correct} {t.correct}, {row.incorrect} {t.incorrect}
+        </li>)}</ul>
+      </section>}
+      {presentForms.length > 0 && <section className="card flex flex-col gap-2">
+        <h2 className="m-0">Present Simple</h2>
+        <ul className="m-0 pl-5">{presentForms.map((row) => <li key={row.form}>
+          <b>{t.forms[row.form]}</b> · {row.correct} {t.correct}, {row.incorrect} {t.incorrect}
+        </li>)}</ul>
+        {problemForm && <p className="m-0">{focusDetails(problemForm.form === "questions" ? "present-questions" : "present-negatives")
+          [teacher ? "prompt" : "practice"][lang]}</p>}
       </section>}
       {longest.length > 0 && <section className="card flex flex-col gap-2">
         <h2 className="m-0">{t.activity}</h2>

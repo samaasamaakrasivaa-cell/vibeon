@@ -18,7 +18,7 @@ export default async function StudentLessonAnalysis({ params }: { params: Promis
         <h1 className="m-0">{ru ? "Итог урока" : "Lesson summary"}</h1>
         <p className="muted m-0">{view.date.toLocaleDateString(ru ? "ru-RU" : "en-GB", { dateStyle: "long", timeZone: student.timezone })}</p>
       </div>
-      <LessonAnalysisReport tasks={view.tasks} practice={view.practice} lang={lang} />
+      <LessonAnalysisReport tasks={view.tasks} practice={view.practice} focus={view.focus} lang={lang} />
     </div>
   );
 }

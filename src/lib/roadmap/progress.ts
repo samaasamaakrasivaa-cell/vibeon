@@ -95,6 +95,8 @@ export async function editorData(studentId: string, teacherId: string, tz: strin
   const paOf = new Map(pas.map((p) => [p.checkpointId!, p]));
   return {
     studentId, first: s.name, ini: `${s.name[0] ?? ""}${s.lastName?.[0] ?? ""}`.toUpperCase(), level: s.level,
+    checkpointFocusSince: r ? v.checkpoints.reduce((since, c) =>
+      c.roadmapId === r.id && c.status === "done" && c.takenAt ? Math.max(since, c.takenAt.getTime()) : since, r.createdAt.getTime()) : 0,
     age: s.birthday ? (() => { const n = new Date(), b = s.birthday!; let a = n.getFullYear() - b.getFullYear(); if (n.getMonth() < b.getMonth() || (n.getMonth() === b.getMonth() && n.getDate() < b.getDate())) a--; return a; })() : null,
     teenAvail: TEEN_READY || isOwner((await db.user.findUnique({ where: { id: teacherId }, select: { email: true } }))?.email),
     courses: courses.map((c) => ({ id: c.id, title: c.title, units: c._count.units })),
