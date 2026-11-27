@@ -270,7 +270,7 @@
         "id": "R-C1-03-q5",
         "q": "Where was the notebook found?",
         "options": [
-          "In a box of the mother's things",
+          "In a box the narrator's mother had meant to sort through",
           "In the grandmother's old kitchen cupboard",
           "In a second-hand bookshop in town",
           "In a restaurant in Marseille"
@@ -278,7 +278,7 @@
         "answer": 0,
         "checks": "detail",
         "topic_id": "r-detail",
-        "explain_ru": "The notebook turned up in a box of things my mother had been meaning to sort through."
+        "explain_ru": "В начале сказано, что мать собиралась разобрать содержимое этой коробки."
       },
       {
         "id": "R-C1-03-q6",

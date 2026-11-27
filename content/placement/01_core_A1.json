@@ -269,7 +269,7 @@
     "type": "mcq",
     "q": "I ___ tired on Monday mornings.",
     "options": [
-      "always am",
+      "always are",
       "am always",
       "always",
       "always be"
@@ -937,7 +937,7 @@
     "topic_en": "this / that / these / those",
     "topic_ru": "this / that / these / those",
     "type": "mcq",
-    "q": "Can you see ___ birds on that tree over there?",
+    "q": "Can you see ___ birds in that tree over there?",
     "options": [
       "this",
       "these",
@@ -994,15 +994,15 @@
     "topic_en": "Countable and uncountable nouns with some / any",
     "topic_ru": "Исчисляемые и неисчисляемые с some / any",
     "type": "mcq",
-    "q": "Can I have ___ water, please?",
+    "q": "I've got ___ water and a lemon. I can make us a drink.",
     "options": [
       "some",
-      "a",
+      "many",
       "any",
-      "many"
+      "few"
     ],
     "answer": 0,
-    "explain_ru": "Просьба с неисчисляемым существительным — some water."
+    "explain_ru": "В обычном утвердительном предложении с неисчисляемым water подходит some."
   },
   {
     "id": "G-A1-39",
@@ -1148,12 +1148,13 @@
     "topic_en": "Collocations with have / go / do",
     "topic_ru": "Сочетания с have / go / do",
     "type": "gap",
-    "q": "I always ___ my homework after dinner.",
+    "q": "I always ___ all my homework after dinner. By eight it's ready.",
     "accept": [
       "do",
-      "finish"
+      "finish",
+      "complete"
     ],
-    "explain_ru": "Сочетание: do homework.",
+    "explain_ru": "Do, finish и complete подходят, если речь о выполнении всей работы.",
     "hint_ru": "глагол: делать (домашнее задание)",
     "group": "a1-v2"
   },
@@ -1302,15 +1303,15 @@
     "topic_en": "Common adjectives and opposites",
     "topic_ru": "Частые прилагательные и антонимы",
     "type": "mcq",
-    "q": "Can you ___ the bus? It's coming now.",
+    "q": "That bus is really ___. I can walk faster than that.",
     "options": [
-      "watch",
-      "look",
-      "see",
-      "listen"
+      "short",
+      "early",
+      "slow",
+      "quiet"
     ],
     "answer": 2,
-    "explain_ru": "Увидеть то, что появилось перед глазами, — see.",
+    "explain_ru": "Сравнение со скоростью ходьбы подтверждает значение slow — «медленный».",
     "group": "a1-v4"
   },
   {
@@ -1384,7 +1385,8 @@
       "are not"
     ],
     "explain_ru": "Ключей в сумке нет (Where are they?) — отрицание с they: aren't (are not).",
-    "hint_ru": "форма глагола to be с отрицанием"
+    "hint_ru": "форма глагола to be с отрицанием",
+    "instruction_en": "Write the negative form in the gap. You can use the full form or a contraction."
   },
   {
     "id": "G-A1-43",
@@ -1659,8 +1661,8 @@
     "options": [
       "an",
       "a",
-      "the",
-      "some"
+      "—",
+      "several"
     ],
     "answer": 0,
     "explain_ru": "Apple начинается с гласного звука — an apple."
@@ -1714,7 +1716,7 @@
     "type": "mcq",
     "q": "I ___ speak French, but I can speak a little Spanish.",
     "options": [
-      "don't",
+      "doesn't",
       "can't",
       "not",
       "am not"
@@ -1809,7 +1811,7 @@
     "type": "mcq",
     "q": "I'm really hungry ___ I didn't have breakfast.",
     "options": [
-      "but",
+      "because of",
       "so",
       "or",
       "because"
@@ -2062,7 +2064,7 @@
       "waiting",
       "to wait"
     ],
-    "explain_ru": "После hate / like / love — глагол с -ing (в британском варианте возможно и to + глагол)."
+    "explain_ru": "После hate допустимы и waiting, и to wait. Обе формы подходят к этому значению."
   },
   {
     "id": "G-A1-T03",

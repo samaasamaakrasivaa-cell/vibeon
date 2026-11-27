@@ -67,16 +67,13 @@ const baby = continuous.span[0] - 1;
 assert.equal(checkCore(continuous, `${baby}-${baby}::baby's`), true);
 assert.equal(checkCore(continuous, `${baby}-${continuous.span[1]}::baby is sleeping`), true);
 full("G-B1-138", "ought to have checked", true);
-full("G-B1-138", "did not check", true);
-full("G-B1-139", "probably went", true);
+full("G-B1-138", "did not check", false);
+full("G-B1-139", "probably went", false);
 full("G-B1-142", "will still be flying", true);
+full("G-B1-142", "will fly", false);
 full("G-B1-142", "will flying", false);
-const legacyContinuous = { ...item("G-B1-142"), accept: ["will be flying", "will fly"] };
-assert.equal(checkCore(legacyContinuous, `${legacyContinuous.span.join("-")}::will fly`), true);
-assert.equal(checkCore(legacyContinuous, `${legacyContinuous.span[0]}::will fly`), true);
-assert.equal(checkCore(legacyContinuous, `${legacyContinuous.span[0]}::will flying`), false);
-full("G-B1-143", "am interviewing", true);
-full("G-B1-150", "were planning to eat", true);
+full("G-B1-143", "am interviewing", false);
+full("G-B1-150", "were planning to eat", false);
 full("G-B1-150", "were go to eat", false);
 full("G-B1-151", "was going to cycle", true);
 full("G-C1-16", "was taking", false);
@@ -93,31 +90,74 @@ assert.equal(checkCore(fixture("She ___ now.", "can swims", "can swim"), "1-2::c
 assert.equal(checkCore(fixture("He said she ___, then left.", "was cook", "was cooking"), "4-4::cooking"), true);
 assert.equal(checkCore(fixture("He said she ___, then left.", "was cook", "was cooking"), "4-4::cooking,"), true);
 
-let originalAlternatives = 0;
-let rejectedAgreementErrors = 0;
+let bankAlternatives = 0;
 for (const { from, accept } of fixSpecs) {
   const fix = item(from);
   assert.ok(fix.accept?.length, fix.id);
+  assert.notEqual(fix.wrong, undefined, fix.id);
+  assert.equal(checkCore(fix, `${fix.span.join("-")}::${fix.wrong}`), false, fix.id);
   for (const accepted of fix.accept) {
     assert.equal(checkCore(fix, `${fix.span.join("-")}::${accepted}`), true, fix.id);
   }
-  const snapshot = { ...fix, accept };
-  for (const original of accept) {
-    originalAlternatives++;
-    const message = `${from}: ${original}`;
-    const accepted = !(from === "G-C1-16" && original === "was taking");
-    if (!accepted) rejectedAgreementErrors++;
-    assert.equal(fix.accept?.includes(original), accepted, message);
-    assert.equal(checkCore(fix, `${fix.span[0]}::${original}`), accepted, message);
-    assert.equal(checkCore(fix, `${fix.span.join("-")}::${original}`), accepted, message);
-    assert.equal(checkCore(snapshot, `${fix.span.join("-")}::${original}`), accepted, message);
-    assert.equal(checkCore(snapshot, `${fix.span[0]}::${original}`), accepted, message);
+  for (const declared of accept) {
+    bankAlternatives++;
+    assert.ok(fix.accept.includes(declared), `${from}: ${declared}`);
+    assert.equal(checkCore(fix, `${fix.span.join("-")}::${declared}`), true, `${from}: ${declared}`);
+    assert.equal(checkCore(fix, `${fix.span[0]}::${declared}`), true, `${from}: ${declared}`);
   }
 }
-assert.equal(rejectedAgreementErrors, 1);
+// Новые вопросы ограничивают ключ. Старый снимок сохраняет свои варианты.
+const retiredAlternatives = [
+  ["G-B1-138", "didn't check", "did not check"],
+  ["G-B1-139", "went", "probably went"],
+  ["G-B1-142", "are flying", "will fly"],
+  ["G-B1-143", "am interviewing"],
+  ["G-B1-150", "were planning to eat", "had planned to eat", "wanted to eat", "meant to eat"],
+  ["G-B1-151", "was planning to cycle", "had planned to cycle", "meant to cycle", "wanted to cycle"],
+  ["G-C1-16", "was taking"],
+] as const;
+for (const [id, ...retired] of retiredAlternatives) {
+  const fix = item(id);
+  const spec = fixSpecs.find((f) => f.from === id);
+  assert.ok(spec?.instruction_en, id);
+  const legacy = { ...fix, instruction_en: undefined, accept: [...fix.accept!, ...retired] };
+  for (const correction of retired) {
+    assert.ok(!spec.accept.includes(correction), `${id}: ${correction}`);
+    full(id, correction, false);
+    // PT-01 rejects only the subject–verb disagreement already present in this context.
+    const acceptedInSnapshot = id !== "G-C1-16";
+    assert.equal(checkCore(legacy, `${legacy.span.join("-")}::${correction}`), acceptedInSnapshot, `${id}: ${correction}`);
+    assert.equal(checkCore(legacy, `${legacy.span[0]}::${correction}`), acceptedInSnapshot, `${id}: ${correction}`);
+  }
+  if (id === "G-B1-142") assert.equal(checkCore(legacy, `${legacy.span[0]}::will flying`), false);
+}
+full("G-A2-110", "that", true);
+full("G-B1-72", "whether", true);
+full("G-B1-142", "will be still flying", true);
+full("G-B2-66", "have", true);
+full("G-C1-64", "should get", true);
+full("G-C1-23", "was to become", true);
+full("G-C1-23", "'d become", false);
+for (const [id, ...answers] of [
+  ["G-B1-T13", "while", "whilst"],
+  ["G-B2-T05", "notwithstanding", "even with"],
+]) {
+  const core = bank.find((entry) => entry.id === id);
+  assert.ok(core, id);
+  for (const answer of answers) assert.equal(checkCore(core, answer), true, `${id}: ${answer}`);
+}
+for (const core of bank) {
+  if (core.type === "mcq") {
+    assert.ok(core.options && core.options[core.answer!], core.id);
+    assert.equal(checkCore(core, core.answer!), true, core.id);
+  } else {
+    assert.ok(core.accept?.length, core.id);
+    for (const accepted of core.accept) assert.equal(checkCore(core, accepted), true, core.id);
+  }
+}
 assert.equal(checkCore({ ...usedTo, type: "mcq", answer: 1 }, 1), true);
 assert.equal(checkCore({ ...usedTo, type: "gap", accept: ["he is sleeping"] }, "he's sleeping"), true);
 assert.equal(checkCore({ ...usedTo, type: "wordform", accept: ["written"] }, "WRITTEN!"), true);
 assert.equal(checkCore({ ...usedTo, type: "transform", accept: ["had gone"] }, "'d gone"), true);
 assert.equal(checkCore({ ...usedTo, type: "brackets", accept: ["doesn't go"] }, "does not go"), true);
-console.log(`Placement Fix: ${fixes.size} заданий, ${originalAlternatives - rejectedAgreementErrors}/${originalAlternatives} исходных вариантов принимаются в обоих форматах. Отклонена одна ошибка согласования.`);
+console.log(`Placement Adult: ${bank.length} заданий ядра, ${fixes.size} Fix и ${bankAlternatives} вариантов Fix. Регрессии проверены.`);

@@ -14,17 +14,17 @@
     "questions": [
       {
         "id": "R-B2-01-q1",
-        "q": "What did most of the trials show?",
+        "q": "What did employees and companies report in the trials?",
         "options": [
           "Companies lost money but employees felt more motivated",
           "Productivity fell sharply, although staff felt less stressed",
-          "Employees were less stressed and productivity didn't fall",
+          "Less stress, and stable or higher productivity",
           "Most workers wanted to return to a five-day week afterwards"
         ],
         "answer": 2,
         "checks": "detail",
         "topic_id": "r-detail",
-        "explain_ru": "Сотрудники меньше нервничали, а продуктивность сохранилась или выросла."
+        "explain_ru": "В тексте большинство работников сообщили о меньшем стрессе. Многие компании отметили сохранение или рост продуктивности."
       },
       {
         "id": "R-B2-01-q2",
@@ -59,20 +59,20 @@
         "q": "What is the writer's opinion of the four-day week?",
         "options": [
           "It's a magic solution that will work for every company",
-          "It's a good idea, but only if work is organised differently",
+          "It's worth trying alongside changes to how work is organised",
           "It's a bad idea that will never work for most real companies",
           "It's only really suitable for hospitals, shops and schools"
         ],
         "answer": 1,
         "checks": "writer's attitude",
         "topic_id": "r-writers-attitude",
-        "explain_ru": "Автор за эксперимент, но считает, что нужно менять и организацию работы."
+        "explain_ru": "Автор считает идею достойной проверки и говорит, что она лучше работает вместе с изменениями в организации работы."
       },
       {
         "id": "R-B2-01-q5",
         "q": "Why do some companies like the four-day week, according to the text?",
         "options": [
-          "It helps them attract talented staff",
+          "It attracts talented staff",
           "It reduces their taxes",
           "It lets them close the office",
           "It means fewer customers"
