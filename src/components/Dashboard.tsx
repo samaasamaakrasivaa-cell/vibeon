@@ -297,6 +297,9 @@ export async function Dashboard({ user, role, day, top }: { user: User; role: "T
                       studentId: l.studentId, charged: l.charged, moved: !!l.movedFrom, price: l.price ?? 0, hw: null,
                     }} />}
                     </div>
+                    {role === "TEACHER" && l.status === "DONE" && l.studentId && <Link href={`/teacher/lesson-analysis/${l.id}`} className="btn secondary sm">
+                      <Icon name="spark" size="sm" />{lang === "ru" ? "Анализ урока" : "Lesson analysis"}
+                    </Link>}
                   </div>
                 </div>
               );

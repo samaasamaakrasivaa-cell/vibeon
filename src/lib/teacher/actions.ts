@@ -12,6 +12,7 @@ import { invalidateLessonSessions, withLessonLifecycleLock } from "../live/lesso
 import { notify, notifyPayer } from "../notify";
 import { repriceLessons } from "../billing/engine";
 import { scheduleRangeMinutes } from "./schedule-range";
+import { patchStudentForm } from "../student/form";
 
 export type Result = { ok: true; id?: string } | { ok: false; error: string };
 
@@ -352,8 +353,7 @@ export async function updateStudentProfile(id: string, f: Record<string, string>
     },
   });
   if (f.phone !== undefined) {
-    const s = await db.student.findUnique({ where: { id }, select: { form: true } });
-    await db.student.update({ where: { id }, data: { form: { ...((s?.form as object) ?? {}), phone: clean(f.phone, 40) } } });
+    if (!await patchStudentForm(id, { teacherId: teacher.id }, { phone: clean(f.phone, 40) })) return { ok: false, error: "not found" };
   }
   refresh(id);
   return { ok: true };
@@ -588,11 +588,11 @@ export async function updateTeacherProfile(f: { name: string; lastName: string; 
 export async function setStudentField(id: string, key: string, value: string): Promise<Result> {
   const { t } = await getT();
   const teacher = await me();
-  const s = await ownStudent(id, teacher.id);
+  await ownStudent(id, teacher.id);
   const v = value.trim();
   const day = (x: string) => (/^\d{4}-\d{2}-\d{2}$/.test(x) ? new Date(x + "T12:00:00Z") : null);
-  const form = (patch: object) => ({ form: { ...((s.form as object) ?? {}), ...patch } });
-  let data: Record<string, unknown>;
+  let data: Record<string, unknown> | undefined;
+  let form: Prisma.InputJsonObject | undefined;
   switch (key) {
     case "name": if (!v) return { ok: false, error: t("auth.err.name") }; data = { name: v.slice(0, 80) }; break;
     case "lastName": data = { lastName: v.slice(0, 80) || null }; break;
@@ -612,20 +612,22 @@ export async function setStudentField(id: string, key: string, value: string): P
       data = { courseId: c?.id ?? null, course: c?.title ?? null };
       break;
     }
-    case "phone": data = form({ phone: v.slice(0, 40) || null }); break;
+    case "phone": form = { phone: v.slice(0, 40) || null }; break;
     case "gender": data = { gender: v === "f" || v === "m" ? v : null }; break;
-    case "vk": data = form({ vk: v.slice(0, 120) || null }); break;
+    case "vk": form = { vk: v.slice(0, 120) || null }; break;
     // другие соцсети — список ссылок (ВКонтакте, Instagram, что угодно); старое поле «ВКонтакте» переезжает сюда
     case "socials": {
       let list: unknown = [];
       try { list = JSON.parse(v || "[]"); } catch { return { ok: false, error: "field" }; }
       const xs = (Array.isArray(list) ? list : []).filter((x): x is string => typeof x === "string").map((x) => x.trim().slice(0, 160)).filter(Boolean).slice(0, 8);
-      data = form({ socials: xs, vk: null });
+      form = { socials: xs, vk: null };
       break;
     }
     default: return { ok: false, error: "field" };
   }
-  await db.student.update({ where: { id }, data });
+  if (form) {
+    if (!await patchStudentForm(id, { teacherId: teacher.id }, form)) return { ok: false, error: "not found" };
+  } else if (data) await db.student.update({ where: { id }, data });
   refresh(id);
   return { ok: true };
 }

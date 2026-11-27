@@ -85,7 +85,7 @@ async function anthropicChat(q: ChatReq): Promise<ChatRes> {
 // Открытые модели (DeepSeek, Qwen) работают только через этот адрес, не через foundationModels/v1/completion.
 
 export type LlmMsg = { role: "system" | "user" | "assistant"; content: string };
-export type LlmOpts = { json?: boolean; temperature?: number; maxTokens?: number; timeoutMs?: number; /** «размышления» DeepSeek/Qwen для этого вызова (иначе AI_REASONING_EFFORT) */ reasoning?: string };
+export type LlmOpts = { json?: boolean; temperature?: number; maxTokens?: number; timeoutMs?: number; /** «размышления» DeepSeek/Qwen для этого вызова (иначе AI_REASONING_EFFORT) */ reasoning?: string; dataLogging?: false };
 
 /** Полное имя модели: «deepseek-v32/latest» → gpt://<каталог>/deepseek-v32/latest (полный URI оставляем как есть). */
 export const modelUri = (name: string) => (name.includes("://") ? name : `gpt://${Y().folder}/${name.replace(/^\/+/, "")}`);
@@ -100,7 +100,7 @@ export async function studioChat(spec: string, messages: LlmMsg[], o: LlmOpts = 
   if (reasoning && reasoning !== "none") o = { ...o, reasoning, maxTokens: Math.max(o.maxTokens ?? 0, 20000), timeoutMs: Math.max(o.timeoutMs ?? 0, 300000) };
   const j = await fetchJson("https://llm.api.cloud.yandex.net/v1/chat/completions", {
     method: "POST",
-    headers: { Authorization: `Api-Key ${Y().key}`, "OpenAI-Project": Y().folder, "Content-Type": "application/json" },
+    headers: { Authorization: `Api-Key ${Y().key}`, "OpenAI-Project": Y().folder, "Content-Type": "application/json", ...(o.dataLogging === false ? { "x-data-logging-enabled": "false" } : {}) },
     body: JSON.stringify({
       model: modelUri(model), messages, temperature: o.temperature ?? 0.2, max_tokens: o.maxTokens ?? 4000,
       // Строгий JSON-режим (response_format) не включаем: на длинной инструкции Alice AI в нём зацикливается (проверено);
