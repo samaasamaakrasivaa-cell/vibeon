@@ -1,10 +1,15 @@
 {
   "claim_id": "b4444ea6b43e4d07933a7719ac6b300e",
   "handoff": null,
-  "issue": null,
+  "issue": 81,
   "key": "DIRECT-STUDENT-STUDY-LESSONS-TESTS",
   "owner": "student",
-  "progress": null,
+  "progress": {
+    "base_sha": "71af5fe9a11f10e6e30fb871f8b930d786559838",
+    "branch": "codex/student/study-lessons-tests",
+    "next": "Обновить раздел Учёба и проверить переходы по ролям",
+    "stage": "implementation"
+  },
   "release": null,
   "source": "direct",
   "version": 1
