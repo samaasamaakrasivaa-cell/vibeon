@@ -1,10 +1,15 @@
 {
   "claim_id": "08adab5805a34c379c4758393f6afe35",
   "handoff": null,
-  "issue": null,
+  "issue": 84,
   "key": "DIRECT-TEACHER-LESSON-ANALYSIS-NAV",
   "owner": "teacher",
-  "progress": null,
+  "progress": {
+    "base_sha": "b0c6eb3744c5f310cabaa5fc097deb297d402026",
+    "branch": "codex/teacher/lesson-analysis-navigation",
+    "next": "Добавить переключение недель на главной и ссылку на существующий анализ из расписания.",
+    "stage": "implementation"
+  },
   "release": null,
   "source": "direct",
   "version": 1
