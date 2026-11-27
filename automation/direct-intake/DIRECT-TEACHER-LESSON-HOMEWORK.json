@@ -7,8 +7,8 @@
   "progress": {
     "base_sha": "58ead57015f67ea5281af520fe7fcf46d68219d5",
     "branch": "codex/teacher/lesson-homework",
-    "head_sha": "738ee55a77617ee63deb815055f4d0237cd32a25",
-    "next": "Проверить независимое ревью и CI исправления. Chromium подтвердил свежий счётчик и сохранение ответа при выходе",
+    "head_sha": "f2984f5b942002ac3f4f0fe22ac79044e6297594",
+    "next": "Дождаться ревью и CI на SHA с проверкой узкого экрана, затем штатный выпуск после задачи 68",
     "pr": 73,
     "stage": "review"
   },
