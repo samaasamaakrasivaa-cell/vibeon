@@ -7,10 +7,11 @@
   "progress": {
     "base_sha": "58ead57015f67ea5281af520fe7fcf46d68219d5",
     "branch": "codex/teacher/lesson-homework",
-    "head_sha": "f2984f5b942002ac3f4f0fe22ac79044e6297594",
-    "next": "Дождаться ревью и CI на SHA с проверкой узкого экрана, затем штатный выпуск после задачи 68",
+    "head_sha": "29faeb65d2f5d779d7e61a7b550abc37891bb647",
+    "next": "Смежное замечание исправлено и проверено с видом ученика. Ожидаются проверка нового SHA и CI.",
     "pr": 73,
-    "stage": "review"
+    "stage": "review",
+    "test_run": 46063132520
   },
   "release": null,
   "source": "direct",
