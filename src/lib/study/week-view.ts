@@ -21,7 +21,7 @@ export async function weekView(studentId: string | null, tz: string, w: string |
     };
   });
   // свои слоты ученика (самостоятельная работа) и слот «Слова» по настройкам слов
-  const study = s ? await studyWeek(s.id, tz, monday, lang) : null;
+  const study = s ? await studyWeek(s.id, tz, monday, lang, teacher) : null;
   const hw = s ? await db.homework.findFirst({ where: { status: "ASSIGNED", lessonInstance: { studentId: s.id } }, orderBy: { lessonInstance: { startsAt: "desc" } }, select: { lessonInstanceId: true } }) : null;
   let hourFrom = 8, hourTo = 21;
   for (const l of [...lessons, ...(study?.occ ?? []).map((o) => ({ startMin: o.startMin, dur: o.dur }))]) { hourFrom = Math.min(hourFrom, Math.floor(l.startMin / 60)); hourTo = Math.max(hourTo, Math.ceil((l.startMin + l.dur) / 60)); }

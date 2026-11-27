@@ -13,6 +13,7 @@ import { goalLevel, LEVELS, ROUTE_TYPES, SKILLS, type Stage } from "./cefr";
 import { grade, itemsFor, WRITING_PROMPT } from "./testbank";
 import { etaDate, paceKey, PACES, parsePace, routeState } from "./math";
 import { lessonMinOf, roadmapView } from "./progress";
+import { publishedSelfStudy } from "./self-study";
 import { notify } from "../notify";
 
 type R = { ok: true; id?: string } | { ok: false; error: string };
@@ -25,7 +26,7 @@ async function own(studentId: string) {
   if (!s || s.teacherId !== me.id) throw new Error("not found");
   return { me, s };
 }
-const refresh = (sid: string) => { revalidatePath(`/teacher/students/${sid}`); revalidatePath("/teacher/students"); revalidatePath("/student/route"); revalidatePath("/student"); };
+const refresh = (sid: string) => { revalidatePath(`/teacher/students/${sid}`); revalidatePath("/teacher/students"); revalidatePath("/student/route"); revalidatePath("/student/schedule"); revalidatePath("/student"); };
 
 // ───────── Тесты ─────────
 
@@ -146,17 +147,16 @@ export async function selfToSchedule(): Promise<R> {
   const user = await requireUser("STUDENT");
   const s = await db.student.findUnique({ where: { userId: user.id } });
   if (!s) return { ok: false, error: "no student" };
-  const r = await db.roadmap.findFirst({ where: { studentId: s.id, approvedAt: { not: null } }, orderBy: { createdAt: "desc" } });
-  const plan = (r?.aiDraft as { self_study?: { items: { skill: string; activity: string; times_per_week: number; minutes: number }[]; minutes_per_week: number } } | null)?.self_study;
+  const r = await db.roadmap.findFirst({ where: { studentId: s.id }, orderBy: { createdAt: "desc" } });
+  const plan = publishedSelfStudy(r);
   if (!r || !plan?.items.length) return { ok: false, error: "no plan" };
-  const want = parsePace(r.paceStudent ?? r.pace).min * 7, had = plan.minutes_per_week || want, k = want / had;
   const KIND: Record<string, string> = { listening: "podcast", reading: "reading", speaking: "speaking", writing: "homework", vocabulary: "homework", grammar: "grammar" };
   const today = new Date().toLocaleDateString("sv-SE", { timeZone: s.timezone });
   const meta = (r.meta ?? {}) as { slotIds?: string[] };
   if (meta.slotIds?.length) await db.studySlot.updateMany({ where: { id: { in: meta.slotIds }, studentId: s.id, until: null }, data: { until: today } });
   const dayLoad = Array(7).fill(0), ids: { kind: string; title: string; wd: number; start: number; dur: number }[] = [];
   plan.items.forEach((x, n) => {
-    const times = Math.max(1, Math.min(7, x.times_per_week)), dur = Math.max(5, Math.min(240, Math.round((x.minutes * k) / 5) * 5));
+    const times = x.times_per_week, dur = Math.min(240, x.minutes);
     for (let j = 0; j < times; j++) {
       const wd = Math.floor((j * 7) / times + n) % 7;
       const start = 19 * 60 + dayLoad[wd];

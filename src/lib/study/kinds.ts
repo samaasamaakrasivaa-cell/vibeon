@@ -2,7 +2,7 @@
 // Домашка и слова уже учитываются в маршруте сами (по ответам и тренировкам) — их слоты второй раз не засчитываем.
 import type { IconName } from "@/components/icon-paths";
 
-export const STUDY_KINDS = ["homework", "words", "film", "podcast", "reading", "speaking", "grammar", "club", "exam"] as const;
+export const STUDY_KINDS = ["homework", "words", "film", "podcast", "reading", "speaking", "grammar", "club", "exam", "other"] as const;
 export type StudyKind = (typeof STUDY_KINDS)[number];
 
 export const KIND: Record<StudyKind, { color: string; icon: IconName; self: boolean; dur: number }> = {
@@ -15,6 +15,7 @@ export const KIND: Record<StudyKind, { color: string; icon: IconName; self: bool
   grammar: { color: "#5E5CE6", icon: "pencil", self: true, dur: 30 },
   club: { color: "#FF375F", icon: "users", self: true, dur: 60 },
   exam: { color: "#64D2FF", icon: "target", self: true, dur: 60 },
+  other: { color: "#8E8E93", icon: "pencil", self: true, dur: 30 },
 };
 
 /** Сделанное вручную засчитывается в маршрут не больше 90 минут в день (чтобы прогноз не уезжал от случайных отметок). */

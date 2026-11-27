@@ -23,7 +23,7 @@ import type { RoadmapForm } from "./actions";
 type R = { ok: true; id?: string; note?: string } | { ok: false; error: string };
 const json = (v: unknown) => JSON.parse(JSON.stringify(v)) as Prisma.InputJsonValue;
 const str = (v: unknown, max = 2000) => (typeof v === "string" ? v.trim().slice(0, max) : "");
-const refresh = (sid: string) => { revalidatePath(`/teacher/students/${sid}`); revalidatePath("/student/route"); revalidatePath("/student"); };
+const refresh = (sid: string) => { revalidatePath(`/teacher/students/${sid}`); revalidatePath("/student/route"); revalidatePath("/student/schedule"); revalidatePath("/student"); };
 
 /** Анкета учителя: рубрики (текст) + короткие поля. */
 export type Brief = Partial<Record<(typeof BRIEF_KEYS)[number], string>> & {

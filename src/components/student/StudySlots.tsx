@@ -9,11 +9,13 @@ import type { DictKey } from "@/lib/i18n/dict";
 import { KIND, STUDY_KINDS, type StudyKind } from "@/lib/study/kinds";
 import { addSlot, markSlot, moveSlot, removeSlot, setWordsTime, updateSlot, type SlotInput } from "@/lib/study/actions";
 import type { Occ } from "@/lib/study/data";
+import type { StudyRecommendation } from "@/lib/study/weekly-plan";
 
 export type StudyProps = {
   occ: Occ[]; planned: number; done: number; target: number | null;
   recs: { kind: StudyKind; title: string | null; why: string }[];
   words: { days: number[]; at: string; goal: number } | null;
+  recommendation: StudyRecommendation | null;
   studentId?: string; teacher?: boolean; hwLink?: string | null; today: string;
 };
 type DayInfo = { iso: string; dow: string; long: string; past: boolean };
@@ -65,7 +67,7 @@ export function SlotForm({ init, days, onClose, studentId, slotId, words, teache
           ))}
         </div>
         {words && <p className="small muted m-0"><Icon name="cards" size="sm" /> {t("st.wordsNote", { at: words.at, n: words.goal })}</p>}
-        <label className="field"><span className="flabel">{t("st.title")}</span><input className="input" value={f.title ?? ""} maxLength={80} placeholder={t(`st.ph.${f.kind}` as DictKey)} onChange={(e) => set({ title: e.target.value })} /></label>
+        <label className="field"><span className="flabel">{t(f.kind === "other" ? "st.otherTitle" : "st.title")}</span><input className="input" value={f.title ?? ""} required={f.kind === "other"} maxLength={80} placeholder={t(`st.ph.${f.kind}` as DictKey)} onChange={(e) => set({ title: e.target.value })} /></label>
         <div className="seg w-full" role="group" aria-label={t("st.repeat")}>
           <button type="button" className="grow" aria-pressed={f.repeat} onClick={() => set({ repeat: true })}>{t("st.weekly")}</button>
           <button type="button" className="grow" aria-pressed={!f.repeat} onClick={() => set({ repeat: false, date: f.date ?? (f.weekday !== undefined && days[f.weekday] && !days[f.weekday].past ? days[f.weekday].iso : days.find((d) => !d.past)?.iso ?? days[0].iso) })}>{t("st.once")}</button>
@@ -86,7 +88,7 @@ export function SlotForm({ init, days, onClose, studentId, slotId, words, teache
         {err && <div className="alert">{err}</div>}
         {onAskLesson && <button type="button" className="alink small self-start" onClick={onAskLesson}>{t("st.askLesson")}</button>}
       </div>
-      <div className="actions"><button className="btn secondary" onClick={onClose}>{t("common.cancel")}</button><button className="btn primary" disabled={pending} onClick={save}>{t("common.save")}</button></div>
+      <div className="actions"><button className="btn secondary" onClick={onClose}>{t("common.cancel")}</button><button className="btn primary" disabled={pending || (f.kind === "other" && !f.title?.trim())} onClick={save}>{t("common.save")}</button></div>
     </Dialog>
   );
 }

@@ -6,6 +6,7 @@ import { Icon } from "../Icon";
 import { useT } from "@/lib/i18n/client";
 import { requestLesson } from "@/lib/student/actions";
 import { SlotBlocks, SlotDialog, SlotForm, StudyPlan, type StudyProps } from "./StudySlots";
+import { ScheduleRecommendations } from "./ScheduleRecommendations";
 import type { Occ } from "@/lib/study/data";
 import type { StudyKind } from "@/lib/study/kinds";
 import type { SlotInput } from "@/lib/study/actions";
@@ -24,6 +25,9 @@ export function StudentWeek({ days, lessons, hourFrom, hourTo, nowDay, nowMin, t
   const teacher = !!study?.teacher;
   const hours = Array.from({ length: hourTo - hourFrom + 1 }, (_, i) => hourFrom + i);
   const height = (hourTo - hourFrom) * PX;
+  const addStudy = (kind: StudyKind = "homework", title = "") => setForm({
+    init: { kind, title, repeat: true, weekday: Math.max(0, days.findIndex((d) => !d.past)), startMin: 19 * 60 },
+  });
   const pick = (e: React.MouseEvent<HTMLDivElement>, d: Day) => {
     if ((e.target as HTMLElement).closest(".lesson, .sslot") || d.past) return;
     const y = e.clientY - e.currentTarget.getBoundingClientRect().top;
@@ -35,12 +39,29 @@ export function StudentWeek({ days, lessons, hourFrom, hourTo, nowDay, nowMin, t
   };
   return (
     <>
-      <div className="mb-4 mt-5 flex flex-wrap items-center justify-between gap-3">
-        <h2 className="m-0">{title}</h2>
-        <div className="flex flex-wrap items-center gap-2">{nav}
-          {study && <button className="btn primary" onClick={() => setForm({ init: { kind: "homework", repeat: true, weekday: Math.max(0, days.findIndex((d) => !d.past)), startMin: 19 * 60 } })}><Icon name="plus" size="sm" />{teacher ? t("st.addFor") : t("st.add")}</button>}
-          {!teacher && <button className={`btn ${study ? "secondary" : "primary"}`} onClick={() => setReq(t("sts.reqTextAny"))}><Icon name="plus" size="sm" />{t("sts.extra")}</button>}</div>
-      </div>
+      {teacher ? (
+        <div className="mb-4 mt-5 flex flex-wrap items-center justify-between gap-3">
+          <h2 className="m-0">{title}</h2>
+          <div className="flex flex-wrap items-center gap-2">
+            {nav}
+            <button className="btn primary" onClick={() => addStudy()}><Icon name="plus" size="sm" />{t("st.addFor")}</button>
+          </div>
+        </div>
+      ) : (
+        <>
+          <section className="card mt-4">
+            <h2 className="m-0">{t("sts.studyTitle")}</h2>
+            <p className="muted mt-2 mb-4">{t("sts.lead")}</p>
+            {study && <div className="flex flex-wrap gap-2">
+              <button className="btn primary" onClick={() => addStudy()}><Icon name="plus" size="sm" />{t("sts.planStudy")}</button>
+              <button className="btn secondary" onClick={() => setReq(t("sts.reqTextAny"))}><Icon name="plus" size="sm" />{t("sts.extra")}</button>
+            </div>}
+            {study?.recommendation && <ScheduleRecommendations key={days[0].iso} plan={study.recommendation} days={days} />}
+          </section>
+          <h2 className="mt-6 mb-2">{title}</h2>
+          <div className="mb-3">{nav}</div>
+        </>
+      )}
       <section className="card" style={{ padding: "20px 20px 18px" }}>
         <div className="weekwrap">
           <div className="week">
@@ -70,7 +91,7 @@ export function StudentWeek({ days, lessons, hourFrom, hourTo, nowDay, nowMin, t
           <span><i style={{ background: "var(--warn)" }} />{t("sch.st.cancelled")}</span>
         </div>
       </section>
-      {study && <StudyPlan p={study} onAdd={(kind, title) => setForm({ init: { kind, title: title ?? "", repeat: true, weekday: Math.max(0, days.findIndex((d) => !d.past)), startMin: 19 * 60 } })} />}
+      {study && <StudyPlan p={study} onAdd={(kind, title) => addStudy(kind, title ?? "")} />}
       {form && study && <SlotForm init={form.init} slotId={form.slotId} days={days} studentId={study.studentId} words={form.slotId ? null : study.words} teacher={teacher} onClose={() => setForm(null)} onAskLesson={form.ask ? () => { const a = form.ask!; setForm(null); setReq(a); } : undefined} />}
       {slot && study && <SlotDialog o={slot} days={days} p={study} onClose={() => setSlot(null)} onEdit={() => { const o = slot; setSlot(null); setForm({ slotId: o.slotId!, init: { kind: o.kind, title: o.title ?? "", repeat: o.repeat, weekday: o.repeat ? o.day : undefined, date: o.repeat ? undefined : o.iso, startMin: o.startMin, durMin: o.dur, remind: o.remind } }); }} />}
       {req !== null && <RequestDialog text={req} onClose={() => setReq(null)} />}

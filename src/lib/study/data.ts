@@ -3,6 +3,7 @@ import { db } from "../db";
 import { addDaysIso, isoDay, minutesOfDay } from "../time";
 import { parsePace } from "../roadmap/math";
 import { txt, type Stage } from "../roadmap/cefr";
+import { publishedSelfStudy, sharesSelfStudy } from "../roadmap/self-study";
 import { KIND, isKind, wordsMin, type StudyKind } from "./kinds";
 
 export type Occ = {
@@ -11,11 +12,11 @@ export type Occ = {
 };
 
 /** Повторяющийся слот приходится на этот день? */
-const onDay = (s: { repeat: boolean; weekday: number | null; date: string | null; from: string; until: string | null }, iso: string, dow: number) =>
+export const onDay = (s: { repeat: boolean; weekday: number | null; date: string | null; from: string; until: string | null }, iso: string, dow: number) =>
   s.repeat ? s.weekday === dow && iso >= s.from && (!s.until || iso < s.until) : s.date === iso;
 
 /** Неделя ученика: свои слоты (с отметками), слот «Слова» из настроек слов; итоги и рекомендации по маршруту. */
-export async function studyWeek(studentId: string, tz: string, monday: string, lang: "ru" | "en" = "ru") {
+export async function studyWeek(studentId: string, tz: string, monday: string, lang: "ru" | "en" = "ru", teacher = false) {
   const days = Array.from({ length: 7 }, (_, i) => addDaysIso(monday, i));
   const today = isoDay(new Date(), tz);
   const nowMin = minutesOfDay(new Date(), tz);
@@ -53,11 +54,16 @@ export async function studyWeek(studentId: string, tz: string, monday: string, l
   // итоги недели и норма по маршруту (самостоятельно: минут в день × 7)
   const planned = occ.reduce((a, o) => a + o.dur, 0);
   const done = occ.filter((o) => o.status === "done").reduce((a, o) => a + o.dur, 0);
-  const pace = roadmap ? parsePace(roadmap.paceStudent ?? roadmap.pace) : null;
-  const target = pace ? pace.min * 7 : null;
+  const selfPlan = teacher ? null : publishedSelfStudy(roadmap);
+  const pace = roadmap && (teacher || sharesSelfStudy(roadmap)) ? parsePace(roadmap.paceStudent ?? roadmap.pace) : null;
+  const target = teacher && pace ? pace.min * 7 : selfPlan?.minutes_per_week ?? null;
+  const recommendation = selfPlan ? {
+    minutes: selfPlan.minutes_per_week,
+    items: selfPlan.items.map(({ skill, activity, minutes, times_per_week }) => ({ skill, activity, minutes, times: times_per_week })),
+  } : null;
   // рекомендации из текущего этапа маршрута: навыки и грамматика этапа → какие слоты добавить
   const recs: { kind: StudyKind; title: string | null; why: string }[] = [];
-  if (roadmap) {
+  if (roadmap && teacher) {
     const stages = (roadmap.stages as Stage[]) ?? [];
     if (stages.length) {
       // текущий этап — первый, у которого не сдан контрольный срез
@@ -74,7 +80,7 @@ export async function studyWeek(studentId: string, tz: string, monday: string, l
       if (g && !kinds.has("grammar")) recs.push({ kind: "grammar", title: g.slice(0, 60), why: g });
     }
   }
-  return { occ, planned, done, target, pace, recs: recs.slice(0, 3), words: s ? { days: s.wordDays, at: s.remindAt, goal: s.wordGoal } : null, colors: Object.fromEntries(Object.entries(KIND).map(([k, v]) => [k, v.color])) };
+  return { occ, planned, done, target, pace, recommendation, recs: recs.slice(0, 3), words: s ? { days: s.wordDays, at: s.remindAt, goal: s.wordGoal } : null, colors: Object.fromEntries(Object.entries(KIND).map(([k, v]) => [k, v.color])) };
 }
 
 export type StudyWeek = Awaited<ReturnType<typeof studyWeek>>;
