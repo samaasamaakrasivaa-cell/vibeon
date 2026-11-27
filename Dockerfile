@@ -9,13 +9,15 @@ COPY prisma ./prisma
 RUN npm ci
 
 FROM base AS build
+ARG BUILD_STAMP
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-ENV NEXT_TELEMETRY_DISABLED=1
+ENV NEXT_TELEMETRY_DISABLED=1 BUILD_STAMP=${BUILD_STAMP}
 RUN npx prisma generate && npm run build
 
 FROM base AS runner
-ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 PORT=3000 HOSTNAME=0.0.0.0
+ARG APP_VERSION=dev
+ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 PORT=3000 HOSTNAME=0.0.0.0 APP_VERSION=${APP_VERSION}
 RUN npm i -g prisma@6.19.3 && groupadd -r app && useradd -r -g app app
 COPY --from=build /app/public ./public
 COPY --from=build --chown=app:app /app/.next/standalone ./

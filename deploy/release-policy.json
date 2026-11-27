@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "enabled": true,
+  "shared_proxy_image": "sha256:4c6e91c6ed0e2fa03efd5b44747b625fec79bc9cd06ac5235a779726618e530d",
+  "compose_sha256": "31df07d972439ff01be2252a3f0296fba7994ca514bf7e64cf1222b77a5ed3c1",
+  "legacy_tooling_sha256": {
+    "vibeon.sh": "c0ada5f0f40ef50bd44dcc3bfae1fa2f81f9d7556f1faeb9322bfc4f1badb766",
+    "attach-proxy.sh": "80e1487a4951f79129a7af71f986bf743b05266fa890d1c5f1f5fdb77e94351a"
+  },
+  "legacy_source": "765cc4ae9da861edbb7e8b0be01c504ac63a65ca",
+  "legacy_image": "sha256:f94aa0ef2f55c349d919da421fa2a7948b0680f99dddfa4df05d5c15ba79c24a",
+  "teacher_source": "01da92f1332056aaacc01ec6a6731f72e1bb45e0",
+  "placement_base": "ea75dffb53749f832d4153857a718a7d0a98ae50",
+  "placement_fallback": "c2996ff7ffb670449de1886738791cb18c279fab"
+}

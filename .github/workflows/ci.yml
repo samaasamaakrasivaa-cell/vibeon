@@ -2,7 +2,11 @@ name: CI
 
 on:
   push:
+    branches: [main]
   pull_request:
+
+permissions:
+  contents: read
 
 jobs:
   build:
@@ -30,9 +34,64 @@ jobs:
           curl -fsS localhost:3000/api/health
           for p in / /teacher /student /ui; do curl -fsS -o /dev/null "localhost:3000$p"; done
 
-  docker:
+  delivery:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Check release failure and recovery contracts
+        run: |
+          python3 scripts/test-release-apply.py
+          python3 scripts/test-delivery-plan.py
+          bash -n deploy/vibeon.sh deploy/attach-proxy.sh scripts/check-release-image.sh
+      - name: Rehearse backup, release and rollback on isolated data
+        # The production SSH executor is root; match file ownership semantics
+        # inside this disposable runner without passing any production secrets.
+        run: sudo --preserve-env=GITHUB_ACTIONS,RUNNER_ENVIRONMENT,GITHUB_REPOSITORY python3 scripts/test-release-apply-docker.py
+
+  docker:
+    needs: [build, delivery]
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    concurrency:
+      group: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && 'server' || format('image-{0}', github.run_id) }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
       - name: Build production image
-        run: docker build -t vibeon:ci .
+        env:
+          DELIVERY_SHA: ${{ github.sha }}
+        run: |
+          docker build --label "org.opencontainers.image.revision=$DELIVERY_SHA" \
+            --label "io.vibeon.recipe-revision=$DELIVERY_SHA" \
+            --build-arg "BUILD_STAMP=$DELIVERY_SHA" --build-arg "APP_VERSION=$DELIVERY_SHA" \
+            -t "vibeon-release:$DELIVERY_SHA" .
+      - name: Verify the exact image and browser version
+        env:
+          DELIVERY_SHA: ${{ github.sha }}
+        run: |
+          DELIVERY_IMAGE=$(docker image inspect --format '{{.Id}}' "vibeon-release:$DELIVERY_SHA")
+          python3 - "$DELIVERY_IMAGE" "$DELIVERY_SHA" <<'PY'
+          import importlib.util, sys
+          spec = importlib.util.spec_from_file_location("delivery_driver", "scripts/run-delivery.py")
+          module = importlib.util.module_from_spec(spec)
+          sys.modules[spec.name] = module
+          spec.loader.exec_module(module)
+          module.verify_local_image(sys.argv[1], sys.argv[2], sys.argv[2])
+          PY
+          bash scripts/check-release-image.sh "$DELIVERY_IMAGE" "$DELIVERY_SHA"
+      - name: Publish the verified main revision
+        if: >-
+          github.repository == 'samaasamaakrasivaa-cell/vibeon' &&
+          github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+        run: |
+          DELIVERY_IMAGE=$(docker image inspect --format '{{.Id}}' "vibeon-release:$GITHUB_SHA")
+          python3 scripts/run-delivery.py --candidate-image "$DELIVERY_IMAGE"

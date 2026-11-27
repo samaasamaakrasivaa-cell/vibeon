@@ -6,7 +6,9 @@ if ! command -v python3 >/dev/null 2>&1; then
   exit 1
 fi
 python3 - <<'PREFLIGHT_PY'
+import hashlib
 import json
+import os
 from pathlib import Path
 import re
 import shutil
@@ -129,10 +131,27 @@ def peer_metadata(container):
     return result
 
 
+def trusted_proxy(metadata, expected_image):
+    return bool(expected_image and IMAGE.fullmatch(expected_image)
+                and metadata["image_id"] == expected_image
+                and metadata["family"] == "caddy"
+                and metadata["command_is_caddy_run"] is True
+                and metadata["credential_env_check_available"] is True
+                and metadata["has_db_credential_env_keys"] is False
+                and metadata["mount_layout_check_available"] is True
+                and metadata["safe_mount_layout"] is True
+                and metadata["shares_db_volume"] is False
+                and metadata["shares_upload_volume"] is False)
+
+
 def collect():
     report = {"schema_version": 1, "status": "blocked", "read_only": True,
               "checks": {}, "blockers": []}
     checks, blockers = report["checks"], report["blockers"]
+    expected_proxy = os.environ.get("VIBEON_EXPECTED_PROXY_IMAGE", "")
+    if expected_proxy and not IMAGE.fullmatch(expected_proxy):
+        blockers.append("invalid_expected_proxy_image")
+        return report
     for name in ("docker", "flock", "tar", "gzip", "sha256sum"):
         checks[name + "_available"] = shutil.which(name) is not None
     if not checks["docker_available"]:
@@ -175,8 +194,17 @@ def collect():
         unknown_peers = [c for c in peers
                          if db_networks & set(filter(None, c["networks"]))
                          and not (c["project"] == "vibeon" and c["service"] in {"backup", "caddy"})]
-        checks["unknown_db_network_peers"] = len(unknown_peers)
-        checks["unknown_peer_metadata"] = [peer_metadata(c) for c in unknown_peers]
+        unknown_metadata, trusted_ids = [], []
+        for peer in unknown_peers:
+            metadata = peer_metadata(peer)
+            if trusted_proxy(metadata, expected_proxy):
+                trusted_ids.append(peer["id"])
+            else:
+                unknown_metadata.append(metadata)
+        checks["unknown_db_network_peers"] = len(unknown_metadata)
+        checks["unknown_peer_metadata"] = unknown_metadata
+        checks["trusted_proxy_count"] = len(trusted_ids)
+        checks["trusted_proxy_ids_sha256"] = hashlib.sha256("\n".join(sorted(trusted_ids)).encode()).hexdigest()
         checks["other_uploads_users"] = sum(
             any(m and m.get("type") == "volume" and m.get("name") == "vibeon_uploads" for m in c["mounts"])
             for c in containers if c["id"] != app["id"])
