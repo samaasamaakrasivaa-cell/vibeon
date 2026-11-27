@@ -14,7 +14,25 @@
     "stage": "publication",
     "test_run": 46059986368
   },
-  "release": null,
+  "release": {
+    "ci": {
+      "result": "success",
+      "run": 46059986368,
+      "sha": "13d527b394fcab553944e4a97e4c16eda0c553f3"
+    },
+    "delivery": {
+      "result": "success",
+      "run": 46060779496,
+      "sha": "8c71158ca82a234370f6b1ae39b99c3aa4485e42"
+    },
+    "owner_note": "Для владельца: Кабинет ученика — На главной видны первые шаги, ближайший урок, ДЗ, вводный тест и время тренировки слов. Учебные ответы анкеты можно дополнить в профиле.",
+    "review": {
+      "comment": 7226932287,
+      "result": "success",
+      "sha": "13d527b394fcab553944e4a97e4c16eda0c553f3"
+    },
+    "site_sha": "8c71158ca82a234370f6b1ae39b99c3aa4485e42"
+  },
   "source": "direct",
   "version": 1
 }
