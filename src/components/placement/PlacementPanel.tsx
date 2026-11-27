@@ -1,10 +1,11 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useT } from "@/lib/i18n/client";
 import type { DictKey } from "@/lib/i18n/dict";
 import { closePlacementLink, deletePlacement, createPlacementLink, selfPlacement, setLinkShowResult } from "@/lib/placement/actions";
+import { resultFilter, resultsHref, type ResultFilter } from "@/lib/placement/results-filter";
 import { useRun } from "../courses/useRun";
 import { Dialog } from "../Dialog";
 import { Icon } from "../Icon";
@@ -12,15 +13,32 @@ import { StudentPicker, type GridStudent } from "../teacher/WeekGrid";
 import { PlacementAbout } from "./PlacementAbout";
 import { useAssignParts } from "./AssignParts";
 
-export type PlRow = { id: string; who: string; mode: string; status: string; level: string | null; when: string; track?: string };
+type PlRow = {
+  id: string; who: string; mode: string; status: string; level: string | null; track: string;
+  createdAt: number; submittedAt?: number; reviewedAt?: number;
+};
+const resultFilters = {
+  assigned: "pl.listAssigned",
+  new: "pl.listNotStarted",
+  submitted: "pl.listPending",
+  reviewed: "pl.listReviewed",
+} as const satisfies Record<ResultFilter, DictKey>;
+
+function dateFor(row: PlRow, filter?: ResultFilter) {
+  const status = filter ?? row.status;
+  if (status === "reviewed") return row.reviewedAt ?? row.submittedAt ?? row.createdAt;
+  if (status === "submitted") return row.submittedAt ?? row.createdAt;
+  return row.createdAt;
+}
+
 export type PlTrack = "adult" | "teen";
 type PlLink = { code: string; showResult: boolean };
 /** Teens подходит ученикам 10–17 лет: если возраст известен, версия подставляется сама. */
 export const trackForAge = (age: number | null | undefined): PlTrack => (typeof age === "number" && age >= 10 && age <= 17 ? "teen" : "adult");
 
-/** «Курсы → Тесты»: вводный тест — пройти самой, назначить ученику, ссылка для нового человека, результаты. */
-export function PlacementPanel({ students, rows, links, origin, owner, teen, ages = {} }: { students: GridStudent[]; rows: PlRow[]; links: Partial<Record<PlTrack, PlLink>>; origin: string; owner: boolean; teen: boolean; ages?: Record<string, number | null> }) {
-  const { t } = useT();
+/** Вводный тест: назначение, гостевая ссылка, самопроверка и результаты. */
+export function PlacementPanel({ students, rows, links, origin, owner, teen, timeZone, ages = {} }: { students: GridStudent[]; rows: PlRow[]; links: Partial<Record<PlTrack, PlLink>>; origin: string; owner: boolean; teen: boolean; timeZone: string; ages?: Record<string, number | null> }) {
+  const { t, lang } = useT();
   const router = useRouter();
   const { run, pending, error } = useRun();
   const [assign, setAssign] = useState(false);
@@ -33,6 +51,45 @@ export function PlacementPanel({ students, rows, links, origin, owner, teen, age
   const [selfTrack, setSelfTrack] = useState<PlTrack>("adult");
   const link = links[linkTrack] ?? null;
   const [copied, setCopied] = useState(false);
+  const filter = resultFilter(useSearchParams().get("status"));
+  const date = new Intl.DateTimeFormat(lang === "ru" ? "ru-RU" : "en-GB", { dateStyle: "medium", timeStyle: "short", timeZone });
+  const assigned = rows.filter((row) => row.mode === "student");
+  const others = rows.filter((row) => row.mode !== "student");
+  const counts = { assigned: assigned.length, new: 0, submitted: 0, reviewed: 0 };
+  for (const row of assigned) {
+    if (row.status === "new" || row.status === "submitted" || row.status === "reviewed") counts[row.status]++;
+  }
+  const visible = filter === "assigned" ? assigned : assigned.filter((row) => row.status === filter);
+  const direction = filter === "new" || filter === "submitted" ? 1 : -1;
+  visible.sort((a, b) => direction * (dateFor(a, filter) - dateFor(b, filter)));
+
+  const attemptList = (attempts: PlRow[], currentFilter?: ResultFilter) => (
+    <ul className="m-0 list-none p-0">
+      {attempts.map((row) => {
+        const who = row.who || "—";
+        const selfUnfinished = row.mode === "self" && (row.status === "new" || row.status === "active");
+        const action = t(row.status === "submitted" ? "pl.listCheck" : row.status === "reviewed" ? "pl.listView" : "pl.listOpen");
+        const backFilter = currentFilter && currentFilter !== "assigned" ? `?status=${currentFilter}` : "";
+        const when = dateFor(row, currentFilter);
+        return (
+          <li key={row.id} className="plrow flex-wrap gap-y-2 px-0">
+            <div className="min-w-0 flex-1 basis-[12rem]">
+              <b className="break-words">{who}</b>{row.track === "teen" && <span className="pill ml-2">Teens</span>}
+              <small className="muted block">{!currentFilter && <>{t(`pl.mode.${row.mode}` as "pl.mode.self")} · </>}<time dateTime={new Date(when).toISOString()}>{date.format(when)}</time></small>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              {row.level && <span className="lvlsm">{row.level}</span>}
+              <span className={`pill ${row.status === "reviewed" ? "green" : row.status === "submitted" ? "orange" : "grey"}`}>{t(`pl.st.${row.status}` as "pl.st.new")}</span>
+            </div>
+            <div className="ml-auto flex items-center gap-2">
+              <Link href={selfUnfinished ? `/placement/${row.id}` : `/teacher/placement/${row.id}${backFilter}`} className="alink small" aria-label={`${action}: ${who}`}>{action}</Link>
+              <button type="button" className="iconbtn" title={t("pl.delete")} aria-label={`${t("pl.delete")}: ${who}`} disabled={pending} onClick={() => confirm(t("pl.delConfirm")) && run(() => deletePlacement(row.id))}><Icon name="close" size="sm" /></button>
+            </div>
+          </li>
+        );
+      })}
+    </ul>
+  );
   // свой незаконченный тест: спросить — продолжить или начать заново
   const selfOpenOf = (tr: PlTrack) => rows.find((r) => r.mode === "self" && (r.track ?? "adult") === tr && (r.status === "new" || r.status === "active"));
   const selfOpen = selfOpenOf(selfTrack);
@@ -70,28 +127,25 @@ export function PlacementPanel({ students, rows, links, origin, owner, teen, age
 
       <section className="card">
         <h3 className="mt-0">{t("pl.results")}</h3>
-        {rows.length === 0 ? <p className="hint m-0">{t("pl.noResults")}</p> : (
-          <div className="flex flex-col">
-            {rows.map((r) => (
-              <div key={r.id} className="plrow">
-                <Link href={r.mode === "self" && (r.status === "new" || r.status === "active") ? `/placement/${r.id}` : `/teacher/placement/${r.id}`} className="pllink">
-                  <span className="grow min-w-0"><b className="truncate block">{r.who}{r.track === "teen" && <span className="pill ml-2">Teens</span>}</b><span className="small muted">{t(`pl.mode.${r.mode}` as "pl.mode.self")} · {r.when}</span></span>
-                  {r.level && <span className="lvlsm">{r.level}</span>}
-                  <span className={`pill ${r.status === "reviewed" ? "green" : r.status === "submitted" ? "orange" : "grey"}`}>{t(`pl.st.${r.status}` as "pl.st.new")}</span>
-                  <Icon name="right" size="sm" />
-                </Link>
-                <button type="button" className="iconbtn" title={t("pl.delete")} aria-label={`${t("pl.delete")}: ${r.who}`} disabled={pending} onClick={() => confirm(t("pl.delConfirm")) && run(() => deletePlacement(r.id))}><Icon name="close" size="sm" /></button>
-              </div>
-            ))}
-          </div>
-        )}
+        <div className="seg mb-3 flex-wrap" role="group" aria-label={t("pl.results")}>
+          {(Object.keys(resultFilters) as ResultFilter[]).map((key) => (
+            <button key={key} type="button" aria-pressed={filter === key} onClick={() => window.history.replaceState(null, "", resultsHref(key))}>
+              {t(resultFilters[key])} <span className="muted tabular-nums">{counts[key]}</span>
+            </button>
+          ))}
+        </div>
+        {visible.length ? attemptList(visible, filter) : <p className="hint m-0">{t(filter === "assigned" ? "pl.listNoAssignments" : "pl.listEmpty")}</p>}
       </section>
+      {others.length > 0 && <details className="card">
+        <summary className="cursor-pointer font-semibold">{t("pl.listOther")} <span className="muted">{others.length}</span></summary>
+        {attemptList(others)}
+      </details>}
 
       <Dialog open={selfAsk} onClose={() => setSelfAsk(false)} title={t("pl.takeSelf")}>
         {teen && <TrackField value={selfTrack} onChange={setSelfTrack} />}
         {selfOpen ? (
           <>
-            <p className="mt-3">{t("pl.selfAsk", { d: selfOpen.when })}</p>
+            <p className="mt-3">{t("pl.selfAsk", { d: date.format(selfOpen.createdAt) })}</p>
             <div className="actions">
               <button className="btn secondary" disabled={pending} onClick={() => { setSelfAsk(false); startSelf(true); }}>{t("pl.selfNew")}</button>
               <button className="btn primary" onClick={() => { setSelfAsk(false); router.push(`/placement/${selfOpen.id}`); }}>{t("pl.selfContinue")}</button>

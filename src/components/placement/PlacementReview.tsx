@@ -425,7 +425,7 @@ export function PlacementReview(p: ReviewProps) {
         </section>
       )}
       {/* удаление — для пробных и случайных прохождений (например, ссылку открыл не тот человек); у ученика пропадёт и результат в кабинете */}
-      <div className="flex flex-wrap items-center justify-end gap-2"><span className="small muted">{t("pl.deleteHint")}</span><button className="btn plain sm" onClick={() => { if (confirm(t("pl.delConfirm"))) run(() => deletePlacement(p.id), () => location.assign("/teacher/courses?tab=tests"), true); }}><Icon name="close" size="sm" />{t("pl.delete")}</button></div>
+      <div className="flex flex-wrap items-center justify-end gap-2"><span className="small muted">{t("pl.deleteHint")}</span><button className="btn plain sm" onClick={() => { if (confirm(t("pl.delConfirm"))) run(() => deletePlacement(p.id), () => location.assign("/teacher/placement"), true); }}><Icon name="close" size="sm" />{t("pl.delete")}</button></div>
     </fieldset>
   );
 }

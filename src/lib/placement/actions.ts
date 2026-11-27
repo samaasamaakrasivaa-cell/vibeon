@@ -233,7 +233,7 @@ async function submit(l: Loaded, st: Loaded["st"], sec?: Later): Promise<R> {
       : parts.includes("writing") || parts.includes("speaking") ? `${who}: placement test пройден — проверьте письмо и говорение` : `${who}: placement test пройден — посмотрите результат`;
     await notify({ userId: a.teacherId, kind: "test", title, action: "review", link: `/teacher/placement/${a.id}` });
   }
-  revalidatePath("/teacher/courses");
+  revalidatePath("/teacher/placement");
   if (a.studentId) revalidatePath(`/teacher/students/${a.studentId}`);
   return r;
 }
@@ -305,7 +305,7 @@ const revision = (a: { id: string; updatedAt: Date; review: unknown; status: str
   ({ id: a.id, updatedAt: a.updatedAt, review: { equals: json(a.review) }, status: a.status, showResult: a.showResult });
 const changed = { ok: false as const, error: "Проверка изменилась. Обновите страницу и повторите действие." };
 const refreshT = (studentId?: string | null) => {
-  revalidatePath("/teacher/courses");
+  revalidatePath("/teacher/placement");
   if (studentId) { revalidatePath(`/teacher/students/${studentId}`); revalidatePath("/student/route"); revalidatePath("/student"); }
 };
 

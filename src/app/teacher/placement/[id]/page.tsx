@@ -13,13 +13,15 @@ import { speechTranscript } from "@/lib/placement/speech-transcript";
 import { reviewData } from "@/lib/placement/review";
 import { doneOf, partsOf, stateOf } from "@/lib/placement/run";
 import { PlacementParts } from "@/components/placement/AssignParts";
+import { resultFilter, resultsHref } from "@/lib/placement/results-filter";
 
 export const metadata = { title: "Placement test — проверка" };
 
-export default async function PlacementReviewPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function PlacementReviewPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ status?: string }> }) {
   const { t, lang } = await getT();
   const me = await requireUser("TEACHER");
   const { id } = await params;
+  const back = resultsHref(resultFilter((await searchParams).status));
   const a = await db.placementAttempt.findUnique({ where: { id }, include: { student: true } });
   if (!a || a.teacherId !== me.id) notFound();
   const st = stateOf(a.state);
@@ -61,7 +63,7 @@ export default async function PlacementReviewPage({ params }: { params: Promise<
   const base = st.base !== undefined && !partsOf(st).includes("core") ? { sub: STEPS[st.base], from: st.baseFrom ?? "teacher" } : null;
   return (
     <div className="page" style={{ maxWidth: 980 }}>
-      <Link href="/teacher/courses?tab=tests" className="small muted">← {t("pl.backTests")}</Link>
+      <Link href={back} className="small muted">← {t("pl.backTests")}</Link>
       <div className="mt-2 mb-4 flex flex-wrap items-center gap-3">
         <h1 className="m-0">{t("pl.title")}: {who}</h1>
         <span className={`pill ${a.status === "reviewed" ? "green" : a.status === "submitted" ? "orange" : "grey"}`}>{t(`pl.st.${a.status}` as "pl.st.new")}</span>
