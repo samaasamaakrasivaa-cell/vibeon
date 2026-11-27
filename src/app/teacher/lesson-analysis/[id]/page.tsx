@@ -40,7 +40,7 @@ export default async function TeacherLessonAnalysis({ params }: { params: Promis
       </nav>}
       <LessonAnalysisReport tasks={tasks} practice={report?.practice ?? localPractice(lessonModelEvidence(tasks))} lang={lang} teacher
         focus={report ? report.focus : observation?.focus} />
-      {report && !pending && <p className="small muted m-0">{report.source === "ai"
+      {report && !pending && tasks.length > 0 && <p className="small muted m-0">{report.source === "ai"
         ? (ru ? "Рекомендации подобраны ИИ по результатам урока." : "AI selected the recommendations from the lesson results.")
         : (ru ? "Рекомендации собраны по сохранённым результатам." : "Recommendations are based on the saved lesson results.")}</p>}
       <LessonAnalysisActions lessonId={id} state={report?.state ?? null} hasEvidence={tasks.length > 0} canGenerate={canCallAi}
