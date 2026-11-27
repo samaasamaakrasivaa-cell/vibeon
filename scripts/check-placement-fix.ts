@@ -32,6 +32,7 @@ assert.equal(checkCore(usedTo, "0-999::used to"), false);
 assert.equal(checkCore(usedTo, `${to}-${use}::used to`), false);
 assert.equal(checkCore(usedTo, `${use}::used to`), true);
 assert.equal(checkCore(usedTo, `${use}::used`), true);
+assert.equal(checkCore(usedTo, `${use}::used to to`), false);
 assert.deepEqual(parseFixAnswer(`${use}::used to`), { span: [use, use], text: "used to", legacy: true });
 assert.equal(parseFixAnswer("::used"), null);
 
@@ -70,12 +71,14 @@ full("G-B1-138", "did not check", false);
 full("G-B1-139", "probably went", false);
 full("G-B1-142", "will still be flying", true);
 full("G-B1-142", "will fly", false);
-const legacyContinuous = { ...item("G-B1-142"), accept: ["will be flying", "will fly"] };
-assert.equal(checkCore(legacyContinuous, `${legacyContinuous.span.join("-")}::will fly`), false);
+full("G-B1-142", "will flying", false);
 full("G-B1-143", "am interviewing", false);
 full("G-B1-150", "were planning to eat", false);
+full("G-B1-150", "were go to eat", false);
 full("G-B1-151", "was going to cycle", true);
 full("G-C1-16", "was taking", false);
+const singularSnapshot = { ...item("G-C1-16"), q: "She took a break when I called.", span: [1, 1] as FixSpan };
+assert.equal(checkCore({ ...singularSnapshot, accept: ["was taking"] }, "1-1::was taking"), true);
 
 function fixture(q: string, wrong: string, correct: string) {
   const source = { ...bank[0], q, type: "mcq" as const, options: [wrong, correct], answer: 1 };
@@ -98,12 +101,13 @@ for (const { from, accept } of fixSpecs) {
   }
   for (const declared of accept) {
     bankAlternatives++;
+    assert.ok(fix.accept.includes(declared), `${from}: ${declared}`);
     assert.equal(checkCore(fix, `${fix.span.join("-")}::${declared}`), true, `${from}: ${declared}`);
     assert.equal(checkCore(fix, `${fix.span[0]}::${declared}`), true, `${from}: ${declared}`);
   }
 }
-// До PT-02 некоторые из этих вариантов хранились в снимках активных попыток.
-const legacyExcluded = [
+// Новые вопросы ограничивают ключ. Старый снимок сохраняет свои варианты.
+const retiredAlternatives = [
   ["G-B1-138", "didn't check", "did not check"],
   ["G-B1-139", "went", "probably went"],
   ["G-B1-142", "are flying", "will fly"],
@@ -112,16 +116,20 @@ const legacyExcluded = [
   ["G-B1-151", "was planning to cycle", "had planned to cycle", "meant to cycle", "wanted to cycle"],
   ["G-C1-16", "was taking"],
 ] as const;
-for (const [id, ...excluded] of legacyExcluded) {
+for (const [id, ...retired] of retiredAlternatives) {
   const fix = item(id);
   const spec = fixSpecs.find((f) => f.from === id);
   assert.ok(spec?.instruction_en, id);
-  const legacy = { ...fix, instruction_en: undefined, accept: [...fix.accept!, ...excluded] };
-  for (const correction of excluded) {
+  const legacy = { ...fix, instruction_en: undefined, accept: [...fix.accept!, ...retired] };
+  for (const correction of retired) {
     assert.ok(!spec.accept.includes(correction), `${id}: ${correction}`);
-    assert.equal(checkCore(legacy, `${fix.span.join("-")}::${correction}`), false, `${id}: ${correction}`);
-    assert.equal(checkCore(legacy, `${fix.span[0]}::${correction}`), false, `${id}: ${correction}`);
+    full(id, correction, false);
+    // PT-01 rejects only the subject–verb disagreement already present in this context.
+    const acceptedInSnapshot = id !== "G-C1-16";
+    assert.equal(checkCore(legacy, `${legacy.span.join("-")}::${correction}`), acceptedInSnapshot, `${id}: ${correction}`);
+    assert.equal(checkCore(legacy, `${legacy.span[0]}::${correction}`), acceptedInSnapshot, `${id}: ${correction}`);
   }
+  if (id === "G-B1-142") assert.equal(checkCore(legacy, `${legacy.span[0]}::will flying`), false);
 }
 full("G-A2-110", "that", true);
 full("G-B1-72", "whether", true);

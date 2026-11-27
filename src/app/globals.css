@@ -1023,6 +1023,11 @@ select.iedit { cursor: pointer; }
 .tl { display: grid; grid-template-columns: 74px minmax(0, 1fr) auto; gap: 16px; align-items: center; padding: 14px 16px; border-radius: 16px; background: var(--surface2); }
 .tl.soon { box-shadow: inset 3px 0 0 var(--accent); }
 .tl.now { background: linear-gradient(90deg, var(--ok-bg), var(--surface2) 70%); }
+.tl[data-teacher-lesson-status="DONE"] { background: var(--ok-bg); }
+.tl[data-teacher-lesson-status="PLANNED"] { background: var(--accent-bg); }
+.tl[data-teacher-lesson-status="ACTIVE"] { background: color-mix(in srgb, var(--violet-bg) 90%, var(--surface)); box-shadow: inset 3px 0 0 var(--violet); }
+.tl[data-teacher-lesson-status] { --text3: var(--text2); }
+.tl[data-teacher-lesson-status] :is(.tl-time em, .tl-pick) { --accent: var(--accent-text); }
 .tl-time { display: flex; flex-direction: column; font-variant-numeric: tabular-nums; line-height: 1.2; }
 .tl-time b { font-size: 19px; letter-spacing: -.01em; }
 .tl-time span { font-size: 12px; color: var(--text3); margin-top: 2px; }

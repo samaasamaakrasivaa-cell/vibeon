@@ -1,7 +1,7 @@
 import "server-only";
 import { db } from "../db";
 import { fileUrl } from "../storage";
-import { buildFix, hasLegacyFixExclusions, type AnyItem, type Bank, type CoreItem, type Family, type FixSpec, type Group, type ListenItem, type ReadItem, type SpeakItem, type WriteItem } from "./engine";
+import { buildFix, type AnyItem, type Bank, type CoreItem, type Family, type FixSpec, type Group, type ListenItem, type ReadItem, type SpeakItem, type WriteItem } from "./engine";
 import c1 from "../../../content/placement/01_core_A1.json";
 import c2 from "../../../content/placement/02_core_A2.json";
 import c3 from "../../../content/placement/03_core_B1.json";
@@ -70,7 +70,6 @@ export type Rubric = { id: string; name_ru: string; levels: Record<string, strin
 export const RUBRICS = rubricsJson as unknown as { speaking: { criteria: Rubric[] }; writing: { criteria: Rubric[] }; sublevels_ru: string; how_to_decide_ru: string; total_ru: string; scores_ru: Record<string, string> };
 const INS = instructionsJson as Record<string, { easy: string; std: string }>;
 const fixSpecs: FixSpec[] = fixJson;
-const fixInstructions = new Map(fixSpecs.map((spec) => [`F-${spec.from}`, spec.instruction_en]));
 const T_INS = tInstructionsJson as Record<string, { easy: string; std: string; ru: string }>;
 const low = (level?: string) => level === "A1" || level === "A2";
 /** Формулировка задания — по-английски; на A1–A2 — проще. */
@@ -82,10 +81,8 @@ export function coreInstruction(item: CoreItem, track: Track) {
   const generic = instruction(item.type, item.level, track);
   if (track === "teen") return generic;
   if (item.type !== "fix") return item.instruction_en ?? generic;
-  // Начатые попытки сохраняют снимок вопроса. Уточнение требуется и для старых Fix,
-  // где PT-01 уже ограничивает допустимые варианты по этому идентификатору.
-  const focus = item.instruction_en ?? (hasLegacyFixExclusions(item.id) ? fixInstructions.get(item.id) : undefined);
-  return focus ? `${generic} ${focus}` : generic;
+  // Начатая попытка использует инструкцию из того же снимка, что условие и ключ.
+  return item.instruction_en ? `${generic} ${item.instruction_en}` : generic;
 }
 
 const caches: Partial<Record<Track, { at: number; bank: Bank; edited: Set<string> }>> = {};
