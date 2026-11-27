@@ -1,16 +1,17 @@
 import Link from "next/link";
 import { Clock } from "@/components/Clock";
 import { Icon } from "@/components/Icon";
-import { LessonCountdown } from "@/components/LessonCountdown";
 import { NotificationList } from "@/components/NotificationList";
 import { NoteChecklist } from "@/components/student/NoteChecklist";
+import { StudentLessonCard } from "@/components/student/StudentLessonCard";
 import { requireUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { getT } from "@/lib/i18n/server";
 import { greetingKey, hourIn } from "@/lib/greeting";
 import { homeworkFor } from "@/lib/homework";
 import { currentStudentLesson, nextStudentLesson, studentLessonCallLink } from "@/lib/student/next-lesson";
-import { hhmm, isoDay } from "@/lib/time";
+import { learningAnswers, studentForm } from "@/lib/student/form";
+import { isoDay, partsIn } from "@/lib/time";
 import { Medal, StudentAvatar } from "@/components/awards/Medal";
 import { AvatarNotice, CelebrateAwards } from "@/components/awards/StudentAwards";
 import { StartTips, type Tip } from "@/components/student/StartTips";
@@ -24,7 +25,7 @@ export default async function StudentHome() {
   const s = await db.student.findUnique({ where: { userId: me.id } });
   const tz = me.timezone;
   const now = new Date();
-  const [current, next, last, hws, practice, dueWords, notifications, wordsTotal] = await Promise.all([
+  const [current, next, last, hws, practice, dueWords, notifications, wordsTotal, taking, taken, publishedTest] = await Promise.all([
     s ? currentStudentLesson(me.id, now) : null,
     s ? nextStudentLesson(me.id, now) : null,
     s ? db.lessonInstance.findFirst({ where: { studentId: s.id, status: "DONE" }, orderBy: { startsAt: "desc" }, include: { template: true } }) : null,
@@ -33,24 +34,50 @@ export default async function StudentHome() {
     s ? db.word.count({ where: { studentId: s.id, level: { lt: 4 }, OR: [{ nextReviewAt: null }, { nextReviewAt: { lte: now } }] } }) : 0,
     db.notification.findMany({ where: { userId: me.id }, orderBy: { createdAt: "desc" }, take: 15 }),
     s ? db.word.count({ where: { studentId: s.id } }) : 0,
+    s ? db.placementAttempt.findFirst({
+      where: { studentId: s.id, mode: "student", status: { in: ["new", "active"] } },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      select: { id: true, status: true, track: true },
+    }) : null,
+    s ? db.placementAttempt.findFirst({
+      where: { studentId: s.id, mode: "student", status: { in: ["submitted", "reviewed"] } },
+      select: { id: true },
+    }) : null,
+    s ? db.placementAttempt.findFirst({
+      where: { studentId: s.id, mode: "student", status: "reviewed", showResult: true, checkpointId: { not: null } },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      select: { checkpointId: true, reviewedAt: true, level: true, track: true },
+    }) : null,
   ]);
-  // вводный тест: назначен / начат — карточка «Пройти», готов и показан учителем — «Посмотреть результат»
-  const pa = s ? await db.placementAttempt.findFirst({ where: { studentId: s.id, OR: [{ status: { in: ["new", "active"] } }, { status: "reviewed", showResult: true, reviewedAt: { gt: new Date(now.getTime() - 14 * 864e5) } }] }, orderBy: { createdAt: "desc" } }) : null;
+  const legacyEntry = s && !taking && !taken ? await db.checkpoint.findFirst({
+    where: { studentId: s.id, kind: "entry", source: "test" },
+    orderBy: [{ assignedAt: "desc" }, { id: "desc" }],
+    select: { id: true, status: true },
+  }) : null;
+  const testLink = taking ? `/placement/${taking.id}` : legacyEntry?.status === "assigned" ? `/student/test/${legacyEntry.id}` : null;
+  const resultLink = publishedTest?.checkpointId ? `/student/test/${publishedTest.checkpointId}` : null;
+  const recentResult = publishedTest?.reviewedAt && now.getTime() - publishedTest.reviewedAt.getTime() < 14 * 86_400_000;
   const loc = lang === "ru" ? "ru-RU" : "en-GB";
   // «С чего начать» — новичку, пока не закрыл: что уже сделано, отмечаем галочкой
   const tips: Tip[] | null = s && !s.tipsDoneAt ? await (async () => {
-    const [slots, practiced, route, tests] = await Promise.all([
-      db.studySlot.count({ where: { studentId: s.id } }),
-      db.wordPractice.count({ where: { studentId: s.id } }),
-      db.roadmap.count({ where: { studentId: s.id, approvedAt: { not: null } } }),
-      db.checkpoint.count({ where: { studentId: s.id } }),
+    const [slot, route] = await Promise.all([
+      db.studySlot.findFirst({ where: { studentId: s.id }, select: { id: true } }),
+      db.roadmap.findFirst({ where: { studentId: s.id }, orderBy: { createdAt: "desc" }, select: { approvedAt: true } }),
     ]);
+    const formDone = Object.values(learningAnswers(s.form)).some((answer) => answer.length > 0);
+    const testDone = !testLink && (!!taken || legacyEntry?.status === "done");
     return [
-      { key: "schedule", icon: "cal", title: t("tips.schedT"), text: t("tips.sched"), href: "/student/schedule", cta: t("tips.schedGo"), done: slots > 0 },
-      { key: "words", icon: "cards", title: t("tips.wordsT"), text: t("tips.words"), href: "/student/words", cta: t("tips.wordsGo"), done: practiced > 0 },
-      { key: "tg", icon: "telegram", title: t("tips.tgT"), text: t("tips.tg"), href: "/student/profile", cta: t("tips.tgGo"), done: !!me.telegramChatId },
-      { key: "route", icon: "route", title: t("tips.routeT"), text: t("tips.route"), done: route > 0 },
-      { key: "tests", icon: "target", title: t("tips.testsT"), text: t("tips.tests"), href: "/student/progress?tab=tests", cta: t("tips.testsGo"), done: tests > 0 },
+      { key: "form", icon: "pencil", title: t("tips.formT"), text: t("tips.form"), href: "/student/profile#questionnaire", cta: t(formDone ? "tips.formEdit" : "tips.formGo"), done: formDone, keepLink: true },
+      { key: "tg", icon: "telegram", title: t("tips.tgT"), text: t("tips.tg"), href: "/student/profile#notify", cta: t("tips.tgGo"), done: !!me.telegramChatId },
+      { key: "schedule", icon: "cal", title: t("tips.schedT"), text: t("tips.sched"), href: "/student/schedule", cta: t("tips.schedGo"), done: !!slot, keepLink: true },
+      {
+        key: "test", icon: "target", title: t("tips.testsT"),
+        text: t(testDone ? "tips.testsDone" : testLink ? "tips.testsAssigned" : "tips.tests"),
+        href: testLink ?? resultLink ?? undefined,
+        cta: t(testDone ? "pl.cardSee" : taking?.status === "active" ? "pl.continue" : "pl.start"),
+        done: testDone, locked: testLink || testDone ? undefined : t("tips.testsLocked"), keepLink: true,
+      },
+      { key: "route", icon: "route", title: t("tips.routeT"), text: t("tips.route"), href: "/student/route", cta: t("tips.routeGo"), done: !!route?.approvedAt, locked: route?.approvedAt ? undefined : t("tips.routeLocked"), keepLink: true },
     ];
   })() : null;
   // статусы: титулы, выведенные учителем на главный экран (главный — под именем, корона на аватарке); новые — праздничным окном
@@ -60,18 +87,20 @@ export default async function StudentHome() {
   ]) : [[], []];
   const pinned = mains.find((a) => a.pinned) ?? null;
   const others = mains.filter((a) => a !== pinned);
-  const hw = hws.find((h) => h.done < h.total);
+  const pendingHomework = hws.find((h) => h.done < h.total);
+  const hw = pendingHomework ?? (hws[0]?.words ? hws[0] : undefined);
   const goal = s?.wordGoal ?? 15;
   const done = Math.min(goal, practice?.count ?? 0);
   const shownLesson = current ?? next;
   const callLink = shownLesson ? await studentLessonCallLink(me.id, shownLesson.id) : null;
-  const isToday = shownLesson && isoDay(shownLesson.startsAt, tz) === isoDay(now, tz);
-  const whenLabel = shownLesson ? `${isToday ? t("dash.today") : shownLesson.startsAt.toLocaleDateString(loc, { weekday: "long", day: "numeric", month: "long", timeZone: tz })}, ${hhmm(shownLesson.startsAt, tz)}` : "";
-  const allDone = !hw && done >= goal && wordsTotal > 0;
+  const needsWordGoal = studentForm(s?.form).wordGoalConfigured === false;
+  const wordTime = s?.wordDays.includes(partsIn(now, tz).dow) ? s.remindAt : null;
+  const allDone = !pendingHomework && done >= goal && wordsTotal > 0;
   const ago = (d: Date) => { const m = Math.round((now.getTime() - d.getTime()) / 60000); return m < 60 ? t("nt.minAgo", { n: Math.max(1, m) }) : m < 1440 ? t("nt.hAgo", { n: Math.round(m / 60) }) : d.toLocaleDateString(loc, { day: "numeric", month: "long", timeZone: tz }); };
 
   return (
     <div className="page">
+      {tips && <StartTips tips={tips} />}
       <section className="card">
         {s?.avatarNotice && <AvatarNotice id={s.id} avatar={s.avatar} />}
         <div className="flex flex-wrap items-center justify-between gap-6 border-b border-sep pb-6">
@@ -103,86 +132,73 @@ export default async function StudentHome() {
         </div>
 
         <div className="mt-5 flex flex-col gap-3">
-          {shownLesson ? (
-            <div className="nextcard">
-              <div className="small opacity-90">{t("st.next")}</div>
-              <div className="mt-1 flex flex-wrap items-center gap-4">
-                <b className="text-[26px] tracking-tight">{whenLabel}</b>
-                <Link href={`/class/${shownLesson.id}`} className="btn"><Icon name="class" size="sm" />{t("cls.enter")}</Link>
-                {callLink && <a href={callLink} className="btn" target="_blank" rel="noreferrer"><Icon name="phone" size="sm" />{t("cls.joinCall")}</a>}
-              </div>
-              <div className="small mt-1 opacity-90">{[shownLesson.template?.title, current ? t("today.live") : null].filter(Boolean).join(" · ")}</div>
-              {!current && next && <LessonCountdown startsAt={next.startsAt.getTime()} initialNow={now.getTime()} variant="student" />}
-            </div>
-          ) : <div className="tile"><span className="muted">{t("st.noNext")}</span></div>}
+          <StudentLessonCard lesson={shownLesson} current={!!current} callLink={callLink} homework={hw} tz={tz} now={now} />
 
-          {pa && pa.status !== "reviewed" && (
+          {testLink && (
             <div className="placecard">
               <div className="flex flex-wrap items-center gap-4">
                 <div className="grow min-w-[220px] flex-1">
-                  <div className="small font-semibold" style={{ color: "#AF52DE" }}>{t("pl.title")}</div>
-                  <h3 className="mt-1 text-[21px]">{pa.status === "active" ? t("pl.cardContinue") : t("pl.cardNew")}</h3>
-                  <p className="small muted mt-1 mb-0">{t("pl.cardSub")}</p>
+                  <div className="small font-semibold text-violet">{t(taking?.track === "teen" ? "plt.title" : "pl.title")}</div>
+                  <h3 className="mt-1 text-[21px]">{t(taking?.status === "active" ? "pl.cardContinue" : "pl.cardNew")}</h3>
+                  <p className="small muted mt-1 mb-0">{t("st.placementIntro")}</p>
+                  {taking && <p className="small muted mt-1 mb-0">{t("pl.cardSub")}</p>}
                 </div>
-                <Link href={`/placement/${pa.id}`} className="btn primary lg">{pa.status === "active" ? t("pl.continue") : t("pl.start")}</Link>
+                <Link href={testLink} className="btn primary lg">{t(taking?.status === "active" ? "pl.continue" : "pl.start")}</Link>
               </div>
               <div className="plab mt-4">{t("pl.whyT")}</div>
-              <ul>{(["pl.why1", "pl.why2", "pl.why3", "pl.why4"] as const).map((k) => <li key={k}><Icon name="check" size="sm" /><span>{t(k)}</span></li>)}</ul>
+              <ul>{(["st.placementHonest", "st.placementHelp"] as const).map((k) => <li key={k}><Icon name="check" size="sm" /><span>{t(k)}</span></li>)}</ul>
             </div>
           )}
 
-          {pa && pa.status === "reviewed" && (
-            <div className="tk flex flex-wrap items-center gap-4" style={{ borderColor: "var(--accent)" }}>
+          {!testLink && publishedTest && resultLink && recentResult && (
+            <div className="tk flex flex-wrap items-center gap-4 border-accent">
               <div className="grow min-w-[220px] flex-1">
-                <div className="small font-semibold text-accent">{t("pl.title")}</div>
-                <h3 className="mt-1">{pa.status === "reviewed" ? t("pl.cardDone", { lvl: pa.level ?? "" }) : pa.status === "active" ? t("pl.cardContinue") : t("pl.cardNew")}</h3>
-                <p className="small muted mt-1 mb-0">{pa.status === "reviewed" ? t("pl.cardDoneSub") : t("pl.cardSub")}</p>
+                <div className="small font-semibold text-accent">{t(publishedTest.track === "teen" ? "plt.title" : "pl.title")}</div>
+                <h3 className="mt-1">{t("pl.cardDone", { lvl: publishedTest.level ?? "" })}</h3>
+                <p className="small muted mt-1 mb-0">{t("pl.cardDoneSub")}</p>
               </div>
-              <Link href={pa.status === "reviewed" ? `/student/test/${pa.checkpointId}` : `/placement/${pa.id}`} className="btn primary lg">{pa.status === "reviewed" ? t("pl.cardSee") : pa.status === "active" ? t("pl.continue") : t("pl.start")}</Link>
+              <Link href={resultLink} className="btn primary lg">{t("pl.cardSee")}</Link>
             </div>
           )}
 
-          {/* домашка, которую преподаватель задал после последнего урока: большая кнопка и сколько заданий осталось */}
-          {hw && (
-            <Link href={`/class/${hw.lesson.id}?tab=homework`} className="hwbig">
-              <span className="hwico"><Icon name="clip" size="lg" /></span>
-              <span className="grow min-w-0">
-                <b>{t("st.doHwBig")}</b>
-                <span className="small mt-1 block opacity-90">{hw.title} · {t("st.hwLeft", { n: hw.total - hw.done, total: hw.total })}</span>
-                <span className="hwbar mt-2 block"><i style={{ width: `${hw.total ? (hw.done / hw.total) * 100 : 0}%` }} /></span>
-              </span>
-              <span className="hwgo"><Icon name="right" /></span>
-            </Link>
+          {needsWordGoal ? (
+            <div className="tk flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <div className="small font-semibold text-accent">{t("nav.words")}</div>
+                <p className="muted mb-0 mt-1">{t("tips.words")}</p>
+              </div>
+              <Link href="/student/words?goal=1" className="btn primary">{t("tips.wordsT")}</Link>
+            </div>
+          ) : wordsTotal === 0 ? (
+            <div className="tk">
+              <div className="small font-semibold text-accent">{t("nav.words")}</div>
+              <p className="muted mb-0 mt-1">{t("st.noWordsYet")}</p>
+            </div>
+          ) : (
+          <div className="tl" data-student-lesson-status="PLANNED">
+            <div className="tl-time">
+              {wordTime ? <><b>{wordTime}</b><span>{t("dash.today")}</span></> : <span className="avatar lg"><Icon name="cards" size="sm" /></span>}
+            </div>
+            <div className="tl-main min-w-0">
+              <div className="tl-who">{t("st.wordPractice")}</div>
+              <p className="small muted mt-1 mb-2">{done >= goal ? t("st.wordsDone") : t("st.doneOf", { n: done, total: goal })}{dueWords && done < goal ? ` · ${t("st.due", { n: dueWords })}` : ""}</p>
+              <span className="hwbar block max-w-[300px]"><i style={{ width: `${(done / goal) * 100}%` }} /></span>
+            </div>
+            <div className="tl-act">
+              <Link href="/student/words?train=today" className="btn primary sm"><Icon name="cards" size="sm" />{t("st.startTraining")}</Link>
+            </div>
+          </div>
           )}
-
           {last && (last.studentNote || last.note) && (
             <div className="grid gap-3 md:grid-cols-2">
               {last.studentNote && <NoteChecklist lessonId={last.id} title={t("st.myNotes")} text={last.studentNote} />}
               {last.note && <div className="tile" style={{ background: "var(--warn-bg)" }}><div className="small mb-2 font-semibold" style={{ color: "var(--warn-text)" }}>{t("st.teacherNotes")}</div>{last.note}</div>}
             </div>
           )}
-
-          {wordsTotal === 0 ? (
-            <div className="tk">
-              <div className="small font-semibold text-accent">{t("nav.words")}</div>
-              <p className="muted mb-0 mt-1">{t("st.noWordsYet")}</p>
-            </div>
-          ) : (
-          <div className="tk flex flex-wrap items-center gap-4">
-            <div className="grow min-w-[220px] flex-1">
-              <div className="small font-semibold text-accent">{t("nav.words")}</div>
-              <h3 className="mt-1">{done >= goal ? t("st.wordsDone") : t("st.trainToday", { n: goal })}</h3>
-              <p className="small muted mt-1 mb-2">{t("st.doneOf", { n: done, total: goal })}{dueWords ? ` · ${t("st.due", { n: dueWords })}` : ""}</p>
-              <span className="hwbar block max-w-[300px]"><i style={{ width: `${(done / goal) * 100}%` }} /></span>
-            </div>
-            <Link href="/student/words?train=today" className="btn primary lg">{t("st.startTraining")}</Link>
-          </div>
-          )}
           {allDone && <div className="alert ok">🎉 {t("st.allDone")}</div>}
         </div>
       </section>
 
-      {tips && <StartTips tips={tips} />}
       {fresh.length > 0 && <CelebrateAwards items={fresh.map((a) => ({ id: a.id, kind: a.kind, name: a.name, why: a.why, icon: a.icon, color: a.color, until: a.until ? a.until.toLocaleDateString(loc, { day: "numeric", month: "long", timeZone: tz }) : null }))} />}
       <section className="card">
         <NotificationList items={notifications.map((n) => ({ id: n.id, title: n.title, when: ago(n.createdAt), unread: !n.readAt, done: !!n.doneAt, link: n.link, action: n.action }))} />

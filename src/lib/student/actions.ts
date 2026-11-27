@@ -9,6 +9,7 @@ import { publish } from "../live/bus";
 import { hashPassword, MIN_PASSWORD, verifyPassword } from "../auth/password";
 import { isoDay } from "../time";
 import { completeNotes, notify } from "../notify";
+import { learningAnswers, patchStudentForm } from "./form";
 
 export type R = { ok: true } | { ok: false; error: string };
 const str = (v: unknown, max = 2000) => (typeof v === "string" ? v.trim().slice(0, max) : "");
@@ -86,16 +87,22 @@ export async function askQuestion(text: string, context: string): Promise<R> {
 const INTERVAL_DAYS = [0, 1, 3, 7, 21]; // интервальное повторение по уровням 0–4
 
 export async function setWordGoal(goal: number, days: number[], remindAt: string): Promise<R> {
-  const { s } = await myStudent();
-  await db.student.update({
-    where: { id: s.id },
-    data: {
-      wordGoal: [5, 10, 15, 20].includes(goal) ? goal : 15,
-      wordDays: [...new Set(days.filter((d) => d >= 0 && d <= 6))].sort(),
-      remindAt: /^\d{2}:\d{2}$/.test(remindAt) ? remindAt : "19:00",
-    },
-  });
+  const { u, s } = await myStudent();
+  const owner = { userId: u.id };
+  await db.$transaction([
+    db.student.update({
+      where: { id: s.id, ...owner },
+      data: {
+        wordGoal: [5, 10, 15, 20].includes(goal) ? goal : 15,
+        wordDays: [...new Set(days.filter((d) => Number.isInteger(d) && d >= 0 && d <= 6))].sort(),
+        remindAt: /^(?:[01]\d|2[0-3]):[0-5]\d$/.test(remindAt) ? remindAt : "19:00",
+      },
+    }),
+    patchStudentForm(s.id, owner, { wordGoalConfigured: true }),
+  ]);
   revalidatePath("/student/words");
+  revalidatePath("/student/schedule");
+  revalidatePath("/student");
   return { ok: true };
 }
 
@@ -148,6 +155,28 @@ export async function setStudentNote(lessonId: string, text: string): Promise<R>
 }
 
 // ───────── Профиль ─────────
+
+export async function updateMyLearningAnswers(_: R | null, f: FormData): Promise<R> {
+  const { u, s } = await myStudent();
+  const answers = learningAnswers({
+    goals: f.getAll("goals"),
+    otherGoal: f.get("other"),
+    about: f.get("about"),
+    since: f.get("since"),
+    easy: f.getAll("easy"),
+    hard: f.getAll("hard"),
+    problem: f.get("problem"),
+  });
+  const defaults = Object.values(answers).some((answer) => answer.length > 0) ? { filledAt: new Date().toISOString() } : {};
+  if (!await patchStudentForm(s.id, { userId: u.id }, answers, defaults)) {
+    const { t } = await getT();
+    return { ok: false, error: t("tips.formSaveError") };
+  }
+  revalidatePath("/student");
+  revalidatePath("/student/profile");
+  revalidatePath(`/teacher/students/${s.id}`);
+  return { ok: true };
+}
 
 export async function updateMyProfile(f: { name: string; lastName: string; phone: string; telegram: string; timezone: string }): Promise<R> {
   const { t } = await getT();
