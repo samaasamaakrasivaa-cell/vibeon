@@ -5,6 +5,7 @@ import { db } from "../db";
 import { chat, provider, studioChat, yandexOcr, yandexReady, yandexStt, yandexTts, type ChatRes, type LlmMsg, type LlmOpts } from "./providers";
 import { mockLlm } from "./mock-llm";
 import { SPECS, type Kind, type SpecIn, type SpecOut } from "./tasks";
+import { LESSON_ANALYSIS_MODEL, LESSON_ANALYSIS_OUTPUT_TOKENS, lessonAnalysisInput, parseLessonPractice } from "./lesson-analysis-plan";
 
 // ИИ-шлюз: все функции платформы обращаются к ИИ только через него.
 // Здесь — лимиты по тарифу, удаление личных данных из текста, кэш общих результатов и учёт вызовов.
@@ -108,6 +109,28 @@ export function llmFor(kind: "check" | "route", ctx: Ctx): Llm {
       throw e;
     }
   };
+}
+
+export const lessonAnalysisAvailable = () => provider() !== "mock" && yandexReady();
+
+/** One attempt, using a budget reservation that was committed before the external call. */
+export async function lessonAnalysisChat(input: ReturnType<typeof lessonAnalysisInput>, reservationId: string, ctx: Ctx) {
+  if (!lessonAnalysisAvailable()) return null;
+  await guard("route", ctx);
+  const started = Date.now();
+  try {
+    const res = await studioChat(LESSON_ANALYSIS_MODEL, [...input.messages], {
+      maxTokens: LESSON_ANALYSIS_OUTPUT_TOKENS, timeoutMs: 20_000, reasoning: "none", dataLogging: false,
+    });
+    const practice = parseLessonPractice(res.text, input.included);
+    await db.aiCall.update({ where: { id: reservationId }, data: {
+      ok: true, ms: Date.now() - started, tokensIn: res.tokensIn, tokensOut: res.tokensOut,
+    } }).catch(() => undefined);
+    return practice;
+  } catch {
+    await db.aiCall.update({ where: { id: reservationId }, data: { ms: Date.now() - started } }).catch(() => undefined);
+    return null;
+  }
 }
 
 /** Любой платный вызов ИИ через шлюз: лимит тарифа и учёт (картинки, озвучка скриптов). В режиме mock — заглушка. */
