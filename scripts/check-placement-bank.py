@@ -2,13 +2,15 @@
 """Проверка банка вводного теста (content/placement/*.json).
 
 Запуск: python3 -I scripts/check-placement-bank.py [файлы…]
-Без аргументов проверяет все файлы банка. Печатает ошибки (ломают тест) и замечания (стоит посмотреть).
+Без аргументов проверяет файлы Adult и порог из трёх исходных заданий на группу тем.
+Печатает ошибки (ломают тест) и замечания (стоит посмотреть).
 """
 import collections, glob, json, os, re, sys
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "content", "placement")
 LEVELS = ["A1", "A2", "B1", "B2", "C1"]
-TYPES = {"mcq", "gap", "wordform", "transform", "brackets", "reading", "listening", "writing", "speaking"}
+CORE_TYPES = {"mcq", "gap", "wordform", "transform", "brackets"}
+TYPES = CORE_TYPES | {"reading", "listening", "writing", "speaking"}
 SKILL_OF_PREFIX = {"G": "grammar", "V": "vocabulary", "R": "reading", "L": "listening", "W": "writing", "S": "speaking"}
 WORDS = {"reading": {"A1": (40, 60), "A2": (80, 110), "B1": (130, 170), "B2": (190, 240), "C1": (240, 300)}}
 # слова грамматических терминов и местоимения — в разборе уместны, даже если их нет в задании
@@ -93,7 +95,7 @@ def check_item(it, seen):
     if ty not in TYPES:
         return err(i, f"неизвестный type «{ty}»")
 
-    if ty in ("mcq", "gap", "wordform", "transform", "brackets"):
+    if ty in CORE_TYPES:
         check_topic(i, it)
         q = it.get("q", "")
         if ty != "transform" and q.count("___") != 1:
@@ -173,7 +175,7 @@ def check_item(it, seen):
                 err(i, "у вопроса говорения нужны q и speak_sec")
 
 
-def check_file(path):
+def check_file(path, adult_core=None):
     data = json.load(open(path))
     items = data if isinstance(data, list) else []
     if not isinstance(data, list):
@@ -181,7 +183,10 @@ def check_file(path):
         return
     seen = set()
     for it in items:
+        errors_before = len(errors)
         check_item(it, seen)
+        if adult_core is not None:
+            adult_core.append((it, len(errors) == errors_before))
     # сводка
     by = collections.Counter((it.get("skill"), it.get("type")) for it in items)
     bands = collections.Counter(it.get("band") for it in items)
@@ -225,12 +230,43 @@ def cross_check(path, items):
         ALL_Q.setdefault(q, i)
 
 
-files = sys.argv[1:] or sorted(
+def check_adult_group_coverage(items):
+    with open(os.path.join(ROOT, "00_groups.json"), encoding="utf-8") as group_file:
+        groups = json.load(group_file)
+    # Как в withGroups: последнее назначение темы имеет приоритет,
+    # кроме заданий с собственным group.
+    group_for_topic = {topic: group["id"] for group in groups for topic in group["topics"]}
+    id_counts = collections.Counter(it.get("id") for it, _ in items)
+    covered = collections.Counter()
+    for it, valid in items:
+        if not valid or id_counts[it["id"]] != 1 or it["type"] not in CORE_TYPES:
+            continue
+        if it["skill"] not in ("grammar", "vocabulary"):
+            continue
+        group_id = it.get("group")
+        if group_id is None:
+            group_id = group_for_topic.get(it["topic_id"])
+        if isinstance(group_id, str):
+            covered[group_id] += 1
+    for group in groups:
+        group_id = group["id"]
+        count = covered[group_id]
+        if count < 3:
+            err(group_id, f"в группе Adult {count} исходных заданий, требуется не менее 3")
+
+
+requested_files = sys.argv[1:]
+files = requested_files or sorted(
     f for f in glob.glob(os.path.join(ROOT, "*.json"))
     if not os.path.basename(f).startswith("00_") and os.path.basename(f) != "09_fix.json"
 )
+adult_core = []
+adult_core_files = {f"{index:02}_core_{level}.json" for index, level in enumerate(LEVELS, 1)}
 for f in files:
-    cross_check(f, check_file(f) or [])
+    collect_core = not requested_files and os.path.basename(f) in adult_core_files
+    cross_check(f, check_file(f, adult_core if collect_core else None) or [])
+if not requested_files:
+    check_adult_group_coverage(adult_core)
 print(f"\nОШИБКИ ({len(errors)}):")
 for e in errors:
     print("  ✗", e)
