@@ -13,14 +13,14 @@
   "lease": {
     "token": "5801fb96cfd144139e3aa6721d23dad6",
     "started_at": "2026-11-27T20:02:34.378028Z",
-    "expires_at": "2026-11-27T23:03:08.406583Z"
+    "expires_at": "2026-11-27T23:03:38.701544Z"
   },
   "checkpoint": {
     "issue": 25,
-    "stage": "refresh_base",
+    "stage": "push_refresh",
     "branch": "codex/vocabulary/voc-09",
     "base_sha": "34d61672958edde1742eac6079bed0da747a22dd",
-    "next": "Merge current main 8c71158ca82a234370f6b1ae39b99c3aa4485e42 into own task branch preserving all changes; one overlap student profile (non-overlapping hunks). New exact head CI and review required. DNS unavailable for local Git and site.",
+    "next": "CAS update task ref from 589b43e29c47e11cbbe349266c918f869b585b50 to candidate 9c78a8dd0ae2b4bed5348c14ea12d6b83401e120; verify PR head, CI and request review once. Prior CI and review passed.",
     "head_sha": "589b43e29c47e11cbbe349266c918f869b585b50",
     "pr": 54,
     "review_request_comment_id": 7226205000,
@@ -34,7 +34,8 @@
     "refresh_base_sha": "8c71158ca82a234370f6b1ae39b99c3aa4485e42",
     "prior_head_sha": "3256f64b47c95f5df9e45d3a194cf16e8206a932",
     "prior_ci_run_id": 46047129614,
-    "prior_review_summary_id": 7224060100
+    "prior_review_summary_id": 7224060100,
+    "candidate_sha": "9c78a8dd0ae2b4bed5348c14ea12d6b83401e120"
   },
   "last_probe": {
     "type": "background_native_review",
