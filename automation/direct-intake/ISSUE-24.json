@@ -8,9 +8,11 @@
     "base_sha": "81d7077b1ed3ae99c4d844c27171d0f2f4485ebb",
     "branch": "codex/homework/hw-01-review-queue",
     "head_sha": "f18e43af530d75d576145151d8bae9655db69d4f",
-    "next": "Проверить независимое браузерное ревью и CI точного SHA; затем проверка выпуска.",
+    "merge_sha": "3d111af83f05a0aa2fba824c767d70d74ad6bf69",
+    "next": "Проследить штатный CD; проверить полный публичный SHA, затем зафиксировать выпуск в issue.",
     "pr": 78,
-    "stage": "review"
+    "stage": "publication",
+    "test_run": 46063948269
   },
   "release": null,
   "source": "direct",
