@@ -40,7 +40,7 @@ export default async function TeacherLessonAnalysis({ params }: { params: Promis
         ? (ru ? "Рекомендации подобраны ИИ по результатам урока." : "AI selected the recommendations from the lesson results.")
         : (ru ? "Рекомендации собраны по сохранённым результатам." : "Recommendations are based on the saved lesson results.")}</p>}
       <LessonAnalysisActions lessonId={id} state={report?.state ?? null} hasEvidence={tasks.length > 0} canGenerate={canCallAi}
-        estimate={estimate} lang={lang} pending={pending} generate={generateAnalysisAction.bind(null, id)}
+        estimate={estimate} lang={lang} pending={pending} generate={generateAnalysisAction.bind(null, id, canCallAi)}
         approvePrivate={approveAnalysisAction.bind(null, id, false)} publish={approveAnalysisAction.bind(null, id, true)} />
       {pending && <Link href={`/teacher/lesson-analysis/${id}`} prefetch={false} className="small">{ru ? "Обновить отчёт" : "Refresh report"}</Link>}
     </div>

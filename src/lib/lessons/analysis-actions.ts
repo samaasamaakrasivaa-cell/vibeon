@@ -4,9 +4,9 @@ import { revalidatePath } from "next/cache";
 import { requireUser } from "../auth/session";
 import { approveLessonAnalysis, generateLessonAnalysis } from "./analysis";
 
-export async function generateAnalysisAction(lessonId: string) {
+export async function generateAnalysisAction(lessonId: string, allowAi: boolean) {
   const teacher = await requireUser("TEACHER");
-  await generateLessonAnalysis(lessonId, teacher.id);
+  await generateLessonAnalysis(lessonId, teacher.id, allowAi === true);
   revalidatePath(`/teacher/lesson-analysis/${lessonId}`);
 }
 

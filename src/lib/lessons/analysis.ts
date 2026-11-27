@@ -113,14 +113,14 @@ async function reserve(client: Client, id: string, teacherId: string) {
   return token;
 }
 
-export async function generateLessonAnalysis(id: string, teacherId: string) {
+export async function generateLessonAnalysis(id: string, teacherId: string, allowAi: boolean) {
   const attempt = await withTeacherLesson(id, teacherId, async (client, lesson) => {
     const stored = await snapshot(client, id, lesson.studentId);
     if (readAnalysis(stored?.notes, lesson)) return null;
     const tasks = await evidenceFor(client, lesson);
     if (!tasks.length) return null;
     const evidence = lessonModelEvidence(tasks);
-    const token = evidence.length && lessonAnalysisAvailable() ? await reserve(client, id, teacherId) : null;
+    const token = allowAi && evidence.length && lessonAnalysisAvailable() ? await reserve(client, id, teacherId) : null;
     const report: LessonAnalysis = { state: "draft", teacherId, studentId: lesson.studentId,
       startsAt: lesson.startsAt.toISOString(), finishedAt: lesson.finishedAt?.toISOString() ?? null, tasks,
       practice: localPractice(evidence), source: "local", pendingUntil: token ? Date.now() + GENERATION_WINDOW : null };
