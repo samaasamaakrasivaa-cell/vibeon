@@ -1,6 +1,8 @@
 // Вводный тест A1–C1: типы банка, «лесенка» ядра, подбор текстов, проверка ответов и подсказки для учителя.
 // Чистые функции без базы — чтобы логику можно было проверить отдельно (scripts/placement-sim.ts).
 
+import { fixWords, parseFixAnswer, replaceFixFragment } from "./fix-answer";
+
 export const PL_LEVELS = ["A1", "A2", "B1", "B2", "C1"] as const;
 export type PLevel = (typeof PL_LEVELS)[number];
 /** Шкала из 9 ступеней — та же, что в маршруте. */
@@ -652,35 +654,78 @@ export function pickTask<T extends WriteItem | SpeakItem>(list: T[], level: PLev
 
 // ───────── Проверка ответа ─────────
 
-const EXP: [RegExp, string[]][] = [
+const FIX_EXP: [RegExp, string[]][] = [
   [/\bcan't\b/g, ["cannot", "can not"]], [/\bwon't\b/g, ["will not"]], [/\bshan't\b/g, ["shall not"]], [/n't\b/g, [" not"]],
-  [/'m\b/g, [" am"]], [/'re\b/g, [" are"]], [/'ve\b/g, [" have"]], [/'ll\b/g, [" will"]], [/'d\b/g, [" had", " would"]], [/\b(it|he|she|that|there|what|who)'s\b/g, ["$1 is", "$1 has"]],
+  [/'m\b/g, [" am"]], [/'re\b/g, [" are"]], [/'ve\b/g, [" have"]], [/'ll\b/g, [" will"]],
+];
+const EXP: [RegExp, string[]][] = [
+  ...FIX_EXP, [/'d\b/g, [" had", " would"]], [/\b(it|he|she|that|there|what|who)'s\b/g, ["$1 is", "$1 has"]],
 ];
 export function norm(s: string) {
   return s.toLowerCase().replace(/[’‘`´]/g, "'").replace(/[“”«»]/g, '"').replace(/\s+/g, " ").trim().replace(/[.,!?;:]+$/, "").trim();
 }
-function variants(s: string) {
+function variants(s: string, expansions: [RegExp, string[]][]) {
   let out = new Set([norm(s)]);
-  for (const [re, reps] of EXP) {
+  for (const [re, reps] of expansions) {
     const next = new Set<string>();
     for (const v of out) { if (re.test(v)) { re.lastIndex = 0; for (const r of reps) next.add(v.replace(re, r).replace(/\s+/g, " ").trim()); } next.add(v); re.lastIndex = 0; }
     out = next;
   }
   return out;
 }
+function matchesText(input: string, accept: string[], expansions: [RegExp, string[]][]) {
+  const a = variants(input, expansions);
+  return accept.some((x) => [...variants(x, expansions)].some((v) => a.has(v)));
+}
 export function checkText(input: string, accept: string[]) {
-  const a = variants(input);
-  return accept.some((x) => [...variants(x)].some((v) => a.has(v)));
+  return matchesText(input, accept, EXP);
+}
+
+const contractedFixAux = { "there is": "There's", is: "'s", has: "'s", had: "'d", would: "'d" } as const;
+// Проверенные контексты, где сокращение сохраняет форму. Выводим вариант из
+// разрешённой полной формы, чтобы не превращать «'s sleeping» в «has sleeping».
+const fixAux = new Map<string, keyof typeof contractedFixAux>([
+  ["F-G-A1-09", "there is"], ["F-G-A1-29", "is"], ["F-G-A2-07", "is"],
+  ["F-G-B1-29", "is"], ["F-G-B1-68", "is"], ["F-G-B2-67", "is"], ["F-G-B2-17", "is"],
+  ["F-G-B1-118", "has"],
+  ["F-G-B1-05", "had"], ["F-G-B1-55", "had"], ["F-G-B2-55", "had"], ["F-G-B2-27", "had"],
+  ["F-G-C1-54", "had"], ["F-G-B1-135", "had"], ["F-G-B1-155", "had"],
+  ["F-G-B2-06", "would"], ["F-G-C1-53", "would"], ["F-G-B1-134", "would"],
+  ["F-G-B1-154", "would"], ["F-G-B1-162", "would"],
+]);
+export function acceptedFixCorrections(item: CoreItem) {
+  const bankAnswers = item.accept ?? [];
+  // The source bank includes “was taking”, but “we was taking” fails subject–verb agreement.
+  // Keep the exception local to this context and preserve other recorded alternatives.
+  const subject = item.id === "F-G-C1-16" && item.span ? fixWords(item.q)[item.span[0] - 1]?.toLowerCase() : undefined;
+  const accepted = subject === "we" ? bankAnswers.filter((text) => norm(text) !== "was taking") : bankAnswers;
+  const aux = fixAux.get(item.id);
+  if (!aux) return accepted;
+  const contractions = accepted.map(norm)
+    .filter((text) => text === aux || text.startsWith(aux + " "))
+    .map((text) => contractedFixAux[aux] + text.slice(aux.length));
+  return [...new Set([...accepted, ...contractions])];
+}
+
+function checkFix(item: CoreItem, value: string | number) {
+  const answer = parseFixAnswer(value);
+  const errorSpan = item.span;
+  if (!answer?.text || !errorSpan) return false;
+  const words = fixWords(item.q);
+  if (answer.span[1] >= words.length || errorSpan[0] < 0 || errorSpan[1] >= words.length || errorSpan[0] > errorSpan[1]) return false;
+  const accepted = acceptedFixCorrections(item);
+  // Старый клиент передавал одно слово, но ввод относился ко всей ошибочной части.
+  const [start] = answer.span;
+  if (answer.legacy && start >= errorSpan[0] && start <= errorSpan[1] && matchesText(answer.text, accepted, FIX_EXP)) return true;
+  const corrected = replaceFixFragment(words, answer.span, answer.text);
+  const expected = accepted.map((text) => replaceFixFragment(words, errorSpan, text));
+  // Не раскрываем неоднозначные сокращения в обе стороны при сравнении.
+  return matchesText(corrected, expected, FIX_EXP);
 }
 export function checkCore(item: CoreItem, v: string | number | null) {
   if (v === null || v === "") return false;
   if (item.type === "mcq") return Number(v) === item.answer;
-  if (item.type === "fix") {
-    // «найди и исправь»: «номер слова::исправление» — слово должно быть из ошибки, исправление — верное
-    const [i, text] = String(v).split("::");
-    const k = Number(i), sp = item.span ?? [0, 0];
-    return k >= sp[0] && k <= sp[1] && checkText(text ?? "", item.accept ?? []);
-  }
+  if (item.type === "fix") return checkFix(item, v);
   return checkText(String(v), item.accept ?? []);
 }
 
@@ -1202,8 +1247,8 @@ export function buildFix(core: CoreItem[], spec: { from: string; wrong: number; 
     if (!pre.trim()) wrong = wrong.charAt(0).toUpperCase() + wrong.slice(1);
     const start = pre.trim() ? pre.trim().split(/\s+/).length : 0;
     const q = `${pre}${wrong}${post}`.replace(/\s+/g, " ").trim();
-    out.push({ ...x, id: `F-${x.id}`, type: "fix", q, options: undefined, answer: undefined, wrong, span: [start, start + wrong.split(/\s+/).length - 1], accept: s.accept,
-      explain_ru: x.explain_ru });
+    const item: CoreItem = { ...x, id: `F-${x.id}`, type: "fix", q, options: undefined, answer: undefined, wrong, span: [start, start + wrong.split(/\s+/).length - 1], accept: s.accept };
+    out.push({ ...item, accept: acceptedFixCorrections(item) });
   }
   return out;
 }
