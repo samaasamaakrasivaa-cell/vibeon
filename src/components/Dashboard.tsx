@@ -115,7 +115,7 @@ export async function Dashboard({ user, role, day, top }: { user: User; role: "T
     const homework = extra.get(lesson.id)?.homework;
     const template = homeworkTemplate(lesson);
     const tasks = homework && template ? assignedHomeworkTasks(tasksByTemplate.get(template) ?? [], homework) : [];
-    const count = new Set(tasks.filter((task) => !task.hidden && !(task.options as { teacherOnly?: boolean } | null)?.teacherOnly).map((task) => task.id)).size;
+    const count = new Set(tasks.filter((task) => !(task.options as { teacherOnly?: boolean } | null)?.teacherOnly).map((task) => task.id)).size;
     if (count > 0) {
       const form = homeworkPlural.select(count);
       return { reminder: false, label: t(form === "one" ? "today.hwOne" : form === "few" ? "today.hwFew" : "today.hwMany", { n: count }) };
