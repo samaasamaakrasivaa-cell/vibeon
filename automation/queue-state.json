@@ -10,22 +10,23 @@
     16,
     18
   ],
-  "lease": {
-    "token": "1017a1e13e5c4cffbb07f9e536ef5347",
-    "started_at": "2026-11-27T14:38:33.521357Z",
-    "expires_at": "2026-11-27T17:39:17.625417Z"
-  },
+  "lease": null,
   "checkpoint": null,
   "last_probe": {
-    "github_read": "passed",
-    "command_execution": "passed",
-    "completed_at": "2026-11-27T14:08:55Z",
-    "github_write": "not_tested",
-    "lease_cas": "not_tested",
-    "delegation": "not_tested",
-    "manual_write": "passed",
-    "manual_contender_head_preserved": true,
-    "manual_conflict_response": "provider_error_ref_unchanged",
-    "manual_checked_at": "2026-11-27T14:27:02.345570Z"
+    "type": "inline_coordination",
+    "execution": "run_now returned inline_run in current chat",
+    "checked_at": "2026-11-27T14:39:44.835Z",
+    "tests_passed": 12,
+    "runtime": "Python 3.12.14",
+    "independent_review": "passed",
+    "review_evidence": "Separate collaboration followup: /root/release_final_review; 12 tests and policy checked",
+    "github_write": "passed",
+    "contender_ref_preserved": true,
+    "contender_error": "GithubGraphQLAPIError / UNKNOWN; actual ref unchanged",
+    "origin_sha": "9b75e31c4788ea9db07422cb77fdd986186890dd",
+    "claim_sha": "5616748d511f9561573c4b31ddda2f88dc90091b",
+    "renew_sha": "f1575c3cab7b91d9d4305238a8591e80ba525866",
+    "background_write": "not_verified",
+    "background_delegation": "not_verified"
   }
 }
