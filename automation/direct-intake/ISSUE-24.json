@@ -5,10 +5,12 @@
   "key": "ISSUE-24",
   "owner": "tech-lead",
   "progress": {
-    "base_sha": "97fa7328aa833b02702a05dc63182148dafdab39",
+    "base_sha": "81d7077b1ed3ae99c4d844c27171d0f2f4485ebb",
     "branch": "codex/homework/hw-01-review-queue",
-    "next": "Сверить сигнал очереди и ручные действия на синтетических сценариях без изменения истории.",
-    "stage": "implementation"
+    "head_sha": "f18e43af530d75d576145151d8bae9655db69d4f",
+    "next": "Проверить независимое браузерное ревью и CI точного SHA; затем проверка выпуска.",
+    "pr": 78,
+    "stage": "review"
   },
   "release": null,
   "source": "direct",
