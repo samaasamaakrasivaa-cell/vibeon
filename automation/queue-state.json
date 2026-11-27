@@ -10,22 +10,20 @@
     16,
     18
   ],
-  "lease": {
-    "token": "5801fb96cfd144139e3aa6721d23dad6",
-    "started_at": "2026-11-27T20:02:34.378028Z",
-    "expires_at": "2026-11-27T23:04:04.507157Z"
-  },
+  "lease": null,
   "checkpoint": {
     "issue": 25,
-    "stage": "request_review",
+    "stage": "await_ci_review",
     "branch": "codex/vocabulary/voc-09",
     "base_sha": "8c71158ca82a234370f6b1ae39b99c3aa4485e42",
-    "next": "PR #54 now has refreshed exact head. Send one native Codex Review request, then discover CI run; no merge before new tests and review.",
+    "next": "Verify CI 46061027417 and native Codex review of exact 9c78a8dd0ae2b4bed5348c14ea12d6b83401e120; no repeat request. Check latest main and branch requirements before merge; public site DNS unavailable locally. Prior CI and review passed, merged non-overlapping scheduling hunk and other main changes.",
     "head_sha": "9c78a8dd0ae2b4bed5348c14ea12d6b83401e120",
     "pr": 54,
-    "review_request_comment_id": null,
-    "ci_run_ids": [],
-    "ci_status": "pending",
+    "review_request_comment_id": 7227146200,
+    "ci_run_ids": [
+      46061027417
+    ],
+    "ci_status": "in_progress",
     "subject_tests": "pending_new_head",
     "review_summary_id": null,
     "review_receipt_id": null,
