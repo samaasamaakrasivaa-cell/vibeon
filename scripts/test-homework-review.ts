@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { currentHomeworkAnswers, isAssignedHomeworkTask, needsHomeworkReview } from "../src/lib/homework-review";
+import { countsAsAutoCheckedHomework, currentHomeworkAnswers, isAssignedHomeworkTask, needsHomeworkReview } from "../src/lib/homework-review";
 
 const essay = { id: "essay", type: "essay", content: "Explain your choice.", options: {}, section: "homework", hidden: false };
 const essayAnswer = { text: "I chose the longer route." };
@@ -25,6 +25,10 @@ test("translation and transformation follow the persisted manual status while le
     const answer = { val: { 0: "the short route" }, checked: true };
     assert.equal(needsHomeworkReview(task, assigned, answer, pending, false), true);
     assert.equal(needsHomeworkReview(task, assigned, answer, "AUTO_CHECKED", false), false);
+    assert.equal(countsAsAutoCheckedHomework(type, "AUTO_CHECKED", false), true);
+    assert.equal(countsAsAutoCheckedHomework(type, "AUTO_CHECKED", true), false);
+    assert.equal(countsAsAutoCheckedHomework(type, "REVIEWED", true), false);
+    assert.equal(countsAsAutoCheckedHomework(type, pending, false), false);
   }
 });
 
@@ -51,4 +55,7 @@ test("a group member's review uses only that member's answer for this lesson", (
   assert.equal(needsHomeworkReview(essay, assigned, essayAnswer, own.status, false), false);
   const [other] = currentHomeworkAnswers(rows, "current-b", "student-b");
   assert.equal(needsHomeworkReview(essay, assigned, essayAnswer, other.status, false), true);
+  const otherAssignment = { manual: true, extraTaskIds: [] };
+  assert.equal(needsHomeworkReview(essay, otherAssignment, essayAnswer, other.status, false), false);
+  assert.equal(needsHomeworkReview(essay, undefined, essayAnswer, other.status, false), false);
 });

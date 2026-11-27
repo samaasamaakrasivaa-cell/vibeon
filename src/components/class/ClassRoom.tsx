@@ -12,7 +12,7 @@ import { LessonCountdown } from "@/components/LessonCountdown";
 import { LogoMark } from "../Logo";
 import { ErrOnlyCtx, KeyCtx, MarkCtx, markMap, TaskCard, type MarkLayer, type TaskData } from "../tasks/TaskView";
 import { hadWrongTry, isFinal, progressOf, summary, type Step } from "@/lib/tasks/progress";
-import { canReviewHomeworkTask, isAssignedHomeworkTask, needsHomeworkReview } from "@/lib/homework-review";
+import { canReviewHomeworkTask, countsAsAutoCheckedHomework, isAssignedHomeworkTask, needsHomeworkReview, type HomeworkReviewAssignment } from "@/lib/homework-review";
 import { AnswerProvider, type Answers } from "../tasks/store";
 import { Catalog } from "../builder/Catalog";
 import { TaskEditor } from "../builder/TaskEditor";
@@ -44,6 +44,7 @@ export type ClassData = {
   lessonSession?: LessonOccurrence & { active: boolean };
   completionNext?: { startsAt: number; initialNow: number; when: string };
   homeworkReviewStatuses?: Record<string, Record<string, string>>;
+  groupReviewAssignments?: Record<string, HomeworkReviewAssignment>;
   times?: Record<string, [number, number]>; // активное время над заданием: [на уроке, вне урока (домашка)], мс
   tgLinked?: boolean | null; // ученик: подключён ли Telegram-бот (кнопка под сообщением «подключите бот»)
   carriedFrom?: string | null; // тот же урок продолжаем с прошлого занятия — ответы оттуда
@@ -91,7 +92,11 @@ export function ClassRoom({ d }: { d: ClassData }) {
   const gTeacher = teacher && !!d.group;
   const own = d.student?.id ?? "_";
   // открыли урок конкретного ученика (например, из «Домашки») — сразу его ответы
-  const [viewSid, setViewSid] = useState<string>(gTeacher ? (d.group!.members.find((m) => m.instanceId === d.id) ?? d.group!.members[0])?.sid ?? "_" : own);
+  const openedSid = gTeacher ? (d.group!.members.find((m) => m.instanceId === d.id) ?? d.group!.members[0])?.sid ?? "_" : own;
+  const [viewSid, setViewSid] = useState(openedSid);
+  const reviewAssignmentFor = useCallback((sid: string) =>
+    sid === openedSid ? d.homework : d.groupReviewAssignments?.[sid],
+  [openedSid, d.homework, d.groupReviewAssignments]);
   const viewRef = useRef(viewSid); viewRef.current = viewSid;
   const [ansBy, setAnsBy] = useState<Record<string, Answers>>(() => (gTeacher ? Object.fromEntries(Object.entries(d.byStudent ?? {}).map(([k, v]) => [k, v.answers])) : { [own]: d.answers }));
   const answers = ansBy[viewSid] ?? {};
@@ -183,9 +188,10 @@ export function ClassRoom({ d }: { d: ClassData }) {
     if (ev === "answer") {
       const taskId = x.taskId as string, key = x.key as string;
       if (x.by !== d.me.id && !mineOnly) setAnsBy((all) => { const a = all[sid] ?? {}; return { ...all, [sid]: { ...a, [taskId]: { ...(a[taskId] ?? {}), [key]: x.value } } }; });
-      if (teacher && tab === "homework" && !["gnotes", "corr", "corrSent", "worked"].includes(key) &&
+      const assignment = reviewAssignmentFor(sid);
+      if (teacher && tab === "homework" && assignment && !["gnotes", "corr", "corrSent", "worked"].includes(key) &&
           d.homeworkReviewStatuses?.[sid]?.[taskId] !== "NEEDS_REVIEW" &&
-          d.tasks.some((task) => task.id === taskId && canReviewHomeworkTask(task.type) && isAssignedHomeworkTask(task, hw))) {
+          d.tasks.some((task) => task.id === taskId && canReviewHomeworkTask(task.type) && isAssignedHomeworkTask(task, assignment))) {
         // Событие ответа не содержит статус. Получаем сохранённое состояние, не выводим его из текста ответа.
         clearTimeout(homeworkReviewRefresh.current);
         homeworkReviewRefresh.current = setTimeout(() => router.refresh(), 700);
@@ -200,7 +206,10 @@ export function ClassRoom({ d }: { d: ClassData }) {
         if ("page" in x && typeof x.page === "number") setPage(x.page);
         if ("hwErr" in x) { setHwErr(!!x.hwErr); if (x.hwErr) setTab("homework"); }
       }
-    } else if (ev === "hw") setHw((h) => ({ ...h, ...x }));
+    } else if (ev === "hw") {
+      setHw((h) => ({ ...h, ...x }));
+      if (teacher && tab === "homework") router.refresh();
+    }
     else if (ev === "board") {
       if (x.by === d.me.id) return;
       const obj = x.obj as BObj, pg = x.page as number;
@@ -258,7 +267,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
       if (!d.preview) router.refresh();
     }
     else if (ev === "cheer" && !teacher && !d.preview && x.sid === own) setCheers((c) => (c.some((y) => y.id === (x.award as NewAward).id) ? c : [...c, x.award as NewAward]));
-  }, [d.me.id, d.preview, d.tasks, d.homeworkReviewStatuses, tab, hw, teacher, router, own, spotlight]);
+  }, [d.me.id, d.preview, d.tasks, d.homeworkReviewStatuses, tab, reviewAssignmentFor, teacher, router, own, spotlight]);
   const { connected, send: liveSend } = useLive(d.id, onEvent);
   // просмотр «как видит ученик»: ничего не отправляем — только смотрим, живые изменения приходят
   const rawSend = useMemo(() => (d.preview ? (async () => ({ ok: true })) as typeof liveSend : liveSend), [d.preview, liveSend]);
@@ -280,14 +289,14 @@ export function ClassRoom({ d }: { d: ClassData }) {
     await send("reload"); router.refresh();
   };
   const needsReviewFor = (task: CTask, sid: string) => needsHomeworkReview(
-    task, hw, ansBy[sid]?.[task.id], d.homeworkReviewStatuses?.[sid]?.[task.id], !!revBy[sid]?.[task.id],
+    task, reviewAssignmentFor(sid), ansBy[sid]?.[task.id], d.homeworkReviewStatuses?.[sid]?.[task.id], !!revBy[sid]?.[task.id],
   );
   const sidFor = (task: CTask): string | null => {
     if (!gTeacher) return viewSid;
     // При переходе к реальной проверке показываем ответ ученика из открытой домашки.
     // В остальных заданиях по-прежнему сохраняется безопасный режим пробы учителя.
     const openingReview = tab === "homework" && needsHomeworkReview(
-      task, hw, ansBy[viewSid]?.[task.id], d.homeworkReviewStatuses?.[viewSid]?.[task.id],
+      task, reviewAssignmentFor(viewSid), ansBy[viewSid]?.[task.id], d.homeworkReviewStatuses?.[viewSid]?.[task.id],
       !!d.byStudent?.[viewSid]?.reviews[task.id],
     );
     const defaultSid = openingReview ? viewSid : "";
@@ -384,13 +393,6 @@ export function ClassRoom({ d }: { d: ClassData }) {
   const removeHw = (task: CTask) => { if (!confirm(t("cls.hwRemoveQ", { n: task.title || t("cls.thisTask") }))) return; setHw((h) => ({ ...h, extraTaskIds: h.extraTaskIds.filter((x) => x !== task.id), removedTaskIds: h.extraTaskIds.includes(task.id) ? h.removedTaskIds : [...(h.removedTaskIds ?? []), task.id] })); void send("hwRemove", { taskId: task.id }); };
   const hwOrder = hw.taskOrder ?? [];
   const hwTasks = [...hwBase].sort((a, b) => { const ia = hwOrder.indexOf(a.id), ib = hwOrder.indexOf(b.id); return (ia < 0 ? 1e6 + hwBase.indexOf(a) : ia) - (ib < 0 ? 1e6 + hwBase.indexOf(b) : ib); });
-  const pendingHomeworkReview = new Set<string>();
-  if (teacher && tab === "homework") {
-    for (const task of hwTasks) {
-      const sid = sidFor(task);
-      if (sid && needsReviewFor(task, sid)) pendingHomeworkReview.add(task.id);
-    }
-  }
   const setHwOrder = (ids: string[]) => { setHw((h) => ({ ...h, taskOrder: ids })); void send("hwOrder", { order: ids }); };
   /** переставить задание домашки: на позицию to (или на шаг вверх/вниз) */
   const moveHw = (id: string, to: number) => {
@@ -503,6 +505,19 @@ export function ClassRoom({ d }: { d: ClassData }) {
     if (gTeacher) for (const m of d.group!.members) setAnswerFor(m.sid, task.id, "worked", v);
     else setAnswer(task.id, "worked", v);
   };
+  const pendingHomeworkReview = new Set<string>();
+  const autoCheckedHomework = new Set<string>();
+  if (teacher && tab === "homework") {
+    for (const task of hwTasks) {
+      const sid = sidFor(task);
+      if (!sid) continue;
+      if (needsReviewFor(task, sid)) pendingHomeworkReview.add(task.id);
+      const status = d.homeworkReviewStatuses?.[sid]?.[task.id];
+      if (STUDENT_KEYS(ansBy[sid]?.[task.id]) && countsAsAutoCheckedHomework(task.type, status, !!revBy[sid]?.[task.id])) {
+        autoCheckedHomework.add(task.id);
+      }
+    }
+  }
   const renderTasks = (list: CTask[], inHw = false, errOnly = false) => (
     <>
       {teacher && !inHw && <Plus onClick={() => setCatalog({ index: 0 })} />}
@@ -656,7 +671,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
               )
             )}
             {tab === "homework" && (
-              <Homework teacher={teacher} hwTime={hwTime} pendingReview={pendingHomeworkReview} started={new Set(hwTasks.filter((x) => STUDENT_KEYS(ansOf(x))).map((x) => x.id))} errOnly={hwErr} setErrOnly={(v) => { setHwErr(v); if (teacher) patchLive({ hwErr: v }); }}
+              <Homework teacher={teacher} hwTime={hwTime} pendingReview={pendingHomeworkReview} autoChecked={autoCheckedHomework} errOnly={hwErr} setErrOnly={(v) => { setHwErr(v); if (teacher) patchLive({ hwErr: v }); }}
                 selfId={d.id} goPrev={(url) => { if (teacher) void send("goto", { url }); router.push(url); }} back={back} onBack={() => { const url = `/class/${back}`; if (teacher) { patchLive({ hwErr: false }); void send("goto", { url }); } router.push(url); }} tasks={hwTasks} errTasks={errTasks} prevHw={d.prevHw ?? null} prepared={prepared} onAssign={assignHw} removed={teacher && !manual ? (hw.removedTaskIds ?? []).length : 0} onRestore={() => { setHw((h) => ({ ...h, removedTaskIds: [] })); void send("hwRestore", {}); }} training={hw.wordTraining} comment={hw.teacherComment} render={renderTasks}
                 cards={[...d.lessonWords.map((w) => ({ word: w.word, tr: w.tr, ex: w.ex })), ...words.filter((w) => !d.lessonWords.some((l) => l.word.toLowerCase() === w.word.toLowerCase())).map((w) => ({ word: w.word, tr: w.translation ?? "", ex: w.example ?? "" }))].filter((w) => w.tr || w.ex)} />
             )}
@@ -870,11 +885,11 @@ function ReviewBox({ lessonId, task, review, draft, answered, send }: { lessonId
   );
 }
 
-function Homework({ teacher, tasks, pendingReview, training, comment, render, cards, removed = 0, onRestore, prepared = [], onAssign, errTasks, prevHw, hwTime = 0, errOnly, setErrOnly, goPrev, back, onBack, selfId, started }: {
-  hwTime?: number; started: Set<string>; errOnly: boolean; setErrOnly: (v: boolean) => void; goPrev: (url: string) => void; back: string | null; selfId: string; onBack: () => void;
+function Homework({ teacher, tasks, pendingReview, autoChecked, training, comment, render, cards, removed = 0, onRestore, prepared = [], onAssign, errTasks, prevHw, hwTime = 0, errOnly, setErrOnly, goPrev, back, onBack, selfId }: {
+  hwTime?: number; errOnly: boolean; setErrOnly: (v: boolean) => void; goPrev: (url: string) => void; back: string | null; selfId: string; onBack: () => void;
   removed?: number; onRestore?: () => void; prepared?: (TaskData & { section: string })[]; onAssign?: (ids: string[]) => void;
   errTasks: Set<string>; prevHw: ClassData["prevHw"] | null;
-  teacher: boolean; tasks: (TaskData & { section: string })[]; pendingReview: Set<string>; training: string[]; comment: string | null;
+  teacher: boolean; tasks: (TaskData & { section: string })[]; pendingReview: Set<string>; autoChecked: Set<string>; training: string[]; comment: string | null;
   render: (list: never[], inHw?: boolean, errOnly?: boolean) => React.ReactNode; cards: { word: string; tr: string; ex: string }[];
 }) {
   const { t } = useT();
@@ -884,7 +899,7 @@ function Homework({ teacher, tasks, pendingReview, training, comment, render, ca
   const [f, setF] = useState<"all" | "auto" | "needs">("all");
   // «Проверены автоматически» — все задания с автопроверкой, которые ученик сделал (неважно, нажимал ли «Проверить»:
   // при мгновенной проверке кнопки нет); «Требуют проверки» — письменные/устные задания, которые ждут вашей оценки
-  const auto = tasks.filter((x) => !pendingReview.has(x.id) && !TYPES[x.type]?.teacherCheck && started.has(x.id));
+  const auto = tasks.filter((x) => autoChecked.has(x.id));
   const needs = tasks.filter((x) => pendingReview.has(x.id));
   const list0 = f === "auto" ? auto : f === "needs" ? needs : tasks;
   const filterErrors = errOnly && f !== "needs";
