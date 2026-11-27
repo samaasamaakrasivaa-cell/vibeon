@@ -283,7 +283,7 @@ export default async function StudentProfile({ params, searchParams }: { params:
               ) : (
                 <>
                   <p className="hint mt-0">{t("prof.noNext")}</p>
-                  <Link className="btn primary sm" href={`/teacher/schedule?new=1&student=${s.id}${held.length === 0 ? "&trial=1" : ""}`}><Icon name="plus" size="sm" />{held.length === 0 ? t("inviteT.trial") : t("sch.new")}</Link>
+                  <Link className="btn primary sm" href={`/teacher/schedule?new=1&student=${s.id}`}><Icon name="plus" size="sm" />{held.length === 0 ? t("inviteT.schedule") : t("sch.new")}</Link>
                 </>
               )}
             </section>
