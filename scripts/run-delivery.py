@@ -301,7 +301,9 @@ class Connection:
         self.directory, self.remote_directory = directory, None
         directory.mkdir(mode=0o700)
         private_key = directory / "id"
-        private_key.write_text(key)
+        # Match the proven shell `printf '%s\n'`: Secrets may omit the final
+        # newline required by OpenSSH's private-key parser.
+        private_key.write_text(key + "\n")
         private_key.chmod(0o600)
         hosts = command(["ssh-keyscan", "-T", "15", host], "ssh_host_key_unavailable", timeout=30)
         if not hosts.strip():
