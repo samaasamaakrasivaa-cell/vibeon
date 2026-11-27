@@ -79,6 +79,9 @@ full("G-B1-143", "am interviewing", true);
 full("G-B1-150", "were planning to eat", true);
 full("G-B1-150", "were go to eat", false);
 full("G-B1-151", "was going to cycle", true);
+full("G-C1-16", "was taking", false);
+const singularSnapshot = { ...item("G-C1-16"), q: "She took a break when I called.", span: [1, 1] as FixSpan };
+assert.equal(checkCore({ ...singularSnapshot, accept: ["was taking"] }, "1-1::was taking"), true);
 
 function fixture(q: string, wrong: string, correct: string) {
   const source = { ...bank[0], q, type: "mcq" as const, options: [wrong, correct], answer: 1 };
@@ -91,6 +94,7 @@ assert.equal(checkCore(fixture("He said she ___, then left.", "was cook", "was c
 assert.equal(checkCore(fixture("He said she ___, then left.", "was cook", "was cooking"), "4-4::cooking,"), true);
 
 let originalAlternatives = 0;
+let rejectedAgreementErrors = 0;
 for (const { from, accept } of fixSpecs) {
   const fix = item(from);
   assert.ok(fix.accept?.length, fix.id);
@@ -101,14 +105,19 @@ for (const { from, accept } of fixSpecs) {
   for (const original of accept) {
     originalAlternatives++;
     const message = `${from}: ${original}`;
-    assert.ok(fix.accept?.includes(original), message);
-    assert.equal(checkCore(snapshot, `${fix.span.join("-")}::${original}`), true, message);
-    assert.equal(checkCore(snapshot, `${fix.span[0]}::${original}`), true, message);
+    const accepted = !(from === "G-C1-16" && original === "was taking");
+    if (!accepted) rejectedAgreementErrors++;
+    assert.equal(fix.accept?.includes(original), accepted, message);
+    assert.equal(checkCore(fix, `${fix.span[0]}::${original}`), accepted, message);
+    assert.equal(checkCore(fix, `${fix.span.join("-")}::${original}`), accepted, message);
+    assert.equal(checkCore(snapshot, `${fix.span.join("-")}::${original}`), accepted, message);
+    assert.equal(checkCore(snapshot, `${fix.span[0]}::${original}`), accepted, message);
   }
 }
+assert.equal(rejectedAgreementErrors, 1);
 assert.equal(checkCore({ ...usedTo, type: "mcq", answer: 1 }, 1), true);
 assert.equal(checkCore({ ...usedTo, type: "gap", accept: ["he is sleeping"] }, "he's sleeping"), true);
 assert.equal(checkCore({ ...usedTo, type: "wordform", accept: ["written"] }, "WRITTEN!"), true);
 assert.equal(checkCore({ ...usedTo, type: "transform", accept: ["had gone"] }, "'d gone"), true);
 assert.equal(checkCore({ ...usedTo, type: "brackets", accept: ["doesn't go"] }, "does not go"), true);
-console.log(`Placement Fix: ${fixes.size} заданий, все ${originalAlternatives} исходных вариантов принимаются в обоих форматах. Регрессии проверены.`);
+console.log(`Placement Fix: ${fixes.size} заданий, ${originalAlternatives - rejectedAgreementErrors}/${originalAlternatives} исходных вариантов принимаются в обоих форматах. Отклонена одна ошибка согласования.`);

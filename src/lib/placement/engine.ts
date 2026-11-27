@@ -694,7 +694,11 @@ const fixAux = new Map<string, keyof typeof contractedFixAux>([
   ["F-G-B1-154", "would"], ["F-G-B1-162", "would"],
 ]);
 export function acceptedFixCorrections(item: CoreItem) {
-  const accepted = item.accept ?? [];
+  const bankAnswers = item.accept ?? [];
+  // The source bank includes “was taking”, but “we was taking” fails subject–verb agreement.
+  // Keep the exception local to this context and preserve other recorded alternatives.
+  const subject = item.id === "F-G-C1-16" && item.span ? fixWords(item.q)[item.span[0] - 1]?.toLowerCase() : undefined;
+  const accepted = subject === "we" ? bankAnswers.filter((text) => norm(text) !== "was taking") : bankAnswers;
   const aux = fixAux.get(item.id);
   if (!aux) return accepted;
   const contractions = accepted.map(norm)
