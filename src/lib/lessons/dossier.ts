@@ -13,7 +13,7 @@ export const OWN_FROM = 90;
 export async function dossier(studentId: string, o: { approvedOnly?: boolean; threshold?: number } = {}) {
   const thr = o.threshold ?? DEFAULT_THRESHOLD;
   const rows = await db.lessonSummary.findMany({
-    where: { studentId, ...(o.approvedOnly ? { status: "approved" } : {}) },
+    where: { studentId, status: o.approvedOnly ? "approved" : { not: "analysis-only" } },
     include: { lessonInstance: { select: { id: true, startsAt: true, template: { select: { title: true } } } } },
     orderBy: { lessonInstance: { startsAt: "desc" } },
   });
@@ -35,7 +35,10 @@ export async function dossier(studentId: string, o: { approvedOnly?: boolean; th
     return { key, name: x.name, skill: x.skill, score, items: x.items, lessons: x.lessons, last: x.last.toISOString().slice(0, 10), daysAgo: Math.floor((now - x.last.getTime()) / 864e5),
       trend: x.scores.length > 1 ? x.scores[0] - x.scores[1] : null, status: score >= OWN_FROM ? "own" as const : score >= thr ? "watch" as const : "gap" as const };
   }).sort((a, b) => a.score - b.score);
-  const summaries: SummaryView[] = rows.map((r) => ({ id: r.id, lessonId: r.lessonInstance.id, date: r.lessonInstance.startsAt.toISOString(), title: r.lessonInstance.template?.title ?? "", status: r.status, topics: r.topics as TopicStat[], checks: r.checks as Check[], notes: r.notes as Notes }));
+  const summaries: SummaryView[] = rows.map((r) => {
+    const { hardest, longest, words, points, other, typos } = (r.notes ?? {}) as Notes;
+    return { id: r.id, lessonId: r.lessonInstance.id, date: r.lessonInstance.startsAt.toISOString(), title: r.lessonInstance.template?.title ?? "", status: r.status, topics: r.topics as TopicStat[], checks: r.checks as Check[], notes: { hardest, longest, words, points, other, typos } };
+  });
   const words = [...new Set(summaries.flatMap((s) => s.notes?.words ?? []))];
   return { threshold: thr, topics, summaries, words };
 }
@@ -43,7 +46,7 @@ export async function dossier(studentId: string, o: { approvedOnly?: boolean; th
 /** Проведённые уроки без итога (до появления итогов) — их можно собрать кнопкой. */
 export async function lessonsWithoutSummary(studentId: string) {
   return db.lessonInstance.findMany({
-    where: { studentId, status: "DONE", templateId: { not: null }, summaries: { none: { studentId } }, answers: { some: { studentId } } },
+    where: { studentId, status: "DONE", templateId: { not: null }, summaries: { none: { studentId, status: { not: "analysis-only" } } }, answers: { some: { studentId } } },
     select: { id: true, startsAt: true, template: { select: { title: true } } }, orderBy: { startsAt: "desc" }, take: 10,
   });
 }
