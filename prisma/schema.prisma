@@ -802,6 +802,7 @@ model Upload {
   createdAt DateTime @default(now())
   paymentKind      PaymentDocumentKind?
   paymentInvoiceId String? // назначение загрузки сохраняется после замены или удаления счёта
+  legacyUnverified Boolean @default(false)
 
   @@index([ownerId])
 }
