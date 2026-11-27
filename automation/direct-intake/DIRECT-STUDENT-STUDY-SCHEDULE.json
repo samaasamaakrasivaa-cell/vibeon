@@ -14,7 +14,25 @@
     "stage": "publication",
     "test_run": 46064562916
   },
-  "release": null,
+  "release": {
+    "ci": {
+      "result": "success",
+      "run": 46064562916,
+      "sha": "04a82c6a4073e9e0e26e0fe29f3af34c5df05e03"
+    },
+    "delivery": {
+      "result": "success",
+      "run": 46065574375,
+      "sha": "71af5fe9a11f10e6e30fb871f8b930d786559838"
+    },
+    "owner_note": "Для владельца: Кабинет ученика — В расписании видны рекомендации из открытого маршрута. Ученик может поправить и сохранить предложенные слоты или добавить своё занятие вручную.",
+    "review": {
+      "comment": 7227495126,
+      "result": "success",
+      "sha": "04a82c6a4073e9e0e26e0fe29f3af34c5df05e03"
+    },
+    "site_sha": "71af5fe9a11f10e6e30fb871f8b930d786559838"
+  },
   "source": "direct",
   "version": 1
 }
