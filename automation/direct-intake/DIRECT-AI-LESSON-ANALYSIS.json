@@ -7,10 +7,11 @@
   "progress": {
     "base_sha": "8c71158ca82a234370f6b1ae39b99c3aa4485e42",
     "branch": "codex/ai-quality/lesson-analysis",
-    "head_sha": "f73719dcdf749e8d2d60021a7b0e2c116576c358",
-    "next": "Дождаться CI и публикации совместимого PR 74, затем сверить ревью и выпуск PR 75",
+    "head_sha": "01ad4a0647489a29a4c6daaa60ac26c122040883",
+    "next": "После CD 349 и CI 347 вывести PR 75 из Draft, перепроверить main и провести выпуск",
     "pr": 75,
-    "stage": "review"
+    "stage": "review",
+    "test_run": 46061742620
   },
   "release": null,
   "source": "direct",
