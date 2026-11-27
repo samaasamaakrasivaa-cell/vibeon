@@ -9,6 +9,7 @@ const labels = {
     incorrect: "не совпало с ключом", recorded: "ответов без результата проверки", unanswered: "без ответа",
     marked: "Отмечено преподавателем", activityOnly: "Есть активность без результата задания",
     activity: "Больше всего активного времени", mins: "мин", repeat: "Что потренировать", next: "На следующем уроке",
+    homework: "Что задать на дом", success: "Хорошо получилось", challenge: "Чаще расходилось с ключом",
     qualification: "По сохранённым ответам и отметкам. Ответы могли быть перенесены с прошлого урока или дополнены позже.",
     timeNote: "Оценка по активности браузера ученика в классе. Время вне урока сюда не входит.",
     compare: (topic: string) => `Проверить тему «${topic}» на новом примере и попросить объяснить выбор.`,
@@ -23,6 +24,7 @@ const labels = {
     incorrect: "did not match the answer key", recorded: "answers without a check result", unanswered: "unanswered",
     marked: "Marked by the teacher", activityOnly: "Activity without a task result",
     activity: "Most recorded activity", mins: "min", repeat: "What to practise", next: "Next lesson",
+    homework: "Suggested homework", success: "What went well", challenge: "Most mismatches with the answer key",
     qualification: "Based on saved answers and teacher marks. Answers may include work carried over from an earlier lesson or completed later.",
     timeNote: "Estimated from the student's browser activity in class. It excludes time recorded outside the lesson.",
     compare: (topic: string) => `Try a new example of ${topic} and explain the choice.`,
@@ -46,6 +48,9 @@ export function LessonAnalysisReport({ tasks, practice, lang, teacher = false }:
   const topic = (id: string | null, name?: string | null) => topicLabel(id ?? undefined, name ?? undefined, lang);
   const canonicalTopics = [...new Set(work.flatMap((task) => task.topicId ? [topic(task.topicId)] : []))];
   const title = (task: LessonTaskEvidence) => task.title.trim() || TYPES[task.type][lang];
+  const strength = [...work].filter((task) => task.correct > 0 && !task.incorrect).sort((a, b) => b.correct - a.correct)[0];
+  const challenge = [...work].filter((task) => task.incorrect > 0).sort((a, b) => b.incorrect - a.incorrect)[0];
+  const highlight = (task?: LessonTaskEvidence) => task && (topic(task.topicId, teacher ? task.topicName : null) || (teacher ? title(task) : null));
   if (!totals.worked && !longest.length) return null;
 
   return (
@@ -59,6 +64,8 @@ export function LessonAnalysisReport({ tasks, practice, lang, teacher = false }:
           {totals.incorrect > 0 && <span className="pill orange">{totals.incorrect} {t.incorrect}</span>}
           {totals.recorded > 0 && <span className="pill grey">{totals.recorded} {t.recorded}</span>}
         </div>
+        {highlight(strength) && <p className="small m-0"><b>{t.success}</b> · {highlight(strength)}</p>}
+        {highlight(challenge) && <p className="small m-0"><b>{t.challenge}</b> · {highlight(challenge)}</p>}
         {!teacher && canonicalTopics.length > 0 && <p className="m-0 small">{canonicalTopics.join(" · ")}</p>}
         {teacher && <ul className="m-0 pl-5">
           {work.map((task, i) => <li key={i} className="mt-1">
@@ -80,7 +87,7 @@ export function LessonAnalysisReport({ tasks, practice, lang, teacher = false }:
         </li>)}</ul>
       </section>}
       {totals.worked > 0 && <section className="card flex flex-col gap-2">
-        <h2 className="m-0">{t.repeat}</h2>
+        <h2 className="m-0">{teacher ? t.homework : t.repeat}</h2>
         {practice.length > 0 ? <>
           <ul className="m-0 pl-5">{practice.map((item) => <li key={item.code}><b>{topic(item.code)}</b> · {t[item.format]}</li>)}</ul>
           <p className="m-0 small"><b>{t.next}</b> · {t.compare(topic(practice[0].code))}</p>
