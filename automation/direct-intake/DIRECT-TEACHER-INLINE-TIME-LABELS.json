@@ -1,10 +1,15 @@
 {
   "claim_id": "392772aa5c644ddaadc6d4e3c6cb5145",
   "handoff": null,
-  "issue": null,
+  "issue": 68,
   "key": "DIRECT-TEACHER-INLINE-TIME-LABELS",
   "owner": "teacher",
-  "progress": null,
+  "progress": {
+    "base_sha": "58ead57015f67ea5281af520fe7fcf46d68219d5",
+    "branch": "codex/teacher/inline-time-labels",
+    "next": "Разместить подписи рядом с полями. Проверить редактирование и переходы на широком и узком экранах",
+    "stage": "implementation"
+  },
   "release": null,
   "source": "direct",
   "version": 1
