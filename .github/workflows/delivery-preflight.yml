@@ -1,0 +1,77 @@
+name: Delivery preflight
+
+# CD-01: observe the existing delivery connection before activating releases.
+# This workflow never updates containers, files, configuration or the database.
+on:
+  pull_request:
+    paths:
+      - .github/workflows/delivery-preflight.yml
+      - deploy/release-preflight.sh
+      - scripts/test-release-preflight.py
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/delivery-preflight.yml
+      - deploy/release-preflight.sh
+      - scripts/test-release-preflight.py
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Validate the read-only preflight and redaction
+        run: |
+          bash -n deploy/release-preflight.sh
+          python3 scripts/test-release-preflight.py
+
+  inspect:
+    needs: validate
+    if: >-
+      github.repository == 'samaasamaakrasivaa-cell/vibeon' &&
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    concurrency:
+      group: server
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Inspect existing VibeOn deployment without changing it
+        env:
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "$SSH_KEY" || -z "$SSH_HOST" ]]; then
+            echo 'Delivery connection is unavailable: SSH_KEY or SSH_HOST is missing.' >&2
+            exit 1
+          fi
+          # Reject configuration injection; never print either secret.
+          [[ "$SSH_HOST" =~ ^[a-zA-Z0-9.:-]+$ && "$SSH_HOST" != -* ]] || {
+            echo 'Delivery connection has an invalid host format.' >&2
+            exit 1
+          }
+          DELIVERY_SSH_DIR=$(mktemp -d)
+          trap 'rm -rf "$DELIVERY_SSH_DIR"' EXIT
+          chmod 700 "$DELIVERY_SSH_DIR"
+          printf '%s\n' "$SSH_KEY" > "$DELIVERY_SSH_DIR/id"
+          chmod 600 "$DELIVERY_SSH_DIR/id"
+          ssh-keyscan -T 15 "$SSH_HOST" > "$DELIVERY_SSH_DIR/known_hosts" 2>/dev/null
+          test -s "$DELIVERY_SSH_DIR/known_hosts"
+          printf 'Host srv\n  HostName %s\n  User root\n  IdentityFile %s/id\n  UserKnownHostsFile %s/known_hosts\n  StrictHostKeyChecking yes\n  IdentitiesOnly yes\n  BatchMode yes\n  ConnectTimeout 15\n  ServerAliveInterval 15\n  ServerAliveCountMax 3\n' \
+            "$SSH_HOST" "$DELIVERY_SSH_DIR" "$DELIVERY_SSH_DIR" > "$DELIVERY_SSH_DIR/config"
+          # Only the allowlisted JSON summary reaches Actions. No server logs,
+          # credentials, student records, complete inspect output or backups.
+          ssh -F "$DELIVERY_SSH_DIR/config" srv bash -s < deploy/release-preflight.sh
