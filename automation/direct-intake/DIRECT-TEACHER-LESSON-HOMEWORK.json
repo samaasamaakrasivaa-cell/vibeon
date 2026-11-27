@@ -7,8 +7,8 @@
   "progress": {
     "base_sha": "58ead57015f67ea5281af520fe7fcf46d68219d5",
     "branch": "codex/teacher/lesson-homework",
-    "head_sha": "42f43ab2451b14046f28cd78e908a8a5d8921ed5",
-    "next": "Независимое ревью и CI, сверка Homework и Live Classroom, затем штатная публикация",
+    "head_sha": "738ee55a77617ee63deb815055f4d0237cd32a25",
+    "next": "Проверить независимое ревью и CI исправления. Chromium подтвердил свежий счётчик и сохранение ответа при выходе",
     "pr": 73,
     "stage": "review"
   },
