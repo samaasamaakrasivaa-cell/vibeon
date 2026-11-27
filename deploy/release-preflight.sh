@@ -7,17 +7,25 @@ if ! command -v python3 >/dev/null 2>&1; then
 fi
 python3 - <<'PREFLIGHT_PY'
 import json
+from pathlib import Path
 import re
 import shutil
 import subprocess
 import sys
 
 # Select topology fields only: no environment, log, host path, IP or credentials.
-INSPECT = r'''{"id":{{json .Id}},"image":{{json .Image}},"image_ref":{{json .Config.Image}},"project":{{if .Config.Labels}}{{json (index .Config.Labels "com.docker.compose.project")}}{{else}}null{{end}},"service":{{if .Config.Labels}}{{json (index .Config.Labels "com.docker.compose.service")}}{{else}}null{{end}},"revision":{{if .Config.Labels}}{{json (index .Config.Labels "org.opencontainers.image.revision")}}{{else}}null{{end}},"mounts":[{{range .Mounts}}{"type":{{json .Type}},"name":{{json (index . "Name")}},"destination":{{json .Destination}},"rw":{{json .RW}}},{{end}}null],"networks":[{{range $k,$v := .NetworkSettings.Networks}}{{json $k}},{{end}}null],"published_ports":[{{range $k,$v := .HostConfig.PortBindings}}{{if $v}}{{json $k}},{{end}}{{end}}null]}'''
+INSPECT = r'''{{$labels := index .Config "Labels"}}{"id":{{json .Id}},"image":{{json .Image}},"image_ref":{{json .Config.Image}},"project":{{if $labels}}{{json (index $labels "com.docker.compose.project")}}{{else}}null{{end}},"service":{{if $labels}}{{json (index $labels "com.docker.compose.service")}}{{else}}null{{end}},"revision":{{if $labels}}{{json (index $labels "org.opencontainers.image.revision")}}{{else}}null{{end}},"mounts":[{{range .Mounts}}{"type":{{json .Type}},"name":{{json (index . "Name")}},"destination":{{json .Destination}},"rw":{{json .RW}}},{{end}}null],"networks":[{{range $k,$v := (index .NetworkSettings "Networks")}}{{json $k}},{{end}}null],"published_ports":[{{range $k,$v := (index .HostConfig "PortBindings")}}{{if $v}}{{json $k}},{{end}}{{end}}null],"exposed_ports":[{{range $k,$v := (index .Config "ExposedPorts")}}{{json $k}},{{end}}null]}'''
+# Only unexpected peers receive this extra query. Docker reduces environment keys
+# to a boolean on the server; no key names or values cross the output boundary.
+PEER_ENV_INSPECT = r'''{{$labels := index .Config "Labels"}}{{$found := false}}{{range (index .Config "Env")}}{{$key := index (split . "=") 0}}{{if or (eq $key "DATABASE_URL") (eq $key "DIRECT_URL") (eq $key "DATABASE_PASSWORD") (eq $key "DATABASE_USER") (eq $key "DB_PASSWORD") (eq $key "DB_USER") (eq $key "DB_URL") (eq $key "DB_HOST") (eq $key "PGPASSWORD") (eq $key "PGUSER") (eq $key "PGHOST") (eq $key "POSTGRES_PASSWORD") (eq $key "POSTGRES_USER")}}{{$found = true}}{{end}}{{end}}{{json $found}}'''
+PEER_CMD_INSPECT = r'''{{$entry := index .Config "Entrypoint"}}{{$cmd := index .Config "Cmd"}}{{$ok := false}}{{if $cmd}}{{if not $entry}}{{if ge (len $cmd) 2}}{{if and (eq (index $cmd 0) "caddy") (eq (index $cmd 1) "run")}}{{$ok = true}}{{end}}{{end}}{{else}}{{if and (eq (index $entry 0) "caddy") (eq (index $cmd 0) "run")}}{{$ok = true}}{{end}}{{end}}{{end}}{{json $ok}}'''
+# Private input to the local predicate below; this JSON is never returned/logged.
+PEER_MOUNTS_INSPECT = r'''[{{range .Mounts}}{"type":{{json .Type}},"name":{{json (index . "Name")}},"source":{{json .Source}},"destination":{{json .Destination}},"rw":{{json .RW}}},{{end}}null]'''
 HEALTH = "fetch('http://127.0.0.1:3000/api/health',{signal:AbortSignal.timeout(8000)}).then(async r=>{const j=await r.json();console.log(JSON.stringify({ok:r.ok&&j.ok===true,version:j.version}))}).catch(()=>process.exit(1))"
 ID = re.compile(r"[0-9a-f]{64}\Z")
 SHA = re.compile(r"[0-9a-f]{40}\Z")
 IMAGE = re.compile(r"sha256:[0-9a-f]{64}\Z")
+OFFICIAL_FAMILY = re.compile(r"(?:(?:docker\.io/)?library/|docker\.io/)?(caddy|nginx|redis|postgres|node)(?::[A-Za-z0-9_][A-Za-z0-9_.-]*)?(?:@sha256:[0-9a-f]{64})?\Z")
 
 
 def run(*args):
@@ -37,6 +45,88 @@ def expected_volume(container, destination, name):
     return len(mounts) == 1 and mounts[0] == {
         "type": "volume", "name": name, "destination": destination, "rw": True
     }
+
+
+def safe_mount_layout(mounts, docker_root):
+    """Check private server paths in memory and return only a fixed boolean."""
+    if not isinstance(mounts, list) or not isinstance(docker_root, str) or not docker_root.startswith("/"):
+        return False
+    try:
+        protected = [Path(p).resolve() for p in ("/opt/vibeon", docker_root, "/dev", "/proc", "/sys", "/run", "/var/run")]
+        destinations = set()
+        for mount in mounts:
+            if mount is None:
+                continue
+            if not isinstance(mount, dict) or not isinstance(mount.get("rw"), bool):
+                return False
+            destination = mount.get("destination")
+            if destination in destinations:
+                return False
+            destinations.add(destination)
+            if mount.get("type") == "volume":
+                if destination not in {"/data", "/config"} or mount.get("name") in {"vibeon_pgdata", "vibeon_uploads"}:
+                    return False
+                if not isinstance(mount.get("name"), str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]*", mount["name"]):
+                    return False
+            elif mount.get("type") == "bind":
+                if destination not in {"/etc/caddy", "/etc/caddy/Caddyfile"}:
+                    return False
+                source = mount.get("source")
+                if not isinstance(source, str) or not source.startswith("/"):
+                    return False
+                resolved = Path(source).resolve(strict=True)
+                if resolved == Path("/") or resolved.name.endswith(".sock") or resolved.is_socket():
+                    return False
+                if any(resolved == p or resolved in p.parents or p in resolved.parents for p in protected):
+                    return False
+            else:
+                return False
+        return True
+    except (OSError, RuntimeError, TypeError, ValueError):
+        return False
+
+
+def peer_metadata(container):
+    family = OFFICIAL_FAMILY.fullmatch(container.get("image_ref") or "")
+    mounts = [m for m in container["mounts"] if m]
+    ports = set(filter(None, container.get("exposed_ports", [])))
+    result = {
+        "family": family.group(1) if family else "other",
+        "image_id": container["image"] if IMAGE.fullmatch(container["image"]) else "unknown",
+        "compose_project": "same" if container["project"] == "vibeon" else ("other" if container["project"] else "none"),
+        "shares_db_volume": any(m.get("type") == "volume" and m.get("name") == "vibeon_pgdata" for m in mounts),
+        "shares_upload_volume": any(m.get("type") == "volume" and m.get("name") == "vibeon_uploads" for m in mounts),
+        "bind_mount_count": sum(m.get("type") == "bind" for m in mounts),
+        "exposed_ports": {"http": int("80/tcp" in ports), "https": len(ports & {"443/tcp", "443/udp"}),
+                          "other": len(ports - {"80/tcp", "443/tcp", "443/udp"})},
+        "has_db_credential_env_keys": None,
+        "credential_env_check_available": False,
+        "command_is_caddy_run": None,
+        "safe_mount_layout": False,
+        "mount_layout_check_available": False,
+    }
+    try:
+        present = json.loads(run("docker", "inspect", "--type", "container", "--format", PEER_ENV_INSPECT, container["id"]))
+        if not isinstance(present, bool):
+            raise ValueError("invalid_boolean")
+        result["has_db_credential_env_keys"] = present
+        result["credential_env_check_available"] = True
+    except Exception:
+        pass  # Unknown remains unknown and the network-peer blocker stays active.
+    try:
+        command_is_caddy = json.loads(run("docker", "inspect", "--type", "container", "--format", PEER_CMD_INSPECT, container["id"]))
+        if isinstance(command_is_caddy, bool):
+            result["command_is_caddy_run"] = command_is_caddy
+    except Exception:
+        pass
+    try:
+        private_mounts = json.loads(run("docker", "inspect", "--type", "container", "--format", PEER_MOUNTS_INSPECT, container["id"]))
+        docker_root = json.loads(run("docker", "info", "--format", "{{json .DockerRootDir}}"))
+        result["safe_mount_layout"] = safe_mount_layout(private_mounts, docker_root)
+        result["mount_layout_check_available"] = True
+    except Exception:
+        pass
+    return result
 
 
 def collect():
@@ -82,9 +172,11 @@ def collect():
         db_networks = set(filter(None, db["networks"]))
         checks["expected_networks"] = app_networks == db_networks == {"vibeon_vibeon"}
         peers = [c for c in containers if c["id"] not in {app["id"], db["id"]}]
-        checks["unknown_db_network_peers"] = sum(
-            bool(db_networks & set(filter(None, c["networks"])))
-            and not (c["project"] == "vibeon" and c["service"] in {"backup", "caddy"}) for c in peers)
+        unknown_peers = [c for c in peers
+                         if db_networks & set(filter(None, c["networks"]))
+                         and not (c["project"] == "vibeon" and c["service"] in {"backup", "caddy"})]
+        checks["unknown_db_network_peers"] = len(unknown_peers)
+        checks["unknown_peer_metadata"] = [peer_metadata(c) for c in unknown_peers]
         checks["other_uploads_users"] = sum(
             any(m and m.get("type") == "volume" and m.get("name") == "vibeon_uploads" for m in c["mounts"])
             for c in containers if c["id"] != app["id"])
