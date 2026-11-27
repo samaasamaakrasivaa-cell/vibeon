@@ -164,7 +164,7 @@ WITH affected(item_id, bank_changed) AS (
     ('W-C1-04', true),
     ('W-C1-05', true)
 )
-SELECT count(*), count(*) FILTER (WHERE coalesce(edits.audio <> '', false))
+SELECT count(*), count(*) FILTER (WHERE affected.item_id LIKE 'L-%' AND coalesce(edits.audio <> '', false))
 FROM public."PlacementEdit" AS edits
 JOIN affected ON edits."itemId" = affected.item_id
 WHERE affected.bank_changed OR coalesce(edits.audio <> '', false);

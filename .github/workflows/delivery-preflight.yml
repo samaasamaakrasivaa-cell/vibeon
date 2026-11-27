@@ -94,11 +94,15 @@ jobs:
               echo 'The fixed PT-02 read-only check failed.' >&2
               exit 1
             fi
-            if [[ ! "$report" =~ ^[0-9]+\|[0-9]+$ ]]; then
+            if [[ ! "$report" =~ ^(0|[1-9][0-9]{0,2})\|(0|[1-9][0-9]?)$ ]]; then
               echo 'Unexpected PT-02 result format.' >&2
               exit 1
             fi
             IFS='|' read -r overlaps audio_overrides <<< "$report"
+            if (( overlaps > 149 || audio_overrides > 20 || audio_overrides > overlaps )); then
+              echo 'Unexpected PT-02 count range.' >&2
+              exit 1
+            fi
             printf 'PlacementEdit overlaps: %s\nListening audio overrides: %s\n' "$overlaps" "$audio_overrides"
             exit 0
           fi
