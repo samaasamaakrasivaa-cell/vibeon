@@ -47,7 +47,9 @@ jobs:
           python3 scripts/test-delivery-plan.py
           bash -n deploy/vibeon.sh deploy/attach-proxy.sh scripts/check-release-image.sh
       - name: Rehearse backup, release and rollback on isolated data
-        run: python3 scripts/test-release-apply-docker.py
+        # The production SSH executor is root; match file ownership semantics
+        # inside this disposable runner without passing any production secrets.
+        run: sudo --preserve-env=GITHUB_ACTIONS,RUNNER_ENVIRONMENT,GITHUB_REPOSITORY python3 scripts/test-release-apply-docker.py
 
   docker:
     needs: [build, delivery]

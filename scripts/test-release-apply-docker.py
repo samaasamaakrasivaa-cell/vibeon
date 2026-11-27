@@ -4,6 +4,7 @@
 Requires a GitHub-hosted runner with no existing VibeOn objects. It never contacts
 the public VibeOn site. Its tiny HTTP app tests delivery mechanics, not VibeOn UI.
 """
+import contextlib
 import hashlib
 import importlib.util
 import json
@@ -37,12 +38,41 @@ def run(args, *, data=None, check=True, timeout=300):
 def guard():
     if os.environ.get("GITHUB_ACTIONS") != "true" or os.environ.get("RUNNER_ENVIRONMENT") != "github-hosted" or os.environ.get("GITHUB_REPOSITORY") != "samaasamaakrasivaa-cell/vibeon":
         raise RuntimeError("isolated_github_runner_required")
+    # The production executor runs as SSH root. Docker's PostgreSQL/tar helper
+    # creates root-owned snapshot files on its bind mount; use the same UID here.
+    if os.geteuid() != 0:
+        raise RuntimeError("root_fixture_execution_required")
     if run(["docker", "ps", "--all", "--quiet", "--filter", "label=com.docker.compose.project=vibeon"]).strip():
         raise RuntimeError("existing_vibeon_containers")
     volumes = run(["docker", "volume", "ls", "--format", "{{.Name}}"]).decode().splitlines()
     networks = run(["docker", "network", "ls", "--format", "{{.Name}}"]).decode().splitlines()
     if any(name.startswith("vibeon_") for name in volumes) or "vibeon_vibeon" in networks:
         raise RuntimeError("existing_vibeon_storage_or_network")
+
+
+@contextlib.contextmanager
+def engine_diagnostics():
+    """Keep unexpected CI failures useful without printing values or messages."""
+    previous = sys.gettrace()
+    seen = set()
+    engine_path = str(ROOT / "deploy/release-apply.py")
+    def trace(frame, event, argument):
+        if event == "exception" and frame.f_code.co_filename == engine_path:
+            kind, _value, _traceback = argument
+            if not issubclass(kind, (delivery.ReleaseError, StopIteration)):
+                name = kind.__name__ if kind.__name__.isidentifier() else "UnknownError"
+                function = frame.f_code.co_name if frame.f_code.co_name.isidentifier() else "unknown"
+                record = (name, function, frame.f_lineno)
+                if record not in seen and len(seen) < 40:
+                    seen.add(record)
+                    print(json.dumps({"fixture_diagnostic": {"exception_class": name,
+                                      "engine_function": function, "line": frame.f_lineno}}), flush=True)
+        return trace
+    sys.settrace(trace)
+    try:
+        yield
+    finally:
+        sys.settrace(previous)
 
 
 def write_fixtures(context):
@@ -120,7 +150,7 @@ def main():
 
             # Public health is replaced only in this isolated in-process test.
             # A second guard ensures an accidental production URL call fails.
-            with patch.object(delivery, "public_health", return_value=True), patch.object(delivery.urllib.request, "build_opener", side_effect=AssertionError("production_network_forbidden")), patch.object(delivery.time, "sleep", side_effect=lambda seconds: original_sleep(min(seconds, 0.2))):
+            with engine_diagnostics(), patch.object(delivery, "public_health", return_value=True), patch.object(delivery.urllib.request, "build_opener", side_effect=AssertionError("production_network_forbidden")), patch.object(delivery.time, "sleep", side_effect=lambda seconds: original_sleep(min(seconds, 0.2))):
                 stale = delivery.Release(CANDIDATE_SHA, images[CANDIDATE_SHA], INITIAL_SHA, images[INITIAL_SHA], compose_hash, "sha256:" + "f" * 64, deployment)
                 try:
                     stale.apply()
