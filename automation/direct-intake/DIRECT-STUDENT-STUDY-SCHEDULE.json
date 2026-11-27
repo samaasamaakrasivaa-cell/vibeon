@@ -7,11 +7,11 @@
   "progress": {
     "base_sha": "81d7077b1ed3ae99c4d844c27171d0f2f4485ebb",
     "branch": "codex/student/study-schedule",
-    "head_sha": "d10af0911db65297857549ac7f494f1476ce1b10",
-    "next": "Завершить Chromium, независимое ревью и CI на финальном SHA",
+    "head_sha": "04a82c6a4073e9e0e26e0fe29f3af34c5df05e03",
+    "next": "Проверить единый черновик и отсутствие повторов на актуальном SHA",
     "pr": 77,
     "stage": "review",
-    "test_run": 46063955494
+    "test_run": 46064562916
   },
   "release": null,
   "source": "direct",
