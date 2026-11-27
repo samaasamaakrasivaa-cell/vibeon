@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { Dialog } from "../Dialog";
 import { Icon } from "../Icon";
 import { LangSwitch } from "../LangSwitch";
+import { LessonCountdown } from "@/components/LessonCountdown";
 import { LogoMark } from "../Logo";
 import { ErrOnlyCtx, KeyCtx, MarkCtx, markMap, TaskCard, type MarkLayer, type TaskData } from "../tasks/TaskView";
 import { hadWrongTry, isFinal, progressOf, summary, type Step } from "@/lib/tasks/progress";
@@ -40,6 +41,7 @@ export type ClassData = {
   title: string | null; crumbs: string | null; course: { title: string; cover: string | null } | null; rubrics: Rubric[]; tasks: CTask[]; teacherInfo?: TInfo;
   answers: Answers; statuses: Record<string, string>; reviews: Record<string, Review>; aiDrafts: Record<string, AiCheck>; live: LiveState;
   lessonSession?: LessonOccurrence & { active: boolean };
+  completionNext?: { startsAt: number; initialNow: number; when: string };
   times?: Record<string, [number, number]>; // активное время над заданием: [на уроке, вне урока (домашка)], мс
   tgLinked?: boolean | null; // ученик: подключён ли Telegram-бот (кнопка под сообщением «подключите бот»)
   carriedFrom?: string | null; // тот же урок продолжаем с прошлого занятия — ответы оттуда
@@ -238,9 +240,12 @@ export function ClassRoom({ d }: { d: ClassData }) {
     else if (ev === "word") { if (!mineOnly) setWordsBy((all) => { const w = all[sid] ?? []; return { ...all, [sid]: x.op === "add" ? (w.some((y) => y.id === (x.word as Word).id) ? w : [...w, x.word as Word]) : w.filter((y) => y.id !== x.id) }; }); }
     else if (ev === "presence") setOnline(x.online as string[]);
     else if (ev === "reload") router.refresh();
-    else if (ev === "finished" && !teacher) setFinished(true);
+    else if (ev === "finished" && !teacher) {
+      setFinished(true);
+      if (!d.preview) router.refresh();
+    }
     else if (ev === "cheer" && !teacher && !d.preview && x.sid === own) setCheers((c) => (c.some((y) => y.id === (x.award as NewAward).id) ? c : [...c, x.award as NewAward]));
-  }, [d.me.id, teacher, router, own, spotlight]);
+  }, [d.me.id, d.preview, teacher, router, own, spotlight]);
   const { connected, send: liveSend } = useLive(d.id, onEvent);
   // просмотр «как видит ученик»: ничего не отправляем — только смотрим, живые изменения приходят
   const rawSend = useMemo(() => (d.preview ? (async () => ({ ok: true })) as typeof liveSend : liveSend), [d.preview, liveSend]);
@@ -722,7 +727,13 @@ export function ClassRoom({ d }: { d: ClassData }) {
         {finished && (
           <Dialog open onClose={() => setFinished(false)} title={t("cls.over")}>
             <p className="muted mt-0">{hwTasks.length + hw.wordTraining.length > 0 ? t("cls.overHw") : t("cls.overNoHw")}</p>
-            <div className="actions"><button className="btn secondary" onClick={() => { setFinished(false); setTab("homework"); }}>{t("nav.homework")}</button><Link className="btn primary" href={d.homeHref}>{t("cls.toCabinet")}</Link></div>
+            {d.completionNext && (
+              <div className="mb-4">
+                <LessonCountdown startsAt={d.completionNext.startsAt} initialNow={d.completionNext.initialNow} variant="student" />
+                <time className="small muted" dateTime={new Date(d.completionNext.startsAt).toISOString()}>{d.completionNext.when}</time>
+              </div>
+            )}
+            <div className="actions"><button className="btn secondary" onClick={() => { setFinished(false); setTab("homework"); }}>{t("nav.homework")}</button><Link className="btn primary" href={d.homeHref} prefetch={false}>{t("cls.toCabinet")}</Link></div>
           </Dialog>
         )}
       </div>

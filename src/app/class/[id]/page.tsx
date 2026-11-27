@@ -13,6 +13,7 @@ import { hasStartedLessonSession, lessonOccurrence } from "@/lib/live/lesson-ses
 import { loadLesson } from "@/lib/teacher/builder-data";
 import { parse } from "@/lib/tasks/parse";
 import { hhmm } from "@/lib/time";
+import { nextStudentLesson } from "@/lib/student/next-lesson";
 import { homeworkFor } from "@/lib/homework";
 import { carriedAnswers, isEmptyPayload } from "@/lib/class/carry";
 import { hadWrongTry, isFinal, progressOf } from "@/lib/tasks/progress";
@@ -117,6 +118,9 @@ export default async function ClassPage({ params, searchParams }: { params: Prom
   const lessonWords = (data?.tasks ?? []).filter((x) => x.type === "wordset").flatMap((x) => { const p = parse("wordset", x.content); return p.kind === "wordset" ? p.items : []; });
   const tz = user.timezone;
   const loc = lang === "ru" ? "ru-RU" : "en-GB";
+  const now = new Date();
+  const nextLesson = acc.role === "student" && acc.own.status === "DONE" && acc.own.finishedAt
+    ? await nextStudentLesson(user.id, now) : null;
   const roadmap = lesson.studentId && !group ? await db.roadmap.findFirst({ where: { studentId: lesson.studentId, approvedAt: { not: null } }, orderBy: { createdAt: "desc" } }) : null;
   const board = (host.board as { pages?: BObj[][] })?.pages ?? [[]];
   return (
@@ -136,6 +140,10 @@ export default async function ClassPage({ params, searchParams }: { params: Prom
         ...(role === "teacher" && data?.l.teacherInfo ? { teacherInfo: data.l.teacherInfo as TInfo } : {}),
         live, board,
         ...(role === "teacher" && host.status === "PLANNED" ? { lessonSession: { ...lessonOccurrence(host), active: hasStartedLessonSession(host) } } : {}),
+        ...(nextLesson ? { completionNext: {
+          startsAt: nextLesson.startsAt.getTime(), initialNow: now.getTime(),
+          when: nextLesson.startsAt.toLocaleString(loc, { dateStyle: "medium", timeStyle: "short", timeZone: tz }),
+        } } : {}),
         prevHw,
         tgLinked: role === "student" ? !!user.telegramChatId : null,
         carriedFrom: carriedFrom ? (carriedFrom as Date).toLocaleDateString(lang === "ru" ? "ru-RU" : "en-GB", { day: "numeric", month: "long", timeZone: user.timezone }) : null,

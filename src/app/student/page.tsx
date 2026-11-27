@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Clock } from "@/components/Clock";
 import { Icon } from "@/components/Icon";
+import { LessonCountdown } from "@/components/LessonCountdown";
 import { NotificationList } from "@/components/NotificationList";
 import { NoteChecklist } from "@/components/student/NoteChecklist";
 import { requireUser } from "@/lib/auth/session";
@@ -8,6 +9,7 @@ import { db } from "@/lib/db";
 import { getT } from "@/lib/i18n/server";
 import { greetingKey, hourIn } from "@/lib/greeting";
 import { homeworkFor } from "@/lib/homework";
+import { currentStudentLesson, nextStudentLesson } from "@/lib/student/next-lesson";
 import { hhmm, isoDay } from "@/lib/time";
 import { Medal, StudentAvatar } from "@/components/awards/Medal";
 import { AvatarNotice, CelebrateAwards } from "@/components/awards/StudentAwards";
@@ -22,8 +24,9 @@ export default async function StudentHome() {
   const s = await db.student.findUnique({ where: { userId: me.id } });
   const tz = me.timezone;
   const now = new Date();
-  const [next, last, hws, practice, dueWords, notifications, wordsTotal] = await Promise.all([
-    s ? db.lessonInstance.findFirst({ where: { studentId: s.id, status: "PLANNED", startsAt: { gt: new Date(now.getTime() - 90 * 60000) } }, orderBy: { startsAt: "asc" }, include: { template: true } }) : null,
+  const [current, next, last, hws, practice, dueWords, notifications, wordsTotal] = await Promise.all([
+    s ? currentStudentLesson(me.id, now) : null,
+    s ? nextStudentLesson(me.id, now) : null,
     s ? db.lessonInstance.findFirst({ where: { studentId: s.id, status: "DONE" }, orderBy: { startsAt: "desc" }, include: { template: true } }) : null,
     s ? homeworkFor({ studentId: s.id }) : [],
     s ? db.wordPractice.findUnique({ where: { studentId_day: { studentId: s.id, day: isoDay(now, tz) } } }) : null,
@@ -60,9 +63,9 @@ export default async function StudentHome() {
   const hw = hws.find((h) => h.done < h.total);
   const goal = s?.wordGoal ?? 15;
   const done = Math.min(goal, practice?.count ?? 0);
-  const inMin = next ? Math.round((next.startsAt.getTime() - now.getTime()) / 60000) : null;
-  const isToday = next && isoDay(next.startsAt, tz) === isoDay(now, tz);
-  const whenLabel = next ? `${isToday ? t("dash.today") : next.startsAt.toLocaleDateString(loc, { weekday: "long", day: "numeric", month: "long", timeZone: tz })}, ${hhmm(next.startsAt, tz)}` : "";
+  const shownLesson = current ?? next;
+  const isToday = shownLesson && isoDay(shownLesson.startsAt, tz) === isoDay(now, tz);
+  const whenLabel = shownLesson ? `${isToday ? t("dash.today") : shownLesson.startsAt.toLocaleDateString(loc, { weekday: "long", day: "numeric", month: "long", timeZone: tz })}, ${hhmm(shownLesson.startsAt, tz)}` : "";
   const allDone = !hw && done >= goal && wordsTotal > 0;
   const ago = (d: Date) => { const m = Math.round((now.getTime() - d.getTime()) / 60000); return m < 60 ? t("nt.minAgo", { n: Math.max(1, m) }) : m < 1440 ? t("nt.hAgo", { n: Math.round(m / 60) }) : d.toLocaleDateString(loc, { day: "numeric", month: "long", timeZone: tz }); };
 
@@ -99,14 +102,15 @@ export default async function StudentHome() {
         </div>
 
         <div className="mt-5 flex flex-col gap-3">
-          {next ? (
+          {shownLesson ? (
             <div className="nextcard">
               <div className="small opacity-90">{t("st.next")}</div>
               <div className="mt-1 flex flex-wrap items-center gap-4">
                 <b className="text-[26px] tracking-tight">{whenLabel}</b>
-                <Link href={`/class/${next.id}`} className="btn"><Icon name="class" size="sm" />{t("cls.enter")}</Link>
+                <Link href={`/class/${shownLesson.id}`} className="btn"><Icon name="class" size="sm" />{t("cls.enter")}</Link>
               </div>
-              <div className="small mt-1 opacity-90">{next.template?.title ?? ""}{inMin !== null && inMin > 0 && inMin < 24 * 60 ? ` · ${t("st.startsIn", { n: inMin < 60 ? `${inMin} ${t("dash.min")}` : `${Math.round(inMin / 60)} ${t("crs.h")}` })}` : inMin !== null && inMin <= 0 ? ` · ${t("today.live")}` : ""}</div>
+              <div className="small mt-1 opacity-90">{[shownLesson.template?.title, current ? t("today.live") : null].filter(Boolean).join(" · ")}</div>
+              {!current && next && <LessonCountdown startsAt={next.startsAt.getTime()} initialNow={now.getTime()} variant="student" />}
             </div>
           ) : <div className="tile"><span className="muted">{t("st.noNext")}</span></div>}
 
