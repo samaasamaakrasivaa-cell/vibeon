@@ -8,9 +8,10 @@
     "base_sha": "58ead57015f67ea5281af520fe7fcf46d68219d5",
     "branch": "codex/teacher/lesson-homework",
     "head_sha": "dd24abc7888f71128ed9539dba6c6a3e6d01089f",
-    "next": "Ревью, CI и сценарий на совместной версии прошли. Ожидается допуск Tech Lead к объединению PR #73.",
+    "merge_sha": "82473a1199a160651ae2bed2f8365b5e536d7c72",
+    "next": "Интегрировано. CD-01 не переключил сайт из-за нехватки места для резервной копии. Устранение согласуется с Tech Lead и Platform.",
     "pr": 73,
-    "stage": "integration",
+    "stage": "publication",
     "test_run": 46065674487
   },
   "release": null,
