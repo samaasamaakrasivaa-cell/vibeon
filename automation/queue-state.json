@@ -13,14 +13,17 @@
   "lease": {
     "token": "c9b6542497ea4205a9dc768b5883192f",
     "started_at": "2026-11-27T16:59:00.721629Z",
-    "expires_at": "2026-11-27T20:00:17.248507Z"
+    "expires_at": "2026-11-27T20:00:53.623473Z"
   },
   "checkpoint": {
     "issue": 24,
-    "stage": "analysis",
+    "stage": "blocked_transfer",
     "branch": "codex/homework/hw-01",
     "base_sha": "c63dc04edf1e7f25be1a4c677d7759a86689e5e3",
-    "next": "Reconcile current answer/review/retry contract and isolated test path; no product branch or PR created."
+    "next": "Record blocker in Issue 24, verify comment, replace only READY marker, verify and clear checkpoint.",
+    "branch_created": false,
+    "pr": null,
+    "blocker": "Existing shared Classroom answer/review/retry contract has no rework transition: both ok flags write REVIEWED, next answer retains REVIEWED and review, retry clears review and is not restricted to marked homework. Catalog marks transform/translate auto-checkable while route sends NEEDS_REVIEW. Need agreed shared transition and history semantics, then isolated role/DB tests."
   },
   "last_probe": {
     "type": "background_native_review",
