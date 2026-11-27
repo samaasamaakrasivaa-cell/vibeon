@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { HidePublishedReport } from "@/components/placement/HidePublishedReport";
 import { PlacementReview } from "@/components/placement/PlacementReview";
 import { requireUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
-import type { RSaved } from "@/lib/placement/report";
+import { lastPublication, publicationStamp, reportDraft, storedReport } from "@/lib/placement/report-publication";
 import { getT } from "@/lib/i18n/server";
 import { getBank, RUBRICS, trackOf } from "@/lib/placement/bank";
 import { teacherReview } from "@/lib/placement/teacher-review";
@@ -38,7 +39,10 @@ export default async function PlacementReviewPage({ params }: { params: Promise<
   // разделы теста и даты: когда пройден каждый (тест можно дополнять разделами)
   const dfmt = (ms: number) => new Date(ms).toLocaleDateString(loc, { day: "numeric", month: "short", timeZone: me.timezone });
   // отчёт уже собран (сохранён) или отправлен ученику — «Редактировать отчёт» вместо «Сгенерировать»
-  const rep = ((a.review ?? {}) as { report?: RSaved }).report;
+  const stored = storedReport(a.review);
+  const rep = reportDraft(stored);
+  const canHidePublished = a.mode === "student" && a.status !== "new" && (a.status !== "reviewed" || !a.showResult)
+    && stored.sent && stored.resultVisible === true && lastPublication(stored)?.schema === 1;
   const draft = teacherReview(a);
   const transcript = speechTranscript(st, draft);
   const hasRep = !!(rep && (rep.sent || rep.student || rep.parent));
@@ -74,13 +78,14 @@ export default async function PlacementReviewPage({ params }: { params: Promise<
         {a.mode === "link" && a.guestContact ? ` · ${t("pl.contact")}: ${a.guestContact}` : ""}
         {a.mode === "student" && a.studentId ? <> · <Link className="alink" href={`/teacher/students/${a.studentId}?tab=roadmap`}>{t("pl.toProfile")}</Link></> : null}
       </p>
+      {canHidePublished && <HidePublishedReport id={id} expected={publicationStamp(stored)} />}
       {/* список разделов не нужен — даты выше; остаётся только «Добавить разделы» */}
       {a.mode === "student" && (a.status === "submitted" || a.status === "reviewed") && <div className="mb-5"><PlacementParts id={id} parts={partsOf(st)} done={doneOf(st)} dates={dates} canAdd compact /></div>}
       <div className="flex flex-col gap-6">
         <PlacementReview key={`${id}-${draft.regrading}-${st.writing?.id}-${transcript.source}`} transcript={transcript} regrading={draft.regrading}
           parts={partsOf(st)} dates={dates} base={base} who={who} reveal={a.reveal}
           id={id} teen={st.track === "teen"} lessonQs={lessonQs} mode={a.mode} status={a.status} level={a.level} showResult={a.showResult} tgSent={((a.review ?? {}) as { tgSentAt?: string }).tgSentAt ? new Date(((a.review ?? {}) as { tgSentAt: string }).tgSentAt).toLocaleString("ru-RU", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: me.timezone }) : null} sm={sm} d={d}
-          review={draft.active as never}
+          review={{ ...draft.active, report: rep } as never}
           howTo={RUBRICS.how_to_decide_ru} sublevels={RUBRICS.sublevels_ru}
         />
       </div>

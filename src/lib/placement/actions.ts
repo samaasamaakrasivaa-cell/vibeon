@@ -19,7 +19,9 @@ import { teacherReview, missingReassessment } from "./teacher-review";
 import { applyScore } from "./ai-feedback";
 import { speechSource } from "./speech-transcript";
 import { revealedScripts } from "./review";
-import { R_BLOCKS, type RCfg, type RSaved, type RVariant } from "./report";
+import { R_BLOCKS, type RCfg, type RVariant } from "./report";
+import { reportData } from "./report-data";
+import { lastPublication, makePublication, publicationScripts, publicationStamp, reportPublicationEnabled, reportSource, storedReport, type PublicationStamp, type StoredReport } from "./report-publication";
 import { run } from "../ai/gateway";
 import { provider } from "../ai/providers";
 import { aiCode, aiCtx } from "../ai/ctx";
@@ -519,9 +521,16 @@ export async function setShowResult(id: string, on: boolean): Promise<R> {
     const { a } = await teacherAttempt(id);
     const review = (a.review ?? {}) as Record<string, unknown>;
     if (on && review.legacyReview && a.status !== "reviewed") return { ok: false, error: "Сначала утвердите итоговый уровень" };
-    const saved = await db.placementAttempt.updateMany({ where: revision(a), data: { showResult: !!on, ...(on && !review.shownAt ? { review: json({ ...review, shownAt: new Date().toISOString() }) } : {}) } });
+    const report = storedReport(review);
+    const updated = {
+      ...review,
+      ...(on && !review.shownAt ? { shownAt: new Date().toISOString() } : {}),
+      ...(lastPublication(report) ? { report: { ...report, resultVisible: !!on } } : {}),
+    };
+    const saved = await db.placementAttempt.updateMany({ where: revision(a), data: { showResult: !!on, review: json(updated) } });
     if (!saved.count) return changed;
     if (a.checkpointId) {
+      revalidatePath(`/student/test/${a.checkpointId}`);
       const c = await db.checkpoint.findUnique({ where: { id: a.checkpointId } });
       if (c) await db.checkpoint.update({ where: { id: c.id }, data: { results: json({ ...((c.results ?? {}) as object), shown: !!on }) } });
     }
@@ -554,10 +563,14 @@ export async function deletePlacement(id: string): Promise<R> {
 }
 
 /** Ученик на разборе: скрипты, которые открыл учитель (опрос раз в несколько секунд). */
-export async function revealState(id: string): Promise<Record<string, string>> {
+export async function revealState(id: string, publicationId?: string): Promise<Record<string, string>> {
   const acc = await attemptFor(id);
   if (!acc || !(acc.a.showResult || acc.who === "teacher")) return {};
-  return revealedScripts(stateOf(acc.a.state), acc.a.reveal);
+  const scripts = revealedScripts(stateOf(acc.a.state), acc.a.reveal);
+  if (!publicationId) return scripts;
+  const r = storedReport(acc.a.review), p = lastPublication(r);
+  if (acc.a.status !== "reviewed" || !r.sent || r.resultVisible !== true || p?.schema !== 1 || p.id !== publicationId) return {};
+  return publicationScripts(p, scripts);
 }
 
 /** Дополнительное задание письма или говорения уровнем выше (dir = 1) или ниже (-1). Одно на навык; в итог идёт последний ответ,
@@ -692,35 +705,99 @@ export async function addSpeakingToLesson(id: string, level: string, questions: 
 
 // ───────── Отчёт (PDF и кабинет ученика) ─────────
 
-/** Настройки отчёта для варианта: язык, включённые блоки, правки текстов (по языкам). */
-export async function saveReport(id: string, v: RVariant, cfg: RCfg): Promise<R> {
+const reportRequestId = (id: string) => typeof id === "string" && /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/.test(id);
+function reportCfg(cfg: RCfg): RCfg {
+  const on = Object.fromEntries(R_BLOCKS.filter((b) => typeof cfg?.on?.[b] === "boolean").map((b) => [b, !!cfg.on[b]]));
+  const texts = Object.fromEntries(Object.entries(cfg?.texts ?? {}).filter(([k, t]) => /^(ru|en):(level|strong|work|plan|comment)$/.test(k) && typeof t === "string").map(([k, t]) => [k, str(t, 5000)]));
+  return { lang: cfg?.lang === "en" ? "en" : "ru", on, texts };
+}
+function withReportDraft(r: StoredReport, v: RVariant, cfg: RCfg, draftId: string): StoredReport {
+  return { ...r, draft: { ...r.draft, [v]: cfg }, draftIds: { ...r.draftIds, [v]: draftId } };
+}
+
+/** Редактирование и печать обновляют только черновик своего варианта. */
+export async function saveReport(id: string, v: RVariant, cfg: RCfg, expected: string | null, draftId: string): Promise<R> {
   return wrap(async () => {
-    const { a } = await teacherAttempt(id);
-    if (v !== "student" && v !== "parent") return { ok: false, error: "variant" };
-    const on = Object.fromEntries(R_BLOCKS.filter((b) => typeof cfg?.on?.[b] === "boolean").map((b) => [b, !!cfg.on[b]]));
-    const texts = Object.fromEntries(Object.entries(cfg?.texts ?? {}).filter(([k, t]) => /^(ru|en):(level|strong|work|plan|comment)$/.test(k) && typeof t === "string").map(([k, t]) => [k, str(t, 5000)]));
-    const cfgJson = JSON.stringify({ lang: cfg?.lang === "en" ? "en" : "ru", on, texts });
-    // Варианты ученика и родителя сохраняются параллельно. Обновляем только свой ключ.
-    await db.$executeRaw`UPDATE "PlacementAttempt"
-      SET review = jsonb_set(review, '{report}', COALESCE(review->'report', '{}'::jsonb) || jsonb_build_object(${v}::text, ${cfgJson}::jsonb)),
-          "updatedAt" = now()
-      WHERE id = ${id} AND "teacherId" = ${a.teacherId}`;
-    return { ok: true };
+    if ((v !== "student" && v !== "parent") || !reportRequestId(draftId)) return { ok: false, error: "variant" };
+    for (let retry = 0; retry < 3; retry++) {
+      const { a } = await teacherAttempt(id);
+      const prev = storedReport(a.review), current = prev.draftIds?.[v] ?? null;
+      if (current === draftId) return { ok: true };
+      if (current !== expected) return changed;
+      const report = withReportDraft(prev, v, reportCfg(cfg), draftId);
+      if ((await db.placementAttempt.updateMany({ where: revision(a), data: { review: json({ ...(a.review as object), report }) } })).count) return { ok: true };
+    }
+    return changed;
   });
 }
 
-/** Отправить отчёт (вариант для ученика) в кабинет: ученик видит его на странице теста и получает уведомление. */
-export async function sendReport(id: string, on: boolean): Promise<R> {
+type ReportSend = { expected: PublicationStamp } & (
+  { on: false } | { on: true; id: string; cfg: RCfg; draftId: string | null; source: string }
+);
+
+/** Явная отправка сохраняет снимок отчёта и разбора после включения версии записи. */
+export async function sendReport(id: string, intent: ReportSend): Promise<R> {
   return wrap(async () => {
-    const { a } = await teacherAttempt(id);
-    if (a.mode !== "student") return { ok: false, error: "mode" };
-    if (on && (!a.level || a.status !== "reviewed")) return { ok: false, error: "level" }; // ученик видит результат только после утверждения уровня
-    const prev = (a.review ?? {}) as Record<string, unknown> & { report?: RSaved };
-    const report: RSaved = { ...(prev.report ?? {}), sent: !!on, ...(on ? { sentAt: new Date().toISOString() } : {}) };
-    if (!(await db.placementAttempt.updateMany({ where: revision(a), data: { review: json({ ...prev, report }) } })).count) return changed;
-    if (on && !a.showResult) return setShowResult(id, true);
-    revalidatePath(`/teacher/placement/${id}`);
-    return { ok: true };
+    if (!intent?.expected || typeof intent.on !== "boolean" || (intent.on && !reportRequestId(intent.id))) return changed;
+    for (let retry = 0; retry < 3; retry++) {
+      const { a, me } = await teacherAttempt(id);
+      if (a.mode !== "student") return { ok: false, error: "mode" };
+      const prev = storedReport(a.review), stamp = publicationStamp(prev);
+      if (intent.on && !reportPublicationEnabled && lastPublication(prev)) return { ok: false, error: "paused" };
+      if (intent.on && !reportPublicationEnabled && prev.legacySendId === intent.id && stamp.sent)
+        return a.showResult ? { ok: true } : changed;
+      if (intent.on && prev.publications?.some((p) => p.id === intent.id))
+        return prev.sent && lastPublication(prev)?.id === intent.id && prev.draftIds?.student === intent.id ? { ok: true } : changed;
+      if (!intent.on && !stamp.sent && stamp.version === intent.expected.version) return { ok: true };
+      if (stamp.sent !== intent.expected.sent || stamp.version !== intent.expected.version) return changed;
+
+      let report: StoredReport = { ...prev, sent: false };
+      if (intent.on) {
+        if (!a.level || a.status !== "reviewed") return { ok: false, error: "level" };
+        if ((prev.draftIds?.student ?? null) !== intent.draftId) return changed;
+        const data = await reportData(a, stateOf(a.state));
+        if (reportSource(data, me.timezone) !== intent.source) return changed;
+        const cfg = reportCfg(intent.cfg), sentAt = new Date().toISOString();
+        report = { ...withReportDraft(prev, "student", cfg, intent.id), sent: true, sentAt };
+        if (reportPublicationEnabled) {
+          if (!a.showResult) return { ok: false, error: "visibility" };
+          if (!a.student?.userId || !a.checkpointId || !await db.checkpoint.findFirst({ where: { id: a.checkpointId, kind: "entry", studentId: a.student.id }, select: { id: true } }))
+            return { ok: false, error: "recipient" };
+          report.resultVisible = true;
+          report.publications = [...(prev.publications ?? []), makePublication(data, cfg, intent.id, sentAt, me.timezone)];
+        } else {
+          // During the reader rollout, a never-versioned attempt keeps its old Send.
+          report.student = cfg;
+          report.legacySendId = intent.id;
+        }
+      }
+      const where = { ...revision(a), state: { equals: json(a.state) }, level: a.level };
+      const showLegacyResult = !reportPublicationEnabled && intent.on && !a.showResult;
+      const existing = (a.review ?? {}) as Record<string, unknown>;
+      const next = { ...existing, report, ...(showLegacyResult && !existing.shownAt ? { shownAt: new Date().toISOString() } : {}) };
+      const persist = async (store: Pick<typeof db, "placementAttempt" | "checkpoint">) => {
+        const { count } = await store.placementAttempt.updateMany({
+          where, data: { review: json(next), ...(showLegacyResult ? { showResult: true } : {}) },
+        });
+        if (count && showLegacyResult && a.checkpointId) {
+          const c = await store.checkpoint.findUnique({ where: { id: a.checkpointId } });
+          if (c) await store.checkpoint.update({ where: { id: c.id }, data: { results: json({ ...((c.results ?? {}) as object), shown: true }) } });
+        }
+        return count;
+      };
+      // Keep the old one-click visibility in fallback without a later write reviving a manually hidden report.
+      const saved = showLegacyResult ? await db.$transaction(persist) : await persist(db);
+      if (saved) {
+        if (showLegacyResult) {
+          if (a.student?.userId) await notify({ userId: a.student.userId, kind: "test", title: "Готов результат placement test", action: "review", link: `/student/test/${a.checkpointId}`, dedupe: `pl-shown:${id}` });
+          refreshT(a.studentId);
+        }
+        revalidatePath(`/teacher/placement/${id}`);
+        if (a.checkpointId) revalidatePath(`/student/test/${a.checkpointId}`);
+        return { ok: true };
+      }
+    }
+    return changed;
   });
 }
 

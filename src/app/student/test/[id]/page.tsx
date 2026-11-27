@@ -12,8 +12,9 @@ import { reviewData } from "@/lib/placement/review";
 import { stateOf } from "@/lib/placement/run";
 import { ReportSheet } from "@/components/placement/ReportSheet";
 import { PrintButton } from "@/components/placement/PrintButton";
-import { resolve, type RSaved } from "@/lib/placement/report";
+import { resolve } from "@/lib/placement/report";
 import { reportData } from "@/lib/placement/report-data";
+import { lastPublication, storedReport, studentAnswers } from "@/lib/placement/report-publication";
 import type { Skill } from "@/lib/roadmap/cefr";
 
 export const metadata = { title: "Тест" };
@@ -27,28 +28,34 @@ export default async function TestPage({ params }: { params: Promise<{ id: strin
   // новый вводный тест: прохождение — на отдельном экране, результат — после проверки и «Показать ученику»
   const pa = c.kind === "entry" ? await db.placementAttempt.findUnique({ where: { checkpointId: c.id } }) : null;
   if (pa) {
-    if (pa.status === "new" || pa.status === "active") redirect(`/placement/${pa.id}`);
-    if (pa.status !== "reviewed" || !pa.showResult)
+    const sentReport = storedReport(pa.review), last = lastPublication(sentReport);
+    if (last && (last.schema !== 1 || pa.mode !== "student" || pa.studentId !== c.studentId)) notFound();
+    // A new diagnostic can reopen the attempt while its previously shared report remains available.
+    const publication = sentReport.sent && sentReport.resultVisible === true && pa.status !== "new" ? last : undefined;
+    if (pa.status === "new" || (pa.status === "active" && !publication)) redirect(`/placement/${pa.id}`);
+    if (!publication && (pa.status !== "reviewed" || !pa.showResult))
       return (
         <div className="page" style={{ maxWidth: 760 }}>
           <section className="card text-center"><h2 className="mt-0">{t("pl.checking")}</h2><p className="muted">{t("pl.checkingSub")}</p><Link className="btn primary" href="/student">{t("pl.toCabinet")}</Link></section>
         </div>
       );
     // учитель отправил отчёт в кабинет — показываем его (вариант для ученика); разбор ответов — ниже, с той же нумерацией
-    const sentReport = ((pa.review ?? {}) as { report?: RSaved }).report;
-    if (sentReport?.sent) {
-      const st = stateOf(pa.state);
-      const full = await reportData({ ...pa, student: c.student }, st);
-      const r = { ...full, d: reviewData(pa.id, st, false) }; // без скриптов аудирования — их ученику открывает только учитель
-      const cfg = resolve(r.input, "student", sentReport.student);
+    if (publication || (sentReport.sent && !last)) {
+      const st = publication ? null : stateOf(pa.state);
+      const legacy = st && await reportData({ ...pa, student: c.student }, st);
+      const sheet = publication?.sheet ?? (legacy && { input: legacy.input, writing: legacy.writing, speaking: legacy.speaking, max: legacy.max, date: legacy.date });
+      const cfg = publication ?? (legacy && resolve(legacy.input, "student", sentReport.student));
+      const answers = publication?.answers ?? (st && studentAnswers(reviewData(pa.id, st, false)));
+      if (!sheet || !cfg || !answers) notFound();
       return (
         <div className="page print" style={{ maxWidth: 900 }}>
           <div className="mb-4 flex flex-wrap items-center gap-3 noprint"><h1 className="m-0 grow">{t("pl.title")}</h1><PrintButton label={t("rp.download")} /></div>
-          <ReportSheet r={r} v="student" lang={cfg.lang} on={{ ...cfg.on, answers: false }} texts={cfg.texts} />
+          {pa.status === "active" && <Link className="btn primary noprint mb-4" href={`/placement/${pa.id}`}>{t("pl.continue")}</Link>}
+          <ReportSheet r={sheet} v="student" lang={cfg.lang} on={{ ...cfg.on, answers: false }} texts={cfg.texts} timeZone={publication?.timeZone} />
           <div className="noprint mt-6">
             <h2 className="mb-1">{t("pl.answers")}</h2>
             <p className="small muted mt-0 mb-3">{t("pl.studentAnswersHint")}</p>
-            <PlacementAnswers id={pa.id} d={reviewData(pa.id, st, false)} teacher={false} reveal={[]} />
+            <PlacementAnswers key={publication?.id} id={pa.id} d={answers} teacher={false} reveal={[]} publicationId={publication?.id} />
           </div>
         </div>
       );
