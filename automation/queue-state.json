@@ -10,22 +10,20 @@
     16,
     18
   ],
-  "lease": {
-    "token": "9cb7d3a0cddb453ca32563eb20945c3a",
-    "started_at": "2026-11-27T18:07:07.945564Z",
-    "expires_at": "2026-11-27T21:08:00.682195Z"
-  },
+  "lease": null,
   "checkpoint": {
     "issue": 25,
-    "stage": "request_review",
+    "stage": "await_ci_review",
     "branch": "codex/vocabulary/voc-09",
     "base_sha": "5d51fb5096e96a93d0aed906714c521691692470",
-    "next": "Verify current PR head and existing review requests; request native review once on refreshed head, observe new CI. No merge before checks pass.",
+    "next": "Verify CI 46047129614 and native review on refreshed head; check branch requirements and main before merge. Public health/version inaccessible via web tool in this run; verify via approved available means after release. Do not repeat request.",
     "head_sha": "3256f64b47c95f5df9e45d3a194cf16e8206a932",
     "pr": 54,
-    "review_request_comment_id": null,
-    "ci_run_ids": [],
-    "ci_status": "pending",
+    "review_request_comment_id": 7225166354,
+    "ci_run_ids": [
+      46047129614
+    ],
+    "ci_status": "in_progress",
     "subject_tests": "pending_new_head",
     "review_summary_id": null,
     "review_receipt_id": null,
