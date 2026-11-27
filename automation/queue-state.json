@@ -13,9 +13,13 @@
   "lease": {
     "token": "4d598b2bdae24cc791017049061b5ebc",
     "started_at": "2026-11-27T14:46:13.928023Z",
-    "expires_at": "2026-11-27T17:46:13.928023Z"
+    "expires_at": "2026-11-27T17:46:47.993675Z"
   },
-  "checkpoint": null,
+  "checkpoint": {
+    "phase": "create_review_branch",
+    "branch": "codex/automation/review-probe",
+    "reviewed_sha": "11a67fe63b5ba03598b20cac4ce0a54e9757f13b"
+  },
   "last_probe": {
     "type": "inline_coordination",
     "execution": "run_now returned inline_run in current chat",
