@@ -7,10 +7,11 @@
   "progress": {
     "base_sha": "58ead57015f67ea5281af520fe7fcf46d68219d5",
     "branch": "codex/student/home-onboarding",
-    "head_sha": "20cc4d0cda9a5da0a36790ced8ab84c31ab04fc7",
-    "next": "Завершить браузерную проверку и подтвердить независимое ревью и CI",
+    "head_sha": "13d527b394fcab553944e4a97e4c16eda0c553f3",
+    "next": "Подтвердить браузерную проверку, независимое ревью и CI на последнем SHA",
     "pr": 70,
-    "stage": "review"
+    "stage": "review",
+    "test_run": 46059986368
   },
   "release": null,
   "source": "direct",
