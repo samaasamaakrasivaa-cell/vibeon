@@ -130,6 +130,14 @@ full("G-B2-66", "have", true);
 full("G-C1-64", "should get", true);
 full("G-C1-23", "was to become", true);
 full("G-C1-23", "'d become", false);
+for (const [id, ...answers] of [
+  ["G-B1-T13", "while", "whilst"],
+  ["G-B2-T05", "notwithstanding", "even with"],
+]) {
+  const core = bank.find((entry) => entry.id === id);
+  assert.ok(core, id);
+  for (const answer of answers) assert.equal(checkCore(core, answer), true, `${id}: ${answer}`);
+}
 for (const core of bank) {
   if (core.type === "mcq") {
     assert.ok(core.options && core.options[core.answer!], core.id);

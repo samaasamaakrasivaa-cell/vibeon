@@ -2487,7 +2487,9 @@
     "accept": [
       "although",
       "even though",
-      "though"
+      "though",
+      "while",
+      "whilst"
     ],
     "explain_ru": "Противопоставление в одном предложении — although / even though.",
     "hint_ru": "although / however",
