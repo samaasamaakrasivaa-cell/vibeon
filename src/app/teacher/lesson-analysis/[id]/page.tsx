@@ -19,7 +19,7 @@ export default async function TeacherLessonAnalysis({ params }: { params: Promis
   const locale = ru ? "ru-RU" : "en-GB";
   const date = lesson.startsAt.toLocaleString(locale, { dateStyle: "medium", timeStyle: "short", timeZone: teacher.timezone });
   const price = new Intl.NumberFormat(locale, { style: "currency", currency: "RUB" }).format(LESSON_ANALYSIS_ESTIMATE_RUB);
-  const estimate = ru ? `Расход платформы — до ${price} за запрос` : `Estimated platform cost — up to ${price} per request`;
+  const estimate = ru ? `Расход платформы — ориентировочно до ${price} за запрос` : `Estimated platform cost — up to ${price} per request`;
   const pending = !!report && analysisPending(report);
 
   return (
