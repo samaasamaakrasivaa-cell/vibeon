@@ -7,7 +7,7 @@ import type { DictKey } from "@/lib/i18n/dict";
 import { Flag } from "./Flag";
 import { Dialog } from "../Dialog";
 import { answerCore, draftText, finishPlacement, finishTexts, goSection, notePlay, peekCore, peekSpeak, reviseCore, saveWriting, startPlacement } from "@/lib/placement/actions";
-import { readSavedFixRange } from "@/lib/placement/fix-answer-read";
+import { fixFragment, fixWords, parseFixAnswer, type FixSpan } from "@/lib/placement/fix-answer";
 import type { PView } from "@/lib/placement/run";
 import { Icon } from "../Icon";
 import type { IconName } from "../icon-paths";
@@ -88,14 +88,11 @@ export function PlacementRunner({ id, initial, sample, done, home, canFlag = fal
     const r = await peekCore(id, curIdx - b).catch(() => null);
     if (r?.ok) { setPast({ item: r.item as CoreItemV, given: r.given ?? null, dk: !!r.dk }); setBack(b); window.scrollTo({ top: 0 }); }
   });
-  const leavePast = async () => {
-    if (back > 1) { const q = await peekCore(id, curIdx - back + 1).catch(() => null); if (q?.ok) { setPast({ item: q.item as CoreItemV, given: q.given ?? null, dk: !!q.dk }); setBack(back - 1); return; } }
-    setPast(null); setBack(0); shownAt.current = Date.now();
-  };
   const revise = (val: string | number | null, dk: boolean) => start(async () => { // подсказку на исправлении не учитываем
     const r = await reviseCore(id, past!.item.id, val, dk).catch(() => null);
     if (!r?.ok) { setErr(t("pl.err.net")); return; }
-    await leavePast();
+    if (back > 1) { const q = await peekCore(id, curIdx - back + 1).catch(() => null); if (q?.ok) { setPast({ item: q.item as CoreItemV, given: q.given ?? null, dk: !!q.dk }); setBack(back - 1); return; } }
+    setPast(null); setBack(0); shownAt.current = Date.now();
   });
   const open = v.open ?? [];
   const vp = v as { parts?: string[]; todo?: string[] };
@@ -130,7 +127,7 @@ export function PlacementRunner({ id, initial, sample, done, home, canFlag = fal
       {between ? <Between from={between.from} to={between.to} onGo={() => { setBetween(null); shownAt.current = Date.now(); }} /> : <>
         {v.section === "intro" && <Intro sample={sample} pending={pending} parts={PARTS.filter((p) => (vp.todo ?? vp.parts ?? PARTS).includes(p))} onStart={() => step(() => startPlacement(id))} />}
         {block && (past && back > 0
-          ? <CoreStep key={`past-${past.item.id}`} item={past.item} n={curIdx - back - from + 1} initial={past.dk ? "" : past.given ?? ""} initialDk={past.dk} past pending={pending} onBack={curIdx - back > from ? () => openPast(back + 1) : undefined} onAnswer={revise} onLeavePast={() => start(leavePast)} />
+          ? <CoreStep key={`past-${past.item.id}`} item={past.item} n={curIdx - back - from + 1} initial={past.dk ? "" : past.given ?? ""} initialDk={past.dk} past pending={pending} onBack={curIdx - back > from ? () => openPast(back + 1) : undefined} onAnswer={revise} />
           : (v as Core).item && <CoreStep key={(v as Core).item!.id} item={(v as Core).item!} n={curIdx - from + 1} pending={pending} onBack={curIdx > from ? () => openPast(1) : undefined} onAnswer={(val, dk, h, tr, sure) => step(() => answerCore(id, (v as Core).item!.id, val, ms(), dk, h, tr, sure))} />)}
         {(v.section === "reading" || v.section === "listening") && (
           <TextStep key={(v as unknown as TextV).items.map((x) => x.id).join()} v={v as unknown as TextV} pending={pending} attempt={id} onFinish={() => step(() => finishTexts(id))} />
@@ -265,7 +262,46 @@ function Intro({ sample, pending, onStart, parts = [...PARTS] }: { sample: strin
 
 // ───────── Грамматика и лексика ─────────
 
-function CoreStep({ item: it, n, pending, onAnswer, onBack, onLeavePast, initial, initialDk, past }: { item: CoreItemV; n: number; pending: boolean; onAnswer: (val: string | number | null, dk: boolean, hinted: boolean, tried?: number[], sure?: boolean) => void; onBack?: () => void; onLeavePast?: () => void; initial?: string | number; initialDk?: boolean; past?: boolean }) {
+function FixPrompt({ question, span, text, onSelect, onText }: { question: string; span: FixSpan | null; text: string; onSelect: (span: FixSpan) => void; onText: (text: string) => void }) {
+  const { t } = useT();
+  const [anchor, setAnchor] = useState<number | null>(null);
+  const [endPreview, setEndPreview] = useState<number | null>(null);
+  const words = fixWords(question);
+  const rangeTo = (index: number): FixSpan => [Math.min(anchor ?? index, index), Math.max(anchor ?? index, index)];
+  const preview = anchor === null || endPreview === null ? null : rangeTo(endPreview);
+  const previewPhrase = preview && preview[1] - preview[0] + 1 < words.length ? preview : null;
+  const select = (index: number) => {
+    onSelect(rangeTo(index));
+    setAnchor(anchor === null ? index : null);
+    setEndPreview(null);
+  };
+  return (
+    <>
+      <p className="plq plfix" onMouseLeave={() => setEndPreview(null)}>
+        {words.map((word, i) => {
+          const selected = !!span && i >= span[0] && i <= span[1];
+          const previewed = !!previewPhrase && i >= previewPhrase[0] && i <= previewPhrase[1];
+          return <button key={i} type="button" className="plfixw min-h-9"
+            style={{
+              backgroundColor: selected || previewed ? "var(--accent-bg)" : undefined,
+              boxShadow: selected ? "inset 0 -2px 0 var(--accent)" : undefined,
+            }}
+            aria-pressed={selected} onMouseEnter={() => { if (anchor !== null) setEndPreview(i); }}
+            onClick={() => select(i)}>{word}</button>;
+        })}
+      </p>
+      {span && (
+        <label className="plfixin"><span className="small muted">{t("pl.fixHow", { w: fixFragment(words, span) })}</span>
+          <input className="input plgap" value={text} onChange={(e) => onText(e.target.value)}
+            onFocus={() => { setAnchor(null); setEndPreview(null); }}
+            autoCapitalize="off" autoComplete="off" spellCheck={false} aria-label={t("pl.answer")} />
+        </label>
+      )}
+    </>
+  );
+}
+
+function CoreStep({ item: it, n, pending, onAnswer, onBack, initial, initialDk, past }: { item: CoreItemV; n: number; pending: boolean; onAnswer: (val: string | number | null, dk: boolean, hinted: boolean, tried?: number[], sure?: boolean) => void; onBack?: () => void; initial?: string | number; initialDk?: boolean; past?: boolean }) {
   const { t } = useT();
   const [val, setVal] = useState<string | number>(initial ?? "");
   const [dk, setDk] = useState(!!initialDk);
@@ -280,14 +316,12 @@ function CoreStep({ item: it, n, pending, onAnswer, onBack, onLeavePast, initial
     const h = setTimeout(() => setSlow(true), (it.type === "mcq" ? SLOW_CHOICE : SLOW_TYPED) * 1000);
     return () => clearTimeout(h);
   }, [it.id, it.type, past]);
-  // «найди и исправь»: выбранное слово и исправление → «номер::текст»
-  const [fixI, setFixI] = useState<number | null>(() => {
-    const match = typeof initial === "string" ? /^(\d+)::/.exec(initial) : null;
-    const index = match ? Number(match[1]) : -1;
-    return index >= 0 && index < it.q.split(" ").length ? index : null;
-  });
-  const [fixT, setFixT] = useState(() => (typeof initial === "string" && initial.includes("::") ? initial.split("::").slice(1).join("::") : ""));
-  const fixVal = fixI === null || !fixT.trim() ? "" : `${fixI}::${fixT.trim()}`;
+  const originalFix = it.type === "fix" ? parseFixAnswer(initial) : null;
+  const [fixSpan, setFixSpan] = useState<FixSpan | null>(() => originalFix?.span ?? null);
+  const [fixT, setFixT] = useState(() => originalFix?.text ?? "");
+  // Старый ответ с неявной заменой всей конструкции сохраняем в исходном формате.
+  const unchangedFix = originalFix?.legacy && fixSpan?.[0] === originalFix.span[0] && fixSpan[1] === originalFix.span[1] && fixT.trim() === originalFix.text;
+  const fixVal = fixSpan && fixT.trim() ? (unchangedFix ? initial! : `${fixSpan[0]}-${fixSpan[1]}::${fixT.trim()}`) : "";
   const value = it.type === "fix" ? fixVal : val;
   // на проверке тем вместо «Дальше» — «Уверен / Не уверен»: так видно, знает ли ученик правило или угадал
   const ask = !!(it as CoreItemV & { ask?: boolean }).ask && !past;
@@ -299,22 +333,6 @@ function CoreStep({ item: it, n, pending, onAnswer, onBack, onLeavePast, initial
   const parts = (s2: string) => { const [a, b] = s2.split("___"); return <p className="plq">{a}{input}{b}</p>; };
   const empty = !dk && (value === "" || (typeof value === "string" && !value.trim()));
   const typed = it.type !== "mcq" && it.type !== "fix";
-  const range = past && it.type === "fix" ? readSavedFixRange(it.q, initial) : null;
-  if (range) {
-    return (
-      <section className="card flex flex-col gap-4" data-item={it.id}>
-        <div className="plpast">{t("pl.flagQ", { n })}</div>
-        <p className="plq plfix">{range.words.map((word, index) => (
-          <span key={index} className="plfixw">{range.span && index >= range.span.start && index <= range.span.end ? <mark>{word}</mark> : word}</span>
-        ))}</p>
-        <p aria-label={t("pl.answer")} data-stored-fix-answer>{range.text}</p>
-        <div className="plactions">
-          {onBack && <button type="button" className="btn plain mr-auto" disabled={pending} onClick={onBack}>{t("pl.prevQ")}</button>}
-          <button type="button" className="btn primary" disabled={pending} onClick={onLeavePast}>{t("pl.next")}</button>
-        </div>
-      </section>
-    );
-  }
   return (
     <section className="card flex flex-col gap-4" data-item={it.id}>
       {past && <div className="plpast"><Icon name="chevl" size="sm" />{t("pl.pastNote", { n })}</div>}
@@ -323,16 +341,9 @@ function CoreStep({ item: it, n, pending, onAnswer, onBack, onLeavePast, initial
         {it.type === "mcq" && <p className="plq">{it.q.split("___").map((x, i, a) => <span key={i}>{x}{i < a.length - 1 && <span className="plblank">{typeof val === "number" ? it.options![val] : "\u00a0"}</span>}</span>)}</p>}
         {it.type === "wordform" && <><div className="plword"><span className="plbase">{it.base}</span><Icon name="right" size="sm" /><span className="muted small">?</span></div>{parts(it.q)}</>}
         {(it.type === "gap" || it.type === "brackets") && parts(it.q)}
-        {it.type === "fix" && (
-          <>
-            <p className="plq plfix">{it.q.split(" ").map((w, i) => <button key={i} type="button" className={`plfixw ${fixI === i ? "on" : ""}`} aria-pressed={fixI === i} onClick={() => { setFixI(i); setDk(false); }}>{w}</button>)}</p>
-            {fixI !== null && (
-              <label className="plfixin"><span className="small muted">{t("pl.fixHow", { w: it.q.split(" ")[fixI].replace(/[.,!?;:]+$/, "") })}</span>
-                <input className="input plgap" autoFocus autoComplete="off" autoCapitalize="off" spellCheck={false} value={fixT} onChange={(e) => setFixT(e.target.value)} aria-label={t("pl.answer")} />
-              </label>
-            )}
-          </>
-        )}
+        {it.type === "fix" && <FixPrompt question={it.q} span={fixSpan} text={fixT}
+          onSelect={(span) => { setFixSpan(span); setDk(false); }}
+          onText={(value) => { setFixT(value); setDk(false); }} />}
         {it.type === "transform" && (
           <>
             <p className="plq m-0">{it.q}</p>

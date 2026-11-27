@@ -1,6 +1,16 @@
 import "server-only";
-import { displaySavedFixRange } from "./fix-answer-read";
-import type { CoreItem, ListenItem, PState, ReadItem, SpeakItem, WriteItem } from "./engine";
+import { acceptedFixCorrections, type CoreItem, type ListenItem, type PState, type ReadItem, type SpeakItem, type WriteItem } from "./engine";
+import { fixFragment, fixWords, parseFixAnswer } from "./fix-answer";
+
+function fixGiven(question: string, value: string | number) {
+  const answer = parseFixAnswer(value);
+  if (!answer) return String(value);
+  const words = fixWords(question);
+  const fragment = answer.legacy
+    ? words[answer.span[0]]?.replace(/[.,!?;:]+$/, "") ?? ""
+    : fixFragment(words, answer.span);
+  return `${fragment} → ${answer.text}`;
+}
 
 // Данные для разбора: задания из снимка, ответ ученика, правильный ответ, объяснение.
 // Скрипты аудирования ученику не отдаются — только учителю (или после «глазика», отдельным запросом).
@@ -9,14 +19,13 @@ export function reviewData(id: string, st: PState, forTeacher: boolean) {
   const core = st.core.map((x) => {
     const it = st.items[x.id] as CoreItem;
     const a = st.answers[x.id];
-    // «найди и исправь»: ученик выбрал слово и написал исправление — «слово → исправление»
-    const fixGiven = (v: string) => { const [i, txt] = v.split("::"); const w = it.q.split(" ")[Number(i)]?.replace(/[.,!?;:]+$/, "") ?? ""; return `${w} → ${txt ?? ""}`; };
-    const given = a?.v === null || a?.v === undefined ? "" : it.type === "mcq" ? it.options?.[Number(a.v)] ?? "" : it.type === "fix" ? displaySavedFixRange(it.q, a.v) ?? fixGiven(String(a.v)) : String(a.v);
+    const given = a?.v === null || a?.v === undefined ? "" : it.type === "mcq" ? it.options?.[Number(a.v)] ?? "" : it.type === "fix" ? fixGiven(it.q, a.v) : String(a.v);
+    const accepted = it.type === "fix" && parseFixAnswer(a?.v)?.legacy === false ? acceptedFixCorrections(it) : it.accept ?? [];
     return {
       id: it.id, level: it.level, step: x.step, skill: it.skill, topic: it.topic_ru, type: it.type, q: it.q, frame: it.frame ?? null, base: it.base ?? it.key ?? null,
-      right: it.type === "mcq" ? it.options?.[it.answer ?? 0] ?? "" : it.type === "fix" ? `${it.wrong ?? ""} → ${(it.accept ?? []).join(" / ")}` : (it.accept ?? []).join(" / "), given, ok: !!a?.ok, explain: it.explain_ru, ms: a?.ms ?? null, dk: !!a?.dk, hinted: !!a?.h, vocab: !!x.ph?.startsWith("v"), ph: x.ph ?? null,
+      right: it.type === "mcq" ? it.options?.[it.answer ?? 0] ?? "" : it.type === "fix" ? `${it.wrong ?? ""} → ${accepted.join(" / ")}` : accepted.join(" / "), given, ok: !!a?.ok, explain: it.explain_ru, ms: a?.ms ?? null, dk: !!a?.dk, hinted: !!a?.h, vocab: !!x.ph?.startsWith("v"), ph: x.ph ?? null,
       cf: a?.cf ?? null, typo: !!a?.ty, // v6: уверен / не уверен, засчитано с опечаткой
-      tried: (a?.tr ?? []).map((k) => (k === -1 ? null : it.type === "mcq" ? it.options?.[Number(k)] ?? "" : displaySavedFixRange(it.q, it.type === "fix" ? k : null) ?? String(k))), // null — «Не знаю»
+      tried: (a?.tr ?? []).map((k) => (k === -1 ? null : it.type === "mcq" ? it.options?.[Number(k)] ?? "" : it.type === "fix" ? fixGiven(it.q, k) : String(k))), // null — «Не знаю»
     };
   });
   const text = (ids: string[], kind: "reading" | "listening") => ids.map((tid) => {

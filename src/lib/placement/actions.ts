@@ -19,7 +19,6 @@ import { teacherReview, missingReassessment } from "./teacher-review";
 import { applyScore } from "./ai-feedback";
 import { speechSource } from "./speech-transcript";
 import { revealedScripts } from "./review";
-import { readSavedFixRange } from "./fix-answer-read";
 import { R_BLOCKS, type RCfg, type RSaved, type RVariant } from "./report";
 import { run } from "../ai/gateway";
 import { provider } from "../ai/providers";
@@ -87,7 +86,6 @@ export async function answerCore(id: string, itemId: string, v: string | number 
     if ((st.section !== "core" && st.section !== "vocab") || !last || last.id !== itemId || st.answers[itemId]) return { ok: true, view: publicView(st, await getLang()) };
     const it = st.items[itemId] as CoreItem;
     const val = dk ? null : typeof v === "number" ? v : str(v, 120);
-    if (it.type === "fix" && readSavedFixRange(it.q, val)) return { ok: false, error: "fix-rollback" };
     const tr = trail(tried, it.options?.length ?? 0, val);
     const ok = dk ? false : checkCore(it, val);
     // опечатка в слове при верной форме — засчитываем (только «вписать самому»), отмечаем для учителя
@@ -262,14 +260,8 @@ export async function reviseCore(id: string, itemId: string, v: string | number 
     const it = st.items[itemId] as CoreItem;
     const val = dk ? null : typeof v === "number" ? v : str(v, 120);
     const old = st.answers[itemId];
-    if (it.type === "fix") {
-      // This build can display modern ranges, but cannot score or revise them.
-      if (readSavedFixRange(it.q, old.v)) {
-        if (!dk && v === old.v) return { ok: true };
-        return { ok: false, error: "fix-rollback" };
-      }
-      if (readSavedFixRange(it.q, val)) return { ok: false, error: "fix-rollback" };
-    }
+    // Повторное сохранение без правки не применяет новую проверку к исторической оценке.
+    if (it.type === "fix" && old.v === val && !!old.dk === dk) return { ok: true };
     const tr = [...(old.tr ?? []), ...(old.dk ? [-1] : old.v !== null && old.v !== val ? [old.v] : [])].slice(-10);
     const ok = dk ? false : checkCore(it, val);
     const typo = !ok && !dk && typeof val === "string" && it.type !== "mcq" && it.type !== "fix" && it.skill === "grammar" && typoOk(val, it.accept ?? []);
