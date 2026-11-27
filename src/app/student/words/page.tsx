@@ -7,7 +7,7 @@ import { addDaysIso, isoDay, mondayOf } from "@/lib/time";
 export const metadata = { title: "Слова" };
 export const dynamic = "force-dynamic";
 
-export default async function Words({ searchParams }: { searchParams: Promise<{ train?: string; tab?: string }> }) {
+export default async function Words({ searchParams }: { searchParams: Promise<{ train?: string; tab?: string; goal?: string }> }) {
   const me = await requireUser("STUDENT");
   const s = await db.student.findUnique({ where: { userId: me.id } });
   if (!s) return null;
@@ -31,6 +31,7 @@ export default async function Words({ searchParams }: { searchParams: Promise<{ 
         words={words.map((w) => ({ id: w.id, word: w.word, translation: w.translation, example: w.example, ownExample: w.ownExample, level: w.level, due: !w.nextReviewAt || w.nextReviewAt <= now }))}
         goal={s.wordGoal} days={s.wordDays} remindAt={s.remindAt} doneToday={byDay.get(today) ?? 0} week={week} streak={streak}
         train={sp.train === "today" || sp.train === "all" ? sp.train : null} tab={sp.tab === "list" ? "list" : "overview"}
+        editGoal={sp.goal === "1" && sp.tab !== "list"}
       />
     </div>
   );

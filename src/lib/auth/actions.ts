@@ -224,6 +224,7 @@ export async function inviteFormAction(token: string, _: FormState, f: FormData)
     hard: f.getAll("hard").map(String),
     problem: fields.problem,
     filledAt: new Date().toISOString(),
+    wordGoalConfigured: false,
   };
   const user = await db.$transaction(async (tx) => {
     const u = await tx.user.create({

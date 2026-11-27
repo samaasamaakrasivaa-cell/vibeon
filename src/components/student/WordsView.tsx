@@ -9,14 +9,14 @@ import { addMyWord, deleteMyWord, practiceResult, setWordGoal, updateMyWord } fr
 import { dictationGrade, shuffle } from "@/lib/tasks/parse";
 
 export type W = { id: string; word: string; translation: string | null; example: string | null; ownExample: string | null; level: number; due: boolean };
-type Props = { words: W[]; goal: number; days: number[]; remindAt: string; doneToday: number; week: { label: string; done: boolean; planned: boolean; today: boolean }[]; streak: number; train: "today" | "all" | null; tab: "overview" | "list" };
+type Props = { words: W[]; goal: number; days: number[]; remindAt: string; doneToday: number; week: { label: string; done: boolean; planned: boolean; today: boolean }[]; streak: number; train: "today" | "all" | null; tab: "overview" | "list"; editGoal: boolean };
 
 const say = (w: string, lang: string) => { if (typeof window === "undefined" || !("speechSynthesis" in window)) return; const u = new SpeechSynthesisUtterance(w); u.lang = lang; u.rate = 0.9; speechSynthesis.cancel(); speechSynthesis.speak(u); };
 
 export function WordsView(p: Props) {
   const { t } = useT();
+  const router = useRouter();
   const [accent, setAccent] = useState("en-GB");
-  const [goalOpen, setGoalOpen] = useState(false);
   if (p.train) return <Trainer {...p} accent={accent} />;
   const learned = p.words.filter((w) => w.level >= 4).length;
   const due = p.words.filter((w) => w.due && w.level < 4).length;
@@ -48,7 +48,7 @@ export function WordsView(p: Props) {
               <h2 className="mt-1">{left > 0 ? t("wd.left", { n: left }) : t("st.wordsDone")}</h2>
               <div className="mt-3 flex gap-1.5">{p.week.map((d, i) => <span key={i} className={`daydot ${d.done ? "done" : ""} ${!d.planned ? "off" : ""} ${d.today ? "today" : ""}`} title={dayNames[i]}>{dayNames[i][0]}</span>)}</div>
               <p className="mt-3 mb-1">{t("wd.daysThisWeek", { n: daysDone, total: daysPlanned })} {t("wd.reminders", { days: p.days.map((d) => dayNames[d]).join(", "), time: p.remindAt })}</p>
-              <button className="btn plain sm" style={{ paddingLeft: 0 }} onClick={() => setGoalOpen(true)}>{t("wd.changeGoal")}</button>
+              <Link className="btn plain sm pl-0" href="/student/words?goal=1" scroll={false}>{t("wd.changeGoal")}</Link>
             </div>
           </section>
           <div className="grid-4 mt-4">
@@ -63,28 +63,38 @@ export function WordsView(p: Props) {
           </div>
         </>
       ) : <WordList words={p.words} accent={accent} />}
-      {goalOpen && <GoalDialog p={p} onClose={() => setGoalOpen(false)} />}
+      {p.editGoal && <GoalDialog p={p} onClose={() => router.replace("/student/words", { scroll: false })} />}
     </>
   );
 }
 
 function GoalDialog({ p, onClose }: { p: Props; onClose: () => void }) {
   const { t } = useT();
-  const router = useRouter();
   const [goal, setGoal] = useState(p.goal);
   const [days, setDays] = useState(p.days);
   const [time, setTime] = useState(p.remindAt);
+  const [error, setError] = useState(false);
   const [pending, start] = useTransition();
   const dayNames = [t("wd.mon"), t("wd.tue"), t("wd.wed"), t("wd.thu"), t("wd.fri"), t("wd.sat"), t("wd.sun")];
   return (
-    <Dialog open onClose={onClose} title={t("wd.changeGoal")}>
+    <Dialog open onClose={() => { if (!pending) onClose(); }} title={t("wd.changeGoal")}>
       <div className="flex flex-col gap-4">
         <div className="field"><span className="flabel">{t("wd.perDay")}</span><div className="seg">{[5, 10, 15, 20].map((g) => <button key={g} aria-pressed={goal === g} onClick={() => setGoal(g)}>{g}</button>)}</div></div>
         <div className="field"><span className="flabel">{t("wd.days")}</span><div className="flex flex-wrap gap-1.5">{dayNames.map((n, i) => <button key={i} className={`pchip ${days.includes(i) ? "on" : ""}`} onClick={() => setDays(days.includes(i) ? days.filter((x) => x !== i) : [...days, i])}>{n}</button>)}</div></div>
         <div className="field"><label htmlFor="rt">{t("wd.remind")}</label><input id="rt" type="time" className="input" style={{ width: 140 }} value={time} onChange={(e) => setTime(e.target.value)} /><span className="hint">{t("wd.remindHint")}</span></div>
       </div>
-      <div className="actions"><button className="btn secondary" onClick={onClose}>{t("common.cancel")}</button>
-        <button className="btn primary" disabled={pending} onClick={() => start(async () => { await setWordGoal(goal, days, time); onClose(); })}>{t("common.save")}</button></div>
+      {error && <p className="small text-bad mb-0" role="alert">{t("wd.goalSaveError")}</p>}
+      <div className="actions"><button className="btn secondary" disabled={pending} onClick={onClose}>{t("common.cancel")}</button>
+        <button className="btn primary" disabled={pending} onClick={() => start(async () => {
+          setError(false);
+          try {
+            const result = await setWordGoal(goal, days, time);
+            if (result.ok) onClose();
+            else setError(true);
+          } catch {
+            setError(true);
+          }
+        })}>{t("common.save")}</button></div>
     </Dialog>
   );
 }

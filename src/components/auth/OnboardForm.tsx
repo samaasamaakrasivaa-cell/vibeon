@@ -3,26 +3,15 @@ import { useActionState } from "react";
 import { NewPassword } from "./PasswordInput";
 import { inviteFormAction, type FormState } from "@/lib/auth/actions";
 import { useT } from "@/lib/i18n/client";
-import { GOALS, SINCE, SKILLS } from "@/lib/onboarding";
+import { LearningFields } from "@/components/student/LearningFields";
 import { Submit } from "./Submit";
 
 type Init = { first: string; email: string };
 
 export function OnboardForm({ token, init }: { token: string; init: Init }) {
-  const { t, lang } = useT();
+  const { t } = useT();
   const [st, action] = useActionState<FormState, FormData>(inviteFormAction.bind(null, token), undefined);
   const v = (k: string, d = "") => st?.fields?.[k] ?? d;
-  const label = (x: [string, string]) => (lang === "en" ? x[1] : x[0]);
-  const chips = (name: string, list: [string, string][], multi = true) => (
-    <div className="chips">
-      {list.map((x) => (
-        <label className="chip" key={x[0]}>
-          <input type={multi ? "checkbox" : "radio"} name={name} value={x[0]} />
-          <span>{label(x)}</span>
-        </label>
-      ))}
-    </div>
-  );
   return (
     <form action={action} className="authform" noValidate>
       <div className="grid-2">
@@ -32,13 +21,7 @@ export function OnboardForm({ token, init }: { token: string; init: Init }) {
         <div className="field"><label htmlFor="phone">{t("ob.phone")} *</label><input id="phone" name="phone" type="tel" className="input" autoComplete="tel" placeholder="+7" defaultValue={v("phone")} required /></div>
       </div>
       <div className="field"><label htmlFor="bday">{t("ob.bday")}</label><input id="bday" name="bday" type="date" className="input" defaultValue={v("bday")} /></div>
-      <div className="field"><span className="flabel">{t("ob.goals")}</span>{chips("goals", GOALS)}</div>
-      <div className="field"><label htmlFor="other">{t("ob.other")}</label><input id="other" name="other" className="input" defaultValue={v("other")} /></div>
-      <div className="field"><label htmlFor="about">{t("ob.about")}</label><textarea id="about" name="about" className="textarea input" defaultValue={v("about")} /></div>
-      <div className="field"><span className="flabel">{t("ob.since")}</span>{chips("since", SINCE, false)}</div>
-      <div className="field"><span className="flabel">{t("ob.easy")}</span>{chips("easy", SKILLS)}</div>
-      <div className="field"><span className="flabel">{t("ob.hard")}</span>{chips("hard", SKILLS)}</div>
-      <div className="field"><label htmlFor="problem">{t("ob.problem")}</label><textarea id="problem" name="problem" className="textarea input" placeholder={t("ob.problemPh")} defaultValue={v("problem")} /></div>
+      <LearningFields answers={{ otherGoal: v("other"), about: v("about"), since: v("since"), problem: v("problem") }} />
       <NewPassword label={`${t("ob.password")} *`} hint={t("ob.passwordHint")} />
       <label className="consent">
         <input type="checkbox" name="consent" className="check" />
