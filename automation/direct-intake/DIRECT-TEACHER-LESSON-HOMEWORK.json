@@ -8,9 +8,9 @@
     "base_sha": "58ead57015f67ea5281af520fe7fcf46d68219d5",
     "branch": "codex/teacher/lesson-homework",
     "head_sha": "dd24abc7888f71128ed9539dba6c6a3e6d01089f",
-    "next": "Конфликт с вышедшей правкой #78 устранён. Сборка и браузерная проверка прошли, ожидаются повторные ревью, CI и допуск.",
+    "next": "Ревью, CI и сценарий на совместной версии прошли. Ожидается допуск Tech Lead к объединению PR #73.",
     "pr": 73,
-    "stage": "review",
+    "stage": "integration",
     "test_run": 46065674487
   },
   "release": null,
