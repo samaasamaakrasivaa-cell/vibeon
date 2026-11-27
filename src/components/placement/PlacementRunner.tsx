@@ -278,8 +278,11 @@ function FixPrompt({ question, span, text, onSelect, onText }: { question: strin
         {words.map((word, i) => {
           const selected = !!span && i >= span[0] && i <= span[1];
           const previewed = !!preview && i >= preview[0] && i <= preview[1];
-          return <button key={i} type="button" className={`plfixw min-h-9 ${selected ? "on" : ""}`}
-            style={previewed && !selected ? { backgroundColor: "var(--accent-bg)" } : undefined}
+          return <button key={i} type="button" className="plfixw min-h-9"
+            style={{
+              backgroundColor: selected || previewed ? "var(--accent-bg)" : undefined,
+              boxShadow: selected ? "inset 0 -2px 0 var(--accent)" : undefined,
+            }}
             aria-pressed={selected} onMouseEnter={() => { if (extending) setEndPreview(i); }}
             onClick={() => { onSelect(rangeTo(i)); setExtending(false); setEndPreview(null); }}>{word}</button>;
         })}
