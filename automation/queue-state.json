@@ -13,14 +13,15 @@
   "lease": {
     "token": "c9b6542497ea4205a9dc768b5883192f",
     "started_at": "2026-11-27T16:59:00.721629Z",
-    "expires_at": "2026-11-27T20:04:03.880071Z"
+    "expires_at": "2026-11-27T20:06:38.307435Z"
   },
   "checkpoint": {
     "issue": 25,
-    "stage": "prepare_commit",
+    "stage": "branch_create",
     "branch": "codex/vocabulary/voc-09",
     "base_sha": "c63dc04edf1e7f25be1a4c677d7759a86689e5e3",
-    "next": "Create tree/commit with parent fresh main; read-only metrics, teacher list + own student progress, synthetic HTTP/Chrome CI test. No release workflow changes. Then verify head, create task branch and draft PR."
+    "next": "Create task branch at prepared commit after verifying main and no duplicate; then open draft PR. Subject checks not yet run.",
+    "head_sha": "b43d0e40841bc9e76c85869d479e072b9ab943d2"
   },
   "last_probe": {
     "type": "background_native_review",
