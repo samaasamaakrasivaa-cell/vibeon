@@ -8,9 +8,10 @@
     "base_sha": "58ead57015f67ea5281af520fe7fcf46d68219d5",
     "branch": "codex/student/home-onboarding",
     "head_sha": "13d527b394fcab553944e4a97e4c16eda0c553f3",
-    "next": "Слить проверенный PR и подтвердить фактический выпуск",
+    "merge_sha": "8c71158ca82a234370f6b1ae39b99c3aa4485e42",
+    "next": "Проверить автоматическую выкладку и полный SHA на сайте",
     "pr": 70,
-    "stage": "integration",
+    "stage": "publication",
     "test_run": 46059986368
   },
   "release": null,
