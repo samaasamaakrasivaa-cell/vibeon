@@ -37,7 +37,7 @@ export function WeekGrid(props: {
   days: Day[]; lessons: GridLesson[]; offs?: GridOff[]; hourFrom: number; hourTo: number; nowDay: number; nowMin: number; todayIso: string;
   students: GridStudent[]; groups?: GridStudent[]; weekTotal: string; legend: boolean; preset?: { studentId?: string; groupId?: string; trial?: boolean; date?: string };
 }) {
-  const { t } = useT();
+  const { t, lang } = useT();
   const { days, hourFrom, hourTo } = props;
   const [over, setOver] = useState<Record<string, { status: GridLesson["status"]; charged: boolean }>>({});
   useEffect(() => {
@@ -252,13 +252,18 @@ export function WeekGrid(props: {
       )}
 
       {newAt && (
-        <NewLessonDialog now={{ iso: props.todayIso, min: props.nowMin }} at={newAt} students={props.students} groups={props.groups ?? []} preset={props.preset} offs={offs} onClose={() => setNewAt(null)}
-          onMarkOff={(x) => { setNewAt(null); setOff({ ...x, weekly: false, note: "" }); }} />
+        <NewLessonDialog now={{ iso: props.todayIso, min: props.nowMin }} at={newAt} students={props.students} groups={props.groups ?? []} preset={props.preset} offs={offs} onClose={() => setNewAt(null)} />
       )}
       {picked && (
-        <Dialog open onClose={() => setPicked(null)} title={t("off.selected", { day: `${picked.day.dow} ${picked.day.num}`, from: picked.start, to: picked.end })}>
+        <Dialog open onClose={() => setPicked(null)} title={
+          <time dateTime={picked.day.iso} className="inline-block border-b-2 border-[var(--accent)] pb-1 text-[clamp(1rem,4.5vw,1.4rem)] font-bold tracking-tight">
+            {new Date(`${picked.day.iso}T12:00:00Z`).toLocaleDateString(lang === "en" ? "en-GB" : "ru-RU", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" })}
+          </time>
+        }>
           <div className="flex flex-col gap-4">
-            <TimeRangeFields range={picked} onChange={(range) => setPicked({ day: picked.day, ...range })} />
+            <div className="mx-auto w-full max-w-xs">
+              <TimeRangeFields range={picked} onChange={(range) => setPicked({ day: picked.day, ...range })} />
+            </div>
             {pickedInvalid && <p className="alert m-0" role="alert">{t("off.err")}</p>}
             <div className="flex flex-col gap-2">
               <button type="button" className="btn primary w-full" disabled={pickedInvalid} onClick={() => { setNewAt({ date: picked.day.iso, start: picked.start, end: picked.end }); setPicked(null); }}><Icon name="plus" size="sm" />{t("off.newLesson")}</button>
@@ -385,7 +390,7 @@ function TimeOffDialog({ x, onClose }: { x: OffDraft; onClose: () => void }) {
   );
 }
 
-function NewLessonDialog({ at, students, groups, preset, onClose, now, offs = [], onMarkOff }: { at: LessonTime; students: GridStudent[]; groups: GridStudent[]; preset?: { studentId?: string; groupId?: string; trial?: boolean; date?: string }; onClose: () => void; now: { iso: string; min: number }; offs?: GridOff[]; onMarkOff?: (x: TimeRange & { date: string }) => void }) {
+function NewLessonDialog({ at, students, groups, preset, onClose, now, offs = [] }: { at: LessonTime; students: GridStudent[]; groups: GridStudent[]; preset?: { studentId?: string; groupId?: string; trial?: boolean; date?: string }; onClose: () => void; now: { iso: string; min: number }; offs?: GridOff[] }) {
   const { t } = useT();
   const { pending, error, run } = useRun();
   const [studentId, setStudentId] = useState<string | null>(preset?.studentId ?? null);
@@ -476,8 +481,6 @@ function NewLessonDialog({ at, students, groups, preset, onClose, now, offs = []
         )}
         {error && <div className="alert">{error}</div>}
       </div>
-      {/* слот можно не занимать уроком, а отметить нерабочим */}
-      {onMarkOff && <button type="button" className="btn plain sm offmark" disabled={pending || invalidTime} onClick={() => onMarkOff({ date, start, end: end ?? hm(Math.min(24 * 60, startMin + presetDuration)) })}><Icon name="lockI" size="sm" />{t("off.mark")}</button>}
       <div className="actions">
         <button type="button" className="btn secondary" onClick={onClose}>{t("common.cancel")}</button>
         <button
