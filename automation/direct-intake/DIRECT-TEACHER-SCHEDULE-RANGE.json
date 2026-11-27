@@ -1,10 +1,15 @@
 {
   "claim_id": "339514e54f8047869209a1bf34a28977",
   "handoff": null,
-  "issue": null,
+  "issue": 58,
   "key": "DIRECT-TEACHER-SCHEDULE-RANGE",
   "owner": "teacher",
-  "progress": null,
+  "progress": {
+    "base_sha": "1687278b3def1e1e81cce166e4dfcd0f01684be7",
+    "branch": "codex/teacher/schedule-range",
+    "next": "Проверить редактирование выделенного времени, затем независимое ревью и CI",
+    "stage": "implementation"
+  },
   "release": null,
   "source": "direct",
   "version": 1
