@@ -23,6 +23,11 @@ async function me() {
   return requireUser("TEACHER");
 }
 
+export async function refreshTeacherDashboard() {
+  await me();
+  revalidatePath("/teacher");
+}
+
 async function ownLesson(id: string, teacherId: string) {
   const l = await db.lessonInstance.findUnique({ where: { id } });
   if (!l || l.teacherId !== teacherId) throw new Error("not found");

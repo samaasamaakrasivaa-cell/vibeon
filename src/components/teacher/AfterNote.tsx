@@ -15,9 +15,10 @@ export function AfterNote({ id, next }: { id: string; next: { date: string; note
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   if (!next) return <span className="small muted tl-nonext">{t("today.noNext")}</span>;
+  const label = t(next.note?.trim() ? "today.afterEdit" : "today.after");
   if (!open) return (
-    <button type="button" className="btn plain sm afterbtn" onClick={() => setOpen(true)}>
-      <Icon name="msg" size="sm" />{next.note ? t("today.afterEdit") : t("today.after")}
+    <button type="button" className="btn plain sm afterbtn min-w-0" onClick={() => { setV(next.note ?? ""); setErr(null); setOpen(true); }}>
+      <Icon name="msg" size="sm" /><span className="min-w-0 whitespace-normal">{label}</span>
     </button>
   );
   const save = async () => {
@@ -30,7 +31,7 @@ export function AfterNote({ id, next }: { id: string; next: { date: string; note
   const changed = v.trim() !== (next.note ?? "").trim();
   return (
     <div className="afternote">
-      <textarea className="afternote-in" rows={3} autoFocus value={v} onChange={(e) => setV(e.target.value)} placeholder={t("today.afterPh")} aria-label={t("today.after")} />
+      <textarea className="afternote-in" rows={3} autoFocus value={v} onChange={(e) => setV(e.target.value)} placeholder={t("today.afterPh")} aria-label={label} />
       <span className="afternote-to"><Icon name="cal" size="sm" />{t("today.afterTo", { d: next.date })}</span>
       <div className="afternote-btns">
         <button type="button" className="btn plain sm" onClick={() => { setV(next.note ?? ""); setOpen(false); }}>{t("common.cancel")}</button>
