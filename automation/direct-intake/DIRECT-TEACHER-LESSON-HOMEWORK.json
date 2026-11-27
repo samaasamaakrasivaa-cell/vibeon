@@ -8,9 +8,9 @@
     "base_sha": "58ead57015f67ea5281af520fe7fcf46d68219d5",
     "branch": "codex/teacher/lesson-homework",
     "head_sha": "29faeb65d2f5d779d7e61a7b550abc37891bb647",
-    "next": "Смежное замечание исправлено и проверено с видом ученика. Ожидаются проверка нового SHA и CI.",
+    "next": "Независимое ревью и CI зелёные. Ожидаются проверка сайта по #68 и допуск Tech Lead на новый SHA.",
     "pr": 73,
-    "stage": "review",
+    "stage": "integration",
     "test_run": 46063132520
   },
   "release": null,
