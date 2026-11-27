@@ -24,6 +24,7 @@ import { useT } from "@/lib/i18n/client";
 import { numbered, PRESET, RUBRICS, SAMPLE, TYPES, type Rubric, type TaskType } from "@/lib/tasks/catalog";
 import { saveTask, setRubrics } from "@/lib/teacher/courses";
 import type { LiveState } from "@/lib/live/access";
+import type { LessonOccurrence } from "@/lib/live/lesson-session";
 import { LessonCheer } from "../awards/LessonCheer";
 import type { CatalogItem } from "@/lib/awards/catalog";
 import { CelebrateAwards, type NewAward } from "../awards/StudentAwards";
@@ -38,6 +39,7 @@ export type ClassData = {
   teacher: { id: string; name: string; lastName: string | null }; student: { id: string; userId: string | null; name: string; lastName: string | null; level: string | null; course: string | null; gender?: string | null } | null;
   title: string | null; crumbs: string | null; course: { title: string; cover: string | null } | null; rubrics: Rubric[]; tasks: CTask[]; teacherInfo?: TInfo;
   answers: Answers; statuses: Record<string, string>; reviews: Record<string, Review>; aiDrafts: Record<string, AiCheck>; live: LiveState;
+  lessonSession?: LessonOccurrence & { active: boolean };
   times?: Record<string, [number, number]>; // активное время над заданием: [на уроке, вне урока (домашка)], мс
   tgLinked?: boolean | null; // ученик: подключён ли Telegram-бот (кнопка под сообщением «подключите бот»)
   carriedFrom?: string | null; // тот же урок продолжаем с прошлого занятия — ответы оттуда
@@ -54,10 +56,27 @@ export type ClassData = {
   byStudent?: Record<string, { answers: Answers; statuses: Record<string, string>; reviews: Record<string, Review>; aiDrafts: Record<string, AiCheck>; words: Word[]; note?: string; times?: Record<string, [number, number]> }>;
 };
 
+function StartLessonButton({ active, onStart }: { active: boolean; onStart: () => Promise<boolean> }) {
+  const { t } = useT();
+  const [state, setState] = useState<"pending" | "error" | "done" | null>(null);
+  if (active || state === "done") return <span className="small">{t("today.live")}</span>;
+
+  return (
+    <>
+      <button type="button" className="btn primary sm" disabled={state === "pending"} onClick={async () => {
+        setState("pending");
+        setState(await onStart() ? "done" : "error");
+      }}>{t("cls.startLesson")}</button>
+      {state === "error" && <span className="small text-bad" role="alert">{t("cls.startLessonError")}</span>}
+    </>
+  );
+}
+
 export function ClassRoom({ d }: { d: ClassData }) {
   const { t, lang } = useT();
   const router = useRouter();
   const teacher = d.role === "teacher";
+  const lessonSession = d.lessonSession;
   const [tab, setTab] = useState<"lesson" | "homework" | "words" | "board">(d.initialTab ?? "lesson");
   const [addHwTip, setAddHwTip] = useState(!!d.addHw); // пришли из «Домашки» по «+»: подсказать, как добавить задания
   // «Разобрать ошибки» в домашке: только задания с ошибками; учитель включает — у ученика тоже (live.hwErr)
@@ -515,6 +534,10 @@ export function ClassRoom({ d }: { d: ClassData }) {
             ))}
           </nav>
           <div className="atr">
+            {teacher && lessonSession && (
+              <StartLessonButton key={`${lessonSession.startsAt}:${lessonSession.revision}`} active={lessonSession.active}
+                onStart={async () => !!(await send("startLessonSession", { startsAt: lessonSession.startsAt, revision: lessonSession.revision })).ok} />
+            )}
             {d.callLink && <a href={d.callLink} target="_blank" rel="noreferrer" className="btn sm cls-call cls-call-top" aria-label={t("cls.joinCall")}><Icon name="phone" size="sm" /></a>}
             {/* ответы видит только учитель; выключить — например, на время демонстрации экрана */}
             {teacher && <button type="button" className={`btn sm ${showKeys ? "tinted" : "secondary"}`} aria-pressed={showKeys} title={showKeys ? t("cls.keysHide") : t("cls.keysShow")} onClick={() => setShowKeys((v) => { try { localStorage.setItem("vibeon.keys", v ? "0" : "1"); } catch { /* приватный режим */ } return !v; })}><Icon name={showKeys ? "eye" : "eyeoff"} size="sm" />{t("cls.keys")}</button>}
