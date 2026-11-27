@@ -13,25 +13,26 @@
   "lease": {
     "token": "9cb7d3a0cddb453ca32563eb20945c3a",
     "started_at": "2026-11-27T18:07:07.945564Z",
-    "expires_at": "2026-11-27T21:07:32.075132Z"
+    "expires_at": "2026-11-27T21:08:00.682195Z"
   },
   "checkpoint": {
     "issue": 25,
-    "stage": "refresh_base",
+    "stage": "request_review",
     "branch": "codex/vocabulary/voc-09",
-    "base_sha": "c63dc04edf1e7f25be1a4c677d7759a86689e5e3",
-    "next": "Integrate current main into task branch (nonoverlapping files); exact new head must pass CI and independent review before merge.",
-    "head_sha": "b43d0e40841bc9e76c85869d479e072b9ab943d2",
+    "base_sha": "5d51fb5096e96a93d0aed906714c521691692470",
+    "next": "Verify current PR head and existing review requests; request native review once on refreshed head, observe new CI. No merge before checks pass.",
+    "head_sha": "3256f64b47c95f5df9e45d3a194cf16e8206a932",
     "pr": 54,
-    "review_request_comment_id": 7224056260,
-    "ci_run_ids": [
-      46039270808
-    ],
-    "ci_status": "success",
-    "subject_tests": "passed_in_CI_46039270808",
-    "review_summary_id": 7224060100,
-    "review_receipt_id": 7224222345,
-    "refresh_base_sha": "5d51fb5096e96a93d0aed906714c521691692470"
+    "review_request_comment_id": null,
+    "ci_run_ids": [],
+    "ci_status": "pending",
+    "subject_tests": "pending_new_head",
+    "review_summary_id": null,
+    "review_receipt_id": null,
+    "refresh_base_sha": "5d51fb5096e96a93d0aed906714c521691692470",
+    "prior_head_sha": "b43d0e40841bc9e76c85869d479e072b9ab943d2",
+    "prior_ci_run_id": 46039270808,
+    "prior_review_summary_id": 7224060100
   },
   "last_probe": {
     "type": "background_native_review",
