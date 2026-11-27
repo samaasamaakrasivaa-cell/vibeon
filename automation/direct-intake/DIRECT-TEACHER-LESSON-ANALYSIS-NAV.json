@@ -8,9 +8,9 @@
     "base_sha": "82473a1199a160651ae2bed2f8365b5e536d7c72",
     "branch": "codex/teacher/lesson-analysis-navigation",
     "head_sha": "08377c07c5decc66fb3035dbabbdd9bc49073366",
-    "next": "PR открыт. На текущей базе запущены браузерная проверка, профильное ревью и CI.",
+    "next": "Точный CI, независимое ревью и сценарии на синтетике прошли. Ожидаются профильный допуск и доступность штатной публикации.",
     "pr": 86,
-    "stage": "review",
+    "stage": "integration",
     "test_run": 46069657805
   },
   "release": null,
