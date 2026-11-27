@@ -1,6 +1,9 @@
 {
   "claim_id": "2a6371d2d7424c73a5002fe16c5ac744",
-  "handoff": null,
+  "handoff": {
+    "approval_comment": 7228177942,
+    "to": "teacher"
+  },
   "issue": 72,
   "key": "DIRECT-TEACHER-COURSES-TESTS",
   "owner": "teacher",
