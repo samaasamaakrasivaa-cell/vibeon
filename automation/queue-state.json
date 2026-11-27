@@ -13,27 +13,25 @@
   "lease": {
     "token": "25ffd93a72414559a7e784b7ba1148f1",
     "started_at": "2026-11-27T19:05:40.453646Z",
-    "expires_at": "2026-11-27T22:06:07.365895Z"
+    "expires_at": "2026-11-27T22:06:40.463232Z"
   },
   "checkpoint": {
     "issue": 25,
-    "stage": "refresh_main",
+    "stage": "request_review",
     "branch": "codex/vocabulary/voc-09",
-    "base_sha": "5d51fb5096e96a93d0aed906714c521691692470",
-    "next": "Integrate current main 34d61672958edde1742eac6079bed0da747a22dd into task head using non-force CAS; no overlapping changed files; verify new CI/review; site DNS unavailable locally and web endpoints inaccessible.",
-    "head_sha": "3256f64b47c95f5df9e45d3a194cf16e8206a932",
+    "base_sha": "34d61672958edde1742eac6079bed0da747a22dd",
+    "next": "Refresh succeeded with identical seven task blobs, current main as second parent. Request native review once for exact new head after checking comments; verify CI and main; live health/version inaccessible locally and via web.",
+    "head_sha": "589b43e29c47e11cbbe349266c918f869b585b50",
     "pr": 54,
-    "review_request_comment_id": 7225166354,
-    "ci_run_ids": [
-      46047129614
-    ],
-    "ci_status": "success",
-    "subject_tests": "passed_isolated_CI",
-    "review_summary_id": 7224060100,
-    "review_receipt_id": 7225191597,
+    "review_request_comment_id": null,
+    "ci_run_ids": [],
+    "ci_status": "pending",
+    "subject_tests": "pending_new_head",
+    "review_summary_id": null,
+    "review_receipt_id": null,
     "refresh_base_sha": "34d61672958edde1742eac6079bed0da747a22dd",
-    "prior_head_sha": "b43d0e40841bc9e76c85869d479e072b9ab943d2",
-    "prior_ci_run_id": 46039270808,
+    "prior_head_sha": "3256f64b47c95f5df9e45d3a194cf16e8206a932",
+    "prior_ci_run_id": 46047129614,
     "prior_review_summary_id": 7224060100
   },
   "last_probe": {
