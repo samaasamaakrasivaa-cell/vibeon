@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { randomUUID } from "node:crypto";
 import { Prisma, type LessonStatus, type PayType } from "@prisma/client";
+import { callLinkOf } from "../lessons/call-link";
 import { db } from "../db";
 import { requireUser } from "../auth/session";
 import { fromZoned, hhmm, isoDay, parseIsoDay } from "../time";
@@ -184,6 +185,24 @@ export async function setCallLink(lessonId: string, link: string): Promise<Resul
   }
   refresh(l.studentId);
   revalidatePath(`/class/${lessonId}`);
+  return { ok: true };
+}
+
+/** Ссылка из карточки на главной относится к одному занятию. */
+export async function setLessonCallLink(lessonId: string, link: string): Promise<Result> {
+  const { t } = await getT();
+  const teacher = await me();
+  const lesson = await ownLesson(lessonId, teacher.id);
+  const value = callLinkOf(link.trim());
+  if (!value || value.length > 500) return { ok: false, error: t("tp.err.link") };
+  if (lesson.status !== "PLANNED") return { ok: false, error: t("sch.callSaveError") };
+
+  await db.lessonInstance.updateMany({
+    where: { teacherId: teacher.id, ...(lesson.slotId ? { slotId: lesson.slotId } : { id: lesson.id }) },
+    data: { callLink: value },
+  });
+  refresh(lesson.studentId);
+  revalidatePath("/student");
   return { ok: true };
 }
 
