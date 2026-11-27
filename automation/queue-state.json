@@ -13,15 +13,16 @@
   "lease": {
     "token": "c9b6542497ea4205a9dc768b5883192f",
     "started_at": "2026-11-27T16:59:00.721629Z",
-    "expires_at": "2026-11-27T20:06:57.920369Z"
+    "expires_at": "2026-11-27T20:07:20.629901Z"
   },
   "checkpoint": {
     "issue": 25,
-    "stage": "pr_create",
+    "stage": "review_request",
     "branch": "codex/vocabulary/voc-09",
     "base_sha": "c63dc04edf1e7f25be1a4c677d7759a86689e5e3",
-    "next": "Branch head verified; open one draft PR. CI and subject checks not yet run.",
-    "head_sha": "b43d0e40841bc9e76c85869d479e072b9ab943d2"
+    "next": "Send one native Codex Review request for exact head, reconcile comment and CI; no merge pending checks.",
+    "head_sha": "b43d0e40841bc9e76c85869d479e072b9ab943d2",
+    "pr": 54
   },
   "last_probe": {
     "type": "background_native_review",
