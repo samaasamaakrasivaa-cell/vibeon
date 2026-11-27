@@ -13,22 +13,25 @@
   "lease": {
     "token": "9cb7d3a0cddb453ca32563eb20945c3a",
     "started_at": "2026-11-27T18:07:07.945564Z",
-    "expires_at": "2026-11-27T21:07:07.945564Z"
+    "expires_at": "2026-11-27T21:07:32.075132Z"
   },
   "checkpoint": {
     "issue": 25,
-    "stage": "await_ci_review",
+    "stage": "refresh_base",
     "branch": "codex/vocabulary/voc-09",
     "base_sha": "c63dc04edf1e7f25be1a4c677d7759a86689e5e3",
-    "next": "Reconcile PR 54 exact head, CI run and native review receipt; fix findings/failing subject tests on task branch, recheck CI/review on each new head. No merge until all subject tests, required CI, independent review and approvals pass.",
+    "next": "Integrate current main into task branch (nonoverlapping files); exact new head must pass CI and independent review before merge.",
     "head_sha": "b43d0e40841bc9e76c85869d479e072b9ab943d2",
     "pr": 54,
     "review_request_comment_id": 7224056260,
     "ci_run_ids": [
       46039270808
     ],
-    "ci_status": "in_progress",
-    "subject_tests": "pending"
+    "ci_status": "success",
+    "subject_tests": "passed_in_CI_46039270808",
+    "review_summary_id": 7224060100,
+    "review_receipt_id": 7224222345,
+    "refresh_base_sha": "5d51fb5096e96a93d0aed906714c521691692470"
   },
   "last_probe": {
     "type": "background_native_review",
