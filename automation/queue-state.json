@@ -10,19 +10,21 @@
     16,
     18
   ],
-  "lease": {
-    "token": "c9b6542497ea4205a9dc768b5883192f",
-    "started_at": "2026-11-27T16:59:00.721629Z",
-    "expires_at": "2026-11-27T20:07:20.629901Z"
-  },
+  "lease": null,
   "checkpoint": {
     "issue": 25,
-    "stage": "review_request",
+    "stage": "await_ci_review",
     "branch": "codex/vocabulary/voc-09",
     "base_sha": "c63dc04edf1e7f25be1a4c677d7759a86689e5e3",
-    "next": "Send one native Codex Review request for exact head, reconcile comment and CI; no merge pending checks.",
+    "next": "Reconcile PR 54 exact head, CI run and native review receipt; fix findings/failing subject tests on task branch, recheck CI/review on each new head. No merge until all subject tests, required CI, independent review and approvals pass.",
     "head_sha": "b43d0e40841bc9e76c85869d479e072b9ab943d2",
-    "pr": 54
+    "pr": 54,
+    "review_request_comment_id": 7224056260,
+    "ci_run_ids": [
+      46039270808
+    ],
+    "ci_status": "in_progress",
+    "subject_tests": "pending"
   },
   "last_probe": {
     "type": "background_native_review",
