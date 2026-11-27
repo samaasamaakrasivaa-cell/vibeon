@@ -8,9 +8,10 @@
     "base_sha": "1687278b3def1e1e81cce166e4dfcd0f01684be7",
     "branch": "codex/teacher/invite-schedule",
     "head_sha": "120f7f5b313cee59a7444fa2df877df696dcfd75",
-    "next": "Ревью и CI пройдены. Интеграция и выпуск после подтверждённой публикации задачи 60",
+    "merge_sha": "837209c104388c96898179f7052f053d8f1ea8ec",
+    "next": "Проверить CD 46055106507, точный SHA и доступность перехода к расписанию на рабочем сайте",
     "pr": 63,
-    "stage": "integration",
+    "stage": "publication",
     "test_run": 46053372204
   },
   "release": null,
