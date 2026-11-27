@@ -7,6 +7,7 @@ import type { DictKey } from "@/lib/i18n/dict";
 import { Flag } from "./Flag";
 import { Dialog } from "../Dialog";
 import { answerCore, draftText, finishPlacement, finishTexts, goSection, notePlay, peekCore, peekSpeak, reviseCore, saveWriting, startPlacement } from "@/lib/placement/actions";
+import { readSavedFixRange } from "@/lib/placement/fix-answer-read";
 import type { PView } from "@/lib/placement/run";
 import { Icon } from "../Icon";
 import type { IconName } from "../icon-paths";
@@ -87,11 +88,14 @@ export function PlacementRunner({ id, initial, sample, done, home, canFlag = fal
     const r = await peekCore(id, curIdx - b).catch(() => null);
     if (r?.ok) { setPast({ item: r.item as CoreItemV, given: r.given ?? null, dk: !!r.dk }); setBack(b); window.scrollTo({ top: 0 }); }
   });
+  const leavePast = async () => {
+    if (back > 1) { const q = await peekCore(id, curIdx - back + 1).catch(() => null); if (q?.ok) { setPast({ item: q.item as CoreItemV, given: q.given ?? null, dk: !!q.dk }); setBack(back - 1); return; } }
+    setPast(null); setBack(0); shownAt.current = Date.now();
+  };
   const revise = (val: string | number | null, dk: boolean) => start(async () => { // подсказку на исправлении не учитываем
     const r = await reviseCore(id, past!.item.id, val, dk).catch(() => null);
     if (!r?.ok) { setErr(t("pl.err.net")); return; }
-    if (back > 1) { const q = await peekCore(id, curIdx - back + 1).catch(() => null); if (q?.ok) { setPast({ item: q.item as CoreItemV, given: q.given ?? null, dk: !!q.dk }); setBack(back - 1); return; } }
-    setPast(null); setBack(0); shownAt.current = Date.now();
+    await leavePast();
   });
   const open = v.open ?? [];
   const vp = v as { parts?: string[]; todo?: string[] };
@@ -126,7 +130,7 @@ export function PlacementRunner({ id, initial, sample, done, home, canFlag = fal
       {between ? <Between from={between.from} to={between.to} onGo={() => { setBetween(null); shownAt.current = Date.now(); }} /> : <>
         {v.section === "intro" && <Intro sample={sample} pending={pending} parts={PARTS.filter((p) => (vp.todo ?? vp.parts ?? PARTS).includes(p))} onStart={() => step(() => startPlacement(id))} />}
         {block && (past && back > 0
-          ? <CoreStep key={`past-${past.item.id}`} item={past.item} n={curIdx - back - from + 1} initial={past.dk ? "" : past.given ?? ""} initialDk={past.dk} past pending={pending} onBack={curIdx - back > from ? () => openPast(back + 1) : undefined} onAnswer={revise} />
+          ? <CoreStep key={`past-${past.item.id}`} item={past.item} n={curIdx - back - from + 1} initial={past.dk ? "" : past.given ?? ""} initialDk={past.dk} past pending={pending} onBack={curIdx - back > from ? () => openPast(back + 1) : undefined} onAnswer={revise} onLeavePast={() => start(leavePast)} />
           : (v as Core).item && <CoreStep key={(v as Core).item!.id} item={(v as Core).item!} n={curIdx - from + 1} pending={pending} onBack={curIdx > from ? () => openPast(1) : undefined} onAnswer={(val, dk, h, tr, sure) => step(() => answerCore(id, (v as Core).item!.id, val, ms(), dk, h, tr, sure))} />)}
         {(v.section === "reading" || v.section === "listening") && (
           <TextStep key={(v as unknown as TextV).items.map((x) => x.id).join()} v={v as unknown as TextV} pending={pending} attempt={id} onFinish={() => step(() => finishTexts(id))} />
@@ -261,7 +265,7 @@ function Intro({ sample, pending, onStart, parts = [...PARTS] }: { sample: strin
 
 // ───────── Грамматика и лексика ─────────
 
-function CoreStep({ item: it, n, pending, onAnswer, onBack, initial, initialDk, past }: { item: CoreItemV; n: number; pending: boolean; onAnswer: (val: string | number | null, dk: boolean, hinted: boolean, tried?: number[], sure?: boolean) => void; onBack?: () => void; initial?: string | number; initialDk?: boolean; past?: boolean }) {
+function CoreStep({ item: it, n, pending, onAnswer, onBack, onLeavePast, initial, initialDk, past }: { item: CoreItemV; n: number; pending: boolean; onAnswer: (val: string | number | null, dk: boolean, hinted: boolean, tried?: number[], sure?: boolean) => void; onBack?: () => void; onLeavePast?: () => void; initial?: string | number; initialDk?: boolean; past?: boolean }) {
   const { t } = useT();
   const [val, setVal] = useState<string | number>(initial ?? "");
   const [dk, setDk] = useState(!!initialDk);
@@ -277,7 +281,11 @@ function CoreStep({ item: it, n, pending, onAnswer, onBack, initial, initialDk, 
     return () => clearTimeout(h);
   }, [it.id, it.type, past]);
   // «найди и исправь»: выбранное слово и исправление → «номер::текст»
-  const [fixI, setFixI] = useState<number | null>(() => (typeof initial === "string" && initial.includes("::") ? Number(initial.split("::")[0]) : null));
+  const [fixI, setFixI] = useState<number | null>(() => {
+    const match = typeof initial === "string" ? /^(\d+)::/.exec(initial) : null;
+    const index = match ? Number(match[1]) : -1;
+    return index >= 0 && index < it.q.split(" ").length ? index : null;
+  });
   const [fixT, setFixT] = useState(() => (typeof initial === "string" && initial.includes("::") ? initial.split("::").slice(1).join("::") : ""));
   const fixVal = fixI === null || !fixT.trim() ? "" : `${fixI}::${fixT.trim()}`;
   const value = it.type === "fix" ? fixVal : val;
@@ -291,6 +299,22 @@ function CoreStep({ item: it, n, pending, onAnswer, onBack, initial, initialDk, 
   const parts = (s2: string) => { const [a, b] = s2.split("___"); return <p className="plq">{a}{input}{b}</p>; };
   const empty = !dk && (value === "" || (typeof value === "string" && !value.trim()));
   const typed = it.type !== "mcq" && it.type !== "fix";
+  const range = past && it.type === "fix" ? readSavedFixRange(it.q, initial) : null;
+  if (range) {
+    return (
+      <section className="card flex flex-col gap-4" data-item={it.id}>
+        <div className="plpast">{t("pl.flagQ", { n })}</div>
+        <p className="plq plfix">{range.words.map((word, index) => (
+          <span key={index} className="plfixw">{range.span && index >= range.span.start && index <= range.span.end ? <mark>{word}</mark> : word}</span>
+        ))}</p>
+        <p aria-label={t("pl.answer")} data-stored-fix-answer>{range.text}</p>
+        <div className="plactions">
+          {onBack && <button type="button" className="btn plain mr-auto" disabled={pending} onClick={onBack}>{t("pl.prevQ")}</button>}
+          <button type="button" className="btn primary" disabled={pending} onClick={onLeavePast}>{t("pl.next")}</button>
+        </div>
+      </section>
+    );
+  }
   return (
     <section className="card flex flex-col gap-4" data-item={it.id}>
       {past && <div className="plpast"><Icon name="chevl" size="sm" />{t("pl.pastNote", { n })}</div>}
