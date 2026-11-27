@@ -286,7 +286,7 @@ export async function Dashboard({ user, role, day, top }: { user: User; role: "T
                   </div>
                   <div className="tl-act">
                     <Link href={`/class/${l.id}`} className={`btn sm ${role === "TEACHER" || soon || live ? "primary" : "secondary"}`}><Icon name="class" size="sm" />{role === "TEACHER" ? t("dash.openClass") : t("cls.enter")}</Link>
-                    {currentHomework && <Link href={`/class/${l.id}?tab=homework`} className={`btn sm ${currentHomework.reminder ? "tinted" : "secondary"}`}><Icon name="home" size="sm" />{currentHomework.label}</Link>}
+                    {currentHomework && <Link href={`/class/${l.id}?tab=homework`} className={`btn sm ${currentHomework.reminder ? "tinted" : "secondary"}`}><Icon name="home" size="sm" /><span className="min-w-0 whitespace-normal">{currentHomework.label}</span></Link>}
                     {role === "TEACHER" && <LessonCall lessonId={l.id} href={callLink} canAdd={l.status === "PLANNED"} />}
                     <div className="tl-quick">
                     {/* урок прошёл — вместо «Перенести / Отменить» комментарий после урока (уйдёт в заметку к следующему) */}

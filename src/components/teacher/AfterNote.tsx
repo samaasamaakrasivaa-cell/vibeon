@@ -17,8 +17,8 @@ export function AfterNote({ id, next }: { id: string; next: { date: string; note
   if (!next) return <span className="small muted tl-nonext">{t("today.noNext")}</span>;
   const label = t(next.note?.trim() ? "today.afterEdit" : "today.after");
   if (!open) return (
-    <button type="button" className="btn plain sm afterbtn" onClick={() => { setV(next.note ?? ""); setErr(null); setOpen(true); }}>
-      <Icon name="msg" size="sm" />{label}
+    <button type="button" className="btn plain sm afterbtn min-w-0" onClick={() => { setV(next.note ?? ""); setErr(null); setOpen(true); }}>
+      <Icon name="msg" size="sm" /><span className="min-w-0 whitespace-normal">{label}</span>
     </button>
   );
   const save = async () => {
