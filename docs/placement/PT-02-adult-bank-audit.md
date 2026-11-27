@@ -65,20 +65,25 @@
 ## Проверки
 
 - Проверка формата банка показала 0 ошибок. Осталось 137 замечаний Adult. Среди них стабильные ID у заданий, перенесённых между уровнями, и эвристические предупреждения по разборам и частоте тем. Банк Teens дал 0 ошибок и 21 замечание.
-- Регрессия Placement проверила все 914 заданий ядра, 271 производное задание и 347 объявленных вариантов Fix. Отдельно проверены 16 исключений на старых снимках, обе схемы записи ответа, работа с диапазоном и допустимые альтернативы. Проверки обратной связи, переоценки и типизации прошли. Симуляции Adult и Teens завершились.
+- Регрессия Placement проверила все 914 заданий ядра, 271 производное задание и 356 объявленных вариантов Fix. Отдельно проверены 16 исключений на старых снимках, обе схемы записи ответа, работа с диапазоном и допустимые альтернативы. Проверки обратной связи, переоценки и типизации прошли. Симуляции Adult и Teens завершились.
 - В Chromium на отдельной PostgreSQL с синтетическими данными проверены новая инструкция при выборе фразы касаниями и при повторном открытии, показ требования к форме на старом активном снимке, сохранение ответа со скобками, вопросы чтения и аудирования, воспроизведение MP3 и обычный вопрос Teens. Опубликованная историческая попытка до и после просмотра совпала целиком.
 - Сравнение с базой подтвердило стабильность всех ID, уровней, подуровней и тегов тем. Позиции ключей выбора сохранены. Файлы каталога, карта связей тем и банк Teens совпадают с базой.
 
-## Реестр 148 затронутых идентификаторов
+## Реестр 157 затронутых идентификаторов
 
-По каждой строке указана основная категория. Итог по категориям — дистракторы 45, контекст и стиль 32, инструкция и форма 31, ключ и альтернативы 27, производный fix 8, соответствие теме 5.
+По каждой строке указана основная категория. Итог по категориям — дистракторы 45, инструкция и форма 34, ключ и альтернативы 33, контекст и стиль 32, производный fix 8, соответствие теме 5.
 
-По возможному влиянию на историю — A 33, B 74, C 41.
+По возможному влиянию на историю — A 39, B 77, C 41.
 
 | ID | Категория | История | Причина | До и после |
 |---|---|:---:|---|---|
-| `F-G-A1-38` | Дистракторы | B | Any в утвердительном сообщении о наличии здесь не подходит. | условие «Can I have a water, please?» → «I've got any water and a lemon. I can make us a drink.» |
+| `F-G-A1-06` | Ключ и альтернативы | A | Без указания близости правильны и these, и those. | ключ «These» → «These / Those» |
+| `F-G-A1-17` | Ключ и альтернативы | A | Просьбу разрешить сесть естественно выражают Can, Could и May. | ключ «Can» → «Can / Could / May» |
+| `F-G-A1-38` | Дистракторы | B | Any в утвердительном сообщении о наличии здесь не подходит. | условие «Can I have a water, please?» → «I've got any water and a lemon. I can make us a drink.»<br>инструкция «общая» → «Choose between some and any.» |
+| `F-G-A1-50` | Ключ и альтернативы | A | После love в данном контексте уместны герундий и инфинитив. | ключ «watching» → «watching / to watch» |
+| `F-G-A1-59` | Инструкция и форма | B | Возможны enough и many, если проверяемая пара не названа. | инструкция «общая» → «Choose between some and any.» |
 | `F-G-A1-65` | Производный Fix | B | Наследует уточнение формулировки или разбора исходного задания G-A1-65. | условие «I'm really hungry but I didn't have breakfast.» → «I'm really hungry because of I didn't have breakfast.» |
+| `F-G-A2-07` | Инструкция и форма | B | Will rain грамматически допустимо в прогнозе. Видимое требование уточняет нужную конструкцию. | инструкция «общая» → «Use be going to for a prediction based on what you can see.» |
 | `F-G-A2-106` | Дистракторы | B | After then может означать «после того момента». After after явно дублирует слово. | условие «Download the form. After then, fill in your name and address.» → «Download the form. After after, fill in your name and address.» |
 | `F-G-A2-109` | Ключ и альтернативы | A | That подходит в определительном придаточном о человеке. | ключ «who» → «who / that» |
 | `F-G-A2-110` | Ключ и альтернативы | A | That подходит в определительном придаточном о предмете. | ключ «which» → «which / that» |
@@ -87,6 +92,7 @@
 | `F-G-A2-130` | Дистракторы | B | Производное задание переставляет прилагательные местами. | условие «We saw an older than red bus outside the station.» → «We saw two red old buses outside the station.»<br>инструкция «общая» → «Use the usual order of age and colour.»<br>ключ «old» → «old red» |
 | `F-G-A2-18` | Ключ и альтернативы | A | Might, may и could выражают возможность. | ключ «might» → «might / may / could» |
 | `F-G-A2-24` | Ключ и альтернативы | A | При переходе через мост over и across подходят. | условие «Walk at the bridge and the restaurant is on your left.» → «Walk at the bridge. The restaurant is on your left on the other side.»<br>ключ «across» → «across / over» |
+| `F-G-A2-34` | Инструкция и форма | B | Запланированное действие можно выразить и Present Continuous, если не названа форма. | инструкция «общая» → «Use be going to for the original plan.» |
 | `F-G-B1-11` | Ключ и альтернативы | A | That тоже вводит определительное придаточное о человеке. | ключ «who» → «who / that» |
 | `F-G-B1-110` | Производный Fix | C | Наследует уточнение формулировки или разбора исходного задания G-B1-110. | условие «I've checked my inbox and spam folder. Perhaps you send the file to the wrong address yesterday.» → «Your card hasn't arrived. Perhaps you send it to my old address yesterday.» |
 | `F-G-B1-12` | Ключ и альтернативы | A | Место можно выразить через where, in which или at which. | ключ «where» → «where / in which / at which» |
@@ -104,14 +110,17 @@
 | `F-G-B2-113` | Ключ и альтернативы | C | Синхронизировали производное задание с бытовым контекстом. | условие «I did sent the invoice. Check the junk folder.» → «I did locked the door. I checked it twice.»<br>ключ «send» → «lock» |
 | `F-G-B2-13` | Ключ и альтернативы | A | Notwithstanding тоже вводит уступку с именной группой. | ключ «Despite / In spite of» → «Despite / In spite of / Notwithstanding» |
 | `F-G-B2-16` | Ключ и альтернативы | A | Be at home также удовлетворяет конструкции would rather + bare infinitive. | ключ «stay» → «stay / be» |
+| `F-G-B2-17` | Ключ и альтернативы | A | Пассивные reporting verbs естественно сохраняют значение слуха о кафе. | ключ «is said to serve» → «is said to serve / is reported to serve / is believed to serve» |
 | `F-G-B2-30` | Инструкция и форма | A | Сильный вывод о прошлом допускает простую или длительную форму модального перфекта. | условие «The ground is wet. It can't have rained last night.» → «The ground is wet. It must had rained last night.»<br>инструкция «общая» → «Use a modal perfect for a strong affirmative deduction.»<br>ключ «must have rained» → «must have rained / must have been raining» |
 | `F-G-B2-40` | Дистракторы | B | It’s time we go обычно в американском английском. Going без личного глагола создаёт настоящую ошибку. | условие «It's time we go home. It's getting dark.» → «It's time we going home. It's getting dark.»<br>инструкция «общая» → «Use the past simple after it’s time.» |
 | `F-G-B2-52` | Инструкция и форма | B | Срок сам по себе не делает Future Perfect единственной грамматической формой. | инструкция «общая» → «Use the future perfect to describe the length of time up to next June.» |
 | `F-G-B2-56` | Производный Fix | B | Наследует уточнение формулировки или разбора исходного задания G-B2-56. | условие «It took me months to be used to the cold winters in Canada.» → «It took me months to getting used to the cold winters in Canada.» |
 | `F-G-B2-61` | Производный Fix | B | Наследует уточнение формулировки или разбора исходного задания G-B2-61. | условие «Tom mustn't have been at the party. He was in Paris that weekend.» → «Tom can't has been at the party. He was in Paris that weekend.» |
 | `F-G-B2-66` | Ключ и альтернативы | A | Have и get образуют корректный каузатив. | ключ «get» → «get / have» |
+| `F-G-B2-67` | Ключ и альтернативы | A | Контекст не ограничивает время сообщения о будущем закрытии. | ключ «is reported» → «is reported / has been reported / was reported» |
 | `F-G-B2-72` | Ключ и альтернативы | A | Even so, still и nonetheless выражают тот же переход. | ключ «However / Nevertheless» → «However / Nevertheless / Even so / Still / Nonetheless / That said» |
 | `F-G-C1-08` | Ключ и альтернативы | A | Mandative should после essential допустимо в британском английском. | ключ «complete» → «complete / should complete» |
+| `F-G-C1-09` | Ключ и альтернативы | A | Простая и перфектная пассивные причастные конструкции подходят для законченного действия. | ключ «Built» → «Built / Having been built» |
 | `F-G-C1-121` | Ключ и альтернативы | A | Несколько формальных уступительных связок сочетаются с существительным. | инструкция «общая» → «Use a formal concessive linker.»<br>ключ «notwithstanding» → «notwithstanding / despite / in spite of» |
 | `F-G-C1-125` | Производный Fix | C | Наследует уточнение формулировки или разбора исходного задания G-C1-125. | разбор «For приблизительного числа используется or so после числа. Конструкция it would appear that смягчает вывод.» → «Для приблизительного количества or so ставится после числа: twenty people or so.» |
 | `F-G-C1-126` | Производный Fix | C | Наследует уточнение формулировки или разбора исходного задания G-C1-126. | условие «From the audit trail, it would appears that the edit was made after the deadline.» → «From the postmarks, it would appears that the letters were sent on different days.» |

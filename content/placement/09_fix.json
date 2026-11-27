@@ -31,7 +31,8 @@
     "from": "G-A1-50",
     "wrong": 1,
     "accept": [
-      "watching"
+      "watching",
+      "to watch"
     ]
   },
   {
@@ -52,7 +53,8 @@
     "from": "G-A1-06",
     "wrong": 0,
     "accept": [
-      "These"
+      "These",
+      "Those"
     ]
   },
   {
@@ -144,7 +146,9 @@
     "from": "G-A1-17",
     "wrong": 2,
     "accept": [
-      "Can"
+      "Can",
+      "Could",
+      "May"
     ]
   },
   {
@@ -194,14 +198,16 @@
     "wrong": 2,
     "accept": [
       "any"
-    ]
+    ],
+    "instruction_en": "Choose between some and any."
   },
   {
     "from": "G-A1-38",
     "wrong": 2,
     "accept": [
       "some"
-    ]
+    ],
+    "instruction_en": "Choose between some and any."
   },
   {
     "from": "G-A1-32",
@@ -313,7 +319,8 @@
     "wrong": 2,
     "accept": [
       "is going to"
-    ]
+    ],
+    "instruction_en": "Use be going to for a prediction based on what you can see."
   },
   {
     "from": "G-A2-34",
@@ -321,7 +328,8 @@
     "accept": [
       "am going to",
       "'m going to"
-    ]
+    ],
+    "instruction_en": "Use be going to for the original plan."
   },
   {
     "from": "G-A2-52",
@@ -920,14 +928,18 @@
     "from": "G-B2-67",
     "wrong": 2,
     "accept": [
-      "is reported"
+      "is reported",
+      "has been reported",
+      "was reported"
     ]
   },
   {
     "from": "G-B2-17",
     "wrong": 3,
     "accept": [
-      "is said to serve"
+      "is said to serve",
+      "is reported to serve",
+      "is believed to serve"
     ]
   },
   {
@@ -1107,7 +1119,8 @@
     "from": "G-C1-09",
     "wrong": 1,
     "accept": [
-      "Built"
+      "Built",
+      "Having been built"
     ]
   },
   {
