@@ -7,8 +7,10 @@
   "progress": {
     "base_sha": "58ead57015f67ea5281af520fe7fcf46d68219d5",
     "branch": "codex/student/home-onboarding",
-    "next": "Обновить главную и профиль ученика",
-    "stage": "implementation"
+    "head_sha": "20cc4d0cda9a5da0a36790ced8ab84c31ab04fc7",
+    "next": "Завершить браузерную проверку и подтвердить независимое ревью и CI",
+    "pr": 70,
+    "stage": "review"
   },
   "release": null,
   "source": "direct",
