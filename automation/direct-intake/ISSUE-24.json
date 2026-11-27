@@ -1,0 +1,16 @@
+{
+  "claim_id": "a2a94dce15c64c17ba1d2f57f2b1373a",
+  "handoff": null,
+  "issue": 24,
+  "key": "ISSUE-24",
+  "owner": "tech-lead",
+  "progress": {
+    "base_sha": "97fa7328aa833b02702a05dc63182148dafdab39",
+    "branch": "codex/homework/hw-01-review-queue",
+    "next": "Сверить сигнал очереди и ручные действия на синтетических сценариях без изменения истории.",
+    "stage": "implementation"
+  },
+  "release": null,
+  "source": "direct",
+  "version": 1
+}
