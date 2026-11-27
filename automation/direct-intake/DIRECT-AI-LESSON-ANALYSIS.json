@@ -8,9 +8,10 @@
     "base_sha": "8c71158ca82a234370f6b1ae39b99c3aa4485e42",
     "branch": "codex/ai-quality/lesson-analysis",
     "head_sha": "01ad4a0647489a29a4c6daaa60ac26c122040883",
-    "next": "После CD 349 и CI 347 вывести PR 75 из Draft, перепроверить main и провести выпуск",
+    "merge_sha": "81d7077b1ed3ae99c4d844c27171d0f2f4485ebb",
+    "next": "Проверить CD 46062893389, итоговый SHA сайта и сценарий перед закрытием карточки",
     "pr": 75,
-    "stage": "review",
+    "stage": "publication",
     "test_run": 46061742620
   },
   "release": null,
