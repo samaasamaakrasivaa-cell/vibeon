@@ -1,10 +1,15 @@
 {
   "claim_id": "5fc5c24fdb2d47f48a2e0a437f71d0fb",
   "handoff": null,
-  "issue": null,
+  "issue": 76,
   "key": "DIRECT-STUDENT-STUDY-SCHEDULE",
   "owner": "student",
-  "progress": null,
+  "progress": {
+    "base_sha": "97fa7328aa833b02702a05dc63182148dafdab39",
+    "branch": "codex/student/study-schedule",
+    "next": "Обновить расписание и сверить контракт отправленного отчёта",
+    "stage": "implementation"
+  },
   "release": null,
   "source": "direct",
   "version": 1
