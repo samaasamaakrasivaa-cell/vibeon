@@ -5,10 +5,13 @@
   "key": "DIRECT-TEACHER-COURSES-TESTS",
   "owner": "teacher",
   "progress": {
-    "base_sha": "b0c6eb3744c5f310cabaa5fc097deb297d402026",
+    "base_sha": "82473a1199a160651ae2bed2f8365b5e536d7c72",
     "branch": "codex/teacher/courses-tests-navigation",
-    "next": "Передача принята. Отдельный пункт в меню и сводка по статусам в существующей диагностике.",
-    "stage": "implementation"
+    "head_sha": "de691c962dde32ba48039db91be8b011fe27a7e5",
+    "next": "Реализовано и проверено на синтетике. Ожидаются профильное ревью и CI.",
+    "pr": 85,
+    "stage": "review",
+    "test_run": 46069647767
   },
   "release": null,
   "source": "direct",
