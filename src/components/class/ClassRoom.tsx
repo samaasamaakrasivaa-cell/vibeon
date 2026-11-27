@@ -21,7 +21,7 @@ import { useLive } from "./useLive";
 import { AiCheckView, type AiCheck } from "../ai/AiCheckView";
 import { AiReviewPanel, StudentCheck, type AiPick, type StudentCheckData } from "../ai/AiReviewPanel";
 import { askAi, checkAnswer } from "@/lib/ai/actions";
-import { setCallLink } from "@/lib/teacher/actions";
+import { refreshTeacherDashboard, setCallLink } from "@/lib/teacher/actions";
 import { useT } from "@/lib/i18n/client";
 import { numbered, PRESET, RUBRICS, SAMPLE, TYPES, type Rubric, type TaskType } from "@/lib/tasks/catalog";
 import { saveTask, setRubrics } from "@/lib/teacher/courses";
@@ -32,6 +32,7 @@ import type { CatalogItem } from "@/lib/awards/catalog";
 import { CelebrateAwards, type NewAward } from "../awards/StudentAwards";
 
 type CTask = TaskData & { section: "lesson" | "homework" | "words"; rubricId: string | null; hidden: boolean };
+const dashboardChanges = new Set(["hw", "hwRemove", "hwRestore", "training", "finish"]);
 type Word = { id: string; word: string; translation: string | null; example: string | null; level: number };
 type Msg = { id: string; text: string; by: string; at: string; replyTo?: string | null; edited?: boolean; deleted?: boolean };
 export type Review = { ok: boolean; comment: string | null; ai?: AiCheck; ai2?: StudentCheckData };
@@ -79,8 +80,6 @@ export function ClassRoom({ d }: { d: ClassData }) {
   const { t, lang } = useT();
   const router = useRouter();
   const teacher = d.role === "teacher";
-  // При возврате преподавателя главная перечитывает счётчик ДЗ из базы.
-  const CabinetLink = teacher ? "a" : Link;
   const lessonSession = d.lessonSession;
   const [tab, setTab] = useState<"lesson" | "homework" | "words" | "board">(d.initialTab ?? "lesson");
   const [addHwTip, setAddHwTip] = useState(!!d.addHw); // пришли из «Домашки» по «+»: подсказать, как добавить задания
@@ -253,8 +252,29 @@ export function ClassRoom({ d }: { d: ClassData }) {
   // просмотр «как видит ученик»: ничего не отправляем — только смотрим, живые изменения приходят
   const rawSend = useMemo(() => (d.preview ? (async () => ({ ok: true })) as typeof liveSend : liveSend), [d.preview, liveSend]);
   const [studentView, setStudentView] = useState(false);
+  const homeworkWrites = useRef(new Set<ReturnType<typeof liveSend>>());
   // учитель в группе действует за выбранного ученика: ответы, проверка, слова, отзыв
-  const send = useCallback((type: string, data: Record<string, unknown> = {}) => rawSend(type, gTeacher ? { studentId: viewRef.current, ...data } : data), [rawSend, gTeacher]);
+  const send = useCallback((type: string, data: Record<string, unknown> = {}) => {
+    const request = rawSend(type, gTeacher ? { studentId: viewRef.current, ...data } : data);
+    if (teacher && dashboardChanges.has(type)) {
+      homeworkWrites.current.add(request);
+      const forget = () => { homeworkWrites.current.delete(request); };
+      void request.then(forget, forget);
+    }
+    return request;
+  }, [rawSend, gTeacher, teacher]);
+  const returnToCabinet = async () => {
+    await Promise.allSettled(homeworkWrites.current);
+    try {
+      await refreshTeacherDashboard();
+    } finally {
+      router.push(d.homeHref);
+    }
+  };
+  const onCabinetNavigate = teacher ? (event: { preventDefault: () => void }) => {
+    event.preventDefault();
+    void returnToCabinet().catch(() => {});
+  } : undefined;
   // групповой урок: над каждым заданием — чьи ответы смотрим (по умолчанию первый ученик)
   const [taskView, setTaskView] = useState<Record<string, string>>({});
   // новая секция прямо на уроке: сохраняется в урок, у всех обновляется
@@ -529,7 +549,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
           </div>
         )}
         <header className="cls-top">
-          <CabinetLink href={d.homeHref} className="cls-logo" aria-label="VibeOn"><LogoMark size={36} /><small>Vibe<span>On</span></small></CabinetLink>
+          <Link href={d.homeHref} onNavigate={onCabinetNavigate} className="cls-logo" aria-label="VibeOn"><LogoMark size={36} /><small>Vibe<span>On</span></small></Link>
           <div className="cls-crumb"><small>{d.crumbs ?? t("cls.lesson")}</small><b>{d.title ?? t("cls.noTemplate")}</b></div>
           <nav className="cls-tabs">
             {([["lesson", "book", t("bld.lesson")], ["homework", "inbox", t("nav.homework")], ["words", "cards", teacher ? t("bld.newWords") : t("cls.myWords")], ["board", "pencil", t("cls.board")]] as const).map(([k, ic, label]) => (
@@ -558,7 +578,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
                 </span>
               ))}
             </span>
-            <CabinetLink href={d.homeHref} className="iconbtn" title={t("cls.exit")} aria-label={t("cls.exit")}><Icon name="logout" size="sm" /></CabinetLink>
+            <Link href={d.homeHref} onNavigate={onCabinetNavigate} className="iconbtn" title={t("cls.exit")} aria-label={t("cls.exit")}><Icon name="logout" size="sm" /></Link>
           </div>
         </header>
 
@@ -717,7 +737,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
               setSaving(false); setEditing(null); await send("reload"); router.refresh();
             }} />
         )}
-        <ClassDialogs which={dlg === "cheer" ? null : dlg} close={() => setDlg(null)} d={d} hwComment={hw.teacherComment} hwInfo={{ given: hwTasks.length, prepared: prepared.length }} send={send} onFinished={() => window.location.assign(d.homeHref)} onCheer={() => setDlg("cheer")} />
+        <ClassDialogs which={dlg === "cheer" ? null : dlg} close={() => setDlg(null)} d={d} hwComment={hw.teacherComment} hwInfo={{ given: hwTasks.length, prepared: prepared.length }} send={send} onFinished={() => { void returnToCabinet().catch(() => {}); }} onCheer={() => setDlg("cheer")} />
         {dlg === "cheer" && (
           <LessonCheer catalog={d.cheers ?? []} onClose={() => setDlg(null)} onGiven={(awardId) => rawSend("cheer", { awardId })}
             to={d.group ? d.group.members.map((m) => ({ sid: m.sid, name: m.name, gender: m.gender ?? null, inClass: !!m.userId && online.includes(m.userId) }))
