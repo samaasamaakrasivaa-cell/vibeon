@@ -161,6 +161,8 @@ export async function Dashboard({ user, role, day, top }: { user: User; role: "T
               const live = start <= now.getTime() && now.getTime() < end;
               const inMin = Math.round((start - now.getTime()) / 60000);
               const soon = inMin > 0 && inMin <= 60;
+              const showTeacherLessonStatus = role === "TEACHER" && isToday && !live && !l.movedFrom && !l.isTrial && !l.groupId && !l.slotId
+                && (l.status === "DONE" || (l.status === "PLANNED" && start > now.getTime()));
               const who = role === "TEACHER" ? lessonWho(l) : t("dash.lesson");
               const x = extra.get(l.id);
               const st = l.slotId ? null : x?.student; // у группы — без абонемента, долга и дня рождения одного ученика
@@ -170,7 +172,7 @@ export async function Dashboard({ user, role, day, top }: { user: User; role: "T
               const bday = st?.birthday && isoDay(st.birthday, "UTC").slice(5) === sel.slice(5);
               const first = !!st && !l.isTrial && st._count.lessons === 0;
               return (
-                <div key={l.id} className={`tl ${live ? "now" : soon ? "soon" : ""}`}>
+                <div key={l.id} className={`tl ${live ? "now" : soon ? "soon" : ""}`} data-teacher-lesson-status={showTeacherLessonStatus ? l.status : undefined}>
                   <div className="tl-time">
                     <b className={live ? "text-ok" : ""}>{hhmm(l.startsAt, tz)}</b>
                     <span>{hhmm(new Date(end), tz)}</span>
