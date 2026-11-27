@@ -1,3 +1,5 @@
+import { teacherVocabularyStats } from "@/lib/teacher/vocabulary-stats";
+import { VocabularyStatsCard } from "@/components/teacher/VocabularyStatsCard";
 import { ProgressStats } from "@/components/student/ProgressStats";
 import { StudyTab } from "@/components/student/StudyTab";
 import { levelsOf } from "@/lib/teacher/levels";
@@ -57,6 +59,7 @@ export default async function StudentProfile({ params, searchParams }: { params:
     },
   });
   if (!s || s.teacherId !== me.id) notFound();
+  const vocabulary = tab === "progress" ? await teacherVocabularyStats(me.id, s.id) : null;
   // подключён ли Telegram-бот: у ученика — после входа на платформу и нажатия «Подключить Telegram», у плательщика — по ссылке из оплаты
   const lvMap = await levelsOf([s]);
   const tgUser = s.userId ? await db.user.findUnique({ where: { id: s.userId }, select: { telegramChatId: true, lastSeenAt: true, timezone: true } }) : null;
@@ -341,7 +344,10 @@ export default async function StudentProfile({ params, searchParams }: { params:
 
       {tab === "roadmap" && <RoadmapEditor d={await editorData(s.id, me.id, tz, lang)} />}
       {tab === "study" && <StudyTab studentId={s.id} tz={s.timezone} w={sp.w} />}
-      {tab === "progress" && <ProgressStats studentId={s.id} tz={tz} lang={lang} t={t} topics={held.filter((l) => l.templateId).length} />}
+      {tab === "progress" && <>
+        {vocabulary && <VocabularyStatsCard stats={vocabulary} scope="student" lang={lang} timezone={tz} />}
+        <ProgressStats studentId={s.id} tz={tz} lang={lang} t={t} topics={held.filter((l) => l.templateId).length} />
+      </>}
       {tab === "feedback" && <FeedbackTab studentId={s.id} tz={tz} lang={lang} t={t} />}
 
       <div className="mt-8 border-t border-sep pt-4">
