@@ -163,7 +163,7 @@ export async function tts(text: string, lang: "en-US" | "ru-RU", ctx: Ctx) {
 }
 
 /** Текст с картинки или PDF-скана. Заглушка читает подпись PNG (tEXt «Description») — для тестов. */
-export async function ocr(buf: Buffer, mime: string, ctx: Ctx) {
+export async function ocr(buf: Buffer, mime: string, ctx: Ctx, options: { confidential?: boolean } = {}) {
   const s = speech();
   if (!s) throw new AiError("off");
   if (s === "mock") {
@@ -180,5 +180,5 @@ export async function ocr(buf: Buffer, mime: string, ctx: Ctx) {
   }
   await guard("ocr", ctx);
   try { const text = await yandexOcr(buf, mime); await log("ocr", ctx, { model: "vision" }); return text; }
-  catch (e) { await log("ocr", ctx, { ok: false }); console.error("[ai:ocr]", e); throw new AiError("fail"); }
+  catch (e) { await log("ocr", ctx, { ok: false }); console.error("[ai:ocr]", options.confidential ? "provider_failed" : e); throw new AiError("fail"); }
 }

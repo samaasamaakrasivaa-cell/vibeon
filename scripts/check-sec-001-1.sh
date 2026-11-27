@@ -24,6 +24,27 @@ cleanup() {
 }
 trap cleanup EXIT
 
+# The server-side update command must stop even if a failed dump produced
+# syntactically valid gzip output. Run with a fake Docker binary.
+mkdir -p "$scratch/failing-update/bin"
+cp deploy/vibeon.sh "$scratch/failing-update/"
+cat > "$scratch/failing-update/bin/docker" <<'MOCK'
+#!/usr/bin/env bash
+case " $* " in
+  *" version "*) exit 0 ;;
+  *" pg_dump "*) exit 1 ;;
+  *) touch "${SEC_FIXTURE_UP:?}"; exit 0 ;;
+esac
+MOCK
+chmod +x "$scratch/failing-update/bin/docker"
+if SEC_FIXTURE_UP="$scratch/update-started" PATH="$scratch/failing-update/bin:$PATH" \
+  bash "$scratch/failing-update/vibeon.sh" update >"$scratch/failed-backup.log" 2>&1; then
+  echo "The update unexpectedly continued after a failed dump" >&2
+  exit 1
+fi
+[[ ! -e "$scratch/update-started" ]]
+echo "Update stops when its pre-release database dump fails"
+
 docker run --rm --detach --name "$container" --publish 127.0.0.1::5432 \
   --env POSTGRES_USER=sec_test --env POSTGRES_PASSWORD=sec_test_local \
   --env POSTGRES_DB=sec0011 --volume /var/lib/postgresql/data postgres:16-alpine >/dev/null
@@ -65,7 +86,7 @@ COPY (
 SQL
 sql sec0011 -qc "UPDATE \"Invoice\" SET \"receiptFile\" = NULL WHERE id IN ('invoice-historical', 'invoice-historical-conflict')"
 [[ $(wc -l < "$scratch/financial.csv") == 3 ]]
-before=$(sql sec0011 -Atc 'SELECT md5(jsonb_agg(to_jsonb(i) ORDER BY id)::text) FROM "Invoice" i')
+before=$(sql sec0011 -Atc 'SELECT md5(jsonb_agg(to_jsonb(i) - $$revision$$ ORDER BY id)::text) FROM "Invoice" i')
 
 # Rehearse a paired backup in a quiescent environment and restore into a new DB
 # and file directory while the application is stopped.
@@ -85,11 +106,11 @@ docker exec "$container" createdb -U sec_test sec0011_restored
 docker exec -i "$container" pg_restore --exit-on-error --single-transaction -U sec_test -d sec0011_restored < "$scratch/copy/database.dump"
 tar -C "$scratch/restored-files" -xf "$scratch/copy/uploads.tar"
 diff -rq "$scratch/source-files" "$scratch/restored-files"
-[[ $(sql sec0011_restored -Atc 'SELECT md5(jsonb_agg(to_jsonb(i) ORDER BY id)::text) FROM "Invoice" i') == "$before" ]]
+[[ $(sql sec0011_restored -Atc 'SELECT md5(jsonb_agg(to_jsonb(i) - $$revision$$ ORDER BY id)::text) FROM "Invoice" i') == "$before" ]]
 echo "Paired backup restored in isolation"
 
 DATABASE_URL="$db_url/sec0011_restored" ./node_modules/.bin/prisma migrate deploy >"$scratch/current.log"
-[[ $(sql sec0011_restored -Atc 'SELECT md5(jsonb_agg(to_jsonb(i) ORDER BY id)::text) FROM "Invoice" i') == "$before" ]]
+[[ $(sql sec0011_restored -Atc 'SELECT md5(jsonb_agg(to_jsonb(i) - $$revision$$ ORDER BY id)::text) FROM "Invoice" i') == "$before" ]]
 pending=$(sql sec0011_restored -Atc "SELECT count(*) FROM \"Upload\" WHERE \"legacyUnverified\"")
 [[ "$pending" == 3 ]]
 [[ $(sql sec0011_restored -Atc "SELECT \"paymentKind\" FROM \"Upload\" WHERE id = 'legacy-conflicting-history'") == RECEIPT ]]
@@ -114,6 +135,7 @@ test_path="$(dirname "$(command -v node)"):/usr/local/bin:/usr/bin:/bin"
 test_env=(
   "PATH=$test_path" "DATABASE_URL=$db_url/sec0011_restored" "APP_URL=$app_url"
   "UPLOAD_DIR=$scratch/restored-files" "AI_PROVIDER=mock" "BILLING_SCHEDULER=off" "NEXT_TELEMETRY_DISABLED=1"
+  "CRON_SECRET=synthetic-sec0011"
 )
 env -i "${test_env[@]}" npm run build
 mkdir -p .next/standalone/content/placement

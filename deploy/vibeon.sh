@@ -106,7 +106,7 @@ case "$cmd" in
   update)
     need
     if [ -d "$DIR/../.git" ]; then say "Новая версия из GitHub"; git -C "$DIR/.." pull --ff-only; fi
-    say "Бэкап перед обновлением"; bash "$0" backup || true
+    say "Бэкап перед обновлением"; bash "$0" backup
     # shellcheck disable=SC2046
     dc $(mode_flags) up -d $(build_flag)
     wait_ok && say "Обновлено: $(getv APP_URL)" || die "Приложение не отвечает: bash deploy/vibeon.sh logs";;

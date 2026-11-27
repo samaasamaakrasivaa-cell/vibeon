@@ -42,9 +42,9 @@ function multipart(bytes, type, name = "synthetic") {
   return body;
 }
 
-async function request(url, status, { actor, method = "GET", headers = {}, body } = {}) {
+async function request(url, status, { actor, method = "GET", headers = {}, body, duplex } = {}) {
   if (actor) headers.cookie = "vo_session=fixture-" + actor;
-  const response = await fetch(process.env.APP_URL + url, { method, headers, body, redirect: "manual" });
+  const response = await fetch(process.env.APP_URL + url, { method, headers, body, duplex, redirect: "manual" });
   assert.equal(response.status, status, [method, url, actor ?? "guest"].join(" "));
   return response;
 }
@@ -63,7 +63,7 @@ async function verifyPrivate(url, status, options) {
 async function getActionIds() {
   const manifest = JSON.parse(await readFile(".next/server/server-reference-manifest.json", "utf8"));
   return Object.fromEntries(Object.entries(manifest.node)
-    .filter(([, action]) => action.filename === "lib/billing/actions.ts")
+    .filter(([, action]) => ["lib/billing/actions.ts", "lib/teacher/actions.ts"].includes(action.filename))
     .map(([id, action]) => [action.exportedName, id]));
 }
 
@@ -134,11 +134,154 @@ async function upload(invoice, kind, actor, bytes, mime, status = 201) {
   return request(document(invoice, kind), status, { actor, method: "POST", body: multipart(bytes, mime) });
 }
 
+async function checkPackUsage(db, actions) {
+  async function paidPack(label, balance = 1) {
+    const record = await db.student.create({ data: {
+      id: "pack-student-" + label, teacherId: teacher, name: "Synthetic pack " + label, payType: "PACK", status: "ACTIVE", price: 500,
+    } });
+    const invoice = await db.invoice.create({ data: {
+      id: "pack-invoice-" + label, studentId: record.id, kind: "pack", amount: 500,
+      packLessons: balance, status: "PAID", paidAt: new Date("2024-02-01T12:00:00Z"),
+      proofAt: new Date("2024-02-01T11:45:00Z"), autoAccepted: true,
+    } });
+    const pack = await db.pack.create({ data: {
+      studentId: record.id, invoiceId: invoice.id, price: 500, lessonsLeft: balance, lessonsTotal: balance,
+    } });
+    return { record, invoice, pack, page: "/teacher/students/" + record.id };
+  }
+
+  const unused = await paidPack("unused");
+  await action(teacher, teacherPage, actions.undoPaid, [unused.invoice.id], /"ok":true/);
+  assert.equal(await db.pack.findUnique({ where: { id: unused.pack.id } }), null);
+  assert.equal((await db.invoice.findUniqueOrThrow({ where: { id: unused.invoice.id } })).status, "PROOF_SENT");
+
+  const used = await paidPack("manual", 2);
+  const manualArgs = [used.record.id, "2024-02-05", "12:00"];
+  await action("teacher-b", used.page, actions.packDeduct, manualArgs, /"ok":false/);
+  await action(teacher, used.page, actions.packDeduct, manualArgs, /"ok":true/);
+  await action(teacher, used.page, actions.packDeduct, manualArgs, /"ok":false/);
+  const manual = await db.lessonInstance.findMany({ where: { studentId: used.record.id } });
+  assert.equal(manual.length, 1);
+  assert.equal(manual[0].status, "DONE");
+  assert.ok(manual[0].deductedAt);
+  const afterCharge = await db.pack.findUniqueOrThrow({ where: { id: used.pack.id } });
+  assert.equal(afterCharge.used, true);
+  assert.equal(afterCharge.lessonsLeft, 1);
+  for (const name of ["undoPaid", "undoAuto", "cancelInvoice"]) {
+    await action(teacher, teacherPage, actions[name], [used.invoice.id], /уже списывали занятия/);
+  }
+  assert.deepEqual(await db.pack.findUniqueOrThrow({ where: { id: used.pack.id } }), afterCharge);
+  assert.deepEqual(await db.invoice.findUniqueOrThrow({ where: { id: used.invoice.id } }), used.invoice);
+  await action(teacher, used.page, actions.packReturn, [manual[0].id], /"ok":true/);
+  const afterReturn = await db.pack.findUniqueOrThrow({ where: { id: used.pack.id } });
+  assert.equal(afterReturn.lessonsLeft, 2);
+  assert.equal(afterReturn.used, true);
+  await action(teacher, teacherPage, actions.undoPaid, [used.invoice.id], /уже списывали занятия/);
+
+  const racing = await paidPack("race");
+  await Promise.all([
+    action(teacher, racing.page, actions.packDeduct, [racing.record.id, "2024-02-06", "12:00"], /"ok":(?:true|false)/),
+    action(teacher, teacherPage, actions.undoPaid, [racing.invoice.id], /"ok":(?:true|false)/),
+  ]);
+  const racedInvoice = await db.invoice.findUniqueOrThrow({ where: { id: racing.invoice.id } });
+  const racedPack = await db.pack.findUnique({ where: { id: racing.pack.id } });
+  const racedLessons = await db.lessonInstance.count({ where: { studentId: racing.record.id, deductedAt: { not: null } } });
+  if (racedInvoice.status === "PAID") {
+    assert.equal(racedPack?.lessonsLeft, 0);
+    assert.equal(racedPack?.used, true);
+    assert.equal(racedLessons, 1);
+  } else {
+    assert.equal(racedInvoice.status, "PROOF_SENT");
+    assert.equal(racedPack, null);
+    assert.equal(racedLessons, 0);
+  }
+
+  const mixed = await paidPack("manual-and-auto", 2);
+  const lesson = await db.lessonInstance.create({ data: {
+    teacherId: teacher, studentId: mixed.record.id, startsAt: new Date("2024-02-07T09:00:00Z"), status: "DONE",
+  } });
+  const free = await db.lessonInstance.create({ data: {
+    teacherId: teacher, studentId: mixed.record.id, startsAt: new Date("2024-02-08T09:00:00Z"), status: "MISSED", charged: false,
+  } });
+  const charged = await db.lessonInstance.create({ data: {
+    teacherId: teacher, studentId: mixed.record.id, startsAt: new Date("2024-02-09T09:00:00Z"), status: "MISSED",
+  } });
+  await Promise.all([
+    action(teacher, mixed.page, actions.packDeduct, [mixed.record.id, "2024-02-07", "12:00"], /"ok":(?:true|false)/),
+    request("/api/cron/billing", 200, { method: "POST", headers: { "x-cron-key": "synthetic-sec0011" } }),
+  ]);
+  const mixedPack = await db.pack.findUniqueOrThrow({ where: { id: mixed.pack.id } });
+  assert.equal(mixedPack.lessonsLeft, 0);
+  assert.equal(mixedPack.used, true);
+  assert.equal(await db.lessonInstance.count({ where: { studentId: mixed.record.id } }), 3);
+  const lessons = await db.lessonInstance.findMany({ where: { studentId: mixed.record.id } });
+  assert.ok(lessons.find((item) => item.id === lesson.id)?.deductedAt);
+  assert.ok(lessons.find((item) => item.id === charged.id)?.deductedAt);
+  assert.equal(lessons.find((item) => item.id === free.id)?.deductedAt, null);
+  await action(teacher, mixed.page, actions.packDeduct, [mixed.record.id, "2024-02-10", "12:00"], /не осталось занятий/);
+  console.log("Unused cancellation, manual deduction, return, races and non-negative pack balances passed");
+}
+
+async function checkPostpaidBilling(db, actions) {
+  const record = await db.student.create({ data: {
+    id: "postpaid-record", teacherId: teacher, name: "Synthetic postpaid", payType: "POSTPAID", status: "ACTIVE", price: 500,
+  } });
+  const lessons = await Promise.all(["01", "02"].map((day) => db.lessonInstance.create({ data: {
+    teacherId: teacher, studentId: record.id, startsAt: new Date(`2024-03-${day}T09:00:00Z`), status: "DONE", price: 500,
+  } })));
+  await Promise.all([
+    action(teacher, "/teacher/students/" + record.id, actions.billNow, [record.id], /"ok":(?:true|false)/),
+    action(teacher, "/teacher/students/" + record.id, actions.billNow, [record.id], /"ok":(?:true|false)/),
+  ]);
+  const issued = await db.invoice.findMany({ where: { studentId: record.id } });
+  assert.equal(issued.length, 1);
+  assert.equal(issued[0].amount, 1000);
+  await Promise.all([
+    action(teacher, teacherPage, actions.confirmLessonPaid, [lessons[0].id], /"ok":true/),
+    action(teacher, teacherPage, actions.confirmLessonPaid, [lessons[0].id], /"ok":true/),
+  ]);
+  const paid = await db.invoice.findMany({ where: { studentId: record.id, status: "PAID" } });
+  assert.equal(paid.length, 1);
+  assert.deepEqual(paid[0].lessonIds, [lessons[0].id]);
+  const open = await db.invoice.findUniqueOrThrow({ where: { id: issued[0].id } });
+  assert.deepEqual(open.lessonIds, [lessons[1].id]);
+  assert.equal(open.amount, 500);
+  console.log("Concurrent billing and separate payment of one billed lesson passed");
+}
+
+async function checkMultipartLimits(png) {
+  const fileLimit = 10 * 1024 * 1024;
+  const bodyLimit = fileLimit + 64 * 1024;
+  const url = document("invoice-new", "proof");
+  // Plain data at the file boundary reaches validation; the next byte does not.
+  await upload("invoice-new", "proof", student, Buffer.alloc(fileLimit), "image/png", 415);
+  await upload("invoice-new", "proof", student, Buffer.alloc(fileLimit + 1), "image/png", 413);
+  const boundary = "synthetic-payment-boundary";
+  const head = Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="file"; filename="sample.png"\r\nContent-Type: image/png\r\n\r\n`);
+  const middle = Buffer.from(`\r\n--${boundary}\r\nContent-Disposition: form-data; name="padding"\r\n\r\n`);
+  const tail = Buffer.from(`\r\n--${boundary}--\r\n`);
+  for (const [size, status] of [[bodyLimit - 1, 201], [bodyLimit, 201], [bodyLimit + 1, 413]]) {
+    const padding = Buffer.alloc(size - head.length - png.length - middle.length - tail.length, 120);
+    const body = new ReadableStream({
+      start(controller) {
+        for (const chunk of [head, png, middle, padding, tail]) controller.enqueue(chunk);
+        controller.close();
+      },
+    });
+    await request(url, status, {
+      actor: student, method: "POST", body, duplex: "half",
+      headers: { "content-type": `multipart/form-data; boundary=${boundary}` },
+    });
+  }
+  console.log("File and actual chunked multipart boundaries passed");
+}
+
 async function verify(db) {
   const png = await readFile(path.join(process.env.UPLOAD_DIR, keyOf("D")));
   const actionIds = await getActionIds();
   await checkEducation(png);
   await checkLegacy(db);
+  await checkMultipartLimits(png);
 
   const invoice = "invoice-new";
   await upload(invoice, "proof", undefined, png, "image/png", 401);
@@ -170,20 +313,28 @@ async function verify(db) {
   const acceptedProof = await db.invoice.findUniqueOrThrow({ where: { id: invoice } });
   assert.equal(acceptedProof.status, "PROOF_SENT");
   assert.equal(acceptedProof.proofFile, generalFile(stored.path));
-  assert.equal(acceptedProof.aiRead.source, "screenshot");
+  assert.deepEqual(acceptedProof.aiRead, { source: "screenshot", matches: false, code: "EMPTY" });
+  await action(student, studentPage, actionIds.iPaid, [invoice, { file: proofId }], /"ok":true,"auto":false/);
+  assert.deepEqual(await db.invoice.findUniqueOrThrow({ where: { id: invoice } }), acceptedProof);
+  assert.equal(await db.notification.count({ where: { userId: teacher, kind: "payment" } }), 1);
   const ocrCalls = await db.aiCall.count({ where: { kind: "ocr" } });
   assert.equal(ocrCalls, 1);
   await action(student, studentPage, actionIds.iPaid, [untouched.id, { text: "725 руб" }], /"ok":true,"auto":true/);
   assert.equal((await db.invoice.findUniqueOrThrow({ where: { id: untouched.id } })).status, "PAID");
 
   const legacyId = "invoice-legacy-good";
+  const staleReceiptId = (await (await upload(legacyId, "receipt", teacher, permittedPdf, "application/pdf")).json()).id;
   const receiptId = (await (await upload(legacyId, "receipt", teacher, permittedPdf, "application/pdf")).json()).id;
   const oldReceipt = document(legacyId, "receipt", "legacy-receipt");
   const receiptUrl = document(legacyId, "receipt", receiptId);
   await verifyPrivate(receiptUrl, 404, { actor: teacher });
   await action(teacher, teacherPage, actionIds.attachReceipt, [untouched.id, receiptId], /"ok":false/);
   await action("teacher-b", teacherPage, actionIds.attachReceipt, [legacyId, receiptId], /"ok":false/);
+  const receiptsBefore = await db.notification.count({ where: { userId: student, kind: "receipt" } });
   await action(teacher, teacherPage, actionIds.attachReceipt, [legacyId, receiptId], /"ok":true/);
+  await action(teacher, teacherPage, actionIds.attachReceipt, [legacyId, receiptId], /"ok":true/);
+  await action(teacher, teacherPage, actionIds.attachReceipt, [legacyId, staleReceiptId], /"ok":false/);
+  assert.equal(await db.notification.count({ where: { userId: student, kind: "receipt" } }), receiptsBefore + 1);
   await verifyPrivate(oldReceipt, 404, { actor: teacher });
   const updated = await verifyPrivate(receiptUrl, 200, { actor: student, headers: { range: "bytes=0-7" } });
   assert.deepEqual(Buffer.from(await updated.arrayBuffer()), permittedPdf);
@@ -194,9 +345,12 @@ async function verify(db) {
   await action(student, studentPage, actionIds.replacePaymentProof, [old.id, restoredId], /"ok":true/);
   const repaired = await db.invoice.findUniqueOrThrow({ where: { id: old.id } });
   assert.notEqual(repaired.proofFile, old.proofFile);
-  assert.deepEqual({ ...repaired, proofFile: old.proofFile }, old);
+  assert.equal(repaired.revision, old.revision + 1);
+  assert.deepEqual({ ...repaired, proofFile: old.proofFile, revision: old.revision }, old);
   assert.equal(await db.aiCall.count({ where: { kind: "ocr" } }), ocrCalls);
   await verifyPrivate(document(old.id, "proof", restoredId), 200, { actor: teacher });
+  await checkPackUsage(db, actionIds);
+  await checkPostpaidBilling(db, actionIds);
   await db.session.delete({ where: { id: "session-student-a" } });
   await verifyPrivate(receiptUrl, 404, { actor: student });
   await verifyPrivate(receiptUrl, 200, { actor: teacher });

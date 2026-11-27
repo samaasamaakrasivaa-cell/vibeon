@@ -130,7 +130,14 @@ export function PayLaterBtn({ id, back }: { id: string; back?: boolean }) {
 /** «Отменить оплату» — сутки после подтверждения (если нажали «Оплачено» по ошибке). */
 export function UndoPaidBtn({ id }: { id: string }) {
   const { t } = useT();
-  const router = useRouter();
-  const [pending, start] = useTransition();
-  return <button type="button" className="btn plain sm text-bad" disabled={pending} title={t("pd.undoHint")} onClick={() => { if (confirm(t("pd.undoQ"))) start(async () => { await undoPaid(id); router.refresh(); }); }}><Icon name="undo" size="sm" />{t("pd.undo")}</button>;
+  const { pending, err, act } = useAct();
+  return (
+    <>
+      <button type="button" className="btn plain sm text-bad" disabled={pending} title={t("pd.undoHint")}
+        onClick={() => { if (confirm(t("pd.undoQ"))) act(() => undoPaid(id)); }}>
+        <Icon name="undo" size="sm" />{t("pd.undo")}
+      </button>
+      {err && <span role="alert" className="small text-bad">{err}</span>}
+    </>
+  );
 }

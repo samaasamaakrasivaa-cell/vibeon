@@ -649,6 +649,7 @@ model Pack {
   studentId    String
   lessonsTotal Int
   lessonsLeft  Int
+  used         Boolean   @default(false) // once charged, returns never clear this marker
   price        Int
   startsAt     DateTime  @default(now())
   frozenUntil  DateTime?
@@ -669,6 +670,7 @@ model Invoice {
   amount       Int
   period       String?
   status       InvoiceStatus @default(SENT)
+  revision     Int           @default(0)
   proofKind    String? // screenshot | text
   proofFile    String?
   proofText    String?
@@ -803,6 +805,7 @@ model Upload {
   paymentKind      PaymentDocumentKind?
   paymentInvoiceId String? // назначение загрузки сохраняется после замены или удаления счёта
   legacyUnverified Boolean @default(false)
+  paymentRevision  Int? // invoice revision when this new draft was uploaded
 
   @@index([ownerId])
 }
