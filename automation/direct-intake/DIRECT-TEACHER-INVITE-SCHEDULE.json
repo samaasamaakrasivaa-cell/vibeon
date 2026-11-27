@@ -1,10 +1,15 @@
 {
   "claim_id": "64d3a2f18d3b431f83feb21691c78e57",
   "handoff": null,
-  "issue": null,
+  "issue": 62,
   "key": "DIRECT-TEACHER-INVITE-SCHEDULE",
   "owner": "teacher",
-  "progress": null,
+  "progress": {
+    "base_sha": "1687278b3def1e1e81cce166e4dfcd0f01684be7",
+    "branch": "codex/teacher/invite-schedule",
+    "next": "Проверить обе формы входа, выключенный пробный режим и ручное включение на синтетике",
+    "stage": "implementation"
+  },
   "release": null,
   "source": "direct",
   "version": 1
