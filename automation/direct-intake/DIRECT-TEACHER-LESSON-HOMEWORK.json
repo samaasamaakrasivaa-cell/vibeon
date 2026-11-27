@@ -7,11 +7,11 @@
   "progress": {
     "base_sha": "58ead57015f67ea5281af520fe7fcf46d68219d5",
     "branch": "codex/teacher/lesson-homework",
-    "head_sha": "29faeb65d2f5d779d7e61a7b550abc37891bb647",
-    "next": "Независимое ревью и CI зелёные. Ожидаются проверка сайта по #68 и допуск Tech Lead на новый SHA.",
+    "head_sha": "dd24abc7888f71128ed9539dba6c6a3e6d01089f",
+    "next": "Конфликт с вышедшей правкой #78 устранён. Сборка и браузерная проверка прошли, ожидаются повторные ревью, CI и допуск.",
     "pr": 73,
-    "stage": "integration",
-    "test_run": 46063132520
+    "stage": "review",
+    "test_run": 46065674487
   },
   "release": null,
   "source": "direct",
