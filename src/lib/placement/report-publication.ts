@@ -5,7 +5,7 @@ import type { ReportDataT } from "./report-data";
 import type { ReviewData } from "./review";
 
 // Deploy the compatible reader before enabling snapshot publication.
-export const reportPublicationEnabled = false;
+export const reportPublicationEnabled = true;
 
 // The student surface uses only these parts of the answer review.
 export function studentAnswers(d: ReviewData) {
