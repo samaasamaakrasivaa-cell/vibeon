@@ -1,5 +1,6 @@
 import "server-only";
 import { db } from "../db";
+import { callLinkOf } from "../lessons/call-link";
 
 const lessonCard = { id: true, startsAt: true, template: { select: { title: true } } } as const;
 
@@ -29,4 +30,26 @@ export async function currentStudentLesson(userId: string, now: Date) {
     orderBy: [{ startsAt: "asc" }, { id: "asc" }],
     select: lessonCard,
   });
+}
+
+export async function studentLessonCallLink(userId: string, lessonId: string) {
+  const lesson = await db.lessonInstance.findFirst({
+    where: { id: lessonId, status: "PLANNED", student: { userId } },
+    select: {
+      teacherId: true, slotId: true, callLink: true,
+      student: { select: { callLink: true } }, group: { select: { callLink: true } },
+    },
+  });
+  if (!lesson?.teacherId) return null;
+  const directLink = callLinkOf(lesson.slotId ? lesson.group?.callLink : lesson.student?.callLink, lesson.callLink);
+  if (directLink) return directLink;
+
+  const [host, teacher] = await Promise.all([
+    lesson.slotId ? db.lessonInstance.findFirst({
+      where: { slotId: lesson.slotId, teacherId: lesson.teacherId },
+      orderBy: { id: "asc" }, select: { callLink: true },
+    }) : null,
+    db.teacherProfile.findUnique({ where: { userId: lesson.teacherId }, select: { callLink: true } }),
+  ]);
+  return callLinkOf(host?.callLink, teacher?.callLink);
 }
