@@ -267,7 +267,10 @@ export function WeekGrid(props: {
             {pickedInvalid && <p className="alert m-0" role="alert">{t("off.err")}</p>}
             <div className="flex flex-col gap-2">
               <button type="button" className="btn primary w-full" disabled={pickedInvalid} onClick={() => { setNewAt({ date: picked.day.iso, start: picked.start, end: picked.end }); setPicked(null); }}><Icon name="plus" size="sm" />{t("off.newLesson")}</button>
-              <button type="button" className="btn secondary w-full" disabled={pickedInvalid} onClick={() => { setOff({ date: picked.day.iso, start: picked.start, end: picked.end, weekly: false, note: "" }); setPicked(null); }}><Icon name="lockI" size="sm" />{t("off.mark")}</button>
+              <button type="button" className="btn secondary w-full" disabled={pickedInvalid} onClick={() => { setOff({ date: picked.day.iso, start: picked.start, end: picked.end, weekly: false, note: "" }); setPicked(null); }}>
+                <Icon name="lockI" size="sm" />
+                <span className="min-w-0 whitespace-normal text-center">{t("off.mark")}</span>
+              </button>
             </div>
           </div>
         </Dialog>
