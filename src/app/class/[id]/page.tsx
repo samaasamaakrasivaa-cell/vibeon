@@ -9,6 +9,7 @@ import { requireUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { getT } from "@/lib/i18n/server";
 import { classAccess, type LiveState } from "@/lib/live/access";
+import { hasStartedLessonSession, lessonOccurrence } from "@/lib/live/lesson-session";
 import { loadLesson } from "@/lib/teacher/builder-data";
 import { parse } from "@/lib/tasks/parse";
 import { hhmm } from "@/lib/time";
@@ -31,6 +32,7 @@ export default async function ClassPage({ params, searchParams }: { params: Prom
   const preview = acc.role === "teacher" && (await searchParams).preview === "student";
   const { lesson, host, slot, group } = acc;
   const role: "teacher" | "student" = preview ? "student" : acc.role;
+  const { lessonSession: _lessonSession, ...live } = (host.live ?? {}) as LiveState & { lessonSession?: unknown };
   const teacherUser = await db.user.findUnique({ where: { id: lesson.teacherId ?? "" }, include: { teacherProfile: true } });
   if (!teacherUser) notFound();
   // урок не выбран — остаётся закреплённый в прошлый раз у этого ученика (у группы — у группы); учитель сменит его кнопкой «Другой урок»
@@ -132,7 +134,8 @@ export default async function ClassPage({ params, searchParams }: { params: Prom
         course: data ? { title: data.l.unit.course.title, cover: data.l.cover || data.l.unit.course.cover } : null,
         rubrics: data?.rubrics ?? [], tasks: (data?.tasks ?? []).filter((x) => role === "teacher" || !x.options?.teacherOnly).map((x) => (role === "teacher" || (!x.options?.teacherKey && !x.options?.help?.hidden) ? x : { ...x, options: { ...x.options, teacherKey: undefined, help: x.options?.help?.hidden ? undefined : x.options?.help } })), /* заметки «только учителю», ответы для учителя и скрытые Useful phrases ученику не отдаём */ answers, statuses, reviews, aiDrafts, times,
         ...(role === "teacher" && data?.l.teacherInfo ? { teacherInfo: data.l.teacherInfo as TInfo } : {}),
-        live: (host.live ?? {}) as LiveState, board,
+        live, board,
+        ...(role === "teacher" && host.status === "PLANNED" ? { lessonSession: { ...lessonOccurrence(host), active: hasStartedLessonSession(host) } } : {}),
         prevHw,
         tgLinked: role === "student" ? !!user.telegramChatId : null,
         carriedFrom: carriedFrom ? (carriedFrom as Date).toLocaleDateString(lang === "ru" ? "ru-RU" : "en-GB", { day: "numeric", month: "long", timeZone: user.timezone }) : null,
