@@ -3,7 +3,8 @@ import { getBank, trackOf } from "./bank";
 import { finalHint, STEPS, summarize, type PLevel, type PState, type V6Topic } from "./engine";
 import { gateKey, rubricOf, stepBy, weakAt } from "./rubric";
 import { reviewData } from "./review";
-import type { RInput, RSaved, RSkill } from "./report";
+import type { RInput, RSkill } from "./report";
+import { reportDraft, storedReport } from "./report-publication";
 
 type Attempt = { id: string; mode: string; level: string | null; review: unknown; guestName: string | null; student?: { name: string; lastName?: string | null } | null; submittedAt: Date | null; startedAt: Date | null; createdAt: Date };
 type Marks = Record<string, number>;
@@ -14,7 +15,7 @@ export async function reportData(a: Attempt, st: PState) {
   const { bank } = await getBank(trackOf(st.track));
   const sm = summarize(st, bank);
   const d = reviewData(a.id, st, true);
-  const rv = (a.review ?? {}) as { writing?: Marks; speaking?: Marks; comment?: string; lesson?: { level: string; marks: Marks } | null; report?: RSaved; wNote?: string; sNote?: string; wc?: Record<string, string>; sc?: Record<string, string> };
+  const rv = (a.review ?? {}) as { writing?: Marks; speaking?: Marks; comment?: string; lesson?: { level: string; marks: Marks } | null; wNote?: string; sNote?: string; wc?: Record<string, string>; sc?: Record<string, string> };
   const set = rubricOf(rv as never), W = set.writing, S = set.speaking, weak = weakAt(set);
   const w = rv.writing ?? {}, s = rv.speaking ?? {};
   const wStep = d.writing ? stepBy(set, W.map((c) => w[c.id]), d.writing.level as PLevel, w[gateKey(set)]) : null;
@@ -44,6 +45,6 @@ export async function reportData(a: Attempt, st: PState) {
   const writing = d.writing && { ...d.writing, note: rv.wNote ?? "", marks: W.map((c) => ({ id: c.id, name: c.name_ru, v: typeof w[c.id] === "number" ? w[c.id] : null, note: rv.wc?.[c.id] ?? "" })) };
   const speakingLevel = speakingLesson?.level ?? d.speaking?.level;
   const speaking = speakingLevel ? { level: speakingLevel, note: rv.sNote ?? "", marks: S.map((c) => ({ id: c.id, name: c.name_ru, v: typeof speakingMarks[c.id] === "number" ? speakingMarks[c.id] : null, note: rv.sc?.[c.id] ?? "" })) } : null;
-  return { input, d, writing, speaking, max: set.max, saved: rv.report ?? {}, finalLevel: a.level, date: (a.submittedAt ?? a.startedAt ?? a.createdAt).toISOString() };
+  return { input, d, writing, speaking, max: set.max, saved: reportDraft(storedReport(a.review)), finalLevel: a.level, date: (a.submittedAt ?? a.startedAt ?? a.createdAt).toISOString() };
 }
 export type ReportDataT = Awaited<ReturnType<typeof reportData>>;
