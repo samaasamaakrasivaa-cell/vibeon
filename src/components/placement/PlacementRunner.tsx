@@ -7,6 +7,7 @@ import type { DictKey } from "@/lib/i18n/dict";
 import { Flag } from "./Flag";
 import { Dialog } from "../Dialog";
 import { answerCore, draftText, finishPlacement, finishTexts, goSection, notePlay, peekCore, peekSpeak, reviseCore, saveWriting, startPlacement } from "@/lib/placement/actions";
+import { fixFragment, fixWords, parseFixAnswer, type FixSpan } from "@/lib/placement/fix-answer";
 import type { PView } from "@/lib/placement/run";
 import { Icon } from "../Icon";
 import type { IconName } from "../icon-paths";
@@ -261,6 +262,46 @@ function Intro({ sample, pending, onStart, parts = [...PARTS] }: { sample: strin
 
 // ───────── Грамматика и лексика ─────────
 
+function FixPrompt({ question, span, text, onSelect, onText }: { question: string; span: FixSpan | null; text: string; onSelect: (span: FixSpan) => void; onText: (text: string) => void }) {
+  const { t, lang } = useT();
+  const [extending, setExtending] = useState(false);
+  const [endPreview, setEndPreview] = useState<number | null>(null);
+  const words = fixWords(question);
+  const rangeTo = (index: number): FixSpan => {
+    const anchor = extending && span ? span[0] : index;
+    return [Math.min(anchor, index), Math.max(anchor, index)];
+  };
+  const preview = endPreview === null ? null : rangeTo(endPreview);
+  return (
+    <>
+      <p className="plq plfix" onMouseLeave={() => setEndPreview(null)}>
+        {words.map((word, i) => {
+          const selected = !!span && i >= span[0] && i <= span[1];
+          const previewed = !!preview && i >= preview[0] && i <= preview[1];
+          return <button key={i} type="button" className={`plfixw min-h-9 ${selected ? "on" : ""}`}
+            style={previewed && !selected ? { backgroundColor: "var(--accent-bg)" } : undefined}
+            aria-pressed={selected} onMouseEnter={() => { if (extending) setEndPreview(i); }}
+            onClick={() => { onSelect(rangeTo(i)); setExtending(false); setEndPreview(null); }}>{word}</button>;
+        })}
+      </p>
+      {span && (
+        <>
+          <div className="flex flex-wrap items-center gap-2">
+            <button type="button" aria-pressed={extending} className="btn plain sm"
+              onClick={() => { setExtending(!extending); setEndPreview(null); }}>
+              {lang === "ru" ? "Выбрать несколько слов" : "Select several words"}
+            </button>
+            {extending && <span className="small muted" role="status">{lang === "ru" ? "Выберите крайнее слово" : "Choose the other end of the phrase"}</span>}
+          </div>
+          <label className="plfixin"><span className="small muted">{t("pl.fixHow", { w: fixFragment(words, span) })}</span>
+            <input className="input plgap" value={text} onChange={(e) => onText(e.target.value)} autoCapitalize="off" autoComplete="off" spellCheck={false} aria-label={t("pl.answer")} />
+          </label>
+        </>
+      )}
+    </>
+  );
+}
+
 function CoreStep({ item: it, n, pending, onAnswer, onBack, initial, initialDk, past }: { item: CoreItemV; n: number; pending: boolean; onAnswer: (val: string | number | null, dk: boolean, hinted: boolean, tried?: number[], sure?: boolean) => void; onBack?: () => void; initial?: string | number; initialDk?: boolean; past?: boolean }) {
   const { t } = useT();
   const [val, setVal] = useState<string | number>(initial ?? "");
@@ -276,10 +317,12 @@ function CoreStep({ item: it, n, pending, onAnswer, onBack, initial, initialDk, 
     const h = setTimeout(() => setSlow(true), (it.type === "mcq" ? SLOW_CHOICE : SLOW_TYPED) * 1000);
     return () => clearTimeout(h);
   }, [it.id, it.type, past]);
-  // «найди и исправь»: выбранное слово и исправление → «номер::текст»
-  const [fixI, setFixI] = useState<number | null>(() => (typeof initial === "string" && initial.includes("::") ? Number(initial.split("::")[0]) : null));
-  const [fixT, setFixT] = useState(() => (typeof initial === "string" && initial.includes("::") ? initial.split("::").slice(1).join("::") : ""));
-  const fixVal = fixI === null || !fixT.trim() ? "" : `${fixI}::${fixT.trim()}`;
+  const originalFix = it.type === "fix" ? parseFixAnswer(initial) : null;
+  const [fixSpan, setFixSpan] = useState<FixSpan | null>(() => originalFix?.span ?? null);
+  const [fixT, setFixT] = useState(() => originalFix?.text ?? "");
+  // Старый ответ с неявной заменой всей конструкции сохраняем в исходном формате.
+  const unchangedFix = originalFix?.legacy && fixSpan?.[0] === originalFix.span[0] && fixSpan[1] === originalFix.span[1] && fixT.trim() === originalFix.text;
+  const fixVal = fixSpan && fixT.trim() ? (unchangedFix ? initial! : `${fixSpan[0]}-${fixSpan[1]}::${fixT.trim()}`) : "";
   const value = it.type === "fix" ? fixVal : val;
   // на проверке тем вместо «Дальше» — «Уверен / Не уверен»: так видно, знает ли ученик правило или угадал
   const ask = !!(it as CoreItemV & { ask?: boolean }).ask && !past;
@@ -299,16 +342,9 @@ function CoreStep({ item: it, n, pending, onAnswer, onBack, initial, initialDk, 
         {it.type === "mcq" && <p className="plq">{it.q.split("___").map((x, i, a) => <span key={i}>{x}{i < a.length - 1 && <span className="plblank">{typeof val === "number" ? it.options![val] : "\u00a0"}</span>}</span>)}</p>}
         {it.type === "wordform" && <><div className="plword"><span className="plbase">{it.base}</span><Icon name="right" size="sm" /><span className="muted small">?</span></div>{parts(it.q)}</>}
         {(it.type === "gap" || it.type === "brackets") && parts(it.q)}
-        {it.type === "fix" && (
-          <>
-            <p className="plq plfix">{it.q.split(" ").map((w, i) => <button key={i} type="button" className={`plfixw ${fixI === i ? "on" : ""}`} aria-pressed={fixI === i} onClick={() => { setFixI(i); setDk(false); }}>{w}</button>)}</p>
-            {fixI !== null && (
-              <label className="plfixin"><span className="small muted">{t("pl.fixHow", { w: it.q.split(" ")[fixI].replace(/[.,!?;:]+$/, "") })}</span>
-                <input className="input plgap" autoFocus autoComplete="off" autoCapitalize="off" spellCheck={false} value={fixT} onChange={(e) => setFixT(e.target.value)} aria-label={t("pl.answer")} />
-              </label>
-            )}
-          </>
-        )}
+        {it.type === "fix" && <FixPrompt question={it.q} span={fixSpan} text={fixT}
+          onSelect={(span) => { setFixSpan(span); setDk(false); }}
+          onText={(value) => { setFixT(value); setDk(false); }} />}
         {it.type === "transform" && (
           <>
             <p className="plq m-0">{it.q}</p>

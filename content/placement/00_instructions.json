@@ -36,7 +36,7 @@
     "std": "Listen to the question, prepare, then answer. You can play back your answer and record it again."
   },
   "fix": {
-    "easy": "There is one mistake in the sentence. Click the wrong word and write it correctly.",
-    "std": "There is one mistake in the sentence. Click the word that is wrong and write the correct version."
+    "easy": "There is one mistake. Select a word or phrase and write the correction.",
+    "std": "Find the mistake. Select the word or phrase you want to replace and write the correction."
   }
 }

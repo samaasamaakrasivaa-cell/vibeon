@@ -1,6 +1,8 @@
 // Вводный тест A1–C1: типы банка, «лесенка» ядра, подбор текстов, проверка ответов и подсказки для учителя.
 // Чистые функции без базы — чтобы логику можно было проверить отдельно (scripts/placement-sim.ts).
 
+import { fixWords, parseFixAnswer, replaceFixFragment } from "./fix-answer";
+
 export const PL_LEVELS = ["A1", "A2", "B1", "B2", "C1"] as const;
 export type PLevel = (typeof PL_LEVELS)[number];
 /** Шкала из 9 ступеней — та же, что в маршруте. */
@@ -652,35 +654,65 @@ export function pickTask<T extends WriteItem | SpeakItem>(list: T[], level: PLev
 
 // ───────── Проверка ответа ─────────
 
-const EXP: [RegExp, string[]][] = [
+const FIX_EXP: [RegExp, string[]][] = [
   [/\bcan't\b/g, ["cannot", "can not"]], [/\bwon't\b/g, ["will not"]], [/\bshan't\b/g, ["shall not"]], [/n't\b/g, [" not"]],
-  [/'m\b/g, [" am"]], [/'re\b/g, [" are"]], [/'ve\b/g, [" have"]], [/'ll\b/g, [" will"]], [/'d\b/g, [" had", " would"]], [/\b(it|he|she|that|there|what|who)'s\b/g, ["$1 is", "$1 has"]],
+  [/'m\b/g, [" am"]], [/'re\b/g, [" are"]], [/'ve\b/g, [" have"]], [/'ll\b/g, [" will"]],
+];
+const EXP: [RegExp, string[]][] = [
+  ...FIX_EXP, [/'d\b/g, [" had", " would"]], [/\b(it|he|she|that|there|what|who)'s\b/g, ["$1 is", "$1 has"]],
 ];
 export function norm(s: string) {
   return s.toLowerCase().replace(/[’‘`´]/g, "'").replace(/[“”«»]/g, '"').replace(/\s+/g, " ").trim().replace(/[.,!?;:]+$/, "").trim();
 }
-function variants(s: string) {
+function variants(s: string, expansions: [RegExp, string[]][]) {
   let out = new Set([norm(s)]);
-  for (const [re, reps] of EXP) {
+  for (const [re, reps] of expansions) {
     const next = new Set<string>();
     for (const v of out) { if (re.test(v)) { re.lastIndex = 0; for (const r of reps) next.add(v.replace(re, r).replace(/\s+/g, " ").trim()); } next.add(v); re.lastIndex = 0; }
     out = next;
   }
   return out;
 }
+function matchesText(input: string, accept: string[], expansions: [RegExp, string[]][]) {
+  const a = variants(input, expansions);
+  return accept.some((x) => [...variants(x, expansions)].some((v) => a.has(v)));
+}
 export function checkText(input: string, accept: string[]) {
-  const a = variants(input);
-  return accept.some((x) => [...variants(x)].some((v) => a.has(v)));
+  return matchesText(input, accept, EXP);
+}
+
+// Некоторые открытые варианты подходят по смыслу, но не проверяют форму, заявленную в теме.
+// Применяем ограничения и к сохранённым заданиям, если ученик отвечает на них сейчас.
+const fixRequiredForm: Partial<Record<string, RegExp>> = {
+  "g-b1p-past-modals": /^(?:(?:should|could|might|may|must|would)(?: not)?|ought to) have /,
+  "g-b1p-future-continuous": /^will (?:still )?be /,
+  "g-b1p-was-going-to": /^(?:was|were) going to /,
+  "F-G-C1-16": /^took$/,
+};
+export function acceptedFixCorrections(item: CoreItem) {
+  const required = fixRequiredForm[item.id] ?? fixRequiredForm[item.topic_id];
+  return (item.accept ?? []).filter((text) => !required || required.test(norm(text)));
+}
+
+function checkFix(item: CoreItem, value: string | number) {
+  const answer = parseFixAnswer(value);
+  const errorSpan = item.span;
+  if (!answer?.text || !errorSpan) return false;
+  const words = fixWords(item.q);
+  if (answer.span[1] >= words.length || errorSpan[0] < 0 || errorSpan[1] >= words.length || errorSpan[0] > errorSpan[1]) return false;
+  const accepted = acceptedFixCorrections(item);
+  // Старый клиент передавал одно слово, но ввод относился ко всей ошибочной части.
+  const [start] = answer.span;
+  if (answer.legacy && start >= errorSpan[0] && start <= errorSpan[1] && matchesText(answer.text, accepted, FIX_EXP)) return true;
+  const corrected = replaceFixFragment(words, answer.span, answer.text);
+  const expected = accepted.map((text) => replaceFixFragment(words, errorSpan, text));
+  // «'s» и «'d» целиком разрешены, если они перечислены в банке для этого задания.
+  return matchesText(corrected, expected, FIX_EXP);
 }
 export function checkCore(item: CoreItem, v: string | number | null) {
   if (v === null || v === "") return false;
   if (item.type === "mcq") return Number(v) === item.answer;
-  if (item.type === "fix") {
-    // «найди и исправь»: «номер слова::исправление» — слово должно быть из ошибки, исправление — верное
-    const [i, text] = String(v).split("::");
-    const k = Number(i), sp = item.span ?? [0, 0];
-    return k >= sp[0] && k <= sp[1] && checkText(text ?? "", item.accept ?? []);
-  }
+  if (item.type === "fix") return checkFix(item, v);
   return checkText(String(v), item.accept ?? []);
 }
 
@@ -1202,8 +1234,8 @@ export function buildFix(core: CoreItem[], spec: { from: string; wrong: number; 
     if (!pre.trim()) wrong = wrong.charAt(0).toUpperCase() + wrong.slice(1);
     const start = pre.trim() ? pre.trim().split(/\s+/).length : 0;
     const q = `${pre}${wrong}${post}`.replace(/\s+/g, " ").trim();
-    out.push({ ...x, id: `F-${x.id}`, type: "fix", q, options: undefined, answer: undefined, wrong, span: [start, start + wrong.split(/\s+/).length - 1], accept: s.accept,
-      explain_ru: x.explain_ru });
+    const item: CoreItem = { ...x, id: `F-${x.id}`, type: "fix", q, options: undefined, answer: undefined, wrong, span: [start, start + wrong.split(/\s+/).length - 1], accept: s.accept };
+    out.push({ ...item, accept: acceptedFixCorrections(item) });
   }
   return out;
 }
