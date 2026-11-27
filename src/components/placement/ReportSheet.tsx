@@ -2,6 +2,7 @@
 import { LogoMark } from "../Logo";
 import { R_SKILL_NAME, R_SKILLS, R_TITLES, type RBlock, type RGrammarTopic, type RLang, type RVariant } from "@/lib/placement/report";
 import type { ReportDataT } from "@/lib/placement/report-data";
+import type { ReportPublication } from "@/lib/placement/report-publication";
 
 const CRIT_EN: Record<string, string> = { task: "Task achievement", coherence: "Coherence and organisation", vocabulary: "Vocabulary", grammar: "Grammar", fluency: "Fluency and coherence", pronunciation: "Pronunciation", content: "Content", achievement: "Communicative Achievement", organisation: "Organisation", language: "Language", discourse: "Discourse Management" };
 const TOPIC_STATUS = {
@@ -27,20 +28,26 @@ function GrammarTopics({ topics, lang, showLevel }: { topics: RGrammarTopic[]; l
 
 /** Лист отчёта: он же — PDF (печать) и страница в кабинете ученика. */
 /** answers — отдельный лист «Разбор ответов» (wrongOnly — только ошибки); иначе — отчёт без разбора ответов. */
-export function ReportSheet({ r, v, lang, on, texts, answers, wrongOnly }: { r: Pick<ReportDataT, "input" | "d" | "writing" | "speaking" | "date"> & { max?: number }; v: RVariant; lang: RLang; on: Record<RBlock, boolean>; texts: Record<string, string>; answers?: boolean; wrongOnly?: boolean }) {
+type Sheet = Omit<ReportPublication["sheet"], "max" | "input"> & {
+  input: Pick<ReportDataT["input"], "name" | "teen" | "level" | "skills" | "families" | "grammarDetail">;
+  max?: number;
+};
+type Review = Pick<ReportDataT["d"], "core" | "reading" | "listening">;
+type SheetProps = { v: RVariant; lang: RLang; on: Record<RBlock, boolean>; texts: Record<string, string>; timeZone?: string } &
+  ({ answers: true; wrongOnly?: boolean; r: Sheet & { d: Review } } | { answers?: false; r: Sheet });
+export function ReportSheet(props: SheetProps) {
+  const { r, v, lang, on, texts, answers, timeZone } = props;
   const T = R_TITLES[lang], x = r.input, ru = lang === "ru";
-  const date = new Date(r.date).toLocaleDateString(ru ? "ru-RU" : "en-GB", { day: "numeric", month: "long", year: "numeric" });
+  const date = new Date(r.date).toLocaleDateString(ru ? "ru-RU" : "en-GB", { day: "numeric", month: "long", year: "numeric", timeZone });
   const grammar = x.grammarDetail;
   const topicCount = grammar?.topics.filter((topic) => topic.n > 0).length ?? 0;
   const coverage = grammar?.coverageKnown ? `${topicCount} ${ru ? "из" : "of"} ${grammar.topics.length}` : String(topicCount);
   const txt = (b: RBlock) => on[b] && texts[b]?.trim() && <section className="rpt-b"><h3>{T[b]}</h3><div className="rpt-t">{texts[b]}</div></section>;
-  const L = ["A1", "A2", "B1", "B2", "C1"];
-  const core = [...L.flatMap((l) => r.d.core.filter((q) => !q.vocab && q.level === l)), ...L.flatMap((l) => r.d.core.filter((q) => q.vocab && q.level === l))];
   return (
     <article className="rpt-sheet">
       <header className="rpt-head">
         <div className="rpt-brand"><LogoMark size={34} /><span>Vibe<b>On</b></span></div>
-        <div className="rpt-meta"><b>{answers ? (ru ? "Разбор ответов placement test" : "Placement test answers") : T.report}</b><span>{answers ? (wrongOnly ? (ru ? "Только ошибки" : "Mistakes only") : (ru ? "Все вопросы" : "All questions")) : T[v]} · {date}</span></div>
+        <div className="rpt-meta"><b>{answers ? (ru ? "Разбор ответов placement test" : "Placement test answers") : T.report}</b><span>{answers ? (props.wrongOnly ? (ru ? "Только ошибки" : "Mistakes only") : (ru ? "Все вопросы" : "All questions")) : T[v]} · {date}</span></div>
       </header>
       <div className="rpt-who">
         <div><div className="rpt-name">{x.name || "—"}</div><div className="rpt-sub">{x.teen ? "Placement test Teens" : "Placement test"}</div></div>
@@ -99,11 +106,14 @@ export function ReportSheet({ r, v, lang, on, texts, answers, wrongOnly }: { r: 
       {txt("plan")}
       {txt("comment")}
       </>}
-      {answers && (() => {
+      {props.answers && (() => {
+        const { d } = props.r, { wrongOnly } = props;
+        const L = ["A1", "A2", "B1", "B2", "C1"];
+        const core = [...L.flatMap((l) => d.core.filter((q) => !q.vocab && q.level === l)), ...L.flatMap((l) => d.core.filter((q) => q.vocab && q.level === l))];
         // нумерация — как в разборе на экране, независимо от фильтра «только ошибки»
         const num = new Map<string, number>(); let k = 0;
         for (const q of core) num.set(q.id, ++k);
-        const texts2 = [...r.d.reading, ...r.d.listening];
+        const texts2 = [...d.reading, ...d.listening];
         for (const t of texts2) for (const q of t.questions) num.set(q.id, ++k);
         const coreRow = (q: (typeof core)[number]) => (
           <li key={q.id} value={num.get(q.id)} className={q.ok ? "ok" : "bad"}>

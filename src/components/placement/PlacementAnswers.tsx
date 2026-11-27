@@ -3,6 +3,7 @@ import { useEffect, useState, useTransition } from "react";
 import { useT } from "@/lib/i18n/client";
 import { revealState, toggleReveal } from "@/lib/placement/actions";
 import type { ReviewData } from "@/lib/placement/review";
+import type { StudentAnswers } from "@/lib/placement/report-publication";
 import { Icon } from "../Icon";
 import { Flag } from "./Flag";
 
@@ -12,8 +13,17 @@ import { Flag } from "./Flag";
  */
 export const fmtSec = (ms: number) => (ms < 60000 ? `${Math.max(1, Math.round(ms / 1000))} с` : `${Math.floor(ms / 60000)} мин ${Math.round((ms % 60000) / 1000)} с`);
 
+type AnswerText = Omit<StudentAnswers["reading"][number], "questions"> & Partial<Pick<ReviewData["reading"][number], "script" | "plays">> & {
+  questions: (StudentAnswers["reading"][number]["questions"][number] & Partial<Pick<ReviewData["reading"][number]["questions"][number], "tried">>)[];
+};
+type Answers = {
+  core: (StudentAnswers["core"][number] & Partial<Pick<ReviewData["core"][number], "tried" | "cf" | "typo" | "ms">>)[];
+  reading: AnswerText[];
+  listening: AnswerText[];
+};
+
 /** only — показать один раздел (разбор под своим блоком в выводе системы), без карточки и заголовка. */
-export function PlacementAnswers({ id, d, teacher, reveal: initial, only, wrongOnly = false }: { id: string; d: ReviewData; teacher: boolean; reveal: string[]; only?: "core" | "vocab" | "reading" | "listening"; wrongOnly?: boolean }) {
+export function PlacementAnswers({ id, d, teacher, reveal: initial, only, wrongOnly = false, publicationId }: { id: string; d: Answers; teacher: boolean; reveal: string[]; only?: "core" | "vocab" | "reading" | "listening"; wrongOnly?: boolean; publicationId?: string }) {
   const { t } = useT();
   const [open, setOpen] = useState<Record<string, string>>({});
   const [rev, setRev] = useState<string[]>(initial);
@@ -21,11 +31,11 @@ export function PlacementAnswers({ id, d, teacher, reveal: initial, only, wrongO
   useEffect(() => {
     if (teacher) return;
     let stop = false;
-    const tick = async () => { const r = await revealState(id).catch(() => null); if (!stop && r) setOpen(r); };
+    const tick = async () => { const r = await revealState(id, publicationId).catch(() => null); if (!stop && r) setOpen(r); };
     void tick();
     const h = setInterval(tick, 3000);
     return () => { stop = true; clearInterval(h); };
-  }, [id, teacher]);
+  }, [id, teacher, publicationId]);
   const flip = (itemId: string) => start(async () => {
     setRev((r) => (r.includes(itemId) ? r.filter((x) => x !== itemId) : [...r, itemId]));
     await toggleReveal(id, itemId);
@@ -57,7 +67,7 @@ export function PlacementAnswers({ id, d, teacher, reveal: initial, only, wrongO
                       {teacher && x.cf === 0 && <span className="pill grey mr-1">{t("pr.unsurePill")}</span>}
                       {teacher && x.typo && <span className="pill grey mr-1">{t("pr.typoPill")}</span>}
                       {x.topic}{x.explain ? ` · ${x.explain}` : ""}</div>
-                  </div>{teacher && x.ms !== null && <span className={`plms ${x.ms < 3000 ? "fast" : x.ms > 60000 ? "slow" : ""}`} title={x.ms < 3000 ? t("pl.fastHint") : undefined}>{fmtSec(x.ms)}</span>}
+                  </div>{teacher && typeof x.ms === "number" && <span className={`plms ${x.ms < 3000 ? "fast" : x.ms > 60000 ? "slow" : ""}`} title={x.ms < 3000 ? t("pl.fastHint") : undefined}>{fmtSec(x.ms)}</span>}
                   {teacher && <Flag itemId={x.id} attempt={id} />}
                   </div>
                 </div>
@@ -72,7 +82,7 @@ export function PlacementAnswers({ id, d, teacher, reveal: initial, only, wrongO
           <div className="flex flex-wrap items-center gap-2">
             <span className="pill grey">{t(x.kind === "reading" ? "pl.part.reading" : "pl.part.listening")} · {x.level}</span>
             <h3 className="m-0 grow">{x.title}</h3>
-            {teacher && x.plays !== null && <span className="small muted">{t("pl.playsUsed", { n: x.plays })}</span>}
+            {teacher && typeof x.plays === "number" && <span className="small muted">{t("pl.playsUsed", { n: x.plays })}</span>}
             {teacher && <Flag itemId={x.id} attempt={id} />}
             {teacher && x.kind === "listening" && (
               <button type="button" className={`btn sm ${rev.includes(x.id) ? "primary" : "secondary"}`} aria-pressed={rev.includes(x.id)} onClick={() => flip(x.id)} title={t("pl.eyeHint")}>
