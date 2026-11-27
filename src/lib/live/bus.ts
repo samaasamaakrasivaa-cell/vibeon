@@ -37,13 +37,14 @@ export function leave(channel: string, userId: string, conn: string) {
 }
 export const online = (channel: string) => [...(bus.presence.get(channel)?.keys() ?? [])];
 
-/** Очередь на ключ: операции с одной доской выполняются строго по очереди (без потери изменений). */
+/** Очередь операций по ключу внутри одного процесса приложения. */
 const g2 = globalThis as unknown as { __locks?: Map<string, Promise<unknown>> };
 const locks = (g2.__locks ??= new Map());
 export function withLock<T>(key: string, fn: () => Promise<T>): Promise<T> {
   const prev = locks.get(key) ?? Promise.resolve();
   const next = prev.then(fn, fn);
-  locks.set(key, next.catch(() => {}));
-  next.finally(() => { if (locks.get(key) === next) locks.delete(key); }).catch(() => {});
+  const settled = next.catch(() => undefined);
+  locks.set(key, settled);
+  void settled.then(() => { if (locks.get(key) === settled) locks.delete(key); });
   return next;
 }

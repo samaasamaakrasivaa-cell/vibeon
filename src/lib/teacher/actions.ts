@@ -7,7 +7,7 @@ import { db } from "../db";
 import { requireUser } from "../auth/session";
 import { fromZoned, parseIsoDay } from "../time";
 import { getT } from "../i18n/server";
-import { invalidateLessonSessions } from "../live/lesson-session";
+import { invalidateLessonSessions, withLessonLifecycleLock } from "../live/lesson-session";
 import { notify, notifyPayer } from "../notify";
 import { repriceLessons } from "../billing/engine";
 
@@ -188,7 +188,7 @@ export async function setLessonStatus(id: string, status: LessonStatus, charged 
   if (!["DONE", "MISSED", "CANCELLED", "PLANNED"].includes(status)) return { ok: false, error: "status" };
   const ids = (await slotOf(l)).map((x) => x.id);
   if (!ids.length) return { ok: false, error: "not found" };
-  const changed = await db.$transaction(async (tx) => {
+  const changed = await withLessonLifecycleLock(teacher.id, l, () => db.$transaction(async (tx) => {
     if (status === "PLANNED" || status === "DONE") {
       const [overlap] = await tx.$queryRaw<{ id: string }[]>`
         SELECT occupied.id FROM "LessonInstance" AS restored
@@ -208,7 +208,7 @@ export async function setLessonStatus(id: string, status: LessonStatus, charged 
     await tx.lessonInstance.updateMany({ where: { id: { in: ids } }, data: { status, charged: status === "MISSED" ? charged : status === "DONE" } });
     if (status !== "DONE") await invalidateLessonSessions(tx, ids);
     return true;
-  });
+  }));
   if (!changed) return { ok: false, error: (await getT()).t("sch.restoreConflict") };
   refresh(l.studentId);
   return { ok: true };
