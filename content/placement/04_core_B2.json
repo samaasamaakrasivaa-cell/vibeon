@@ -744,7 +744,8 @@
       "will have finished",
       "'ll have finished"
     ],
-    "explain_ru": "Действие завершится к моменту в будущем — Future Perfect: will have finished."
+    "explain_ru": "Действие завершится к моменту в будущем — Future Perfect: will have finished.",
+    "instruction_en": "Use the future perfect for an action completed by then."
   },
   {
     "id": "G-B2-24",
@@ -758,7 +759,7 @@
     "q": "My flatmate ___ his dirty socks on the sofa! It's so annoying.",
     "options": [
       "is always leaving",
-      "always is leaving",
+      "always is leave",
       "is leaving always",
       "has always been leaving"
     ],
@@ -798,7 +799,8 @@
       "will be lying",
       "'ll be lying"
     ],
-    "explain_ru": "Действие в процессе в момент будущего — Future Continuous: will be lying."
+    "explain_ru": "Действие в процессе в момент будущего — Future Continuous: will be lying.",
+    "instruction_en": "Use the future continuous for the action in progress at that time."
   },
   {
     "id": "G-B2-27",
@@ -866,7 +868,7 @@
     "q": "The ground is wet. It ___ last night.",
     "options": [
       "must have rained",
-      "can't have rained",
+      "must had rained",
       "should rain",
       "must rain"
     ],
@@ -887,7 +889,7 @@
       "shouldn't have",
       "mustn't have",
       "couldn't have",
-      "needn't have"
+      "needn't to have"
     ],
     "answer": 0,
     "explain_ru": "Сожаление о прошлом — shouldn't have + третья форма."
@@ -993,7 +995,7 @@
     "q": "The manager apologised ___ the delay.",
     "options": [
       "for",
-      "about",
+      "on",
       "of",
       "to"
     ],
@@ -1090,7 +1092,7 @@
       "—",
       "the",
       "an",
-      "some"
+      "much"
     ],
     "answer": 1,
     "explain_ru": "Конкретное здание, где работают, — the hospital (а лежат в больнице — in hospital, без артикля)."
@@ -1490,7 +1492,8 @@
       "will have been"
     ],
     "answer": 3,
-    "explain_ru": "К моменту в будущем (by next June) — Future Perfect: will have been."
+    "explain_ru": "К моменту в будущем (by next June) — Future Perfect: will have been.",
+    "instruction_en": "Use the future perfect to describe the length of time up to next June."
   },
   {
     "id": "G-B2-53",
@@ -1560,7 +1563,7 @@
     "type": "mcq",
     "q": "It took me months to ___ used to the cold winters in Canada.",
     "options": [
-      "be",
+      "getting",
       "use",
       "make",
       "get"
@@ -1654,13 +1657,13 @@
     "type": "mcq",
     "q": "Tom ___ been at the party. He was in Paris that weekend.",
     "options": [
-      "mustn't have",
+      "can't has",
       "shouldn't have",
       "needn't have",
       "can't have"
     ],
     "answer": 3,
-    "explain_ru": "Уверены, что этого не было, — can't have been."
+    "explain_ru": "Can’t have been at the party выражает отрицательный вывод о прошлом. В американском английском в таком значении также встречается must not have been."
   },
   {
     "id": "G-B2-62",
@@ -1934,7 +1937,7 @@
     "topic_en": "Verbs that change meaning: -ing vs to-infinitive",
     "topic_ru": "Глаголы с разным значением: -ing и инфинитив",
     "type": "mcq",
-    "q": "I regret ___ you that. I'm really sorry.",
+    "q": "I regret ___ you the secret yesterday. I should have kept it to myself.",
     "options": [
       "to tell",
       "tell",
@@ -1942,7 +1945,7 @@
       "to telling"
     ],
     "answer": 2,
-    "explain_ru": "Сожалеть о сделанном — regret + -ing; regret to tell — официально «с сожалением сообщаем»."
+    "explain_ru": "Ученик говорит о сообщённой вчера тайне. Regret telling выражает сожаление о совершённом действии."
   },
   {
     "id": "G-B2-77",
@@ -2367,7 +2370,8 @@
       "in spite of"
     ],
     "explain_ru": "Перед существительным — despite / in spite of.",
-    "hint_ru": "despite / although / however"
+    "hint_ru": "despite / although / however",
+    "instruction_en": "Complete the contrast link. You can use one to three words."
   },
   {
     "id": "G-B2-T06",
@@ -2800,15 +2804,15 @@
     "topic_en": "Emphatic do / did; so / such for emphasis",
     "topic_ru": "Усилительное do / did; so / such для эмфазы",
     "type": "mcq",
-    "q": "I did ___ the invoice. Check the junk folder.",
+    "q": "I did ___ the door. I checked it twice.",
     "options": [
-      "sent",
-      "sending",
-      "sends",
-      "send"
+      "locked",
+      "locking",
+      "locks",
+      "lock"
     ],
     "answer": 3,
-    "explain_ru": "Для усиления утверждения используются do, does или did с начальной формой глагола. So стоит перед прилагательным, а such — перед группой с существительным."
+    "explain_ru": "После усилительного did нужен bare infinitive lock."
   },
   {
     "id": "G-B2-114",
@@ -3085,11 +3089,11 @@
     "topic_en": "be used to / get used to",
     "topic_ru": "be used to / get used to",
     "type": "brackets",
-    "q": "I'm getting used to ___ (work) with two monitors.",
+    "q": "I'm getting used to ___ (work) in a much noisier office.",
     "accept": [
       "working"
     ],
-    "explain_ru": "После get used to требуется форма глагола на -ing."
+    "explain_ru": "После get used to в значении «привыкать» употребляется форма working."
   },
   {
     "id": "G-B2-130",

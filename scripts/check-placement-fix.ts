@@ -87,34 +87,61 @@ assert.equal(checkCore(fixture("She ___ now.", "can swims", "can swim"), "1-2::c
 assert.equal(checkCore(fixture("He said she ___, then left.", "was cook", "was cooking"), "4-4::cooking"), true);
 assert.equal(checkCore(fixture("He said she ___, then left.", "was cook", "was cooking"), "4-4::cooking,"), true);
 
-const rejected: string[] = [];
-let originalAlternatives = 0;
+let bankAlternatives = 0;
 for (const { from, accept } of fixSpecs) {
   const fix = item(from);
   assert.ok(fix.accept?.length, fix.id);
+  assert.notEqual(fix.wrong, undefined, fix.id);
+  assert.equal(checkCore(fix, `${fix.span.join("-")}::${fix.wrong}`), false, fix.id);
   for (const accepted of fix.accept) {
     assert.equal(checkCore(fix, `${fix.span.join("-")}::${accepted}`), true, fix.id);
   }
-  const snapshot = { ...fix, accept };
-  for (const original of accept) {
-    originalAlternatives++;
-    const result = checkCore(snapshot, `${fix.span.join("-")}::${original}`);
-    assert.equal(checkCore(snapshot, `${fix.span[0]}::${original}`), result, `${from}: ${original}`);
-    if (!result) rejected.push(`${from}: ${original}`);
+  for (const declared of accept) {
+    bankAlternatives++;
+    assert.equal(checkCore(fix, `${fix.span.join("-")}::${declared}`), true, `${from}: ${declared}`);
+    assert.equal(checkCore(fix, `${fix.span[0]}::${declared}`), true, `${from}: ${declared}`);
   }
 }
-assert.deepEqual(rejected.sort(), [
-  "G-B1-138: didn't check", "G-B1-138: did not check",
-  "G-B1-139: went", "G-B1-139: probably went",
-  "G-B1-142: are flying", "G-B1-142: will fly", "G-B1-143: am interviewing",
-  "G-B1-150: were planning to eat", "G-B1-150: had planned to eat",
-  "G-B1-150: wanted to eat", "G-B1-150: meant to eat",
-  "G-B1-151: was planning to cycle", "G-B1-151: had planned to cycle",
-  "G-B1-151: meant to cycle", "G-B1-151: wanted to cycle", "G-C1-16: was taking",
-].sort());
+// До PT-02 некоторые из этих вариантов хранились в снимках активных попыток.
+const legacyExcluded = [
+  ["G-B1-138", "didn't check", "did not check"],
+  ["G-B1-139", "went", "probably went"],
+  ["G-B1-142", "are flying", "will fly"],
+  ["G-B1-143", "am interviewing"],
+  ["G-B1-150", "were planning to eat", "had planned to eat", "wanted to eat", "meant to eat"],
+  ["G-B1-151", "was planning to cycle", "had planned to cycle", "meant to cycle", "wanted to cycle"],
+  ["G-C1-16", "was taking"],
+] as const;
+for (const [id, ...excluded] of legacyExcluded) {
+  const fix = item(id);
+  const spec = fixSpecs.find((f) => f.from === id);
+  assert.ok(spec?.instruction_en, id);
+  const legacy = { ...fix, instruction_en: undefined, accept: [...fix.accept!, ...excluded] };
+  for (const correction of excluded) {
+    assert.ok(!spec.accept.includes(correction), `${id}: ${correction}`);
+    assert.equal(checkCore(legacy, `${fix.span.join("-")}::${correction}`), false, `${id}: ${correction}`);
+    assert.equal(checkCore(legacy, `${fix.span[0]}::${correction}`), false, `${id}: ${correction}`);
+  }
+}
+full("G-A2-110", "that", true);
+full("G-B1-72", "whether", true);
+full("G-B1-142", "will be still flying", true);
+full("G-B2-66", "have", true);
+full("G-C1-64", "should get", true);
+full("G-C1-23", "was to become", true);
+full("G-C1-23", "'d become", false);
+for (const core of bank) {
+  if (core.type === "mcq") {
+    assert.ok(core.options && core.options[core.answer!], core.id);
+    assert.equal(checkCore(core, core.answer!), true, core.id);
+  } else {
+    assert.ok(core.accept?.length, core.id);
+    for (const accepted of core.accept) assert.equal(checkCore(core, accepted), true, core.id);
+  }
+}
 assert.equal(checkCore({ ...usedTo, type: "mcq", answer: 1 }, 1), true);
 assert.equal(checkCore({ ...usedTo, type: "gap", accept: ["he is sleeping"] }, "he's sleeping"), true);
 assert.equal(checkCore({ ...usedTo, type: "wordform", accept: ["written"] }, "WRITTEN!"), true);
 assert.equal(checkCore({ ...usedTo, type: "transform", accept: ["had gone"] }, "'d gone"), true);
 assert.equal(checkCore({ ...usedTo, type: "brackets", accept: ["doesn't go"] }, "does not go"), true);
-console.log(`Placement Fix: ${fixes.size} заданий, ${originalAlternatives} исходных вариантов, ${rejected.length} исключений. Регрессии проверены.`);
+console.log(`Placement Adult: ${bank.length} заданий ядра, ${fixes.size} Fix и ${bankAlternatives} вариантов Fix. Регрессии проверены.`);

@@ -14,7 +14,7 @@
     "questions": [
       {
         "id": "R-A1-01-q1",
-        "q": "When is the pool open?",
+        "q": "How often is the pool normally open?",
         "options": [
           "Only at the weekend",
           "Every day",
@@ -269,7 +269,7 @@
     "questions": [
       {
         "id": "R-A1-04-q1",
-        "q": "What does the writer do in the morning?",
+        "q": "What does the writer do on Sunday morning?",
         "options": [
           "Makes pancakes",
           "Goes to work",
@@ -354,7 +354,7 @@
     "questions": [
       {
         "id": "R-A2-01-q1",
-        "q": "What didn't the writer like?",
+        "q": "Which part of the meal did the writer find a bit dry?",
         "options": [
           "The soup",
           "The prices",

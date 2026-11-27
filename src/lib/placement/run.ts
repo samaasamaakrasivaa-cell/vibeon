@@ -1,6 +1,6 @@
 import "server-only";
 import type { Prisma } from "@prisma/client";
-import { instruction, instructionRu, trackOf } from "./bank";
+import { coreInstruction, instruction, instructionRu, trackOf } from "./bank";
 import {
   SECTIONS, type Section,
   checkCore, coreProgress, coreResult, firstText, levelOfStep, wsStep, nextCore, nextText, nextVocab, pickTask, PL_LEVELS, stepOf, textLevel, vocabProgress, vocabResult,
@@ -151,7 +151,7 @@ export function publicView(st: PState, lang: "ru" | "en", bank?: Bank) {
     if (!it) return { ...base, section: sec, n: 0, from: 0, progress, item: null };
     return {
       ...base, section: sec, n: st.core.length, from: Math.max(0, from), progress,
-      item: { id: it.id, type: it.type, skill: it.skill, q: it.q, options: it.options ?? null, base: it.base ?? null, key: it.key ?? null, frame: it.frame ?? null, hint: (it as CoreItem & { hint_ru?: string }).hint_ru ?? null, instr: ins(it.type, it.level), instrRu: insRu(it.type, it.level),
+      item: { id: it.id, type: it.type, skill: it.skill, q: it.q, options: it.options ?? null, base: it.base ?? null, key: it.key ?? null, frame: it.frame ?? null, hint: (it as CoreItem & { hint_ru?: string }).hint_ru ?? null, instr: coreInstruction(it, track), instrRu: insRu(it.type, it.level),
         // v6: на проверке тем после ответа — «Уверен / Не уверен»
         ask: last.ph === "t" || last.ph === "c" || last.ph === "g" },
     };

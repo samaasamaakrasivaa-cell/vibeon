@@ -325,7 +325,7 @@
         "options": [
           "She thinks Sam visits their mother too often",
           "She is angry that their mother is leaving without asking",
-          "She feels she does much more for their mother than Sam",
+          "She feels she makes more effort to visit their mother than Sam does",
           "She would like to move to Portugal herself"
         ],
         "answer": 2,
@@ -340,12 +340,12 @@
           "Persuade their mother to stay in her house in England",
           "Ask Aunt Jo to look after their mother",
           "Help their mother sell the house quickly",
-          "Visit the place with their mother before she decides"
+          "Visit the place with their mother before she signs anything"
         ],
         "answer": 3,
         "checks": "detail",
         "topic_id": "l-detail",
-        "explain_ru": "Поехать посмотреть место вместе с мамой, пока она ничего не подписала."
+        "explain_ru": "Лора предлагает поехать вместе до того, как мать подпишет документы. Сэм соглашается посмотреть билеты."
       }
     ],
     "situation_en": "A brother and sister talk about their mother's plans after she retires."
@@ -409,7 +409,7 @@
           "X-rays often give misleading results about old paintings",
           "Nineteenth-century restorers were careless",
           "Dark backgrounds are usually more effective",
-          "Confident restorers can destroy a work's meaning"
+          "Confident restorers can obscure what the artist intended"
         ],
         "answer": 3,
         "checks": "main idea",

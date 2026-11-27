@@ -198,7 +198,7 @@
   },
   {
     "from": "G-A1-38",
-    "wrong": 1,
+    "wrong": 2,
     "accept": [
       "some"
     ]
@@ -426,7 +426,9 @@
     "from": "G-A2-18",
     "wrong": 0,
     "accept": [
-      "might"
+      "might",
+      "may",
+      "could"
     ]
   },
   {
@@ -468,7 +470,8 @@
     "from": "G-A2-24",
     "wrong": 3,
     "accept": [
-      "across"
+      "across",
+      "over"
     ]
   },
   {
@@ -594,21 +597,25 @@
     "from": "G-B1-11",
     "wrong": 2,
     "accept": [
-      "who"
+      "who",
+      "that"
     ]
   },
   {
     "from": "G-B1-12",
     "wrong": 0,
     "accept": [
-      "where"
+      "where",
+      "in which",
+      "at which"
     ]
   },
   {
     "from": "G-B1-74",
     "wrong": 0,
     "accept": [
-      "told"
+      "told",
+      "said to"
     ]
   },
   {
@@ -622,7 +629,8 @@
     "from": "G-B1-72",
     "wrong": 2,
     "accept": [
-      "if"
+      "if",
+      "whether"
     ]
   },
   {
@@ -724,7 +732,8 @@
     "from": "G-B1-45",
     "wrong": 0,
     "accept": [
-      "the"
+      "the",
+      "some"
     ]
   },
   {
@@ -823,7 +832,8 @@
     "wrong": 1,
     "accept": [
       "will have been"
-    ]
+    ],
+    "instruction_en": "Use the future perfect to describe the length of time up to next June."
   },
   {
     "from": "G-B2-11",
@@ -851,7 +861,8 @@
     "wrong": 2,
     "accept": [
       "Despite",
-      "In spite of"
+      "In spite of",
+      "Notwithstanding"
     ]
   },
   {
@@ -859,7 +870,11 @@
     "wrong": 3,
     "accept": [
       "However",
-      "Nevertheless"
+      "Nevertheless",
+      "Even so",
+      "Still",
+      "Nonetheless",
+      "That said"
     ]
   },
   {
@@ -889,15 +904,17 @@
     "from": "G-B2-16",
     "wrong": 2,
     "accept": [
-      "stay"
+      "stay",
+      "be"
     ]
   },
   {
     "from": "G-B2-40",
-    "wrong": 0,
+    "wrong": 2,
     "accept": [
       "went"
-    ]
+    ],
+    "instruction_en": "Use the past simple after it’s time."
   },
   {
     "from": "G-B2-67",
@@ -966,8 +983,10 @@
     "from": "G-B2-30",
     "wrong": 1,
     "accept": [
-      "must have rained"
-    ]
+      "must have rained",
+      "must have been raining"
+    ],
+    "instruction_en": "Use a modal perfect for a strong affirmative deduction."
   },
   {
     "from": "G-B2-78",
@@ -1018,7 +1037,8 @@
     "from": "G-B2-66",
     "wrong": 3,
     "accept": [
-      "get"
+      "get",
+      "have"
     ]
   },
   {
@@ -1046,8 +1066,12 @@
     "from": "G-C1-62",
     "wrong": 2,
     "accept": [
-      "bound"
-    ]
+      "bound",
+      "sure",
+      "certain",
+      "likely"
+    ],
+    "instruction_en": "Use an adjective of likelihood or certainty."
   },
   {
     "from": "G-C1-07",
@@ -1067,14 +1091,16 @@
     "from": "G-C1-64",
     "wrong": 3,
     "accept": [
-      "get"
+      "get",
+      "should get"
     ]
   },
   {
     "from": "G-C1-08",
     "wrong": 2,
     "accept": [
-      "complete"
+      "complete",
+      "should complete"
     ]
   },
   {
@@ -1109,7 +1135,8 @@
     "from": "G-C1-69",
     "wrong": 0,
     "accept": [
-      "neither"
+      "neither",
+      "nor"
     ]
   },
   {
@@ -1157,14 +1184,16 @@
     "from": "G-C1-73",
     "wrong": 0,
     "accept": [
-      "to whom"
+      "to whom",
+      "with whom"
     ]
   },
   {
     "from": "G-C1-14",
     "wrong": 0,
     "accept": [
-      "in which"
+      "in which",
+      "at which"
     ]
   },
   {
@@ -1178,16 +1207,18 @@
     "from": "G-C1-63",
     "wrong": 3,
     "accept": [
-      "were"
-    ]
+      "were",
+      "was"
+    ],
+    "instruction_en": "Use an unreal past form after as if."
   },
   {
     "from": "G-C1-16",
-    "wrong": 0,
+    "wrong": 1,
     "accept": [
-      "took",
-      "was taking"
-    ]
+      "took"
+    ],
+    "instruction_en": "Use the past simple after it’s high time."
   },
   {
     "from": "G-C1-54",
@@ -1200,8 +1231,11 @@
     "from": "G-C1-23",
     "wrong": 0,
     "accept": [
-      "would become"
-    ]
+      "would become",
+      "was to become",
+      "was going to become"
+    ],
+    "instruction_en": "Report a future event from a point in the past. Write the auxiliary in full."
   },
   {
     "from": "G-C1-57",
@@ -1331,7 +1365,7 @@
   },
   {
     "from": "G-A2-106",
-    "wrong": 0,
+    "wrong": 1,
     "accept": [
       "that"
     ]
@@ -1340,14 +1374,16 @@
     "from": "G-A2-109",
     "wrong": 2,
     "accept": [
-      "who"
+      "who",
+      "that"
     ]
   },
   {
     "from": "G-A2-110",
     "wrong": 3,
     "accept": [
-      "which"
+      "which",
+      "that"
     ]
   },
   {
@@ -1566,8 +1602,11 @@
     "from": "G-C1-121",
     "wrong": 1,
     "accept": [
-      "notwithstanding"
-    ]
+      "notwithstanding",
+      "despite",
+      "in spite of"
+    ],
+    "instruction_en": "Use a formal concessive linker."
   },
   {
     "from": "G-C1-122",
@@ -1606,7 +1645,7 @@
   },
   {
     "from": "G-A2-117",
-    "wrong": 3,
+    "wrong": 1,
     "accept": [
       "emptied"
     ]
@@ -1648,17 +1687,19 @@
   },
   {
     "from": "G-A2-129",
-    "wrong": 2,
+    "wrong": 0,
     "accept": [
-      "small"
-    ]
+      "small blue"
+    ],
+    "instruction_en": "Use the usual order of size and colour."
   },
   {
     "from": "G-A2-130",
-    "wrong": 3,
+    "wrong": 0,
     "accept": [
-      "old"
-    ]
+      "old red"
+    ],
+    "instruction_en": "Use the usual order of age and colour."
   },
   {
     "from": "G-A2-133",
@@ -1726,10 +1767,9 @@
     "accept": [
       "should have checked",
       "ought to have checked",
-      "could have checked",
-      "didn't check",
-      "did not check"
-    ]
+      "could have checked"
+    ],
+    "instruction_en": "Use a modal perfect to express a past mistake or missed opportunity."
   },
   {
     "from": "G-B1-139",
@@ -1737,10 +1777,9 @@
     "accept": [
       "might have gone",
       "may have gone",
-      "could have gone",
-      "went",
-      "probably went"
-    ]
+      "could have gone"
+    ],
+    "instruction_en": "Use a modal perfect to express a possibility in the past."
   },
   {
     "from": "G-B1-142",
@@ -1748,9 +1787,9 @@
     "accept": [
       "will be flying",
       "will still be flying",
-      "are flying",
-      "will fly"
-    ]
+      "will be still flying"
+    ],
+    "instruction_en": "Use the future continuous for the action in progress."
   },
   {
     "from": "G-B1-143",
@@ -1758,8 +1797,9 @@
     "accept": [
       "will be interviewing",
       "will still be interviewing",
-      "am interviewing"
-    ]
+      "will be still interviewing"
+    ],
+    "instruction_en": "Use the future continuous for the action in progress."
   },
   {
     "from": "G-B1-146",
@@ -1779,23 +1819,17 @@
     "from": "G-B1-150",
     "wrong": 0,
     "accept": [
-      "were going to eat",
-      "were planning to eat",
-      "had planned to eat",
-      "wanted to eat",
-      "meant to eat"
-    ]
+      "were going to eat"
+    ],
+    "instruction_en": "Use the past form of be going to for the original plan."
   },
   {
     "from": "G-B1-151",
     "wrong": 1,
     "accept": [
-      "was going to cycle",
-      "was planning to cycle",
-      "had planned to cycle",
-      "meant to cycle",
-      "wanted to cycle"
-    ]
+      "was going to cycle"
+    ],
+    "instruction_en": "Use the past form of be going to for the original plan."
   },
   {
     "from": "G-B1-154",
@@ -1842,14 +1876,15 @@
     "from": "G-B2-110",
     "wrong": 3,
     "accept": [
-      "that"
+      "that",
+      "which"
     ]
   },
   {
     "from": "G-B2-113",
     "wrong": 0,
     "accept": [
-      "send"
+      "lock"
     ]
   },
   {

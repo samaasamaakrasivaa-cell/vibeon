@@ -11,7 +11,7 @@ import { notify } from "../notify";
 import { rateLimit } from "../rate-limit";
 import { getLang } from "../i18n/server";
 import { attemptFor, ptCookie } from "./access";
-import { getBank, isOwner, TEEN_READY, trackOf, type Track } from "./bank";
+import { coreInstruction, getBank, isOwner, TEEN_READY, trackOf, type Track } from "./bank";
 import { describe5, RUB_V2, rubricOf } from "./rubric";
 import { checkCore, typoOk, emptyState, EXPECT, pickTask, PlacementCoverageError, PL_LEVELS, SECTIONS, STEPS, stepIdx, type Section, summarize, words, type CoreItem, type Expect, type ListenItem, type ReadItem, type SpeakItem, type WriteItem } from "./engine";
 import { addNextText, advance, begin, closeSection, doneOf, ensureTasks, enter, goTo, json, LATER, availOf, openOf, partsOf, publicView, stateOf, touch, type Later, type PView } from "./run";
@@ -246,7 +246,7 @@ export async function peekCore(id: string, idx: number): Promise<R & { item?: un
     const inBlock = (y?: { ph?: string }) => !!y && (st.section === "vocab" ? !!y.ph?.startsWith("v") : st.section === "core" && !y.ph?.startsWith("v"));
     if (!inBlock(x) || !st.answers[x.id]) return { ok: false, error: "idx" };
     const it = st.items[x.id] as CoreItem;
-    const ins = (await import("./bank")).instruction(it.type, it.level, trackOf(st.track));
+    const ins = coreInstruction(it, trackOf(st.track));
     return { ok: true, item: { id: it.id, type: it.type, skill: it.skill, q: it.q, options: it.options ?? null, base: it.base ?? null, key: it.key ?? null, frame: it.frame ?? null, hint: (it as CoreItem & { hint_ru?: string }).hint_ru ?? null, instr: ins }, given: st.answers[x.id].v, dk: !!st.answers[x.id].dk };
   } catch { return { ok: false, error: "not found" }; }
 }

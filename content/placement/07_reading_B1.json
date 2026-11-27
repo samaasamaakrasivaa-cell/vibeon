@@ -44,7 +44,7 @@
         "id": "R-B1-01-q3",
         "q": "What can we understand about Anna's flat?",
         "options": [
-          "It doesn't have a spare bedroom",
+          "There probably isn’t a guest bed for Jess",
           "It's right next to the sea",
           "It's too expensive for her new salary",
           "It's very noisy in the mornings"
@@ -52,7 +52,7 @@
         "answer": 0,
         "checks": "inference",
         "topic_id": "r-inference",
-        "explain_ru": "Гостье придётся спать на диване — значит, отдельной комнаты нет."
+        "explain_ru": "Анна предлагает Джесс спать на диване. Можно сделать вывод, что для неё нет отдельной кровати."
       },
       {
         "id": "R-B1-01-q4",
@@ -313,7 +313,7 @@
         "id": "R-B1-04-q4",
         "q": "What was included in the price?",
         "options": [
-          "A bowl to take home",
+          "A ready-made bowl to take home that day",
           "Lunch",
           "Materials and a cup of tea",
           "Three lessons"
