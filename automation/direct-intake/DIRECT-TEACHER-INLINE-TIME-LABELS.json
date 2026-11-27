@@ -7,8 +7,10 @@
   "progress": {
     "base_sha": "58ead57015f67ea5281af520fe7fcf46d68219d5",
     "branch": "codex/teacher/inline-time-labels",
-    "next": "Разместить подписи рядом с полями. Проверить редактирование и переходы на широком и узком экранах",
-    "stage": "implementation"
+    "head_sha": "7acc95ef6cf0de627a451fbd60a80ff09d136bdd",
+    "next": "Независимое ревью и CI на точный SHA. Сверить порядок выпусков с Tech Lead",
+    "pr": 71,
+    "stage": "review"
   },
   "release": null,
   "source": "direct",
