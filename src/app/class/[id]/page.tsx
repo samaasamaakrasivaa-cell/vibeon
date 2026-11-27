@@ -15,6 +15,7 @@ import { parse } from "@/lib/tasks/parse";
 import { hhmm } from "@/lib/time";
 import { nextStudentLesson } from "@/lib/student/next-lesson";
 import { homeworkFor } from "@/lib/homework";
+import { currentHomeworkAnswers } from "@/lib/homework-review";
 import { carriedAnswers, isEmptyPayload } from "@/lib/class/carry";
 import { hadWrongTry, isFinal, progressOf } from "@/lib/tasks/progress";
 import type { TaskOptions, TaskType } from "@/lib/tasks/catalog";
@@ -106,6 +107,12 @@ export default async function ClassPage({ params, searchParams }: { params: Prom
     };
   };
   const members = slot.filter((x) => x.student).map((x) => ({ sid: x.student!.id, instanceId: x.id, userId: x.student!.userId, name: [x.student!.name, x.student!.lastName].filter(Boolean).join(" "), gender: x.student!.gender }));
+  // Продолженные с другого урока ответы видны в задании, но сами по себе не требуют проверки этой домашки.
+  const homeworkReviewStatuses = role === "teacher" ? Object.fromEntries(members.map((m) => [
+    m.sid, Object.fromEntries(currentHomeworkAnswers(rows0, m.instanceId, m.sid)
+      .filter((answer) => !isEmptyPayload(answer.payload))
+      .map((answer) => [answer.taskId, answer.status])),
+  ])) : undefined;
   const answersRows = allRows.filter((a) => a.studentId === lesson.studentId);
   const words = allWords.filter((w) => w.studentId === lesson.studentId);
   const answers: Answers = Object.fromEntries(answersRows.filter((a) => Object.keys((a.payload as object) ?? {}).length).map((a) => [a.taskId, a.payload as Record<string, unknown>]));
@@ -136,7 +143,7 @@ export default async function ClassPage({ params, searchParams }: { params: Prom
         title: data?.l.title ?? null,
         crumbs: data ? `${data.l.unit.course.title} · Unit ${data.unitNo} · Lesson ${data.lessonNo}` : null,
         course: data ? { title: data.l.unit.course.title, cover: data.l.cover || data.l.unit.course.cover } : null,
-        rubrics: data?.rubrics ?? [], tasks: (data?.tasks ?? []).filter((x) => role === "teacher" || !x.options?.teacherOnly).map((x) => (role === "teacher" || (!x.options?.teacherKey && !x.options?.help?.hidden) ? x : { ...x, options: { ...x.options, teacherKey: undefined, help: x.options?.help?.hidden ? undefined : x.options?.help } })), /* заметки «только учителю», ответы для учителя и скрытые Useful phrases ученику не отдаём */ answers, statuses, reviews, aiDrafts, times,
+        rubrics: data?.rubrics ?? [], tasks: (data?.tasks ?? []).filter((x) => role === "teacher" || !x.options?.teacherOnly).map((x) => (role === "teacher" || (!x.options?.teacherKey && !x.options?.help?.hidden) ? x : { ...x, options: { ...x.options, teacherKey: undefined, help: x.options?.help?.hidden ? undefined : x.options?.help } })), /* заметки «только учителю», ответы для учителя и скрытые Useful phrases ученику не отдаём */ answers, statuses, reviews, aiDrafts, times, homeworkReviewStatuses,
         ...(role === "teacher" && data?.l.teacherInfo ? { teacherInfo: data.l.teacherInfo as TInfo } : {}),
         live, board,
         ...(role === "teacher" && host.status === "PLANNED" ? { lessonSession: { ...lessonOccurrence(host), active: hasStartedLessonSession(host) } } : {}),
