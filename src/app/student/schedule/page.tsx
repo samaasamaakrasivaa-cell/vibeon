@@ -22,7 +22,6 @@ export default async function StudentSchedule({ searchParams }: { searchParams: 
   return (
     <div className="page" style={{ maxWidth: 1100 }}>
       <h1>{t("nav.schedule")}</h1>
-      <p className="muted mt-2">{t("sts.lead")}</p>
       <StudentWeek days={v.days} lessons={v.lessons} hourFrom={v.hourFrom} hourTo={v.hourTo} nowDay={v.nowDay} nowMin={v.nowMin} title={t("sts.week")} study={v.study} nav={
         <div className="weeknav">
           <Link href={`?w=${addDaysIso(monday, -7)}`} aria-label={t("sch.prev")}><Icon name="chevl" size="sm" /></Link>

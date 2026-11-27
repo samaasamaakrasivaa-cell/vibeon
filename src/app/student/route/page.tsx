@@ -10,6 +10,7 @@ import { segName, skillNote, SKILL_COLOR, SKILL_NAME, SKILLS, txt, type Skill, t
 import { etaRange, fmtHM, lessonsWord, paceKey, paceLabel, parsePace, selfBudget, stageMath } from "@/lib/roadmap/math";
 import { roadmapView, schedPerWeek, type RouteAi } from "@/lib/roadmap/progress";
 import { SelfPlan, StudentSelfControls } from "@/components/roadmap/SelfPlan";
+import { publishedSelfStudy } from "@/lib/roadmap/self-study";
 
 export const metadata = { title: "Мой маршрут" };
 const TABS = ["ov", "a", "now", "next", "fin"] as const;
@@ -47,11 +48,7 @@ export default async function MyRoute({ searchParams }: { searchParams: Promise<
   // минуты в день: выбор ученика, иначе выбор учителя
   const selfMinDay = parsePace(r.paceStudent ?? r.pace).min;
   const selfRec = selfBudget(selfLessons, v.lessonMin).minPerDay;
-  const selfPlan = sh.self && aiD?.self_study ? (() => {
-    const want = selfMinDay * 7, had = aiD.self_study!.minutes_per_week || want, k = want / had;
-    const items = aiD.self_study!.items.map((x) => ({ ...x, minutes: Math.max(5, Math.round((x.minutes * k) / 5) * 5) }));
-    return { ...aiD.self_study!, items, minutes_per_week: items.reduce((a, x) => a + x.minutes * x.times_per_week, 0) };
-  })() : null;
+  const selfPlan = publishedSelfStudy(r);
   // ученику — только название точки и утверждённое учителем (подсказки ИИ и «почему» не уходят в браузер)
   const stages = v.stages.map((x, i) => ({ ...x, title: x.kind ? segName(v.stages, i, r.fromLevel) : txt(x.title, L), points: (x.points ?? []).map((p) => ({ id: p.id, title: p.title, level: p.level, hours: p.hours, why: "", focus: "", ok: p.ok ?? {}, ...(p.done !== undefined ? { done: p.done } : {}) })) }));
   const tab = sp.tab === "stage" ? "stage" : (TABS as readonly string[]).includes(sp.tab ?? "") ? sp.tab! : "ov";

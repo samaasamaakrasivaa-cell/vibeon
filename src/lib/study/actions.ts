@@ -1,10 +1,13 @@
 "use server";
+import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { db } from "../db";
 import { requireUser } from "../auth/session";
-import { isoDay } from "../time";
+import { addDaysIso, dayStart, isoDay, minutesOfDay } from "../time";
 import { notify } from "../notify";
 import { isKind } from "./kinds";
+import { draftCalendar, schedulePlan } from "./draft-data";
+import { activityKey, activityTitle, draftWeek, isDraftKind, isWeekStart, localInterval, overlaps, remainingActivities, type DraftSlot, type WeekDraft } from "./weekly-plan";
 
 type R = { ok: true } | { ok: false; error: string };
 export type SlotInput = { kind: string; title?: string; repeat: boolean; weekday?: number; date?: string; startMin: number; durMin: number; remind: boolean };
@@ -27,16 +30,90 @@ const isoOk = (v?: string) => !!v && /^\d{4}-\d{2}-\d{2}$/.test(v);
 
 function clean(x: SlotInput, tz: string) {
   if (!isKind(x.kind) || x.kind === "words") return null;
+  const title = (x.title ?? "").trim().slice(0, 80) || null;
+  if (x.kind === "other" && !title) return null;
   const startMin = Math.max(0, Math.min(23 * 60 + 45, Math.round(x.startMin / 5) * 5));
   const durMin = Math.max(5, Math.min(240, Math.round(x.durMin / 5) * 5));
   if (x.repeat ? !(Number.isInteger(x.weekday) && x.weekday! >= 0 && x.weekday! <= 6) : !isoOk(x.date)) return null;
   return {
-    kind: x.kind, title: (x.title ?? "").trim().slice(0, 80) || null, repeat: x.repeat, weekday: x.repeat ? x.weekday! : null, date: x.repeat ? null : x.date!,
+    kind: x.kind, title, repeat: x.repeat, weekday: x.repeat ? x.weekday! : null, date: x.repeat ? null : x.date!,
     startMin, durMin, remind: !!x.remind, from: x.repeat ? isoDay(new Date(), tz) : x.date!,
   };
 }
 
-const KIND_RU: Record<string, string> = { homework: "домашка", words: "слова", film: "фильм / сериал", podcast: "подкаст / аудио", reading: "чтение", speaking: "говорение", grammar: "грамматика", club: "разговорный клуб", exam: "подготовка к экзамену" };
+const KIND_RU: Record<string, string> = { homework: "домашка", words: "слова", film: "фильм / сериал", podcast: "подкаст / аудио", reading: "чтение", speaking: "говорение", grammar: "грамматика", club: "разговорный клуб", exam: "подготовка к экзамену", other: "другое занятие" };
+
+const draftStudent = { id: true, wordDays: true, wordGoal: true, remindAt: true } as const;
+
+/** A draft is a preview for the current student. Reading it creates no calendar entries. */
+export async function proposeStudyWeek(monday: string): Promise<({ ok: true } & WeekDraft) | { ok: false; error: string }> {
+  const user = await requireUser("STUDENT");
+  if (!isWeekStart(monday) || addDaysIso(monday, 6) < isoDay(new Date(), user.timezone)) return { ok: false, error: "past" };
+  const student = await db.student.findUnique({ where: { userId: user.id }, select: draftStudent });
+  if (!student) return { ok: false, error: "plan" };
+  const plan = await schedulePlan(student.id);
+  if (!plan) return { ok: false, error: "plan" };
+  const calendar = await draftCalendar(student, monday, user.timezone);
+  return {
+    ok: true,
+    revision: plan.revision,
+    ...draftWeek(plan.items, monday, user.timezone, Date.now(), calendar.busy, calendar.existing),
+  };
+}
+
+/** Recheck the published version and occupied times at confirmation, then save the whole draft. */
+export async function confirmStudyWeek(monday: string, revision: string, slots: DraftSlot[]): Promise<R> {
+  const user = await requireUser("STUDENT");
+  if (!isWeekStart(monday) || !Array.isArray(slots) || !slots.length || slots.length > 70 || slots.some((slot) =>
+    !slot || !isDraftKind(slot.kind) ||
+    typeof slot.title !== "string" || !slot.title.trim() || slot.title.length > 80 ||
+    !Number.isInteger(slot.day) || slot.day < 0 || slot.day > 6 ||
+    !Number.isInteger(slot.startMin) || slot.startMin < 0 || slot.startMin % 5 !== 0 ||
+    !Number.isInteger(slot.durMin) || slot.durMin < 5 || slot.durMin > 240 || slot.durMin % 5 !== 0 ||
+    slot.startMin + slot.durMin > 1440
+  )) return { ok: false, error: "bad" };
+
+  try {
+    const saved = await db.$transaction(async (tx) => {
+      const student = await tx.student.findUnique({ where: { userId: user.id }, select: draftStudent });
+      if (!student) return { error: "plan" } as const;
+      const plan = await schedulePlan(student.id, tx);
+      if (!plan || plan.revision !== revision) return { error: "plan" } as const;
+      const { busy, existing } = await draftCalendar(student, monday, user.timezone, tx);
+      const remaining = new Map<string, number>();
+      for (const item of remainingActivities(plan.items, existing)) {
+        const key = activityKey(item);
+        remaining.set(key, (remaining.get(key) ?? 0) + item.needed);
+      }
+      const now = Date.now();
+      const rows = slots.map((slot) => {
+        const date = addDaysIso(monday, slot.day);
+        return { studentId: student.id, kind: slot.kind, title: activityTitle(slot.title), repeat: false,
+          date, from: date, startMin: slot.startMin, durMin: slot.durMin, remind: true };
+      });
+      for (const row of rows) {
+        const key = activityKey(row);
+        const available = remaining.get(key) ?? 0;
+        if (available < 1) return { error: "plan" } as const;
+        remaining.set(key, available - 1);
+        const interval = localInterval(row.date, row.startMin, row.durMin, user.timezone);
+        if (interval.start <= now) return { error: "past" } as const;
+        if (minutesOfDay(new Date(interval.start), user.timezone) !== row.startMin ||
+            interval.end > dayStart(addDaysIso(row.date, 1), user.timezone).getTime()) return { error: "bad" } as const;
+        if (busy.some((block) => overlaps(interval, block))) return { error: "overlap" } as const;
+        busy.push(interval);
+      }
+      await tx.studySlot.createMany({ data: rows });
+      return { id: student.id } as const;
+    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+    if (!saved.id) return { ok: false, error: saved.error ?? "bad" };
+    done(saved.id);
+    return { ok: true };
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2034") return { ok: false, error: "overlap" };
+    throw error;
+  }
+}
 
 /** Новый слот (ученик себе или учитель ученику). */
 export async function addSlot(x: SlotInput, studentId?: string): Promise<R> {
