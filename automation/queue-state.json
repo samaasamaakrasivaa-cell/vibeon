@@ -10,11 +10,7 @@
     16,
     18
   ],
-  "lease": {
-    "token": "5a7c1171-e42d-480d-8005-bd43479418f1",
-    "started_at": "2026-11-27T14:24:30.870210+00:00",
-    "expires_at": "2026-11-27T17:24:30.870210+00:00"
-  },
+  "lease": null,
   "checkpoint": null,
   "last_probe": {
     "github_read": "passed",
@@ -22,6 +18,10 @@
     "completed_at": "2026-11-27T14:08:55Z",
     "github_write": "not_tested",
     "lease_cas": "not_tested",
-    "delegation": "not_tested"
+    "delegation": "not_tested",
+    "manual_write": "passed",
+    "manual_contender_head_preserved": true,
+    "manual_conflict_response": "provider_error_ref_unchanged",
+    "manual_checked_at": "2026-11-27T14:27:02.345570Z"
   }
 }
