@@ -8,7 +8,7 @@
     "base_sha": "437986d954400f8b44ba456f02a68df18b5f0e31",
     "branch": "codex/student/study-lessons-tests",
     "head_sha": "463bd2d21b34ffa8eba9bd9bf91d2127e7956ef1",
-    "next": "Завершить CI точного SHA, сверить проверенное дерево с актуальной main и подтвердить выпуск #73 перед merge.",
+    "next": "Ревью и CI пройдены, дерево с актуальной main проверено. Подтвердить уже запущенный выпуск #82 перед merge.",
     "pr": 83,
     "stage": "integration",
     "test_run": 46067999207
