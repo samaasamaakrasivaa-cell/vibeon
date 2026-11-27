@@ -22,8 +22,8 @@ export default async function TeacherLessonAnalysis({ params }: { params: Promis
   const price = new Intl.NumberFormat(locale, { style: "currency", currency: "RUB" }).format(LESSON_ANALYSIS_ESTIMATE_RUB);
   const estimate = ru ? `Расход платформы — ориентировочно до ${price} за запрос` : `Estimated platform cost — up to ${price} per request`;
   const pending = !!report && analysisPending(report);
-  const lessonTopics = [...new Set([observation?.focus, ...tasks.map((task) => observationFocus(`topic:${task.topicId}`))]
-    .filter((value): value is ObservationFocus => !!value?.startsWith("topic:")))];
+  const lessonTopics = [...new Set([observation?.focus, ...tasks.flatMap((task) => [task.topicId, ...(task.itemTopics ?? []).map((row) => row.code)]
+    .map((code) => observationFocus(`topic:${code}`)))].filter((value): value is ObservationFocus => !!value?.startsWith("topic:")))];
 
   return (
     <div className="page flex flex-col gap-4" style={{ maxWidth: 820 }}>

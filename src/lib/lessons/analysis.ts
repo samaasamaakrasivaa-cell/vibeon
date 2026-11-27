@@ -141,14 +141,16 @@ async function writeObservation(client: Client, lesson: LessonBinding & { id: st
 }
 
 export async function saveLessonObservation(id: string, teacherId: string, input: ObservationInput) {
-  await withTeacherLesson(id, teacherId, async (client, lesson) => {
+  return withTeacherLesson(id, teacherId, async (client, lesson) => {
     await writeObservation(client, lesson, teacherId, input);
     const stored = await snapshot(client, id, lesson.studentId);
     const report = readAnalysis(stored?.notes, lesson);
     const focus = observationFocus(input.selected);
-    if (report?.state !== "draft" || (report.focus ?? null) === focus) return;
-    if (report.tasks.length || focus) await saveAnalysis(client, id, { ...report, focus });
-    else await deleteLessonNote(client, id, lesson.studentId, key);
+    if (report?.state === "draft" && (report.focus ?? null) !== focus) {
+      if (report.tasks.length || focus) await saveAnalysis(client, id, { ...report, focus });
+      else await deleteLessonNote(client, id, lesson.studentId, key);
+    }
+    return lesson.studentId;
   });
 }
 

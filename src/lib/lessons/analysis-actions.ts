@@ -10,8 +10,10 @@ function observationFrom(form: FormData) {
 
 export async function saveObservationAction(lessonId: string, form: FormData) {
   const teacher = await requireUser("TEACHER");
-  await saveLessonObservation(lessonId, teacher.id, observationFrom(form));
+  const studentId = await saveLessonObservation(lessonId, teacher.id, observationFrom(form));
+  if (!studentId) return;
   revalidatePath(`/teacher/lesson-analysis/${lessonId}`);
+  revalidatePath(`/teacher/students/${studentId}`);
 }
 
 export async function generateAnalysisAction(lessonId: string, allowAi: boolean, form: FormData) {
