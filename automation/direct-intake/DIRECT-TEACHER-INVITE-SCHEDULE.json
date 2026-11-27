@@ -14,7 +14,25 @@
     "stage": "publication",
     "test_run": 46053372204
   },
-  "release": null,
+  "release": {
+    "ci": {
+      "result": "success",
+      "run": 46053372204,
+      "sha": "120f7f5b313cee59a7444fa2df877df696dcfd75"
+    },
+    "delivery": {
+      "result": "success",
+      "run": 46055106507,
+      "sha": "837209c104388c96898179f7052f053d8f1ea8ec"
+    },
+    "owner_note": "Для владельца: Кабинет преподавателя и расписание — После приглашения ученика кнопка «Поставить урок» сразу открывает форму обычного занятия с выбранным учеником. Пробный урок можно включить вручную.",
+    "review": {
+      "comment": 7226078262,
+      "result": "success",
+      "sha": "120f7f5b313cee59a7444fa2df877df696dcfd75"
+    },
+    "site_sha": "837209c104388c96898179f7052f053d8f1ea8ec"
+  },
   "source": "direct",
   "version": 1
 }
