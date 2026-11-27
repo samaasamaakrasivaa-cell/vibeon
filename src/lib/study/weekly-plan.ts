@@ -44,6 +44,7 @@ export const overlaps = (a: BusyInterval, b: BusyInterval) =>
   (a.start < b.end && b.start < a.end) || (a.wallStart < b.wallEnd && b.wallStart < a.wallEnd);
 export const activityTitle = (value: string) => value.trim().slice(0, 80).trimEnd();
 export const activityKey = (slot: PlannedActivity) => JSON.stringify([slot.kind, slot.title === null ? null : activityTitle(slot.title)]);
+const oldRouteKinds: Partial<Record<SelfItem["skill"], DraftKind>> = { listening: "podcast", speaking: "speaking", writing: "homework" };
 
 export function remainingActivities(items: StudyRecommendation["items"], existing: PlannedActivity[]) {
   const counts = new Map<string, number>();
@@ -55,10 +56,16 @@ export function remainingActivities(items: StudyRecommendation["items"], existin
     const kind = activityKind(item.skill, item.activity);
     if (!kind) return [];
     const title = activityTitle(item.activity);
-    const key = activityKey({ kind, title });
-    const existingCount = counts.get(key) ?? 0;
-    counts.set(key, Math.max(0, existingCount - item.times));
-    return [{ kind, title, minutes: item.minutes, needed: Math.max(0, item.times - existingCount) }];
+    let needed = item.times;
+    // Earlier versions used fewer calendar categories for the same route activities.
+    for (const compatible of new Set([kind, oldRouteKinds[item.skill] ?? kind])) {
+      const key = activityKey({ kind: compatible, title });
+      const available = counts.get(key) ?? 0;
+      const used = Math.min(available, needed);
+      counts.set(key, available - used);
+      needed -= used;
+    }
+    return [{ kind, title, minutes: item.minutes, needed }];
   });
 }
 

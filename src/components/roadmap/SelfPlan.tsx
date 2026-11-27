@@ -1,8 +1,9 @@
 "use client";
 // План самостоятельной работы: что, как часто и сколько минут; ссылки — только на поиск (адреса не выдумываются).
+import Link from "next/link";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { selfToSchedule, setStudentPace } from "@/lib/roadmap/actions";
+import { setStudentPace } from "@/lib/roadmap/actions";
 import { useT } from "@/lib/i18n/client";
 import { SS_SKILLS, type SelfItem, type SelfStudy } from "@/lib/ai/route-core";
 import { useRun } from "../courses/useRun";
@@ -82,7 +83,6 @@ export function StudentSelfControls({ lessons, lessonMin, cur, rec, left }: { le
   const { t, lang } = useT();
   const router = useRouter();
   const [pending, start] = useTransition();
-  const [ok, setOk] = useState(false);
   const mins = [...new Set([10, 15, 20, rec, 30, 40, cur])].sort((a, b) => a - b);
   const loc = lang === "ru" ? "ru-RU" : "en-GB";
   return (
@@ -95,7 +95,7 @@ export function StudentSelfControls({ lessons, lessonMin, cur, rec, left }: { le
           const on = m === cur;
           return (
             <button key={m} type="button" className={`paceopt ${on ? "on" : ""}`} disabled={pending} aria-pressed={on}
-              onClick={() => !on && start(async () => { await setStudentPace(`${lessons}:${m}`); setOk(false); router.refresh(); })}>
+              onClick={() => !on && start(async () => { await setStudentPace(`${lessons}:${m}`); router.refresh(); })}>
               <span className="po-a">{t("rm6.paceA", { l: lessons, m })}</span>
               <span className="po-b">{t("rm6.paceB", { w: wk, d })}</span>
               {m === rec && <span className="pill blue">{t("rm6.rec")}</span>}
@@ -104,10 +104,7 @@ export function StudentSelfControls({ lessons, lessonMin, cur, rec, left }: { le
           );
         })}
       </div>
-      <div className="flex flex-wrap items-center gap-2">
-        <button type="button" className="btn primary sm" disabled={pending} onClick={() => start(async () => { const r = await selfToSchedule(); setOk(r.ok); router.refresh(); })}><Icon name="cal" size="sm" />{t("ss.toSched")}</button>
-        {ok && <><span className="small text-ok">{t("ss.toSchedDone")}</span><a className="small alink" href="/student/schedule">{t("ss.openSched")}</a></>}
-      </div>
+      <Link href="/student/schedule#study-recommendations" className="btn primary sm self-start"><Icon name="cal" size="sm" />{t("ss.toSched")}</Link>
     </div>
   );
 }

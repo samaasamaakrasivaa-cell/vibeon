@@ -63,7 +63,7 @@ export function ScheduleRecommendations({ plan, days }: { plan: StudyRecommendat
     startMin < 0 || durMin < 5 || durMin > 240 || startMin % 5 !== 0 || durMin % 5 !== 0 || startMin + durMin > 1440);
 
   return (
-    <div className="mt-5 pt-4 border-t border-sep">
+    <div id="study-recommendations" className="mt-5 pt-4 border-t border-sep scroll-mt-24">
       <div className="flex flex-wrap gap-2 justify-between items-baseline">
         <h3 className="m-0">{t("st.routeRecommendations")}</h3>
         <b>{t("st.weekTime", { amount: fmtHM(plan.minutes / 60, lang) })}</b>
