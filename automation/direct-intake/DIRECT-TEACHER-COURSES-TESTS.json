@@ -7,11 +7,11 @@
   "progress": {
     "base_sha": "82473a1199a160651ae2bed2f8365b5e536d7c72",
     "branch": "codex/teacher/courses-tests-navigation",
-    "head_sha": "de691c962dde32ba48039db91be8b011fe27a7e5",
-    "next": "Реализовано и проверено на синтетике. Ожидаются профильное ревью и CI.",
+    "head_sha": "b3c7831d0e6fce8bbc7fa500031dcc926befb3d7",
+    "next": "Уточнён возврат в тот же статус через отчёт и после удаления, запущено повторное ревью.",
     "pr": 85,
     "stage": "review",
-    "test_run": 46069647767
+    "test_run": 46070127919
   },
   "release": null,
   "source": "direct",
