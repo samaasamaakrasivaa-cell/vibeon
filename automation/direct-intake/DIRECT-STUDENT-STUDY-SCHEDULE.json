@@ -5,10 +5,13 @@
   "key": "DIRECT-STUDENT-STUDY-SCHEDULE",
   "owner": "student",
   "progress": {
-    "base_sha": "97fa7328aa833b02702a05dc63182148dafdab39",
+    "base_sha": "81d7077b1ed3ae99c4d844c27171d0f2f4485ebb",
     "branch": "codex/student/study-schedule",
-    "next": "Обновить расписание и сверить контракт отправленного отчёта",
-    "stage": "implementation"
+    "head_sha": "d10af0911db65297857549ac7f494f1476ce1b10",
+    "next": "Завершить Chromium, независимое ревью и CI на финальном SHA",
+    "pr": 77,
+    "stage": "review",
+    "test_run": 46063955494
   },
   "release": null,
   "source": "direct",
