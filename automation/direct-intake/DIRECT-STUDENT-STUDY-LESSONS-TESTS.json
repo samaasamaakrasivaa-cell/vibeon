@@ -8,9 +8,9 @@
     "base_sha": "437986d954400f8b44ba456f02a68df18b5f0e31",
     "branch": "codex/student/study-lessons-tests",
     "head_sha": "463bd2d21b34ffa8eba9bd9bf91d2127e7956ef1",
-    "next": "Ревью и CI пройдены, дерево с актуальной main проверено. Подтвердить уже запущенный выпуск #82 перед merge.",
+    "next": "Platform восстанавливает место для обязательной копии. После штатного выпуска текущей main повторно сверить дерево и выпустить PR #83.",
     "pr": 83,
-    "stage": "integration",
+    "stage": "blocked",
     "test_run": 46067999207
   },
   "release": null,
