@@ -5,10 +5,13 @@
   "key": "DIRECT-TEACHER-LESSON-ANALYSIS-NAV",
   "owner": "teacher",
   "progress": {
-    "base_sha": "b0c6eb3744c5f310cabaa5fc097deb297d402026",
+    "base_sha": "82473a1199a160651ae2bed2f8365b5e536d7c72",
     "branch": "codex/teacher/lesson-analysis-navigation",
-    "next": "Добавить переключение недель на главной и ссылку на существующий анализ из расписания.",
-    "stage": "implementation"
+    "head_sha": "08377c07c5decc66fb3035dbabbdd9bc49073366",
+    "next": "PR открыт. На текущей базе запущены браузерная проверка, профильное ревью и CI.",
+    "pr": 86,
+    "stage": "review",
+    "test_run": 46069657805
   },
   "release": null,
   "source": "direct",
