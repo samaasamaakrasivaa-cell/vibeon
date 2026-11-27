@@ -260,6 +260,8 @@ export async function reviseCore(id: string, itemId: string, v: string | number 
     const it = st.items[itemId] as CoreItem;
     const val = dk ? null : typeof v === "number" ? v : str(v, 120);
     const old = st.answers[itemId];
+    // Повторное сохранение без правки не применяет новую проверку к исторической оценке.
+    if (it.type === "fix" && old.v === val && !!old.dk === dk) return { ok: true };
     const tr = [...(old.tr ?? []), ...(old.dk ? [-1] : old.v !== null && old.v !== val ? [old.v] : [])].slice(-10);
     const ok = dk ? false : checkCore(it, val);
     const typo = !ok && !dk && typeof val === "string" && it.type !== "mcq" && it.type !== "fix" && it.skill === "grammar" && typoOk(val, it.accept ?? []);

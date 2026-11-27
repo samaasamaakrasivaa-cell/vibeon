@@ -24,7 +24,7 @@ export function replaceFixFragment(words: string[], [start, end]: FixSpan, text:
   const suffix = words.slice(end + 1).join(" ");
   const before = words[start].match(leading)?.[0] ?? "";
   const after = words[end].match(trailing)?.[0] ?? "";
-  const contracted = !before && /[a-z]$/i.test(prefix) && /^['’](?:s|m|d|re|ve|ll)(?:\s|$)/i.test(text);
+  const contracted = !before && /\p{L}$/u.test(prefix) && /^['’](?:s|m|d|re|ve|ll)(?:\s|$)/i.test(text);
   const replacement = (text.startsWith(before) ? "" : before) + text + (text.endsWith(after) ? "" : after);
   return prefix + (prefix && !contracted ? " " : "") + replacement + (suffix ? " " + suffix : "");
 }

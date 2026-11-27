@@ -47,6 +47,20 @@ full("G-B1-134", "had have booked", false);
 full("G-A1-29", "is sleeping", true);
 full("G-A1-29", "'s sleeping", true);
 full("G-A1-29", "has sleeping", false);
+full("G-A1-09", "There's", true);
+full("G-A1-52", "'d", false); // had — смысловой глагол.
+full("G-A2-07", "'s going to", true);
+full("G-B1-55", "’d left", true);
+full("G-B1-55", "would left", false);
+full("G-B1-118", "'s approved", true);
+full("G-B1-118", "is approved", false);
+full("G-B2-17", "'s said to serve", true); // Сокращение после café.
+full("G-B1-154", "'d be bringing", true);
+full("G-C1-53", "'d", true);
+full("G-C1-57", "'d", false); // Инверсия Had I ... .
+const oldPastPerfect = { ...item("G-B1-55"), accept: ["had left"] };
+assert.equal(checkCore(oldPastPerfect, `${oldPastPerfect.span[0]}::'d left`), true);
+assert.equal(checkCore(oldPastPerfect, `${oldPastPerfect.span.join("-")}::'d left`), true);
 const continuous = item("G-A1-29");
 const baby = continuous.span[0] - 1;
 assert.equal(checkCore(continuous, `${baby}-${baby}::baby's`), true);
@@ -73,15 +87,34 @@ assert.equal(checkCore(fixture("She ___ now.", "can swims", "can swim"), "1-2::c
 assert.equal(checkCore(fixture("He said she ___, then left.", "was cook", "was cooking"), "4-4::cooking"), true);
 assert.equal(checkCore(fixture("He said she ___, then left.", "was cook", "was cooking"), "4-4::cooking,"), true);
 
-for (const fix of fixes.values()) {
+const rejected: string[] = [];
+let originalAlternatives = 0;
+for (const { from, accept } of fixSpecs) {
+  const fix = item(from);
   assert.ok(fix.accept?.length, fix.id);
   for (const accepted of fix.accept) {
-    assert.equal(checkCore(fix, `${fix.span!.join("-")}::${accepted}`), true, fix.id);
+    assert.equal(checkCore(fix, `${fix.span.join("-")}::${accepted}`), true, fix.id);
+  }
+  const snapshot = { ...fix, accept };
+  for (const original of accept) {
+    originalAlternatives++;
+    const result = checkCore(snapshot, `${fix.span.join("-")}::${original}`);
+    assert.equal(checkCore(snapshot, `${fix.span[0]}::${original}`), result, `${from}: ${original}`);
+    if (!result) rejected.push(`${from}: ${original}`);
   }
 }
+assert.deepEqual(rejected.sort(), [
+  "G-B1-138: didn't check", "G-B1-138: did not check",
+  "G-B1-139: went", "G-B1-139: probably went",
+  "G-B1-142: are flying", "G-B1-142: will fly", "G-B1-143: am interviewing",
+  "G-B1-150: were planning to eat", "G-B1-150: had planned to eat",
+  "G-B1-150: wanted to eat", "G-B1-150: meant to eat",
+  "G-B1-151: was planning to cycle", "G-B1-151: had planned to cycle",
+  "G-B1-151: meant to cycle", "G-B1-151: wanted to cycle", "G-C1-16: was taking",
+].sort());
 assert.equal(checkCore({ ...usedTo, type: "mcq", answer: 1 }, 1), true);
 assert.equal(checkCore({ ...usedTo, type: "gap", accept: ["he is sleeping"] }, "he's sleeping"), true);
 assert.equal(checkCore({ ...usedTo, type: "wordform", accept: ["written"] }, "WRITTEN!"), true);
 assert.equal(checkCore({ ...usedTo, type: "transform", accept: ["had gone"] }, "'d gone"), true);
 assert.equal(checkCore({ ...usedTo, type: "brackets", accept: ["doesn't go"] }, "does not go"), true);
-console.log(`Placement Fix: ${fixes.size} заданий банка и регрессионные сценарии проверены.`);
+console.log(`Placement Fix: ${fixes.size} заданий, ${originalAlternatives} исходных вариантов, ${rejected.length} исключений. Регрессии проверены.`);

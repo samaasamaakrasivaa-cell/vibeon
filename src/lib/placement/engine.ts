@@ -681,17 +681,38 @@ export function checkText(input: string, accept: string[]) {
   return matchesText(input, accept, EXP);
 }
 
-// Некоторые открытые варианты подходят по смыслу, но не проверяют форму, заявленную в теме.
-// Применяем ограничения и к сохранённым заданиям, если ученик отвечает на них сейчас.
-const fixRequiredForm: Partial<Record<string, RegExp>> = {
-  "g-b1p-past-modals": /^(?:(?:should|could|might|may|must|would)(?: not)?|ought to) have /,
-  "g-b1p-future-continuous": /^will (?:still )?be /,
-  "g-b1p-was-going-to": /^(?:was|were) going to /,
-  "F-G-C1-16": /^took$/,
-};
+// Известные варианты из банка, которые обходят тему задания или содержат ошибку.
+// Учитываем их и при проверке нового ответа на сохранённый снимок задания.
+const excludedFixCorrections = new Map<string, string[]>([
+  ["F-G-B1-138", ["didn't check", "did not check"]],
+  ["F-G-B1-139", ["went", "probably went"]],
+  ["F-G-B1-142", ["are flying", "will fly"]],
+  ["F-G-B1-143", ["am interviewing"]],
+  ["F-G-B1-150", ["were planning to eat", "had planned to eat", "wanted to eat", "meant to eat"]],
+  ["F-G-B1-151", ["was planning to cycle", "had planned to cycle", "meant to cycle", "wanted to cycle"]],
+  ["F-G-C1-16", ["was taking"]],
+]);
+const contractedFixAux = { "there is": "There's", is: "'s", has: "'s", had: "'d", would: "'d" } as const;
+// Проверенные контексты, где сокращение сохраняет форму. Выводим вариант из
+// разрешённой полной формы, чтобы не превращать «'s sleeping» в «has sleeping».
+const fixAux = new Map<string, keyof typeof contractedFixAux>([
+  ["F-G-A1-09", "there is"], ["F-G-A1-29", "is"], ["F-G-A2-07", "is"],
+  ["F-G-B1-29", "is"], ["F-G-B1-68", "is"], ["F-G-B2-67", "is"], ["F-G-B2-17", "is"],
+  ["F-G-B1-118", "has"],
+  ["F-G-B1-05", "had"], ["F-G-B1-55", "had"], ["F-G-B2-55", "had"], ["F-G-B2-27", "had"],
+  ["F-G-C1-54", "had"], ["F-G-B1-135", "had"], ["F-G-B1-155", "had"],
+  ["F-G-B2-06", "would"], ["F-G-C1-53", "would"], ["F-G-B1-134", "would"],
+  ["F-G-B1-154", "would"], ["F-G-B1-162", "would"],
+]);
 export function acceptedFixCorrections(item: CoreItem) {
-  const required = fixRequiredForm[item.id] ?? fixRequiredForm[item.topic_id];
-  return (item.accept ?? []).filter((text) => !required || required.test(norm(text)));
+  const excluded = excludedFixCorrections.get(item.id) ?? [];
+  const accepted = (item.accept ?? []).filter((text) => !excluded.includes(norm(text)));
+  const aux = fixAux.get(item.id);
+  if (!aux) return accepted;
+  const contractions = accepted.map(norm)
+    .filter((text) => text === aux || text.startsWith(aux + " "))
+    .map((text) => contractedFixAux[aux] + text.slice(aux.length));
+  return [...new Set([...accepted, ...contractions])];
 }
 
 function checkFix(item: CoreItem, value: string | number) {
@@ -706,7 +727,7 @@ function checkFix(item: CoreItem, value: string | number) {
   if (answer.legacy && start >= errorSpan[0] && start <= errorSpan[1] && matchesText(answer.text, accepted, FIX_EXP)) return true;
   const corrected = replaceFixFragment(words, answer.span, answer.text);
   const expected = accepted.map((text) => replaceFixFragment(words, errorSpan, text));
-  // «'s» и «'d» целиком разрешены, если они перечислены в банке для этого задания.
+  // Не раскрываем неоднозначные сокращения в обе стороны при сравнении.
   return matchesText(corrected, expected, FIX_EXP);
 }
 export function checkCore(item: CoreItem, v: string | number | null) {

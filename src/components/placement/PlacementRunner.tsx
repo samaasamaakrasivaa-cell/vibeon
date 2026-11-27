@@ -263,43 +263,39 @@ function Intro({ sample, pending, onStart, parts = [...PARTS] }: { sample: strin
 // ───────── Грамматика и лексика ─────────
 
 function FixPrompt({ question, span, text, onSelect, onText }: { question: string; span: FixSpan | null; text: string; onSelect: (span: FixSpan) => void; onText: (text: string) => void }) {
-  const { t, lang } = useT();
-  const [extending, setExtending] = useState(false);
+  const { t } = useT();
+  const [anchor, setAnchor] = useState<number | null>(null);
   const [endPreview, setEndPreview] = useState<number | null>(null);
   const words = fixWords(question);
-  const rangeTo = (index: number): FixSpan => {
-    const anchor = extending && span ? span[0] : index;
-    return [Math.min(anchor, index), Math.max(anchor, index)];
+  const rangeTo = (index: number): FixSpan => [Math.min(anchor ?? index, index), Math.max(anchor ?? index, index)];
+  const preview = anchor === null || endPreview === null ? null : rangeTo(endPreview);
+  const previewPhrase = preview && preview[1] - preview[0] + 1 < words.length ? preview : null;
+  const select = (index: number) => {
+    onSelect(rangeTo(index));
+    setAnchor(anchor === null ? index : null);
+    setEndPreview(null);
   };
-  const preview = endPreview === null ? null : rangeTo(endPreview);
   return (
     <>
       <p className="plq plfix" onMouseLeave={() => setEndPreview(null)}>
         {words.map((word, i) => {
           const selected = !!span && i >= span[0] && i <= span[1];
-          const previewed = !!preview && i >= preview[0] && i <= preview[1];
+          const previewed = !!previewPhrase && i >= previewPhrase[0] && i <= previewPhrase[1];
           return <button key={i} type="button" className="plfixw min-h-9"
             style={{
               backgroundColor: selected || previewed ? "var(--accent-bg)" : undefined,
               boxShadow: selected ? "inset 0 -2px 0 var(--accent)" : undefined,
             }}
-            aria-pressed={selected} onMouseEnter={() => { if (extending) setEndPreview(i); }}
-            onClick={() => { onSelect(rangeTo(i)); setExtending(false); setEndPreview(null); }}>{word}</button>;
+            aria-pressed={selected} onMouseEnter={() => { if (anchor !== null) setEndPreview(i); }}
+            onClick={() => select(i)}>{word}</button>;
         })}
       </p>
       {span && (
-        <>
-          <div className="flex flex-wrap items-center gap-2">
-            <button type="button" aria-pressed={extending} className="btn plain sm"
-              onClick={() => { setExtending(!extending); setEndPreview(null); }}>
-              {lang === "ru" ? "Выбрать несколько слов" : "Select several words"}
-            </button>
-            {extending && <span className="small muted" role="status">{lang === "ru" ? "Выберите крайнее слово" : "Choose the other end of the phrase"}</span>}
-          </div>
-          <label className="plfixin"><span className="small muted">{t("pl.fixHow", { w: fixFragment(words, span) })}</span>
-            <input className="input plgap" value={text} onChange={(e) => onText(e.target.value)} autoCapitalize="off" autoComplete="off" spellCheck={false} aria-label={t("pl.answer")} />
-          </label>
-        </>
+        <label className="plfixin"><span className="small muted">{t("pl.fixHow", { w: fixFragment(words, span) })}</span>
+          <input className="input plgap" value={text} onChange={(e) => onText(e.target.value)}
+            onFocus={() => { setAnchor(null); setEndPreview(null); }}
+            autoCapitalize="off" autoComplete="off" spellCheck={false} aria-label={t("pl.answer")} />
+        </label>
       )}
     </>
   );
