@@ -44,9 +44,12 @@ export default async function StudentHome() {
       select: { id: true },
     }) : null,
     s ? db.placementAttempt.findFirst({
-      where: { studentId: s.id, mode: "student", status: "reviewed", showResult: true, checkpointId: { not: null } },
+      where: {
+        studentId: s.id, mode: "student", status: "reviewed", showResult: true, checkpointId: { not: null },
+        reviewedAt: { gt: new Date(now.getTime() - 14 * 86_400_000) },
+      },
       orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-      select: { checkpointId: true, reviewedAt: true, level: true, track: true },
+      select: { checkpointId: true, level: true, track: true },
     }) : null,
   ]);
   const legacyEntry = s && !taking && !taken ? await db.checkpoint.findFirst({
@@ -56,7 +59,6 @@ export default async function StudentHome() {
   }) : null;
   const testLink = taking ? `/placement/${taking.id}` : legacyEntry?.status === "assigned" ? `/student/test/${legacyEntry.id}` : null;
   const resultLink = publishedTest?.checkpointId ? `/student/test/${publishedTest.checkpointId}` : null;
-  const recentResult = publishedTest?.reviewedAt && now.getTime() - publishedTest.reviewedAt.getTime() < 14 * 86_400_000;
   const loc = lang === "ru" ? "ru-RU" : "en-GB";
   // «С чего начать» — новичку, пока не закрыл: что уже сделано, отмечаем галочкой
   const tips: Tip[] | null = s && !s.tipsDoneAt ? await (async () => {
@@ -150,7 +152,7 @@ export default async function StudentHome() {
             </div>
           )}
 
-          {!testLink && publishedTest && resultLink && recentResult && (
+          {!testLink && publishedTest && resultLink && (
             <div className="tk flex flex-wrap items-center gap-4 border-accent">
               <div className="grow min-w-[220px] flex-1">
                 <div className="small font-semibold text-accent">{t(publishedTest.track === "teen" ? "plt.title" : "pl.title")}</div>
