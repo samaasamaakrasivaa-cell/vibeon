@@ -1,6 +1,6 @@
 import "server-only";
 import { db } from "../db";
-import { earnedOf, rub } from "../teacher/data";
+import { earnedOf, oneScheduledSlot, rub } from "../teacher/data";
 import { addDaysIso, dayStart, isoDay, mondayOf } from "../time";
 import { notify } from "../notify";
 
@@ -19,8 +19,7 @@ export async function weekReport(teacherId: string, tz: string, now = new Date()
   const stat = (a: Date, b: Date) => {
     const ls = lessons.filter((l) => inWeek(l.startsAt, a, b));
     // групповое занятие считаем одним уроком
-    const seen = new Set<string>();
-    const units = ls.filter((l) => { if (!(l.groupId && l.slotId)) return true; if (seen.has(l.slotId)) return false; seen.add(l.slotId); return true; });
+    const units = oneScheduledSlot(ls);
     return {
       earned: ls.reduce((s, l) => s + earnedOf(l), 0),
       received: paid.filter((p) => p.paidAt && inWeek(p.paidAt, a, b)).reduce((s, p) => s + p.amount, 0),

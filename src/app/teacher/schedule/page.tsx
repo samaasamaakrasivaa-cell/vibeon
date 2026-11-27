@@ -5,7 +5,7 @@ import { requireUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { getT } from "@/lib/i18n/server";
 import { addDaysIso, dayStart, hhmm, isoDay, minutesOfDay, mondayOf, parseIsoDay, partsIn, weekRange } from "@/lib/time";
-import { earnedOf, lessonInclude, lessonWho, oneSlot, rub, syncSchedule } from "@/lib/teacher/data";
+import { earnedOf, lessonInclude, lessonWho, oneScheduledSlot, oneSlot, rub, syncSchedule } from "@/lib/teacher/data";
 import { initials } from "@/lib/invite";
 import { homeworkFor } from "@/lib/homework";
 import { payStateOf } from "@/lib/billing/lesson-pay";
@@ -67,7 +67,7 @@ export default async function Schedule({ searchParams }: { searchParams: Promise
     const n = l.student.name.trim();
     return (firstCount.get(n.toLowerCase()) ?? 0) > 1 && l.student.lastName ? `${n} ${l.student.lastName.trim().charAt(0).toUpperCase()}.` : n;
   };
-  const lessons: GridLesson[] = oneSlot(rows).map((l) => {
+  const lessons: GridLesson[] = oneScheduledSlot(rows).map((l) => {
     const end = new Date(l.startsAt.getTime() + l.durationMin * 60000);
     const day = Math.round((dayStart(isoDay(l.startsAt, tz), tz).getTime() - from.getTime()) / 864e5);
     return {
@@ -86,6 +86,7 @@ export default async function Schedule({ searchParams }: { searchParams: Promise
   // Часы сетки: 8:00–21:00, расширяется под уроки раньше/позже
   let hourFrom = 8, hourTo = 21;
   for (const l of lessons) {
+    if (l.status === "CANCELLED") continue;
     hourFrom = Math.min(hourFrom, Math.floor(l.startMin / 60));
     hourTo = Math.max(hourTo, Math.min(24, Math.ceil((l.startMin + l.dur) / 60)));
   }

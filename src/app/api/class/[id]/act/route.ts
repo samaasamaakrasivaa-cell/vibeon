@@ -7,7 +7,7 @@ import { getSessionUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { classAccess, type LiveState } from "@/lib/live/access";
 import { publish, withLock } from "@/lib/live/bus";
-import { startLessonSession } from "@/lib/live/lesson-session";
+import { startLessonSession, withLessonLifecycleLock, type LessonFinishedEvent } from "@/lib/live/lesson-session";
 import { inLessonNow } from "@/lib/student/in-lesson";
 import { rateLimit } from "@/lib/rate-limit";
 import { parse } from "@/lib/tasks/parse";
@@ -406,34 +406,46 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     // ── завершить урок: статус «проведён», домашка ученику, слова урока — в его список
     case "finish": {
       if (!teacher) return bad();
-      const tpl = host.templateId ? await db.lessonTemplate.findUnique({ where: { id: host.templateId }, include: { tasks: true } }) : null;
-      const hwTasks = tpl?.tasks.filter((t) => t.section === "homework" && !t.hidden && !(t.options as { teacherOnly?: boolean } | null)?.teacherOnly).sort((a, b) => a.order - b.order).map((t) => t.id) ?? [];
-      const items = tpl ? tpl.tasks.filter((t) => t.type === "wordset").flatMap((t) => { const p = parse(t.type as TaskType, t.content); return p.kind === "wordset" ? p.items : []; }) : [];
-      let anyHw = false;
-      // групповое занятие — каждому ученику: домашка, слова урока, «урок проведён», уведомления
-      for (const l of slot) {
-        // новые домашки: заготовки раздела «Домашка» ученик получает, только если учитель их задал (или отметил «задать заготовки» при завершении)
-        const prev = await db.homework.findUnique({ where: { lessonInstanceId: l.id } });
-        const manual = prev ? prev.manual : true;
-        const hw = manual
-          ? await db.homework.upsert({ where: { lessonInstanceId: l.id }, create: { lessonInstanceId: l.id, taskIds: [], extraTaskIds: body.prepared ? hwTasks : [] },
-              update: body.prepared ? { extraTaskIds: [...new Set([...(prev?.extraTaskIds ?? []), ...hwTasks.filter((x) => !(prev?.removedTaskIds ?? []).includes(x))])] } : {} })
-          : await db.homework.upsert({ where: { lessonInstanceId: l.id }, create: { lessonInstanceId: l.id, taskIds: hwTasks }, update: { taskIds: hwTasks } });
-        const hasHw = hw.taskIds.length + hw.extraTaskIds.length + hw.wordTraining.length > 0;
-        anyHw ||= hasHw;
-        if (l.studentId && items.length) {
-          const have = new Set((await db.word.findMany({ where: { studentId: l.studentId }, select: { word: true } })).map((w) => w.word.toLowerCase()));
-          const add = items.filter((w) => !have.has(w.word.toLowerCase()));
-          if (add.length) await db.word.createMany({ data: add.map((w) => ({ studentId: l.studentId!, word: w.word, translation: w.tr || null, example: w.ex || null, sourceLessonId: l.id })) });
+      const completed = await withLessonLifecycleLock(user.id, host, async () => {
+        const participants = await db.lessonInstance.findMany({
+          where: { ...(host.slotId ? { slotId: host.slotId } : { id: host.id }), teacherId: user.id, status: { not: "CANCELLED" } },
+          include: { student: true },
+          orderBy: { id: "asc" },
+        });
+        if (!participants.length) return null;
+        const tpl = host.templateId ? await db.lessonTemplate.findUnique({ where: { id: host.templateId }, include: { tasks: true } }) : null;
+        const hwTasks = tpl?.tasks.filter((t) => t.section === "homework" && !t.hidden && !(t.options as { teacherOnly?: boolean } | null)?.teacherOnly).sort((a, b) => a.order - b.order).map((t) => t.id) ?? [];
+        const items = tpl ? tpl.tasks.filter((t) => t.type === "wordset").flatMap((t) => { const p = parse(t.type as TaskType, t.content); return p.kind === "wordset" ? p.items : []; }) : [];
+        const outcomes: { lesson: (typeof participants)[number]; hasHw: boolean }[] = [];
+        for (const l of participants) {
+          // Заготовки получает только ученик, которому учитель их задал либо выбрал при завершении.
+          const prev = await db.homework.findUnique({ where: { lessonInstanceId: l.id } });
+          const manual = prev ? prev.manual : true;
+          const hw = manual
+            ? await db.homework.upsert({ where: { lessonInstanceId: l.id }, create: { lessonInstanceId: l.id, taskIds: [], extraTaskIds: body.prepared ? hwTasks : [] },
+                update: body.prepared ? { extraTaskIds: [...new Set([...(prev?.extraTaskIds ?? []), ...hwTasks.filter((x) => !(prev?.removedTaskIds ?? []).includes(x))])] } : {} })
+            : await db.homework.upsert({ where: { lessonInstanceId: l.id }, create: { lessonInstanceId: l.id, taskIds: hwTasks }, update: { taskIds: hwTasks } });
+          const hasHw = hw.taskIds.length + hw.extraTaskIds.length + hw.wordTraining.length > 0;
+          if (l.studentId && items.length) {
+            const have = new Set((await db.word.findMany({ where: { studentId: l.studentId }, select: { word: true } })).map((w) => w.word.toLowerCase()));
+            const add = items.filter((w) => !have.has(w.word.toLowerCase()));
+            if (add.length) await db.word.createMany({ data: add.map((w) => ({ studentId: l.studentId!, word: w.word, translation: w.tr || null, example: w.ex || null, sourceLessonId: l.id })) });
+          }
+          await db.lessonInstance.update({ where: { id: l.id }, data: { status: "DONE", finishedAt: new Date() } });
+          outcomes.push({ lesson: l, hasHw });
         }
-        await db.lessonInstance.update({ where: { id: l.id }, data: { status: "DONE", finishedAt: new Date() } });
+        return outcomes;
+      });
+      if (!completed) return NextResponse.json({ ok: false, error: "lesson cancelled" }, { status: 409 });
+      for (const { lesson: l, hasHw } of completed) {
         if (l.studentId) await notifyPayer(l.studentId, `Урок английского прошёл: ${l.student?.name ?? ""}, ${new Date().toLocaleDateString("ru-RU", { day: "numeric", month: "long", timeZone: user.timezone })}.${hasHw ? " Домашнее задание выдано." : ""}`);
         if (l.student?.userId)
           await notify({ userId: l.student.userId, kind: "lesson_done", title: hasHw ? (user.lang === "EN" ? "The lesson is over — homework is waiting" : "Урок окончен — тебя ждёт домашка") : (user.lang === "EN" ? "The lesson is over" : "Урок окончен"), action: "review", link: `/class/${l.id}?tab=homework` });
       }
       // итог урока по каждому ученику — в фоне (разметка тем, проверка сомнительных ответов ИИ), учитель увидит его в досье
-      for (const l of slot) if (l.studentId) void buildLessonSummary(l.id, l.studentId).catch((e) => console.error("[summary]", (e as Error).message));
-      publish(ch, "finished", { hasHw: anyHw });
+      for (const { lesson: l } of completed) if (l.studentId) void buildLessonSummary(l.id, l.studentId).catch((e) => console.error("[summary]", (e as Error).message));
+      const finished: LessonFinishedEvent = { lessons: completed.map(({ lesson, hasHw }) => ({ id: lesson.id, hasHw })) };
+      publish(ch, "finished", finished);
       return NextResponse.json({ ok: true });
     }
     default:

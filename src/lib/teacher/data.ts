@@ -61,6 +61,15 @@ export function oneSlot<T extends { slotId: string | null }>(rows: T[]) {
   return rows.filter((l) => !l.slotId || (seen.has(l.slotId) ? false : (seen.add(l.slotId), true)));
 }
 
+/** Отмена части группы сохраняет слот. Представитель отменён только у полностью отменённой группы. */
+export function oneScheduledSlot<T extends { slotId: string | null; status: string }>(rows: T[]) {
+  const occupied = new Set<string>();
+  for (const lesson of rows) {
+    if (lesson.slotId && lesson.status !== "CANCELLED") occupied.add(lesson.slotId);
+  }
+  return oneSlot(rows.filter((lesson) => lesson.status !== "CANCELLED" || !lesson.slotId || !occupied.has(lesson.slotId)));
+}
+
 export function lessonWho(l: { trialName: string | null; student: { name: string; lastName: string | null } | null; group: { title: string } | null }) {
   return l.group?.title ?? (l.student ? [l.student.name, l.student.lastName].filter(Boolean).join(" ") : (l.trialName ?? "—"));
 }

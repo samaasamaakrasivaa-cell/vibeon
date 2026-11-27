@@ -2,10 +2,17 @@ import "server-only";
 import { randomUUID } from "node:crypto";
 import type { Prisma } from "@prisma/client";
 import { db } from "../db";
+import { withLock } from "./bus";
 
 export type LessonOccurrence = { startsAt: number; revision: string | null };
+export type LessonFinishedEvent = { lessons: { id: string; hasHw: boolean }[] };
 
 type SessionLesson = { startsAt: Date; live: unknown };
+
+export function withLessonLifecycleLock<T>(teacherId: string, lesson: { id: string; slotId: string | null }, run: () => Promise<T>) {
+  const key = JSON.stringify([teacherId, lesson.slotId ? "slot" : "lesson", lesson.slotId || lesson.id]);
+  return withLock(`lesson-lifecycle:${key}`, run);
+}
 
 function sessionState(live: unknown) {
   if (!live || typeof live !== "object" || !("lessonSession" in live)) return null;

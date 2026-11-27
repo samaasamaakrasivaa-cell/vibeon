@@ -1370,7 +1370,8 @@ function ClassDialogs({ which, close, d, hwComment, hwInfo, send, onFinished, on
   const [done, setDone] = useState(false);
   const [fbTo, setFbTo] = useState<string | null>(null);
   const [givePrep, setGivePrep] = useState(false);
-  useEffect(() => { setText(which === "hwc" ? hwComment ?? "" : ""); setDone(false); setFbTo(null); setGivePrep(hwInfo.given === 0 && hwInfo.prepared > 0); }, [which, hwComment]); // eslint-disable-line react-hooks/exhaustive-deps
+  const [finishError, setFinishError] = useState(false);
+  useEffect(() => { setText(which === "hwc" ? hwComment ?? "" : ""); setDone(false); setFbTo(null); setGivePrep(hwInfo.given === 0 && hwInfo.prepared > 0); setFinishError(false); }, [which, hwComment]); // eslint-disable-line react-hooks/exhaustive-deps
   const s = d.student;
   const goal = useMemo(() => d.goal, [d.goal]);
   if (!which) return null;
@@ -1402,8 +1403,20 @@ function ClassDialogs({ which, close, d, hwComment, hwInfo, send, onFinished, on
           </label>
         )}
         <button type="button" className="chrnudge" onClick={onCheer}><span aria-hidden="true">💛</span><span className="grow"><b>{t("chr.btn")}</b><br /><span className="small muted">{t("chr.nudge")}</span></span><Icon name="right" size="sm" /></button>
+        {finishError && <p className="alert mt-3" role="alert">{t("cls.finishError")}</p>}
         <div className="actions"><button className="btn secondary" onClick={close}>{t("common.cancel")}</button>
-          <button className="btn primary" disabled={busy} onClick={async () => { setBusy(true); await send("finish", givePrep ? { prepared: true } : {}); setBusy(false); close(); onFinished(); }}>{t("cls.finish")}</button></div>
+          <button className="btn primary" disabled={busy} onClick={async () => {
+            setBusy(true);
+            setFinishError(false);
+            const result = await send("finish", givePrep ? { prepared: true } : {});
+            setBusy(false);
+            if (!result.ok) {
+              setFinishError(true);
+              return;
+            }
+            close();
+            onFinished();
+          }}>{t("cls.finish")}</button></div>
       </Dialog>
     );
   const isHw = which === "hwc";

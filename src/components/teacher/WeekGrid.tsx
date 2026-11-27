@@ -43,8 +43,12 @@ export function WeekGrid(props: {
     return () => window.removeEventListener("vibeon-status", h);
   }, []);
   // когда сервер прислал тот же статус — наложение больше не нужно
-  useEffect(() => { setOver((o) => Object.fromEntries(Object.entries(o).filter(([id, v]) => props.lessons.find((l) => l.id === id)?.status !== v.status))); }, [props.lessons]);
+  useEffect(() => {
+    const statuses = new Map(props.lessons.map((lesson) => [lesson.id, lesson.status]));
+    setOver((over) => Object.fromEntries(Object.entries(over).filter(([id, value]) => statuses.has(id) && statuses.get(id) !== value.status)));
+  }, [props.lessons]);
   const lessons = props.lessons.map((l) => (over[l.id] ? { ...l, ...over[l.id] } : l));
+  const cancelled = lessons.filter((l) => l.status === "CANCELLED");
   const [newAt, setNewAt] = useState<{ date: string; start: string } | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
   const open = lessons.find((l) => l.id === openId) ?? null;
@@ -185,7 +189,7 @@ export function WeekGrid(props: {
               {props.nowDay === di && props.nowMin >= hourFrom * 60 && props.nowMin <= hourTo * 60 && (
                 <div className="nowline" style={{ top: ((props.nowMin - hourFrom * 60) / 60) * PX }} />
               )}
-              {lessons.filter((l) => l.day === di).map((l) => {
+              {lessons.filter((l) => l.day === di && l.status !== "CANCELLED").map((l) => {
                 const cls = l.isTrial ? "trial" : l.status === "PLANNED" ? "" : l.status.toLowerCase();
                 const h = Math.max(22, (l.dur / 60) * PX - 3);
                 return (
@@ -215,7 +219,6 @@ export function WeekGrid(props: {
         <div className="legend">
           <span><i style={{ background: "var(--accent)" }} />{t("sch.st.planned")}</span>
           <span><i style={{ background: "var(--ok)" }} />{t("sch.st.done")}</span>
-          <span><i style={{ background: "var(--warn)" }} />{t("sch.st.cancelled")}</span>
           <span><i style={{ background: "var(--bad)" }} />{t("sch.st.missed")}</span>
           <span><i style={{ background: "var(--violet)" }} />{t("sch.trial")}</span>
         </div>
@@ -223,6 +226,22 @@ export function WeekGrid(props: {
           {t("sch.weekTotal")}: {props.weekTotal} <Icon name="right" size="sm" />
         </Link>
       </div>
+
+      {cancelled.length > 0 && (
+        <details className="mt-4">
+          <summary className="cursor-pointer text-text2">{t("sch.cancelledHistory")} ({cancelled.length})</summary>
+          <ul className="mt-2 flex flex-col gap-2">
+            {cancelled.map((lesson) => (
+              <li key={lesson.id}>
+                <button type="button" className="btn secondary sm flex-wrap" onClick={() => { setMoveTo(null); setOpenId(lesson.id); }}>
+                  <span>{lesson.date.split("-").reverse().join(".")} · {lesson.start}–{lesson.end}</span>
+                  <b>{lesson.who}</b>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
 
       {newAt && (
         <NewLessonDialog now={{ iso: props.todayIso, min: props.nowMin }} at={newAt} students={props.students} groups={props.groups ?? []} preset={props.preset} offs={offs} onClose={() => setNewAt(null)}

@@ -2,6 +2,7 @@ import type { NextRequest } from "next/server";
 import { getSessionUser } from "@/lib/auth/session";
 import { classAccess } from "@/lib/live/access";
 import { join, leave, online, publish, subscribe } from "@/lib/live/bus";
+import type { LessonFinishedEvent } from "@/lib/live/lesson-session";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +19,19 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   let cleanup = () => {};
   const stream = new ReadableStream({
     start(ctrl) {
-      const send = (event: string, data: unknown) => ctrl.enqueue(enc.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`));
+      const send = (event: string, data: unknown) => {
+        if (event === "finished") {
+          const { lessons } = data as LessonFinishedEvent;
+          if (acc.role === "student") {
+            const own = lessons.find((lesson) => lesson.id === acc.own.id);
+            if (!own) return;
+            data = { hasHw: own.hasHw };
+          } else {
+            data = { hasHw: lessons.some((lesson) => lesson.hasHw) };
+          }
+        }
+        ctrl.enqueue(enc.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`));
+      };
       const unsub = subscribe(ch, send);
       join(ch, user.id, conn);
       publish(ch, "presence", { online: online(ch) });

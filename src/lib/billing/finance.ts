@@ -1,6 +1,6 @@
 import "server-only";
 import { db } from "../db";
-import { earnedOf } from "../teacher/data";
+import { earnedOf, oneScheduledSlot } from "../teacher/data";
 import { addDaysIso, dayStart, isoDay, mondayOf } from "../time";
 
 export type Range = "week" | "month" | "all";
@@ -41,8 +41,7 @@ export async function financeData(teacherId: string, tz: string, range: Range) {
   const waiting = invoices.filter((i) => i.status === "SENT" || i.status === "PROOF_SENT").reduce((a, i) => a + i.amount, 0) + unbilledSum;
   const prepaid = students.reduce((a, s) => a + s.packs.reduce((b, p) => b + Math.round((p.price / Math.max(1, p.lessonsTotal)) * p.lessonsLeft), 0), 0);
   // отмены и переносы: групповое занятие — одно (у каждого ученика группы свой урок, но переносила группа)
-  const seen = new Set<string>();
-  const pUnits = inPeriod.filter((l) => { if (!(l.groupId && l.slotId)) return true; if (seen.has(l.slotId)) return false; seen.add(l.slotId); return true; });
+  const pUnits = oneScheduledSlot(inPeriod);
   const who = (l: (typeof lessons)[number]) => (l.groupId ? `«${l.group?.title ?? ""}»` : `${l.student?.name ?? ""} ${l.student?.lastName ?? ""}`.trim());
   const total = pUnits.length;
   const cancelledList = pUnits.filter((l) => l.status === "CANCELLED").map((l) => ({ id: l.id, who: who(l), group: !!l.groupId, at: l.startsAt, charged: l.charged })).sort((a, b) => a.at.getTime() - b.at.getTime());
@@ -125,13 +124,13 @@ export async function financeData(teacherId: string, tz: string, range: Range) {
     select: { slotId: true, groupId: true, studentId: true, status: true, movedFrom: true, isTrial: true, price: true, student: { select: { name: true, lastName: true, status: true } }, group: { select: { title: true } } },
   });
   type Unit = { name: string; total: number; moved: number; cancelled: number };
-  const units = new Map<string, Unit>(); const seenSlot = new Set<string>();
-  for (const l of recent) {
-    if ((l.isTrial && !((l.price ?? 0) > 0)) || l.student?.status !== "ACTIVE") continue;
-    if (l.groupId && l.slotId) { if (seenSlot.has(l.slotId)) continue; seenSlot.add(l.slotId); }
+  const units = new Map<string, Unit>();
+  const cancelledSlots = new Set(oneScheduledSlot(recent).filter((l) => l.status === "CANCELLED").map((l) => l.slotId));
+  const activeStudents = recent.filter((l) => (!l.isTrial || (l.price ?? 0) > 0) && l.student?.status === "ACTIVE");
+  for (const l of oneScheduledSlot(activeStudents)) {
     const key = l.groupId ? `g:${l.groupId}` : `s:${l.studentId}`;
     const u = units.get(key) ?? { name: l.groupId ? `«${l.group?.title ?? ""}»` : `${l.student?.name ?? ""} ${l.student?.lastName ?? ""}`.trim(), total: 0, moved: 0, cancelled: 0 };
-    u.total++; if (l.movedFrom) u.moved++; if (l.status === "CANCELLED") u.cancelled++;
+    u.total++; if (l.movedFrom) u.moved++; if (l.slotId ? cancelledSlots.has(l.slotId) : l.status === "CANCELLED") u.cancelled++;
     units.set(key, u);
   }
   const all = [...units.entries()];
