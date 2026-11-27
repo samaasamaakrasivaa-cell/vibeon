@@ -7,6 +7,7 @@ on:
     paths:
       - .github/workflows/delivery-preflight.yml
       - deploy/release-preflight.sh
+      - deploy/pt02-placementedit-check.sh
       - scripts/test-release-preflight.py
       - deploy/release-policy.json
   push:
@@ -14,9 +15,15 @@ on:
     paths:
       - .github/workflows/delivery-preflight.yml
       - deploy/release-preflight.sh
+      - deploy/pt02-placementedit-check.sh
       - scripts/test-release-preflight.py
       - deploy/release-policy.json
   workflow_dispatch:
+    inputs:
+      pt02_placementedit_check:
+        description: Check the fixed PT-02 inventory for editor overrides
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -32,6 +39,7 @@ jobs:
       - name: Validate the read-only preflight and redaction
         run: |
           bash -n deploy/release-preflight.sh
+          bash -n deploy/pt02-placementedit-check.sh
           python3 scripts/test-release-preflight.py
       - name: Exercise Docker metadata parsing on isolated fixtures
         env:
@@ -57,6 +65,7 @@ jobs:
         env:
           SSH_KEY: ${{ secrets.SSH_KEY }}
           SSH_HOST: ${{ secrets.SSH_HOST }}
+          PT02_PLACEMENTEDIT_CHECK: ${{ github.event_name == 'workflow_dispatch' && inputs.pt02_placementedit_check }}
         shell: bash
         run: |
           set -euo pipefail
@@ -80,5 +89,22 @@ jobs:
             "$SSH_HOST" "$DELIVERY_SSH_DIR" "$DELIVERY_SSH_DIR" > "$DELIVERY_SSH_DIR/config"
           # Only the allowlisted JSON summary reaches Actions. No server logs,
           # credentials, student records, complete inspect output or backups.
+          if [[ "$PT02_PLACEMENTEDIT_CHECK" == true ]]; then
+            if ! report=$(ssh -F "$DELIVERY_SSH_DIR/config" srv 'bash -s' < deploy/pt02-placementedit-check.sh 2>/dev/null); then
+              echo 'The fixed PT-02 read-only check failed.' >&2
+              exit 1
+            fi
+            if [[ ! "$report" =~ ^(0|[1-9][0-9]{0,2})\|(0|[1-9][0-9]?)$ ]]; then
+              echo 'Unexpected PT-02 result format.' >&2
+              exit 1
+            fi
+            IFS='|' read -r overlaps audio_overrides <<< "$report"
+            if (( overlaps > 149 || audio_overrides > 20 || audio_overrides > overlaps )); then
+              echo 'Unexpected PT-02 count range.' >&2
+              exit 1
+            fi
+            printf 'PlacementEdit overlaps: %s\nListening audio overrides: %s\n' "$overlaps" "$audio_overrides"
+            exit 0
+          fi
           DELIVERY_PROXY_IMAGE=$(python3 -c 'import json,re; from pathlib import Path; p=Path("deploy/release-policy.json"); v=(json.loads(p.read_text()).get("shared_proxy_image") or "") if p.exists() else ""; assert not v or re.fullmatch(r"sha256:[0-9a-f]{64}",v); print(v)')
           ssh -F "$DELIVERY_SSH_DIR/config" srv "env VIBEON_EXPECTED_PROXY_IMAGE='$DELIVERY_PROXY_IMAGE' bash -s" < deploy/release-preflight.sh
