@@ -8,9 +8,10 @@
     "base_sha": "1687278b3def1e1e81cce166e4dfcd0f01684be7",
     "branch": "codex/teacher/dashboard-call",
     "head_sha": "064352f35fbe1522eb4840e4fb20e68c2c8ac331",
-    "next": "Независимое ревью и CI на SHA PR, сверка Student и Live Classroom, затем допуск Tech Lead",
+    "next": "Ревью и CI пройдены. Допуск Tech Lead и интеграция после подтверждения выпуска задачи 58",
     "pr": 61,
-    "stage": "review"
+    "stage": "integration",
+    "test_run": 46052853645
   },
   "release": null,
   "source": "direct",
