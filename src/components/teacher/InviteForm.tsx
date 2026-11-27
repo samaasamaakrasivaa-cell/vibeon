@@ -124,7 +124,7 @@ export function InviteForm() {
           <p className="mt-0 mb-3 font-semibold">{t("inviteT.ready", { name: st.ok ?? "" })}</p>
           <ShareLink link={st.link} msg={st.msg ?? st.link} kind="invite" vars={{ name: st.ok, teacher: st.fields?.teacher }} />
           <p className="small mt-3 mb-0 opacity-80">{t("inviteT.tgWhy")}</p>
-          {st.id && <a className="btn primary sm mt-3" href={`/teacher/schedule?new=1&trial=1&student=${st.id}`}><Icon name="cal" size="sm" />{t("inviteT.trial")}</a>}
+          {st.id && <a className="btn primary sm mt-3" href={`/teacher/schedule?new=1&student=${st.id}`}><Icon name="cal" size="sm" />{t("inviteT.schedule")}</a>}
         </div>
       )}
     </div>
