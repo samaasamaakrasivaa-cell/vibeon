@@ -2,7 +2,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { randomUUID } from "node:crypto";
-import type { LessonStatus, PayType } from "@prisma/client";
+import { Prisma, type LessonStatus, type PayType } from "@prisma/client";
 import { db } from "../db";
 import { requireUser } from "../auth/session";
 import { fromZoned, parseIsoDay } from "../time";
@@ -187,10 +187,29 @@ export async function setLessonStatus(id: string, status: LessonStatus, charged 
   const l = await ownLesson(id, teacher.id);
   if (!["DONE", "MISSED", "CANCELLED", "PLANNED"].includes(status)) return { ok: false, error: "status" };
   const ids = (await slotOf(l)).map((x) => x.id);
-  await db.$transaction(async (tx) => {
+  if (!ids.length) return { ok: false, error: "not found" };
+  const changed = await db.$transaction(async (tx) => {
+    if (status === "PLANNED" || status === "DONE") {
+      const [overlap] = await tx.$queryRaw<{ id: string }[]>`
+        SELECT occupied.id FROM "LessonInstance" AS restored
+        JOIN "LessonInstance" AS occupied ON occupied."teacherId" = restored."teacherId"
+          AND occupied."startsAt" < restored."startsAt" + restored."durationMin" * interval '1 minute'
+          AND restored."startsAt" < occupied."startsAt" + occupied."durationMin" * interval '1 minute'
+        WHERE restored.id IN (${Prisma.join(ids)})
+          AND restored.status = 'CANCELLED'
+          AND occupied.id NOT IN (${Prisma.join(ids)})
+          AND ((${status} = 'DONE' AND occupied.status = 'DONE')
+            OR (occupied.status = 'PLANNED'
+              AND restored."startsAt" + restored."durationMin" * interval '1 minute' > ${new Date()}))
+        LIMIT 1
+      `;
+      if (overlap) return false;
+    }
     await tx.lessonInstance.updateMany({ where: { id: { in: ids } }, data: { status, charged: status === "MISSED" ? charged : status === "DONE" } });
     if (status !== "DONE") await invalidateLessonSessions(tx, ids);
+    return true;
   });
+  if (!changed) return { ok: false, error: (await getT()).t("sch.restoreConflict") };
   refresh(l.studentId);
   return { ok: true };
 }

@@ -406,12 +406,18 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     // ── завершить урок: статус «проведён», домашка ученику, слова урока — в его список
     case "finish": {
       if (!teacher) return bad();
+      const participants = await db.lessonInstance.findMany({
+        where: { ...(host.slotId ? { slotId: host.slotId } : { id: host.id }), teacherId: user.id, status: { not: "CANCELLED" } },
+        include: { student: true },
+        orderBy: { id: "asc" },
+      });
+      if (!participants.length) return NextResponse.json({ ok: false, error: "lesson cancelled" }, { status: 409 });
       const tpl = host.templateId ? await db.lessonTemplate.findUnique({ where: { id: host.templateId }, include: { tasks: true } }) : null;
       const hwTasks = tpl?.tasks.filter((t) => t.section === "homework" && !t.hidden && !(t.options as { teacherOnly?: boolean } | null)?.teacherOnly).sort((a, b) => a.order - b.order).map((t) => t.id) ?? [];
       const items = tpl ? tpl.tasks.filter((t) => t.type === "wordset").flatMap((t) => { const p = parse(t.type as TaskType, t.content); return p.kind === "wordset" ? p.items : []; }) : [];
       let anyHw = false;
       // групповое занятие — каждому ученику: домашка, слова урока, «урок проведён», уведомления
-      for (const l of slot) {
+      for (const l of participants) {
         // новые домашки: заготовки раздела «Домашка» ученик получает, только если учитель их задал (или отметил «задать заготовки» при завершении)
         const prev = await db.homework.findUnique({ where: { lessonInstanceId: l.id } });
         const manual = prev ? prev.manual : true;
@@ -432,7 +438,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
           await notify({ userId: l.student.userId, kind: "lesson_done", title: hasHw ? (user.lang === "EN" ? "The lesson is over — homework is waiting" : "Урок окончен — тебя ждёт домашка") : (user.lang === "EN" ? "The lesson is over" : "Урок окончен"), action: "review", link: `/class/${l.id}?tab=homework` });
       }
       // итог урока по каждому ученику — в фоне (разметка тем, проверка сомнительных ответов ИИ), учитель увидит его в досье
-      for (const l of slot) if (l.studentId) void buildLessonSummary(l.id, l.studentId).catch((e) => console.error("[summary]", (e as Error).message));
+      for (const l of participants) if (l.studentId) void buildLessonSummary(l.id, l.studentId).catch((e) => console.error("[summary]", (e as Error).message));
       publish(ch, "finished", { hasHw: anyHw });
       return NextResponse.json({ ok: true });
     }
