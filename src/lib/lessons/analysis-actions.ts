@@ -2,11 +2,21 @@
 
 import { revalidatePath } from "next/cache";
 import { requireUser } from "../auth/session";
-import { approveLessonAnalysis, generateLessonAnalysis } from "./analysis";
+import { approveLessonAnalysis, generateLessonAnalysis, saveLessonObservation } from "./analysis";
 
-export async function generateAnalysisAction(lessonId: string, allowAi: boolean) {
+function observationFrom(form: FormData) {
+  return { text: form.get("observation"), selected: form.get("focus") };
+}
+
+export async function saveObservationAction(lessonId: string, form: FormData) {
   const teacher = await requireUser("TEACHER");
-  await generateLessonAnalysis(lessonId, teacher.id, allowAi === true);
+  await saveLessonObservation(lessonId, teacher.id, observationFrom(form));
+  revalidatePath(`/teacher/lesson-analysis/${lessonId}`);
+}
+
+export async function generateAnalysisAction(lessonId: string, allowAi: boolean, form: FormData) {
+  const teacher = await requireUser("TEACHER");
+  await generateLessonAnalysis(lessonId, teacher.id, allowAi === true, form.has("observation") ? observationFrom(form) : undefined);
   revalidatePath(`/teacher/lesson-analysis/${lessonId}`);
 }
 
