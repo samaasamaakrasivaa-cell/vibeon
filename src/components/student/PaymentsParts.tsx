@@ -3,7 +3,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Dialog } from "../Dialog";
 import { Icon } from "../Icon";
-import { paymentFileAccept, uploadPaymentDocument } from "../finance/PaymentDocumentUpload";
+import { paymentFileAccept, paymentUploadMessage, uploadPaymentDocument } from "../finance/PaymentDocumentUpload";
 import { useT } from "@/lib/i18n/client";
 import { buyPack, iPaid, payMessage } from "@/lib/billing/actions";
 
@@ -38,8 +38,8 @@ export function PaidButton({ id, amount }: { id: string; amount: string }) {
                 try {
                   setFile(await uploadPaymentDocument(id, "proof", selected));
                   setFname(selected.name);
-                } catch {
-                  setErr(t("pay.documentError"));
+                } catch (error) {
+                  setErr(t(paymentUploadMessage(error)));
                 } finally {
                   setUploading(false);
                 }

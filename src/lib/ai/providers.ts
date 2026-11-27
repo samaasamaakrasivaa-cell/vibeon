@@ -192,3 +192,59 @@ export async function speechkitV3(text: string, o: { voice: string; speed?: numb
   if (!parts.length) throw new Error("TTS v3: no audio");
   return Buffer.concat(parts);
 }
+
+type PaymentOcrResponse = { provider: string; code: "OK"; text: string } |
+  { provider: string; code: "EMPTY" | "TIMEOUT" | "THROTTLED" | "FAILED" | "BAD_RESPONSE" | "UNAVAILABLE" | "UNSUPPORTED" };
+
+export async function requestPaymentOcr(buf: Buffer, mime: string): Promise<PaymentOcrResponse> {
+  const mockUrl = provider() === "mock" ? process.env.PAYMENT_OCR_TEST_URL : undefined;
+  const synthetic = !!mockUrl && /^http:\/\/127\.0\.0\.1:\d+\/recognize$/.test(mockUrl);
+  const name = synthetic ? "synthetic" : "yandex";
+  if (!synthetic && (provider() === "mock" || !yandexReady())) return { provider: name, code: "UNAVAILABLE" };
+
+  const mimeType = { "image/png": "PNG", "image/jpeg": "JPEG", "application/pdf": "PDF" }[mime];
+  if (!mimeType || !buf.length || buf.length > 7 * 1024 ** 2) return { provider: name, code: "UNSUPPORTED" };
+  const body = JSON.stringify({ mimeType, languageCodes: ["en", "ru"], model: "page", content: buf.toString("base64") });
+  if (Buffer.byteLength(body) > 4 * Math.ceil(7 * 1024 ** 2 / 3) + 512) return { provider: name, code: "UNSUPPORTED" };
+
+  const signal = AbortSignal.timeout(15_000);
+  try {
+    const response = await fetch(synthetic ? mockUrl! : "https://ocr.api.cloud.yandex.net/ocr/v1/recognizeText", {
+      method: "POST", redirect: "error", signal, body,
+      headers: { ...(synthetic ? {} : yHeaders()), "Content-Type": "application/json" },
+    });
+    if (!response.ok) {
+      await response.body?.cancel().catch(() => undefined);
+      return { provider: name, code: response.status === 429 ? "THROTTLED" : "FAILED" };
+    }
+    if (!response.body) return { provider: name, code: "BAD_RESPONSE" };
+    const reader = response.body.getReader();
+    const chunks: Uint8Array[] = [];
+    let size = 0;
+    try {
+      while (true) {
+        const part = await reader.read();
+        if (part.done) break;
+        size += part.value.byteLength;
+        if (size > 1024 ** 2) {
+          await reader.cancel().catch(() => undefined);
+          return { provider: name, code: "BAD_RESPONSE" };
+        }
+        chunks.push(part.value);
+      }
+    } finally {
+      reader.releaseLock();
+    }
+    let data;
+    try {
+      data = JSON.parse(Buffer.concat(chunks, size).toString("utf8"));
+    } catch {
+      return { provider: name, code: "BAD_RESPONSE" };
+    }
+    const text = data?.result?.textAnnotation?.fullText;
+    if (typeof text !== "string") return { provider: name, code: "BAD_RESPONSE" };
+    return text.trim() ? { provider: name, code: "OK", text } : { provider: name, code: "EMPTY" };
+  } catch {
+    return { provider: name, code: signal.aborted ? "TIMEOUT" : "FAILED" };
+  }
+}

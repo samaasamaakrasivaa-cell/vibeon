@@ -5,7 +5,7 @@ import { requireUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { getT } from "@/lib/i18n/server";
 import { packOptions } from "@/lib/billing/engine";
-import { invoiceDocumentLinks } from "@/lib/billing/documents";
+import { invoiceDocumentStates } from "@/lib/billing/documents";
 import { PaymentDocumentUpload } from "@/components/finance/PaymentDocumentUpload";
 import { rub } from "@/lib/teacher/data";
 import { roadmapView } from "@/lib/roadmap/progress";
@@ -25,17 +25,19 @@ export default async function Payments({ searchParams }: { searchParams: Promise
   const date = (d: Date) => d.toLocaleDateString(loc, { day: "numeric", month: "long", year: "numeric", timeZone: me.timezone });
   const open = s.invoices.filter((i) => i.status === "SENT" || i.status === "PROOF_SENT");
   const history = s.invoices.filter((i) => i.status === "PAID");
-  const documentLink = await invoiceDocumentLinks(tab === "bills" ? [...open, ...history].map((i) => ({ ...i, student: s })) : []);
+  const archive = s.invoices.filter((i) => i.status === "CANCELLED");
+  const documentState = await invoiceDocumentStates(tab === "bills" ? [...open, ...history, ...archive].map((i) => ({ ...i, student: s })) : []);
   const paymentDocuments = (i: typeof open[number]) => {
     if (!i.proofFile && !i.receiptFile) return null;
-    const proof = documentLink({ ...i, student: s }, "proof");
-    const receipt = documentLink({ ...i, student: s }, "receipt");
+    const proof = documentState({ ...i, student: s }, "proof");
+    const receipt = documentState({ ...i, student: s }, "receipt");
     return (
       <div className="flex flex-wrap items-center gap-2">
-        {proof && <a className="btn tinted sm" href={proof} download>{t("pay.proofDocument")}</a>}
-        {!proof && i.proofFile && <PaymentDocumentUpload id={i.id} kind="proof" />}
-        {receipt ? <a className="btn tinted sm" href={receipt} download>{t("pay.yourReceipt")}</a>
-          : i.receiptFile && <span className="small">{t("pay.receiptAskAgain")}</span>}
+        {proof.href ? <a className="btn tinted sm" href={proof.href} download>{t("pay.proofDocument")}</a>
+          : i.proofFile && (proof.pending ? <span className="small">{t("pay.documentPending")}</span> : <PaymentDocumentUpload id={i.id} kind="proof" />)}
+        {receipt.href ? <a className="btn tinted sm" href={receipt.href} download>{t("pay.yourReceipt")}</a>
+          : i.receiptFile && <span className="small">{t(receipt.pending ? "pay.documentPending" : "pay.receiptAskAgain")}</span>}
+        {[proof.restoredAt, receipt.restoredAt].map((time, index) => time && <span key={index} className="small muted">{t("pay.documentRestored", { d: date(time) })}</span>)}
       </div>
     );
   };
@@ -158,6 +160,16 @@ export default async function Payments({ searchParams }: { searchParams: Promise
               </div>
             ))}
           </section>
+          {!!archive.length && <>
+            <h2 className="mb-3 mt-8">{t("pay.archive")}</h2>
+            <section className="list">
+              {archive.map((i) => <div key={i.id} className="row">
+                <div className="grow"><div className="t">{i.title}</div><div className="s">{date(i.createdAt)}</div></div>
+                {paymentDocuments(i)}
+                <b>{R(i.amount)}</b>
+              </div>)}
+            </section>
+          </>}
         </>
       )}
     </div>

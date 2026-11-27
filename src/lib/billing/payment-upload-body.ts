@@ -14,9 +14,15 @@ export async function readPaymentUploadBody(req: Request): Promise<ParsedUpload>
   const reader = req.body.getReader();
   const chunks: Buffer[] = [];
   let size = 0;
+  let expired = false;
+  const deadline = setTimeout(() => {
+    expired = true;
+    void reader.cancel().catch(() => undefined);
+  }, 15_000);
   try {
     while (true) {
       const next = await reader.read();
+      if (expired) return { status: 400 };
       if (next.done) break;
       size += next.value.byteLength;
       if (size > MAX_PAYMENT_BODY) {
@@ -32,6 +38,7 @@ export async function readPaymentUploadBody(req: Request): Promise<ParsedUpload>
   } catch {
     return { status: 400 };
   } finally {
+    clearTimeout(deadline);
     reader.releaseLock();
   }
 }

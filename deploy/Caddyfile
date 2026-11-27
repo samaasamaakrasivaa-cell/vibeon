@@ -1,7 +1,20 @@
 # HTTPS-сертификат Let's Encrypt Caddy получает и продлевает сам.
 {$DOMAIN} {
 	encode gzip
-	request_body {
+	@paymentUpload {
+		method POST
+		path /api/billing/documents/*
+	}
+	@otherRequest {
+		not {
+			method POST
+			path /api/billing/documents/*
+		}
+	}
+	request_body @paymentUpload {
+		max_size 10551296
+	}
+	request_body @otherRequest {
 		max_size 50MB
 	}
 	reverse_proxy app:3000 {

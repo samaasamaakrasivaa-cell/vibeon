@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { chmod, mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { PrismaClient } from "@prisma/client";
 import { PDFDocument } from "pdf-lib";
@@ -42,9 +42,9 @@ function multipart(bytes, type, name = "synthetic") {
   return body;
 }
 
-async function request(url, status, { actor, method = "GET", headers = {}, body, duplex } = {}) {
+async function request(url, status, { actor, method = "GET", headers = {}, body, duplex, origin = process.env.APP_URL } = {}) {
   if (actor) headers.cookie = "vo_session=fixture-" + actor;
-  const response = await fetch(process.env.APP_URL + url, { method, headers, body, duplex, redirect: "manual" });
+  const response = await fetch(origin + url, { method, headers, body, duplex, redirect: "manual" });
   assert.equal(response.status, status, [method, url, actor ?? "guest"].join(" "));
   return response;
 }
@@ -67,15 +67,15 @@ async function getActionIds() {
     .map(([id, action]) => [action.exportedName, id]));
 }
 
-async function action(actor, page, actionId, args, expected) {
+async function action(actor, page, actionId, args, expected, origin = process.env.APP_URL) {
   assert.ok(actionId);
   const response = await request(page, 200, {
-    actor, method: "POST", body: JSON.stringify(args),
+    actor, origin, method: "POST", body: JSON.stringify(args),
     headers: {
       "next-action": actionId,
       "accept": "text/x-component",
       "content-type": "text/plain;charset=UTF-8",
-      "origin": process.env.APP_URL,
+      "origin": origin,
     },
   });
   assert.match(await response.text(), expected);
@@ -130,8 +130,11 @@ async function checkLegacy(db) {
   console.log("Legacy attached documents, quarantined bytes and detached classification fixtures passed");
 }
 
-async function upload(invoice, kind, actor, bytes, mime, status = 201) {
-  return request(document(invoice, kind), status, { actor, method: "POST", body: multipart(bytes, mime) });
+let uploadIp = 1;
+async function upload(invoice, kind, actor, bytes, mime, status = 201, origin) {
+  return request(document(invoice, kind), status, {
+    actor, origin, method: "POST", body: multipart(bytes, mime), headers: { "x-real-ip": "192.0.2." + uploadIp++ },
+  });
 }
 
 async function checkPackUsage(db, actions) {
@@ -260,20 +263,98 @@ async function checkMultipartLimits(png) {
   const head = Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="file"; filename="sample.png"\r\nContent-Type: image/png\r\n\r\n`);
   const middle = Buffer.from(`\r\n--${boundary}\r\nContent-Disposition: form-data; name="padding"\r\n\r\n`);
   const tail = Buffer.from(`\r\n--${boundary}--\r\n`);
-  for (const [size, status] of [[bodyLimit - 1, 201], [bodyLimit, 201], [bodyLimit + 1, 413]]) {
-    const padding = Buffer.alloc(size - head.length - png.length - middle.length - tail.length, 120);
-    const body = new ReadableStream({
-      start(controller) {
-        for (const chunk of [head, png, middle, padding, tail]) controller.enqueue(chunk);
-        controller.close();
-      },
-    });
-    await request(url, status, {
-      actor: student, method: "POST", body, duplex: "half",
-      headers: { "content-type": `multipart/form-data; boundary=${boundary}` },
-    });
+  for (const origin of [process.env.APP_URL, process.env.SEC_PROXY_URL]) {
+    assert.match(origin, /^http:\/\/127\.0\.0\.1:\d+$/);
+    for (const [size, status] of [[bodyLimit - 1, 201], [bodyLimit, 201], [bodyLimit + 1, 413]]) {
+      const padding = Buffer.alloc(size - head.length - png.length - middle.length - tail.length, 120);
+      const body = new ReadableStream({
+        start(controller) {
+          for (const chunk of [head, png, middle, padding, tail]) controller.enqueue(chunk);
+          controller.close();
+        },
+      });
+      await request(url, status, {
+        actor: student, origin, method: "POST", body, duplex: "half",
+        headers: { "content-type": `multipart/form-data; boundary=${boundary}` },
+      });
+    }
   }
-  console.log("File and actual chunked multipart boundaries passed");
+  console.log("File and chunked multipart boundaries passed at Next.js and Caddy");
+}
+
+async function checkOcrReplicas(db, actions, png) {
+  const fixture = new URL(process.env.PAYMENT_OCR_TEST_URL);
+  assert.equal(fixture.hostname, "127.0.0.1");
+  async function state() {
+    return (await fetch(new URL("/calls", fixture))).json();
+  }
+  async function setMode(mode) {
+    assert.equal((await fetch(new URL("/mode/" + mode, fixture), { method: "POST" })).status, 200);
+  }
+  async function prepare(id, origin, bytes = png, mime = "image/png") {
+    const invoice = await db.invoice.create({ data: { id, studentId: "record-a", kind: "manual", amount: 900, status: "SENT" } });
+    const { id: uploadId } = await (await upload(id, "proof", student, bytes, mime, 201, origin)).json();
+    return { invoice, uploadId, submit: (target) => action(student, studentPage, actions.iPaid, [id, { file: uploadId }], /"ok":true/, target) };
+  }
+  const first = await prepare("ocr-first", process.env.APP_URL);
+  const second = await prepare("ocr-second", process.env.SEC_REPLICA_URL);
+  const before = await state();
+  await setMode("hold");
+  const processing = first.submit(process.env.APP_URL);
+  try {
+    for (let i = 0; i < 50 && !(await state()).active; i++) await new Promise((resolve) => setTimeout(resolve, 25));
+    assert.equal((await state()).active, 1);
+    await first.submit(process.env.SEC_REPLICA_URL);
+    await second.submit(process.env.SEC_REPLICA_URL);
+    assert.deepEqual(await state(), { calls: before.calls + 1, active: 1, high: 1 });
+    assert.deepEqual((await db.invoice.findUniqueOrThrow({ where: { id: second.invoice.id } })).aiRead,
+      { source: "screenshot", matches: false, code: "BUSY" });
+  } finally {
+    await setMode("empty");
+    await processing;
+  }
+  await first.submit(process.env.SEC_REPLICA_URL);
+  assert.equal((await state()).calls, before.calls + 1);
+
+  for (const [mode, code] of [["throttle", "THROTTLED"], ["fail", "FAILED"], ["broken", "BAD_RESPONSE"], ["schema", "BAD_RESPONSE"], ["timeout", "TIMEOUT"]]) {
+    await setMode(mode);
+    const item = await prepare("ocr-" + mode, process.env.APP_URL);
+    const calls = (await state()).calls;
+    const started = performance.now();
+    await item.submit(process.env.APP_URL);
+    if (mode === "timeout") {
+      const elapsed = performance.now() - started;
+      assert.ok(elapsed >= 14_500 && elapsed < 20_000, String(elapsed));
+    }
+    await item.submit(process.env.SEC_REPLICA_URL);
+    const current = await db.invoice.findUniqueOrThrow({ where: { id: item.invoice.id } });
+    assert.equal(current.status, "PROOF_SENT");
+    assert.deepEqual(current.aiRead, { source: "screenshot", matches: false, code });
+    assert.equal((await state()).calls, calls + 1);
+  }
+  await setMode("empty");
+  const image = await sharp(png).withExif({ IFD0: { Artist: "Synthetic metadata" } }).webp().toBuffer();
+  const webp = await prepare("ocr-webp", process.env.APP_URL, image, "image/webp");
+  const onePage = await PDFDocument.create();
+  onePage.addPage().drawText("Synthetic payment");
+  onePage.setTitle("Synthetic metadata");
+  const pdf = await prepare("ocr-pdf", process.env.SEC_REPLICA_URL, Buffer.from(await onePage.save()), "application/pdf");
+  for (const item of [webp, pdf]) {
+    const calls = (await state()).calls;
+    await item.submit(process.env.SEC_REPLICA_URL);
+    assert.equal((await state()).calls, calls + 1);
+    assert.deepEqual((await db.invoice.findUniqueOrThrow({ where: { id: item.invoice.id } })).aiRead,
+      { source: "screenshot", matches: false, code: "EMPTY" });
+  }
+  onePage.addPage();
+  const multipage = await prepare("ocr-no-multipage", process.env.APP_URL, Buffer.from(await onePage.save()), "application/pdf");
+  const calls = (await state()).calls;
+  await multipage.submit(process.env.APP_URL);
+  assert.equal((await state()).calls, calls);
+  assert.deepEqual((await db.invoice.findUniqueOrThrow({ where: { id: multipage.invoice.id } })).aiRead,
+    { source: "screenshot", matches: false, code: "UNSUPPORTED" });
+  assert.equal((await state()).high, 1);
+  console.log("Two-replica OCR deduplication, concurrency, failures and format boundaries passed");
 }
 
 async function verify(db) {
@@ -282,6 +363,9 @@ async function verify(db) {
   await checkEducation(png);
   await checkLegacy(db);
   await checkMultipartLimits(png);
+  await verifyPrivate(generalFile(keyOf("A")), 404, { origin: process.env.SEC_PROXY_URL });
+  await verifyPrivate(document("invoice-legacy-good", "receipt", "legacy-receipt"), 200, { actor: student, origin: process.env.SEC_PROXY_URL });
+  await request("/share/synthetic-share", 200, { origin: process.env.SEC_PROXY_URL });
 
   const invoice = "invoice-new";
   await upload(invoice, "proof", undefined, png, "image/png", 401);
@@ -331,24 +415,54 @@ async function verify(db) {
   await action(teacher, teacherPage, actionIds.attachReceipt, [untouched.id, receiptId], /"ok":false/);
   await action("teacher-b", teacherPage, actionIds.attachReceipt, [legacyId, receiptId], /"ok":false/);
   const receiptsBefore = await db.notification.count({ where: { userId: student, kind: "receipt" } });
+  const beforeRepair = await db.invoice.findUniqueOrThrow({ where: { id: legacyId } });
+  await action(teacher, teacherPage, actionIds.attachReceipt, [legacyId, receiptId], /"ok":false/);
+  const checkedReceipt = (await db.upload.findUniqueOrThrow({ where: { id: "legacy-receipt" } })).paymentArtifact.document;
+  const receiptFile = path.join(process.env.UPLOAD_DIR, checkedReceipt.key);
+  await chmod(receiptFile, 0o640);
+  await writeFile(receiptFile, Buffer.alloc(checkedReceipt.size));
+  for (const method of ["GET", "HEAD"]) await verifyPrivate(oldReceipt, 404, { actor: teacher, method });
   await action(teacher, teacherPage, actionIds.attachReceipt, [legacyId, receiptId], /"ok":true/);
   await action(teacher, teacherPage, actionIds.attachReceipt, [legacyId, receiptId], /"ok":true/);
   await action(teacher, teacherPage, actionIds.attachReceipt, [legacyId, staleReceiptId], /"ok":false/);
-  assert.equal(await db.notification.count({ where: { userId: student, kind: "receipt" } }), receiptsBefore + 1);
+  assert.equal(await db.notification.count({ where: { userId: student, kind: "receipt" } }), receiptsBefore);
+  const afterRepair = await db.invoice.findUniqueOrThrow({ where: { id: legacyId } });
+  assert.deepEqual({ ...afterRepair, receiptFile: beforeRepair.receiptFile, revision: beforeRepair.revision }, beforeRepair);
+  const receiptVersion = await db.invoiceDocumentVersion.findUniqueOrThrow({ where: { uploadId: receiptId } });
+  assert.equal(receiptVersion.previous, beforeRepair.receiptFile);
+  assert.equal(receiptVersion.actorId, teacher);
+  assert.equal(receiptVersion.restored, true);
   await verifyPrivate(oldReceipt, 404, { actor: teacher });
   const updated = await verifyPrivate(receiptUrl, 200, { actor: student, headers: { range: "bytes=0-7" } });
   assert.deepEqual(Buffer.from(await updated.arrayBuffer()), permittedPdf);
   await verifyPrivate(receiptUrl, 404);
 
-  const old = await db.invoice.findUniqueOrThrow({ where: { id: "invoice-legacy-unverified" } });
+  const old = await db.invoice.update({ where: { id: "invoice-legacy-unverified" }, data: {
+    status: "CANCELLED", title: "Archived synthetic invoice",
+  } });
+  for (const [actor, page] of [[teacher, teacherPage], [student, studentPage]]) {
+    assert.match(await (await request(page, 200, { actor })).text(), /Archived synthetic invoice/);
+  }
+  for (const [actor, page] of [["teacher-b", teacherPage], ["student-b", studentPage]]) {
+    assert.doesNotMatch(await (await request(page, 200, { actor })).text(), /Archived synthetic invoice/);
+  }
   const restoredId = (await (await upload(old.id, "proof", student, png, "image/png")).json()).id;
-  await action(student, studentPage, actionIds.replacePaymentProof, [old.id, restoredId], /"ok":true/);
+  await action("student-b", studentPage, actionIds.replacePaymentProof, [old.id, restoredId], /"ok":false/);
+  await Promise.all([process.env.APP_URL, process.env.SEC_REPLICA_URL].map((origin) =>
+    action(student, studentPage, actionIds.replacePaymentProof, [old.id, restoredId], /"ok":true/, origin)));
+  const proofVersion = await db.invoiceDocumentVersion.findUniqueOrThrow({ where: { uploadId: restoredId } });
+  assert.equal(proofVersion.previous, old.proofFile);
+  assert.equal(proofVersion.actorId, student);
+  assert.equal(proofVersion.restored, true);
   const repaired = await db.invoice.findUniqueOrThrow({ where: { id: old.id } });
   assert.notEqual(repaired.proofFile, old.proofFile);
   assert.equal(repaired.revision, old.revision + 1);
   assert.deepEqual({ ...repaired, proofFile: old.proofFile, revision: old.revision }, old);
   assert.equal(await db.aiCall.count({ where: { kind: "ocr" } }), ocrCalls);
   await verifyPrivate(document(old.id, "proof", restoredId), 200, { actor: teacher });
+  const unwantedReplacement = (await (await upload(old.id, "proof", student, png, "image/png")).json()).id;
+  await action(student, studentPage, actionIds.replacePaymentProof, [old.id, unwantedReplacement], /"ok":false/);
+  await checkOcrReplicas(db, actionIds, png);
   await checkPackUsage(db, actionIds);
   await checkPostpaidBilling(db, actionIds);
   await db.session.delete({ where: { id: "session-student-a" } });

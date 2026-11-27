@@ -690,9 +690,34 @@ model Invoice {
   remindCount  Int           @default(0)
   createdAt    DateTime      @default(now())
   student      Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  documentVersions InvoiceDocumentVersion[]
 
   @@index([studentId, status])
   @@index([status, createdAt])
+}
+
+model InvoiceDocumentVersion {
+  uploadId    String              @id
+  invoiceId   String
+  kind        PaymentDocumentKind
+  previous    String?
+  actorId     String
+  changedAt   DateTime            @default(now())
+  restored    Boolean             @default(false)
+  invoice     Invoice             @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId, changedAt])
+}
+
+model PaymentOcrAttempt {
+  uploadId    String   @id
+  invoiceId   String
+  amount      Int
+  code        String
+  matches     Boolean  @default(false)
+  provider    String?
+  createdAt   DateTime @default(now())
+  completedAt DateTime?
 }
 
 // ───────────── Общение ─────────────
@@ -806,6 +831,7 @@ model Upload {
   paymentInvoiceId String? // назначение загрузки сохраняется после замены или удаления счёта
   legacyUnverified Boolean @default(false)
   paymentRevision  Int? // invoice revision when this new draft was uploaded
+  paymentArtifact  Json? // verified immutable download and optional OCR copy
 
   @@index([ownerId])
 }

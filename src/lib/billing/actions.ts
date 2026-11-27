@@ -6,7 +6,7 @@ import { requireUser } from "../auth/session";
 import { getT } from "../i18n/server";
 import { fileUrl } from "../storage";
 import { lockStudentBilling } from "./pack-usage";
-import { invoiceDocumentAccess, invoiceDocumentLinks, invoiceForDocumentWrite, paymentUploadForWrite, readPaymentDocument } from "./documents";
+import { invoiceDocumentAccess, invoiceDocumentStates, invoiceForDocumentWrite, paymentDocumentField, paymentKinds, paymentUploadForWrite, usablePaymentUpload, type PaymentDocument } from "./documents";
 import { acceptInvoice, acceptInvoiceInTransaction, createInvoice, notifyInvoice, packOptions, submitProof, undoAccept } from "./engine";
 import { sendMessage } from "../student/actions";
 import { completeNotes, deliverPending, notify, notifyPayer } from "../notify";
@@ -319,32 +319,54 @@ export async function manualInvoice(studentId: string, amount: number, title: st
   return { ok: true };
 }
 
-/** Чек («Мой налог») к оплате. */
-export async function attachReceipt(id: string, uploadId: string): Promise<R> {
-  const actor = await requireUser("TEACHER");
-  if (typeof id !== "string" || typeof uploadId !== "string" || !uploadId) return { ok: false, error: "file" };
-  const inv = await invoiceForDocumentWrite(id, "receipt", actor);
-  if (!inv) return { ok: false, error: "not found" };
-  const upload = await paymentUploadForWrite(uploadId, id, "receipt", actor.id);
-  if (!upload) return { ok: false, error: "file" };
-  const receiptFile = fileUrl(upload.path);
-  if (receiptFile === inv.receiptFile) return { ok: true };
-  if (upload.paymentRevision !== inv.revision || !await readPaymentDocument(upload)) return { ok: false, error: "file" };
+async function bindPaymentDocument(id: string, kind: PaymentDocument, uploadId: string): Promise<R> {
+  const actor = await requireUser(kind === "receipt" ? "TEACHER" : "STUDENT");
+  const { t } = await getT();
+  if (typeof id !== "string" || typeof uploadId !== "string" || !uploadId) return { ok: false, error: t("pay.documentError") };
+  const invoice = await invoiceForDocumentWrite(id, kind, actor);
+  if (!invoice) return { ok: false, error: t("pay.err.stale") };
+  const field = paymentDocumentField(kind);
+  const previous = invoice[field];
+  const restored = !!previous;
+  if (!restored && (kind === "proof" || invoice.status === "CANCELLED")) return { ok: false, error: t("pay.documentError") };
 
-  const change = await db.$transaction(async (tx) => {
-    if (!await lockStudentBilling(tx, inv.studentId)) return false;
+  const upload = await paymentUploadForWrite(uploadId, id, kind, actor.id);
+  if (!upload) return { ok: false, error: t("pay.documentError") };
+  const next = fileUrl(upload.path);
+  if (next === previous) return { ok: true };
+  if (upload.paymentRevision !== invoice.revision || !await usablePaymentUpload(upload)) return { ok: false, error: t("pay.err.stale") };
+  if (restored) {
+    const state = (await invoiceDocumentStates([invoice]))(invoice, kind);
+    if (state.href || state.pending) return { ok: false, error: t(state.pending ? "pay.documentPending" : "pay.documentExists") };
+  }
+
+  const changed = await db.$transaction(async (tx) => {
+    if (!await lockStudentBilling(tx, invoice.studentId)) return false;
+    const priorVersion = await tx.invoiceDocumentVersion.findUnique({ where: { uploadId } });
+    if (priorVersion) {
+      const current = await tx.invoice.findFirst({ where: { id, ...invoiceDocumentAccess(actor) }, select: { proofFile: true, receiptFile: true } });
+      return current?.[field] === next;
+    }
     const result = await tx.invoice.updateMany({
-      where: { id, ...invoiceDocumentAccess(actor), studentId: inv.studentId, revision: inv.revision },
-      data: { receiptFile, revision: { increment: 1 } },
+      where: { id, ...invoiceDocumentAccess(actor), studentId: invoice.studentId, revision: invoice.revision, [field]: previous },
+      data: { [field]: next, revision: { increment: 1 } },
     });
     if (!result.count) return false;
-    if (inv.student.userId) await notify({ userId: inv.student.userId, kind: "receipt", title: "Преподаватель прикрепил чек к оплате", link: "/student/payments?tab=bills" }, tx);
+    await tx.invoiceDocumentVersion.create({ data: { uploadId, invoiceId: id, kind: paymentKinds[kind], previous, actorId: actor.id, restored } });
+    if (!restored && kind === "receipt" && invoice.student.userId) await notify({
+      userId: invoice.student.userId, kind: "receipt", title: "Преподаватель прикрепил чек к оплате", link: "/student/payments?tab=bills",
+    }, tx);
     return true;
   });
-  if (!change) return { ok: false, error: "not found" };
-  void deliverPending().catch(() => undefined);
+  if (!changed) return { ok: false, error: t("pay.err.stale") };
+  if (!restored) void deliverPending().catch(() => undefined);
   refresh();
   return { ok: true };
+}
+
+/** Прикрепить первый чек или восстановить недоступный чек. */
+export async function attachReceipt(id: string, uploadId: string): Promise<R> {
+  return bindPaymentDocument(id, "receipt", uploadId);
 }
 
 /** Реквизиты для оплаты — их ученик видит в счёте. */
@@ -376,30 +398,7 @@ export async function iPaid(id: string, proof: { text?: string; file?: string })
 
 /** Восстановить недоступное подтверждение без перерасчёта платежа или OCR. */
 export async function replacePaymentProof(id: string, uploadId: string): Promise<R> {
-  const actor = await requireUser("STUDENT");
-  if (typeof id !== "string" || typeof uploadId !== "string" || !uploadId) return { ok: false, error: "file" };
-  const inv = await invoiceForDocumentWrite(id, "proof", actor);
-  if (!inv?.proofFile) return { ok: false, error: "not found" };
-  const upload = await paymentUploadForWrite(uploadId, id, "proof", actor.id);
-  if (!upload) return { ok: false, error: "file" };
-  const proofFile = fileUrl(upload.path);
-  if (proofFile === inv.proofFile) return { ok: true };
-  const currentLink = await invoiceDocumentLinks([inv]);
-  if (currentLink(inv, "proof") || upload.paymentRevision !== inv.revision || !await readPaymentDocument(upload)) {
-    return { ok: false, error: "file" };
-  }
-
-  const changed = await db.$transaction(async (tx) => {
-    if (!await lockStudentBilling(tx, inv.studentId)) return false;
-    const result = await tx.invoice.updateMany({
-      where: { id, ...invoiceDocumentAccess(actor), studentId: inv.studentId, revision: inv.revision },
-      data: { proofFile, revision: { increment: 1 } },
-    });
-    return !!result.count;
-  });
-  if (!changed) return { ok: false, error: "not found" };
-  refresh();
-  return { ok: true };
+  return bindPaymentDocument(id, "proof", uploadId);
 }
 
 /** «Продлить» / «Перейти на абонемент»: счёт за выбранный абонемент. */

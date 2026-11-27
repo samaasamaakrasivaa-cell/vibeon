@@ -8,8 +8,8 @@ import { env } from "../env";
 import { publish } from "../live/bus";
 import { fileUrl } from "../storage";
 import { lockStudentBilling, spendPackLesson } from "./pack-usage";
-import { invoiceDocumentAccess, invoiceForDocumentWrite, paymentUploadForWrite, readPaymentDocument } from "./documents";
-import { ocr } from "../ai/gateway";
+import { invoiceDocumentAccess, invoiceForDocumentWrite, paymentUploadForWrite, usablePaymentUpload } from "./documents";
+import { runPaymentOcr } from "./payment-ocr";
 import { weeklyReports } from "../roadmap/jobs";
 import { notify, notifyPayer } from "../notify";
 import { pluralForm } from "@/lib/i18n/dict";
@@ -171,58 +171,69 @@ export async function submitProof(id: string, actor: Pick<User, "id" | "role">, 
   const text = proof.text?.trim().slice(0, 1000) || null;
   const upload = proof.file ? await paymentUploadForWrite(proof.file, id, "proof", actor.id) : null;
   if (proof.file && !upload) return { ok: false, error: "file" } as const;
-  if (upload && fileUrl(upload.path) === inv.proofFile && text === inv.proofText &&
+  const ref = upload ? fileUrl(upload.path) : null;
+  if ((ref || text) && ref === inv.proofFile && text === inv.proofText &&
       (inv.status === "PROOF_SENT" || inv.status === "PAID")) return { ok: true, auto: inv.autoAccepted } as const;
-  if (inv.status === "PAID") return { ok: false, error: "not found" } as const;
-  if (upload && upload.paymentRevision !== inv.revision) return { ok: false, error: "stale" } as const;
-  const content = upload ? await readPaymentDocument(upload) : null;
-  if (upload && !content) return { ok: false, error: "file" } as const;
+  if (inv.status !== "SENT" || upload && upload.paymentRevision !== inv.revision) return { ok: false, error: "stale" } as const;
+  const artifact = upload ? await usablePaymentUpload(upload) : null;
+  if (upload && !artifact || !upload && !text) return { ok: false, error: "file" } as const;
 
-  const writable = {
-    id,
-    ...invoiceDocumentAccess(actor),
-    studentId: inv.studentId,
-    status: inv.status,
-    revision: inv.revision,
-  };
-  let read: { source: "text" | "screenshot"; matches: boolean; code?: "EMPTY" | "FAILED" };
-  if (text) {
-    const found = amountsIn(text);
-    read = { source: "text", matches: found.includes(inv.amount) };
-  } else {
-    if (!content) return { ok: false, error: "file" } as const;
-    const current = await db.invoice.findFirst({ where: writable, select: { student: { select: { teacherId: true } } } });
-    if (!current) return { ok: false, error: "not found" } as const;
-    read = { source: "screenshot", matches: false };
-    try {
-      const seen = await ocr(content.buf, content.mime, { userId: actor.id, teacherId: current.student.teacherId }, { confidential: true });
-      read = { source: "screenshot", matches: amountsIn(seen).includes(inv.amount), ...(seen.trim() ? {} : { code: "EMPTY" as const }) };
-    } catch { read.code = "FAILED"; }
-  }
-
-  const matches = read.matches;
-  const fresh = await db.$transaction(async (tx) => {
-    if (!await lockStudentBilling(tx, inv.studentId)) return null;
+  const ocrCopy = !text && artifact?.ocr || null;
+  const matchFromText = !!text && amountsIn(text).includes(inv.amount);
+  const initialRead = text ? { source: "text", matches: matchFromText }
+    : { source: "screenshot", matches: false, code: ocrCopy ? "PENDING" : "UNSUPPORTED" };
+  const scope = { id, ...invoiceDocumentAccess(actor), studentId: inv.studentId };
+  const saved = await db.$transaction(async (tx) => {
+    if (!await lockStudentBilling(tx, inv.studentId)) return false;
+    if (upload && await tx.invoiceDocumentVersion.findUnique({ where: { uploadId: upload.id } })) return false;
     const change = await tx.invoice.updateMany({
-      where: writable,
+      where: { ...scope, status: "SENT", revision: inv.revision },
       data: {
-        status: "PROOF_SENT", proofKind: upload ? "screenshot" : "text",
-        proofFile: upload ? fileUrl(upload.path) : null, proofText: text, proofAt: new Date(), aiRead: read,
-        revision: { increment: 1 },
+        status: "PROOF_SENT", proofKind: upload ? "screenshot" : "text", proofFile: ref,
+        proofText: text, proofAt: new Date(), aiRead: initialRead, revision: { increment: 1 },
       },
     });
-    if (!change.count) return null;
-    if (matches) await acceptInvoiceInTransaction(tx, inv, true);
-    const student = await tx.student.findUniqueOrThrow({ where: { id: inv.studentId }, select: { teacherId: true, name: true } });
+    if (!change.count) return false;
+    if (upload) {
+      await tx.invoiceDocumentVersion.create({
+        data: { uploadId: upload.id, invoiceId: id, kind: "PROOF", previous: inv.proofFile, actorId: actor.id },
+      });
+      if (ocrCopy) await tx.paymentOcrAttempt.create({ data: { uploadId: upload.id, invoiceId: id, amount: inv.amount, code: "RUNNING" } });
+    }
+    if (matchFromText) await acceptInvoiceInTransaction(tx, inv, true);
     await notify({
-      userId: student.teacherId, kind: "payment",
-      title: `${student.name} ${matches ? "оплатил(а)" : "прислал(а) подтверждение оплаты"}: ${new Intl.NumberFormat("ru-RU").format(inv.amount)} ₽`,
-      action: matches ? "review" : "check_screenshot", link: "/teacher/finance?tab=check",
+      userId: inv.student.teacherId, kind: "payment",
+      title: `${inv.student.name} ${matchFromText ? "оплатил(а)" : "прислал(а) подтверждение оплаты"}: ${new Intl.NumberFormat("ru-RU").format(inv.amount)} ₽`,
+      action: matchFromText ? "review" : "check_screenshot", link: "/teacher/finance?tab=check",
     }, tx);
     return true;
   });
-  if (!fresh) return { ok: false, error: "not found" } as const;
-  return { ok: true, auto: matches } as const;
+
+  if (!saved) {
+    const current = await db.invoice.findFirst({ where: scope });
+    if ((ref || text) && current?.proofFile === ref && current.proofText === text &&
+        (current.status === "PROOF_SENT" || current.status === "PAID")) return { ok: true, auto: current.autoAccepted } as const;
+    return { ok: false, error: "stale" } as const;
+  }
+  if (!ocrCopy || !upload) return { ok: true, auto: matchFromText } as const;
+
+  const expected = { ...scope, status: "PROOF_SENT" as const, revision: inv.revision + 1, proofFile: ref };
+  const outcome = await runPaymentOcr(upload.id, expected, ocrCopy, { userId: actor.id, teacherId: inv.student.teacherId },
+    (seen) => amountsIn(seen).includes(inv.amount));
+  const auto = await db.$transaction(async (tx) => {
+    await tx.paymentOcrAttempt.updateMany({
+      where: { uploadId: upload.id, code: "RUNNING" },
+      data: { code: outcome.code, matches: outcome.matches, completedAt: new Date() },
+    });
+    if (!await lockStudentBilling(tx, inv.studentId)) return false;
+    const updated = await tx.invoice.updateMany({
+      where: expected, data: { aiRead: { source: "screenshot", ...outcome }, revision: { increment: 1 } },
+    });
+    if (!updated.count || !outcome.matches) return false;
+    await acceptInvoiceInTransaction(tx, inv, true);
+    return true;
+  });
+  return { ok: true, auto } as const;
 }
 
 // ───────── Плановые задачи (раз в минуту) ─────────

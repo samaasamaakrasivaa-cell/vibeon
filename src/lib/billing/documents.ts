@@ -1,8 +1,9 @@
 import "server-only";
 import type { Invoice, Prisma, User } from "@prisma/client";
 import { db } from "../db";
-import { fileUrl, readStored } from "../storage";
-import { inspectPaymentDocument, paymentDocumentExtension } from "./document-content";
+import { fileUrl } from "../storage";
+import { paymentDocumentExtension } from "./document-content";
+import { hasPaymentBlob, paymentArtifact } from "./payment-artifacts";
 
 export const paymentKinds = { proof: "PROOF", receipt: "RECEIPT" } as const;
 export type PaymentDocument = keyof typeof paymentKinds;
@@ -33,10 +34,9 @@ export async function paymentUploadForWrite(uploadId: string, invoiceId: string,
   return upload && paymentDocumentExtension(upload.mime) ? upload : null;
 }
 
-export async function readPaymentDocument(upload: { path: string; mime: string; size: number }) {
-  const stored = await readStored(upload.path);
-  if (!stored || stored.size !== upload.size) return null;
-  return inspectPaymentDocument(stored.buf, upload.mime);
+export async function usablePaymentUpload(upload: { paymentArtifact: Prisma.JsonValue | null }) {
+  const artifact = paymentArtifact(upload.paymentArtifact);
+  return artifact && await hasPaymentBlob(artifact.document) ? artifact : null;
 }
 
 export async function currentPaymentDocument(invoiceId: string, kind: PaymentDocument, uploadId: string, actor: Pick<User, "id" | "role">) {
@@ -56,23 +56,34 @@ type InvoiceDocumentView = Pick<Invoice, "id" | "proofFile" | "receiptFile"> & {
   student: { userId: string | null; teacherId: string };
 };
 
-export async function invoiceDocumentLinks(invoices: InvoiceDocumentView[]) {
+export async function invoiceDocumentStates(invoices: InvoiceDocumentView[]) {
   const paths = invoices.flatMap(({ proofFile, receiptFile }) =>
     [proofFile, receiptFile].flatMap((url) => url?.startsWith("/api/files/") ? [url.slice("/api/files/".length)] : []));
   const uploads = paths.length
     ? await db.upload.findMany({
       where: { path: { in: [...new Set(paths)] }, paymentKind: { in: ["PROOF", "RECEIPT"] } },
-      select: { id: true, path: true, ownerId: true, paymentKind: true, paymentInvoiceId: true, mime: true },
+      select: { id: true, path: true, ownerId: true, paymentKind: true, paymentInvoiceId: true, paymentArtifact: true },
     })
     : [];
-  const byUrl = new Map(uploads.map((upload) => [fileUrl(upload.path), upload]));
+  const states = new Map();
+  for (const upload of uploads) {
+    states.set(fileUrl(upload.path), { upload, pending: upload.paymentArtifact === null, available: !!await usablePaymentUpload(upload) });
+  }
+  const versions = uploads.length ? await db.invoiceDocumentVersion.findMany({
+    where: { uploadId: { in: uploads.map((upload) => upload.id) }, restored: true },
+    select: { uploadId: true, changedAt: true },
+  }) : [];
+  const restored = new Map(versions.map((v) => [v.uploadId, v.changedAt]));
 
-  return (invoice: InvoiceDocumentView, kind: PaymentDocument) => {
+  return (invoice: InvoiceDocumentView, kind: PaymentDocument): { href: string | null; pending: boolean; restoredAt?: Date } => {
     const ref = invoice[paymentDocumentField(kind)];
-    const upload = ref && byUrl.get(ref);
+    const state = ref ? states.get(ref) : undefined;
+    const upload = state?.upload;
     const ownerId = kind === "proof" ? invoice.student.userId : invoice.student.teacherId;
-    if (!upload || upload.paymentKind !== paymentKinds[kind] || upload.paymentInvoiceId !== invoice.id ||
-        upload.ownerId !== ownerId || !paymentDocumentExtension(upload.mime)) return null;
-    return `/api/billing/documents/${invoice.id}/${kind}/${upload.id}`;
+    if (!state || !upload || upload.paymentKind !== paymentKinds[kind] || upload.paymentInvoiceId !== invoice.id || upload.ownerId !== ownerId) {
+      return { href: null, pending: false };
+    }
+    return { href: state.available ? `/api/billing/documents/${invoice.id}/${kind}/${upload.id}` : null,
+      pending: state.pending, restoredAt: restored.get(upload.id) };
   };
 }

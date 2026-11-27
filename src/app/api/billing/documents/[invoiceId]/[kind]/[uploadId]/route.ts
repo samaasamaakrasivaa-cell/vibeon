@@ -1,6 +1,7 @@
 import { getSessionUser } from "@/lib/auth/session";
 import { paymentDocumentExtension } from "@/lib/billing/document-content";
-import { currentPaymentDocument, parsePaymentDocument, readPaymentDocument } from "@/lib/billing/documents";
+import { currentPaymentDocument, parsePaymentDocument } from "@/lib/billing/documents";
+import { hasPaymentBlob, paymentArtifact, streamPaymentBlob } from "@/lib/billing/payment-artifacts";
 
 type Params = { params: Promise<{ invoiceId: string; kind: string; uploadId: string }> };
 const headers = {
@@ -17,16 +18,23 @@ export async function GET(req: Request, { params }: Params) {
   const kind = parsePaymentDocument(rawKind);
   if (!actor || !kind) return missing();
   const upload = await currentPaymentDocument(invoiceId, kind, uploadId, actor);
-  if (!upload) return missing();
-  const content = await readPaymentDocument(upload);
-  if (!content) return missing();
+  const artifact = paymentArtifact(upload?.paymentArtifact);
+  if (!artifact) return missing();
 
-  return new Response(req.method === "HEAD" ? null : new Uint8Array(content.buf), {
+  const document = artifact.document;
+  let body = null;
+  if (req.method === "HEAD") {
+    if (!await hasPaymentBlob(document)) return missing();
+  } else {
+    body = await streamPaymentBlob(document);
+    if (!body) return missing();
+  }
+  return new Response(body, {
     headers: {
       ...headers,
-      "Content-Type": content.mime,
-      "Content-Length": String(content.buf.length),
-      "Content-Disposition": `attachment; filename="${kind}.${paymentDocumentExtension(content.mime)}"`,
+      "Content-Type": document.mime,
+      "Content-Length": String(document.size),
+      "Content-Disposition": `attachment; filename="${kind}.${paymentDocumentExtension(document.mime)}"`,
       "Accept-Ranges": "none",
     },
   });
