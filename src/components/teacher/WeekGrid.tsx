@@ -1,11 +1,12 @@
 "use client";
-import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { useEffect, useId, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Dialog } from "../Dialog";
 import { confirmLessonPaid, undoLessonPaid } from "@/lib/billing/actions";
 import { Icon } from "../Icon";
 import { useT } from "@/lib/i18n/client";
+import { scheduleRangeMinutes } from "@/lib/teacher/schedule-range";
 import {
   createLesson, createTimeOff, deleteLesson, deleteTimeOff, makeWeekly, moveLesson, saveLessonNote, setCallLink, setLessonPrice, setLessonStatus, updateTimeOff, type Result,
 } from "@/lib/teacher/actions";
@@ -23,7 +24,9 @@ export type GridLesson = {
 export type GridStudent = { id: string; name: string; initials: string };
 /** Нерабочее время учителя (выходной, свои дела): закрашенный блок в сетке. */
 export type GridOff = { id: string; day: number; date: string; startMin: number; endMin: number; start: string; end: string; weekly: boolean; note: string | null };
-type OffDraft = { id?: string; date: string; start: string; end: string; weekly: boolean; note: string };
+type TimeRange = { start: string; end: string };
+type LessonTime = { date: string; start: string; end?: string };
+type OffDraft = TimeRange & { id?: string; date: string; weekly: boolean; note: string };
 const hm = (m: number) => `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
 const toMin = (s: string) => { const [h, m] = s.split(":").map(Number); return h * 60 + (m || 0); };
 type Day = { iso: string; dow: string; num: number; today: boolean; past: boolean; earned: string | null; tip?: string };
@@ -49,7 +52,7 @@ export function WeekGrid(props: {
   }, [props.lessons]);
   const lessons = props.lessons.map((l) => (over[l.id] ? { ...l, ...over[l.id] } : l));
   const cancelled = lessons.filter((l) => l.status === "CANCELLED");
-  const [newAt, setNewAt] = useState<{ date: string; start: string } | null>(null);
+  const [newAt, setNewAt] = useState<LessonTime | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
   const open = lessons.find((l) => l.id === openId) ?? null;
 
@@ -75,10 +78,15 @@ export function WeekGrid(props: {
   const [off, setOff] = useState<OffDraft | null>(null); // окно «Нерабочее время»
   // выделение мышью: нажали на пустом месте и протянули — «Отметить как нерабочее время» или урок в это время
   const [sel, setSel] = useState<{ day: number; a: number; b: number } | null>(null);
-  const [picked, setPicked] = useState<{ day: number; from: number; to: number } | null>(null);
+  const [picked, setPicked] = useState<(TimeRange & { day: Day }) | null>(null);
+  const pickedInvalid = picked !== null && scheduleRangeMinutes(picked.start, picked.end) === null;
   const drag = useRef<{ day: number; y0: number; moved: boolean } | null>(null);
   const justDragged = useRef(false);
   const snap = (y: number) => Math.max(hourFrom * 60, Math.min(hourTo * 60, hourFrom * 60 + Math.round(((y / PX) * 60) / 15) * 15));
+  const selection = (y0: number, y: number) => {
+    const a = Math.min(snap(Math.min(y0, y)), hourTo * 60 - 15);
+    return { a, b: Math.max(snap(Math.max(y0, y)), a + 15) };
+  };
   const onDown = (e: React.PointerEvent<HTMLDivElement>, di: number) => {
     if (e.pointerType !== "mouse" || e.button !== 0 || (e.target as HTMLElement).closest(".lesson, .offblk")) return;
     const y = e.clientY - e.currentTarget.getBoundingClientRect().top;
@@ -90,16 +98,16 @@ export function WeekGrid(props: {
     const y = e.clientY - e.currentTarget.getBoundingClientRect().top;
     if (!d.moved && Math.abs(y - d.y0) < 8) return;
     if (!d.moved) { d.moved = true; e.currentTarget.setPointerCapture(e.pointerId); }
-    const a = snap(Math.min(d.y0, y)), b = snap(Math.max(d.y0, y));
-    setSel({ day: d.day, a, b: Math.max(b, a + 15) });
+    setSel({ day: d.day, ...selection(d.y0, y) });
   };
-  const onUp = () => {
+  const onUp = (e: React.PointerEvent<HTMLDivElement>) => {
     const d = drag.current;
     drag.current = null;
     if (!d?.moved) return;
     justDragged.current = true; // клик после протягивания — не «новый урок»
     setTimeout(() => { justDragged.current = false; }, 0);
-    if (sel) setPicked({ day: sel.day, from: sel.a, to: sel.b });
+    const { a, b } = selection(d.y0, e.clientY - e.currentTarget.getBoundingClientRect().top);
+    setPicked({ day: days[d.day], start: hm(a), end: hm(b) });
     setSel(null);
   };
   // перетаскивание урока мышью: зажали урок и тянем на другое время или день — тень показывает новое место;
@@ -245,13 +253,17 @@ export function WeekGrid(props: {
 
       {newAt && (
         <NewLessonDialog now={{ iso: props.todayIso, min: props.nowMin }} at={newAt} students={props.students} groups={props.groups ?? []} preset={props.preset} offs={offs} onClose={() => setNewAt(null)}
-          onMarkOff={(x) => { setNewAt(null); setOff({ date: x.date, start: x.start, end: hm(Math.min(24 * 60, toMin(x.start) + x.dur)), weekly: false, note: "" }); }} />
+          onMarkOff={(x) => { setNewAt(null); setOff({ ...x, weekly: false, note: "" }); }} />
       )}
       {picked && (
-        <Dialog open onClose={() => setPicked(null)} title={t("off.selected", { day: `${days[picked.day].dow} ${days[picked.day].num}`, from: hm(picked.from), to: hm(picked.to) })}>
-          <div className="flex flex-col gap-2">
-            <button type="button" className="btn primary w-full" onClick={() => { setOff({ date: days[picked.day].iso, start: hm(picked.from), end: hm(picked.to), weekly: false, note: "" }); setPicked(null); }}><Icon name="lockI" size="sm" />{t("off.mark")}</button>
-            <button type="button" className="btn secondary w-full" onClick={() => { setNewAt({ date: days[picked.day].iso, start: hm(picked.from) }); setPicked(null); }}><Icon name="plus" size="sm" />{t("off.newLesson")}</button>
+        <Dialog open onClose={() => setPicked(null)} title={t("off.selected", { day: `${picked.day.dow} ${picked.day.num}`, from: picked.start, to: picked.end })}>
+          <div className="flex flex-col gap-4">
+            <TimeRangeFields range={picked} onChange={(range) => setPicked({ day: picked.day, ...range })} />
+            {pickedInvalid && <p className="alert m-0" role="alert">{t("off.err")}</p>}
+            <div className="flex flex-col gap-2">
+              <button type="button" className="btn primary w-full" disabled={pickedInvalid} onClick={() => { setNewAt({ date: picked.day.iso, start: picked.start, end: picked.end }); setPicked(null); }}><Icon name="plus" size="sm" />{t("off.newLesson")}</button>
+              <button type="button" className="btn secondary w-full" disabled={pickedInvalid} onClick={() => { setOff({ date: picked.day.iso, start: picked.start, end: picked.end, weekly: false, note: "" }); setPicked(null); }}><Icon name="lockI" size="sm" />{t("off.mark")}</button>
+            </div>
           </div>
         </Dialog>
       )}
@@ -326,39 +338,54 @@ export function StudentPicker({ students, value, onChange, placeholder }: { stud
   );
 }
 
+function TimeRangeFields({ range, onChange }: { range: TimeRange; onChange: (range: TimeRange) => void }) {
+  const { t } = useT();
+  const id = useId();
+  return (
+    <div className="grid grid-cols-2 gap-3">
+      <div className="field">
+        <label htmlFor={`${id}-start`}>{t("off.from")}</label>
+        <input id={`${id}-start`} type="time" className="input" value={range.start} onChange={(e) => onChange({ start: e.target.value, end: range.end })} />
+      </div>
+      <div className="field">
+        <label htmlFor={`${id}-end`}>{t("off.to")}</label>
+        <input id={`${id}-end`} type="time" className="input" value={range.end === "24:00" ? "00:00" : range.end} onChange={(e) => onChange({ start: range.start, end: e.target.value === "00:00" ? "24:00" : e.target.value })} />
+      </div>
+    </div>
+  );
+}
+
 /** Нерабочее время: день, с … до, каждую неделю, что это. */
 function TimeOffDialog({ x, onClose }: { x: OffDraft; onClose: () => void }) {
   const { t, lang } = useT();
   const { pending, error, run } = useRun();
   const [v, setV] = useState(x);
+  const invalidTime = scheduleRangeMinutes(v.start, v.end) === null;
   const dow = new Date(`${v.date}T12:00:00Z`).toLocaleDateString(lang === "en" ? "en-GB" : "ru-RU", { weekday: "long", timeZone: "UTC" });
   const save = () => run(() => (x.id ? updateTimeOff(x.id, v) : createTimeOff(v)), onClose);
   return (
     <Dialog open onClose={onClose} title={t("off.title")}>
       <div className="flex flex-col gap-4">
         <div className="field"><label htmlFor="off-d">{t("sch.date")}</label><input id="off-d" type="date" className="input" value={v.date} onChange={(e) => setV({ ...v, date: e.target.value })} /></div>
-        <div className="grid grid-cols-2 gap-3">
-          <div className="field"><label htmlFor="off-a">{t("off.from")}</label><input id="off-a" type="time" step={900} className="input" value={v.start} onChange={(e) => setV({ ...v, start: e.target.value })} /></div>
-          <div className="field"><label htmlFor="off-b">{t("off.to")}</label><input id="off-b" type="time" step={900} className="input" value={v.end === "24:00" ? "23:59" : v.end} onChange={(e) => setV({ ...v, end: e.target.value })} /></div>
-        </div>
+        <TimeRangeFields range={v} onChange={(range) => setV({ ...v, ...range })} />
         <label className="setting">
           <span><span>{t("off.weekly", { dow })}</span><br /><span className="small muted">{t("off.weeklyHint")}</span></span>
           <span className="switch"><input type="checkbox" checked={v.weekly} onChange={(e) => setV({ ...v, weekly: e.target.checked })} /><span /></span>
         </label>
         <div className="field"><label htmlFor="off-n">{t("off.note")}</label><input id="off-n" className="input" value={v.note} maxLength={120} placeholder={t("off.notePh")} onChange={(e) => setV({ ...v, note: e.target.value })} /></div>
         <p className="hint m-0">{t("off.hint")}</p>
-        {error && <div className="alert">{error}</div>}
+        {(invalidTime || error) && <div className="alert" role="alert">{invalidTime ? t("off.err") : error}</div>}
       </div>
       <div className="actions">
         {x.id && <button type="button" className="btn plain bad mr-auto" disabled={pending} onClick={() => run(() => deleteTimeOff(x.id!), onClose)}>{x.weekly ? t("off.deleteSeries") : t("off.delete")}</button>}
         <button type="button" className="btn secondary" onClick={onClose}>{t("common.cancel")}</button>
-        <button type="button" className="btn primary" disabled={pending || !v.date || !v.start || !v.end} onClick={save}>{t("off.save")}</button>
+        <button type="button" className="btn primary" disabled={pending || !v.date || invalidTime} onClick={save}>{t("off.save")}</button>
       </div>
     </Dialog>
   );
 }
 
-function NewLessonDialog({ at, students, groups, preset, onClose, now, offs = [], onMarkOff }: { at: { date: string; start: string }; students: GridStudent[]; groups: GridStudent[]; preset?: { studentId?: string; groupId?: string; trial?: boolean; date?: string }; onClose: () => void; now: { iso: string; min: number }; offs?: GridOff[]; onMarkOff?: (x: { date: string; start: string; dur: number }) => void }) {
+function NewLessonDialog({ at, students, groups, preset, onClose, now, offs = [], onMarkOff }: { at: LessonTime; students: GridStudent[]; groups: GridStudent[]; preset?: { studentId?: string; groupId?: string; trial?: boolean; date?: string }; onClose: () => void; now: { iso: string; min: number }; offs?: GridOff[]; onMarkOff?: (x: TimeRange & { date: string }) => void }) {
   const { t } = useT();
   const { pending, error, run } = useRun();
   const [studentId, setStudentId] = useState<string | null>(preset?.studentId ?? null);
@@ -369,16 +396,20 @@ function NewLessonDialog({ at, students, groups, preset, onClose, now, offs = []
   const [trialName, setTrialName] = useState("");
   const [date, setDate] = useState(at.date);
   const [start, setStart] = useState(at.start);
-  const [dur, setDur] = useState(60);
+  const [end, setEnd] = useState(at.end);
+  const [presetDuration, setPresetDuration] = useState(60);
+  const duration = end === undefined ? presetDuration : scheduleRangeMinutes(start, end);
+  const invalidTime = !date || !start || duration === null;
   const [repeat, setRepeat] = useState(false);
   const [paid, setPaid] = useState(false); // пробный урок по умолчанию бесплатный
   const [price, setPrice] = useState("");
   const needName = trial && !studentId;
   // прошло ли выбранное время — по часам учителя
-  const [hh, mm] = (start || "00:00").split(":").map(Number);
-  const inPast = date < now.iso || (date === now.iso && hh * 60 + mm < now.min);
+  const startMin = toMin(start);
+  const inPast = !invalidTime && (date < now.iso || (date === now.iso && startMin < now.min));
   // попали на нерабочее время — предупреждаем (не запрещаем)
-  const clash = offs.find((o) => o.date === date && hh * 60 + mm < o.endMin && hh * 60 + mm + dur > o.startMin);
+  const clash = duration === null || invalidTime ? null : offs.find((o) => o.date === date && startMin < o.endMin && startMin + duration > o.startMin);
+  const timing = { date, start, ...(end === undefined ? { durationMin: presetDuration } : { end }) };
   return (
     <Dialog open onClose={onClose} title={t("sch.new")}>
       <div className="flex flex-col gap-4">
@@ -420,20 +451,23 @@ function NewLessonDialog({ at, students, groups, preset, onClose, now, offs = []
             <p className="hint mt-2 mb-0">{paid ? t("sch.trialPaidHint") : t("sch.trialHint")}</p>
           </div>
         )}
-        <div className="grid grid-cols-2 gap-3">
+        <div className={end === undefined ? "grid grid-cols-2 gap-3" : "flex flex-col gap-3"}>
           <div className="field"><label htmlFor="nd">{t("sch.date")}</label><input id="nd" type="date" className="input" value={date} onChange={(e) => setDate(e.target.value)} /></div>
-          <div className="field"><label htmlFor="ns">{t("sch.start")}</label><input id="ns" type="time" step={300} className="input" value={start} onChange={(e) => setStart(e.target.value)} /></div>
+          {end === undefined
+            ? <div className="field"><label htmlFor="ns">{t("sch.start")}</label><input id="ns" type="time" step={300} className="input" value={start} onChange={(e) => setStart(e.target.value)} /></div>
+            : <TimeRangeFields range={{ start, end }} onChange={(range) => { setStart(range.start); setEnd(range.end); }} />}
         </div>
+        {end !== undefined && duration === null && <div className="alert m-0" role="alert">{t("off.err")}</div>}
         {inPast && <div className="alert -mt-1 m-0" role="alert">{t("sch.pastWarn")}</div>}
         {clash && <div className="alert calm -mt-1 m-0" role="alert">{t("off.clash", { note: clash.note || `${clash.start}–${clash.end}` })}</div>}
-        <div className="field">
+        {end === undefined && <div className="field">
           <span className="flabel">{t("sch.length")}</span>
           <div className="seg">
             {[45, 60, 90, 120].map((m) => (
-              <button key={m} type="button" aria-pressed={dur === m} onClick={() => setDur(m)}>{m} {t("dash.min")}</button>
+              <button key={m} type="button" aria-pressed={presetDuration === m} onClick={() => setPresetDuration(m)}>{m} {t("dash.min")}</button>
             ))}
           </div>
-        </div>
+        </div>}
         {!trial && (
           <label className="setting">
             <span>{t("sch.repeat")}</span>
@@ -443,13 +477,13 @@ function NewLessonDialog({ at, students, groups, preset, onClose, now, offs = []
         {error && <div className="alert">{error}</div>}
       </div>
       {/* слот можно не занимать уроком, а отметить нерабочим */}
-      {onMarkOff && <button type="button" className="btn plain sm offmark" onClick={() => onMarkOff({ date, start, dur })}><Icon name="lockI" size="sm" />{t("off.mark")}</button>}
+      {onMarkOff && <button type="button" className="btn plain sm offmark" disabled={pending || invalidTime} onClick={() => onMarkOff({ date, start, end: end ?? hm(Math.min(24 * 60, startMin + presetDuration)) })}><Icon name="lockI" size="sm" />{t("off.mark")}</button>}
       <div className="actions">
         <button type="button" className="btn secondary" onClick={onClose}>{t("common.cancel")}</button>
         <button
           type="button" className="btn primary"
-          disabled={pending || (kind === "group" && !trial && !groupId)}
-          onClick={() => run(() => createLesson(kind === "group" && !trial ? { groupId, isTrial: false, date, start, durationMin: dur, repeat } : { studentId, isTrial: trial, trialName, date, start, durationMin: dur, repeat, trialPrice: trial && paid ? Number(price) || 0 : 0 }), onClose)}
+          disabled={pending || invalidTime || (kind === "group" && !trial && !groupId)}
+          onClick={() => run(() => createLesson(kind === "group" && !trial ? { ...timing, groupId, isTrial: false, repeat } : { ...timing, studentId, isTrial: trial, trialName, repeat, trialPrice: trial && paid ? Number(price) || 0 : 0 }), onClose)}
         >
           {t("sch.add")}
         </button>
