@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "mode": "probe",
+  "authorized_author": "samaasamaakrasivaa-cell",
+  "readiness_marker": "[VIBEON-AUTO: READY]",
+  "manual_issue_numbers": [2, 7, 8, 16, 18],
+  "lease": null,
+  "checkpoint": null,
+  "last_probe": {
+    "github_read": "passed",
+    "command_execution": "passed",
+    "completed_at": "2026-11-27T14:08:55Z",
+    "github_write": "not_tested",
+    "lease_cas": "not_tested",
+    "delegation": "not_tested"
+  }
+}
