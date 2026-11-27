@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
-"""Pure plan tests: no Docker, SSH, Git mutations or production access."""
+"""Plan/key-format tests: no Docker, network, Git mutations or production access."""
 import importlib.util
 import hashlib
 import json
+import os
 from pathlib import Path
+import shutil
+import subprocess
 import sys
 import tempfile
 import types
@@ -34,6 +37,37 @@ def ancestor(base, head):
 
 
 class PlanTest(unittest.TestCase):
+    @unittest.skipUnless(shutil.which("ssh-keygen"), "OpenSSH key parser required")
+    def test_secret_without_final_newline_remains_valid_openssh_key(self):
+        with tempfile.TemporaryDirectory() as directory:
+            original = Path(directory) / "generated"
+            subprocess.run(["ssh-keygen", "-q", "-t", "ed25519", "-N", "", "-f", str(original)],
+                           check=True, capture_output=True, timeout=10)
+            expected = subprocess.run(["ssh-keygen", "-y", "-P", "", "-f", str(original)],
+                                      check=True, capture_output=True, timeout=10).stdout
+            secret = original.read_text().rstrip("\n")
+            original.write_text(secret)
+            # Prove the original missing-newline behavior is the failing case.
+            unnormalized = subprocess.run(["ssh-keygen", "-y", "-P", "", "-f", str(original)],
+                                          capture_output=True, timeout=10)
+            self.assertNotEqual(unnormalized.returncode, 0)
+            def local_only(args, reason, **options):
+                self.assertEqual(args[0], "ssh-keyscan")
+                return b"synthetic.invalid ssh-ed25519 synthetic-fixture\n"
+
+            for suffix in ("", "\n"):
+                supplied = secret + suffix
+                with self.subTest(already_has_newline=bool(suffix)):
+                    with patch.dict(os.environ, {"SSH_KEY": supplied, "SSH_HOST": "synthetic.invalid"}), patch.object(delivery, "command", side_effect=local_only):
+                        connection = delivery.Connection(Path(directory) / ("connection-existing" if suffix else "connection-missing"))
+                    saved = connection.directory / "id"
+                    actual = subprocess.run(["ssh-keygen", "-y", "-P", "", "-f", str(saved)],
+                                            check=True, capture_output=True, timeout=10).stdout
+                    self.assertEqual(actual, expected)
+                    self.assertEqual(saved.read_text(), supplied + "\n")
+                    self.assertEqual(saved.stat().st_mode & 0o777, 0o600)
+                    self.assertEqual(connection.directory.stat().st_mode & 0o777, 0o700)
+
     def plan(self, state):
         return delivery.make_plan(POLICY, TARGET, state, ancestor)
 
