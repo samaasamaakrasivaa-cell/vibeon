@@ -52,7 +52,7 @@ export function StudentWeek({ days, lessons, hourFrom, hourTo, nowDay, nowMin, t
           <section className="card mt-4">
             <h2 className="m-0">{t("sts.studyTitle")}</h2>
             <p className="muted mt-2 mb-4">{t("sts.lead")}</p>
-            {study && <div className="flex flex-wrap gap-2">
+            {study && <div className="study-actions flex flex-wrap gap-2">
               <button className="btn primary" onClick={() => addStudy()}><Icon name="plus" size="sm" />{t("sts.planStudy")}</button>
               <button className="btn secondary" onClick={() => setReq(t("sts.reqTextAny"))}><Icon name="plus" size="sm" />{t("sts.extra")}</button>
             </div>}
