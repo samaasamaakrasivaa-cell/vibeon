@@ -7,8 +7,8 @@
   "progress": {
     "base_sha": "58ead57015f67ea5281af520fe7fcf46d68219d5",
     "branch": "codex/teacher/courses-tests-navigation",
-    "next": "Реализация и проверка двух разделов кабинета",
-    "stage": "implementation"
+    "next": "Владелец переслал поручение в свой рабочий чат Teacher. Работа в исходном чате остановлена, формальная передача владения не оформлялась.",
+    "stage": "blocked"
   },
   "release": null,
   "source": "direct",
