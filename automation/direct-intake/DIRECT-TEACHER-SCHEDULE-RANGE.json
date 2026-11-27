@@ -14,7 +14,25 @@
     "stage": "publication",
     "test_run": 46051707316
   },
-  "release": null,
+  "release": {
+    "ci": {
+      "result": "success",
+      "run": 46051707316,
+      "sha": "c369eada853840d8a9c54c9bd770254ae6e832e6"
+    },
+    "delivery": {
+      "result": "success",
+      "run": 46052947764,
+      "sha": "dcb4a922e040838d15f22f75216c32ad3ab537c6"
+    },
+    "owner_note": "Для владельца: Кабинет преподавателя и расписание — После выделения интервала можно изменить начало и конец, затем создать урок или отметить это время нерабочим.",
+    "review": {
+      "comment": 7225836996,
+      "result": "success",
+      "sha": "c369eada853840d8a9c54c9bd770254ae6e832e6"
+    },
+    "site_sha": "dcb4a922e040838d15f22f75216c32ad3ab537c6"
+  },
   "source": "direct",
   "version": 1
 }
