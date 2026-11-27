@@ -8,12 +8,14 @@ on:
       - .github/workflows/delivery-preflight.yml
       - deploy/release-preflight.sh
       - scripts/test-release-preflight.py
+      - deploy/release-policy.json
   push:
     branches: [main]
     paths:
       - .github/workflows/delivery-preflight.yml
       - deploy/release-preflight.sh
       - scripts/test-release-preflight.py
+      - deploy/release-policy.json
   workflow_dispatch:
 
 permissions:
@@ -78,4 +80,5 @@ jobs:
             "$SSH_HOST" "$DELIVERY_SSH_DIR" "$DELIVERY_SSH_DIR" > "$DELIVERY_SSH_DIR/config"
           # Only the allowlisted JSON summary reaches Actions. No server logs,
           # credentials, student records, complete inspect output or backups.
-          ssh -F "$DELIVERY_SSH_DIR/config" srv bash -s < deploy/release-preflight.sh
+          DELIVERY_PROXY_IMAGE=$(python3 -c 'import json,re; from pathlib import Path; p=Path("deploy/release-policy.json"); v=(json.loads(p.read_text()).get("shared_proxy_image") or "") if p.exists() else ""; assert not v or re.fullmatch(r"sha256:[0-9a-f]{64}",v); print(v)')
+          ssh -F "$DELIVERY_SSH_DIR/config" srv "env VIBEON_EXPECTED_PROXY_IMAGE='$DELIVERY_PROXY_IMAGE' bash -s" < deploy/release-preflight.sh

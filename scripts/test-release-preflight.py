@@ -162,6 +162,37 @@ class PreflightTest(unittest.TestCase):
         self.containers.append(container(4, "app"))
         self.assertIn("expected_single_app_and_db", self.collect()["blockers"])
 
+    def test_proxy_requires_exact_image_and_every_safety_fact(self):
+        image = "sha256:" + "a" * 64
+        metadata = {"image_id": image, "family": "caddy", "command_is_caddy_run": True,
+                    "credential_env_check_available": True, "has_db_credential_env_keys": False,
+                    "mount_layout_check_available": True, "safe_mount_layout": True,
+                    "shares_db_volume": False, "shares_upload_volume": False}
+        self.assertTrue(preflight.trusted_proxy(metadata, image))
+        self.assertFalse(preflight.trusted_proxy(metadata, ""))
+        self.assertFalse(preflight.trusted_proxy(metadata, "sha256:" + "f" * 64))
+        for key, bad in (("family", "other"), ("command_is_caddy_run", False),
+                         ("credential_env_check_available", False), ("has_db_credential_env_keys", True),
+                         ("mount_layout_check_available", False), ("safe_mount_layout", False),
+                         ("shares_db_volume", True), ("shares_upload_volume", True)):
+            with self.subTest(key=key):
+                self.assertFalse(preflight.trusted_proxy({**metadata, key: bad}, image))
+
+    def test_qualified_proxy_identity_is_bound_without_exposing_ids(self):
+        peer = container(4, "shared-proxy")
+        peer["project"] = "other"
+        self.containers.append(peer)
+        metadata = {"image_id": peer["image"], "family": "caddy", "command_is_caddy_run": True,
+                    "credential_env_check_available": True, "has_db_credential_env_keys": False,
+                    "mount_layout_check_available": True, "safe_mount_layout": True,
+                    "shares_db_volume": False, "shares_upload_volume": False}
+        with patch.dict(os.environ, {"VIBEON_EXPECTED_PROXY_IMAGE": peer["image"]}), patch.object(preflight, "peer_metadata", return_value=metadata):
+            report = self.collect()
+        self.assertEqual(report["status"], "observed")
+        self.assertEqual(report["checks"]["trusted_proxy_count"], 1)
+        self.assertEqual(report["checks"]["trusted_proxy_ids_sha256"], preflight.hashlib.sha256(peer["id"].encode()).hexdigest())
+        self.assertNotIn(peer["id"], json.dumps(report))
+
     def test_unhealthy_site_blocks(self):
         self.health["ok"] = False
         self.assertIn("health_unavailable", self.collect()["blockers"])

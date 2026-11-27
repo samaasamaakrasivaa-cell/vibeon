@@ -2,7 +2,7 @@
 # VibeOn — управление на сервере. Всё работает в контейнерах проекта «vibeon» и не трогает другие контейнеры.
 #
 #   bash deploy/vibeon.sh install [домен]   первая установка (без домена — временно по http://IP:порт)
-#   bash deploy/vibeon.sh update            забрать новую версию из GitHub и перезапустить
+#   Выпуск новой версии выполняет GitHub CI после проверок.
 #   bash deploy/vibeon.sh status | logs     состояние и журнал
 #   bash deploy/vibeon.sh backup            бэкап базы прямо сейчас
 #   bash deploy/vibeon.sh restore <файл>    восстановить базу из бэкапа
@@ -13,7 +13,11 @@
 set -euo pipefail
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ENV="$DIR/.env"
-dc() { docker compose -f "$DIR/docker-compose.prod.yml" --env-file "$ENV" "$@"; }
+dc() {
+  local args=(-f "$DIR/docker-compose.prod.yml" --env-file "$ENV")
+  [ ! -f "$DIR/release-image.json" ] || args+=(-f "$DIR/release-image.json")
+  docker compose "${args[@]}" "$@"
+}
 say() { printf '\n\033[1;34m▸ %s\033[0m\n' "$*"; }
 die() { printf '\n\033[1;31m✗ %s\033[0m\n' "$*" >&2; exit 1; }
 # порт занят: по ss, а если его нет — пробным подключением
@@ -28,7 +32,7 @@ need() {
 }
 mode_flags() { if [ "$(getv MODE)" = "https" ]; then echo "--profile https"; fi; }
 # NO_BUILD=1 — образ уже собран в GitHub Actions и загружен (на сервере мало памяти для сборки)
-build_flag() { if [ "${NO_BUILD:-}" = "1" ]; then echo "--no-build"; else echo "--build"; fi; }
+build_flag() { if [ "${NO_BUILD:-}" = "1" ] || [ -f "$DIR/release-image.json" ]; then echo "--no-build"; else echo "--build"; fi; }
 wait_ok() {
   local port; port="$(getv APP_PORT)"
   for _ in $(seq 1 60); do curl -fsS "http://127.0.0.1:$port/api/health" >/dev/null 2>&1 && return 0; sleep 3; done
@@ -86,6 +90,16 @@ TXT
 }
 
 cmd="${1:-help}"; shift || true
+# Share the release executor's lock. Nested calls inherit the same open lock.
+case "$cmd" in
+  install|domain|update|backup|restore|verify|set|setq|restart|stop)
+    if [ "${VIBEON_RELEASE_LOCK_HELD:-}" != 1 ]; then
+      exec 9>"$DIR/.release.lock"
+      flock -n 9 || die "Уже выполняется серверная операция VibeOn"
+      export VIBEON_RELEASE_LOCK_HELD=1
+    fi
+    ;;
+esac
 case "$cmd" in
   install)
     need
@@ -104,12 +118,7 @@ case "$cmd" in
     wait_ok || die "Приложение не отвечает: bash deploy/vibeon.sh logs"
     show_result;;
   update)
-    need
-    if [ -d "$DIR/../.git" ]; then say "Новая версия из GitHub"; git -C "$DIR/.." pull --ff-only; fi
-    say "Бэкап перед обновлением"; bash "$0" backup || true
-    # shellcheck disable=SC2046
-    dc $(mode_flags) up -d $(build_flag)
-    wait_ok && say "Обновлено: $(getv APP_URL)" || die "Приложение не отвечает: bash deploy/vibeon.sh logs";;
+    die "Выпуск выполняется через GitHub CI: проверенный образ, согласованная копия и совместимый откат. Команда update выведена из эксплуатации.";;
   status) dc ps; curl -fsS "http://127.0.0.1:$(getv APP_PORT)/api/health" && echo;;
   logs) dc logs --tail "${1:-200}" -f app;;
   backup)
@@ -129,12 +138,12 @@ case "$cmd" in
     [[ "${1:-}" == *=* ]] || die "Формат: set КЛЮЧ=значение"
     setv "${1%%=*}" "${1#*=}"
     # shellcheck disable=SC2046
-    dc $(mode_flags) up -d; say "Сохранено и перезапущено: ${1%%=*}";;
+    dc $(mode_flags) up -d --no-build; say "Сохранено и перезапущено: ${1%%=*}";;
   setq) # записать настройку без перезапуска и без вывода значения (для GitHub Actions)
     [[ "${1:-}" == *=* ]] || die "Формат: setq КЛЮЧ=значение"; setv "${1%%=*}" "${1#*=}";;
   restart)
     # shellcheck disable=SC2046
-    dc $(mode_flags) up -d --force-recreate app; wait_ok && say "Перезапущено: $(getv APP_URL)" || die "Приложение не отвечает: bash deploy/vibeon.sh logs";;
+    dc $(mode_flags) up -d --no-build --force-recreate app; wait_ok && say "Перезапущено: $(getv APP_URL)" || die "Приложение не отвечает: bash deploy/vibeon.sh logs";;
   stop) dc --profile https stop; say "Остановлено. Данные в томах vibeon_* сохранены.";;
   *) sed -n '2,13p' "$0";;
 esac

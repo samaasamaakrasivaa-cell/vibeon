@@ -14,6 +14,11 @@ DOMAIN="${1:?Укажите домен}"
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 say() { printf '\n\033[1;34m▸ %s\033[0m\n' "$*"; }
 die() { printf '\n\033[1;31m✗ %s\033[0m\n' "$*" >&2; exit 1; }
+if [ "${VIBEON_RELEASE_LOCK_HELD:-}" != 1 ]; then
+  exec 9>"$DIR/.release.lock"
+  flock -n 9 || die "Уже выполняется серверная операция VibeOn"
+  export VIBEON_RELEASE_LOCK_HELD=1
+fi
 
 C="$(docker ps --filter publish=443 --format '{{.Names}}' | head -1)"
 [ -n "$C" ] || die "Не найден контейнер, который держит порт 443"
@@ -88,7 +93,7 @@ bash "$DIR/vibeon.sh" setq "APP_BIND=$BIND"
 bash "$DIR/vibeon.sh" setq "DOMAIN=$DOMAIN"
 bash "$DIR/vibeon.sh" setq "APP_URL=https://$DOMAIN"
 bash "$DIR/vibeon.sh" setq "MODE=proxy"
-docker compose -f "$DIR/docker-compose.prod.yml" --env-file "$DIR/.env" up -d --no-build app >/dev/null 2>&1 || die "Не удалось перезапустить VibeOn"
+bash "$DIR/vibeon.sh" restart >/dev/null 2>&1 || die "Не удалось перезапустить VibeOn"
 for _ in $(seq 1 40); do probe "$TARGET" && break; sleep 3; done
 probe "$TARGET" || die "VibeOn не отвечает для Caddy ($TARGET): bash deploy/vibeon.sh logs"
 
