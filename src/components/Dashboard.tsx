@@ -19,7 +19,21 @@ import { addDaysIso, dayStart, hhmm, isoDay, mondayOf } from "@/lib/time";
 import { lessonInclude, lessonWho, oneSlot, syncSchedule } from "@/lib/teacher/data";
 import { initials } from "@/lib/invite";
 import { homeworkFor, type HwState } from "@/lib/homework";
-import type { User } from "@prisma/client";
+import { hasStartedLessonSession } from "@/lib/live/lesson-session";
+import type { LessonInstance, User } from "@prisma/client";
+
+type ScheduledLesson = Pick<LessonInstance, "startsAt" | "status" | "live">;
+
+function teacherLessonCardStatus(lesson: LessonInstance, host: ScheduledLesson | undefined, now: Date) {
+  if (!host || host.status !== lesson.status || +host.startsAt !== +lesson.startsAt) return;
+  if (hasStartedLessonSession(host)) {
+    if (lesson.status === "PLANNED") return "ACTIVE";
+    if (lesson.status === "DONE") return "DONE";
+  }
+  if (lesson.isTrial || lesson.movedFrom || lesson.groupId || lesson.slotId) return;
+  if (lesson.status === "DONE") return "DONE";
+  if (lesson.status === "PLANNED" && lesson.startsAt > now) return "PLANNED";
+}
 
 /** Главный экран «Обновления»: приветствие, часы, «Сегодня», неделя, «Что нового». */
 export async function Dashboard({ user, role, day, top }: { user: User; role: "TEACHER" | "STUDENT"; day?: string; top?: React.ReactNode }) {
@@ -52,6 +66,21 @@ export async function Dashboard({ user, role, day, top }: { user: User; role: "T
   const sel = day && day >= todayIso && day < addDaysIso(todayIso, 7) ? day : todayIso;
   const isToday = sel === todayIso;
   const todayLessons = lessons.filter((l) => isoDay(l.startsAt, tz) === sel);
+  const slotIds = role === "TEACHER" && isToday ? todayLessons.flatMap((l) => l.slotId ? [l.slotId] : []) : [];
+  // Как в classAccess: состояние группы принадлежит первому по id участнику этого слота.
+  const slotMembers = slotIds.length ? await db.lessonInstance.findMany({
+    where: { teacherId: user.id, slotId: { in: slotIds } },
+    orderBy: { id: "asc" },
+    select: { slotId: true, status: true, startsAt: true, live: true },
+  }) : [];
+  const hosts = new Map<string, ScheduledLesson>();
+  const inconsistentSlots = new Set<string>();
+  for (const member of slotMembers) {
+    if (!member.slotId) continue;
+    const host = hosts.get(member.slotId);
+    if (!host) hosts.set(member.slotId, member);
+    else if (member.status !== host.status || +member.startsAt !== +host.startsAt) inconsistentSlots.add(member.slotId);
+  }
   // подробности уроков выбранного дня: материал, абонемент, долг, первый урок, день рождения
   const extra = new Map((await db.lessonInstance.findMany({
     where: { id: { in: todayLessons.map((l) => l.id) } },
@@ -158,11 +187,14 @@ export async function Dashboard({ user, role, day, top }: { user: User; role: "T
           <div className="tlist">
             {todayLessons.map((l) => {
               const start = l.startsAt.getTime(), end = start + l.durationMin * 60000;
-              const live = start <= now.getTime() && now.getTime() < end;
+              const host = l.slotId ? hosts.get(l.slotId) : l;
+              const teacherLessonStatus = role === "TEACHER" && isToday && !(l.slotId && inconsistentSlots.has(l.slotId))
+                ? teacherLessonCardStatus(l, host, now) : undefined;
+              const studentLive = role === "STUDENT" && start <= now.getTime() && now.getTime() < end;
+              const live = studentLive || teacherLessonStatus === "ACTIVE";
               const inMin = Math.round((start - now.getTime()) / 60000);
-              const soon = inMin > 0 && inMin <= 60;
-              const showTeacherLessonStatus = role === "TEACHER" && isToday && !live && !l.movedFrom && !l.isTrial && !l.groupId && !l.slotId
-                && (l.status === "DONE" || (l.status === "PLANNED" && start > now.getTime()));
+              const soon = inMin > 0 && inMin <= 60
+                && (role === "STUDENT" || (l.status === "PLANNED" && teacherLessonStatus !== "ACTIVE"));
               const who = role === "TEACHER" ? lessonWho(l) : t("dash.lesson");
               const x = extra.get(l.id);
               const st = l.slotId ? null : x?.student; // у группы — без абонемента, долга и дня рождения одного ученика
@@ -172,12 +204,14 @@ export async function Dashboard({ user, role, day, top }: { user: User; role: "T
               const bday = st?.birthday && isoDay(st.birthday, "UTC").slice(5) === sel.slice(5);
               const first = !!st && !l.isTrial && st._count.lessons === 0;
               return (
-                <div key={l.id} className={`tl ${live ? "now" : soon ? "soon" : ""}`} data-teacher-lesson-status={showTeacherLessonStatus ? l.status : undefined}>
+                <div key={l.id} className={`tl ${studentLive ? "now" : soon ? "soon" : ""}`} data-teacher-lesson-status={teacherLessonStatus}>
                   <div className="tl-time">
-                    <b className={live ? "text-ok" : ""}>{hhmm(l.startsAt, tz)}</b>
+                    <b className={studentLive ? "text-ok" : ""}>{hhmm(l.startsAt, tz)}</b>
                     <span>{hhmm(new Date(end), tz)}</span>
                     {soon && <em className="text-accent">{t("today.startsIn", { n: inMin })}</em>}
-                    {live && <em className="text-ok">{t("today.live")}</em>}
+                    {live && <em className={studentLive ? "text-ok" : ""}>{t("today.live")}</em>}
+                    {teacherLessonStatus === "DONE" && <em>{t("sch.st.done")}</em>}
+                    {teacherLessonStatus === "PLANNED" && !soon && <em>{t("sch.st.planned")}</em>}
                   </div>
                   <div className="tl-main">
                     <div className="tl-who">

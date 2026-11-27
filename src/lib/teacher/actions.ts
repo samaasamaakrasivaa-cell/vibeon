@@ -7,6 +7,7 @@ import { db } from "../db";
 import { requireUser } from "../auth/session";
 import { fromZoned, parseIsoDay } from "../time";
 import { getT } from "../i18n/server";
+import { invalidateLessonSessions } from "../live/lesson-session";
 import { notify, notifyPayer } from "../notify";
 import { repriceLessons } from "../billing/engine";
 
@@ -185,7 +186,11 @@ export async function setLessonStatus(id: string, status: LessonStatus, charged 
   const teacher = await me();
   const l = await ownLesson(id, teacher.id);
   if (!["DONE", "MISSED", "CANCELLED", "PLANNED"].includes(status)) return { ok: false, error: "status" };
-  await db.lessonInstance.updateMany({ where: { id: { in: (await slotOf(l)).map((x) => x.id) } }, data: { status, charged: status === "MISSED" ? charged : status === "DONE" } });
+  const ids = (await slotOf(l)).map((x) => x.id);
+  await db.$transaction(async (tx) => {
+    await tx.lessonInstance.updateMany({ where: { id: { in: ids } }, data: { status, charged: status === "MISSED" ? charged : status === "DONE" } });
+    if (status !== "DONE") await invalidateLessonSessions(tx, ids);
+  });
   refresh(l.studentId);
   return { ok: true };
 }
@@ -200,9 +205,12 @@ export async function moveLesson(id: string, date: string, start: string, fix = 
   // fix — исправление ошибки (неверно поставили дату): не считается переносом и не попадает в статистику переносов.
   const past = startsAt.getTime() + l.durationMin * 60000 < Date.now();
   for (const x of await slotOf(l)) { // групповое занятие переносится целиком
-    await db.lessonInstance.update({
-      where: { id: x.id },
-      data: { startsAt, movedFrom: fix ? x.movedFrom : x.movedFrom ?? x.startsAt, seriesId: null, status: fix && past ? x.status : "PLANNED", ...(!past ? { deductedAt: null } : {}) },
+    await db.$transaction(async (tx) => {
+      await tx.lessonInstance.update({
+        where: { id: x.id },
+        data: { startsAt, movedFrom: fix ? x.movedFrom : x.movedFrom ?? x.startsAt, seriesId: null, status: fix && past ? x.status : "PLANNED", ...(!past ? { deductedAt: null } : {}) },
+      });
+      await invalidateLessonSessions(tx, [x.id]);
     });
     if (!past) await restorePackLesson(x);
   }

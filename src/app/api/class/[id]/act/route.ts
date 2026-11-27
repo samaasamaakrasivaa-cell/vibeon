@@ -7,6 +7,7 @@ import { getSessionUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { classAccess, type LiveState } from "@/lib/live/access";
 import { publish, withLock } from "@/lib/live/bus";
+import { startLessonSession } from "@/lib/live/lesson-session";
 import { inLessonNow } from "@/lib/student/in-lesson";
 import { rateLimit } from "@/lib/rate-limit";
 import { parse } from "@/lib/tasks/parse";
@@ -129,6 +130,13 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         return NextResponse.json({ ok: true });
       });
     }
+    case "startLessonSession": {
+      if (!teacher) return bad("teacher only");
+      const revision: unknown = body.revision;
+      if (body.startsAt !== host.startsAt.getTime() || (revision !== null && (typeof revision !== "string" || revision.length !== 36))) return bad("stale lesson");
+      if (!await startLessonSession(host.id, user.id, host.startsAt, revision)) return bad("stale lesson");
+      return NextResponse.json({ ok: true });
+    }
     // ── состояние урока: рубрика, «показать ученику», скрытые, таймер, доска…
     case "live": {
       if (!teacher) return bad("teacher only");
@@ -137,9 +145,14 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       const clean = Object.fromEntries(Object.entries(patch).filter(([k]) => allowed.includes(k as keyof LiveState)));
       if (JSON.stringify(clean).length > 60000) return bad("big");
       await withLock(`live:${host.id}`, async () => {
-        const fresh = await db.lessonInstance.findUnique({ where: { id: host.id }, select: { live: true } });
-        const live = { ...((fresh?.live as object) ?? {}), ...clean };
-        await db.lessonInstance.update({ where: { id: host.id }, data: { live: json(live), startedAt: host.startedAt ?? new Date() } });
+        await db.$transaction(async (tx) => {
+          const [fresh] = await tx.$queryRaw<{ live: Prisma.JsonValue; startedAt: Date | null }[]>`
+            SELECT "live", "startedAt" FROM "LessonInstance" WHERE "id" = ${host.id} FOR UPDATE
+          `;
+          if (!fresh) throw new Error("lesson not found");
+          const live = { ...((fresh.live as object) ?? {}), ...clean };
+          await tx.lessonInstance.update({ where: { id: host.id }, data: { live: json(live), startedAt: fresh.startedAt ?? new Date() } });
+        });
       });
       publish(ch, "live", clean);
       return NextResponse.json({ ok: true });
