@@ -8,9 +8,10 @@
     "base_sha": "58ead57015f67ea5281af520fe7fcf46d68219d5",
     "branch": "codex/teacher/inline-time-labels",
     "head_sha": "7acc95ef6cf0de627a451fbd60a80ff09d136bdd",
-    "next": "CI и ревью пройдены. Допуск Tech Lead и подтверждение публикации перед выпуском домашки",
+    "merge_sha": "286a35fe99f7fc3b79840806c3af121331dafa82",
+    "next": "Проверить штатный выпуск 46061725640 и точную версию на сайте",
     "pr": 71,
-    "stage": "integration",
+    "stage": "publication",
     "test_run": 46059890989
   },
   "release": null,
