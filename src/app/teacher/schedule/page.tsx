@@ -25,7 +25,11 @@ export default async function Schedule({ searchParams }: { searchParams: Promise
   const to = dayStart(addDaysIso(monday, 7), tz);
 
   const [rows, students, hws, groups, offRows] = await Promise.all([
-    db.lessonInstance.findMany({ where: { teacherId: me.id, startsAt: { gte: from, lt: to } }, include: lessonInclude, orderBy: { startsAt: "asc" } }),
+    db.lessonInstance.findMany({
+      where: { teacherId: me.id, startsAt: { gte: from, lt: to } },
+      include: { ...lessonInclude, student: { select: { ...lessonInclude.student.select, teacherId: true } } },
+      orderBy: { startsAt: "asc" },
+    }),
     db.student.findMany({ where: { teacherId: me.id, status: { in: ["ACTIVE", "INVITED"] } }, orderBy: [{ status: "asc" }, { name: "asc" }] }),
     homeworkFor({ teacherId: me.id }),
     db.group.findMany({ where: { teacherId: me.id }, include: { members: { include: { student: { select: { name: true, lastName: true } } } } }, orderBy: { title: "asc" } }),
@@ -54,7 +58,12 @@ export default async function Schedule({ searchParams }: { searchParams: Promise
   const priceRow = (l: (typeof rows)[number]) => ({ id: l.id, name: l.student ? [l.student.name, l.student.lastName].filter(Boolean).join(" ") : (l.trialName ?? "—"), price: l.price ?? 0, locked: locked.has(l.id), counts: earnedOf(l) > 0, pay: l.studentId ? payStateOf(l, invs) : null });
   // групповое занятие — одним блоком; у кого из группы урок — по урокам этого занятия
   const slotMembers = new Map<string, string[]>();
-  for (const l of rows) if (l.slotId && l.student) slotMembers.set(l.slotId, [...(slotMembers.get(l.slotId) ?? []), l.student.name]);
+  const slotAnalysis = new Map<string, string>();
+  for (const l of rows) {
+    if (!l.slotId || !l.student) continue;
+    slotMembers.set(l.slotId, [...(slotMembers.get(l.slotId) ?? []), l.student.name]);
+    if (l.status === "DONE" && l.student.teacherId === me.id && !slotAnalysis.has(l.slotId)) slotAnalysis.set(l.slotId, l.id);
+  }
   const hwOf = new Map(hws.map((h) => [h.lesson.id, h.state]));
 
   const loc = lang === "ru" ? "ru-RU" : "en-GB";
@@ -75,6 +84,7 @@ export default async function Schedule({ searchParams }: { searchParams: Promise
       isTrial: l.isTrial, isGroup: !!l.group, note: l.note, date: isoDay(l.startsAt, tz), start: hhmm(l.startsAt, tz), end: hhmm(end, tz),
       weekly: !!l.seriesId, past: end <= now, studentId: l.studentId, charged: l.charged, moved: !!l.movedFrom, price: l.price ?? 0,
       hw: hwOf.get(l.id) ?? null,
+      analysisLessonId: l.status === "DONE" ? (l.slotId ? slotAnalysis.get(l.slotId) : l.student?.teacherId === me.id ? l.id : undefined) : undefined,
       short: l.slotId ? undefined : shortOf(l),
       prices: (l.slotId ? rows.filter((x) => x.slotId === l.slotId) : [l]).map(priceRow),
       callLink: (l.groupId ? l.group?.callLink : l.student?.callLink) || l.callLink || null,
