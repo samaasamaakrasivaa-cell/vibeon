@@ -7,8 +7,11 @@
   "progress": {
     "base_sha": "71af5fe9a11f10e6e30fb871f8b930d786559838",
     "branch": "codex/ai-quality/lesson-observations",
-    "next": "Проверить два этапа выпуска наблюдений и учебного фокуса.",
-    "stage": "implementation"
+    "head_sha": "af7a78335e15d94aa4b4fee04afcdf6df8887b3f",
+    "next": "Дождаться точного CI и проверить совместимый образ отката, затем завершить выпуск.",
+    "pr": 82,
+    "stage": "review",
+    "test_run": 46067474586
   },
   "release": null,
   "source": "direct",
