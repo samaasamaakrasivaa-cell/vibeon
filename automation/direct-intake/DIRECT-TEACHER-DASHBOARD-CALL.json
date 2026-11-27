@@ -14,7 +14,25 @@
     "stage": "publication",
     "test_run": 46052853645
   },
-  "release": null,
+  "release": {
+    "ci": {
+      "result": "success",
+      "run": 46052853645,
+      "sha": "064352f35fbe1522eb4840e4fb20e68c2c8ac331"
+    },
+    "delivery": {
+      "result": "success",
+      "run": 46054067567,
+      "sha": "34d61672958edde1742eac6079bed0da747a22dd"
+    },
+    "owner_note": "Для владельца: Кабинет преподавателя и расписание — На главной кнопка «Открыть класс» стала заметнее. Рядом преподаватель может открыть видеозвонок или добавить ссылку для конкретного урока. Ученик видит ссылку в карточке своего урока.",
+    "review": {
+      "comment": 7226005757,
+      "result": "success",
+      "sha": "064352f35fbe1522eb4840e4fb20e68c2c8ac331"
+    },
+    "site_sha": "34d61672958edde1742eac6079bed0da747a22dd"
+  },
   "source": "direct",
   "version": 1
 }
