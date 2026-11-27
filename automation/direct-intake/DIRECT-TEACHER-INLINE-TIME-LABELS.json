@@ -8,9 +8,10 @@
     "base_sha": "58ead57015f67ea5281af520fe7fcf46d68219d5",
     "branch": "codex/teacher/inline-time-labels",
     "head_sha": "7acc95ef6cf0de627a451fbd60a80ff09d136bdd",
-    "next": "Независимое ревью и CI на точный SHA. Сверить порядок выпусков с Tech Lead",
+    "next": "CI и ревью пройдены. Допуск Tech Lead и подтверждение публикации перед выпуском домашки",
     "pr": 71,
-    "stage": "review"
+    "stage": "integration",
+    "test_run": 46059890989
   },
   "release": null,
   "source": "direct",
