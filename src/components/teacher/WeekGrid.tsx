@@ -350,14 +350,14 @@ function TimeRangeFields({ range, onChange }: { range: TimeRange; onChange: (ran
   const { t } = useT();
   const id = useId();
   return (
-    <div className="grid grid-cols-2 gap-3">
-      <div className="field">
-        <label htmlFor={`${id}-start`}>{t("off.from")}</label>
-        <input id={`${id}-start`} type="time" className="input" value={range.start} onChange={(e) => onChange({ start: e.target.value, end: range.end })} />
+    <div className="grid gap-2 min-[380px]:grid-cols-2">
+      <div className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-2">
+        <label htmlFor={`${id}-start`} className="flabel">{t("off.from")}</label>
+        <input id={`${id}-start`} type="time" className="input min-w-0 px-2!" value={range.start} onChange={(e) => onChange({ start: e.target.value, end: range.end })} />
       </div>
-      <div className="field">
-        <label htmlFor={`${id}-end`}>{t("off.to")}</label>
-        <input id={`${id}-end`} type="time" className="input" value={range.end === "24:00" ? "00:00" : range.end} onChange={(e) => onChange({ start: range.start, end: e.target.value === "00:00" ? "24:00" : e.target.value })} />
+      <div className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-2">
+        <label htmlFor={`${id}-end`} className="flabel">{t("off.to")}</label>
+        <input id={`${id}-end`} type="time" className="input min-w-0 px-2!" value={range.end === "24:00" ? "00:00" : range.end} onChange={(e) => onChange({ start: range.start, end: e.target.value === "00:00" ? "24:00" : e.target.value })} />
       </div>
     </div>
   );
