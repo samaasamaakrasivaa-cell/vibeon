@@ -31,6 +31,10 @@ jobs:
         run: |
           bash -n deploy/release-preflight.sh
           python3 scripts/test-release-preflight.py
+      - name: Exercise Docker metadata parsing on isolated fixtures
+        env:
+          CD01_REAL_DOCKER: '1'
+        run: python3 scripts/test-release-preflight.py DockerMetadataTest
 
   inspect:
     needs: validate

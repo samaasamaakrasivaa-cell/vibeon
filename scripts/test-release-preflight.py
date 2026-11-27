@@ -41,8 +41,9 @@ class PreflightTest(unittest.TestCase):
         if args[:2] == ("docker", "ps"):
             return "\n".join(c["id"] for c in self.containers)
         if args[:2] == ("docker", "inspect"):
-            self.assertNotIn(".Config.Env", args[3])
-            self.assertNotIn(".Source", args[3])
+            template = args[args.index("--format") + 1]
+            self.assertNotIn(".Config.Env", template)
+            self.assertNotIn(".Source", template)
             return "\n".join(json.dumps(c) for c in self.containers)
         if args[:2] == ("docker", "exec"):
             self.assertEqual(args[3:5], ("node", "-e"))
@@ -119,6 +120,45 @@ class PreflightTest(unittest.TestCase):
         self.assertEqual(json.loads(result.stdout)["status"], "blocked")
         self.assertNotIn(SECRET, result.stdout + result.stderr)
         self.assertEqual(result.stderr, "")
+
+
+@unittest.skipUnless(os.environ.get("CD01_REAL_DOCKER") == "1", "Docker integration runs in CI")
+class DockerMetadataTest(unittest.TestCase):
+    def test_unlabelled_and_labelled_containers_with_bind_mount(self):
+        # Exercise Docker's Go-template parser, rather than a mocked JSON reply.
+        # Fixtures never run, have no network and contain only synthetic values.
+        fixture_ids = []
+        with tempfile.TemporaryDirectory() as directory:
+            try:
+                subprocess.run(["docker", "pull", "busybox:1.36"], check=True,
+                               stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, timeout=90)
+                for labelled in (False, True):
+                    args = ["docker", "create", "--network", "none",
+                            "--mount", "type=bind,source=" + directory + ",target=/fixture,readonly",
+                            "--env", "SYNTHETIC_SECRET=" + SECRET]
+                    if labelled:
+                        args += ["--label", "com.docker.compose.project=vibeon",
+                                 "--label", "com.docker.compose.service=app"]
+                    args += ["busybox:1.36", "true"]
+                    created = subprocess.run(args, check=True, capture_output=True, text=True, timeout=30)
+                    fixture_id = created.stdout.strip()
+                    self.assertRegex(fixture_id, r"^[0-9a-f]{64}$")
+                    fixture_ids.append(fixture_id)
+                    observed = subprocess.run(
+                        ["docker", "inspect", "--type", "container", "--format", preflight.INSPECT, fixture_id],
+                        check=True, capture_output=True, text=True, timeout=30)
+                    metadata = json.loads(observed.stdout)
+                    self.assertEqual(metadata["project"], "vibeon" if labelled else None)
+                    self.assertIsNone(metadata["revision"])
+                    mount = next(m for m in metadata["mounts"] if m)
+                    self.assertEqual(mount["type"], "bind")
+                    self.assertIn(mount["name"], (None, ""))
+                    self.assertNotIn(SECRET, observed.stdout)
+                    self.assertNotIn(directory, observed.stdout)
+            finally:
+                for fixture_id in fixture_ids:
+                    subprocess.run(["docker", "rm", fixture_id], check=False,
+                                   stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=30)
 
 
 if __name__ == "__main__":
