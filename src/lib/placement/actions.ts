@@ -11,7 +11,7 @@ import { notify } from "../notify";
 import { rateLimit } from "../rate-limit";
 import { getLang } from "../i18n/server";
 import { attemptFor, ptCookie } from "./access";
-import { getBank, isOwner, TEEN_READY, trackOf, type Track } from "./bank";
+import { coreInstruction, getBank, isOwner, TEEN_READY, trackOf, type Track } from "./bank";
 import { describe5, RUB_V2, rubricOf } from "./rubric";
 import { checkCore, typoOk, emptyState, EXPECT, pickTask, PlacementCoverageError, PL_LEVELS, SECTIONS, STEPS, stepIdx, type Section, summarize, words, type CoreItem, type Expect, type ListenItem, type ReadItem, type SpeakItem, type WriteItem } from "./engine";
 import { addNextText, advance, begin, closeSection, doneOf, ensureTasks, enter, goTo, json, LATER, availOf, openOf, partsOf, publicView, stateOf, touch, type Later, type PView } from "./run";
@@ -246,7 +246,7 @@ export async function peekCore(id: string, idx: number): Promise<R & { item?: un
     const inBlock = (y?: { ph?: string }) => !!y && (st.section === "vocab" ? !!y.ph?.startsWith("v") : st.section === "core" && !y.ph?.startsWith("v"));
     if (!inBlock(x) || !st.answers[x.id]) return { ok: false, error: "idx" };
     const it = st.items[x.id] as CoreItem;
-    const ins = (await import("./bank")).instruction(it.type, it.level, trackOf(st.track));
+    const ins = coreInstruction(it, trackOf(st.track));
     return { ok: true, item: { id: it.id, type: it.type, skill: it.skill, q: it.q, options: it.options ?? null, base: it.base ?? null, key: it.key ?? null, frame: it.frame ?? null, hint: (it as CoreItem & { hint_ru?: string }).hint_ru ?? null, instr: ins }, given: st.answers[x.id].v, dk: !!st.answers[x.id].dk };
   } catch { return { ok: false, error: "not found" }; }
 }
@@ -260,8 +260,11 @@ export async function reviseCore(id: string, itemId: string, v: string | number 
     const it = st.items[itemId] as CoreItem;
     const val = dk ? null : typeof v === "number" ? v : str(v, 120);
     const old = st.answers[itemId];
-    // Повторное сохранение без правки не применяет новую проверку к исторической оценке.
-    if (it.type === "fix" && old.v === val && !!old.dk === dk) return { ok: true };
+    // PT-02 переводит G-B1-T05 из gap в brackets. При повторном сохранении
+    // без правок сохраняем уже записанную оценку в обоих снимках.
+    const preserveOnNoChange = it.type === "fix"
+      || (it.id === "G-B1-T05" && (it.type === "gap" || it.type === "brackets"));
+    if (preserveOnNoChange && old.v === val && !!old.dk === dk) return { ok: true };
     const tr = [...(old.tr ?? []), ...(old.dk ? [-1] : old.v !== null && old.v !== val ? [old.v] : [])].slice(-10);
     const ok = dk ? false : checkCore(it, val);
     const typo = !ok && !dk && typeof val === "string" && it.type !== "mcq" && it.type !== "fix" && it.skill === "grammar" && typoOk(val, it.accept ?? []);

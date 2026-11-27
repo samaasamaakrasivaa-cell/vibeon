@@ -1,7 +1,7 @@
 import "server-only";
 import { db } from "../db";
 import { fileUrl } from "../storage";
-import { buildFix, type AnyItem, type Bank, type CoreItem, type Family, type Group, type ListenItem, type ReadItem, type SpeakItem, type WriteItem } from "./engine";
+import { buildFix, type AnyItem, type Bank, type CoreItem, type Family, type FixSpec, type Group, type ListenItem, type ReadItem, type SpeakItem, type WriteItem } from "./engine";
 import c1 from "../../../content/placement/01_core_A1.json";
 import c2 from "../../../content/placement/02_core_A2.json";
 import c3 from "../../../content/placement/03_core_B1.json";
@@ -69,12 +69,21 @@ export const TEEN_READY = ["A1", "A2", "B1", "B2"].every((l) => TEEN_ITEMS.some(
 export type Rubric = { id: string; name_ru: string; levels: Record<string, string> };
 export const RUBRICS = rubricsJson as unknown as { speaking: { criteria: Rubric[] }; writing: { criteria: Rubric[] }; sublevels_ru: string; how_to_decide_ru: string; total_ru: string; scores_ru: Record<string, string> };
 const INS = instructionsJson as Record<string, { easy: string; std: string }>;
+const fixSpecs: FixSpec[] = fixJson;
 const T_INS = tInstructionsJson as Record<string, { easy: string; std: string; ru: string }>;
 const low = (level?: string) => level === "A1" || level === "A2";
 /** Формулировка задания — по-английски; на A1–A2 — проще. */
 export const instruction = (type: string, level?: string, track: Track = "adult") => ((track === "teen" ? T_INS : INS)[type]?.[low(level) ? "easy" : "std"]) ?? "";
 /** Teens, уровни A1–A2: перевод инструкции на русский («ты»). */
 export const instructionRu = (type: string, level?: string, track: Track = "adult") => (track === "teen" && low(level) ? T_INS[type]?.ru ?? "" : "");
+
+export function coreInstruction(item: CoreItem, track: Track) {
+  const generic = instruction(item.type, item.level, track);
+  if (track === "teen") return generic;
+  if (item.type !== "fix") return item.instruction_en ?? generic;
+  // Начатая попытка использует инструкцию из того же снимка, что условие и ключ.
+  return item.instruction_en ? `${generic} ${item.instruction_en}` : generic;
+}
 
 const caches: Partial<Record<Track, { at: number; bank: Bank; edited: Set<string> }>> = {};
 export const dropBankCache = () => { delete caches.adult; delete caches.teen; };
@@ -103,7 +112,7 @@ export async function getBank(track: Track = "adult"): Promise<{ bank: Bank; edi
     families: (track === "teen" ? tFamiliesJson : familiesJson) as unknown as Family[],
     core: items.filter((x): x is CoreItem => x.skill === "grammar" || x.skill === "vocabulary"),
     // взрослые (v6): «найди и исправь» из заданий с вариантами (с правками владельца) и карта связей тем
-    ...(track === "teen" ? {} : { fix: buildFix(items.filter((x): x is CoreItem => x.skill === "grammar"), fixJson as { from: string; wrong: number; accept: string[] }[]), prereq: Object.fromEntries(Object.entries(prereqJson).filter(([k]) => !k.startsWith("_"))) as Record<string, string[]> }),
+    ...(track === "teen" ? {} : { fix: buildFix(items.filter((x): x is CoreItem => x.skill === "grammar"), fixSpecs), prereq: Object.fromEntries(Object.entries(prereqJson).filter(([k]) => !k.startsWith("_"))) as Record<string, string[]> }),
     reading: items.filter((x): x is ReadItem => x.type === "reading"),
     listening: items.filter((x): x is ListenItem => x.type === "listening"),
     writing: items.filter((x): x is WriteItem => x.type === "writing"),

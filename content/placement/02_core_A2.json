@@ -390,7 +390,7 @@
     "topic_en": "Prepositions of movement",
     "topic_ru": "Предлоги движения",
     "type": "mcq",
-    "q": "Walk ___ the bridge and the restaurant is on your left.",
+    "q": "Walk ___ the bridge. The restaurant is on your left on the other side.",
     "options": [
       "across",
       "between",
@@ -794,7 +794,7 @@
     "type": "mcq",
     "q": "While we ___ in the park, it started to rain.",
     "options": [
-      "walked",
+      "walk",
       "are walking",
       "was walking",
       "were walking"
@@ -1110,15 +1110,15 @@
     "topic_en": "Feelings and personality",
     "topic_ru": "Чувства и характер",
     "type": "mcq",
-    "q": "Can you ___ me the time, please?",
+    "q": "Ella looks happy even on difficult days. She's a very ___ person.",
     "options": [
-      "say",
-      "speak",
-      "talk",
-      "tell"
+      "careless",
+      "nervous",
+      "gloomy",
+      "cheerful"
     ],
     "answer": 3,
-    "explain_ru": "tell somebody something: tell me the time.",
+    "explain_ru": "Cheerful означает «жизнерадостный». Это следует из happy even on difficult days.",
     "group": "a2-v4"
   },
   {
@@ -1133,7 +1133,9 @@
     "q": "Tom never shares his things. He's very ___.",
     "accept": [
       "selfish",
-      "mean"
+      "mean",
+      "stingy",
+      "ungenerous"
     ],
     "explain_ru": "Тот, кто не делится, — selfish.",
     "hint_ru": "черта характера",
@@ -1154,7 +1156,10 @@
       "pleased",
       "glad",
       "excited",
-      "delighted"
+      "delighted",
+      "proud",
+      "thrilled",
+      "relieved"
     ],
     "explain_ru": "Радость от хорошего результата — happy / pleased.",
     "hint_ru": "чувство",
@@ -1207,7 +1212,7 @@
     "topic_en": "Travel and holidays",
     "topic_ru": "Путешествия и отдых",
     "type": "mcq",
-    "q": "How was your ___ to Paris?",
+    "q": "How was your weekend ___ to Paris by coach?",
     "options": [
       "travel",
       "trip",
@@ -1776,7 +1781,7 @@
     "topic_en": "Travel and holidays",
     "topic_ru": "Путешествия и отдых",
     "type": "mcq",
-    "q": "My brother ___ me his car for the weekend, so we drove to the lake.",
+    "q": "My brother ___ me his car for the weekend. He didn't charge us, and we gave it back on Monday.",
     "options": [
       "borrowed",
       "rented",
@@ -1907,9 +1912,10 @@
     "q": "I ___ (visit) my aunt in Spain next month. I've already booked the flights.",
     "accept": [
       "am going to visit",
-      "am visiting"
+      "'m going to visit"
     ],
-    "explain_ru": "План, который уже решён, — be going to (или Present Continuous для договорённости)."
+    "explain_ru": "План, который уже решён, — be going to (или Present Continuous для договорённости).",
+    "instruction_en": "Use be going to to complete the sentence about the plan."
   },
   {
     "id": "G-A2-T04",
@@ -1938,10 +1944,10 @@
     "q": "I can't meet you on Thursday — I ___ (fly) to Paris that morning.",
     "accept": [
       "am flying",
-      "am going to fly",
-      "will be flying"
+      "'m flying"
     ],
-    "explain_ru": "Договорённость на будущее — Present Continuous: I'm flying."
+    "explain_ru": "Договорённость на будущее — Present Continuous: I'm flying.",
+    "instruction_en": "Use the present continuous for the future arrangement."
   },
   {
     "id": "G-A2-T07",
@@ -2038,7 +2044,8 @@
       "should not"
     ],
     "explain_ru": "Совет «не стоит» — shouldn't + глагол.",
-    "hint_ru": "should в отрицании"
+    "hint_ru": "should в отрицании",
+    "instruction_en": "Use the negative form of should. You can write it in full or as a contraction."
   },
   {
     "id": "G-A2-T14",
@@ -2670,14 +2677,14 @@
     "topic_en": "Present perfect with for / since",
     "topic_ru": "Present Perfect с for / since",
     "type": "transform",
-    "q": "I met Zoe in 2020 and I still know her.",
+    "q": "Zoe and I met in 2020, and we're still friends.",
     "key": "SINCE",
     "frame": "I've ___ 2020.",
     "accept": [
       "known zoe since",
       "known her since"
     ],
-    "explain_ru": "В Present Perfect for вводит длительность, а since — момент начала."
+    "explain_ru": "Для знакомства, начавшегося в 2020 и продолжающегося сейчас, подходит have known… since 2020."
   },
   {
     "id": "G-A2-124",
@@ -2776,15 +2783,15 @@
     "topic_en": "Order of adjectives",
     "topic_ru": "Порядок прилагательных",
     "type": "mcq",
-    "q": "Maya put the spare keys in a ___ blue box.",
+    "q": "Maya put the spare keys in a ___ box.",
     "options": [
-      "smallly",
-      "small",
-      "smaller than",
-      "smallest"
+      "blue small",
+      "small blue",
+      "smallest blue",
+      "small bluer"
     ],
     "answer": 1,
-    "explain_ru": "В обычном порядке описания размер стоит перед цветом, возраст — перед цветом, цвет — перед материалом."
+    "explain_ru": "В нейтральном порядке размер идёт перед цветом: a small blue box."
   },
   {
     "id": "G-A2-130",
@@ -2795,15 +2802,15 @@
     "topic_en": "Order of adjectives",
     "topic_ru": "Порядок прилагательных",
     "type": "mcq",
-    "q": "We saw an ___ red bus outside the station.",
+    "q": "We saw two ___ buses outside the station.",
     "options": [
-      "oldest",
-      "oldly",
-      "old",
-      "older than"
+      "red old",
+      "older than red",
+      "old red",
+      "old reddest"
     ],
     "answer": 2,
-    "explain_ru": "В обычном порядке описания размер стоит перед цветом, возраст — перед цветом, цвет — перед материалом."
+    "explain_ru": "Нейтральный порядок — возраст, затем цвет: old red buses."
   },
   {
     "id": "G-A2-131",

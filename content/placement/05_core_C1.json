@@ -72,11 +72,11 @@
     "topic_en": "Unreal past: as if / would rather / suppose",
     "topic_ru": "Нереальное прошлое: as if / would rather / suppose",
     "type": "brackets",
-    "q": "I'd rather you ___ (not / tell) anyone about this yet.",
-    "explain_ru": "I'd rather + подлежащее + Past Simple — «я бы предпочёл, чтобы ты...».",
+    "q": "I'd rather you ___ (not / mention) the meeting to Dan yesterday. It was supposed to be a surprise.",
+    "explain_ru": "Yesterday указывает на уже совершённое действие. После would rather для сожаления о прошлом подходит past perfect.",
     "accept": [
-      "didn't tell",
-      "did not tell"
+      "hadn't mentioned",
+      "had not mentioned"
     ]
   },
   {
@@ -267,7 +267,8 @@
       "will take"
     ],
     "answer": 2,
-    "explain_ru": "После it's high time we используется Past Simple."
+    "explain_ru": "После it's high time we используется Past Simple.",
+    "instruction_en": "Choose the past simple after it’s high time."
   },
   {
     "id": "G-C1-17",
@@ -781,7 +782,8 @@
       "Should"
     ],
     "answer": 3,
-    "explain_ru": "Условие с инверсией в формальном стиле: Should you require…"
+    "explain_ru": "Условие с инверсией в формальном стиле: Should you require…",
+    "instruction_en": "Choose the inverted form of the conditional."
   },
   {
     "id": "G-C1-25",
@@ -1051,7 +1053,7 @@
       "heavy",
       "strong",
       "big",
-      "hard"
+      "tough"
     ],
     "answer": 1,
     "explain_ru": "Устойчивое сочетание: strong evidence.",
@@ -1109,8 +1111,8 @@
     "q": "There is a growing ___ among scientists that the climate is changing faster than expected.",
     "options": [
       "agreement on",
-      "opinion",
-      "accord",
+      "inference",
+      "accordance",
       "consensus"
     ],
     "answer": 3,
@@ -1135,7 +1137,8 @@
     ],
     "answer": 0,
     "explain_ru": "Формальный стиль: regret to inform you that…",
-    "group": "c1-v1"
+    "group": "c1-v1",
+    "instruction_en": "Choose the most formal wording for this email."
   },
   {
     "id": "V-C1-26",
@@ -1351,7 +1354,7 @@
     "topic_en": "Reported speech: reporting verbs, sequence of tenses, was to",
     "topic_ru": "Косвенная речь: глаголы (urge, insist on, accuse of), согласование времён, was to",
     "type": "mcq",
-    "q": "The minister announced that the new law ___ come into force the following year.",
+    "q": "The minister announced that the new law ___ come into force the following year. It took effect the following spring.",
     "options": [
       "will",
       "was to",
@@ -1456,7 +1459,10 @@
       "heavily",
       "significantly",
       "greatly",
-      "hard"
+      "substantially",
+      "markedly",
+      "materially",
+      "drastically"
     ],
     "explain_ru": "Серьёзно пострадали — severely / seriously affected.",
     "hint_ru": "наречие: сильно, серьёзно",
@@ -1471,7 +1477,7 @@
     "topic_en": "Future in the past: was about to / was to",
     "topic_ru": "Будущее в прошлом: was about to / was to",
     "type": "mcq",
-    "q": "She promised she ___ call me the moment she landed.",
+    "q": "She promised she ___ call me the moment she landed. She landed yesterday and called as promised.",
     "options": [
       "will",
       "was",
@@ -1479,7 +1485,7 @@
       "would"
     ],
     "answer": 3,
-    "explain_ru": "Будущее в прошедшем после promised — would."
+    "explain_ru": "Действие было будущим с точки зрения прошлого обещания, поэтому подходит would call."
   },
   {
     "id": "G-C1-54",
@@ -1493,7 +1499,7 @@
     "q": "By the time she retired, she ___ at the company for forty years.",
     "options": [
       "has worked",
-      "worked",
+      "had working",
       "had worked",
       "was working"
     ],
@@ -1604,7 +1610,7 @@
     "topic_en": "Emphasis: do / at all / whatsoever",
     "topic_ru": "Усиление: do / at all / whatsoever",
     "type": "mcq",
-    "q": "You ___ look tired. Why don't you go home early?",
+    "q": "You ___ look tired right now. Why don't you go home early?",
     "options": [
       "are",
       "have",
@@ -2151,8 +2157,8 @@
     "type": "mcq",
     "q": "I was ___ surprised by how good the food was.",
     "options": [
-      "nicely",
-      "happily",
+      "fondly",
+      "cheerfully",
       "pleasantly",
       "kindly"
     ],
@@ -2756,14 +2762,14 @@
     "topic_en": "Narrative tenses for experience, incl. passive",
     "topic_ru": "Повествовательные времена, включая пассив",
     "type": "transform",
-    "q": "They'd backed up the recordings by the time the server failed.",
+    "q": "They'd stored the costumes by the time the theatre closed.",
     "key": "BEEN",
-    "frame": "The recordings ___ by the time the server failed.",
+    "frame": "The costumes ___ by the time the theatre closed.",
     "accept": [
-      "had been backed up",
-      "'d been backed up"
+      "had been stored",
+      "'d been stored"
     ],
-    "explain_ru": "В рассказе пассив показывает, что важно событие. Past Perfect Passive отмечает то, что случилось раньше, а Past Continuous Passive — то, что происходило в тот момент."
+    "explain_ru": "Past Perfect Passive имеет форму had been + past participle: had been stored."
   },
   {
     "id": "G-C1-121",
@@ -2853,7 +2859,7 @@
       "so"
     ],
     "answer": 3,
-    "explain_ru": "For приблизительного числа используется or so после числа. Конструкция it would appear that смягчает вывод."
+    "explain_ru": "Для приблизительного количества or so ставится после числа: twenty people or so."
   },
   {
     "id": "G-C1-126",
@@ -2864,7 +2870,7 @@
     "topic_en": "Approximating and hedging: sort of, -ish, it would seem that",
     "topic_ru": "Приблизительность и смягчение: sort of, -ish, it would seem that",
     "type": "mcq",
-    "q": "From the audit trail, it would ___ that the edit was made after the deadline.",
+    "q": "From the postmarks, it would ___ that the letters were sent on different days.",
     "options": [
       "appear",
       "appears",
@@ -2872,7 +2878,7 @@
       "appeared"
     ],
     "answer": 0,
-    "explain_ru": "For приблизительного числа используется or so после числа. Конструкция it would appear that смягчает вывод."
+    "explain_ru": "It would appear that осторожно формулирует вывод по почтовым штемпелям."
   },
   {
     "id": "G-C1-127",
@@ -2890,7 +2896,7 @@
       "ten minutes or so",
       "10 minutes or so"
     ],
-    "explain_ru": "For приблизительного числа используется or so после числа. Конструкция it would appear that смягчает вывод."
+    "explain_ru": "Ten minutes or so означает «примерно десять минут». Or so стоит после количества."
   },
   {
     "id": "G-C1-128",
@@ -2905,7 +2911,7 @@
     "accept": [
       "seem"
     ],
-    "explain_ru": "For приблизительного числа используется or so после числа. Конструкция it would appear that смягчает вывод."
+    "explain_ru": "It would seem that позволяет сделать осторожный вывод на основе двух счетов."
   },
   {
     "id": "G-C1-129",

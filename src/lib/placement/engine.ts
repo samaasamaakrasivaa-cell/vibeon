@@ -14,6 +14,7 @@ type Base = { id: string; level: PLevel; band: number; topic_en: string; topic_r
 export type CoreItem = Base & {
   skill: "grammar" | "vocabulary"; topic_id: string; type: "mcq" | "gap" | "wordform" | "transform" | "brackets" | "fix";
   q: string; options?: string[]; answer?: number; accept?: string[]; base?: string; key?: string; frame?: string; explain_ru: string;
+  instruction_en?: string;
   span?: [number, number]; wrong?: string; // «найди и исправь»: слова с ошибкой (номера слов в q, с 0) и сама ошибка
   group?: string; // группа тем (00_groups.json) — проставляется при загрузке банка
 };
@@ -1236,7 +1237,9 @@ export function summarizeV6(st: PState, bank: Bank): V6Summary {
 }
 
 /** «Найди и исправь» из заданий с вариантами: в предложение подставлен неверный вариант; span — его слова. */
-export function buildFix(core: CoreItem[], spec: { from: string; wrong: number; accept: string[] }[]): CoreItem[] {
+export type FixSpec = { from: string; wrong: number; accept: string[]; instruction_en?: string };
+
+export function buildFix(core: CoreItem[], spec: FixSpec[]): CoreItem[] {
   const by = new Map(core.map((x) => [x.id, x]));
   const out: CoreItem[] = [];
   for (const s of spec) {
@@ -1247,7 +1250,7 @@ export function buildFix(core: CoreItem[], spec: { from: string; wrong: number; 
     if (!pre.trim()) wrong = wrong.charAt(0).toUpperCase() + wrong.slice(1);
     const start = pre.trim() ? pre.trim().split(/\s+/).length : 0;
     const q = `${pre}${wrong}${post}`.replace(/\s+/g, " ").trim();
-    const item: CoreItem = { ...x, id: `F-${x.id}`, type: "fix", q, options: undefined, answer: undefined, wrong, span: [start, start + wrong.split(/\s+/).length - 1], accept: s.accept };
+    const item: CoreItem = { ...x, id: `F-${x.id}`, type: "fix", q, options: undefined, answer: undefined, wrong, span: [start, start + wrong.split(/\s+/).length - 1], accept: s.accept, instruction_en: s.instruction_en };
     out.push({ ...item, accept: acceptedFixCorrections(item) });
   }
   return out;

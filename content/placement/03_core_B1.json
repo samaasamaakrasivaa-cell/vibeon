@@ -31,7 +31,7 @@
     "options": [
       "is",
       "should to",
-      "won't",
+      "might to",
       "might"
     ],
     "answer": 3,
@@ -362,13 +362,13 @@
     "type": "mcq",
     "q": "The trains weren't running, but we ___ get home before midnight.",
     "options": [
-      "could",
+      "were able",
       "managed to",
       "succeeded to",
       "can"
     ],
     "answer": 1,
-    "explain_ru": "О единичном успехе в прошлом говорят managed to; could здесь не подходит, succeed — только succeeded in doing."
+    "explain_ru": "Managed to get home передаёт единичный успешный результат. После were able понадобилось бы to."
   },
   {
     "id": "G-B1-18",
@@ -805,8 +805,7 @@
     "q": "I ___ (never / try) sushi, but I'd love to.",
     "accept": [
       "have never tried",
-      "'ve never tried",
-      "ve never tried"
+      "'ve never tried"
     ],
     "explain_ru": "Опыт в жизни без указания времени — Present Perfect: have never tried."
   },
@@ -934,7 +933,8 @@
       "is going to crash",
       "'s going to crash"
     ],
-    "explain_ru": "Предсказание по тому, что видим сейчас, — be going to: is going to crash."
+    "explain_ru": "Предсказание по тому, что видим сейчас, — be going to: is going to crash.",
+    "instruction_en": "Use be going to for a prediction based on what you can see."
   },
   {
     "id": "G-B1-33",
@@ -1372,13 +1372,13 @@
     "type": "mcq",
     "q": "I ___ my phone at home this morning, so I couldn't call you.",
     "options": [
-      "forgot",
+      "forgotten",
       "left",
       "lost",
       "missed"
     ],
     "answer": 1,
-    "explain_ru": "Оставить что-то где-то — leave (forget — без указания места).",
+    "explain_ru": "Left my phone at home — естественный способ сказать, где остался телефон. В американском английском также употребляют forgot my phone at home.",
     "group": "b1-v4"
   },
   {
@@ -1635,7 +1635,7 @@
     "q": "The museum ___ at 10 a.m. on Sundays, so we can go in the morning.",
     "options": [
       "opens",
-      "is opened",
+      "is opening to",
       "opening",
       "open"
     ],
@@ -1654,9 +1654,9 @@
     "q": "You've been travelling all day. You ___ be exhausted!",
     "options": [
       "can't",
-      "should",
+      "should to",
       "must",
-      "have to"
+      "must to"
     ],
     "answer": 2,
     "explain_ru": "Уверенное предположение — must be."
@@ -1672,13 +1672,13 @@
     "type": "mcq",
     "q": "She ___ be hungry. She's just eaten a huge pizza.",
     "options": [
-      "mustn't",
+      "can't to",
       "must",
       "doesn't",
       "can't"
     ],
     "answer": 3,
-    "explain_ru": "Уверены, что это невозможно, — can't be. Mustn't — это запрет."
+    "explain_ru": "Can’t be hungry выражает сильный отрицательный вывод. В американском английском отрицательный вывод также возможен с must not."
   },
   {
     "id": "G-B1-63",
@@ -1862,7 +1862,7 @@
       "this jacket costs",
       "does this jacket cost",
       "costs this jacket",
-      "this jacket does cost"
+      "this jacket is cost"
     ],
     "answer": 0,
     "explain_ru": "В косвенном вопросе прямой порядок слов и нет does: how much this jacket costs."
@@ -2106,7 +2106,7 @@
     "q": "Can you ___ out this form, please? Write your name and address here.",
     "options": [
       "fill",
-      "write",
+      "carry",
       "put",
       "take"
     ],
@@ -2355,14 +2355,14 @@
     "topic_id": "g-b1-indirect-questions",
     "topic_en": "Indirect questions",
     "topic_ru": "Косвенные вопросы (Could you tell me...)",
-    "type": "gap",
-    "q": "Could you tell me what time the museum ___ on Sundays?",
+    "type": "brackets",
+    "q": "Could you tell me what time ___ (the museum / close) on Sundays?",
     "accept": [
-      "opens",
-      "closes"
+      "the museum closes"
     ],
-    "explain_ru": "В косвенном вопросе — прямой порядок слов, без does: what time the museum opens.",
-    "hint_ru": "косвенный вопрос — прямой порядок слов"
+    "explain_ru": "После what time в косвенном вопросе используется порядок «подлежащее + глагол»: the museum closes.",
+    "hint_ru": "косвенный вопрос — прямой порядок слов",
+    "instruction_en": "Complete the indirect question. Use the words in brackets in the correct order and form."
   },
   {
     "id": "G-B1-T06",
@@ -2378,7 +2378,8 @@
       "must"
     ],
     "explain_ru": "Уверенный логический вывод — must.",
-    "hint_ru": "must / might / can't"
+    "hint_ru": "must / might / can't",
+    "instruction_en": "Use must, might or can’t to express a strong affirmative deduction."
   },
   {
     "id": "G-B1-T07",
@@ -2487,10 +2488,13 @@
     "accept": [
       "although",
       "even though",
-      "though"
+      "though",
+      "while",
+      "whilst"
     ],
     "explain_ru": "Противопоставление в одном предложении — although / even though.",
-    "hint_ru": "although / however"
+    "hint_ru": "although / however",
+    "instruction_en": "Complete the contrast clause with one or two words."
   },
   {
     "id": "G-B1-T14",
@@ -2504,10 +2508,14 @@
     "q": "The hotel was very cheap. ___, the rooms were clean and comfortable.",
     "accept": [
       "however",
-      "nevertheless"
+      "nevertheless",
+      "nonetheless",
+      "still",
+      "even so"
     ],
     "explain_ru": "Противопоставление в начале нового предложения, с запятой — However.",
-    "hint_ru": "although / however"
+    "hint_ru": "although / however",
+    "instruction_en": "Complete the contrast link with one or two words."
   },
   {
     "id": "G-B1-T15",
@@ -2695,7 +2703,7 @@
     "topic_en": "Degrees of possibility: might, may, will, probably, perhaps",
     "topic_ru": "Степени вероятности: might, may, will, probably, perhaps",
     "type": "mcq",
-    "q": "I've checked my inbox and spam folder. Perhaps you ___ the file to the wrong address yesterday.",
+    "q": "Your card hasn't arrived. Perhaps you ___ it to my old address yesterday.",
     "options": [
       "will send",
       "will have been sending",
@@ -2703,7 +2711,7 @@
       "send"
     ],
     "answer": 2,
-    "explain_ru": "Perhaps выражает предположение. Для возможного события в закончившемся прошлом, обозначенного yesterday, подходит Past Simple."
+    "explain_ru": "Perhaps выражает неуверенность. Yesterday задаёт завершённое прошлое, поэтому нужна форма sent."
   },
   {
     "id": "G-B1-111",
@@ -2804,13 +2812,13 @@
     "topic_en": "must vs have to; ought to",
     "topic_ru": "must vs have to; ought to",
     "type": "transform",
-    "q": "It's a good idea to back up these files.",
+    "q": "It's a good idea to keep your receipts until the end of the month.",
     "key": "OUGHT",
-    "frame": "You ___ these files.",
+    "frame": "You ___ your receipts until the end of the month.",
     "accept": [
-      "ought to back up"
+      "ought to keep"
     ],
-    "explain_ru": "После did / didn't используется have to. После ought в этой конструкции нужен инфинитив с to, а после must — без to."
+    "explain_ru": "Ought to keep выражает совет и сохраняет смысл исходного предложения."
   },
   {
     "id": "G-B1-117",
@@ -3193,7 +3201,7 @@
       "should still check",
       "will have checked",
       "should have checked",
-      "checked"
+      "should had checked"
     ],
     "answer": 2,
     "explain_ru": "Речь о том, что стоило сделать до выхода из дома. Для такого сожаления употребляется should have + причастие."
@@ -3233,7 +3241,8 @@
       "should really have checked",
       "really should have checked"
     ],
-    "explain_ru": "О действии, которое стоило выполнить в прошлом, можно сказать should have checked или ought to have checked."
+    "explain_ru": "О действии, которое стоило выполнить в прошлом, можно сказать should have checked или ought to have checked.",
+    "instruction_en": "Use a modal perfect to express regret about the earlier action."
   },
   {
     "id": "G-B1-141",
@@ -3249,9 +3258,12 @@
       "might have left",
       "may have left",
       "could have left",
-      "might possibly have left"
+      "might possibly have left",
+      "may possibly have left",
+      "could possibly have left"
     ],
-    "explain_ru": "Для предположения о том, что курьер мог сделать час назад, подходит might, may или could + have + причастие."
+    "explain_ru": "Для предположения о том, что курьер мог сделать час назад, подходит might, may или could + have + причастие.",
+    "instruction_en": "Use a modal perfect to express a possibility in the past."
   },
   {
     "id": "G-B1-142",
@@ -3305,9 +3317,10 @@
       "will still be driving",
       "'ll still be driving",
       "will be still driving",
-      "are still driving"
+      "'ll be still driving"
     ],
-    "explain_ru": "Future Continuous — will be + форма на -ing. Он описывает действие в процессе в определённый момент в будущем."
+    "explain_ru": "Future Continuous — will be + форма на -ing. Он описывает действие в процессе в определённый момент в будущем.",
+    "instruction_en": "Use the future continuous for the action in progress at noon."
   },
   {
     "id": "G-B1-145",
@@ -3322,13 +3335,13 @@
     "accept": [
       "will be working",
       "will still be working",
+      "will be still working",
       "'ll be working",
       "'ll still be working",
-      "is working",
-      "'s working",
-      "is still working"
+      "'ll be still working"
     ],
-    "explain_ru": "В восемь смена будет в самом разгаре. Здесь подходят Future Continuous и Present Continuous для запланированного действия."
+    "explain_ru": "В восемь смена будет в самом разгаре. Здесь подходят Future Continuous и Present Continuous для запланированного действия.",
+    "instruction_en": "Use the future continuous for the action in progress at eight."
   },
   {
     "id": "G-B1-146",
@@ -3412,7 +3425,7 @@
     "type": "mcq",
     "q": "We ___ outside, but it started to snow before dinner, so we ate indoors instead.",
     "options": [
-      "ate",
+      "was going to eat",
       "will be eating",
       "were going to eat",
       "are still going to eat"
@@ -3432,7 +3445,7 @@
     "q": "I ___ to work that morning, but my bike had a flat tyre, so I took the bus instead.",
     "options": [
       "am going to cycle",
-      "cycled",
+      "were going to cycle",
       "will have cycled",
       "was going to cycle"
     ],
@@ -3450,15 +3463,10 @@
     "type": "brackets",
     "q": "They ___ (take) the bus, but in the end a friend gave them a lift.",
     "accept": [
-      "were going to take",
-      "were planning to take",
-      "had planned to take",
-      "meant to take",
-      "intended to take",
-      "wanted to take",
-      "were about to take"
+      "were going to take"
     ],
-    "explain_ru": "Прошлый план можно передать через were going to, were planning to или had planned to с подходящей формой смыслового глагола."
+    "explain_ru": "Were going to take передаёт первоначальный план на автобус. Он изменился, когда друг предложил подвезти.",
+    "instruction_en": "Use the past form of be going to for the original plan."
   },
   {
     "id": "G-B1-153",
@@ -3471,15 +3479,10 @@
     "type": "brackets",
     "q": "I ___ (call) you last night, but I fell asleep before I could do it.",
     "accept": [
-      "was going to call",
-      "had planned to call",
-      "was planning to call",
-      "meant to call",
-      "intended to call",
-      "wanted to call",
-      "was about to call"
+      "was going to call"
     ],
-    "explain_ru": "Звонок был в планах, но не состоялся. Was going to call и близкие по смыслу выражения передают это намерение."
+    "explain_ru": "Was going to call выражает прошлое намерение, которое не осуществилось.",
+    "instruction_en": "Use the past form of be going to for the original plan."
   },
   {
     "id": "G-B1-154",
