@@ -3,13 +3,15 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { randomUUID } from "node:crypto";
 import { Prisma, type LessonStatus, type PayType } from "@prisma/client";
+import { callLinkOf } from "../lessons/call-link";
 import { db } from "../db";
 import { requireUser } from "../auth/session";
-import { fromZoned, parseIsoDay } from "../time";
+import { fromZoned, hhmm, isoDay, parseIsoDay } from "../time";
 import { getT } from "../i18n/server";
 import { invalidateLessonSessions, withLessonLifecycleLock } from "../live/lesson-session";
 import { notify, notifyPayer } from "../notify";
 import { repriceLessons } from "../billing/engine";
+import { scheduleRangeMinutes } from "./schedule-range";
 
 export type Result = { ok: true; id?: string } | { ok: false; error: string };
 
@@ -65,15 +67,19 @@ export async function createLesson(input: {
   trialName?: string;
   date: string;
   start: string;
-  durationMin: number;
   repeat: boolean;
   trialPrice?: number; // платный пробный урок: > 0 — попадает в финансы
-}): Promise<Result> {
+} & ({ durationMin: number; end?: never } | { durationMin?: never; end: string })): Promise<Result> {
   const { t } = await getT();
   const teacher = await me();
-  const startsAt = parseWhen(input.date, input.start, teacher.timezone);
+  const range = input.end === undefined ? null : scheduleRange({ date: input.date, start: input.start, end: input.end }, teacher.timezone);
+  if (input.end !== undefined && !range) return { ok: false, error: t("sch.err.time") };
+  const startsAt = range?.startsAt ?? parseWhen(input.date, input.start, teacher.timezone);
   if (!startsAt) return { ok: false, error: t("sch.err.time") };
-  const durationMin = DURATIONS.includes(input.durationMin) ? input.durationMin : 60;
+  const presetDuration = input.durationMin ?? 60;
+  const durationMin = range
+    ? (range.endsAt.getTime() - range.startsAt.getTime()) / 60_000
+    : DURATIONS.includes(presetDuration) ? presetDuration : 60;
 
   // групповое занятие
   if (input.groupId && !input.isTrial) {
@@ -179,6 +185,24 @@ export async function setCallLink(lessonId: string, link: string): Promise<Resul
   }
   refresh(l.studentId);
   revalidatePath(`/class/${lessonId}`);
+  return { ok: true };
+}
+
+/** Ссылка из карточки на главной относится к одному занятию. */
+export async function setLessonCallLink(lessonId: string, link: string): Promise<Result> {
+  const { t } = await getT();
+  const teacher = await me();
+  const lesson = await ownLesson(lessonId, teacher.id);
+  const value = callLinkOf(link.trim());
+  if (!value || value.length > 500) return { ok: false, error: t("tp.err.link") };
+  if (lesson.status !== "PLANNED") return { ok: false, error: t("sch.callSaveError") };
+
+  await db.lessonInstance.updateMany({
+    where: { teacherId: teacher.id, ...(lesson.slotId ? { slotId: lesson.slotId } : { id: lesson.id }) },
+    data: { callLink: value },
+  });
+  refresh(lesson.studentId);
+  revalidatePath("/student");
   return { ok: true };
 }
 
@@ -605,18 +629,21 @@ export async function setStudentField(id: string, key: string, value: string): P
 
 export type TimeOffInput = { date: string; start: string; end: string; weekly: boolean; note?: string };
 
-function timeOffRange(x: TimeOffInput, tz: string) {
-  const s = parseWhen(x.date, x.start, tz);
-  // «до 24:00» — конец дня
-  const e = x.end === "24:00" ? (() => { const d = parseWhen(x.date, "00:00", tz); return d ? new Date(d.getTime() + 864e5) : null; })() : parseWhen(x.date, x.end, tz);
-  return s && e && e > s ? { startsAt: s, endsAt: e } : null;
+function scheduleRange(x: Pick<TimeOffInput, "date" | "start" | "end">, tz: string) {
+  if (scheduleRangeMinutes(x.start, x.end) === null) return null;
+  const startsAt = parseWhen(x.date, x.start, tz);
+  const endsAt = parseWhen(x.date, x.end, tz);
+  const endClock = x.end === "24:00" ? "00:00" : x.end;
+  if (!startsAt || !endsAt || endsAt <= startsAt) return null;
+  if (isoDay(startsAt, tz) !== x.date || hhmm(startsAt, tz) !== x.start || hhmm(endsAt, tz) !== endClock) return null;
+  return { startsAt, endsAt };
 }
 
 /** Отметить время нерабочим (выходной, свои дела): в расписании его видно, уроки туда лучше не ставить. */
 export async function createTimeOff(x: TimeOffInput): Promise<Result> {
   const { t } = await getT();
   const teacher = await me();
-  const r = timeOffRange(x, teacher.timezone);
+  const r = scheduleRange(x, teacher.timezone);
   if (!r) return { ok: false, error: t("off.err") };
   await db.timeOff.create({ data: { teacherId: teacher.id, ...r, weekly: !!x.weekly, note: x.note?.trim().slice(0, 120) || null } });
   revalidatePath("/teacher/schedule");
@@ -628,7 +655,7 @@ export async function updateTimeOff(id: string, x: TimeOffInput): Promise<Result
   const teacher = await me();
   const cur = await db.timeOff.findUnique({ where: { id } });
   if (!cur || cur.teacherId !== teacher.id) return { ok: false, error: t("off.err") };
-  const r = timeOffRange(x, teacher.timezone);
+  const r = scheduleRange(x, teacher.timezone);
   if (!r) return { ok: false, error: t("off.err") };
   // у повторяющегося меняем время и день недели, а начало серии оставляем прежним, если новая дата позже
   await db.timeOff.update({ where: { id }, data: { ...r, weekly: !!x.weekly, note: x.note?.trim().slice(0, 120) || null } });

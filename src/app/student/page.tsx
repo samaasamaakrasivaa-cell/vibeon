@@ -9,7 +9,7 @@ import { db } from "@/lib/db";
 import { getT } from "@/lib/i18n/server";
 import { greetingKey, hourIn } from "@/lib/greeting";
 import { homeworkFor } from "@/lib/homework";
-import { currentStudentLesson, nextStudentLesson } from "@/lib/student/next-lesson";
+import { currentStudentLesson, nextStudentLesson, studentLessonCallLink } from "@/lib/student/next-lesson";
 import { hhmm, isoDay } from "@/lib/time";
 import { Medal, StudentAvatar } from "@/components/awards/Medal";
 import { AvatarNotice, CelebrateAwards } from "@/components/awards/StudentAwards";
@@ -64,6 +64,7 @@ export default async function StudentHome() {
   const goal = s?.wordGoal ?? 15;
   const done = Math.min(goal, practice?.count ?? 0);
   const shownLesson = current ?? next;
+  const callLink = shownLesson ? await studentLessonCallLink(me.id, shownLesson.id) : null;
   const isToday = shownLesson && isoDay(shownLesson.startsAt, tz) === isoDay(now, tz);
   const whenLabel = shownLesson ? `${isToday ? t("dash.today") : shownLesson.startsAt.toLocaleDateString(loc, { weekday: "long", day: "numeric", month: "long", timeZone: tz })}, ${hhmm(shownLesson.startsAt, tz)}` : "";
   const allDone = !hw && done >= goal && wordsTotal > 0;
@@ -108,6 +109,7 @@ export default async function StudentHome() {
               <div className="mt-1 flex flex-wrap items-center gap-4">
                 <b className="text-[26px] tracking-tight">{whenLabel}</b>
                 <Link href={`/class/${shownLesson.id}`} className="btn"><Icon name="class" size="sm" />{t("cls.enter")}</Link>
+                {callLink && <a href={callLink} className="btn" target="_blank" rel="noreferrer"><Icon name="phone" size="sm" />{t("cls.joinCall")}</a>}
               </div>
               <div className="small mt-1 opacity-90">{[shownLesson.template?.title, current ? t("today.live") : null].filter(Boolean).join(" · ")}</div>
               {!current && next && <LessonCountdown startsAt={next.startsAt.getTime()} initialNow={now.getTime()} variant="student" />}

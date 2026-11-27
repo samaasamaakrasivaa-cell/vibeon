@@ -21,9 +21,11 @@ import { initials } from "@/lib/invite";
 import { homeworkFor, type HwState } from "@/lib/homework";
 import { hasStartedLessonSession } from "@/lib/live/lesson-session";
 import { LessonCountdown } from "./LessonCountdown";
+import { LessonCall } from "./teacher/LessonCall";
+import { callLinkOf } from "@/lib/lessons/call-link";
 import type { LessonInstance, User } from "@prisma/client";
 
-type ScheduledLesson = Pick<LessonInstance, "startsAt" | "status" | "live">;
+type ScheduledLesson = Pick<LessonInstance, "startsAt" | "status" | "live" | "callLink">;
 
 function teacherLessonCardStatus(lesson: LessonInstance, host: ScheduledLesson | undefined, now: Date) {
   if (!host || host.status !== lesson.status || +host.startsAt !== +lesson.startsAt) return;
@@ -67,12 +69,12 @@ export async function Dashboard({ user, role, day, top }: { user: User; role: "T
   const sel = day && day >= todayIso && day < addDaysIso(todayIso, 7) ? day : todayIso;
   const isToday = sel === todayIso;
   const todayLessons = lessons.filter((l) => isoDay(l.startsAt, tz) === sel);
-  const slotIds = role === "TEACHER" && isToday ? todayLessons.flatMap((l) => l.slotId ? [l.slotId] : []) : [];
+  const slotIds = role === "TEACHER" ? todayLessons.flatMap((l) => l.slotId ? [l.slotId] : []) : [];
   // Как в classAccess: состояние группы принадлежит первому по id участнику этого слота.
   const slotMembers = slotIds.length ? await db.lessonInstance.findMany({
     where: { teacherId: user.id, slotId: { in: slotIds } },
     orderBy: { id: "asc" },
-    select: { slotId: true, status: true, startsAt: true, live: true },
+    select: { slotId: true, status: true, startsAt: true, live: true, callLink: true },
   }) : [];
   const hosts = new Map<string, ScheduledLesson>();
   const inconsistentSlots = new Set<string>();
@@ -121,6 +123,7 @@ export async function Dashboard({ user, role, day, top }: { user: User; role: "T
 
   // «С чего начать» — пока учитель не сделал главное: курс, ученик, первый урок
   let steps: { done: boolean; href: string; label: string; sub: string }[] = [];
+  let teacherCallLink: string | null = null;
   if (role === "TEACHER") {
     const [courses, students, anyLesson, prof] = await Promise.all([
       db.course.count({ where: { teacherId: user.id } }),
@@ -129,6 +132,7 @@ export async function Dashboard({ user, role, day, top }: { user: User; role: "T
       db.teacherProfile.findUnique({ where: { userId: user.id }, select: { callLink: true, settings: true } }),
     ]);
     const pay = !!(prof?.settings as { payDetails?: string } | null)?.payDetails;
+    teacherCallLink = prof?.callLink ?? null;
     steps = [
       { done: students > 0, href: "/teacher/students?invite=1", label: t("fs.invite"), sub: t("fs.inviteSub") },
       { done: anyLesson > 0, href: "/teacher/schedule?new=1", label: t("fs.lesson"), sub: t("fs.lessonSub") },
@@ -209,6 +213,12 @@ export async function Dashboard({ user, role, day, top }: { user: User; role: "T
               const hw = l.slotId ? null : hwBefore(l.studentId, l.startsAt);
               const bday = st?.birthday && isoDay(st.birthday, "UTC").slice(5) === sel.slice(5);
               const first = !!st && !l.isTrial && st._count.lessons === 0;
+              const callLink = callLinkOf(
+                l.slotId ? l.group?.callLink : l.student?.callLink,
+                l.callLink,
+                l.slotId ? hosts.get(l.slotId)?.callLink : null,
+                teacherCallLink,
+              );
               return (
                 <div key={l.id} className={`tl ${studentLive ? "now" : soon ? "soon" : ""}`} data-teacher-lesson-status={teacherLessonStatus}>
                   <div className="tl-time">
@@ -251,8 +261,8 @@ export async function Dashboard({ user, role, day, top }: { user: User; role: "T
                     {l.note && <div className="tl-note" title={l.note}><Icon name="msg" size="sm" />{l.note}</div>}
                   </div>
                   <div className="tl-act">
-
-                    <Link href={`/class/${l.id}`} className={`btn sm ${soon || live ? "primary" : "secondary"}`}><Icon name="class" size="sm" />{role === "TEACHER" ? t("dash.openClass") : t("cls.enter")}</Link>
+                    <Link href={`/class/${l.id}`} className={`btn sm ${role === "TEACHER" || soon || live ? "primary" : "secondary"}`}><Icon name="class" size="sm" />{role === "TEACHER" ? t("dash.openClass") : t("cls.enter")}</Link>
+                    {role === "TEACHER" && <LessonCall lessonId={l.id} href={callLink} canAdd={l.status === "PLANNED"} />}
                     <div className="tl-quick">
                     {/* урок прошёл — вместо «Перенести / Отменить» комментарий после урока (уйдёт в заметку к следующему) */}
                     {role === "TEACHER" && end <= now.getTime() && <AfterNote id={l.id} next={nextOf.get(l.id) ?? null} />}
