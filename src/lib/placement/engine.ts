@@ -681,17 +681,6 @@ export function checkText(input: string, accept: string[]) {
   return matchesText(input, accept, EXP);
 }
 
-// Известные варианты из банка, которые обходят тему задания или содержат ошибку.
-// Учитываем их и при проверке нового ответа на сохранённый снимок задания.
-const excludedFixCorrections = new Map<string, string[]>([
-  ["F-G-B1-138", ["didn't check", "did not check"]],
-  ["F-G-B1-139", ["went", "probably went"]],
-  ["F-G-B1-142", ["are flying", "will fly"]],
-  ["F-G-B1-143", ["am interviewing"]],
-  ["F-G-B1-150", ["were planning to eat", "had planned to eat", "wanted to eat", "meant to eat"]],
-  ["F-G-B1-151", ["was planning to cycle", "had planned to cycle", "meant to cycle", "wanted to cycle"]],
-  ["F-G-C1-16", ["was taking"]],
-]);
 const contractedFixAux = { "there is": "There's", is: "'s", has: "'s", had: "'d", would: "'d" } as const;
 // Проверенные контексты, где сокращение сохраняет форму. Выводим вариант из
 // разрешённой полной формы, чтобы не превращать «'s sleeping» в «has sleeping».
@@ -705,8 +694,7 @@ const fixAux = new Map<string, keyof typeof contractedFixAux>([
   ["F-G-B1-154", "would"], ["F-G-B1-162", "would"],
 ]);
 export function acceptedFixCorrections(item: CoreItem) {
-  const excluded = excludedFixCorrections.get(item.id) ?? [];
-  const accepted = (item.accept ?? []).filter((text) => !excluded.includes(norm(text)));
+  const accepted = item.accept ?? [];
   const aux = fixAux.get(item.id);
   if (!aux) return accepted;
   const contractions = accepted.map(norm)
