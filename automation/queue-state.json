@@ -13,12 +13,13 @@
   "lease": {
     "token": "4d598b2bdae24cc791017049061b5ebc",
     "started_at": "2026-11-27T14:46:13.928023Z",
-    "expires_at": "2026-11-27T17:47:05.245159Z"
+    "expires_at": "2026-11-27T17:47:29.296022Z"
   },
   "checkpoint": {
-    "phase": "create_draft_pr",
+    "phase": "request_review",
     "branch": "codex/automation/review-probe",
-    "reviewed_sha": "11a67fe63b5ba03598b20cac4ce0a54e9757f13b"
+    "reviewed_sha": "11a67fe63b5ba03598b20cac4ce0a54e9757f13b",
+    "review_pr": 22
   },
   "last_probe": {
     "type": "inline_coordination",
