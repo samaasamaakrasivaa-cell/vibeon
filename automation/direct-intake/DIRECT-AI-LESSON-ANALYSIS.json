@@ -14,7 +14,25 @@
     "stage": "publication",
     "test_run": 46061742620
   },
-  "release": null,
+  "release": {
+    "ci": {
+      "result": "success",
+      "run": 46061742620,
+      "sha": "01ad4a0647489a29a4c6daaa60ac26c122040883"
+    },
+    "delivery": {
+      "result": "success",
+      "run": 46062893389,
+      "sha": "81d7077b1ed3ae99c4d844c27171d0f2f4485ebb"
+    },
+    "owner_note": "Для владельца: Уроки и конструктор — у проведённого урока появился анализ с оценкой стоимости запроса и выбором, показывать ли итог ученику",
+    "review": {
+      "comment": 6092946618,
+      "result": "success",
+      "sha": "01ad4a0647489a29a4c6daaa60ac26c122040883"
+    },
+    "site_sha": "81d7077b1ed3ae99c4d844c27171d0f2f4485ebb"
+  },
   "source": "direct",
   "version": 1
 }
