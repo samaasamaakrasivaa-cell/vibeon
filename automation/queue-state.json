@@ -10,22 +10,20 @@
     16,
     18
   ],
-  "lease": {
-    "token": "25ffd93a72414559a7e784b7ba1148f1",
-    "started_at": "2026-11-27T19:05:40.453646Z",
-    "expires_at": "2026-11-27T22:06:40.463232Z"
-  },
+  "lease": null,
   "checkpoint": {
     "issue": 25,
-    "stage": "request_review",
+    "stage": "await_ci_review",
     "branch": "codex/vocabulary/voc-09",
     "base_sha": "34d61672958edde1742eac6079bed0da747a22dd",
-    "next": "Refresh succeeded with identical seven task blobs, current main as second parent. Request native review once for exact new head after checking comments; verify CI and main; live health/version inaccessible locally and via web.",
+    "next": "Verify CI 46054332372 and native review on exact head; check current main and branch requirements before merge. Public health/version unavailable via curl DNS and web; verify through approved available means after release. Do not repeat review request.",
     "head_sha": "589b43e29c47e11cbbe349266c918f869b585b50",
     "pr": 54,
-    "review_request_comment_id": null,
-    "ci_run_ids": [],
-    "ci_status": "pending",
+    "review_request_comment_id": 7226205000,
+    "ci_run_ids": [
+      46054332372
+    ],
+    "ci_status": "in_progress",
     "subject_tests": "pending_new_head",
     "review_summary_id": null,
     "review_receipt_id": null,
