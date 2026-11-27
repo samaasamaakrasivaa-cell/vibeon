@@ -3,8 +3,18 @@
   "mode": "probe",
   "authorized_author": "samaasamaakrasivaa-cell",
   "readiness_marker": "[VIBEON-AUTO: READY]",
-  "manual_issue_numbers": [2, 7, 8, 16, 18],
-  "lease": null,
+  "manual_issue_numbers": [
+    2,
+    7,
+    8,
+    16,
+    18
+  ],
+  "lease": {
+    "token": "5a7c1171-e42d-480d-8005-bd43479418f1",
+    "started_at": "2026-11-27T14:24:30.870210+00:00",
+    "expires_at": "2026-11-27T17:24:30.870210+00:00"
+  },
   "checkpoint": null,
   "last_probe": {
     "github_read": "passed",
