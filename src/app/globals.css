@@ -753,6 +753,7 @@ details.how[open] summary { margin-bottom: 6px; }
 .qrow .grow { flex: 1; min-width: 0; }
 .nextcard { background: linear-gradient(120deg, #0A84FF, #3D8BFF); color: #fff; border-radius: 20px; padding: 20px 22px; }
 .nextcard .btn { background: #fff; color: var(--accent); }
+.nextcard .lesson-countdown { --lcd-label: #0D2035; }
 .goalring { width: 132px; height: 132px; flex: none; }
 .wstat { border-radius: 18px; padding: 14px; text-align: center; background: var(--surface); border: 1.5px solid var(--sep); }
 .wstat b { display: block; font-size: 26px; line-height: 1.2; }
@@ -1030,8 +1031,9 @@ select.iedit { cursor: pointer; }
 .tl[data-teacher-lesson-status] :is(.tl-time em, .tl-pick) { --accent: var(--accent-text); }
 .tl-time { display: flex; flex-direction: column; font-variant-numeric: tabular-nums; line-height: 1.2; }
 .tl-time b { font-size: 19px; letter-spacing: -.01em; }
-.tl-time span { font-size: 12px; color: var(--text3); margin-top: 2px; }
+.tl-time > span { font-size: 12px; color: var(--text3); margin-top: 2px; }
 .tl-time em { font-style: normal; font-size: 11.5px; font-weight: 600; margin-top: 4px; }
+.tl-time:has(.lesson-countdown) .tl-planned-label { display: none; }
 .tl-who { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; font-weight: 600; font-size: 15.5px; }
 .tl-what { margin: 4px 0 0 40px; font-size: 13px; color: var(--text2); }
 .tl-tags { margin: 8px 0 0 40px; display: flex; flex-wrap: wrap; gap: 6px; }
@@ -1045,6 +1047,39 @@ select.iedit { cursor: pointer; }
   .tl-act .btn { width: 100%; justify-content: center; }
   .tl-what, .tl-tags, .tl-note { margin-left: 0; }
 }
+
+.lesson-countdown {
+  --lcd-size: 25px;
+  display: inline-flex; flex-wrap: wrap; align-items: center; gap: 5px 8px;
+  max-width: 100%; vertical-align: middle; font-variant-numeric: tabular-nums; line-height: 1.2;
+}
+.lesson-countdown--teacher { --lcd-size: 20px; flex-direction: column; align-items: flex-start; gap: 3px; margin-top: 4px; }
+.lesson-countdown .lcd-prefix { font-size: 12px; font-weight: 600; color: var(--lcd-label, var(--text)); }
+.lesson-countdown--teacher .lcd-prefix { font-size: 10px; }
+.lcd-units, .lcd-unit { display: inline-flex; align-items: baseline; gap: 3px; }
+.lcd-units { flex-wrap: wrap; gap: 5px 9px; }
+.lcd-unit { white-space: nowrap; }
+.lesson-countdown .lcd-unit-label { font-size: 11px; color: var(--lcd-label, var(--text)); }
+.lesson-countdown--teacher .lcd-unit-label { font-size: 9px; }
+.lcd-tile {
+  display: inline-block; position: relative; width: calc(var(--lcd-size) * .72); height: var(--lcd-size);
+  flex: none; border-radius: 4px; overflow: hidden; perspective: 115px; vertical-align: middle;
+  font-size: calc(var(--lcd-size) * .65); font-weight: 700; line-height: var(--lcd-size);
+}
+.lcd-tile::after { content: ""; position: absolute; z-index: 3; top: 50%; inset-inline: 0; border-top: 1px solid var(--surface); opacity: .35; pointer-events: none; }
+.lcd-tile .lcd-face { position: absolute; left: 0; right: 0; height: 50%; overflow: hidden; color: var(--surface); background: var(--text); }
+.lcd-tile .lcd-top { top: 0; background: color-mix(in srgb, var(--text) 93%, var(--surface)); }
+.lcd-tile .lcd-bottom { bottom: 0; }
+.lcd-tile .lcd-face > span { position: absolute; inset-inline: 0; height: var(--lcd-size); text-align: center; }
+.lcd-top > span { top: 0; }
+.lcd-bottom > span { bottom: 0; }
+.lcd-hold { animation: lcd-hide 0s 150ms forwards; }
+.lcd-fold { z-index: 2; transform-origin: bottom; animation: lcd-fold 150ms ease-in both; }
+.lcd-unfold { z-index: 2; transform-origin: top; animation: lcd-unfold 150ms 150ms ease-out both; }
+@keyframes lcd-hide { to { visibility: hidden; } }
+@keyframes lcd-fold { to { transform: rotateX(-90deg); } }
+@keyframes lcd-unfold { from { transform: rotateX(90deg); } to { transform: rotateX(0deg); } }
+@media (prefers-reduced-motion: reduce) { .lcd-motion { display: none; } }
 
 /* выбор ученика в окне нового урока */
 .spick { position: relative; }

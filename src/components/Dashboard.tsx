@@ -20,6 +20,7 @@ import { lessonInclude, lessonWho, oneSlot, syncSchedule } from "@/lib/teacher/d
 import { initials } from "@/lib/invite";
 import { homeworkFor, type HwState } from "@/lib/homework";
 import { hasStartedLessonSession } from "@/lib/live/lesson-session";
+import { LessonCountdown } from "./LessonCountdown";
 import type { LessonInstance, User } from "@prisma/client";
 
 type ScheduledLesson = Pick<LessonInstance, "startsAt" | "status" | "live">;
@@ -81,6 +82,13 @@ export async function Dashboard({ user, role, day, top }: { user: User; role: "T
     if (!host) hosts.set(member.slotId, member);
     else if (member.status !== host.status || +member.startsAt !== +host.startsAt) inconsistentSlots.add(member.slotId);
   }
+  const statusFor = (lesson: LessonInstance) => {
+    if (role !== "TEACHER" || !isToday || (lesson.slotId && inconsistentSlots.has(lesson.slotId))) return;
+    return teacherLessonCardStatus(lesson, lesson.slotId ? hosts.get(lesson.slotId) : lesson, now);
+  };
+  const countdownId = role === "TEACHER" ? todayLessons.find((lesson) =>
+    lesson.status === "PLANNED" && lesson.startsAt > now && statusFor(lesson) !== "ACTIVE"
+  )?.id : undefined;
   // подробности уроков выбранного дня: материал, абонемент, долг, первый урок, день рождения
   const extra = new Map((await db.lessonInstance.findMany({
     where: { id: { in: todayLessons.map((l) => l.id) } },
@@ -187,9 +195,7 @@ export async function Dashboard({ user, role, day, top }: { user: User; role: "T
           <div className="tlist">
             {todayLessons.map((l) => {
               const start = l.startsAt.getTime(), end = start + l.durationMin * 60000;
-              const host = l.slotId ? hosts.get(l.slotId) : l;
-              const teacherLessonStatus = role === "TEACHER" && isToday && !(l.slotId && inconsistentSlots.has(l.slotId))
-                ? teacherLessonCardStatus(l, host, now) : undefined;
+              const teacherLessonStatus = statusFor(l);
               const studentLive = role === "STUDENT" && start <= now.getTime() && now.getTime() < end;
               const live = studentLive || teacherLessonStatus === "ACTIVE";
               const inMin = Math.round((start - now.getTime()) / 60000);
@@ -208,10 +214,13 @@ export async function Dashboard({ user, role, day, top }: { user: User; role: "T
                   <div className="tl-time">
                     <b className={studentLive ? "text-ok" : ""}>{hhmm(l.startsAt, tz)}</b>
                     <span>{hhmm(new Date(end), tz)}</span>
-                    {soon && <em className="text-accent">{t("today.startsIn", { n: inMin })}</em>}
+                    {role === "STUDENT" && soon && <em className="text-accent">{t("today.startsIn", { n: inMin })}</em>}
+                    {l.id === countdownId && <LessonCountdown startsAt={start} initialNow={now.getTime()} variant="teacher" />}
                     {live && <em className={studentLive ? "text-ok" : ""}>{t("today.live")}</em>}
                     {teacherLessonStatus === "DONE" && <em>{t("sch.st.done")}</em>}
-                    {teacherLessonStatus === "PLANNED" && !soon && <em>{t("sch.st.planned")}</em>}
+                    {teacherLessonStatus === "PLANNED" && (!soon || l.id === countdownId) && (
+                      <em className="tl-planned-label">{t("sch.st.planned")}</em>
+                    )}
                   </div>
                   <div className="tl-main">
                     <div className="tl-who">
