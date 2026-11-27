@@ -8,8 +8,8 @@
     "base_sha": "58ead57015f67ea5281af520fe7fcf46d68219d5",
     "branch": "codex/teacher/inline-time-labels",
     "head_sha": "7acc95ef6cf0de627a451fbd60a80ff09d136bdd",
-    "merge_sha": "286a35fe99f7fc3b79840806c3af121331dafa82",
-    "next": "Проверить штатный выпуск 46061725640 и точную версию на сайте",
+    "merge_sha": "97fa7328aa833b02702a05dc63182148dafdab39",
+    "next": "CD-01 подтвердил точный SHA в публичном health, требуется подтверждение сценария Tech Lead.",
     "pr": 71,
     "stage": "publication",
     "test_run": 46059890989
