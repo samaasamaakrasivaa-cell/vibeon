@@ -5,10 +5,10 @@
   "key": "DIRECT-TEACHER-COURSES-TESTS",
   "owner": "teacher",
   "progress": {
-    "base_sha": "58ead57015f67ea5281af520fe7fcf46d68219d5",
+    "base_sha": "b0c6eb3744c5f310cabaa5fc097deb297d402026",
     "branch": "codex/teacher/courses-tests-navigation",
-    "next": "Владелец переслал поручение в свой рабочий чат Teacher. Работа в исходном чате остановлена, формальная передача владения не оформлялась.",
-    "stage": "blocked"
+    "next": "Передача принята. Отдельный пункт в меню и сводка по статусам в существующей диагностике.",
+    "stage": "implementation"
   },
   "release": null,
   "source": "direct",
