@@ -5,12 +5,12 @@
   "key": "DIRECT-STUDENT-STUDY-SCHEDULE",
   "owner": "student",
   "progress": {
-    "base_sha": "81d7077b1ed3ae99c4d844c27171d0f2f4485ebb",
+    "base_sha": "3d111af83f05a0aa2fba824c767d70d74ad6bf69",
     "branch": "codex/student/study-schedule",
     "head_sha": "04a82c6a4073e9e0e26e0fe29f3af34c5df05e03",
-    "next": "Проверить единый черновик и отсутствие повторов на актуальном SHA",
+    "next": "Подтвердить выпуск предыдущего main и слить проверенное объединение",
     "pr": 77,
-    "stage": "review",
+    "stage": "integration",
     "test_run": 46064562916
   },
   "release": null,
