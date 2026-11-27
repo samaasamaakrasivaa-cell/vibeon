@@ -7,8 +7,10 @@
   "progress": {
     "base_sha": "1687278b3def1e1e81cce166e4dfcd0f01684be7",
     "branch": "codex/teacher/invite-schedule",
-    "next": "Проверить обе формы входа, выключенный пробный режим и ручное включение на синтетике",
-    "stage": "implementation"
+    "head_sha": "120f7f5b313cee59a7444fa2df877df696dcfd75",
+    "next": "Независимое ревью и CI на SHA PR. Выпуск после подтверждённой публикации задач 58 и 60",
+    "pr": 63,
+    "stage": "review"
   },
   "release": null,
   "source": "direct",
