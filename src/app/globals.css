@@ -2102,7 +2102,6 @@ button.grp-row:hover { background: var(--fill); }
 .selblk { position: absolute; left: 3px; right: 3px; z-index: 3; border-radius: 9px; background: color-mix(in srgb, var(--accent) 16%, transparent); box-shadow: inset 0 0 0 1.5px var(--accent); pointer-events: none; display: flex; justify-content: center; padding-top: 4px; }
 .selblk span { font-size: 11.5px; font-weight: 700; color: var(--accent-text); background: var(--surface); border-radius: 6px; padding: 0 6px; height: 18px; line-height: 18px; }
 .daycol { user-select: none; }
-.offmark { margin-top: 14px; color: var(--text2); }
 .rv-sec:hover small.truncate, .rv-sec:focus-visible small.truncate { white-space: normal; overflow: visible; }
 
 /* Личные заметки: вкладки-категории */
