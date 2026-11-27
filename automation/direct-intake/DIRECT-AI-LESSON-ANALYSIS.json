@@ -5,10 +5,12 @@
   "key": "DIRECT-AI-LESSON-ANALYSIS",
   "owner": "ai-quality",
   "progress": {
-    "base_sha": "58ead57015f67ea5281af520fe7fcf46d68219d5",
+    "base_sha": "8c71158ca82a234370f6b1ae39b99c3aa4485e42",
     "branch": "codex/ai-quality/lesson-analysis",
-    "next": "Сверить общий файл с Teacher и согласовать аудиторию, состав данных и бюджет",
-    "stage": "registered"
+    "head_sha": "f73719dcdf749e8d2d60021a7b0e2c116576c358",
+    "next": "Дождаться CI и публикации совместимого PR 74, затем сверить ревью и выпуск PR 75",
+    "pr": 75,
+    "stage": "review"
   },
   "release": null,
   "source": "direct",
