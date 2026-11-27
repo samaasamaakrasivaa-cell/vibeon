@@ -1,4 +1,5 @@
 import "server-only";
+import { displaySavedFixRange } from "./fix-answer-read";
 import type { CoreItem, ListenItem, PState, ReadItem, SpeakItem, WriteItem } from "./engine";
 
 // Данные для разбора: задания из снимка, ответ ученика, правильный ответ, объяснение.
@@ -10,12 +11,12 @@ export function reviewData(id: string, st: PState, forTeacher: boolean) {
     const a = st.answers[x.id];
     // «найди и исправь»: ученик выбрал слово и написал исправление — «слово → исправление»
     const fixGiven = (v: string) => { const [i, txt] = v.split("::"); const w = it.q.split(" ")[Number(i)]?.replace(/[.,!?;:]+$/, "") ?? ""; return `${w} → ${txt ?? ""}`; };
-    const given = a?.v === null || a?.v === undefined ? "" : it.type === "mcq" ? it.options?.[Number(a.v)] ?? "" : it.type === "fix" ? fixGiven(String(a.v)) : String(a.v);
+    const given = a?.v === null || a?.v === undefined ? "" : it.type === "mcq" ? it.options?.[Number(a.v)] ?? "" : it.type === "fix" ? displaySavedFixRange(it.q, a.v) ?? fixGiven(String(a.v)) : String(a.v);
     return {
       id: it.id, level: it.level, step: x.step, skill: it.skill, topic: it.topic_ru, type: it.type, q: it.q, frame: it.frame ?? null, base: it.base ?? it.key ?? null,
       right: it.type === "mcq" ? it.options?.[it.answer ?? 0] ?? "" : it.type === "fix" ? `${it.wrong ?? ""} → ${(it.accept ?? []).join(" / ")}` : (it.accept ?? []).join(" / "), given, ok: !!a?.ok, explain: it.explain_ru, ms: a?.ms ?? null, dk: !!a?.dk, hinted: !!a?.h, vocab: !!x.ph?.startsWith("v"), ph: x.ph ?? null,
       cf: a?.cf ?? null, typo: !!a?.ty, // v6: уверен / не уверен, засчитано с опечаткой
-      tried: (a?.tr ?? []).map((k) => (k === -1 ? null : it.type === "mcq" ? it.options?.[Number(k)] ?? "" : String(k))), // null — «Не знаю»
+      tried: (a?.tr ?? []).map((k) => (k === -1 ? null : it.type === "mcq" ? it.options?.[Number(k)] ?? "" : displaySavedFixRange(it.q, it.type === "fix" ? k : null) ?? String(k))), // null — «Не знаю»
     };
   });
   const text = (ids: string[], kind: "reading" | "listening") => ids.map((tid) => {
