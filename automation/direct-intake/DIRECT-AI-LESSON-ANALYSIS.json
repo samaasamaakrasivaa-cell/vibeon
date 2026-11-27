@@ -1,10 +1,15 @@
 {
   "claim_id": "296e661823ea4c2daa742fb42519475b",
   "handoff": null,
-  "issue": null,
+  "issue": 69,
   "key": "DIRECT-AI-LESSON-ANALYSIS",
   "owner": "ai-quality",
-  "progress": null,
+  "progress": {
+    "base_sha": "58ead57015f67ea5281af520fe7fcf46d68219d5",
+    "branch": "codex/ai-quality/lesson-analysis",
+    "next": "Сверить общий файл с Teacher и согласовать аудиторию, состав данных и бюджет",
+    "stage": "registered"
+  },
   "release": null,
   "source": "direct",
   "version": 1
