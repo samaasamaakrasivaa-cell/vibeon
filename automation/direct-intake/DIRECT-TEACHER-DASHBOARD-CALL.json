@@ -1,10 +1,15 @@
 {
   "claim_id": "10c8d4052529499b85085950d4d501c0",
   "handoff": null,
-  "issue": null,
+  "issue": 60,
   "key": "DIRECT-TEACHER-DASHBOARD-CALL",
   "owner": "teacher",
-  "progress": null,
+  "progress": {
+    "base_sha": "1687278b3def1e1e81cce166e4dfcd0f01684be7",
+    "branch": "codex/teacher/dashboard-call",
+    "next": "Сверить стык Student и Live Classroom, проверить ссылки и доступ на синтетических аккаунтах",
+    "stage": "implementation"
+  },
   "release": null,
   "source": "direct",
   "version": 1
