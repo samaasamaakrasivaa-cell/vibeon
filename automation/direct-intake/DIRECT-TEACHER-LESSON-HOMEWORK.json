@@ -7,8 +7,10 @@
   "progress": {
     "base_sha": "58ead57015f67ea5281af520fe7fcf46d68219d5",
     "branch": "codex/teacher/lesson-homework",
-    "next": "Сверить действующие правила подсчёта, затем проверить обе кнопки на тестовой базе",
-    "stage": "implementation"
+    "head_sha": "42f43ab2451b14046f28cd78e908a8a5d8921ed5",
+    "next": "Независимое ревью и CI, сверка Homework и Live Classroom, затем штатная публикация",
+    "pr": 73,
+    "stage": "review"
   },
   "release": null,
   "source": "direct",
