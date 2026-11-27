@@ -8,9 +8,9 @@
     "base_sha": "82473a1199a160651ae2bed2f8365b5e536d7c72",
     "branch": "codex/teacher/courses-tests-navigation",
     "head_sha": "b3c7831d0e6fce8bbc7fa500031dcc926befb3d7",
-    "next": "Уточнён возврат в тот же статус через отчёт и после удаления, запущено повторное ревью.",
+    "next": "Точный CI, повторное независимое ревью и браузерные проверки прошли. Ожидаются профильный допуск и возобновление выкладки.",
     "pr": 85,
-    "stage": "review",
+    "stage": "integration",
     "test_run": 46070127919
   },
   "release": null,
