@@ -10,7 +10,11 @@
     16,
     18
   ],
-  "lease": null,
+  "lease": {
+    "token": "c9b6542497ea4205a9dc768b5883192f",
+    "started_at": "2026-11-27T16:59:00.721629Z",
+    "expires_at": "2026-11-27T19:59:00.721629Z"
+  },
   "checkpoint": null,
   "last_probe": {
     "type": "background_native_review",
