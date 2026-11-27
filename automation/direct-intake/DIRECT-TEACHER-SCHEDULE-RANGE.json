@@ -8,9 +8,10 @@
     "base_sha": "1687278b3def1e1e81cce166e4dfcd0f01684be7",
     "branch": "codex/teacher/schedule-range",
     "head_sha": "c369eada853840d8a9c54c9bd770254ae6e832e6",
-    "next": "Независимое ревью и CI на SHA PR, допуск Tech Lead и штатная публикация",
+    "next": "CI и независимое ревью пройдены. Ожидается проверка Tech Lead перед интеграцией и штатным CD",
     "pr": 59,
-    "stage": "review"
+    "stage": "integration",
+    "test_run": 46051707316
   },
   "release": null,
   "source": "direct",
