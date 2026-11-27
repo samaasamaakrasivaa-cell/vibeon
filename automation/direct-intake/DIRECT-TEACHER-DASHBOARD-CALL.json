@@ -7,8 +7,10 @@
   "progress": {
     "base_sha": "1687278b3def1e1e81cce166e4dfcd0f01684be7",
     "branch": "codex/teacher/dashboard-call",
-    "next": "Сверить стык Student и Live Classroom, проверить ссылки и доступ на синтетических аккаунтах",
-    "stage": "implementation"
+    "head_sha": "064352f35fbe1522eb4840e4fb20e68c2c8ac331",
+    "next": "Независимое ревью и CI на SHA PR, сверка Student и Live Classroom, затем допуск Tech Lead",
+    "pr": 61,
+    "stage": "review"
   },
   "release": null,
   "source": "direct",
