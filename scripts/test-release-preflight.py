@@ -40,11 +40,19 @@ class PreflightTest(unittest.TestCase):
             return "2.39.0"
         if args[:2] == ("docker", "ps"):
             return "\n".join(c["id"] for c in self.containers)
+        if args[:2] == ("docker", "info"):
+            return json.dumps("/var/lib/docker")
         if args[:2] == ("docker", "inspect"):
             template = args[args.index("--format") + 1]
             if template == preflight.PEER_ENV_INSPECT:
                 peer = next(c for c in self.containers if c["id"] == args[-1])
                 return json.dumps(peer.get("synthetic_db_env", False))
+            if template == preflight.PEER_CMD_INSPECT:
+                peer = next(c for c in self.containers if c["id"] == args[-1])
+                return json.dumps(peer.get("synthetic_caddy_command", False))
+            if template == preflight.PEER_MOUNTS_INSPECT:
+                peer = next(c for c in self.containers if c["id"] == args[-1])
+                return json.dumps(peer["mounts"])
             self.assertNotIn(".Config.Env", template)
             self.assertNotIn(".Source", template)
             return "\n".join(json.dumps(c) for c in self.containers)
@@ -121,6 +129,34 @@ class PreflightTest(unittest.TestCase):
         self.assertIsNone(metadata["has_db_credential_env_keys"])
         self.assertFalse(metadata["credential_env_check_available"])
         self.assertNotIn(SECRET, json.dumps(metadata))
+
+    def test_safe_caddy_mount_layout_and_sensitive_bind_rejection(self):
+        with tempfile.TemporaryDirectory() as directory:
+            config = Path(directory) / "Caddyfile"
+            config.write_text("synthetic fixture")
+            bind = {"type": "bind", "name": None, "source": str(config), "destination": "/etc/caddy/Caddyfile", "rw": True}
+            volume = {"type": "volume", "name": "proxy_data", "source": "/var/lib/docker/volumes/proxy_data/_data", "destination": "/data", "rw": True}
+            self.assertTrue(preflight.safe_mount_layout([bind, volume, None], "/var/lib/docker"))
+            # All protected paths resolve synthetically without touching their contents.
+            for unsafe in ("/", "/opt", "/opt/vibeon", "/opt/vibeon/deploy", "/var", "/var/lib/docker", "/var/lib/docker/volumes", "/proc", "/sys", "/dev", "/run/docker.sock"):
+                with patch.object(preflight.Path, "resolve", lambda p, strict=False: p):
+                    self.assertFalse(preflight.safe_mount_layout([{**bind, "source": unsafe}], "/var/lib/docker"), unsafe)
+            symlink = Path(directory) / "hidden-config"
+            symlink.symlink_to("/proc")
+            self.assertFalse(preflight.safe_mount_layout([{**bind, "source": str(symlink)}], "/var/lib/docker"))
+            self.assertFalse(preflight.safe_mount_layout([{**bind, "destination": "/var/run/docker.sock"}], "/var/lib/docker"))
+            self.assertFalse(preflight.safe_mount_layout([{**volume, "name": "vibeon_uploads"}], "/var/lib/docker"))
+            self.assertFalse(preflight.safe_mount_layout([{**volume, "destination": "/app/uploads"}], "/var/lib/docker"))
+            self.assertFalse(preflight.safe_mount_layout([bind, bind], "/var/lib/docker"))
+
+    def test_peer_mount_paths_never_enter_report(self):
+        peer = container(4, "proxy")
+        peer["project"] = "other"
+        peer["mounts"] = [{"type": "bind", "name": None, "source": "/" + SECRET, "destination": "/etc/caddy", "rw": True}]
+        self.containers.append(peer)
+        report = self.collect()
+        self.assertFalse(report["checks"]["unknown_peer_metadata"][0]["safe_mount_layout"])
+        self.assertIn("unknown_db_network_peers", report["blockers"])
 
     def test_multiple_app_replicas_block(self):
         self.containers.append(container(4, "app"))
@@ -205,6 +241,27 @@ class DockerMetadataTest(unittest.TestCase):
                     self.assertEqual(json.loads(env_presence.stdout), labelled)
                     self.assertNotIn(SECRET, env_presence.stdout)
                     self.assertNotIn("DATABASE_URL", env_presence.stdout)
+                    command_presence = subprocess.run(
+                        ["docker", "inspect", "--type", "container", "--format", preflight.PEER_CMD_INSPECT, fixture_id],
+                        check=True, capture_output=True, text=True, timeout=30)
+                    self.assertFalse(json.loads(command_presence.stdout))
+                subprocess.run(["docker", "pull", "caddy:2.8-alpine"], check=True,
+                               stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, timeout=90)
+                created = subprocess.run(["docker", "create", "--network", "none", "caddy:2.8-alpine"],
+                                         check=True, capture_output=True, text=True, timeout=30)
+                fixture_id = created.stdout.strip()
+                self.assertRegex(fixture_id, r"^[0-9a-f]{64}$")
+                fixture_ids.append(fixture_id)
+                command_presence = subprocess.run(
+                    ["docker", "inspect", "--type", "container", "--format", preflight.PEER_CMD_INSPECT, fixture_id],
+                    check=True, capture_output=True, text=True, timeout=30)
+                self.assertTrue(json.loads(command_presence.stdout))
+                private_mounts = subprocess.run(
+                    ["docker", "inspect", "--type", "container", "--format", preflight.PEER_MOUNTS_INSPECT, fixture_id],
+                    check=True, capture_output=True, text=True, timeout=30)
+                docker_root = subprocess.run(["docker", "info", "--format", "{{json .DockerRootDir}}"],
+                                             check=True, capture_output=True, text=True, timeout=30)
+                self.assertTrue(preflight.safe_mount_layout(json.loads(private_mounts.stdout), json.loads(docker_root.stdout)))
             finally:
                 for fixture_id in fixture_ids:
                     subprocess.run(["docker", "rm", fixture_id], check=False,
