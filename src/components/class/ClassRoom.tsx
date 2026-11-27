@@ -12,6 +12,7 @@ import { LessonCountdown } from "@/components/LessonCountdown";
 import { LogoMark } from "../Logo";
 import { ErrOnlyCtx, KeyCtx, MarkCtx, markMap, TaskCard, type MarkLayer, type TaskData } from "../tasks/TaskView";
 import { hadWrongTry, isFinal, progressOf, summary, type Step } from "@/lib/tasks/progress";
+import { assignedHomeworkTasks } from "@/lib/tasks/homework-selection";
 import { AnswerProvider, type Answers } from "../tasks/store";
 import { Catalog } from "../builder/Catalog";
 import { TaskEditor } from "../builder/TaskEditor";
@@ -78,6 +79,8 @@ export function ClassRoom({ d }: { d: ClassData }) {
   const { t, lang } = useT();
   const router = useRouter();
   const teacher = d.role === "teacher";
+  // При возврате преподавателя главная перечитывает счётчик ДЗ из базы.
+  const CabinetLink = teacher ? "a" : Link;
   const lessonSession = d.lessonSession;
   const [tab, setTab] = useState<"lesson" | "homework" | "words" | "board">(d.initialTab ?? "lesson");
   const [addHwTip, setAddHwTip] = useState(!!d.addHw); // пришли из «Домашки» по «+»: подсказать, как добавить задания
@@ -348,10 +351,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
   // новые домашки (manual): задания раздела «Домашка» — заготовки, ученик их не видит; у ученика — только заданное учителем,
   // в том порядке, как учитель задавал (первым задал — первым в списке). Старые домашки — как раньше: раздел «Домашка» + отправленные с урока
   const manual = hw.manual !== false;
-  const byId = new Map(d.tasks.map((x) => [x.id, x]));
-  const hwBase = manual
-    ? hw.extraTaskIds.map((id) => byId.get(id)).filter((x): x is CTask => !!x && !x.hidden)
-    : [...d.tasks.filter((x) => x.section === "homework" && !x.hidden && !(hw.removedTaskIds ?? []).includes(x.id)), ...d.tasks.filter((x) => hw.extraTaskIds.includes(x.id))];
+  const hwBase = assignedHomeworkTasks(d.tasks, hw);
   const prepared = manual && teacher ? d.tasks.filter((x) => x.section === "homework" && !x.hidden && !x.options?.teacherOnly && !hw.extraTaskIds.includes(x.id)) : [];
   const assignHw = (ids: string[]) => { if (!ids.length) return; setHw((h) => ({ ...h, extraTaskIds: [...new Set([...h.extraTaskIds, ...ids])] })); void send("hw", { ids, on: true }); };
   // крестик: убрать из домашки (по ошибке добавили)
@@ -529,7 +529,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
           </div>
         )}
         <header className="cls-top">
-          <Link href={d.homeHref} className="cls-logo" aria-label="VibeOn"><LogoMark size={36} /><small>Vibe<span>On</span></small></Link>
+          <CabinetLink href={d.homeHref} className="cls-logo" aria-label="VibeOn"><LogoMark size={36} /><small>Vibe<span>On</span></small></CabinetLink>
           <div className="cls-crumb"><small>{d.crumbs ?? t("cls.lesson")}</small><b>{d.title ?? t("cls.noTemplate")}</b></div>
           <nav className="cls-tabs">
             {([["lesson", "book", t("bld.lesson")], ["homework", "inbox", t("nav.homework")], ["words", "cards", teacher ? t("bld.newWords") : t("cls.myWords")], ["board", "pencil", t("cls.board")]] as const).map(([k, ic, label]) => (
@@ -558,7 +558,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
                 </span>
               ))}
             </span>
-            <Link href={d.homeHref} className="iconbtn" title={t("cls.exit")} aria-label={t("cls.exit")}><Icon name="logout" size="sm" /></Link>
+            <CabinetLink href={d.homeHref} className="iconbtn" title={t("cls.exit")} aria-label={t("cls.exit")}><Icon name="logout" size="sm" /></CabinetLink>
           </div>
         </header>
 
@@ -717,7 +717,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
               setSaving(false); setEditing(null); await send("reload"); router.refresh();
             }} />
         )}
-        <ClassDialogs which={dlg === "cheer" ? null : dlg} close={() => setDlg(null)} d={d} hwComment={hw.teacherComment} hwInfo={{ given: hwTasks.length, prepared: prepared.length }} send={send} onFinished={() => router.push(d.homeHref)} onCheer={() => setDlg("cheer")} />
+        <ClassDialogs which={dlg === "cheer" ? null : dlg} close={() => setDlg(null)} d={d} hwComment={hw.teacherComment} hwInfo={{ given: hwTasks.length, prepared: prepared.length }} send={send} onFinished={() => window.location.assign(d.homeHref)} onCheer={() => setDlg("cheer")} />
         {dlg === "cheer" && (
           <LessonCheer catalog={d.cheers ?? []} onClose={() => setDlg(null)} onGiven={(awardId) => rawSend("cheer", { awardId })}
             to={d.group ? d.group.members.map((m) => ({ sid: m.sid, name: m.name, gender: m.gender ?? null, inClass: !!m.userId && online.includes(m.userId) }))
