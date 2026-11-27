@@ -4,6 +4,14 @@ export function resultFilter(value: string | null | undefined): ResultFilter {
   return value === "new" || value === "submitted" || value === "reviewed" ? value : "assigned";
 }
 
+function filterQuery(filter: ResultFilter) {
+  return filter === "assigned" ? "" : `?status=${filter}`;
+}
+
 export function resultsHref(filter: ResultFilter) {
-  return filter === "assigned" ? "/teacher/placement" : `/teacher/placement?status=${filter}`;
+  return `/teacher/placement${filterQuery(filter)}`;
+}
+
+export function attemptHref(id: string, filter: ResultFilter = "assigned", section?: "report") {
+  return `/teacher/placement/${id}${section === "report" ? "/report" : ""}${filterQuery(filter)}`;
 }

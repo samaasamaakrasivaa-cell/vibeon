@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useT } from "@/lib/i18n/client";
 import type { DictKey } from "@/lib/i18n/dict";
 import { closePlacementLink, deletePlacement, createPlacementLink, selfPlacement, setLinkShowResult } from "@/lib/placement/actions";
-import { resultFilter, resultsHref, type ResultFilter } from "@/lib/placement/results-filter";
+import { attemptHref, resultFilter, resultsHref, type ResultFilter } from "@/lib/placement/results-filter";
 import { useRun } from "../courses/useRun";
 import { Dialog } from "../Dialog";
 import { Icon } from "../Icon";
@@ -69,7 +69,6 @@ export function PlacementPanel({ students, rows, links, origin, owner, teen, tim
         const who = row.who || "—";
         const selfUnfinished = row.mode === "self" && (row.status === "new" || row.status === "active");
         const action = t(row.status === "submitted" ? "pl.listCheck" : row.status === "reviewed" ? "pl.listView" : "pl.listOpen");
-        const backFilter = currentFilter && currentFilter !== "assigned" ? `?status=${currentFilter}` : "";
         const when = dateFor(row, currentFilter);
         return (
           <li key={row.id} className="plrow flex-wrap gap-y-2 px-0">
@@ -82,7 +81,7 @@ export function PlacementPanel({ students, rows, links, origin, owner, teen, tim
               <span className={`pill ${row.status === "reviewed" ? "green" : row.status === "submitted" ? "orange" : "grey"}`}>{t(`pl.st.${row.status}` as "pl.st.new")}</span>
             </div>
             <div className="ml-auto flex items-center gap-2">
-              <Link href={selfUnfinished ? `/placement/${row.id}` : `/teacher/placement/${row.id}${backFilter}`} className="alink small" aria-label={`${action}: ${who}`}>{action}</Link>
+              <Link href={selfUnfinished ? `/placement/${row.id}` : attemptHref(row.id, currentFilter)} className="alink small" aria-label={`${action}: ${who}`}>{action}</Link>
               <button type="button" className="iconbtn" title={t("pl.delete")} aria-label={`${t("pl.delete")}: ${who}`} disabled={pending} onClick={() => confirm(t("pl.delConfirm")) && run(() => deletePlacement(row.id))}><Icon name="close" size="sm" /></button>
             </div>
           </li>

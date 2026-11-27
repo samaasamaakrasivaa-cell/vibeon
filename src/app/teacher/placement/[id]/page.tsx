@@ -13,7 +13,7 @@ import { speechTranscript } from "@/lib/placement/speech-transcript";
 import { reviewData } from "@/lib/placement/review";
 import { doneOf, partsOf, stateOf } from "@/lib/placement/run";
 import { PlacementParts } from "@/components/placement/AssignParts";
-import { resultFilter, resultsHref } from "@/lib/placement/results-filter";
+import { attemptHref, resultFilter, resultsHref } from "@/lib/placement/results-filter";
 
 export const metadata = { title: "Placement test — проверка" };
 
@@ -21,7 +21,9 @@ export default async function PlacementReviewPage({ params, searchParams }: { pa
   const { t, lang } = await getT();
   const me = await requireUser("TEACHER");
   const { id } = await params;
-  const back = resultsHref(resultFilter((await searchParams).status));
+  const filter = resultFilter((await searchParams).status);
+  const back = resultsHref(filter);
+  const reportHref = attemptHref(id, filter, "report");
   const a = await db.placementAttempt.findUnique({ where: { id }, include: { student: true } });
   if (!a || a.teacherId !== me.id) notFound();
   const st = stateOf(a.state);
@@ -70,7 +72,7 @@ export default async function PlacementReviewPage({ params, searchParams }: { pa
         {(a.status === "submitted" || a.status === "reviewed") && (
           <span className="ml-auto flex flex-wrap items-center gap-2">
             {rep?.sent && <span className="small muted">{t("pl.repSent", { d: rep.sentAt ? new Date(rep.sentAt).toLocaleDateString(loc, { day: "numeric", month: "long", timeZone: me.timezone }) : "" })}</span>}
-            <Link href={`/teacher/placement/${id}/report`} className="btn primary sm">{t(hasRep ? "pl.editReport" : "pl.genReport")}</Link>
+            <Link href={reportHref} className="btn primary sm">{t(hasRep ? "pl.editReport" : "pl.genReport")}</Link>
           </span>
         )}
       </div>
@@ -84,7 +86,7 @@ export default async function PlacementReviewPage({ params, searchParams }: { pa
       {/* список разделов не нужен — даты выше; остаётся только «Добавить разделы» */}
       {a.mode === "student" && (a.status === "submitted" || a.status === "reviewed") && <div className="mb-5"><PlacementParts id={id} parts={partsOf(st)} done={doneOf(st)} dates={dates} canAdd compact /></div>}
       <div className="flex flex-col gap-6">
-        <PlacementReview key={`${id}-${draft.regrading}-${st.writing?.id}-${transcript.source}`} transcript={transcript} regrading={draft.regrading}
+        <PlacementReview key={`${id}-${draft.regrading}-${st.writing?.id}-${transcript.source}`} transcript={transcript} regrading={draft.regrading} reportHref={reportHref} backHref={back}
           parts={partsOf(st)} dates={dates} base={base} who={who} reveal={a.reveal}
           id={id} teen={st.track === "teen"} lessonQs={lessonQs} mode={a.mode} status={a.status} level={a.level} showResult={a.showResult} tgSent={((a.review ?? {}) as { tgSentAt?: string }).tgSentAt ? new Date(((a.review ?? {}) as { tgSentAt: string }).tgSentAt).toLocaleString("ru-RU", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: me.timezone }) : null} sm={sm} d={d}
           review={{ ...draft.active, report: rep } as never}
