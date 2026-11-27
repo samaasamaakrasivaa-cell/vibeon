@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "mode": "probe",
+  "mode": "enabled",
   "authorized_author": "samaasamaakrasivaa-cell",
   "readiness_marker": "[VIBEON-AUTO: READY]",
   "manual_issue_numbers": [
