@@ -42,6 +42,9 @@ class PreflightTest(unittest.TestCase):
             return "\n".join(c["id"] for c in self.containers)
         if args[:2] == ("docker", "inspect"):
             template = args[args.index("--format") + 1]
+            if template == preflight.PEER_ENV_INSPECT:
+                peer = next(c for c in self.containers if c["id"] == args[-1])
+                return json.dumps(peer.get("synthetic_db_env", False))
             self.assertNotIn(".Config.Env", template)
             self.assertNotIn(".Source", template)
             return "\n".join(json.dumps(c) for c in self.containers)
@@ -78,6 +81,46 @@ class PreflightTest(unittest.TestCase):
     def test_published_database_port_blocks(self):
         self.db["published_ports"] = ["5432/tcp", None]
         self.assertIn("db_ports_published", self.collect()["blockers"])
+
+    def test_peer_metadata_is_allowlisted_and_never_admits_proxy(self):
+        peer = container(4, SECRET)
+        peer.update(project=SECRET, image_ref="docker.io/library/caddy:2.8-alpine",
+                    exposed_ports=["80/tcp", "443/tcp", "443/udp", SECRET, None],
+                    synthetic_db_env=True)
+        peer["mounts"] = [{"type": "bind", "name": SECRET, "destination": SECRET, "rw": True},
+                          {"type": "volume", "name": "vibeon_pgdata", "destination": SECRET, "rw": True}]
+        self.containers.append(peer)
+        report = self.collect()
+        self.assertEqual(report["status"], "blocked")
+        self.assertIn("unknown_db_network_peers", report["blockers"])
+        metadata = report["checks"]["unknown_peer_metadata"][0]
+        self.assertEqual(metadata["family"], "caddy")
+        self.assertEqual(metadata["compose_project"], "other")
+        self.assertEqual(metadata["exposed_ports"], {"http": 1, "https": 2, "other": 1})
+        self.assertEqual(metadata["bind_mount_count"], 1)
+        self.assertTrue(metadata["shares_db_volume"])
+        self.assertFalse(metadata["shares_upload_volume"])
+        self.assertTrue(metadata["has_db_credential_env_keys"])
+        self.assertNotIn("DATABASE_URL", json.dumps(report))
+
+    def test_private_or_lookalike_image_is_not_official_family(self):
+        peer = container(4, "proxy")
+        peer["project"] = None
+        for image_ref in ("private.example/caddy:2", "attacker/nginx:latest", "caddy.evil:2", SECRET):
+            peer["image_ref"] = image_ref
+            with patch.object(preflight, "run", return_value="false"):
+                metadata = preflight.peer_metadata(peer)
+            self.assertEqual(metadata["family"], "other")
+            self.assertEqual(metadata["compose_project"], "none")
+            self.assertFalse(metadata["has_db_credential_env_keys"])
+            self.assertNotIn(SECRET, json.dumps(metadata))
+
+    def test_failed_peer_credential_probe_stays_unknown_and_redacted(self):
+        with patch.object(preflight, "run", side_effect=RuntimeError(SECRET)):
+            metadata = preflight.peer_metadata(container(4, "other"))
+        self.assertIsNone(metadata["has_db_credential_env_keys"])
+        self.assertFalse(metadata["credential_env_check_available"])
+        self.assertNotIn(SECRET, json.dumps(metadata))
 
     def test_multiple_app_replicas_block(self):
         self.containers.append(container(4, "app"))
@@ -138,7 +181,8 @@ class DockerMetadataTest(unittest.TestCase):
                             "--env", "SYNTHETIC_SECRET=" + SECRET]
                     if labelled:
                         args += ["--label", "com.docker.compose.project=vibeon",
-                                 "--label", "com.docker.compose.service=app"]
+                                 "--label", "com.docker.compose.service=app",
+                                 "--env", "DATABASE_URL=" + SECRET]
                     args += ["busybox:1.36", "true"]
                     created = subprocess.run(args, check=True, capture_output=True, text=True, timeout=30)
                     fixture_id = created.stdout.strip()
@@ -155,6 +199,12 @@ class DockerMetadataTest(unittest.TestCase):
                     self.assertIn(mount["name"], (None, ""))
                     self.assertNotIn(SECRET, observed.stdout)
                     self.assertNotIn(directory, observed.stdout)
+                    env_presence = subprocess.run(
+                        ["docker", "inspect", "--type", "container", "--format", preflight.PEER_ENV_INSPECT, fixture_id],
+                        check=True, capture_output=True, text=True, timeout=30)
+                    self.assertEqual(json.loads(env_presence.stdout), labelled)
+                    self.assertNotIn(SECRET, env_presence.stdout)
+                    self.assertNotIn("DATABASE_URL", env_presence.stdout)
             finally:
                 for fixture_id in fixture_ids:
                     subprocess.run(["docker", "rm", fixture_id], check=False,
