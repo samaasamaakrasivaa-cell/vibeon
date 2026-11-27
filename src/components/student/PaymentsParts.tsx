@@ -3,7 +3,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Dialog } from "../Dialog";
 import { Icon } from "../Icon";
-import { upload } from "../courses/CourseView";
+import { paymentFileAccept, paymentUploadMessage, uploadPaymentDocument } from "../finance/PaymentDocumentUpload";
 import { useT } from "@/lib/i18n/client";
 import { buyPack, iPaid, payMessage } from "@/lib/billing/actions";
 
@@ -14,6 +14,7 @@ export function PaidButton({ id, amount }: { id: string; amount: string }) {
   const [text, setText] = useState("");
   const [file, setFile] = useState<string | null>(null);
   const [fname, setFname] = useState("");
+  const [uploading, setUploading] = useState(false);
   const [res, setRes] = useState<null | "auto" | "sent">(null);
   const [err, setErr] = useState<string | null>(null);
   const [pending, start] = useTransition();
@@ -26,12 +27,28 @@ export function PaidButton({ id, amount }: { id: string; amount: string }) {
             <p className="muted m-0">{t("pay.proofLead")}</p>
             <label className="upl">
               <Icon name="image" />{fname || t("pay.attachScreenshot")}
-              <input type="file" accept="image/*,application/pdf" hidden onChange={async (e) => { const f = e.target.files?.[0]; if (!f) return; setFname(f.name); try { setFile((await upload(f)).url); } catch { setErr(t("bld.uploadErr")); } }} />
+              <input type="file" accept={paymentFileAccept} className="sr-only" disabled={pending || uploading} onChange={async (e) => {
+                const selected = e.target.files?.[0];
+                e.target.value = "";
+                if (!selected) return;
+                setErr(null);
+                setFile(null);
+                setFname("");
+                setUploading(true);
+                try {
+                  setFile(await uploadPaymentDocument(id, "proof", selected));
+                  setFname(selected.name);
+                } catch (error) {
+                  setErr(t(paymentUploadMessage(error)));
+                } finally {
+                  setUploading(false);
+                }
+              }} />
             </label>
             <div className="field"><label htmlFor="pt">{t("pay.orText")}</label><textarea id="pt" className="textarea" value={text} onChange={(e) => setText(e.target.value)} placeholder={t("pay.textPh", { amount })} /></div>
             {err && <div className="alert">{err}</div>}
             <div className="actions"><button className="btn secondary" onClick={() => setOpen(false)}>{t("common.cancel")}</button>
-              <button className="btn primary" disabled={pending || (!text.trim() && !file)} onClick={() => start(async () => { const r = await iPaid(id, { text, file: file ?? undefined }); if (!r.ok) setErr(r.error); else setRes(r.auto ? "auto" : "sent"); })}>{t("cls.send")}</button></div>
+              <button className="btn primary" disabled={pending || uploading || (!text.trim() && !file)} onClick={() => start(async () => { const r = await iPaid(id, { text, file: file ?? undefined }); if (!r.ok) setErr(r.error); else setRes(r.auto ? "auto" : "sent"); })}>{t("cls.send")}</button></div>
           </div>
         )}
       </Dialog>

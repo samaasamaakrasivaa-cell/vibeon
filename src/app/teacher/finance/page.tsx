@@ -2,10 +2,12 @@ import Link from "next/link";
 import { Icon } from "@/components/Icon";
 import { FinTiles, type FinTile } from "@/components/finance/FinTiles";
 import { StudentAvatar } from "@/components/awards/Medal";
-import { CheckActions, InvoiceEdit, LessonPaidBtn, PayLaterBtn, UndoPaidBtn, PayDetails, ReceiptButton, ResendLink } from "@/components/finance/FinanceParts";
+import { CheckActions, InvoiceEdit, LessonPaidBtn, PayLaterBtn, UndoPaidBtn, PayDetails, ResendLink } from "@/components/finance/FinanceParts";
 import { requireUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { getT } from "@/lib/i18n/server";
+import { invoiceDocumentStates } from "@/lib/billing/documents";
+import { PaymentDocumentUpload } from "@/components/finance/PaymentDocumentUpload";
 import { financeData, type Range } from "@/lib/billing/finance";
 import { weekReport } from "@/lib/billing/weekly";
 import { WeekCard } from "@/components/finance/WeekCard";
@@ -17,7 +19,7 @@ export const dynamic = "force-dynamic";
 
 const TABS = ["updates", "income", "students", "check"] as const;
 
-export default async function Finance({ searchParams }: { searchParams: Promise<{ tab?: string; r?: string; c?: string; hl?: string }> }) {
+export default async function Finance({ searchParams }: { searchParams: Promise<{ tab?: string; r?: string; c?: string; hl?: string; paidPage?: string; archivePage?: string }> }) {
   const { t, lang } = await getT();
   const me = await requireUser("TEACHER");
   const sp = await searchParams;
@@ -33,6 +35,11 @@ export default async function Finance({ searchParams }: { searchParams: Promise<
   const q = (p: Record<string, string>) => `?${new URLSearchParams({ tab, r: range, ...p })}`;
   const checkTab = sp.c === "toCheck" || sp.c === "auto" ? sp.c : "waiting";
   const rows = d.check[checkTab as keyof typeof d.check];
+  const documentLink = await invoiceDocumentStates(tab === "check" ? rows : []);
+  const requestedPage = Number(sp.paidPage);
+  const paidPage = Number.isSafeInteger(requestedPage) && requestedPage > 0 && requestedPage <= 100_000 ? requestedPage : 1;
+  const requestedArchive = Number(sp.archivePage);
+  const archivePage = Number.isSafeInteger(requestedArchive) && requestedArchive > 0 && requestedArchive <= 100_000 ? requestedArchive : 1;
   const daysSince = d.oldestProof ? Math.floor((Date.now() - d.oldestProof.getTime()) / 864e5) : 0;
   const maxM = Math.max(1, ...d.months.flatMap((m) => [m.earned, m.received]));
   const maxS = Math.max(1, ...d.perStudent.map((p) => p.earned));
@@ -183,6 +190,8 @@ export default async function Finance({ searchParams }: { searchParams: Promise<
             {rows.length === 0 && !(checkTab === "waiting" && (d.unbilled.length || d.later.length)) && <div className="card"><p className="hint m-0">{t("fin.c.empty")}</p></div>}
             {rows.map((i) => {
               const ai = i.aiRead as { amounts?: number[]; matches?: boolean; source?: string } | null;
+              const proof = documentLink(i, "proof");
+              const receipt = documentLink(i, "receipt");
               return (
                 <div key={i.id} id={`inv-${i.id}`} className={`chkrow ${checkTab === "auto" ? "auto" : ""} ${sp.hl === i.id ? "hl" : ""}`}>
                   <span className="avatar lg">{initials(i.student.name, i.student.lastName)}</span>
@@ -192,7 +201,9 @@ export default async function Finance({ searchParams }: { searchParams: Promise<
                       <><span className="small text-text3 block">{t("fin.nothingSent")}{i.remindCount ? ` · ${t("fin.reminded", { n: i.remindCount })}` : ""}</span><ResendLink id={i.id} /></>
                     ) : (
                       <div className="flex flex-col items-start gap-1">
-                        {i.proofFile && <a href={i.proofFile} target="_blank" rel="noreferrer" className="pill blue"><Icon name="image" size="sm" />{t("fin.screenshot")}</a>}
+                        {proof.href ? <a href={proof.href} download className="pill blue">{t("pay.proofDocument")}</a>
+                          : i.proofFile && <span className="small">{t(proof.pending ? "pay.documentPending" : "pay.proofUnavailable")}</span>}
+                        {proof.restoredAt && <span className="small muted">{t("pay.documentRestored", { d: dtt(proof.restoredAt) })}</span>}
                         {i.proofText && <span className="small"><Icon name="msg" size="sm" /> {i.proofText}</span>}
                         {ai?.source === "text" && <span className={`pill ${ai.matches ? "green" : "red"}`}>{ai.matches ? t("fin.matches") : t("fin.noMatch")}</span>}
                         {ai?.source === "screenshot" && (ai.matches
@@ -200,6 +211,12 @@ export default async function Finance({ searchParams }: { searchParams: Promise<
                           : <span className="pill orange"><Icon name="spark" size="sm" />{ai.amounts?.length ? t("fin.aiOther", { sum: ai.amounts.map(R).join(", ") }) : t("fin.aiNone")}</span>)}
                       </div>
                     )}
+                    {i.receiptFile && <div className="flex flex-wrap items-center gap-2">
+                      {receipt.href ? <a href={receipt.href} download className="pill blue">{t("pay.receipt")}</a>
+                        : receipt.pending ? <span className="small">{t("pay.documentPending")}</span>
+                          : <PaymentDocumentUpload id={i.id} kind="receipt" has />}
+                      {receipt.restoredAt && <span className="small muted">{t("pay.documentRestored", { d: dtt(receipt.restoredAt) })}</span>}
+                    </div>}
                   </div>
                   <span className="amt">{R(i.amount)}</span>
                   <InvoiceEdit id={i.id} />
@@ -209,31 +226,56 @@ export default async function Finance({ searchParams }: { searchParams: Promise<
             })}
             {checkTab !== "auto" && rows.length > 0 && <div className="mt-2 flex items-center justify-between px-4"><b>{t("fin.stillToReceive")}</b><span className="amt big">{R(rows.reduce((a, i) => a + i.amount, 0))}</span></div>}
           </div>
-          <RecentPaid teacherId={me.id} R={R} loc={loc} tz={me.timezone} t={t} />
+          <InvoiceHistory teacherId={me.id} page={paidPage} href={(n) => q({ c: checkTab, paidPage: String(n), archivePage: String(archivePage) })} R={R} loc={loc} tz={me.timezone} t={t} />
+          <InvoiceHistory cancelled teacherId={me.id} page={archivePage} href={(n) => q({ c: checkTab, paidPage: String(paidPage), archivePage: String(n) })} R={R} loc={loc} tz={me.timezone} t={t} />
         </>
       )}
     </div>
   );
 }
 
-async function RecentPaid({ teacherId, R, loc, tz, t }: { teacherId: string; R: (n: number) => string; loc: string; tz: string; t: (k: never, v?: Record<string, string | number>) => string }) {
-  const paid = await db.invoice.findMany({ where: { student: { teacherId }, status: "PAID", closedAt: { not: null } }, include: { student: true }, orderBy: { paidAt: "desc" }, take: 15 });
-  if (!paid.length) return null;
+async function InvoiceHistory({ teacherId, page, href, R, loc, tz, t, cancelled = false }: {
+  teacherId: string; page: number; href: (page: number) => string; R: (n: number) => string; loc: string; tz: string; cancelled?: boolean;
+  t: Awaited<ReturnType<typeof getT>>["t"];
+}) {
+  const pageSize = 15;
+  const rows = await db.invoice.findMany({
+    where: { student: { teacherId }, ...(cancelled ? { status: "CANCELLED" as const } : { status: "PAID" as const, closedAt: { not: null } }) },
+    include: { student: true },
+    orderBy: [cancelled ? { createdAt: "desc" } : { paidAt: "desc" }, { id: "desc" }],
+    skip: (page - 1) * pageSize,
+    take: pageSize + 1,
+  });
+  if (!rows.length && page === 1) return null;
+  const paid = rows.slice(0, pageSize);
+  const documentLink = await invoiceDocumentStates(paid);
   return (
-    <section className="card mt-6">
-      <h3 className="mb-3">{t("fin.recentPaid" as never)}</h3>
-      {paid.map((i) => (
-        <div key={i.id} className="row wrap-phone">
-          <span className="pill green">✓</span>
-          <div className="grow"><b className="block">{i.student.name} {i.student.lastName}</b><span className="small muted">{i.title} · {i.paidAt?.toLocaleDateString(loc, { day: "numeric", month: "short", timeZone: tz })}</span></div>
-          <b>{R(i.amount)}</b>
-          <InvoiceEdit id={i.id} />
-          {i.receiptFile && <a className="pill blue" href={i.receiptFile} target="_blank" rel="noreferrer">{t("pay.receipt" as never)}</a>}
-          <ReceiptButton id={i.id} has={!!i.receiptFile} />
-          {/* подтвердили по ошибке — сутки можно отменить прямо здесь */}
-          {!i.autoAccepted && i.paidAt && Date.now() - i.paidAt.getTime() < 864e5 && <UndoPaidBtn id={i.id} />}
-        </div>
-      ))}
+    <section className="list mt-6">
+      <h3 className="mb-3">{t(cancelled ? "pay.archive" : "fin.recentPaid")}</h3>
+      {paid.map((i) => {
+        const date = (d: Date) => d.toLocaleDateString(loc, { day: "numeric", month: "short", timeZone: tz });
+        const receipt = documentLink(i, "receipt");
+        const proof = documentLink(i, "proof");
+        return (
+          <div key={i.id} className="row wrap-phone">
+            {!cancelled && <span className="pill green">✓</span>}
+            <div className="grow"><b className="block">{i.title}</b><span className="small muted">{date(i.paidAt ?? i.createdAt)}</span></div>
+            <b>{R(i.amount)}</b>
+            {!cancelled && <InvoiceEdit id={i.id} />}
+            {proof.href ? <a href={proof.href} download className="pill blue">{t("pay.proofDocument")}</a>
+              : i.proofFile && <span className="small">{t(proof.pending ? "pay.documentPending" : "pay.proofUnavailable")}</span>}
+            {receipt.href ? <a href={receipt.href} download className="pill blue">{t("pay.receipt")}</a>
+              : receipt.pending ? <span className="small">{t("pay.documentPending")}</span>
+                : (i.receiptFile || !cancelled) && <PaymentDocumentUpload id={i.id} kind="receipt" has={!!i.receiptFile} />}
+            {[proof.restoredAt, receipt.restoredAt].map((time, index) => time && <span key={index} className="small muted">{t("pay.documentRestored", { d: date(time) })}</span>)}
+            {!cancelled && !i.autoAccepted && i.paidAt && Date.now() - i.paidAt.getTime() < 864e5 && <UndoPaidBtn id={i.id} />}
+          </div>
+        );
+      })}
+      {(page > 1 || rows.length > pageSize) && <nav className="row flex-wrap">
+        {page > 1 && <Link href={href(page - 1)} className="btn plain sm">{t("pay.newerInvoices")}</Link>}
+        {rows.length > pageSize && <Link href={href(page + 1)} className="btn plain sm">{t("pay.olderInvoices")}</Link>}
+      </nav>}
     </section>
   );
 }

@@ -6,7 +6,9 @@ import { readStored } from "@/lib/storage";
 export async function GET(req: NextRequest, { params }: { params: Promise<{ key: string[] }> }) {
   const key = (await params).key.join("/");
   const meta = await db.upload.findUnique({ where: { path: key } });
-  if (!meta) return new NextResponse("Not found", { status: 404 });
+  if (!meta || meta.paymentKind !== null || meta.legacyUnverified) {
+    return new NextResponse(null, { status: 404, headers: { "Cache-Control": "private, no-store" } });
+  }
   const f = await readStored(key);
   if (!f) return new NextResponse("Not found", { status: 404 });
   const range = req.headers.get("range");

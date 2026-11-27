@@ -1,13 +1,15 @@
 import { weeklyMoments } from "../teacher/moment-digest";
 import "server-only";
 import { backfillTelegram } from "../notify/bot";
-import type { Invoice, Student } from "@prisma/client";
+import type { Invoice, Prisma, Student, User } from "@prisma/client";
 import { db } from "../db";
 import { mailInvoice } from "../mail";
 import { env } from "../env";
 import { publish } from "../live/bus";
-import { readStored } from "../storage";
-import { ocr } from "../ai/gateway";
+import { fileUrl } from "../storage";
+import { lockStudentBilling, spendPackLesson } from "./pack-usage";
+import { invoiceDocumentAccess, invoiceForDocumentWrite, paymentUploadForWrite, usablePaymentUpload } from "./documents";
+import { runPaymentOcr } from "./payment-ocr";
 import { weeklyReports } from "../roadmap/jobs";
 import { notify, notifyPayer } from "../notify";
 import { pluralForm } from "@/lib/i18n/dict";
@@ -37,28 +39,31 @@ export function amountsIn(text: string): number[] {
 /** Цена из анкеты (или цена группы) — во все ещё не оплаченные уроки ученика: будущие, проведённые без счёта и в счетах,
  *  которые ещё ждут оплаты; суммы таких счетов пересчитываются. Уроки из абонемента — тоже (деньги за них — в абонементе). Оплаченные по счёту уроки не меняются. */
 export async function repriceLessons(studentId: string) {
-  const s = await db.student.findUnique({ where: { id: studentId } });
-  if (!s) return;
-  const open = await db.invoice.findMany({ where: { studentId, kind: "lessons", status: "SENT" } });
-  const openIds = open.flatMap((i) => i.lessonIds);
-  const lessons = await db.lessonInstance.findMany({
-    // урок из абонемента: деньги — за абонемент, цена урока лишь показывает, сколько он стоит, — тоже по анкете
-    where: { studentId, isTrial: false, status: { not: "CANCELLED" }, OR: [{ billedAt: null }, { id: { in: openIds } }] },
-    select: { id: true, price: true, groupId: true, group: { select: { price: true } } },
+  await db.$transaction(async (tx) => {
+    if (!await lockStudentBilling(tx, studentId)) return;
+    const s = await tx.student.findUnique({ where: { id: studentId } });
+    if (!s) return;
+    const open = await tx.invoice.findMany({ where: { studentId, kind: "lessons", status: "SENT" } });
+    const openIds = open.flatMap((i) => i.lessonIds);
+    const lessons = await tx.lessonInstance.findMany({
+      // урок из абонемента: деньги — за абонемент, цена урока лишь показывает, сколько он стоит, — тоже по анкете
+      where: { studentId, isTrial: false, status: { not: "CANCELLED" }, OR: [{ billedAt: null }, { id: { in: openIds } }] },
+      select: { id: true, price: true, groupId: true, group: { select: { price: true } } },
+    });
+    const byPrice = new Map<number, string[]>();
+    for (const l of lessons) {
+      const target = (l.groupId ? l.group?.price : null) ?? s.price; // групповое занятие — по цене группы, если она задана
+      if (target == null || l.price === target) continue;
+      byPrice.set(target, [...(byPrice.get(target) ?? []), l.id]);
+    }
+    for (const [price, ids] of byPrice) await tx.lessonInstance.updateMany({ where: { id: { in: ids } }, data: { price } });
+    for (const inv of open) {
+      if (!inv.lessonIds.length) continue;
+      const ls = await tx.lessonInstance.findMany({ where: { id: { in: inv.lessonIds } }, select: { price: true } });
+      const amount = ls.reduce((a, l) => a + (l.price ?? s.price ?? 0), 0);
+      if (amount > 0 && amount !== inv.amount) await tx.invoice.update({ where: { id: inv.id }, data: { amount, revision: { increment: 1 } } });
+    }
   });
-  const byPrice = new Map<number, string[]>();
-  for (const l of lessons) {
-    const target = (l.groupId ? l.group?.price : null) ?? s.price; // групповое занятие — по цене группы, если она задана
-    if (target == null || l.price === target) continue;
-    byPrice.set(target, [...(byPrice.get(target) ?? []), l.id]);
-  }
-  for (const [price, ids] of byPrice) await db.lessonInstance.updateMany({ where: { id: { in: ids } }, data: { price } });
-  for (const inv of open) {
-    if (!inv.lessonIds.length) continue;
-    const ls = await db.lessonInstance.findMany({ where: { id: { in: inv.lessonIds } }, select: { price: true } });
-    const amount = ls.reduce((a, l) => a + (l.price ?? s.price ?? 0), 0);
-    if (amount > 0 && amount !== inv.amount) await db.invoice.update({ where: { id: inv.id }, data: { amount } });
-  }
 }
 
 // ───────── Счета ─────────
@@ -66,14 +71,26 @@ export async function repriceLessons(studentId: string) {
 const RULE_DELAY_MIN: Record<string, number> = { after_5: 5, after_15: 15, after_30: 30, after_60: 60, next_day: 24 * 60 };
 
 export async function createInvoice(s: Student, data: { amount: number; kind: "lessons" | "pack" | "manual"; title: string; period?: string; lessonIds?: string[]; packLessons?: number }) {
-  const inv = await db.invoice.create({
-    data: {
-      studentId: s.id, amount: Math.round(data.amount), kind: data.kind, title: data.title, period: data.period ?? null,
-      lessonIds: data.lessonIds ?? [], packLessons: data.packLessons ?? null, payerName: s.payerName, payerContact: s.payerContact,
-    },
+  const inv = await db.$transaction(async (tx) => {
+    if (!await lockStudentBilling(tx, s.id)) return null;
+    if (data.kind === "pack" && await tx.invoice.count({
+      where: { studentId: s.id, kind: "pack", status: { in: ["SENT", "PROOF_SENT"] } },
+    })) return null;
+    const lessonIds = [...new Set(data.lessonIds)];
+    if (lessonIds.length) {
+      const eligible = { id: { in: lessonIds }, studentId: s.id, billedAt: null, deductedAt: null };
+      if (await tx.lessonInstance.count({ where: eligible }) !== lessonIds.length) return null;
+      const claim = await tx.lessonInstance.updateMany({ where: eligible, data: { billedAt: new Date() } });
+      if (claim.count !== lessonIds.length) throw new Error("Invoice lessons changed while being credited");
+    }
+    return tx.invoice.create({
+      data: {
+        studentId: s.id, amount: Math.round(data.amount), kind: data.kind, title: data.title, period: data.period ?? null,
+        lessonIds, packLessons: data.packLessons ?? null, payerName: s.payerName, payerContact: s.payerContact,
+      },
+    });
   });
-  if (data.lessonIds?.length) await db.lessonInstance.updateMany({ where: { id: { in: data.lessonIds } }, data: { billedAt: new Date() } });
-  await notifyInvoice(s, inv, false);
+  if (inv) await notifyInvoice(s, inv, false);
   return inv;
 }
 
@@ -93,82 +110,154 @@ export async function notifyInvoice(s: Student, inv: Invoice, reminder: boolean)
 }
 
 /** Принять оплату: счёт оплачен; для абонемента — новый абонемент. */
+export async function acceptInvoiceInTransaction(tx: Prisma.TransactionClient, inv: Invoice, auto: boolean) {
+  await tx.invoice.update({ where: { id: inv.id }, data: { status: "PAID", paidAt: new Date(), autoAccepted: auto, closedAt: auto ? null : new Date(), revision: { increment: 1 } } });
+  if (inv.kind === "pack" && inv.packLessons && !(await tx.pack.findUnique({ where: { invoiceId: inv.id } }))) {
+    const pack = await tx.pack.create({ data: { studentId: inv.studentId, lessonsTotal: inv.packLessons, lessonsLeft: inv.packLessons, price: inv.amount, invoiceId: inv.id } });
+    // уроки, проведённые «в долг» после окончания прошлого абонемента, списываются из нового
+    // урок, который учитель «вернул» в абонемент (charged = false), повторно не списывается
+    const owed = await tx.lessonInstance.findMany({
+      where: { studentId: inv.studentId, deductedAt: null, billedAt: null, isTrial: false, charged: true, status: { in: ["DONE", "MISSED"] } },
+      orderBy: [{ startsAt: "asc" }, { id: "asc" }], take: inv.packLessons, select: { id: true },
+    });
+    for (const lesson of owed) await spendPackLesson(tx, pack, lesson.id);
+  }
+}
+
 export async function acceptInvoice(inv: Invoice, auto: boolean) {
-  await db.$transaction(async (tx) => {
-    await tx.invoice.update({ where: { id: inv.id }, data: { status: "PAID", paidAt: new Date(), autoAccepted: auto, closedAt: auto ? null : new Date() } });
-    if (inv.kind === "pack" && inv.packLessons && !(await tx.pack.findUnique({ where: { invoiceId: inv.id } }))) {
-      await tx.pack.create({ data: { studentId: inv.studentId, lessonsTotal: inv.packLessons, lessonsLeft: inv.packLessons, price: inv.amount, invoiceId: inv.id } });
-      // уроки, проведённые «в долг» после окончания прошлого абонемента, списываются из нового
-      // урок, который учитель «вернул» в абонемент (charged = false), повторно не списывается
-      const owed = await tx.lessonInstance.findMany({ where: { studentId: inv.studentId, deductedAt: null, isTrial: false, charged: true, status: { in: ["DONE", "MISSED"] } }, orderBy: { startsAt: "asc" }, take: inv.packLessons });
-      if (owed.length) {
-        const p = await tx.pack.findUnique({ where: { invoiceId: inv.id } });
-        await tx.pack.update({ where: { id: p!.id }, data: { lessonsLeft: { decrement: owed.length } } });
-        await tx.lessonInstance.updateMany({ where: { id: { in: owed.map((l) => l.id) } }, data: { deductedAt: new Date() } });
-      }
-    }
+  return db.$transaction(async (tx) => {
+    if (!await lockStudentBilling(tx, inv.studentId)) return false;
+    const current = await tx.invoice.findFirst({
+      where: { id: inv.id, studentId: inv.studentId, status: inv.status, revision: inv.revision },
+    });
+    if (!current || current.status === "PAID" || current.status === "CANCELLED") return false;
+    await acceptInvoiceInTransaction(tx, current, auto);
+    const student = await tx.student.findUnique({ where: { id: current.studentId }, select: { userId: true } });
+    if (student?.userId) await notify({
+      userId: student.userId, kind: "paid",
+      title: `Оплата получена: ${new Intl.NumberFormat("ru-RU").format(current.amount)} ₽. Спасибо!`,
+      link: "/student/payments?tab=bills",
+    }, tx);
+    return true;
   });
 }
 
 /** Отменить приём оплаты (кнопка «Отменить» у автоприёма): счёт снова ждёт проверки. */
-export async function undoAccept(inv: Invoice) {
-  await db.$transaction(async (tx) => {
-    const p = await tx.pack.findUnique({ where: { invoiceId: inv.id } });
-    if (p && p.lessonsLeft === p.lessonsTotal) await tx.pack.delete({ where: { id: p.id } });
-    await tx.invoice.update({ where: { id: inv.id }, data: { status: inv.proofAt ? "PROOF_SENT" : "SENT", paidAt: null, autoAccepted: false, closedAt: null } });
+export async function undoAccept(inv: Invoice, options: { auto?: boolean } = {}) {
+  return db.$transaction(async (tx) => {
+    if (!await lockStudentBilling(tx, inv.studentId)) return "stale";
+    const current = await tx.invoice.findFirst({
+      where: {
+        id: inv.id, studentId: inv.studentId, status: "PAID", revision: inv.revision,
+      },
+    });
+    if (!current || options.auto && (!current.autoAccepted || current.closedAt)) return "stale";
+
+    const pack = await tx.pack.findUnique({ where: { invoiceId: inv.id } });
+    if (pack && (pack.used || pack.lessonsLeft !== pack.lessonsTotal)) return "used";
+    if (pack) await tx.pack.delete({ where: { id: pack.id } });
+    await tx.invoice.update({
+      where: { id: inv.id },
+      data: { status: current.proofAt ? "PROOF_SENT" : "SENT", paidAt: null, autoAccepted: false, closedAt: null, revision: { increment: 1 } },
+    });
+    return "ok";
   });
 }
 
 /** Ученик прислал подтверждение. Текст или скриншот (сумму читает ИИ-распознавание): совпала сумма — автоприём, иначе — на проверку учителю. */
-export async function submitProof(inv: Invoice, proof: { text?: string; file?: string }) {
+export async function submitProof(id: string, actor: Pick<User, "id" | "role">, proof: { text?: string; file?: string }) {
+  const inv = await invoiceForDocumentWrite(id, "proof", actor);
+  if (!inv || inv.status === "CANCELLED") return { ok: false, error: "not found" } as const;
   const text = proof.text?.trim().slice(0, 1000) || null;
-  let read: { source: string; amounts: number[]; matches: boolean; text?: string; failed?: boolean };
-  if (text) { const found = amountsIn(text); read = { source: "text", amounts: found, matches: found.includes(inv.amount) }; }
-  else {
-    read = { source: "screenshot", amounts: [], matches: false };
-    try {
-      const key = proof.file!.replace(/^\/api\/files\//, "");
-      const file = await readStored(key);
-      const st = await db.student.findUnique({ where: { id: inv.studentId }, select: { teacherId: true, userId: true } });
-      if (file && st) {
-        const mime = key.endsWith(".png") ? "image/png" : key.endsWith(".pdf") ? "application/pdf" : "image/jpeg";
-        const seen = await ocr(file.buf, mime, { userId: st.userId ?? "", teacherId: st.teacherId });
-        const found = amountsIn(seen);
-        read = { source: "screenshot", amounts: found, matches: found.includes(inv.amount), text: seen.slice(0, 400) };
-      }
-    } catch { read.failed = true; }
-  }
-  const matches = read.matches;
-  await db.invoice.update({
-    where: { id: inv.id },
-    data: { status: "PROOF_SENT", proofKind: proof.file ? "screenshot" : "text", proofFile: proof.file ?? null, proofText: text, proofAt: new Date(), aiRead: read },
-  });
-  const fresh = await db.invoice.findUniqueOrThrow({ where: { id: inv.id }, include: { student: true } });
-  if (matches) await acceptInvoice(fresh, true);
-  await notify({
-      userId: fresh.student.teacherId, kind: "payment",
-      title: `${fresh.student.name} ${matches ? "оплатил(а)" : "прислал(а) подтверждение оплаты"}: ${new Intl.NumberFormat("ru-RU").format(inv.amount)} ₽`,
-      action: matches ? "review" : "check_screenshot", link: "/teacher/finance?tab=check",
+  const upload = proof.file ? await paymentUploadForWrite(proof.file, id, "proof", actor.id) : null;
+  if (proof.file && !upload) return { ok: false, error: "file" } as const;
+  const ref = upload ? fileUrl(upload.path) : null;
+  if ((ref || text) && ref === inv.proofFile && text === inv.proofText &&
+      (inv.status === "PROOF_SENT" || inv.status === "PAID")) return { ok: true, auto: inv.autoAccepted } as const;
+  if (inv.status !== "SENT" || upload && upload.paymentRevision !== inv.revision) return { ok: false, error: "stale" } as const;
+  const artifact = upload ? await usablePaymentUpload(upload) : null;
+  if (upload && !artifact || !upload && !text) return { ok: false, error: "file" } as const;
+
+  const ocrCopy = !text && artifact?.ocr || null;
+  const matchFromText = !!text && amountsIn(text).includes(inv.amount);
+  const initialRead = text ? { source: "text", matches: matchFromText }
+    : { source: "screenshot", matches: false, code: ocrCopy ? "PENDING" : "UNSUPPORTED" };
+  const scope = { id, ...invoiceDocumentAccess(actor), studentId: inv.studentId };
+  const saved = await db.$transaction(async (tx) => {
+    if (!await lockStudentBilling(tx, inv.studentId)) return false;
+    if (upload && await tx.invoiceDocumentVersion.findUnique({ where: { uploadId: upload.id } })) return false;
+    const change = await tx.invoice.updateMany({
+      where: { ...scope, status: "SENT", revision: inv.revision },
+      data: {
+        status: "PROOF_SENT", proofKind: upload ? "screenshot" : "text", proofFile: ref,
+        proofText: text, proofAt: new Date(), aiRead: initialRead, revision: { increment: 1 },
+      },
     });
-  return matches;
+    if (!change.count) return false;
+    if (upload) {
+      await tx.invoiceDocumentVersion.create({
+        data: { uploadId: upload.id, invoiceId: id, kind: "PROOF", previous: inv.proofFile, actorId: actor.id },
+      });
+      if (ocrCopy) await tx.paymentOcrAttempt.create({ data: { uploadId: upload.id, invoiceId: id, amount: inv.amount, code: "RUNNING" } });
+    }
+    if (matchFromText) await acceptInvoiceInTransaction(tx, inv, true);
+    await notify({
+      userId: inv.student.teacherId, kind: "payment",
+      title: `${inv.student.name} ${matchFromText ? "оплатил(а)" : "прислал(а) подтверждение оплаты"}: ${new Intl.NumberFormat("ru-RU").format(inv.amount)} ₽`,
+      action: matchFromText ? "review" : "check_screenshot", link: "/teacher/finance?tab=check",
+    }, tx);
+    return true;
+  });
+
+  if (!saved) {
+    const current = await db.invoice.findFirst({ where: scope });
+    if ((ref || text) && current?.proofFile === ref && current.proofText === text &&
+        (current.status === "PROOF_SENT" || current.status === "PAID")) return { ok: true, auto: current.autoAccepted } as const;
+    return { ok: false, error: "stale" } as const;
+  }
+  if (!ocrCopy || !upload) return { ok: true, auto: matchFromText } as const;
+
+  const expected = { ...scope, status: "PROOF_SENT" as const, revision: inv.revision + 1, proofFile: ref };
+  const outcome = await runPaymentOcr(upload.id, expected, ocrCopy, { userId: actor.id, teacherId: inv.student.teacherId },
+    (seen) => amountsIn(seen).includes(inv.amount));
+  const auto = await db.$transaction(async (tx) => {
+    await tx.paymentOcrAttempt.updateMany({
+      where: { uploadId: upload.id, code: "RUNNING" },
+      data: { code: outcome.code, matches: outcome.matches, completedAt: new Date() },
+    });
+    if (!await lockStudentBilling(tx, inv.studentId)) return false;
+    const updated = await tx.invoice.updateMany({
+      where: expected, data: { aiRead: { source: "screenshot", ...outcome }, revision: { increment: 1 } },
+    });
+    if (!updated.count || !outcome.matches) return false;
+    await acceptInvoiceInTransaction(tx, inv, true);
+    return true;
+  });
+  return { ok: true, auto } as const;
 }
 
 // ───────── Плановые задачи (раз в минуту) ─────────
 
 /** Списание уроков из абонемента: проведённые и оплачиваемые пропуски. */
 async function deductPacks() {
-  const lessons = await db.lessonInstance.findMany({
-    where: { deductedAt: null, isTrial: false, student: { payType: "PACK" }, charged: true, status: { in: ["DONE", "MISSED"] } },
-    orderBy: { startsAt: "asc" },
-    take: 500,
-  });
-  for (const l of lessons) {
-    const pack = await db.pack.findFirst({ where: { studentId: l.studentId!, lessonsLeft: { gt: 0 }, OR: [{ frozenUntil: null }, { frozenUntil: { lt: l.startsAt } }] }, orderBy: { startsAt: "asc" } });
-    if (!pack) continue; // абонемент закончился — урок спишется из следующего
-    await db.$transaction([
-      db.pack.update({ where: { id: pack.id }, data: { lessonsLeft: { decrement: 1 } } }),
-      db.lessonInstance.update({ where: { id: l.id }, data: { deductedAt: new Date() } }),
-    ]);
+  const eligible = {
+    deductedAt: null, billedAt: null, isTrial: false, student: { payType: "PACK" }, charged: true,
+    status: { in: ["DONE", "MISSED"] },
+  } satisfies Prisma.LessonInstanceWhereInput;
+  const lessons = await db.lessonInstance.findMany({ where: eligible, orderBy: { startsAt: "asc" }, take: 500 });
+  for (const lesson of lessons) {
+    const studentId = lesson.studentId;
+    if (!studentId) continue;
+    await db.$transaction(async (tx) => {
+      if (!await lockStudentBilling(tx, studentId)) return;
+      const current = await tx.lessonInstance.findFirst({ where: { id: lesson.id, studentId, ...eligible } });
+      if (!current) return;
+      const pack = await tx.pack.findFirst({
+        where: { studentId, lessonsLeft: { gt: 0 }, OR: [{ frozenUntil: null }, { frozenUntil: { lt: current.startsAt } }] },
+        orderBy: [{ startsAt: "asc" }, { id: "asc" }],
+      });
+      if (pack) await spendPackLesson(tx, pack, current.id);
+    });
   }
 }
 

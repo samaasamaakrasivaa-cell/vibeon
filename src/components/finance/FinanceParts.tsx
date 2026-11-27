@@ -3,9 +3,8 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "../Icon";
 import { Dialog } from "../Dialog";
-import { upload } from "../courses/CourseView";
 import { useT } from "@/lib/i18n/client";
-import { attachReceipt, cancelInvoice, closeInvoice, confirmLessonPaid, payLater, undoPaid, invoiceDetails, markPaid, updateInvoice, rejectProof, resendInvoice, savePayDetails, undoAuto } from "@/lib/billing/actions";
+import { cancelInvoice, closeInvoice, confirmLessonPaid, payLater, undoPaid, invoiceDetails, markPaid, updateInvoice, rejectProof, resendInvoice, savePayDetails, undoAuto } from "@/lib/billing/actions";
 
 type Res = { ok: boolean; error?: string };
 function useAct() {
@@ -90,17 +89,6 @@ export function ResendLink({ id }: { id: string }) {
   return <button className="btn plain sm" style={{ paddingLeft: 0 }} disabled={pending || done} onClick={() => { act(() => resendInvoice(id)); setDone(true); }}><Icon name="msg" size="sm" />{done ? t("pay.resent") : t("pay.resend")}</button>;
 }
 
-export function ReceiptButton({ id, has }: { id: string; has: boolean }) {
-  const { t } = useT();
-  const { pending, act } = useAct();
-  return (
-    <label className="btn plain sm" style={{ cursor: "pointer" }}>
-      <Icon name="clip" size="sm" />{has ? t("pay.receiptReplace") : t("pay.attachReceipt")}
-      <input type="file" accept="image/*,application/pdf" hidden disabled={pending} onChange={async (e) => { const f = e.target.files?.[0]; if (!f) return; const r = await upload(f); act(() => attachReceipt(id, r.url)); }} />
-    </label>
-  );
-}
-
 export function PayDetails({ initial }: { initial: string }) {
   const { t } = useT();
   const { pending, act } = useAct();
@@ -142,7 +130,14 @@ export function PayLaterBtn({ id, back }: { id: string; back?: boolean }) {
 /** «Отменить оплату» — сутки после подтверждения (если нажали «Оплачено» по ошибке). */
 export function UndoPaidBtn({ id }: { id: string }) {
   const { t } = useT();
-  const router = useRouter();
-  const [pending, start] = useTransition();
-  return <button type="button" className="btn plain sm text-bad" disabled={pending} title={t("pd.undoHint")} onClick={() => { if (confirm(t("pd.undoQ"))) start(async () => { await undoPaid(id); router.refresh(); }); }}><Icon name="undo" size="sm" />{t("pd.undo")}</button>;
+  const { pending, err, act } = useAct();
+  return (
+    <>
+      <button type="button" className="btn plain sm text-bad" disabled={pending} title={t("pd.undoHint")}
+        onClick={() => { if (confirm(t("pd.undoQ"))) act(() => undoPaid(id)); }}>
+        <Icon name="undo" size="sm" />{t("pd.undo")}
+      </button>
+      {err && <span role="alert" className="small text-bad">{err}</span>}
+    </>
+  );
 }

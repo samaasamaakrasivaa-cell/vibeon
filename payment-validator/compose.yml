@@ -1,0 +1,26 @@
+# Add to deploy/docker-compose.prod.yml only after qualifying the target host.
+services:
+  app:
+    environment:
+      PAYMENT_VALIDATOR_SOCKET: /run/payment-validator/worker.sock
+    volumes:
+      - payment_validator_socket:/run/payment-validator:ro
+  payment-validator:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+      target: payment-validator
+    image: vibeon-payment-validator:latest
+    restart: unless-stopped
+    network_mode: none
+    read_only: true
+    mem_limit: 256m
+    memswap_limit: 256m
+    pids_limit: 32
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    volumes:
+      - payment_validator_socket:/run/payment-validator
+
+volumes:
+  payment_validator_socket: {}

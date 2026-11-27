@@ -2,13 +2,14 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { randomUUID } from "node:crypto";
-import type { LessonStatus, PayType } from "@prisma/client";
+import type { LessonStatus, PayType, Prisma } from "@prisma/client";
 import { db } from "../db";
 import { requireUser } from "../auth/session";
 import { fromZoned, parseIsoDay } from "../time";
 import { getT } from "../i18n/server";
 import { notify, notifyPayer } from "../notify";
 import { repriceLessons } from "../billing/engine";
+import { lockStudentBilling, spendPackLesson } from "../billing/pack-usage";
 
 export type Result = { ok: true; id?: string } | { ok: false; error: string };
 
@@ -211,10 +212,13 @@ export async function moveLesson(id: string, date: string, start: string, fix = 
 }
 
 /** Урок уже списан из абонемента, а его удалили или перенесли в будущее — вернуть урок в абонемент. */
-async function restorePackLesson(l: { studentId: string | null; deductedAt: Date | null }) {
+async function restorePackLesson(l: { studentId: string | null; deductedAt: Date | null }, tx: Prisma.TransactionClient = db) {
   if (!l.studentId || !l.deductedAt) return;
-  const pack = await db.pack.findFirst({ where: { studentId: l.studentId }, orderBy: { startsAt: "desc" } });
-  if (pack && pack.lessonsLeft < pack.lessonsTotal) await db.pack.update({ where: { id: pack.id }, data: { lessonsLeft: { increment: 1 } } });
+  const pack = await tx.pack.findFirst({ where: { studentId: l.studentId }, orderBy: { startsAt: "desc" } });
+  if (pack) await tx.pack.updateMany({
+    where: { id: pack.id, lessonsLeft: { lt: pack.lessonsTotal } },
+    data: { lessonsLeft: { increment: 1 } },
+  });
 }
 
 export async function deleteLesson(id: string, scope: "one" | "following" = "one"): Promise<Result> {
@@ -383,18 +387,36 @@ export async function packFreeze(studentId: string, until: string | null): Promi
 export async function packDeduct(studentId: string, date: string, start: string): Promise<Result> {
   const { t } = await getT();
   const teacher = await me();
-  const s = await ownStudent(studentId, teacher.id);
-  const pack = await db.pack.findFirst({ where: { studentId, lessonsLeft: { gt: 0 } }, orderBy: { startsAt: "asc" } });
-  if (!pack) return { ok: false, error: t("prof.packEmpty") };
   const from = parseWhen(date, "00:00", teacher.timezone);
   const at = parseWhen(date, start || "12:00", teacher.timezone);
   if (!from || !at) return { ok: false, error: t("sch.err.time") };
-  let l = await db.lessonInstance.findFirst({ where: { studentId, isTrial: false, deductedAt: null, status: { not: "CANCELLED" }, startsAt: { gte: from, lt: new Date(from.getTime() + 864e5) } }, orderBy: { startsAt: "asc" } });
-  if (!l) l = await db.lessonInstance.create({ data: { teacherId: teacher.id, studentId, startsAt: at, durationMin: 60, status: at < new Date() ? "DONE" : "PLANNED", price: s.price ?? null } });
-  await db.$transaction([
-    db.pack.update({ where: { id: pack.id }, data: { lessonsLeft: { decrement: 1 } } }),
-    db.lessonInstance.update({ where: { id: l.id }, data: { deductedAt: new Date(), charged: true, ...(l.status === "PLANNED" && at < new Date() ? { status: "DONE" } : {}) } }),
-  ]);
+
+  const result = await db.$transaction(async (tx) => {
+    if (!await lockStudentBilling(tx, studentId)) return "missing";
+    const student = await tx.student.findFirst({ where: { id: studentId, teacherId: teacher.id } });
+    if (!student) return "missing";
+    const pack = await tx.pack.findFirst({
+      where: { studentId, lessonsLeft: { gt: 0 } },
+      orderBy: [{ startsAt: "asc" }, { id: "asc" }],
+    });
+    if (!pack) return "empty";
+
+    const lessons = await tx.lessonInstance.findMany({
+      where: { studentId, isTrial: false, status: { not: "CANCELLED" }, startsAt: { gte: from, lt: new Date(from.getTime() + 864e5) } },
+      orderBy: [{ startsAt: "asc" }, { id: "asc" }],
+    });
+    const exact = start && lessons.find((lesson) => lesson.startsAt.getTime() === at.getTime());
+    const selected = exact || lessons.find((lesson) => !lesson.deductedAt && !lesson.billedAt);
+    if (selected && (selected.deductedAt || selected.billedAt) || !selected && lessons.length) return "used";
+    const lesson = selected || await tx.lessonInstance.create({
+      data: { teacherId: teacher.id, studentId, startsAt: at, durationMin: 60, status: at < new Date() ? "DONE" : "PLANNED", price: student.price },
+    });
+    const status = lesson.status === "PLANNED" && at < new Date() ? "DONE" : lesson.status;
+    return await spendPackLesson(tx, pack, lesson.id, status) ? "ok" : "used";
+  });
+  if (result === "missing") return { ok: false, error: t("pay.err.notFound") };
+  if (result === "empty") return { ok: false, error: t("prof.packEmpty") };
+  if (result === "used") return { ok: false, error: t("prof.packAlreadyDeducted") };
   refresh(studentId);
   return { ok: true };
 }
@@ -403,9 +425,15 @@ export async function packDeduct(studentId: string, date: string, start: string)
 export async function packReturn(lessonId: string): Promise<Result> {
   const teacher = await me();
   const l = await ownLesson(lessonId, teacher.id);
-  if (!l.deductedAt) return { ok: true };
-  await db.lessonInstance.update({ where: { id: l.id }, data: { deductedAt: null, charged: false } });
-  await restorePackLesson(l);
+  if (!l.studentId || !l.deductedAt) return { ok: true };
+  await db.$transaction(async (tx) => {
+    if (!await lockStudentBilling(tx, l.studentId!)) return;
+    const change = await tx.lessonInstance.updateMany({
+      where: { id: l.id, studentId: l.studentId, deductedAt: l.deductedAt },
+      data: { deductedAt: null, charged: false },
+    });
+    if (change.count) await restorePackLesson(l, tx);
+  });
   refresh(l.studentId);
   return { ok: true };
 }

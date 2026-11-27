@@ -1,4 +1,5 @@
 import "server-only";
+import type { Prisma } from "@prisma/client";
 import { db } from "../db";
 import { env } from "../env";
 import { mailNotice } from "../mail";
@@ -21,11 +22,13 @@ function notBefore(now: Date, tz: string, quiet: [number, number] | null) {
   return new Date(now.getTime() + Math.max(0, wait));
 }
 
-export async function notify(n: Notice) {
-  if (n.dedupe && (await db.notification.findUnique({ where: { dedupe: n.dedupe } }))) return null;
-  const user = await db.user.findUnique({ where: { id: n.userId } });
+export async function notify(n: Notice, transaction?: Prisma.TransactionClient) {
+  const writer = transaction ?? db;
+  if (n.dedupe && (await writer.notification.findUnique({ where: { dedupe: n.dedupe } }))) return null;
+  const user = await writer.user.findUnique({ where: { id: n.userId } });
   if (!user) return null;
-  const row = await db.notification.create({ data: { userId: n.userId, kind: n.kind, title: n.title.slice(0, 300), action: n.action ?? null, link: n.link ?? null, dedupe: n.dedupe ?? null } }).catch(() => null);
+  const create = writer.notification.create({ data: { userId: n.userId, kind: n.kind, title: n.title.slice(0, 300), action: n.action ?? null, link: n.link ?? null, dedupe: n.dedupe ?? null } });
+  const row = transaction ? await create : await create.catch(() => null);
   if (!row) return null; // тот же dedupe создан параллельно
   const st = settingsOf(user.role, user.notify);
   const cat = catOf(n.kind);
@@ -36,8 +39,8 @@ export async function notify(n: Notice) {
   if (st.tg[cat] && user.telegramChatId && tgEnabled()) rows.push({ channel: "telegram", to: user.telegramChatId });
   if (st.email[cat] && user.email) rows.push({ channel: "email", to: user.email });
   if (rows.length) {
-    await db.delivery.createMany({ data: rows.map((r) => ({ ...r, notificationId: row.id, userId: user.id, text: n.title, link: url, notBefore: when })) });
-    void deliverPending().catch((e) => console.error("[notify]", e));
+    await writer.delivery.createMany({ data: rows.map((r) => ({ ...r, notificationId: row.id, userId: user.id, text: n.title, link: url, notBefore: when })) });
+    if (!transaction) void deliverPending().catch((e) => console.error("[notify]", e));
   }
   return row;
 }

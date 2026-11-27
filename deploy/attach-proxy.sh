@@ -66,7 +66,20 @@ $DOMAIN, www.$DOMAIN {
 	@www host www.$DOMAIN
 	redir @www https://$DOMAIN{uri} permanent
 	encode gzip
-	request_body {
+	@paymentUpload {
+		method POST
+		path /api/billing/documents/*
+	}
+	@otherRequest {
+		not {
+			method POST
+			path /api/billing/documents/*
+		}
+	}
+	request_body @paymentUpload {
+		max_size 10551296
+	}
+	request_body @otherRequest {
 		max_size 50MB
 	}
 	reverse_proxy $TARGET {

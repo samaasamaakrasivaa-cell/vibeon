@@ -649,6 +649,7 @@ model Pack {
   studentId    String
   lessonsTotal Int
   lessonsLeft  Int
+  used         Boolean   @default(false) // once charged, returns never clear this marker
   price        Int
   startsAt     DateTime  @default(now())
   frozenUntil  DateTime?
@@ -669,6 +670,7 @@ model Invoice {
   amount       Int
   period       String?
   status       InvoiceStatus @default(SENT)
+  revision     Int           @default(0)
   proofKind    String? // screenshot | text
   proofFile    String?
   proofText    String?
@@ -688,9 +690,34 @@ model Invoice {
   remindCount  Int           @default(0)
   createdAt    DateTime      @default(now())
   student      Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  documentVersions InvoiceDocumentVersion[]
 
   @@index([studentId, status])
   @@index([status, createdAt])
+}
+
+model InvoiceDocumentVersion {
+  uploadId    String              @id
+  invoiceId   String
+  kind        PaymentDocumentKind
+  previous    String?
+  actorId     String
+  changedAt   DateTime            @default(now())
+  restored    Boolean             @default(false)
+  invoice     Invoice             @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId, changedAt])
+}
+
+model PaymentOcrAttempt {
+  uploadId    String   @id
+  invoiceId   String
+  amount      Int
+  code        String
+  matches     Boolean  @default(false)
+  provider    String?
+  createdAt   DateTime @default(now())
+  completedAt DateTime?
 }
 
 // ───────────── Общение ─────────────
@@ -785,6 +812,12 @@ model Note {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+enum PaymentDocumentKind {
+  PROOF
+  RECEIPT
+  QUARANTINED
+}
+
 // Загруженные файлы (картинки, аудио, видео, PDF, чеки). Хранилище: локальная папка или S3.
 model Upload {
   id        String   @id @default(cuid())
@@ -794,6 +827,11 @@ model Upload {
   mime      String
   size      Int
   createdAt DateTime @default(now())
+  paymentKind      PaymentDocumentKind?
+  paymentInvoiceId String? // назначение загрузки сохраняется после замены или удаления счёта
+  legacyUnverified Boolean @default(false)
+  paymentRevision  Int? // invoice revision when this new draft was uploaded
+  paymentArtifact  Json? // verified immutable download and optional OCR copy
 
   @@index([ownerId])
 }

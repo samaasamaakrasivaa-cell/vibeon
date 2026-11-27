@@ -30,3 +30,14 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=40s CMD node -e "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["node", "server.js"]
+
+# Separate service. No application code, database or uploads are mounted here.
+FROM base AS payment-validator
+COPY --from=deps /app/node_modules ./node_modules
+COPY --chown=node:node payment-validator ./payment-validator
+RUN install -d -o node -g node /run/payment-validator
+USER node
+CMD ["node", "payment-validator/server.cjs"]
+
+# Preserve the existing default app image for builds without --target.
+FROM runner AS application
