@@ -42,7 +42,8 @@ export function localInterval(date: string, startMin: number, durMin: number, tz
 // The calendar also needs non-overlapping wall times when the clock repeats an hour.
 export const overlaps = (a: BusyInterval, b: BusyInterval) =>
   (a.start < b.end && b.start < a.end) || (a.wallStart < b.wallEnd && b.wallStart < a.wallEnd);
-export const activityKey = (slot: PlannedActivity) => JSON.stringify([slot.kind, slot.title]);
+export const activityTitle = (value: string) => value.trim().slice(0, 80).trimEnd();
+export const activityKey = (slot: PlannedActivity) => JSON.stringify([slot.kind, slot.title === null ? null : activityTitle(slot.title)]);
 
 export function remainingActivities(items: StudyRecommendation["items"], existing: PlannedActivity[]) {
   const counts = new Map<string, number>();
@@ -53,7 +54,7 @@ export function remainingActivities(items: StudyRecommendation["items"], existin
   return items.flatMap((item) => {
     const kind = activityKind(item.skill, item.activity);
     if (!kind) return [];
-    const title = item.activity.trim().slice(0, 80);
+    const title = activityTitle(item.activity);
     const key = activityKey({ kind, title });
     const existingCount = counts.get(key) ?? 0;
     counts.set(key, Math.max(0, existingCount - item.times));

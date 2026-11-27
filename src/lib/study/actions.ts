@@ -7,7 +7,7 @@ import { addDaysIso, dayStart, isoDay, minutesOfDay } from "../time";
 import { notify } from "../notify";
 import { isKind } from "./kinds";
 import { draftCalendar, schedulePlan } from "./draft-data";
-import { activityKey, draftWeek, isDraftKind, isWeekStart, localInterval, overlaps, remainingActivities, type DraftSlot, type WeekDraft } from "./weekly-plan";
+import { activityKey, activityTitle, draftWeek, isDraftKind, isWeekStart, localInterval, overlaps, remainingActivities, type DraftSlot, type WeekDraft } from "./weekly-plan";
 
 type R = { ok: true } | { ok: false; error: string };
 export type SlotInput = { kind: string; title?: string; repeat: boolean; weekday?: number; date?: string; startMin: number; durMin: number; remind: boolean };
@@ -88,7 +88,7 @@ export async function confirmStudyWeek(monday: string, revision: string, slots: 
       const now = Date.now();
       const rows = slots.map((slot) => {
         const date = addDaysIso(monday, slot.day);
-        return { studentId: student.id, kind: slot.kind, title: slot.title.trim(), repeat: false,
+        return { studentId: student.id, kind: slot.kind, title: activityTitle(slot.title), repeat: false,
           date, from: date, startMin: slot.startMin, durMin: slot.durMin, remind: true };
       });
       for (const row of rows) {
