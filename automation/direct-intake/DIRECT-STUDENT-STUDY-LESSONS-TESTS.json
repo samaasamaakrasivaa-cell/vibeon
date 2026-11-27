@@ -5,10 +5,13 @@
   "key": "DIRECT-STUDENT-STUDY-LESSONS-TESTS",
   "owner": "student",
   "progress": {
-    "base_sha": "71af5fe9a11f10e6e30fb871f8b930d786559838",
+    "base_sha": "437986d954400f8b44ba456f02a68df18b5f0e31",
     "branch": "codex/student/study-lessons-tests",
-    "next": "Обновить раздел Учёба и проверить переходы по ролям",
-    "stage": "implementation"
+    "head_sha": "463bd2d21b34ffa8eba9bd9bf91d2127e7956ef1",
+    "next": "Сверить SHA ревью и CI, проверить сценарии на результирующей сборке с актуальной main.",
+    "pr": 83,
+    "stage": "review",
+    "test_run": 46067999207
   },
   "release": null,
   "source": "direct",
