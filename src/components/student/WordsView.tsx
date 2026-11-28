@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Dialog } from "../Dialog";
 import { Icon } from "../Icon";
 import { useT } from "@/lib/i18n/client";
-import { addMyWord, deleteMyWord, enrichMyWord, practiceResult, setWordGoal, updateMyWord } from "@/lib/student/actions";
+import { addMyWord, deleteMyWord, enrichMyWord, lookupMyWord, practiceResult, setWordGoal, updateMyWord } from "@/lib/student/actions";
 import { wordTranslations } from "@/lib/student/word-translations";
 import { dictationGrade, shuffle } from "@/lib/tasks/parse";
 
@@ -165,10 +165,35 @@ function WordList({ words, accent }: { words: W[]; accent: string }) {
   const { t } = useT();
   const router = useRouter();
   const [q, setQ] = useState("");
+  const [lookup, setLookup] = useState<Awaited<ReturnType<typeof lookupMyWord>> | null>(null);
+  const [lookingUp, setLookingUp] = useState(false);
+  const lookupRequest = useRef(0);
   const [notice, setNotice] = useState<"wd.wordExists" | "wd.translationUpdated" | "wd.wordSaveError" | null>(null);
   const [confirmation, setConfirmation] = useState<Extract<Awaited<ReturnType<typeof addMyWord>>, { status: "confirm" }> | null>(null);
   const [pending, start] = useTransition();
   const levels = [t("cls.lv0"), t("cls.lv1"), t("cls.lv2"), t("cls.lv3"), t("cls.lv4")];
+  const [word, translation = "", example = ""] = q.split(/\s+[—–-]\s+/);
+  const manual = Boolean(translation.trim() || example.trim());
+  const options = lookup && "translations" in lookup ? lookup.translations : [];
+  const lookupMessage = lookup && "error" in lookup
+    ? t(lookup.error === "input" ? "cls.dictInput" : lookup.error === "limit" ? "cls.dictLimit" : "cls.dictUnavailable")
+    : lookup && !options.length ? t("cls.dictEmpty") : null;
+
+  const search = async (query: string) => {
+    const request = ++lookupRequest.current;
+    setLookup(null);
+    setNotice(null);
+    setLookingUp(true);
+    try {
+      const result = await lookupMyWord(query);
+      if (request === lookupRequest.current) setLookup(result);
+    } catch {
+      if (request === lookupRequest.current) setLookup({ error: "unavailable" });
+    } finally {
+      if (request === lookupRequest.current) setLookingUp(false);
+    }
+  };
+
   const saveWord = (word: string, translation: string, example: string, existing?: NonNullable<typeof confirmation>["existing"]) => {
     setNotice(null);
     start(async () => {
@@ -182,7 +207,10 @@ function WordList({ words, accent }: { words: W[]; accent: string }) {
         if (result.status === "existing") setNotice("wd.wordExists");
         if (result.status === "updated") setNotice("wd.translationUpdated");
         if (result.status === "empty" || result.status === "changed") setNotice("wd.wordSaveError");
-        if (result.status === "added" || result.status === "updated") setQ("");
+        if (result.status === "added" || result.status === "updated") {
+          setQ("");
+          setLookup(null);
+        }
       } catch {
         setConfirmation(null);
         setNotice("wd.wordSaveError");
@@ -192,14 +220,39 @@ function WordList({ words, accent }: { words: W[]; accent: string }) {
   const current = confirmation ? wordTranslations(confirmation.existing.translation).join("; ") : "";
   return (
     <section className="card">
-      <form className="mb-4 flex gap-2" onSubmit={(e) => {
+      <form className="flex gap-2" onSubmit={(e) => {
         e.preventDefault();
-        const [word, translation = "", example = ""] = q.split(/\s+[—–-]\s+/);
-        if (!pending && word.trim()) saveWord(word, translation, example);
+        if (pending || lookingUp || !word.trim()) return;
+        if (manual) saveWord(word, translation, example);
+        else void search(word);
       }}>
-        <input className="input" value={q} onChange={(e) => { setQ(e.target.value); setNotice(null); }} placeholder={t("cls.addWordPh")} aria-label={t("cls.addWordPh")} />
-        <button className="btn primary" disabled={pending || !q.trim()}>{t("cls.addWord")}</button>
+        <input className="input min-w-0" value={q} disabled={pending} placeholder={t("cls.dictPh")} aria-label={t("cls.dictPh")}
+          aria-describedby="my-word-format" onChange={(e) => {
+            lookupRequest.current++;
+            setQ(e.target.value);
+            setLookup(null);
+            setLookingUp(false);
+            setNotice(null);
+          }} />
+        <button type="submit" className="btn primary" disabled={pending || lookingUp || !word.trim()}>{t(manual ? "cls.addWord" : "cls.dictSearch")}</button>
       </form>
+      <p className="hint mt-2 mb-4" id="my-word-format">{t("wd.wordManualHint")}</p>
+      {(lookingUp || lookupMessage) && <p className="small mb-2 mt-0" role="status">{lookingUp ? t("cls.dictLoading") : lookupMessage}</p>}
+      {options.length > 0 && (
+        <ul className="mb-4 flex flex-col gap-2">
+          {options.map((option) => (
+            <li key={option} className="flex items-center justify-between gap-2">
+              <span>{option}</span>
+              <button type="button" className="iconbtn wplus" disabled={pending} aria-label={t("cls.dictAdd", { translation: option })}
+                onClick={() => saveWord(word, option, "")}><Icon name="plus" size="sm" /></button>
+            </li>
+          ))}
+        </ul>
+      )}
+      {lookupMessage && (
+        <button type="button" className="btn plain sm mb-4" disabled={pending}
+          onClick={() => saveWord(word, "", "")}>{t("wd.wordWithoutTranslation")}</button>
+      )}
       {notice && <p className="small mb-4 mt-0" role="status">{t(notice)}</p>}
       {confirmation && (
         <Dialog key={JSON.stringify([confirmation.existing.id, confirmation.existing.translation])}
