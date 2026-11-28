@@ -5,10 +5,13 @@
   "key": "DIRECT-FINANCE-PACK-DEBT",
   "owner": "finance-admin",
   "progress": {
-    "base_sha": "d7d94a6d6e76d9a6810a53c4a6434caea821b82d",
+    "base_sha": "d4454a0b7210c4aa534f9a3c9464fb0d9ca1536e",
     "branch": "codex/finance-admin/pack-debt-overlap",
-    "next": "Проверить взаимное исключение счёта и списания на синтетике",
-    "stage": "implementation"
+    "head_sha": "38be8a477ce7fb6ee7fa2c2e47c923a31a6c139d",
+    "next": "Teacher и Platform & Access проверяют поведение, Tech Lead ведёт выпуск",
+    "pr": 137,
+    "stage": "review",
+    "test_run": 46182907159
   },
   "release": null,
   "source": "direct",
