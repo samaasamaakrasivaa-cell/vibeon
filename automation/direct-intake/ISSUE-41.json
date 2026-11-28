@@ -4,7 +4,15 @@
   "issue": 41,
   "key": "ISSUE-41",
   "owner": "homework",
-  "progress": null,
+  "progress": {
+    "base_sha": "8e4215a2988ba3c0df1917584d49e0b7948eb302",
+    "branch": "codex/homework/hw-02-feedback-draft",
+    "head_sha": "c608e2c941248c1e5980b9e98141b1365633ba8f",
+    "next": "Согласовать индивидуальный контракт с AI & Quality и подключить черновик после выпуска статусов из PR 100.",
+    "pr": 133,
+    "stage": "blocked",
+    "test_run": 46165084966
+  },
   "release": null,
   "source": "direct",
   "version": 1
