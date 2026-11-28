@@ -1,5 +1,6 @@
 const assert = require("node:assert/strict");
-const { execFileSync } = require("node:child_process");
+const { execFile, execFileSync } = require("node:child_process");
+const run = require("node:util").promisify(execFile);
 const fs = require("node:fs");
 const http = require("node:http");
 const path = require("node:path");
@@ -52,8 +53,7 @@ async function main() {
     await new Promise(resolve => server.once("listening", resolve));
     const openBrowser = async (audio) => {
       const args = ["--no-sandbox","--accept-lang=en-US,ru-RU"];
-      if (audio) args.push("--use-fake-device-for-media-stream", "--use-fake-ui-for-media-stream",
-        "--use-file-for-fake-audio-capture=" + audio);
+      if (audio) args.push("--use-fake-ui-for-media-stream", "--enable-logging=stderr");
       const context = await chromium.launchPersistentContext(profile, { executablePath: "/usr/bin/google-chrome",
         ignoreDefaultArgs: ["--disable-background-networking", "--disable-component-update"],
         args, permissions: ["microphone"], locale: "en-US" });
@@ -96,6 +96,19 @@ async function main() {
       try {
         const page = context.pages()[0];
         const expectedSaves = saves.length;
+        await page.addInitScript(() => {
+          window.nativeEvents = [];
+          const prototype = SpeechRecognition.prototype;
+          const realStart = prototype.start;
+          prototype.start = function (...args) {
+            for (const key of ["start","audiostart","soundstart","speechstart","audioend","speechend","end","nomatch"]) {
+              this.addEventListener(key, () => window.nativeEvents.push(key));
+            }
+            this.addEventListener("result", () => window.nativeEvents.push("result"));
+            this.addEventListener("error", event => window.nativeEvents.push("error:" + event.error));
+            return realStart.apply(this, args);
+          };
+        });
         await page.goto(origin);
         let nativeStatus;
         for (let i = 0; i < 20; i++) {
@@ -112,11 +125,18 @@ async function main() {
         await page.getByLabel("Dictation language").selectOption(language);
         await page.getByRole("button", { name: "Dictate", exact: true }).click();
         await page.getByRole("button", { name: "Stop", exact: true }).waitFor({ timeout: 30_000 });
-        await page.waitForTimeout(8_000);
+        await page.waitForFunction(() => window.nativeEvents.includes("audiostart"), null, { timeout: 10_000 });
+        await run("paplay", ["--device=dictation_qa", path.join(scratch, key + ".wav")]);
+        await page.waitForTimeout(1500);
         assert.equal(saves.length, expectedSaves);
         const stop = page.getByRole("button", { name: "Stop", exact: true });
         if (await stop.isVisible()) await stop.click();
-        await page.waitForFunction(() => document.querySelector("textarea").value.length > "Manual prefix".length, null, { timeout: 20_000 });
+        try {
+          await page.waitForFunction(() => document.querySelector("textarea").value.length > "Manual prefix".length, null, { timeout: 15_000 });
+        } finally {
+          console.log(language, "native events", await page.evaluate(() => window.nativeEvents),
+            await page.locator("[role=status]").allTextContents());
+        }
         const composed = await field.inputValue();
         assert.match(composed, key === "en" ? /cat|sleeps|sofa/i : /нравится|читать|книг/i);
         assert.equal(saves.length, expectedSaves);
