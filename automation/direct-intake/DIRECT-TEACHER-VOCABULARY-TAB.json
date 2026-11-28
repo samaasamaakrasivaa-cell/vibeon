@@ -5,13 +5,13 @@
   "key": "DIRECT-TEACHER-VOCABULARY-TAB",
   "owner": "teacher",
   "progress": {
-    "base_sha": "5d07042533faee38382ddf4097b7e83c89ef6dd7",
+    "base_sha": "7aa0781b4f6046a2c1184426b6c76a9c9aa9d746",
     "branch": "codex/teacher/student-vocabulary-tab",
-    "head_sha": "a025431473b33f0726da1b9ff2fd312ae33509ef",
-    "next": "Все проверки точного SHA, Chromium и ревью пройдены. Ждём штатного восстановления и согласования порядка #119 и #106.",
+    "head_sha": "6bbd34cac1ce3d4a1f5e60bd62d6a9ab04155ed8",
+    "next": "После восстановления CD база синхронизирована с текущей main. Проверяем точное дерево, ожидаем согласование очередности выпуска в #113.",
     "pr": 119,
-    "stage": "integration",
-    "test_run": 46152078797
+    "stage": "review",
+    "test_run": 46152814680
   },
   "release": null,
   "source": "direct",
