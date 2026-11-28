@@ -4,8 +4,9 @@ const personalName = String.raw`\p{L}[\p{L}'’.-]*(?:[ ]+\p{L}[\p{L}'’.-]*){1
 const score = String.raw`(?:\d{1,3}(?:[.,]\d+)?(?:\s*(?:%|/\s*\d{1,3}))?|[A-F][+-]?)`;
 const scoreLabel = /(?:^|[^\p{L}\p{N}])(?:оценка|балл(?:ы)?|результат|получил[а]?|grade|score|mark|result|received)\s*[:=]?\s*(?:[0-9]|[A-F](?:[+-]|\b))/iu;
 const gradeCell = new RegExp(String.raw`^${score}$`, "iu");
-const nameOnly = new RegExp(String.raw`^${personalName}(?: +\([^()\n]{1,30}\))?$`, "iu");
-const bareGrade = /^\p{L}+[ -]\p{L}+(?: \p{L}+)? [1-5][+-]?$/u;
+const nameWithLevel = String.raw`${personalName}(?: +\([^()\n]{1,30}\))?`;
+const nameOnly = new RegExp(String.raw`^${nameWithLevel}$`, "iu");
+const bareGrade = new RegExp(String.raw`^${nameWithLevel} +(?:[1-5][+-]?|\d{1,3}\s*(?:%|/\s*\d{1,3}))$`, "iu");
 const cellSeparator = /\t+| {2,}|\s*[:,;|=–—]\s*|\s+-\s+/u;
 
 const outlineTitle = /^(?:table of contents|contents|syllabus|scope and sequence|student[’']s book|оглавление|содержание|программа курса)[:.]?$/iu;

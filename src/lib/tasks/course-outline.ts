@@ -2,6 +2,7 @@ import { z } from "zod";
 
 export const OUTLINE_FILE_LIMIT = 8;
 export const OUTLINE_SOURCE_LIMIT = 24_000;
+export const isCourseOutlineImage = (name: string) => /\.(?:jpe?g|png|webp)$/i.test(name);
 const unitLimit = 40;
 const lessonLimit = 40;
 

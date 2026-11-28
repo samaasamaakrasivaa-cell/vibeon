@@ -9,6 +9,7 @@
   { "rows": ["Олег Пробный — сдал после пересдачи — 83/100"], "error": "studentRecords" },
   { "rows": ["Topics: \"Лена Примерова\";\"84/100\""], "error": "studentRecords" },
   { "rows": ["Lesson 10 — Нина Учебная (B1) — 87/100"], "error": "studentRecords" },
+  { "rows": ["Topics: нина учебная (B1) 87/100"], "error": "studentRecords" },
   { "rows": ["Student name", ": Synthetic Example"], "error": "studentRecords" },
   { "rows": ["Ведомость оценок", "Вымышленное Имя", "5"], "error": "studentRecords" },
   { "rows": ["Вставка, которую сервер не может отнести к оглавлению"], "error": "unverified" }

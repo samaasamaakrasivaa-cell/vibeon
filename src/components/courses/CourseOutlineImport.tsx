@@ -1,16 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { planCourseOutline } from "@/lib/ai/actions";
 import { useT } from "@/lib/i18n/client";
-import { OUTLINE_FILE_LIMIT, OUTLINE_SOURCE_LIMIT, type CourseOutlineEntry } from "@/lib/tasks/course-outline";
+import { isCourseOutlineImage, OUTLINE_FILE_LIMIT, OUTLINE_SOURCE_LIMIT, type CourseOutlineEntry } from "@/lib/tasks/course-outline";
 import { importCourseOutline } from "@/lib/teacher/courses";
 import { extractFile } from "../ai/BookImport";
 import { randomId } from "../builder/rid";
 import { Dialog } from "../Dialog";
 import { Icon } from "../Icon";
 
-const formats = ".pdf,.docx";
+const formats = ".jpg,.jpeg,.png,.webp,.pdf,.docx";
+const outlineErrors = ["outlineText", "outlineImage", "outlineImageSize", "outlineBusy"] as const;
 const extractionErrors = ["type", "size", "limit", "tariff", "off"] as const;
 const textFields = [
   ["topics", "crs.outline.topics"],
@@ -22,6 +23,22 @@ const textFields = [
 type DraftLesson = CourseOutlineEntry & { key: string };
 type DraftUnit = CourseOutlineEntry & { key: string; lessons: DraftLesson[] };
 type Draft = { ticket: string; units: DraftUnit[] };
+
+function OriginalImage({ file }: { file: File }) {
+  const [url, setUrl] = useState<string | null>(null);
+  useEffect(() => {
+    const preview = URL.createObjectURL(file);
+    setUrl(preview);
+    return () => URL.revokeObjectURL(preview);
+  }, [file]);
+
+  return (
+    <details>
+      <summary className="cursor-pointer">{file.name}</summary>
+      {url && <img src={url} alt={file.name} className="max-h-[36rem] max-w-full object-contain" />}
+    </details>
+  );
+}
 
 function OutlineFields({ entry, titleLimit, onChange }: {
   entry: CourseOutlineEntry;
@@ -54,6 +71,7 @@ export function CourseOutlineImport({ courseId, onClose, onSaved }: {
 }) {
   const { t } = useT();
   const [files, setFiles] = useState<File[]>([]);
+  const [reviewText, setReviewText] = useState<string | null>(null);
   const [draft, setDraft] = useState<Draft | null>(null);
   const [busy, setBusy] = useState<"reading" | "planning" | "saving" | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -65,28 +83,33 @@ export function CourseOutlineImport({ courseId, onClose, onSaved }: {
       return;
     }
     setError(null);
-    setBusy("reading");
     try {
-      const pages: string[] = [];
-      for (const file of files) {
-        try {
-          const page = (await extractFile(file, "course-outline")).trim();
-          if (!page) {
-            setError(`${file.name} · ${t("ai.err.empty")}`);
+      let source = reviewText;
+      if (source === null) {
+        setBusy("reading");
+        const pages: string[] = [];
+        for (const file of files) {
+          try {
+            const page = (await extractFile(file, "course-outline")).trim();
+            if (!page) {
+              setError(`${file.name} · ${t("ai.err.empty")}`);
+              return;
+            }
+            pages.push(page);
+          } catch (problem) {
+            const message = problem instanceof Error ? problem.message : "";
+            const local = outlineErrors.find((code) => code === message);
+            const code = extractionErrors.find((code) => code === message);
+            setError(`${file.name} · ${local ? t(`crs.outline.${local}`) : code ? t(`ai.err.${code}`) : t("ai.err.fail")}`);
             return;
           }
-          pages.push(page);
-        } catch (problem) {
-          if (problem instanceof Error && problem.message === "outlineText") {
-            setError(`${file.name} · ${t("crs.outline.localText")}`);
-            return;
-          }
-          const code = extractionErrors.find((code) => problem instanceof Error && problem.message === code);
-          setError(`${file.name} · ${code ? t(`ai.err.${code}`) : t("ai.err.fail")}`);
+        }
+        source = pages.join("\n\n");
+        if (source.length <= OUTLINE_SOURCE_LIMIT && files.some((file) => isCourseOutlineImage(file.name))) {
+          setReviewText(source);
           return;
         }
       }
-      const source = pages.join("\n\n");
       if (source.length > OUTLINE_SOURCE_LIMIT) {
         setError(t("crs.outline.sourceLimit"));
         return;
@@ -184,8 +207,21 @@ export function CourseOutlineImport({ courseId, onClose, onSaved }: {
           <input id="course-outline-files" className="input" type="file" accept={formats} multiple disabled={!!busy}
             aria-describedby="course-outline-help" onChange={(event) => {
               setFiles(Array.from(event.currentTarget.files ?? []));
+              setReviewText(null);
               setError(null);
             }} />
+          {reviewText !== null && (
+            <>
+              {files.filter((file) => isCourseOutlineImage(file.name)).map((file, index) => (
+                <OriginalImage key={`${index}:${file.name}`} file={file} />
+              ))}
+              <label htmlFor="course-outline-recognized">{t("crs.outline.recognized")}</label>
+              <p id="course-outline-recognized-help" className="hint m-0">{t("crs.outline.recognizedHelp")}</p>
+              <textarea id="course-outline-recognized" className="textarea" rows={12} maxLength={OUTLINE_SOURCE_LIMIT}
+                value={reviewText} disabled={!!busy} aria-describedby="course-outline-recognized-help"
+                onChange={(event) => { setReviewText(event.currentTarget.value); setError(null); }} />
+            </>
+          )}
         </div>
       )}
 
@@ -197,8 +233,8 @@ export function CourseOutlineImport({ courseId, onClose, onSaved }: {
             {busy === "saving" ? t("common.saving") : t("crs.outline.save")}
           </button>
         ) : (
-          <button type="button" className="btn primary" disabled={!!busy || !files.length} onClick={analyze}>
-            {busy === "reading" ? t("ai.reading") : busy === "planning" ? t("ai.splitting") : t("crs.outline.analyze")}
+          <button type="button" className="btn primary" disabled={!!busy || !files.length || reviewText === ""} onClick={analyze}>
+            {busy === "reading" ? t("ai.reading") : busy === "planning" ? t("ai.splitting") : t(reviewText === null ? "crs.outline.analyze" : "crs.outline.checkText")}
           </button>
         )}
       </div>
