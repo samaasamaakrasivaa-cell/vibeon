@@ -8,9 +8,10 @@
     "base_sha": "2044f77648fcf73701fe5f2232817fb817bcec28",
     "branch": "codex/vocabulary-training/my-words-lookup",
     "head_sha": "2980c5f5ead478675e70de457942f62e9bbd8ebe",
-    "next": "Повторить проверки после закрепления общего лимита словарного поиска",
+    "next": "Ревью и CI пройдены; объединить PR после сверки итогового дерева и проверить CD",
     "pr": 114,
-    "stage": "review"
+    "stage": "integration",
+    "test_run": 46151367137
   },
   "release": null,
   "source": "direct",
