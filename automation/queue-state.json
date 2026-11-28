@@ -13,14 +13,14 @@
   "lease": {
     "token": "e4727f0e77094875ab3c4dd4f976f982",
     "started_at": "2026-11-28T11:02:07.835774Z",
-    "expires_at": "2026-11-28T14:02:07.835774Z"
+    "expires_at": "2026-11-28T14:02:49.201107Z"
   },
   "checkpoint": {
     "issue": 25,
-    "stage": "await_ci_review",
+    "stage": "refresh_integration",
     "branch": "codex/vocabulary/voc-09",
     "base_sha": "daacd5bf1e2f13c4c0b063f5db07f2f47c887dbc",
-    "next": "Exact-head CI and VOC-09 isolated subject checks passed; native review requested in comment 7237693840. Await bot summary for full head and inspect findings; verify main compatibility, branch requirements and release readiness before merge. Direct DNS unavailable.",
+    "next": "Exact-head CI and bot review completed with no findings. Latest main 348c4a99 changed vocabulary sources, no seven-file overlap. Intent: merge current main into existing branch with identical task blobs; require new CI and review. Latest main CD-01 released.",
     "head_sha": "d983a2b46788cc3c84342a42811670e2db35b398",
     "pr": 54,
     "review_request_comment_id": 7237693840,
@@ -29,8 +29,8 @@
     ],
     "ci_status": "success",
     "subject_tests": "passed: build job 140930050810 VOC-09 role/scope/archive/foreign/empty/legacy/repeat/RU-EN/mobile/desktop",
-    "review_summary_id": null,
-    "review_receipt_id": null,
+    "review_summary_id": 7224060100,
+    "review_receipt_id": 7237709783,
     "refresh_base_sha": "daacd5bf1e2f13c4c0b063f5db07f2f47c887dbc",
     "prior_head_sha": "f3696be2397acb2cb012be632995145719e78a2a",
     "prior_ci_run_id": 46123737844,
@@ -38,8 +38,8 @@
     "observed_main_sha": "348c4a99fd27cbc8ee9ac813d2cdc07b7abdbc30",
     "release_blocker": null,
     "release_run_id": 46068517899,
-    "last_confirmed_release_sha": "daacd5bf1e2f13c4c0b063f5db07f2f47c887dbc",
-    "last_confirmed_release_run_id": 46128291612
+    "last_confirmed_release_sha": "348c4a99fd27cbc8ee9ac813d2cdc07b7abdbc30",
+    "last_confirmed_release_run_id": 46132491430
   },
   "last_probe": {
     "type": "background_native_review",
