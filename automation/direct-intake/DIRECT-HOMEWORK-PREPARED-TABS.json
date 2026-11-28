@@ -5,10 +5,13 @@
   "key": "DIRECT-HOMEWORK-PREPARED-TABS",
   "owner": "homework",
   "progress": {
-    "base_sha": "2044f77648fcf73701fe5f2232817fb817bcec28",
+    "base_sha": "f87d8b6f0993b79819ba8d568d0051585f98ec3e",
     "branch": "codex/homework/prepared-homework-tabs",
-    "next": "Подготовить вкладки, проверить назначение и видимость на синтетике и передать Live Classroom ревью общих файлов.",
-    "stage": "implementation"
+    "head_sha": "a2ae6424460fb55d7fe02ff7bd19249c2a64069b",
+    "next": "Проверки на синтетике пройдены. Ждём независимое ревью общих файлов от Live Classroom и подтверждение порядка интеграции Tech Lead.",
+    "pr": 120,
+    "stage": "review",
+    "test_run": 46152052341
   },
   "release": null,
   "source": "direct",
