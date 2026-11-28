@@ -356,7 +356,7 @@ export function PlacementReview(p: ReviewProps) {
           )}
           <details><summary className="small">{t("pl.expects")}</summary><ul className="small mt-2">{p.d.writing.expects.map((e) => <li key={e}>{e}</li>)}</ul></details>
           {p.wsDecision?.writing
-            ? <WsTeacherDecision key={`${p.wsDecision?.writing.expected.source}-${p.wsDecision?.writing.expected.generation}-${p.wsDecision?.writing.at}`} id={p.id} kind="writing" view={p.wsDecision?.writing} />
+            ? <WsTeacherDecision key={`${p.wsDecision?.writing.expected.source}-${p.wsDecision?.writing.expected.generation}-${p.wsDecision?.writing.requestSequence}-${p.wsDecision?.writing.at}`} id={p.id} kind="writing" view={p.wsDecision?.writing} />
             : <>
                 {rubric(t("pl.part.writing"), RS.writing, w, setW, wHint, p.d.writing.level, "writing")}
                 {noteBox("pl-wnote", wNote, setWNote)}

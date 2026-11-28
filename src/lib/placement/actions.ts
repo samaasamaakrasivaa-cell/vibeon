@@ -467,8 +467,11 @@ export async function saveReview(id: string, r: ReviewInput): Promise<R> {
         !!r.regrading !== draft.regrading) return changed;
     const points = Array.isArray(r.points) ? r.points.slice(0, 10).map(Boolean) : [];
     const lesson = r.lesson && PL_LEVELS.includes(r.lesson.level as never) ? { level: r.lesson.level, marks: cleanScores(r.lesson.marks) } : r.lesson === null ? null : draft.active.lesson;
-    const review = draft.edit({ writing: cleanScores(r.writing), speaking: cleanScores(r.speaking), points,
-      comment: str(r.comment, 3000), lesson, wNote: str(r.wNote ?? "", 3000), sNote: str(r.sNote ?? "", 3000), wc: cleanNotes(r.wc), sc: cleanNotes(r.sc) });
+    const legacyMarks = wsTeacherWriteEnabled() ? {} : {
+      writing: cleanScores(r.writing), speaking: cleanScores(r.speaking),
+      wNote: str(r.wNote ?? "", 3000), sNote: str(r.sNote ?? "", 3000), wc: cleanNotes(r.wc), sc: cleanNotes(r.sc),
+    };
+    const review = draft.edit({ ...legacyMarks, points, comment: str(r.comment, 3000), lesson });
     const saved = await db.placementAttempt.updateMany({ where: revision(a), data: { review: json(review) } });
     if (!saved.count) return changed;
     revalidatePath(`/teacher/placement/${id}`);
@@ -845,6 +848,7 @@ export async function saveSpeechTranscript(id: string, source: string, texts: st
 export async function aiScore(id: string, kind: "writing" | "speaking", transcripts: string[] = [], rubric?: number, regrading = false, source?: string): Promise<R & { ai?: PlScore; marks?: Record<string, number>; comments?: Record<string, string> }> {
   return wrap(async () => {
     const { me, a } = await teacherAttempt(id);
+    if (wsTeacherWriteEnabled()) return { ok: false, error: "off" };
     // без настоящего ИИ оценка была бы по длине ответа, а расшифровка — шаблонной: честно говорим, что ИИ не подключён
     if (provider() === "mock" && process.env.PL_AI_MOCK !== "1") return { ok: false, error: "off" };
     const st = stateOf(a.state);

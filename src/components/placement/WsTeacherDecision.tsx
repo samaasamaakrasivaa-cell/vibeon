@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { useT } from "@/lib/i18n/client";
 import { RUB_V2 } from "@/lib/placement/rubric";
-import { changeWsTeacherAssessment } from "@/lib/placement/ws-teacher-actions";
+import { changeWsTeacherAssessment, requestWritingDraft } from "@/lib/placement/ws-teacher-actions";
 import type { wsTeacherDecisionView } from "@/lib/placement/ws-teacher-write";
 
 export type WsTeacherDecisionView = NonNullable<ReturnType<typeof wsTeacherDecisionView>>;
@@ -39,6 +39,22 @@ export function WsTeacherDecision({ id, kind, view }: { id: string; kind: "writi
     }
   }
 
+  async function draftWriting() {
+    setBusy(true);
+    setError("");
+    try {
+      const result = await requestWritingDraft(id, { ...view.expected, requestSequence: view.requestSequence });
+      router.refresh();
+      if (result === "off") setError(t("pl.aiErr.off"));
+      if (result === "failed") setError(t("pl.aiErr.fail"));
+      if (result === "stale") setError(t("pl.wsDecisionChanged"));
+    } catch {
+      setError(t("pl.err.net"));
+    } finally {
+      setBusy(false);
+    }
+  }
+
   if (!view.hasAnswer) return <p className="small muted">{t(kind === "speaking" ? "pl.noRec" : "pl.noAnswer")}</p>;
   return (
     <form className="plrub flex flex-col gap-2" onSubmit={submit}>
@@ -56,6 +72,9 @@ export function WsTeacherDecision({ id, kind, view }: { id: string; kind: "writi
       <button type="submit" className="btn secondary sm self-start" disabled={busy}>
         {t(view.confirmed ? "pl.wsTeacherReopen" : "pl.wsTeacherConfirm")}
       </button>
+      {kind === "writing" && !view.confirmed && <button type="button" className="btn plain sm self-start" disabled={busy} onClick={() => void draftWriting()}>
+        {t(view.draft ? "pl.aiAgain" : "pl.aiCheck")}
+      </button>}
       {error && <p className="small m-0" role="alert">{error}</p>}
     </form>
   );

@@ -84,6 +84,7 @@ export function wsTeacherDecisionView(attempt: { status: string; submittedAt: Da
   const assessment = readWsAssessment((attempt.review ?? {}) as Record<string, unknown>, source);
   return {
     expected: { source: source.fingerprint, generation: assessment.generation, submittedAt: attempt.submittedAt?.toISOString() ?? null },
+    requestSequence: assessment.request?.sequence ?? null,
     hasAnswer: source.hasAnswer,
     confirmed: assessment.confirmation !== null,
     at: assessment.confirmation?.at ?? null,

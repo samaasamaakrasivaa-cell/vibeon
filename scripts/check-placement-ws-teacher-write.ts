@@ -6,6 +6,7 @@ import { RUB_V2 } from "../src/lib/placement/rubric";
 import { json } from "../src/lib/placement/run";
 import { readWsAssessment, wsAssessmentSource } from "../src/lib/placement/ws-assessment";
 import { saveWsTeacherDecision } from "../src/lib/placement/ws-teacher-write";
+import { requestWsWritingDraft } from "../src/lib/placement/ws-writing-draft";
 import { saveFile } from "../src/lib/storage";
 
 const database = new URL(process.env.DATABASE_URL ?? "");
@@ -84,6 +85,42 @@ async function main() {
     assert.equal(await saveWsTeacherDecision(id, teacherId, "speaking", source("speaking", null, missingAudio), confirm("speaking")), "empty");
     assert.deepEqual(await read(), prior);
     console.log("PASS teacher Writing/Speaking persistence: flag, owner, rubric, parallel confirmation, single reopening, missing and replaced audio, legacy review and report preservation");
+    const originalWriting = { ...source("writing", 2), requestSequence: null };
+    const draft = { scores: marks("writing"), why: {}, summary: "Synthetic draft" };
+    assert.equal(await requestWsWritingDraft(id, "other-teacher", originalWriting, async () => {
+      assert.fail("Do not request scoring for another teacher");
+    }), "stale");
+    assert.equal(await requestWsWritingDraft(id, teacherId, originalWriting, async () => { throw new Error("fixture failure"); }), "failed");
+    const writingAfterFailure = readWsAssessment(asReview((await read()).review), writingSource);
+    assert.equal(writingAfterFailure.request?.status, "failed");
+
+    let started!: () => void;
+    const modelStarted = new Promise<void>((resolve) => { started = resolve; });
+    let completeModel!: () => void;
+    const modelResult = new Promise<void>((resolve) => { completeModel = resolve; });
+    const pendingDraft = requestWsWritingDraft(id, teacherId, { ...originalWriting, requestSequence: 1 }, async (input) => {
+      assert.deepEqual(input.answers, [state.writing.text]);
+      started();
+      await modelResult;
+      return draft;
+    });
+    await modelStarted;
+    assert.equal(await saveWsTeacherDecision(id, teacherId, "writing", source("writing", 2), confirm("writing")), "saved");
+    completeModel();
+    assert.equal(await pendingDraft, "stale");
+    const afterLateResponse = asReview((await read()).review);
+    assert.equal(readWsAssessment(afterLateResponse, writingSource).draft, null);
+    assert.ok(readWsAssessment(afterLateResponse, writingSource).confirmation);
+    assert.deepEqual(afterLateResponse.report, report);
+
+    assert.equal(await saveWsTeacherDecision(id, teacherId, "writing", source("writing", 2), { type: "reopen" }), "saved");
+    assert.equal(await requestWsWritingDraft(id, teacherId, { ...source("writing", 3), requestSequence: null }, async () => draft), "saved");
+    const aiReview = asReview((await read()).review);
+    assert.deepEqual(readWsAssessment(aiReview, writingSource).draft?.score, draft);
+    assert.equal(readWsAssessment(aiReview, writingSource).confirmation, null);
+    assert.deepEqual(aiReview.writing, legacy.writing);
+    console.log("PASS Writing AI storage: owner, failure, late model response after confirmation, and separate draft persistence");
+
     if (process.env.WS_TEACHER_FIXTURE_ORIGIN) {
       const origin = new URL(process.env.WS_TEACHER_FIXTURE_ORIGIN);
       assert.equal(origin.hostname, "127.0.0.1");
@@ -111,7 +148,7 @@ async function main() {
       assert.equal(newAssessment.confirmation, null);
       assert.ok(newAssessment.staleConfirmation);
       assert.equal(newAssessment.history.length, 1);
-      assert.deepEqual(readWsAssessment(updatedReview, writingSource), readWsAssessment(reopened, writingSource));
+      assert.deepEqual(readWsAssessment(updatedReview, writingSource), readWsAssessment(aiReview, writingSource));
       assert.deepEqual(updatedReview.report, report);
       console.log("PASS HTTP upload: wrong task rejected, parallel distinct questions preserved, Speaking revision and history updated atomically");
     }
