@@ -7,8 +7,11 @@
   "progress": {
     "base_sha": "a3673f8bf137eb165bf6fe5e311baf531bb30a2f",
     "branch": "codex/placement/pt-08-ws-review",
-    "next": "Изолированный контракт и синтетические проверки для AI & Quality.",
-    "stage": "implementation"
+    "head_sha": "0e2d1084ae24faa27fd3fbaa955e988865589449",
+    "next": "Готово к проверке AI & Quality. Изолированный этап PT-08.",
+    "pr": 99,
+    "stage": "review",
+    "test_run": 46132370566
   },
   "release": null,
   "source": "direct",
