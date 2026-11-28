@@ -124,7 +124,7 @@ export function ClassDictionary({ lessonId, preview, canSave, recipient, save }:
             <li key={option} className="flex items-center justify-between gap-2">
               <span><b>{word}</b> — {option}</span>
               {canSave && !preview && (
-                <button type="button" className="iconbtn wplus" disabled={saving || success}
+                <button type="button" className="iconbtn wplus" disabled={saving || !!success}
                   aria-label={t("cls.dictAdd", { translation: option })} onClick={() => void add(option)}>
                   <Icon name="plus" size="sm" />
                 </button>
