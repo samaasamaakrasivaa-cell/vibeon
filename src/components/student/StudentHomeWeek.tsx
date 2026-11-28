@@ -59,7 +59,7 @@ export async function StudentHomeWeek({ studentId, tz, now, day, hasWordGoal }: 
   for (const { occ } of weeks) {
     for (const slot of occ) {
       const words = slot.kind === "words";
-      if (words && slot.slotId === null && !hasWordGoal) continue;
+      if (words && slot.slotId === null && (!hasWordGoal || slot.iso === today)) continue;
       const time = `${String(Math.floor(slot.startMin / 60)).padStart(2, "0")}:${String(slot.startMin % 60).padStart(2, "0")}`;
       events.get(slot.iso)?.push({
         key: slot.key,

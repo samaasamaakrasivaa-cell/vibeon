@@ -49,7 +49,7 @@
   display: grid;
   grid-template-columns: var(--icon-size) minmax(0, 1fr) auto;
   grid-template-rows: auto 1fr auto;
-  grid-template-areas: "icon . lock" "copy copy copy" "action action action";
+  grid-template-areas: "icon title lock" "copy copy copy" "action action action";
   align-items: start;
   gap: 10px;
   min-width: 0;
@@ -93,10 +93,19 @@
   color: var(--ok-text);
 }
 
-.copy { grid-area: copy; }
-.copy h3 { margin: 0; font-size: 16px; line-height: 1.25; font-weight: 650; }
-.copy p {
-  margin: 5px 0 0;
+.title {
+  grid-area: title;
+  align-self: center;
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.25;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+.step:not([data-state="locked"]) .title { grid-column-end: -1; }
+.copy {
+  grid-area: copy;
+  margin: 0;
   color: var(--text2);
   font-size: 13px;
   line-height: 1.45;
@@ -182,14 +191,13 @@
   .step {
     --icon-size: 36px;
     grid-template-rows: auto;
-    grid-template-areas: "icon copy lock" ". action action";
+    grid-template-areas: "icon title lock" "copy copy copy" "action action action";
     gap: 7px 10px;
     padding: 11px 12px;
     border-radius: 14px;
   }
 
-  .step:not(:has(.lock)) .copy { grid-column: 2 / -1; }
-  .step:not(:has(.action)) { grid-template-areas: "icon copy lock"; }
+  .step:not(:has(.action)) { grid-template-areas: "icon title lock" "copy copy copy"; }
   .icon { border-radius: 10px; }
-  .copy h3 { font-size: 15px; }
+  .title { font-size: 15px; }
 }

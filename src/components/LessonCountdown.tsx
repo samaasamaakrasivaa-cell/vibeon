@@ -65,7 +65,9 @@ export function LessonCountdown({ startsAt, initialNow, variant, compact }: Coun
         return;
       }
       const untilVisible = variant === "teacher" ? remaining - TEACHER_WINDOW_MS + 1 : 0;
-      timeout = window.setTimeout(tick, Math.max(1, untilVisible > 0 ? untilVisible : remaining % MINUTE_MS || MINUTE_MS));
+      const nextMinute = remaining % MINUTE_MS;
+      const delay = compact ? Math.min(remaining, nextMinute + 1) : (nextMinute || MINUTE_MS);
+      timeout = window.setTimeout(tick, untilVisible > 0 ? untilVisible : delay);
     };
     const resume = () => {
       if (!document.hidden) tick();
@@ -78,7 +80,7 @@ export function LessonCountdown({ startsAt, initialNow, variant, compact }: Coun
       window.removeEventListener("focus", resume);
       document.removeEventListener("visibilitychange", resume);
     };
-  }, [router, startsAt, variant]);
+  }, [router, startsAt, variant, compact]);
 
   const remaining = startsAt - Math.max(now, initialNow);
   const visible = remaining > 0 && (variant === "student" || remaining < TEACHER_WINDOW_MS);
@@ -90,9 +92,26 @@ export function LessonCountdown({ startsAt, initialNow, variant, compact }: Coun
 function CountdownFace({ startsAt, initialNow, variant, compact, remaining }: CountdownProps & { remaining: number }) {
   const { lang, t } = useT();
   const [initialMinutes] = useState(() => Math.ceil((startsAt - initialNow) / MINUTE_MS));
+  if (compact) {
+    const minutes = Math.max(1, Math.floor(remaining / MINUTE_MS));
+    const units: [Unit, number][] = minutes >= DAY_MINUTES
+      ? [["day", Math.floor(minutes / DAY_MINUTES)], ["hour", Math.floor(minutes / 60) % 24]]
+      : [["hour", Math.floor(minutes / 60)], ["minute", minutes % 60]];
+    const duration = units.filter(([, value]) => value > 0);
+    const accessible = duration.map(([unit, value]) =>
+      new Intl.NumberFormat(lang, { style: "unit", unit, unitDisplay: "long" }).format(value)
+    ).join(", ");
+    const prefix = t("st.timeToLesson");
+    return (
+      <time className="student-lesson-countdown" role="timer" dateTime={new Date(startsAt).toISOString()} aria-label={`${prefix} ${accessible}`}>
+        <span>{prefix}</span>{" "}<b>{duration.map(([unit, value]) => `${value} ${t(unitLabels[unit])}`).join(" ")}</b>
+      </time>
+    );
+  }
+
   const dayDigits = Math.max(2, String(Math.floor(initialMinutes / DAY_MINUTES)).length);
   const minutes = Math.ceil(remaining / MINUTE_MS);
-  const prefix = t(compact ? "st.timeToLesson" : variant === "teacher" ? "lessonCountdown.teacher" : "lessonCountdown.student");
+  const prefix = t(variant === "teacher" ? "lessonCountdown.teacher" : "lessonCountdown.student");
   const units: [Unit, number][] = [];
   if (variant === "teacher") {
     units.push(["minute", Math.min(minutes, 60)]);
@@ -102,16 +121,9 @@ function CountdownFace({ startsAt, initialNow, variant, compact, remaining }: Co
     if (initialMinutes >= 60 || minutes >= 60) units.push(["hour", Math.floor(minutes / 60) % 24]);
     units.push(["minute", minutes % 60]);
   }
-  const duration = units.filter(([, value]) => value > 0);
-  const accessible = (compact ? duration : units.filter(([unit, value]) => unit === "minute" || value > 0)).map(([unit, value]) =>
+  const accessible = units.filter(([unit, value]) => unit === "minute" || value > 0).map(([unit, value]) =>
     new Intl.NumberFormat(lang, { style: "unit", unit, unitDisplay: "long" }).format(value)
   ).join(", ");
-
-  if (compact) return (
-    <time className="student-lesson-countdown" role="timer" dateTime={new Date(startsAt).toISOString()} aria-label={`${prefix} ${accessible}`}>
-      <span>{prefix}</span>{" "}<b>{duration.map(([unit, value]) => `${value} ${t(unitLabels[unit])}`).join(" ")}</b>
-    </time>
-  );
 
   return (
     <time className={`lesson-countdown lesson-countdown--${variant}`} role="timer"

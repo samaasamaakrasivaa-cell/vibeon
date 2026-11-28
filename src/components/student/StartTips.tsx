@@ -73,10 +73,8 @@ export function StartTips({ tips }: { tips: Tip[] }) {
                 </span>
               )}
             </span>
-            <div className={styles.copy}>
-              <h3>{tip.title}</h3>
-              <p>{tip.text}</p>
-            </div>
+            <h3 className={styles.title}>{tip.title}</h3>
+            <p className={styles.copy}>{tip.text}</p>
             {tip.locked ? (
               <LockHint label={`${tip.title}. ${t("tips.locked")}`} reason={tip.locked} />
             ) : tip.href && tip.cta && (!tip.done || tip.keepLink) && (

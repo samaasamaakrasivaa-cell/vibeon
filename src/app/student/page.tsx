@@ -101,7 +101,6 @@ export default async function StudentHome({ searchParams }: { searchParams: Prom
   ]);
   const homeworkForLesson = lessonWork[0];
   const pendingHomework = hws.find((h) => h.needsRevision || h.done < h.total);
-  const previousHomework = pendingHomework ?? (!homeworkForLesson && hws[0]?.words ? hws[0] : undefined);
   const homeworkPending = homeworkForLesson && (homeworkForLesson.needsRevision || homeworkForLesson.done < homeworkForLesson.total || homeworkForLesson.words > 0 || homeworkForLesson.total === 0);
   const needsWordGoal = studentForm(s?.form).wordGoalConfigured === false;
   const wordTime = s?.wordDays.includes(partsIn(now, tz).dow) ? s.remindAt : null;
@@ -142,68 +141,65 @@ export default async function StudentHome({ searchParams }: { searchParams: Prom
         </div>
 
         <div className="mt-5 flex flex-col gap-3">
-          <StudentLessonCard lesson={shownLesson} current={!!current} callLink={callLink} homework={homeworkForLesson} previousHomework={previousHomework} tz={tz} now={now} />
+          <StudentLessonCard lesson={shownLesson} current={!!current} callLink={callLink} homework={homeworkForLesson} tz={tz} now={now} />
+          <section className="student-home-task student-home-words" aria-labelledby="student-words-title">
+            <header className="student-home-task-head">
+              <span className="student-home-task-icon" aria-hidden="true"><Icon name="cards" /></span>
+              <div className="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-1">
+                <h3 id="student-words-title">{t(needsWordGoal || !wordsTotal ? "nav.words" : "st.wordPractice")}</h3>
+                {!needsWordGoal && wordsTotal > 0 && wordTime && <span className="small muted">{t("st.wordPracticeAt", { time: wordTime })}</span>}
+              </div>
+            </header>
+            {needsWordGoal || wordsTotal === 0 ? <p className="student-home-task-body m-0 muted">{t(needsWordGoal ? "tips.words" : "st.noWordsYet")}</p> : (
+              <div className="student-home-task-body">
+                {done === 0 && <p className="m-0 mb-2 muted">{t("st.wordsNotStarted")}</p>}
+                {done >= goal && <p className="m-0 mb-2 font-semibold">{t("st.wordsDone")}</p>}
+                <div className="student-home-word-count small">
+                  <b>{t("st.doneOf", { n: done, total: goal })}</b>
+                  <span className="muted">{dueWords ? t("st.due", { n: dueWords }) : t("st.noWordsDue")}</span>
+                </div>
+                <span className="hwbar block" role="progressbar" aria-label={t("st.wordPractice")} aria-valuemin={0} aria-valuemax={goal} aria-valuenow={done}><i style={{ width: `${(done / goal) * 100}%` }} /></span>
+              </div>
+            )}
+            {needsWordGoal ? <Link href="/student/words?goal=1" className="btn primary sm"><Icon name="target" size="sm" />{t("tips.wordsT")}</Link> :
+                wordsTotal === 0 ? <Link href="/student/words?tab=list" className="btn secondary sm">{t("st.openDictionary")}</Link> :
+                <Link href={dueWords ? "/student/words?train=today" : "/student/words?train=all"} className="btn primary sm"><Icon name="cards" size="sm" />{t(dueWords ? "st.startTraining" : "st.reviewWords")}</Link>}
+          </section>
           {s && <StudentHomeWeek studentId={s.id} day={d} tz={tz} now={now} hasWordGoal={!needsWordGoal} />}
         </div>
       </section>
 
-      <div className="student-home-activities">
-        {testLink && (
-          <section className="student-home-task student-home-placement student-home-placement-active" aria-labelledby="student-placement-title">
-            <header className="student-home-task-head">
-              <span className="student-home-task-icon" aria-hidden="true"><Icon name="target" /></span>
-              <div className="min-w-0">
-                <h3 id="student-placement-title">{t(taking?.status === "active" ? "st.placementInProgress" : "pl.cardNew")}</h3>
-                {taking?.track === "teen" && <span className="small muted">{t("plt.title")}</span>}
-              </div>
-            </header>
-            <div className="student-home-task-body">
-              <p className="m-0 font-semibold">{t("st.placementIntro")}</p>
-              <p className="m-0 mt-1 muted">{t("st.placementHonest")} {t("st.placementHelp")}</p>
-              {taking && <p className="m-0 mt-2 small muted">{t("pl.cardSub")}</p>}
-            </div>
-            <Link href={testLink} className="btn plwhite sm"><Icon name="target" size="sm" />{t(taking?.status === "active" ? "pl.continue" : "pl.start")}</Link>
-          </section>
-        )}
-
-        {!testLink && publishedTest && resultLink && (
-          <section className="student-home-task student-home-placement" aria-labelledby="student-placement-title">
-            <header className="student-home-task-head">
-              <span className="student-home-task-icon" aria-hidden="true"><Icon name="target" /></span>
-              <div className="min-w-0">
-                <h3 id="student-placement-title">{t("pl.cardDone", { lvl: publishedTest.level ?? "" })}</h3>
-                {publishedTest.track === "teen" && <span className="small muted">{t("plt.title")}</span>}
-              </div>
-            </header>
-            <p className="student-home-task-body m-0 muted">{t("st.placementResultHint")}</p>
-            <Link href={resultLink} prefetch={false} className="btn primary sm">{t("pl.cardSee")}</Link>
-          </section>
-        )}
-
-        <section className="student-home-task student-home-words" aria-labelledby="student-words-title">
+      {testLink && (
+        <section className="student-home-task student-home-placement student-home-placement-active" aria-labelledby="student-placement-title">
           <header className="student-home-task-head">
-            <span className="student-home-task-icon" aria-hidden="true"><Icon name="cards" /></span>
+            <span className="student-home-task-icon" aria-hidden="true"><Icon name="target" /></span>
             <div className="min-w-0">
-              <h3 id="student-words-title">{t(needsWordGoal || !wordsTotal ? "nav.words" : "st.wordPractice")}</h3>
-              {!needsWordGoal && wordsTotal > 0 && wordTime && <span className="small muted">{t("st.wordPracticeAt", { time: wordTime })}</span>}
+              <h3 id="student-placement-title">{t(taking?.status === "active" ? "st.placementInProgress" : "pl.cardNew")}</h3>
+              {taking?.track === "teen" && <span className="small muted">{t("plt.title")}</span>}
             </div>
           </header>
-          {needsWordGoal || wordsTotal === 0 ? <p className="student-home-task-body m-0 muted">{t(needsWordGoal ? "tips.words" : "st.noWordsYet")}</p> : (
-            <div className="student-home-task-body">
-              {done === 0 && <p className="m-0 mb-2 muted">{t("st.wordsNotStarted")}</p>}
-              {done >= goal && <p className="m-0 mb-2 font-semibold">{t("st.wordsDone")}</p>}
-              <div className="student-home-word-count small">
-                <b>{t("st.doneOf", { n: done, total: goal })}</b>
-                <span className="muted">{dueWords ? t("st.due", { n: dueWords }) : t("st.noWordsDue")}</span>
-              </div>
-              <span className="hwbar block" role="progressbar" aria-label={t("st.wordPractice")} aria-valuemin={0} aria-valuemax={goal} aria-valuenow={done}><i style={{ width: `${(done / goal) * 100}%` }} /></span>
-            </div>
-          )}
-          {needsWordGoal ? <Link href="/student/words?goal=1" className="btn primary sm"><Icon name="target" size="sm" />{t("tips.wordsT")}</Link> :
-              wordsTotal === 0 ? <Link href="/student/words?tab=list" className="btn secondary sm">{t("st.openDictionary")}</Link> :
-              <Link href={dueWords ? "/student/words?train=today" : "/student/words?train=all"} className="btn primary sm"><Icon name="cards" size="sm" />{t(dueWords ? "st.startTraining" : "st.reviewWords")}</Link>}
+          <div className="student-home-task-body">
+            <p className="m-0 font-semibold">{t("st.placementIntro")}</p>
+            <p className="m-0 mt-1 muted">{t("st.placementHonest")} {t("st.placementHelp")}</p>
+            {taking && <p className="m-0 mt-2 small muted">{t("pl.cardSub")}</p>}
+          </div>
+          <Link href={testLink} className="btn plwhite sm"><Icon name="target" size="sm" />{t(taking?.status === "active" ? "pl.continue" : "pl.start")}</Link>
         </section>
-      </div>
+      )}
+
+      {!testLink && publishedTest && resultLink && (
+        <section className="student-home-task student-home-placement" aria-labelledby="student-placement-title">
+          <header className="student-home-task-head">
+            <span className="student-home-task-icon" aria-hidden="true"><Icon name="target" /></span>
+            <div className="min-w-0">
+              <h3 id="student-placement-title">{t("pl.cardDone", { lvl: publishedTest.level ?? "" })}</h3>
+              {publishedTest.track === "teen" && <span className="small muted">{t("plt.title")}</span>}
+            </div>
+          </header>
+          <p className="student-home-task-body m-0 muted">{t("st.placementResultHint")}</p>
+          <Link href={resultLink} prefetch={false} className="btn primary sm">{t("pl.cardSee")}</Link>
+        </section>
+      )}
 
       {last && (last.studentNote || last.note) && (
         <div className="grid gap-3 md:grid-cols-2">
