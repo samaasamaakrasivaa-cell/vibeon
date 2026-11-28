@@ -7,11 +7,11 @@
   "progress": {
     "base_sha": "6b57ad51f4d7d48fe661461f9ab52b2d1fc18098",
     "branch": "codex/placement/pt-10-objective-facts",
-    "head_sha": "104e9bdb6b7f7722c8c4fad3cf313405e64d558a",
-    "next": "Ревью AI & Quality сборщика четырёх навыков. Рабочее подключение отдельно.",
+    "head_sha": "d6602ff09e158790e9b5b927984bd92ef9ad92b2",
+    "next": "Повторное ревью AI & Quality двух исправлений в PR №124. Рабочее подключение отдельно.",
     "pr": 124,
     "stage": "review",
-    "test_run": 46157345398
+    "test_run": 46159476022
   },
   "release": null,
   "source": "direct",
