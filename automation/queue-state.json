@@ -10,17 +10,13 @@
     16,
     18
   ],
-  "lease": {
-    "token": "197573e333364001826a08b06e33e38e",
-    "started_at": "2026-11-28T17:06:56.032840Z",
-    "expires_at": "2026-11-28T20:06:56.032840Z"
-  },
+  "lease": null,
   "checkpoint": {
     "issue": 25,
     "stage": "await_live_verification",
     "branch": "codex/vocabulary/voc-09",
     "base_sha": "348c4a99fd27cbc8ee9ac813d2cdc07b7abdbc30",
-    "next": "Issue 25 partial release recorded and read back. Obtain public /api/version and safe live teacher scenario evidence through existing access; confirm current released SHA contains merge; only then owner note/close. No repeat merge or rollout.",
+    "next": "Confirm personal student card Progress vocabulary/training block in existing authorized teacher session; confirm current public version, then owner note/close. No repeat merge or rollout.",
     "head_sha": "9d3cb5ebcc719c4051fdc6bf56fb9146dfaf8b29",
     "pr": 54,
     "review_request_comment_id": 7238969762,
@@ -31,13 +27,13 @@
     "subject_tests": "passed synthetic PostgreSQL/HTTP/Chromium, scope/archive/foreign/role denial, empty/legacy source, repeat, RU/EN, 320/1280",
     "review_summary_id": 7224060100,
     "review_receipt_id": 7238990218,
-    "observed_main_sha": "8e4215a2988ba3c0df1917584d49e0b7948eb302",
-    "release_blocker": "curl /api/health and /api/version: DNS error 6; web fetch inaccessible. No direct version or live teacher scenario evidence. Related direct task #113: existing browser proxy CONNECT 403; access denied (comments 7241873296, 7241898592). CD-01 released exact SHA.",
+    "observed_main_sha": "d7d94a6d6e76d9a6810a53c4a6434caea821b82d",
+    "release_blocker": "Own curl health/version DNS error 6; web inaccessible. Other Tech Lead #25 comment 7242350595 verified both endpoints at 41505e1a97ee5e282d3915b8064e00d45b7681a1 (contains merge). #113 comment 7242379213 confirms owner screenshot of overview tab only, not individual Progress page. No authorized live teacher session here.",
     "release_run_id": 46147737925,
-    "last_confirmed_release_sha": "8e4215a2988ba3c0df1917584d49e0b7948eb302",
-    "last_confirmed_release_run_id": 46162280847,
+    "last_confirmed_release_sha": "d7d94a6d6e76d9a6810a53c4a6434caea821b82d",
+    "last_confirmed_release_run_id": 46167867763,
     "merge_sha": "0fcef7b9e18fcb9a3165d1e2a7b7e9f7cc172075",
-    "release_status": "released exact SHA; public/local health verified by CD-01",
+    "release_status": "released exact SHA; health verified by CD-01; current main isolated VOC-09 passed",
     "release_image": "sha256:cfb3dfdcfb57675fb1e1329c927ce7ab6c1cf4b1d370e318ddf40aff00791e69",
     "release_comment_id": 7240435699
   },
