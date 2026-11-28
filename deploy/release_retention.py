@@ -6,6 +6,8 @@ import json
 import os
 import re
 import stat
+
+from release_uploads_manifest import uploads_tree_sha256
 from pathlib import Path
 
 IMAGE = re.compile(r"sha256:[0-9a-f]{64}")
@@ -148,19 +150,22 @@ def confirm_replacements(verified):
                 return False
             seen.update(files.values())
             marker = load_json("verified.json", directory_fd=directory_fd, expected_inode=files["verified.json"])
-            # Legacy receipts lack a checksum for the compressed archive. Wait
-            # for three new restore-tested receipts before any automatic expiry.
             for name, key in (("database.dump", "database_dump_sha256"),
                               ("uploads.tar.gz", "uploads_archive_sha256")):
-                expected = marker.get(key, "")
+                expected = marker.get(key)
+                legacy_uploads = name == "uploads.tar.gz" and expected is None
+                if legacy_uploads:
+                    expected = marker.get("uploads_sha256")
                 if not re.fullmatch(r"[0-9a-f]{64}", str(expected)):
                     return False
                 fd = os.open(name, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK, dir_fd=directory_fd)
                 with os.fdopen(fd, "rb") as handle:
                     row = os.fstat(handle.fileno())
                     if (not stat.S_ISREG(row.st_mode) or row.st_nlink != 1
-                            or (row.st_dev, row.st_ino) != files[name]
-                            or hashlib.file_digest(handle, "sha256").hexdigest() != expected):
+                            or (row.st_dev, row.st_ino) != files[name]):
+                        raise ValueError("backup replacement failed integrity check")
+                    digest = uploads_tree_sha256(handle) if legacy_uploads else hashlib.file_digest(handle, "sha256").hexdigest()
+                    if digest != expected:
                         raise ValueError("backup replacement failed integrity check")
         finally:
             os.close(directory_fd)

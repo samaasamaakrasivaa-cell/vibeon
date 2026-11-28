@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 import sys
 import tempfile
+import tarfile
 import unittest
 from unittest.mock import patch
 
@@ -91,10 +92,11 @@ class RetentionTest(unittest.TestCase):
         paths = [self.backup(i, row(i), marked=i != 5) for i in range(1, 6)]
         pinned = {**row(50), "sha": next(iter(retention.PINS))}
         paths.append(self.backup(1, pinned))
-        report = self.rotate()
-        self.assertEqual(report["verified_full_backups"], 5)
-        self.assertEqual(report["full_backup_candidates"], 1)
-        self.assertEqual(report["full_backup_candidate_bytes"], 11)
+        verified, candidates, _ = retention.full_backup_plan(self.root)
+        self.assertEqual(len(verified), 5)
+        self.assertEqual([backup.bytes for backup in candidates], [11])
+        with self.assertRaises(ValueError):
+            self.rotate()
         self.assertTrue(all(path.exists() for path in paths))
 
     def test_keep_three_newest_and_exclude_future_receipts(self):
@@ -116,6 +118,20 @@ class RetentionTest(unittest.TestCase):
         self.assertFalse(old.exists())
         self.assertTrue(foreign.exists())
         self.assertTrue(all(entry.exists() for entry in latest))
+
+    def test_legacy_restore_digest_proves_three_replacements(self):
+        old = self.backup(1, row(1))
+        for day in (21, 22, 23):
+            current = self.backup(day, row(day))
+            with tarfile.open(current / "uploads.tar.gz", "w:gz") as archive:
+                root = tarfile.TarInfo(".")
+                root.type = tarfile.DIRTYPE
+                archive.addfile(root)
+            marker = retention.load_json(current / "verified.json")
+            marker["uploads_sha256"] = hashlib.sha256(b"").hexdigest()
+            self.write(current / "verified.json", marker)
+        self.assertEqual(self.rotate()["full_backups_removed"], 1)
+        self.assertFalse(old.exists())
 
     def test_corrupt_replacement_preserves_every_backup_and_image(self):
         old = self.backup(1, row(1))
