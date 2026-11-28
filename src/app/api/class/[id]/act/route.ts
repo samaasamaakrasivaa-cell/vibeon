@@ -5,6 +5,7 @@ import { carriedOne, isEmptyPayload } from "@/lib/class/carry";
 import { Prisma } from "@prisma/client";
 import { getSessionUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
+import { lessonDictionaryContext } from "@/lib/live/context-dictionary";
 import { classAccess, type LiveState } from "@/lib/live/access";
 import { publish, withLock } from "@/lib/live/bus";
 import { startLessonSession, withLessonLifecycleLock, type LessonFinishedEvent } from "@/lib/live/lesson-session";
@@ -377,8 +378,13 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
             (confirmation.translation !== null && typeof confirmation.translation !== "string")
           )) return bad();
 
+          const example = str(body.ex, 280).trim();
+          const origin = body.context == null ? null : await lessonDictionaryContext(acc, { ...body.context, query: word });
+          if (body.context != null && (!origin || !example)) return bad();
           const result = await savePersonalWord(studentId, {
-            word, translation: inputTranslation, example: str(body.ex, 400), sourceLessonId: tg.id, confirmation,
+            word, translation: inputTranslation, example: origin ? example : str(body.ex, 400),
+            sourceLessonId: tg.id, confirmation,
+            context: origin ? { lessonId: tg.id, sentence: origin.sentence, example } : undefined,
           });
           if (result.status === "confirm") return NextResponse.json({ ok: true, ...result });
           if (!("saved" in result)) return bad(result.status);

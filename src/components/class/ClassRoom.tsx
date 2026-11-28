@@ -747,7 +747,13 @@ export function ClassRoom({ d }: { d: ClassData }) {
 
           <main className="cls-main">
             {!d.preview && tab === "lesson" && (teacher || live.contextTranslation !== false) && (
-              <ClassContextDictionary lessonId={d.id} />
+              <ClassContextDictionary lessonId={d.id}
+                recipients={gTeacher ? d.group?.members.map((member) => ({ id: member.sid, name: member.name })) : undefined}
+                save={gTeacher || d.student ? (selection, suggestion, studentId, confirmation) => send("word", {
+                  op: "add", dictionary: true, word: selection.query, tr: suggestion.translation, ex: suggestion.example,
+                  context: { taskId: selection.taskId, sentence: selection.sentence }, confirmation,
+                  ...(gTeacher ? { studentId } : {}),
+                }) : undefined} />
             )}
            <KeyCtx.Provider value={teacher && showKeys}>
             {gTeacher && tab === "words" && (

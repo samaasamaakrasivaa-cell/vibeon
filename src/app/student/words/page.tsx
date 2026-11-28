@@ -18,7 +18,7 @@ export default async function Words({ searchParams }: { searchParams: Promise<{ 
   const now = new Date();
   const today = isoDay(now, me.timezone);
   const [words, log] = await Promise.all([
-    db.word.findMany({ where: { studentId: s.id }, orderBy: [{ level: "asc" }, { createdAt: "desc" }] }),
+    db.word.findMany({ where: { studentId: s.id }, orderBy: [{ level: "asc" }, { createdAt: "desc" }], include: { contexts: sp.tab === "list" } }),
     db.wordPractice.findMany({ where: { studentId: s.id, day: { gte: addDaysIso(today, -120) } } }),
   ]);
   // Общие словарные данные читаются из кэша только в списке «Мои слова».
@@ -48,7 +48,7 @@ export default async function Words({ searchParams }: { searchParams: Promise<{ 
           const details = key ? cardDetails.get(key) : null;
           const translations = wordTranslations(w.translation);
           return {
-            id: w.id, word: w.word, translation: translations.join("; ") || null, definition: w.definition,
+            id: w.id, word: w.word, translation: translations.join("; ") || null, definition: w.definition, contexts: w.contexts ?? [],
             example: w.example, ownExample: w.ownExample, level: w.level, due: !w.nextReviewAt || w.nextReviewAt <= now,
             ipa: details?.ipa ?? null, synonyms: details?.synonyms ?? null, canEnrich: !!key,
             meanings: sp.tab === "list" ? translations : [],
