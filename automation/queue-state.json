@@ -10,11 +10,7 @@
     16,
     18
   ],
-  "lease": {
-    "token": "f4f0e538b19b4ac49a6c25ba9545ce03",
-    "started_at": "2026-11-28T17:57:17.000000Z",
-    "expires_at": "2026-11-28T20:57:17.000000Z"
-  },
+  "lease": null,
   "checkpoint": {
     "issue": 25,
     "stage": "await_live_verification",
@@ -32,13 +28,13 @@
     "review_summary_id": 7224060100,
     "review_receipt_id": 7238990218,
     "observed_main_sha": "d7d94a6d6e76d9a6810a53c4a6434caea821b82d",
-    "release_blocker": "Own curl health/version DNS error 6; web inaccessible. Other Tech Lead #25 comment 7242350595 verified both endpoints at 41505e1a97ee5e282d3915b8064e00d45b7681a1 (contains merge). #113 comment 7242379213 confirms owner screenshot of overview tab only, not individual Progress page. No authorized live teacher session here.",
+    "release_blocker": "28.11: curl health/version DNS error 6; web both endpoints inaccessible. Tech Lead #25 comment 7242350595 verified both at 41505e1a97ee5e282d3915b8064e00d45b7681a1 (contains merge). #113 comment 7242379213 confirms overview tab only, not individual Progress page. No authorized live teacher session here. CD-01 46167867763 released d7d94a6d6e76d9a6810a53c4a6434caea821b82d (contains merge; compare ahead 63).",
     "release_run_id": 46147737925,
     "last_confirmed_release_sha": "d7d94a6d6e76d9a6810a53c4a6434caea821b82d",
     "last_confirmed_release_run_id": 46167867763,
     "merge_sha": "0fcef7b9e18fcb9a3165d1e2a7b7e9f7cc172075",
     "release_status": "released exact SHA; health verified by CD-01; current main isolated VOC-09 passed",
-    "release_image": "sha256:cfb3dfdcfb57675fb1e1329c927ce7ab6c1cf4b1d370e318ddf40aff00791e69",
+    "release_image": "sha256:121a9fff04408534d5d5031f9053ba69b65010bc40284c7cc02219472bcd64b8",
     "release_comment_id": 7240435699
   },
   "last_probe": {
