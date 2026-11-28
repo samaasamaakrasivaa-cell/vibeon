@@ -4,7 +4,7 @@ import { isoDay, minutesOfDay, partsIn } from "../time";
 import { notify } from "../notify";
 import { isKind } from "./kinds";
 
-const RU: Record<string, string> = { homework: "домашка", film: "фильм / сериал", podcast: "подкаст / аудио", reading: "чтение", speaking: "говорение", grammar: "грамматика", club: "разговорный клуб", exam: "подготовка к экзамену" };
+const RU: Record<string, string> = { homework: "домашка", film: "фильм / сериал", podcast: "подкаст / аудио", reading: "чтение", speaking: "говорение", grammar: "грамматика", club: "разговорный клуб", exam: "подготовка к экзамену", other: "другое занятие" };
 const hhmm = (m: number) => `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
 
 /** Свои слоты ученика: напоминание в Telegram за 15 минут до начала (один раз на слот в день). Слова напоминаются по своим настройкам. */

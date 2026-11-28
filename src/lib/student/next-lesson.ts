@@ -4,15 +4,15 @@ import { callLinkOf } from "../lessons/call-link";
 
 const lessonCard = { id: true, startsAt: true, durationMin: true, template: { select: { title: true } } } as const;
 
-export function nextStudentLesson(userId: string, now: Date) {
+export function nextStudentLesson(userId: string, now: Date, courseId?: string) {
   return db.lessonInstance.findFirst({
-    where: { student: { userId }, status: "PLANNED", startsAt: { gt: now } },
+    where: { student: { userId }, status: "PLANNED", startsAt: { gt: now }, ...(courseId ? { template: { unit: { courseId } } } : {}) },
     orderBy: [{ startsAt: "asc" }, { id: "asc" }],
     select: lessonCard,
   });
 }
 
-export async function currentStudentLesson(userId: string, now: Date) {
+export async function currentStudentLesson(userId: string, now: Date, courseId?: string) {
   const windowStart = new Date(now.getTime() - 90 * 60_000);
   const lastFinished = await db.lessonInstance.findFirst({
     where: { student: { userId }, status: "DONE", finishedAt: { gt: windowStart, lte: now } },
@@ -26,6 +26,7 @@ export async function currentStudentLesson(userId: string, now: Date) {
     where: {
       student: { userId }, status: "PLANNED",
       startsAt: { gt: after, lte: now },
+      ...(courseId ? { template: { unit: { courseId } } } : {}),
     },
     orderBy: [{ startsAt: "asc" }, { id: "asc" }],
     select: lessonCard,

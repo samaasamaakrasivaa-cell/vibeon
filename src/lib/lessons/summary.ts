@@ -2,7 +2,7 @@ import "server-only";
 // Итог урока по ученику: каждый пункт каждого задания (верно с первой попытки / в итоге), тема пункта по меткам,
 // вес формата (найди и исправь > перевод > вписать > выбор). Ответы, помеченные неверными в заданиях со свободной
 // формой, проверяет ИИ: ключ ответов бывает неполным. Решение «Засчитать / Оставить ошибкой» — за учителем.
-import type { Prisma } from "@prisma/client";
+import { randomUUID } from "node:crypto";
 import { db } from "../db";
 import { llmFor } from "../ai/gateway";
 import { modelsFor } from "../ai/models";
@@ -17,7 +17,6 @@ import { tagTemplate } from "../tasks/tagging";
 type P = Record<string, unknown>;
 const rec = <T,>(x: unknown) => ((x && typeof x === "object" ? x : {}) as Record<string, T>);
 const filled = (v: unknown) => (typeof v === "string" ? !!v.trim() : v != null);
-const json = (v: unknown) => JSON.parse(JSON.stringify(v)) as Prisma.InputJsonValue;
 
 export type Item = { key: string; idx: number; ok: boolean; firstOk: boolean; typed: boolean; ctx: string; expected: string; given: string };
 export type Verdict = "correct" | "topic_error" | "other_error" | "typo" | "unverified";
@@ -188,6 +187,17 @@ export async function buildLessonSummary(lessonInstanceId: string, studentId: st
     ...(long && long.ms ? { longest: { taskId: long.taskId, title: long.title, ms: long.ms } } : {}),
     words: [...words].slice(0, 80), points, other, typos,
   };
-  const data = { topics: json(topics), checks: json(checks), notes: json(notes) };
-  return db.lessonSummary.upsert({ where: { lessonInstanceId_studentId: { lessonInstanceId, studentId } }, create: { lessonInstanceId, studentId, ...data }, update: data });
+  // Preserve private observations and the approved report across summary rebuilds.
+  await db.$executeRaw`
+    INSERT INTO "LessonSummary" ("id", "lessonInstanceId", "studentId", "topics", "checks", "notes", "updatedAt")
+    VALUES (${randomUUID()}, ${lessonInstanceId}, ${studentId}, ${JSON.stringify(topics)}::jsonb,
+            ${JSON.stringify(checks)}::jsonb, ${JSON.stringify(notes)}::jsonb, CURRENT_TIMESTAMP)
+    ON CONFLICT ("lessonInstanceId", "studentId") DO UPDATE SET
+      "topics" = EXCLUDED."topics", "checks" = EXCLUDED."checks", "updatedAt" = EXCLUDED."updatedAt",
+      "status" = CASE WHEN "LessonSummary"."status" = 'analysis-only' THEN 'draft' ELSE "LessonSummary"."status" END,
+      "notes" = EXCLUDED."notes" || CASE WHEN "LessonSummary"."notes" ? 'lessonAnalysisV1'
+        THEN jsonb_build_object('lessonAnalysisV1', "LessonSummary"."notes" -> 'lessonAnalysisV1') ELSE '{}'::jsonb END
+        || CASE WHEN "LessonSummary"."notes" ? 'lessonObservationV1'
+        THEN jsonb_build_object('lessonObservationV1', "LessonSummary"."notes" -> 'lessonObservationV1') ELSE '{}'::jsonb END
+  `;
 }

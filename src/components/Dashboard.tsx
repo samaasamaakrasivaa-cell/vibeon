@@ -15,7 +15,7 @@ import { nextBirthday } from "@/lib/birthdays";
 import { getT } from "@/lib/i18n/server";
 import { greetingKey, hourIn } from "@/lib/greeting";
 import { db } from "@/lib/db";
-import { addDaysIso, dayStart, hhmm, isoDay, mondayOf } from "@/lib/time";
+import { addDaysIso, dayStart, hhmm, isoDay, mondayOf, parseIsoDay, weekRange } from "@/lib/time";
 import { lessonInclude, lessonWho, oneSlot, syncSchedule } from "@/lib/teacher/data";
 import { initials } from "@/lib/invite";
 import { homeworkFor, type HwState } from "@/lib/homework";
@@ -23,9 +23,10 @@ import { hasStartedLessonSession } from "@/lib/live/lesson-session";
 import { LessonCountdown } from "./LessonCountdown";
 import { LessonCall } from "./teacher/LessonCall";
 import { callLinkOf } from "@/lib/lessons/call-link";
+import { assignedHomeworkTasks } from "@/lib/tasks/homework-selection";
 import type { LessonInstance, User } from "@prisma/client";
 
-type ScheduledLesson = Pick<LessonInstance, "startsAt" | "status" | "live" | "callLink">;
+type ScheduledLesson = Pick<LessonInstance, "startsAt" | "status" | "live" | "callLink" | "templateId">;
 
 function teacherLessonCardStatus(lesson: LessonInstance, host: ScheduledLesson | undefined, now: Date) {
   if (!host || host.status !== lesson.status || +host.startsAt !== +lesson.startsAt) return;
@@ -44,8 +45,14 @@ export async function Dashboard({ user, role, day, top }: { user: User; role: "T
   const tz = user.timezone;
   const now = new Date();
   const todayIso = isoDay(now, tz);
-  const from = dayStart(todayIso, tz);
-  const to = dayStart(addDaysIso(todayIso, 7), tz);
+  const sel = day && parseIsoDay(day) && addDaysIso(day, 0) === day && day < addDaysIso(todayIso, 7)
+      && (role === "TEACHER" || day >= todayIso) ? day : todayIso;
+  const isToday = sel === todayIso;
+  const daysBack = (Date.parse(todayIso) - Date.parse(sel)) / 864e5;
+  const windowStart = daysBack > 0 ? addDaysIso(todayIso, -7 * Math.ceil(daysBack / 7)) : todayIso;
+  const from = dayStart(windowStart, tz);
+  const to = dayStart(addDaysIso(windowStart, 7), tz);
+  const dayHref = (iso: string) => iso === todayIso ? "?" : `?d=${iso}`;
   if (role === "TEACHER") await syncSchedule(user.id);
 
   const where = role === "TEACHER" ? { teacherId: user.id } : { student: { userId: user.id } };
@@ -65,16 +72,13 @@ export async function Dashboard({ user, role, day, top }: { user: User; role: "T
   const hwPill = { review: ["orange", "hwT.review"], partial: ["blue", "hwT.partial"], notdone: ["red", "hwT.notdone"], checked: ["green", "hwT.checked"] } as const satisfies Record<HwState, readonly [string, string]>;
 
   const loc = lang === "ru" ? "ru-RU" : "en-GB";
-  // выбранный в полосе «Эта неделя» день (по умолчанию — сегодня)
-  const sel = day && day >= todayIso && day < addDaysIso(todayIso, 7) ? day : todayIso;
-  const isToday = sel === todayIso;
   const todayLessons = lessons.filter((l) => isoDay(l.startsAt, tz) === sel);
   const slotIds = role === "TEACHER" ? todayLessons.flatMap((l) => l.slotId ? [l.slotId] : []) : [];
   // Как в classAccess: состояние группы принадлежит первому по id участнику этого слота.
   const slotMembers = slotIds.length ? await db.lessonInstance.findMany({
     where: { teacherId: user.id, slotId: { in: slotIds } },
     orderBy: { id: "asc" },
-    select: { slotId: true, status: true, startsAt: true, live: true, callLink: true },
+    select: { slotId: true, status: true, startsAt: true, live: true, callLink: true, templateId: true },
   }) : [];
   const hosts = new Map<string, ScheduledLesson>();
   const inconsistentSlots = new Set<string>();
@@ -85,7 +89,9 @@ export async function Dashboard({ user, role, day, top }: { user: User; role: "T
     else if (member.status !== host.status || +member.startsAt !== +host.startsAt) inconsistentSlots.add(member.slotId);
   }
   const statusFor = (lesson: LessonInstance) => {
-    if (role !== "TEACHER" || !isToday || (lesson.slotId && inconsistentSlots.has(lesson.slotId))) return;
+    if (role !== "TEACHER" || (lesson.slotId && inconsistentSlots.has(lesson.slotId))) return;
+    if (sel < todayIso && lesson.status === "DONE") return "DONE";
+    if (!isToday) return;
     return teacherLessonCardStatus(lesson, lesson.slotId ? hosts.get(lesson.slotId) : lesson, now);
   };
   const countdownId = role === "TEACHER" ? todayLessons.find((lesson) =>
@@ -93,13 +99,35 @@ export async function Dashboard({ user, role, day, top }: { user: User; role: "T
   )?.id : undefined;
   // подробности уроков выбранного дня: материал, абонемент, долг, первый урок, день рождения
   const extra = new Map((await db.lessonInstance.findMany({
-    where: { id: { in: todayLessons.map((l) => l.id) } },
+    where: { ...where, id: { in: todayLessons.map((l) => l.id) } },
     select: {
       id: true, movedFrom: true,
+      homework: { select: { manual: true, extraTaskIds: true, removedTaskIds: true, wordTraining: true } },
       template: { select: { title: true, subtitle: true, unit: { select: { title: true, course: { select: { title: true } } } } } },
       student: { select: { id: true, avatar: true, payType: true, birthday: true, packs: { orderBy: { startsAt: "desc" }, take: 1, select: { lessonsLeft: true, lessonsTotal: true } }, invoices: { where: { status: { in: ["SENT", "PROOF_SENT"] } }, select: { id: true, amount: true, status: true } }, _count: { select: { lessons: { where: { status: "DONE" } } } } } },
     },
   })).map((x) => [x.id, x]));
+  const canManageHomework = (lesson: LessonInstance) => role === "TEACHER" && lesson.status === "DONE" && !!lesson.studentId;
+  const homeworkTemplate = (lesson: LessonInstance) => (lesson.slotId ? hosts.get(lesson.slotId)?.templateId : null) ?? lesson.templateId;
+  const homeworkTemplateIds = new Set(todayLessons.filter((lesson) => canManageHomework(lesson) && extra.get(lesson.id)?.homework).map(homeworkTemplate).filter((id) => id !== null));
+  const homeworkMaterial = homeworkTemplateIds.size ? await db.lessonTemplate.findMany({
+    where: { id: { in: [...homeworkTemplateIds] } },
+    select: { id: true, tasks: { select: { id: true, section: true, hidden: true, options: true } } },
+  }) : [];
+  const tasksByTemplate = new Map(homeworkMaterial.map(({ id, tasks }) => [id, tasks]));
+  const homeworkPlural = new Intl.PluralRules(lang);
+  const homeworkAction = (lesson: LessonInstance) => {
+    const homework = extra.get(lesson.id)?.homework;
+    const template = homeworkTemplate(lesson);
+    const tasks = homework && template ? assignedHomeworkTasks(tasksByTemplate.get(template) ?? [], homework) : [];
+    const count = new Set(tasks.filter((task) => !(task.options as { teacherOnly?: boolean } | null)?.teacherOnly).map((task) => task.id)).size;
+    if (count > 0) {
+      const form = homeworkPlural.select(count);
+      return { reminder: false, label: t(form === "one" ? "today.hwOne" : form === "few" ? "today.hwFew" : "today.hwMany", { n: count }) };
+    }
+    if (homework?.wordTraining.length) return { reminder: false, label: t("today.hwWords") };
+    return { reminder: true, label: t("today.hwAdd") };
+  };
   // прошедшие уроки дня: следующий урок того же ученика (группы) — туда уходит «Комментарий после урока»
   const nextOf = new Map(role === "TEACHER" ? await Promise.all(todayLessons.filter((l) => l.startsAt.getTime() + l.durationMin * 60000 <= now.getTime()).map(async (l) => {
     const who = l.groupId ? { groupId: l.groupId } : l.studentId ? { studentId: l.studentId, groupId: null } : null;
@@ -108,7 +136,7 @@ export async function Dashboard({ user, role, day, top }: { user: User; role: "T
   })) : []);
   const selTitle = isToday ? t("dash.today") : ((x) => x.charAt(0).toUpperCase() + x.slice(1))(new Date(dayStart(sel, tz).getTime() + 12 * 3600e3).toLocaleDateString(loc, { weekday: "long", day: "numeric", month: "long", timeZone: tz }));
   const days = Array.from({ length: 7 }, (_, i) => {
-    const iso = addDaysIso(todayIso, i);
+    const iso = addDaysIso(windowStart, i);
     return { iso, n: lessons.filter((l) => isoDay(l.startsAt, tz) === iso).length, label: new Date(dayStart(iso, tz).getTime() + 12 * 3600e3).toLocaleDateString(loc, { weekday: "short", day: "numeric", timeZone: tz }).replace(".", "") };
   });
   const lessonsWord = (n: number) =>
@@ -211,6 +239,7 @@ export async function Dashboard({ user, role, day, top }: { user: User; role: "T
               const pack = st?.payType === "PACK" ? st.packs[0] : null;
               const debt = st?.invoices.reduce((a, i) => a + i.amount, 0) ?? 0;
               const hw = l.slotId ? null : hwBefore(l.studentId, l.startsAt);
+              const currentHomework = canManageHomework(l) ? homeworkAction(l) : null;
               const bday = st?.birthday && isoDay(st.birthday, "UTC").slice(5) === sel.slice(5);
               const first = !!st && !l.isTrial && st._count.lessons === 0;
               const callLink = callLinkOf(
@@ -262,6 +291,7 @@ export async function Dashboard({ user, role, day, top }: { user: User; role: "T
                   </div>
                   <div className="tl-act">
                     <Link href={`/class/${l.id}`} className={`btn sm ${role === "TEACHER" || soon || live ? "primary" : "secondary"}`}><Icon name="class" size="sm" />{role === "TEACHER" ? t("dash.openClass") : t("cls.enter")}</Link>
+                    {currentHomework && <Link href={`/class/${l.id}?tab=homework`} className={`btn sm ${currentHomework.reminder ? "tinted" : "secondary"}`}><Icon name="home" size="sm" /><span className="min-w-0 whitespace-normal">{currentHomework.label}</span></Link>}
                     {role === "TEACHER" && <LessonCall lessonId={l.id} href={callLink} canAdd={l.status === "PLANNED"} />}
                     <div className="tl-quick">
                     {/* урок прошёл — вместо «Перенести / Отменить» комментарий после урока (уйдёт в заметку к следующему) */}
@@ -272,6 +302,9 @@ export async function Dashboard({ user, role, day, top }: { user: User; role: "T
                       studentId: l.studentId, charged: l.charged, moved: !!l.movedFrom, price: l.price ?? 0, hw: null,
                     }} />}
                     </div>
+                    {role === "TEACHER" && l.status === "DONE" && l.studentId && <Link href={`/teacher/lesson-analysis/${l.id}`} className="btn secondary sm">
+                      <Icon name="spark" size="sm" />{t("today.analysis")}
+                    </Link>}
                   </div>
                 </div>
               );
@@ -279,14 +312,21 @@ export async function Dashboard({ user, role, day, top }: { user: User; role: "T
           </div>
         )}
 
-        <div className="mt-7 mb-3 flex items-baseline justify-between gap-3">
-          <h3 className="m-0">{t("dash.week")}</h3>
-          <Link href={`${scheduleHref}?w=${mondayOf(sel)}`} className="alink small whitespace-nowrap">{t("nav.schedule")} →</Link>
+        <div className="mt-7 mb-3 flex flex-wrap items-center justify-between gap-3">
+          <h3 className="m-0">{windowStart === todayIso ? t("dash.week") : weekRange(windowStart, tz, loc)}</h3>
+          <div className="flex flex-wrap items-center gap-2">
+            {role === "TEACHER" && <nav className="weeknav" aria-label={t("dash.week")}>
+              <Link href={dayHref(addDaysIso(windowStart, -1))} scroll={false} aria-label={t("sch.prev")}><Icon name="chevl" size="sm" /></Link>
+              {windowStart < todayIso && <Link href={dayHref(addDaysIso(windowStart, 7))} scroll={false} aria-label={t("sch.next")}><Icon name="right" size="sm" /></Link>}
+            </nav>}
+            {windowStart < todayIso && <Link href={dayHref(todayIso)} scroll={false} className="btn secondary sm">{t("dash.today")}</Link>}
+            <Link href={`${scheduleHref}?w=${mondayOf(sel)}`} className="alink small whitespace-nowrap">{t("nav.schedule")} →</Link>
+          </div>
         </div>
         <div className="grid grid-cols-7 gap-1 max-[760px]:flex max-[760px]:overflow-x-auto">
-          {days.map((d, i) => (
-            <Link key={d.iso} href={i === 0 ? "?" : `?d=${d.iso}`} scroll={false} aria-current={d.iso === sel ? "true" : undefined} className={`daytile ${d.iso === sel ? "on" : ""}`}>
-              <span className={`text-[12px] ${d.iso === sel ? "font-semibold" : "text-text3"}`}>{i === 0 ? t("dash.today") : d.label}</span>
+          {days.map((d) => (
+            <Link key={d.iso} href={dayHref(d.iso)} scroll={false} aria-current={d.iso === sel ? "true" : undefined} className={`daytile ${d.iso === sel ? "on" : ""}`}>
+              <span className={`text-[12px] ${d.iso === sel ? "font-semibold" : "text-text3"}`}>{d.iso === todayIso ? t("dash.today") : d.label}</span>
               <span className="text-[15px] font-semibold">{lessonsWord(d.n)}</span>
             </Link>
           ))}

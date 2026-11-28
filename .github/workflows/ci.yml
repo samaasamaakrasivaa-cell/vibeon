@@ -46,6 +46,9 @@ jobs:
         run: |
           python3 scripts/test-release-apply.py
           python3 scripts/test-delivery-plan.py
+          python3 scripts/test-release-capacity.py
+          python3 scripts/test-release-retention.py
+          python3 scripts/test-release-uploads-manifest.py
           bash -n deploy/vibeon.sh deploy/attach-proxy.sh scripts/check-release-image.sh
       - name: Rehearse backup, release and rollback on isolated data
         # The production SSH executor is root; match file ownership semantics
@@ -86,6 +89,11 @@ jobs:
           module.verify_local_image(sys.argv[1], sys.argv[2], sys.argv[2])
           PY
           bash scripts/check-release-image.sh "$DELIVERY_IMAGE" "$DELIVERY_SHA"
+      - name: Measure candidate storage without server access
+        if: github.event_name == 'pull_request' && github.repository == 'samaasamaakrasivaa-cell/vibeon'
+        run: |
+          DELIVERY_IMAGE=$(docker image inspect --format '{{.Id}}' "vibeon-release:$GITHUB_SHA")
+          python3 scripts/run-delivery.py --measure-image "$DELIVERY_IMAGE"
       - name: Publish the verified main revision
         if: >-
           github.repository == 'samaasamaakrasivaa-cell/vibeon' &&

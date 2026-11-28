@@ -8,6 +8,7 @@ import { ProgressHead, type ProgressTab } from "@/components/student/SectionTabs
 import { ProgressStats } from "@/components/student/ProgressStats";
 import { cleanInfo } from "@/lib/tasks/teacher-info";
 import { dossier } from "@/lib/lessons/dossier";
+import { recentPublishedAnalysis } from "@/lib/lessons/analysis";
 import { Rich } from "@/components/roadmap/RouteBrief";
 
 export const metadata = { title: "Мой прогресс" };
@@ -35,10 +36,16 @@ export default async function Progress({ searchParams }: { searchParams: Promise
   const tz = me.timezone;
   const loc = lang === "ru" ? "ru-RU" : "en-GB";
   const fmt = (d: Date, long = false) => d.toLocaleDateString(loc, { day: "numeric", month: long ? "long" : "short", timeZone: tz });
+  const analyses = tab === "topics" ? await recentPublishedAnalysis(s.id, me.id) : [];
 
   return (
     <div className="page" style={{ maxWidth: 980 }}>
       <ProgressHead active={tab} />
+      {analyses.length > 0 && <section className="card flex flex-col gap-2 mb-4">
+        <h2 className="m-0">{lang === "ru" ? "Итоги уроков" : "Lesson summaries"}</h2>
+        <div className="flex flex-wrap gap-2">{analyses.map((analysis) => <Link key={analysis.id}
+          href={`/student/lesson-analysis/${analysis.id}`} className="btn secondary sm">{fmt(analysis.date, true)}</Link>)}</div>
+      </section>}
       {tab === "topics" && <Topics />}
       {tab === "stats" && <ProgressStats studentId={s.id} tz={tz} lang={lang} t={t} topics={await db.lessonInstance.count({ where: { studentId: s.id, status: "DONE", templateId: { not: null } } })} />}
       {tab === "tests" && <Tests />}

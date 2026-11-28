@@ -17,7 +17,7 @@ export function SectionTabs({ items }: { items: Item[] }) {
 }
 
 // Разделы меню ученика, собранные из нескольких страниц: заголовок раздела + вкладки.
-export type StudyTab = "lessons" | "words";
+export type StudyTab = "lessons" | "words" | "tests";
 export type ChatTab = "teacher" | "answers";
 export type ProgressTab = "topics" | "stats" | "route" | "tests" | "awards" | "feedback";
 
@@ -29,6 +29,7 @@ export async function StudyHead({ active }: { active: StudyTab }) {
       <SectionTabs items={[
         { href: "/student/lessons", label: t("nav.lessons"), active: active === "lessons" },
         { href: "/student/words", label: t("nav.words"), active: active === "words" },
+        { href: "/student/tests", label: t("stl.myTests"), active: active === "tests" },
       ]} />
     </>
   );
