@@ -8,9 +8,10 @@
     "base_sha": "6b57ad51f4d7d48fe661461f9ab52b2d1fc18098",
     "branch": "codex/vocabulary-training/card-example-synonyms",
     "head_sha": "950a2d84ae2496ae6181325e0423339bf9a04ed4",
-    "next": "Ревью, CI и сценарии на итоговом дереве прошли; объединить и отследить выпуск",
+    "merge_sha": "f8d9bf25b193a0540c73df132857db5f2e93abce",
+    "next": "Подтвердить автоматическую публикацию карточек и точный SHA сайта",
     "pr": 126,
-    "stage": "integration",
+    "stage": "publication",
     "test_run": 46158290528
   },
   "release": null,
