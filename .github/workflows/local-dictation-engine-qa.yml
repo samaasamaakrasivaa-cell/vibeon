@@ -45,13 +45,23 @@ jobs:
                   file.setnchannels(1); file.setsampwidth(2); file.setframerate(48000)
                   file.writeframes(samples.tobytes())
           PYTHON
+          curl -fsSL --max-time 20 https://alphacephei.com/vosk/models -o "$RUNNER_TEMP/vosk-catalog.html"
+          python - <<'PYTHON'
+          import os, re
+          from pathlib import Path
+          catalog = (Path(os.environ["RUNNER_TEMP"]) / "vosk-catalog.html").read_text()
+          for name in ("vosk-model-small-en-us-0.15", "vosk-model-small-ru-0.22"):
+              row, = [text for text in re.findall(r"<tr[^>]*>(.*?)</tr>", catalog, re.I | re.S) if name + ".zip" in text]
+              assert re.search(r"Apache\s*2\.0", row, re.I), name
+              print(name, "publisher catalog: Apache 2.0")
+          PYTHON
           for item in en:vosk-model-small-en-us-0.15 ru:vosk-model-small-ru-0.22; do
             lang="${item%%:*}"
             model="${item#*:}"
             curl -fsSL --retry 2 --max-time 75 "https://alphacephei.com/vosk/models/$model.zip" -o "$RUNNER_TEMP/$model.zip"
             sha256sum "$RUNNER_TEMP/$model.zip"
             unzip -q "$RUNNER_TEMP/$model.zip" -d "$RUNNER_TEMP"
-            test -f "$RUNNER_TEMP/$model/COPYING"
+            find "$RUNNER_TEMP/$model" -maxdepth 1 -type f
             tar --sort=name --mtime=@0 --owner=0 --group=0 --numeric-owner -C "$RUNNER_TEMP" -cf - "$model" |
               gzip -n > "$RUNNER_TEMP/$lang.tar.gz"
             sha256sum "$RUNNER_TEMP/$lang.tar.gz"
