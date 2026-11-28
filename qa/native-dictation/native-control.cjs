@@ -1,5 +1,6 @@
 const assert = require("node:assert/strict");
-const { execFileSync } = require("node:child_process");
+const { execFile, execFileSync } = require("node:child_process");
+const run = require("node:util").promisify(execFile);
 const fs = require("node:fs");
 const http = require("node:http");
 const path = require("node:path");
@@ -46,8 +47,7 @@ async function main() {
       const context = await chromium.launchPersistentContext(profile, {
         executablePath: "/usr/bin/google-chrome", headless: false, locale: lang, permissions: ["microphone"],
         ignoreDefaultArgs: ["--disable-background-networking", "--disable-component-update", "--mute-audio"],
-        args: ["--no-sandbox", "--accept-lang=" + lang, "--use-fake-device-for-media-stream",
-          "--use-fake-ui-for-media-stream", "--use-file-for-fake-audio-capture=" + path.join(scratch, key + ".wav")],
+        args: ["--no-sandbox", "--accept-lang=" + lang, "--use-fake-ui-for-media-stream"],
       });
       try {
         await context.grantPermissions(["microphone"], { origin });
@@ -56,23 +56,8 @@ async function main() {
         await page.waitForFunction(l => SpeechRecognition.available({ langs: [l], processLocally: true })
           .then(state => state === "available"), lang, { timeout: 25_000 });
         await page.evaluate(language => {
-          window.measurement = { peak: 0, events: [], final: "" };
+          window.measurement = { events: [], final: "" };
           document.querySelector("#recognize").onclick = async () => {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            const audio = new AudioContext();
-            await audio.resume();
-            const analyser = audio.createAnalyser();
-            audio.createMediaStreamSource(stream).connect(analyser);
-            const capture = new Float32Array(analyser.fftSize);
-            const until = performance.now() + 2600;
-            while (performance.now() < until) {
-              analyser.getFloatTimeDomainData(capture);
-              const max = capture.reduce((peak, sample) => Math.max(peak, Math.abs(sample)), 0);
-              window.measurement.peak = Math.max(window.measurement.peak, max);
-              await new Promise(resolve => setTimeout(resolve, 40));
-            }
-            stream.getTracks().forEach(track => track.stop());
-            await audio.close();
             const recognition = new SpeechRecognition();
             recognition.processLocally = true;
             if (recognition.processLocally !== true) throw new Error("Local mode not selected");
@@ -94,13 +79,19 @@ async function main() {
         }, lang);
         await page.locator("#recognize").click();
         await page.waitForFunction(() => window.control !== undefined, null, { timeout: 15_000 }).catch(() => {});
-        await page.waitForFunction(() => window.measurement.events.includes("result") || window.measurement.events.includes("end"),
-          null, { timeout: 12_000 }).catch(() => {});
+        await page.waitForFunction(() => window.measurement.events.some(event => event === "audiostart" || event.startsWith("error:")),
+          null, { timeout: 15_000 }).catch(() => {});
+        const started = await page.evaluate(() => window.measurement.events.includes("audiostart"));
+        if (started) {
+          await page.waitForTimeout(1200);
+          await run("paplay", ["--device=dictation_qa", path.join(scratch, key + ".wav")]);
+          await page.waitForTimeout(1000);
+        }
         await page.evaluate(() => window.control?.stop());
         await page.waitForFunction(() => window.measurement.events.includes("end"), null, { timeout: 15_000 }).catch(() => {});
         const result = await page.evaluate(() => window.measurement);
-        const matches = result.peak > .01 && expected.test(result.final);
-        console.log(lang, "bare Chrome start() with loopback only", { peak: result.peak, events: result.events, transcriptMatches: matches });
+        const matches = started && expected.test(result.final);
+        console.log(lang, "bare Chrome start() with loopback only", { audiosource: "remapped PulseAudio microphone", events: result.events, transcriptMatches: matches });
         if (!matches) {
           pass = false;
           continue;
@@ -111,7 +102,13 @@ async function main() {
         await page.getByRole("button", { name: "Dictate", exact: true }).click();
         const stop = page.getByRole("button", { name: "Stop", exact: true });
         await stop.waitFor({ timeout: 12_000 });
-        await page.waitForTimeout(10_000);
+        const deadline = Date.now() + 12000;
+        while (Date.now() < deadline && !execFileSync("pactl", ["list", "short", "source-outputs"], { encoding: "utf8" }).trim()) {
+          await page.waitForTimeout(200);
+        }
+        assert.ok(execFileSync("pactl", ["list", "short", "source-outputs"], { encoding: "utf8" }).trim());
+        await page.waitForTimeout(1200);
+        await run("paplay", ["--device=dictation_qa", path.join(scratch, key + ".wav")]);
         assert.equal(saves, previous);
         if (await stop.isVisible()) await stop.click();
         const field = page.getByLabel("Synthetic observation");

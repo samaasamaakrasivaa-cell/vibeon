@@ -23,7 +23,7 @@ jobs:
           npm ci
           npm install --prefix "$RUNNER_TEMP/browser" --no-audit --no-fund playwright-core
           sudo apt-get update -qq
-          sudo apt-get install -y ffmpeg xvfb xauth
+          sudo apt-get install -y ffmpeg xvfb xauth pulseaudio pulseaudio-utils
           google-chrome --version
           python -m pip install --quiet piper-tts
           for model in en/en_US/lessac/medium/en_US-lessac-medium ru/ru_RU/irina/medium/ru_RU-irina-medium; do
@@ -43,4 +43,14 @@ jobs:
           sudo ip netns add vibeon-dictation
           sudo ip -n vibeon-dictation link set lo up
           trap 'sudo ip netns del vibeon-dictation' EXIT
-          sudo ip netns exec vibeon-dictation sudo -u "$USER" env HOME="$HOME" PATH="$PATH" RUNNER_TEMP="$RUNNER_TEMP" xvfb-run --auto-servernum node qa/native-dictation/native-control.cjs
+          mkdir -m 700 "$RUNNER_TEMP/voice-runtime"
+          sudo ip netns exec vibeon-dictation sudo -u "$USER" env HOME="$HOME" PATH="$PATH" RUNNER_TEMP="$RUNNER_TEMP" XDG_RUNTIME_DIR="$RUNNER_TEMP/voice-runtime" bash -e -c '
+            pulseaudio --start --log-target=stderr --exit-idle-time=-1
+            export PULSE_SERVER="unix:$XDG_RUNTIME_DIR/pulse/native"
+            pactl load-module module-null-sink sink_name=dictation_qa >/dev/null
+            pactl load-module module-remap-source master=dictation_qa.monitor source_name=dictation_qa_mic >/dev/null
+            pactl set-default-source dictation_qa_mic
+            export PULSE_SOURCE=dictation_qa_mic
+            pactl list short sources
+            xvfb-run --auto-servernum node qa/native-dictation/native-control.cjs
+          '
