@@ -8,9 +8,9 @@
     "base_sha": "ff7dc26aa22c6626b408a58f2dfebc5a0e9febbf",
     "branch": "codex/ai-quality/private-lesson-dictation",
     "head_sha": "74072caa4975f12818e811558430f57ff7f1cce1",
-    "next": "Подтвердить нативное распознавание русского и английского без сети, дождаться CI.",
+    "next": "На стенде Chrome слышит синтетическую речь, но не возвращает текст. Нужен живой прогон RU и EN без внешней сети.",
     "pr": 90,
-    "stage": "review",
+    "stage": "blocked",
     "test_run": 46122536654
   },
   "release": null,
