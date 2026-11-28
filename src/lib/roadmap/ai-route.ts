@@ -19,6 +19,7 @@ import { accountStats, testPack } from "./pack";
 import { sylTopic, topicsBetween } from "../grammar/syllabus";
 import { dossier } from "../lessons/dossier";
 import type { RoadmapForm } from "./actions";
+import { roadmapChanged, writeRoadmapStages } from "./stage-writes";
 
 type R = { ok: true; id?: string; note?: string } | { ok: false; error: string };
 const json = (v: unknown) => JSON.parse(JSON.stringify(v)) as Prisma.InputJsonValue;
@@ -181,20 +182,20 @@ const pushVersion = (versions: unknown, r: { stages: unknown; aiDraft: unknown }
   [{ at: new Date().toISOString(), note, stages: r.stages, aiDraft: r.aiDraft }, ...((versions as unknown[]) ?? [])].slice(0, 20);
 
 /** Сохранить черновик ИИ в маршрут: часы считает платформа, подсказки и утверждённое в точках сохраняются. */
-async function saveDraft(rid: string, run: { data: ReturnType<typeof cleanRoute>; model: string; ms: number; fallbackFrom?: string }, weekly: number, gl: string, prev: Stage[], extra: Prisma.RoadmapUpdateInput) {
+async function saveDraft(revision: Parameters<typeof writeRoadmapStages>[0], run: { data: ReturnType<typeof cleanRoute>; model: string; ms: number; fallbackFrom?: string }, weekly: number, gl: string, extra: Prisma.RoadmapUpdateManyMutationInput) {
   const d = settleHours(run.data, weekly, hoursTo);
-  const stages = toStages(d, gl, prev);
+  const stages = toStages(d, gl, (revision.stages as Stage[]) ?? []);
   const lastCp = d.segments[d.segments.length - 1]?.checkpoint?.pass_rule;
   const aiDraft = { model: run.model, label: modelLabel(run.model), fallbackFrom: run.fallbackFrom ?? null, ms: run.ms, start: d.start, goal: d.goal, weekly_hours: d.weekly_hours, total_hours: d.total_hours, forecast_weeks: d.forecast_weeks, deadline_check: d.deadline_check, risks: d.risks, pace_options: d.pace_options, student_message: d.student_message, changes: d.changes, self_study: d.self_study, at: new Date().toISOString(), v: 2 };
-  const cur = await db.roadmap.findUnique({ where: { id: rid }, select: { meta: true, criteria: true } });
+  const cur = await db.roadmap.findUnique({ where: { id: revision.id }, select: { meta: true, criteria: true } });
   const meta = cur?.meta as RoadmapMeta | null;
   const prevCrit = ((cur?.criteria as unknown[]) ?? []).map((x) => String(x));
   const doneText = new Set((meta?.done ?? []).map((i) => prevCrit[i]).filter(Boolean));
   // галочки «показать ученику»: ИИ предлагает, но выбор учителя сохраняется; отметки критериев сбрасываются при новых критериях
   const crit = d.goal.criteria.length ? d.goal.criteria : [d.goal.explanation, lastCp].filter(Boolean) as string[];
   const newMeta: RoadmapMeta = { share: meta?.shareSetByTeacher ? meta.share : d.share, shareSetByTeacher: !!meta?.shareSetByTeacher, done: crit.map((c, i) => (doneText.has(c) ? i : -1)).filter((i) => i >= 0) };
-  await db.roadmap.update({ where: { id: rid }, data: { ...extra, meta: json(newMeta), stages: json(stages), criteria: json(crit), summary: d.teacher_summary || null, aiDraft: json(aiDraft), builtAt: new Date(), approvedAt: null } });
-  return d;
+  const saved = await writeRoadmapStages(revision, { ...extra, meta: json(newMeta), stages: json(stages), criteria: json(crit), summary: d.teacher_summary || null, aiDraft: json(aiDraft), builtAt: new Date(), approvedAt: null });
+  return saved ? d : null;
 }
 
 /** «Создать черновик»: маршрут из участков и точек по выводу, анкете и комплекту разбора. */
@@ -212,12 +213,13 @@ export async function buildRoadmap(studentId: string, f: RoadmapForm, brief: Bri
     const courseIds = (await db.course.findMany({ where: { teacherId: me.id, id: { in: f.courseIds ?? [] } }, select: { id: true } })).map((c) => c.id);
     const lead = f.leadCourseId && courseIds.includes(f.leadCourseId) ? f.leadCourseId : null;
     const units = lead ? await db.unit.findMany({ where: { courseId: lead }, orderBy: { order: "asc" }, select: { title: true, outcomes: true } }) : [];
-    await saveDraft(r0.id, run, weekly, p.gl, (r0.stages as Stage[]) ?? [], {
+    const saved = await saveDraft(r0, run, weekly, p.gl, {
       type: p.type, goal: p.goal, fromLevel: p.from, deadline: f.deadline ? new Date(`${f.deadline}-01T00:00:00Z`) : null, showDate: !!f.deadline && !!f.showDate, pace: p.pace,
       mood: ["plan", "more", "slack"].includes(f.mood) ? f.mood : "plan", note: str(f.note, 2000) || null, courseIds, leadCourseId: lead, units: json(units),
       brief: json(b), versions: json(r0.builtAt ? pushVersion(r0.versions, r0, "before rebuild") : r0.versions ?? []),
       chat: json(r0.builtAt ? [...((r0.chat as ChatMsg[]) ?? []), { role: "ai", text: t("rm2.rebuilt"), at: new Date().toISOString() }] : []),
     });
+    if (!saved) return roadmapChanged();
     await db.checkpoint.updateMany({ where: { studentId, roadmapId: null }, data: { roadmapId: r0.id } });
     refresh(studentId);
     return { ok: true, id: r0.id };
@@ -247,12 +249,12 @@ export async function refineRoadmap(roadmapId: string, text: string, files: { na
   const now = new Date().toISOString();
   try {
     const run = await runJson(llmFor("route", await aiCtx(me)), modelsFor("route"), prompt("route"), input, (j) => cleanRoute(j, selfMin), { tag: "route-refine", maxTokens: 10000, timeoutMs: 280000 });
-    const d = await saveDraft(r.id, run, weekly, p.gl, (r.stages as Stage[]) ?? [], {
+    const d = await saveDraft(r, run, weekly, p.gl, {
       versions: json(pushVersion(r.versions, r, msg.slice(0, 120))),
       chat: json([...chat, { role: "teacher", text: msg, at: now, ...names }, { role: "ai", text: run.data.changes || t("rm2.updated"), at: new Date().toISOString() }].slice(-60)),
     });
     refresh(r.studentId);
-    return { ok: true, note: d.changes };
+    return d ? { ok: true, note: d.changes } : roadmapChanged();
   } catch (e) {
     console.error("[ai:route-refine]", e);
     await db.roadmap.update({ where: { id: r.id }, data: { chat: json([...chat, { role: "teacher", text: msg, at: now, ...names }].slice(-60)) } });
@@ -269,7 +271,7 @@ export async function restoreVersion(roadmapId: string, i: number): Promise<R> {
   const v = vs[i];
   if (!v) return { ok: false, error: "version" };
   const rest = vs.filter((_, k) => k !== i);
-  await db.roadmap.update({ where: { id: r.id }, data: { stages: json(v.stages), aiDraft: json(v.aiDraft), approvedAt: null, versions: json(pushVersion(rest, r, "before restore")) } });
+  if (!await writeRoadmapStages(r, { stages: json(v.stages), aiDraft: json(v.aiDraft), approvedAt: null, versions: json(pushVersion(rest, r, "before restore")) })) return roadmapChanged();
   refresh(r.studentId);
   return { ok: true };
 }
@@ -285,7 +287,7 @@ export async function suggestPoint(roadmapId: string, pointId: string): Promise<
   if (!r) return { ok: false, error: "not found" };
   const { me } = await own(r.studentId);
   const { t } = await getT();
-  const stages = (r.stages as Stage[]) ?? [];
+  const stages = structuredClone((r.stages as Stage[]) ?? []);
   const p = findPoint(stages, pointId);
   if (!p) return { ok: false, error: "point" };
   const b = (r.brief ?? {}) as Brief;
@@ -297,7 +299,7 @@ export async function suggestPoint(roadmapId: string, pointId: string): Promise<
   try {
     const run = await runJson(llmFor("route", await aiCtx(me)), modelsFor("route"), prompt("route-point"), input, cleanRecs, { tag: "route-point", maxTokens: 2500 });
     p.recs = run.data;
-    await db.roadmap.update({ where: { id: r.id }, data: { stages: json(stages) } });
+    if (!await writeRoadmapStages(r, { stages: json(stages) })) return roadmapChanged();
     refresh(r.studentId);
     return { ok: true };
   } catch (e) { console.error("[ai:route-point]", e); return { ok: false, error: t(`ai.err.${aiCode(e)}`) }; }
@@ -308,7 +310,7 @@ export async function savePoint(roadmapId: string, pointId: string, patch: { ok?
   const r = await db.roadmap.findUnique({ where: { id: roadmapId } });
   if (!r) return { ok: false, error: "not found" };
   await own(r.studentId);
-  const stages = (r.stages as Stage[]) ?? [];
+  const stages = structuredClone((r.stages as Stage[]) ?? []);
   const p = findPoint(stages, pointId);
   if (!p) return { ok: false, error: "point" };
   if (patch.ok) {
@@ -326,7 +328,7 @@ export async function savePoint(roadmapId: string, pointId: string, patch: { ok?
   if (patch.hours !== undefined && patch.hours >= 1 && patch.hours <= 60) p.hours = Math.round(patch.hours);
   // часы участка = сумма точек
   for (const s of stages) if (s.points?.length) { s.hours = s.points.reduce((a, x) => a + x.hours, 0); s.grammar = s.points.map((x) => x.title); }
-  await db.roadmap.update({ where: { id: r.id }, data: { stages: json(stages) } });
+  if (!await writeRoadmapStages(r, { stages: json(stages) })) return roadmapChanged();
   refresh(r.studentId);
   return { ok: true };
 }
@@ -370,7 +372,7 @@ export async function analyzeArticle(roadmapId: string, pointId: string, a: { ti
   if (!r) return { ok: false, error: "not found" };
   const { me } = await own(r.studentId);
   const { t } = await getT();
-  const stages = (r.stages as Stage[]) ?? [];
+  const stages = structuredClone((r.stages as Stage[]) ?? []);
   const p = findPoint(stages, pointId);
   if (!p) return { ok: false, error: "point" };
   let text = str(a.text, 60000), title = str(a.title, 200);
@@ -387,7 +389,7 @@ export async function analyzeArticle(roadmapId: string, pointId: string, a: { ti
       cleanArticle, { tag: "route-article", maxTokens: 3000 });
     const art = { id: `a${Date.now().toString(36)}`, title: title || url || t("rm3.myArticle"), url, excerpt: text.slice(0, 400), at: new Date().toISOString(), recs: run.data };
     p.articles = [art, ...(p.articles ?? [])].slice(0, 6);
-    await db.roadmap.update({ where: { id: r.id }, data: { stages: json(stages) } });
+    if (!await writeRoadmapStages(r, { stages: json(stages) })) return roadmapChanged();
     refresh(r.studentId);
     return { ok: true, id: art.id };
   } catch (e) { console.error("[ai:route-article]", e); return { ok: false, error: t(`ai.err.${aiCode(e)}`) }; }
@@ -397,11 +399,11 @@ export async function removeArticle(roadmapId: string, pointId: string, articleI
   const r = await db.roadmap.findUnique({ where: { id: roadmapId } });
   if (!r) return { ok: false, error: "not found" };
   await own(r.studentId);
-  const stages = (r.stages as Stage[]) ?? [];
+  const stages = structuredClone((r.stages as Stage[]) ?? []);
   const p = findPoint(stages, pointId);
   if (!p) return { ok: false, error: "point" };
   p.articles = (p.articles ?? []).filter((x) => x.id !== articleId);
-  await db.roadmap.update({ where: { id: r.id }, data: { stages: json(stages) } });
+  if (!await writeRoadmapStages(r, { stages: json(stages) })) return roadmapChanged();
   refresh(r.studentId);
   return { ok: true };
 }
@@ -428,11 +430,11 @@ export async function saveCheckpoint(roadmapId: string, i: number, cp: { what: s
   const r = await db.roadmap.findUnique({ where: { id: roadmapId } });
   if (!r) return { ok: false, error: "not found" };
   await own(r.studentId);
-  const stages = (r.stages as Stage[]) ?? [];
+  const stages = structuredClone((r.stages as Stage[]) ?? []);
   if (!stages[i]) return { ok: false, error: "stage" };
   const old = stages[i].checkpoint ?? { tests: [], pass_rule: "" };
   stages[i].checkpoint = { ...old, what: cp.what.map((x) => str(x, 200)).filter(Boolean).slice(0, 12), format: str(cp.format, 400), pass_rule: str(cp.pass_rule, 600), if_not_passed: str(cp.if_not_passed, 400), approved: !!cp.approved };
-  await db.roadmap.update({ where: { id: r.id }, data: { stages: json(stages) } });
+  if (!await writeRoadmapStages(r, { stages: json(stages) })) return roadmapChanged();
   refresh(r.studentId);
   return { ok: true };
 }
@@ -493,12 +495,12 @@ export async function markStage(roadmapId: string, i: number, m: { pointId?: str
   const r = await db.roadmap.findUnique({ where: { id: roadmapId } });
   if (!r) return { ok: false, error: "not found" };
   await own(r.studentId);
-  const stages = (r.stages as Stage[]) ?? [];
+  const stages = structuredClone((r.stages as Stage[]) ?? []);
   const st = stages[i];
   if (!st) return { ok: false, error: "stage" };
   if (m.pointId) { const p = (st.points ?? []).find((x) => x.id === m.pointId); if (p) { if (m.done === null || m.done === undefined) delete p.done; else p.done = m.done; } }
   if (m.can) st.canDone = [...new Set(m.can.filter((k) => Number.isInteger(k) && k >= 0 && k < (st.skills ?? []).length))];
-  await db.roadmap.update({ where: { id: r.id }, data: { stages: json(stages) } });
+  if (!await writeRoadmapStages(r, { stages: json(stages) })) return roadmapChanged();
   refresh(r.studentId);
   return { ok: true };
 }

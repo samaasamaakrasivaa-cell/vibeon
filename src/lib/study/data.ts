@@ -86,8 +86,8 @@ export async function studyWeek(studentId: string, tz: string, monday: string, l
 export type StudyWeek = Awaited<ReturnType<typeof studyWeek>>;
 
 /** Для маршрута: минуты самостоятельной работы (фильм, чтение, говорение…), отмеченной «сделал», — не больше 90 в день. */
-export async function selfStudyMinutes(studentId: string, fromIso: string, toIso: string) {
-  const logs = await db.studyLog.findMany({ where: { studentId, status: "done", day: { gte: fromIso, lt: toIso } }, select: { day: true, minutes: true, slot: { select: { kind: true } } } });
+export async function selfStudyMinutes(studentId: string, fromIso: string, toIso: string, client: Pick<typeof db, "studyLog"> = db) {
+  const logs = await client.studyLog.findMany({ where: { studentId, status: "done", day: { gte: fromIso, lt: toIso } }, select: { day: true, minutes: true, slot: { select: { kind: true } } } });
   const per = new Map<string, number>();
   for (const l of logs) if (isKind(l.slot.kind) && KIND[l.slot.kind].self) per.set(l.day, (per.get(l.day) ?? 0) + l.minutes);
   return [...per.values()].reduce((a, m) => a + Math.min(90, m), 0);
