@@ -8,9 +8,9 @@
     "base_sha": "47fa1c441d0dfff1e2423db146912175e544ab08",
     "branch": "codex/student/study-lessons-tests",
     "head_sha": "9abc1da6e3bf30ae6dd753ce45ea04930bcdd050",
-    "next": "Подтвердить ревью, CI, обслуживание хранилища и свежую суточную пару после P0. Затем штатный выпуск #83.",
+    "next": "Ревью и CI зелёные, обслуживание и суточная копия подтверждены. Выпустить #83 и сверить публичный SHA.",
     "pr": 83,
-    "stage": "review",
+    "stage": "integration",
     "test_run": 46121209298
   },
   "release": null,
