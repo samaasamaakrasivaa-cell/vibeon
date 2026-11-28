@@ -218,6 +218,8 @@ function WordList({ words, accent }: { words: W[]; accent: string }) {
   const { t } = useT();
   const router = useRouter();
   const [q, setQ] = useState("");
+  const [showDefinition, setShowDefinition] = useState(false);
+  const [definition, setDefinition] = useState("");
   const [lookup, setLookup] = useState<Awaited<ReturnType<typeof lookupMyWord>> | null>(null);
   const [lookingUp, setLookingUp] = useState(false);
   const lookupRequest = useRef(0);
@@ -226,7 +228,7 @@ function WordList({ words, accent }: { words: W[]; accent: string }) {
   const [pending, start] = useTransition();
   const levels = [t("cls.lv0"), t("cls.lv1"), t("cls.lv2"), t("cls.lv3"), t("cls.lv4")];
   const [word, translation = "", example = ""] = q.split(/\s+[—–-]\s+/);
-  const manual = Boolean(translation.trim() || example.trim());
+  const manual = Boolean(translation.trim() || example.trim() || definition.trim());
   const options = lookup && "translations" in lookup ? lookup.translations : [];
   const lookupMessage = lookup && "error" in lookup
     ? t(lookup.error === "input" ? "cls.dictInput" : lookup.error === "limit" ? "cls.dictLimit" : "cls.dictUnavailable")
@@ -251,7 +253,7 @@ function WordList({ words, accent }: { words: W[]; accent: string }) {
     setNotice(null);
     start(async () => {
       try {
-        const result = await addMyWord(word, translation, example, existing && { id: existing.id, translation: existing.translation });
+        const result = await addMyWord(word, translation, example, { definition, confirmation: existing });
         if (result.status === "confirm") {
           setConfirmation(result);
           return;
@@ -262,6 +264,8 @@ function WordList({ words, accent }: { words: W[]; accent: string }) {
         if (result.status === "empty" || result.status === "changed") setNotice("wd.wordSaveError");
         if (result.status === "added" || result.status === "updated") {
           setQ("");
+          setDefinition("");
+          setShowDefinition(false);
           setLookup(null);
         }
       } catch {
@@ -274,21 +278,32 @@ function WordList({ words, accent }: { words: W[]; accent: string }) {
   return (
     <div className={styles.layout}>
       <section className="card">
-        <form className="flex gap-2" onSubmit={(e) => {
+        <form className="flex flex-col gap-2" onSubmit={(e) => {
           e.preventDefault();
           if (pending || lookingUp || !word.trim()) return;
           if (manual) saveWord(word, translation, example);
           else void search(word);
         }}>
-          <input className="input min-w-0" value={q} disabled={pending} placeholder={t("cls.dictPh")} aria-label={t("cls.dictPh")}
-            aria-describedby="my-word-format" onChange={(e) => {
-              lookupRequest.current++;
-              setQ(e.target.value);
-              setLookup(null);
-              setLookingUp(false);
-              setNotice(null);
-            }} />
-          <button type="submit" className="btn primary" disabled={pending || lookingUp || !word.trim()}>{t(manual ? "cls.addWord" : "cls.dictSearch")}</button>
+          <div className="flex gap-2">
+            <input className="input min-w-0" value={q} disabled={pending} placeholder={t("cls.dictPh")} aria-label={t("cls.dictPh")}
+              aria-describedby="my-word-format" onChange={(e) => {
+                lookupRequest.current++;
+                setQ(e.target.value);
+                setLookup(null);
+                setLookingUp(false);
+                setNotice(null);
+              }} />
+            <button type="submit" className="btn primary" disabled={pending || lookingUp || !word.trim()}>{t(manual ? "cls.addWord" : "cls.dictSearch")}</button>
+          </div>
+          <button type="button" className="btn plain sm self-start" disabled={pending} aria-expanded={showDefinition}
+            onClick={() => { setShowDefinition(!showDefinition); if (showDefinition) setDefinition(""); }}>
+            {t(showDefinition ? "wd.hideDefinitionInput" : "wd.showDefinitionInput")}
+          </button>
+          {showDefinition && <label className="field">
+            <span className="flabel">{t("wd.cardDefinition")}</span>
+            <textarea className="textarea" value={definition} maxLength={400} rows={2} disabled={pending} lang="en"
+              onChange={(event) => setDefinition(event.target.value)} />
+          </label>}
         </form>
         <p className="hint mt-2 mb-4" id="my-word-format">{t("wd.wordManualHint")}</p>
         {(lookingUp || lookupMessage) && <p className="small mb-2 mt-0" role="status">{lookingUp ? t("cls.dictLoading") : lookupMessage}</p>}
@@ -387,7 +402,13 @@ function Trainer(p: Props & { accent: string }) {
           <div className="flash" onClick={() => setFlip(true)}>
             <div className="w">{card.w.word}</div>
             <button className="iconbtn" onClick={(e) => { e.stopPropagation(); say(card.w.word, p.accent); }} aria-label={t("tk.listen")}><Icon name="sound" size="sm" /></button>
-            {flip ? <><div className="text-[19px]">{card.w.translation ?? "—"}</div>{card.w.example && <i className="small muted">{card.w.example}</i>}</> : <span className="hint">{t("wd.tapToFlip")}</span>}
+            {flip ? (
+              <>
+                {card.w.translation && <div className="text-[19px]">{card.w.translation}</div>}
+                {card.w.definition?.trim() && <div className={card.w.translation ? "small" : "text-[19px]"} lang="en">{card.w.definition}</div>}
+                {card.w.example && <i className="small muted" lang="en">{card.w.example}</i>}
+              </>
+            ) : <span className="hint">{t("wd.tapToFlip")}</span>}
           </div>
           {state === "ask" ? (
             <div className="mt-4 grid grid-cols-2 gap-3"><button className="btn secondary lg" onClick={() => answer(false).then(next)}>{t("wd.dontKnow")}</button><button className="btn primary lg" onClick={() => answer(true).then(next)}>{t("wd.know")}</button></div>

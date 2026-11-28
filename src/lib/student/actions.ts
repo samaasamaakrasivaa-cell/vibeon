@@ -133,9 +133,9 @@ export async function lookupMyWord(query: string) {
   });
 }
 
-export async function addMyWord(word: string, tr: string, ex: string, confirmation?: WordConfirmation) {
+export async function addMyWord(word: string, tr: string, ex: string, options?: { confirmation?: WordConfirmation; definition?: string }) {
   const { s } = await myStudent();
-  const result = await savePersonalWord(s.id, { word, translation: tr, example: ex, confirmation });
+  const result = await savePersonalWord(s.id, { word, translation: tr, example: ex, confirmation: options?.confirmation, definition: options?.definition });
   if (result.status === "added" || result.status === "updated") revalidatePath("/student/words");
   return result.status === "confirm" ? result : { status: result.status };
 }
