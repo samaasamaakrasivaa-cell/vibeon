@@ -181,13 +181,13 @@ export type Llm = (model: string, messages: LlmMsg[], o?: LlmOpts) => Promise<Ch
 
 /** Вызов модели через шлюз: лимит тарифа, учёт каждого вызова (модель, токены, время). Личные данные убирает вызывающий код
  *  (проверка работ — со сдвигом позиций правок, см. check-core). В режиме mock — заглушка без сети. */
-export function llmFor(kind: "check" | "route" | "word-card", ctx: Ctx): Llm {
+export function llmFor(kind: "check" | "route" | "word-card" | "dictionary", ctx: Ctx): Llm {
   return async (model, messages, o) => {
     await guard(kind, ctx);
     const t0 = Date.now();
     try {
       const res = provider() === "mock" ? await mockLlm(model, messages) : await studioChat(model, messages, o);
-      await log(kind, ctx, { ...(kind === "word-card" ? { provider: "yandex" } : {}), model: res.model, tokensIn: res.tokensIn, tokensOut: res.tokensOut, ms: Date.now() - t0 });
+      await log(kind, ctx, { ...((kind === "word-card" || kind === "dictionary") ? { provider: "yandex" } : {}), model: res.model, tokensIn: res.tokensIn, tokensOut: res.tokensOut, ms: Date.now() - t0 });
       return res;
     } catch (e) {
       await log(kind, ctx, { ok: false, model, ms: Date.now() - t0 });

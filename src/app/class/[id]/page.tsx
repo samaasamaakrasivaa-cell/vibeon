@@ -179,6 +179,7 @@ export default async function ClassPage({ params, searchParams }: { params: Prom
         rubrics: data?.rubrics ?? [], tasks: visibleTasks, answers, statuses, reviews, aiDrafts, times, homeworkReviewStatuses, groupReviewAssignments,
         ...(role === "teacher" && data?.l.teacherInfo ? { teacherInfo: data.l.teacherInfo as TInfo } : {}),
         live, board,
+        canChooseLessonWords: role === "student" && !preview && lesson.status === "DONE",
         ...(role === "teacher" && host.status === "PLANNED" ? { lessonSession: { ...lessonOccurrence(host), active: hasStartedLessonSession(host) } } : {}),
         ...(nextLesson ? { completionNext: {
           startsAt: nextLesson.startsAt.getTime(), initialNow: now.getTime(),
