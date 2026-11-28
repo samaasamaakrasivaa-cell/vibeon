@@ -13,27 +13,29 @@
   "lease": {
     "token": "9be7c89369044679ae11bd2d676f42e1",
     "started_at": "2026-11-28T10:07:15.283592Z",
-    "expires_at": "2026-11-28T13:07:15.283592Z"
+    "expires_at": "2026-11-28T13:07:51.248743Z"
   },
   "checkpoint": {
     "issue": 25,
-    "stage": "await_ci_review",
+    "stage": "request_review",
     "branch": "codex/vocabulary/voc-09",
     "base_sha": "daacd5bf1e2f13c4c0b063f5db07f2f47c887dbc",
-    "next": "PR #54 exact seven-path refresh confirmed. Wait new-head CI (not visible yet), inspect subject logs then send one native review after checking comments. Check main and permissions before merge. CD-01 46128291612 released latest main; direct Git/site DNS unavailable.",
+    "next": "CI exact head confirmed. Intent: one native review request for d983a2b46788cc3c84342a42811670e2db35b398. Main advanced 8 commits, no task path overlap; assess compatible source semantics and exact-head review before integration.",
     "head_sha": "d983a2b46788cc3c84342a42811670e2db35b398",
     "pr": 54,
     "review_request_comment_id": null,
-    "ci_run_ids": [],
-    "ci_status": "not_yet_visible",
-    "subject_tests": "pending_new_head",
+    "ci_run_ids": [
+      46129070900
+    ],
+    "ci_status": "success",
+    "subject_tests": "passed: build job 140930050810 VOC-09 role/scope/archive/foreign/empty/legacy/repeat/RU-EN/mobile/desktop",
     "review_summary_id": null,
     "review_receipt_id": null,
     "refresh_base_sha": "daacd5bf1e2f13c4c0b063f5db07f2f47c887dbc",
     "prior_head_sha": "f3696be2397acb2cb012be632995145719e78a2a",
     "prior_ci_run_id": 46123737844,
     "prior_review_summary_id": null,
-    "observed_main_sha": "daacd5bf1e2f13c4c0b063f5db07f2f47c887dbc",
+    "observed_main_sha": "348c4a99fd27cbc8ee9ac813d2cdc07b7abdbc30",
     "release_blocker": null,
     "release_run_id": 46068517899,
     "last_confirmed_release_sha": "daacd5bf1e2f13c4c0b063f5db07f2f47c887dbc",
