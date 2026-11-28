@@ -21,7 +21,7 @@ const textFields = [
 
 type DraftLesson = CourseOutlineEntry & { key: string };
 type DraftUnit = CourseOutlineEntry & { key: string; lessons: DraftLesson[] };
-type Draft = { importId: string; units: DraftUnit[] };
+type Draft = { ticket: string; units: DraftUnit[] };
 
 function OutlineFields({ entry, titleLimit, onChange }: {
   entry: CourseOutlineEntry;
@@ -94,7 +94,7 @@ export function CourseOutlineImport({ courseId, onClose, onSaved }: {
         return;
       }
       setDraft({
-        importId: result.importId,
+        ticket: result.draft,
         units: result.outline.units.map((unit) => ({
           ...unit,
           key: randomId(),
@@ -121,7 +121,7 @@ export function CourseOutlineImport({ courseId, onClose, onSaved }: {
     setError(null);
     setBusy("saving");
     try {
-      const result = await importCourseOutline(courseId, draft.importId, { units: draft.units });
+      const result = await importCourseOutline(courseId, draft.ticket, { units: draft.units });
       if (!result.ok) {
         setError(result.error);
         return;

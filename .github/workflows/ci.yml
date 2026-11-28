@@ -25,6 +25,8 @@ jobs:
         with: { node-version: 22, cache: npm }
       - run: npm ci
       - run: npx prisma migrate deploy
+      - name: Check course outline import on PostgreSQL
+        run: node --conditions=react-server --import tsx scripts/check-course-outline.ts
       - run: npm run typecheck
       - run: npm run build
       - name: Smoke test

@@ -11,7 +11,8 @@ import { randomToken } from "../auth/crypto";
 import { getT } from "../i18n/server";
 import { COURSE_CATEGORIES, isType, PRESET, SAMPLE, type Rubric, type TaskOptions, type TaskType } from "../tasks/catalog";
 import { cleanInfo, type TInfo } from "../tasks/teacher-info";
-import { courseOutlineSchema, outlineUnitOutcomes } from "../tasks/course-outline";
+import { courseOutlineSchema } from "../tasks/course-outline";
+import { appendCourseUnit, orderCourseUnits, saveCourseOutlineUnits, withCourseUnits } from "./course-units";
 
 export type R = { ok: true; id?: string; token?: string } | { ok: false; error: string };
 const clean = (v: unknown, max = 200) => (typeof v === "string" ? v.trim().slice(0, max) : "");
@@ -104,54 +105,16 @@ export async function reorderCategories(keys: string[]): Promise<R> {
   return { ok: true };
 }
 
-/** Сохраняет подтверждённый план одной транзакцией. ID юнитов защищают повтор отправки. */
-export async function importCourseOutline(courseId: string, importId: string, input: unknown): Promise<R> {
+/** Сохраняет отредактированный план по выданному сервером черновику. */
+export async function importCourseOutline(courseId: string, draft: string, input: unknown): Promise<R> {
   const teacher = await me();
   const { t } = await getT();
   const plan = courseOutlineSchema.safeParse(input);
-  if (!plan.success || !plan.data.units.length || !/^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/.test(importId)) {
-    return { ok: false, error: t("crs.outline.invalid") };
-  }
+  if (!plan.success || !plan.data.units.length) return { ok: false, error: t("crs.outline.invalid") };
 
-  const existingImport = { courseId, id: { startsWith: `${importId}-` }, course: { teacherId: teacher.id } };
-  try {
-    const saved = await db.$transaction(async (tx) => {
-      const course = await tx.course.findFirst({ where: { id: courseId, teacherId: teacher.id }, select: { id: true } });
-      if (!course) return false;
-      if (await tx.unit.findFirst({ where: existingImport, select: { id: true } })) return true;
-      const { _max } = await tx.unit.aggregate({ where: { courseId }, _max: { order: true } });
-      const firstOrder = (_max.order ?? -1) + 1;
-      for (const [index, unit] of plan.data.units.entries()) {
-        await tx.unit.create({
-          data: {
-            id: `${importId}-${index}`,
-            courseId,
-            title: unit.title,
-            order: firstOrder + index,
-            outcomes: outlineUnitOutcomes(unit),
-            lessons: {
-              create: unit.lessons.map((lesson, order) => ({
-                title: lesson.title,
-                order,
-                outcomes: lesson.topics ? [lesson.topics.slice(0, 200)] : [],
-                sections: [{ id: randomUUID(), title: "Lead-in" }],
-                teacherInfo: cleanInfo({
-                  info: lesson.topics,
-                  aims: { grammar: lesson.grammar, vocabulary: lesson.vocabulary, skills: lesson.skills },
-                }) as Prisma.InputJsonObject,
-              })),
-            },
-          },
-        });
-      }
-      return true;
-    }, { isolationLevel: "Serializable", timeout: 15_000 });
-    if (!saved) return { ok: false, error: t("crs.outline.saveError") };
-  } catch {
-    // При одновременной повторной отправке одна из транзакций уже могла сохранить импорт.
-    const saved = await db.unit.findFirst({ where: existingImport, select: { id: true } }).catch(() => null);
-    if (!saved) return { ok: false, error: t("crs.outline.saveError") };
-  }
+  const result = await saveCourseOutlineUnits(courseId, teacher.id, draft, plan.data).catch(() => null);
+  if (result === "invalid-draft") return { ok: false, error: t("crs.outline.invalidDraft") };
+  if (result !== "saved") return { ok: false, error: t("crs.outline.saveError") };
 
   refreshCourse(courseId);
   return { ok: true, id: courseId };
@@ -161,9 +124,8 @@ export async function importCourseOutline(courseId: string, importId: string, in
 
 export async function createUnit(courseId: string, title: string): Promise<R> {
   const teacher = await me();
-  await ownCourse(courseId, teacher.id);
-  const n = await db.unit.count({ where: { courseId } });
-  const u = await db.unit.create({ data: { courseId, title: clean(title, 120) || `Unit ${n + 1}`, order: n } });
+  const u = await appendCourseUnit(courseId, teacher.id, clean(title, 120));
+  if (!u) return { ok: false, error: "not found" };
   refreshCourse(courseId);
   return { ok: true, id: u.id };
 }
@@ -182,17 +144,15 @@ export async function updateUnit(id: string, f: { title?: string; collapsed?: bo
 export async function deleteUnit(id: string): Promise<R> {
   const teacher = await me();
   const u = await ownUnit(id, teacher.id);
-  await db.unit.delete({ where: { id } });
+  const removed = await withCourseUnits(u.courseId, teacher.id, (tx) => tx.unit.deleteMany({ where: { id, courseId: u.courseId } }));
+  if (!removed?.count) return { ok: false, error: "not found" };
   refreshCourse(u.courseId);
   return { ok: true };
 }
 
 export async function reorderUnits(courseId: string, ids: string[]): Promise<R> {
   const teacher = await me();
-  await ownCourse(courseId, teacher.id);
-  const own = await db.unit.count({ where: { id: { in: ids }, courseId } });
-  if (own !== ids.length) return { ok: false, error: "not found" };
-  await db.$transaction(ids.map((id, i) => db.unit.update({ where: { id }, data: { order: i } })));
+  if (!await orderCourseUnits(courseId, teacher.id, ids)) return { ok: false, error: "not found" };
   refreshCourse(courseId);
   return { ok: true };
 }
