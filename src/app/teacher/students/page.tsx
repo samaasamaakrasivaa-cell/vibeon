@@ -1,3 +1,5 @@
+import { teacherVocabularyStats } from "@/lib/teacher/vocabulary-stats";
+import { VocabularyStatsCard } from "@/components/teacher/VocabularyStatsCard";
 import Link from "next/link";
 import { DeleteInvite, InviteButton, StudentsGrid, type Card } from "@/components/teacher/StudentsGrid";
 import { CopyLink, LinkMaker } from "@/components/teacher/InviteForm";
@@ -43,6 +45,7 @@ export default async function Students({ searchParams }: { searchParams: Promise
       : `${l.startsAt.toLocaleDateString(loc, { weekday: "short", day: "numeric", month: "short", timeZone: me.timezone })}, ${time}`;
   };
   const active = all.filter((s) => s.status === "ACTIVE");
+  const vocabulary = tab === "profiles" ? await teacherVocabularyStats(me.id) : null;
   // «Оплата»: последний счёт каждого ученика (за какие уроки, оплачен ли) и когда закончится абонемент
   const dfmt = (d: Date) => d.toLocaleDateString(lang === "ru" ? "ru-RU" : "en-GB", { day: "numeric", month: "short", timeZone: me.timezone });
   // урок: «12 нояб (ср, 18:00)»
@@ -107,6 +110,7 @@ export default async function Students({ searchParams }: { searchParams: Promise
 
       {tab === "profiles" && (
         <>
+          {vocabulary && <VocabularyStatsCard stats={vocabulary} scope="active" lang={lang} timezone={me.timezone} />}
           <StudentsGrid title={t("stu.registered")} cards={active.map((s, i) => card(s, i, levelLine(lv.get(s.id)) || t("stu.noLevel")))} empty={t("inviteT.none")} />
           {/* группы: выбрать учеников галочками — и ставить группу в расписание одним занятием */}
           <Groups

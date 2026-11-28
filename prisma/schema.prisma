@@ -663,6 +663,7 @@ model Pack {
   studentId    String
   lessonsTotal Int
   lessonsLeft  Int
+  used         Boolean   @default(false) // once charged, returns never clear this marker
   price        Int
   startsAt     DateTime  @default(now())
   frozenUntil  DateTime?
