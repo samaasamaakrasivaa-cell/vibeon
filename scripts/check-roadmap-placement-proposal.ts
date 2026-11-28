@@ -31,6 +31,7 @@ const planned = (prefix: string) => [
   point(`${prefix}-gap`, topic.gap),
   point(`${prefix}-partial`, topic.partial),
 ];
+const slice = (stage: number | null) => ({ stage, kind: "slice", source: "test", status: "assigned" });
 const orders = (stages: Stage[]) => stages.map((s) => s.points?.map((p) => p.id));
 const original = [
   stage("completed", [point("past", topic.gap, true)], { passed: { score: 80, at: "2026-11-20" } }),
@@ -40,13 +41,13 @@ const original = [
 
 {
   const snapshot = structuredClone(original);
-  const plan = planPlacementUpdate(original, 3, [{ stage: 1 }], result);
+  const plan = planPlacementUpdate(original, 3, [slice(1)], result);
   assert.deepEqual(original, snapshot);
   assert.deepEqual(orders(plan.stages)[2], ["future-gap", "future-unknown", "future-partial", "future-secure"]);
   assert.deepEqual(plan.changes[0].moved.find((move) => move.title === "future-gap")?.facts[0].correct, 1);
 }
 {
-  const plan = planPlacementUpdate(original, 3, [{ stage: 1 }], result);
+  const plan = planPlacementUpdate(original, 3, [slice(1)], result);
   assert.deepEqual(plan.stages.slice(0, 2), original.slice(0, 2));
   assert.deepEqual(plan.stages.map((s) => s.hours), original.map((s) => s.hours));
   assert.deepEqual(plan.stages.map((s) => s.checkpoint), original.map((s) => s.checkpoint));
@@ -58,8 +59,8 @@ const original = [
   assert.ok(plan.stages[2].points?.every((p) => p.done === undefined));
 }
 {
-  const beyond = [...original, stage("after", planned("after"))];
-  assert.deepEqual(planPlacementUpdate(beyond, 3, [{ stage: 2 }], result).changes.map((c) => c.stage), [3]);
+  const beyond = [...structuredClone(original), stage("after", planned("after"))];
+  assert.deepEqual(planPlacementUpdate(beyond, 3, [slice(2)], result).changes.map((c) => c.stage), [3]);
   assert.deepEqual(planPlacementUpdate(beyond, 10.1, [], result).changes.map((c) => c.stage), [3]);
   beyond[2].points![0].done = false;
   assert.deepEqual(planPlacementUpdate(beyond, 3, [], result).changes.map((c) => c.stage), [3]);
@@ -77,9 +78,12 @@ const original = [
 }
 {
   const duplicate = [...original, stage("ambiguous", planned("future"))];
-  assert.equal(planPlacementUpdate(duplicate, 3, [], result).ambiguous, true);
-  assert.equal(planPlacementUpdate(original, 3, [{ stage: null }], result).ambiguous, true);
-  assert.equal(planPlacementUpdate(original, 3, [{ stage: 9 }], result).ambiguous, true);
+  assert.equal(planPlacementUpdate(duplicate, 3, [], result).blockedBy, "route");
+  assert.equal(planPlacementUpdate(original, 3, [slice(null)], result).blockedBy, "checkpoint");
+  assert.equal(planPlacementUpdate(original, 3, [slice(9)], result).blockedBy, "checkpoint");
+  const external = { ...slice(null), source: "manual", status: "done" };
+  assert.equal(planPlacementUpdate(original, 3, [external], result).changes.length, 1);
+  assert.equal(planPlacementUpdate(original, 3, [{ ...external, status: "assigned" }], result).blockedBy, "checkpoint");
   const noMapping = [original[0], original[1], stage("legacy", [point("legacy", "old-name-only")])];
   assert.deepEqual(planPlacementUpdate(noMapping, 3, [], result).changes, []);
 }

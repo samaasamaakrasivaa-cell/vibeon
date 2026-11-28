@@ -23,7 +23,10 @@ const labels = {
     description: "Темы с подтверждёнными пробелами предлагается пройти раньше в пределах будущего этапа.",
     before: "Сейчас", after: "Предлагается", stage: "Этап",
     empty: "Подтверждённые данные не дают оснований менять порядок будущих тем.",
-    ambiguous: "Связь тем или контрольных точек с этапами требует уточнения.",
+    blocked: {
+      checkpoint: "Не удалось определить защищённые этапы: один из срезов не привязан к существующему этапу маршрута.",
+      route: "Не удалось определить будущие темы: проверьте данные этапов и прогресс.",
+    },
     confirm: "Подтвердить изменения будущих тем",
     applied: "Порядок будущих тем обновлён.",
     stale: "Результат диагностики или маршрут изменился. Проверьте обновлённое предложение.",
@@ -45,7 +48,10 @@ const labels = {
     description: "Topics with confirmed gaps are prioritised within a future stage.",
     before: "Current order", after: "Suggested order", stage: "Stage",
     empty: "The confirmed evidence does not warrant reordering any future topics.",
-    ambiguous: "Some topics or checkpoints cannot be reliably linked to a stage.",
+    blocked: {
+      checkpoint: "The protected stages could not be identified because a checkpoint is not linked to an existing stage.",
+      route: "Future topics could not be identified. Check the stage data and progress.",
+    },
     confirm: "Confirm changes to future topics",
     applied: "The order of future topics was updated.",
     stale: "The diagnostic result or route changed. Review the updated proposal.",
@@ -106,7 +112,7 @@ export function PlacementProposalCard({ preview, studentId, roadmapId }: {
           <span className="muted" title={source.version}> · {source.level} · {new Date(source.confirmedAt).toLocaleDateString(lang === "ru" ? "ru-RU" : "en-GB", { timeZone: "UTC" })}</span>
         </div>
         {preview.changes.length > 0 ? <p className="small m-0">{t.description} {t.preserved}</p> : !currentFeedback &&
-          <p className="small m-0">{preview.ambiguous ? t.ambiguous : t.empty}</p>}
+          <p className="small m-0">{preview.blockedBy ? t.blocked[preview.blockedBy] : t.empty}</p>}
         {preview.changes.map(({ stage, before, after, moved }) => (
           <div key={stage} className="rounded-xl border border-sep p-3 flex flex-col gap-3">
             <h4 className="m-0">{t.stage} {stage + 1}</h4>

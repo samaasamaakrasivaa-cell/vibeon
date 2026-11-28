@@ -1,4 +1,5 @@
 "use server";
+import { isDeepStrictEqual } from "node:util";
 import { revalidatePath } from "next/cache";
 import type { Prisma } from "@prisma/client";
 import { db } from "../db";
@@ -14,6 +15,7 @@ import { grade, itemsFor, WRITING_PROMPT } from "./testbank";
 import { etaDate, paceKey, PACES, parsePace, routeState } from "./math";
 import { lessonMinOf, roadmapView } from "./progress";
 import { notify } from "../notify";
+import { roadmapChanged, writeRoadmapStages } from "./stage-writes";
 
 type R = { ok: true; id?: string } | { ok: false; error: string };
 const json = (v: unknown) => JSON.parse(JSON.stringify(v)) as Prisma.InputJsonValue;
@@ -82,11 +84,38 @@ export async function submitTest(id: string, answers: Record<string, number>, wr
     } catch { wScore = null; }
   }
   const res = grade(items, answers, wScore);
-  await db.checkpoint.update({ where: { id }, data: { status: "done", level: res.level, results: json({ ...res, writingCheck: wCheck }), answers: json({ answers, writing: text }), takenAt: new Date() } });
-  // срез этапа: от 70% — этап пройден, маршрут идёт дальше
-  if (c.roadmap && c.kind !== "entry" && c.stage !== null && stages[c.stage] && res.score >= 70) {
-    stages[c.stage] = { ...stages[c.stage], passed: { score: res.score, at: new Date().toISOString() } };
-    await db.roadmap.update({ where: { id: c.roadmap.id }, data: { stages: json(stages) } });
+  const takenAt = new Date();
+  const saved = await db.$transaction(async (tx) => {
+    const { count } = await tx.checkpoint.updateMany({
+      where: { id, studentId: c.studentId, roadmapId: c.roadmapId, kind: c.kind, stage: c.stage, status: { not: "done" } },
+      data: { status: "done", level: res.level, results: json({ ...res, writingCheck: wCheck }), answers: json({ answers, writing: text }), takenAt },
+    });
+    if (!count) return false;
+
+    // Grading can take time. Lock and read the current stages only when committing the result.
+    const index = c.stage;
+    if (c.roadmap && c.kind !== "entry" && index !== null && stages[index] && res.score >= 70) {
+      const [route] = await tx.$queryRaw<Pick<typeof c.roadmap, "id" | "approvedAt" | "builtAt" | "stages">[]>`
+        SELECT id, "approvedAt", "builtAt", stages FROM "Roadmap" WHERE id = ${c.roadmap.id} FOR UPDATE
+      `;
+      const current = route?.stages as Stage[] | undefined;
+      const stage = current?.[index];
+      const previous = stages[index];
+      const identity = (s: Stage) => s.points?.length ? s.points.map((p) => p.id) : s.grammar;
+      if (route && current && stage && current.length === stages.length && route.builtAt?.getTime() === c.roadmap.builtAt?.getTime()
+        && stage.lvl === previous.lvl && isDeepStrictEqual(identity(stage), identity(previous))) {
+        const next = [...current];
+        next[index] = { ...stage, passed: { score: res.score, at: takenAt.toISOString() } };
+        if (!await writeRoadmapStages(route, { stages: json(next) }, tx)) throw new Error("Locked Roadmap changed before checkpoint commit");
+      }
+    }
+    return true;
+  });
+  if (!saved) {
+    const latest = await db.checkpoint.findUnique({ where: { id }, select: { studentId: true, status: true, level: true } });
+    return latest?.studentId === c.studentId && latest.status === "done"
+      ? { ok: true, level: latest.level ?? undefined }
+      : roadmapChanged();
   }
   await notify({ userId: c.student.teacherId, kind: "test", title: `${c.student.name} ${c.kind === "entry" ? "прошёл(ла) placement test" : "прошёл(ла) срез"}: ${res.level}, ${res.score}%`, action: "review", link: `/teacher/students/${c.studentId}?tab=roadmap` });
   refresh(c.studentId);
@@ -102,11 +131,11 @@ export async function editStage(roadmapId: string, i: number, patch: { title?: s
   const r = await db.roadmap.findUnique({ where: { id: roadmapId } });
   if (!r) return { ok: false, error: "not found" };
   await own(r.studentId);
-  const stages = (r.stages as Stage[]) ?? [];
+  const stages = structuredClone((r.stages as Stage[]) ?? []);
   if (!stages[i]) return { ok: false, error: "stage" };
   if (patch.title !== undefined) stages[i].title = str(patch.title, 120) || stages[i].title;
   if (patch.hours !== undefined && patch.hours > 0 && patch.hours <= 500) stages[i].hours = Math.round(patch.hours);
-  await db.roadmap.update({ where: { id: roadmapId }, data: { stages: json(stages) } });
+  if (!await writeRoadmapStages(r, { stages: json(stages) })) return roadmapChanged();
   refresh(r.studentId);
   return { ok: true };
 }

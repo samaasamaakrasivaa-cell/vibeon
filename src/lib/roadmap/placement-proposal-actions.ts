@@ -4,6 +4,7 @@ import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { requireUser } from "../auth/session";
 import { db } from "../db";
+import { writeRoadmapStages } from "./stage-writes";
 import { loadPlacementProposal, type PlacementConfirmation } from "./placement-proposal-data";
 
 type Outcome = "applied" | "already-applied" | "stale";
@@ -23,7 +24,7 @@ export async function confirmPlacementProposal(
         });
         if (!route?.approvedAt || route.id !== roadmapId) return "stale";
         const proposal = await loadPlacementProposal(route, teacher.id, tx, true);
-        if (!proposal || proposal.preview.ambiguous || proposal.preview.confirmation.result !== expected?.result) return "stale";
+        if (!proposal || proposal.preview.blockedBy || proposal.preview.confirmation.result !== expected?.result) return "stale";
         const current = proposal.preview.confirmation;
         if (!proposal.preview.changes.length) {
           return current.before === expected.after && expected.before !== expected.after ? "already-applied" : "stale";
@@ -31,11 +32,7 @@ export async function confirmPlacementProposal(
         if (current.before !== expected.before || current.after !== expected.after) return "stale";
 
         const stages = JSON.parse(JSON.stringify(proposal.stages)) as Prisma.InputJsonValue;
-        const updated = await tx.roadmap.updateMany({
-          where: { id: route.id, approvedAt: route.approvedAt, stages: { equals: route.stages as Prisma.InputJsonValue } },
-          data: { stages },
-        });
-        return updated.count === 1 ? "applied" : "stale";
+        return await writeRoadmapStages(route, { stages }, tx) ? "applied" : "stale";
       }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
       if (outcome !== "stale") {
         revalidatePath(`/teacher/students/${studentId}`);

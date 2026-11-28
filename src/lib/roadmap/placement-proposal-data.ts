@@ -39,7 +39,7 @@ export async function loadPlacementProposal(
     }),
     client.checkpoint.findMany({
       where: { studentId: roadmap.studentId, OR: [{ roadmapId: roadmap.id }, { roadmapId: null }], kind: { in: ["slice", "final"] } },
-      select: { id: true, stage: true, status: true, roadmapId: true },
+      select: { id: true, stage: true, status: true, roadmapId: true, source: true, kind: true },
       orderBy: { id: "asc" },
     }),
   ]);

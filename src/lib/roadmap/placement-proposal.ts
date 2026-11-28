@@ -53,21 +53,26 @@ export type PlacementStageChange = {
 export function planPlacementUpdate(
   stages: Stage[],
   protectedHours: number,
-  checkpoints: { stage: number | null }[],
+  checkpoints: { stage: number | null; kind: string; source: string; status: string }[],
   source: ConfirmedPlacement,
 ) {
   const changes: PlacementStageChange[] = [];
   const unknownPoints: { title: string; topicIds: string[] }[] = [];
   const facts = new Map(source.topics.map((fact) => [sylTopic(fact.topicId)?.id ?? fact.topicId, fact]));
   const pointIds = stages.flatMap((stage) => (stage.points ?? []).map((point) => point.id));
-  const ambiguous = !Number.isFinite(protectedHours) || protectedHours < 0
+  // A completed external result is recorded without a stage by design. It does not mark a route stage as passed.
+  const stageChecks = checkpoints.filter(({ stage, kind, source, status }) =>
+    !(stage === null && kind === "slice" && source === "manual" && status === "done"));
+  const unresolvedCheckpoint = stageChecks.some(({ stage }) =>
+    stage === null || !Number.isInteger(stage) || stage < 0 || stage >= stages.length);
+  const unresolvedRoute = !Number.isFinite(protectedHours) || protectedHours < 0
     || stages.some((stage) => !Number.isFinite(stage.hours) || stage.hours <= 0)
-    || pointIds.some((pointId) => !pointId) || new Set(pointIds).size !== pointIds.length
-    || checkpoints.some(({ stage }) => stage === null || !Number.isInteger(stage) || stage < 0 || stage >= stages.length);
-  if (ambiguous || !stages.length) return { stages, changes, unknownPoints, ambiguous };
+    || pointIds.some((pointId) => !pointId) || new Set(pointIds).size !== pointIds.length;
+  const blockedBy = unresolvedCheckpoint ? "checkpoint" as const : unresolvedRoute ? "route" as const : null;
+  if (blockedBy || !stages.length) return { stages, changes, unknownPoints, blockedBy };
 
-  // Keep the entire current stage and the prefix through every existing slice or recorded milestone.
-  let protectedThrough = Math.max(routeState(stages, protectedHours).ci, ...checkpoints.map(({ stage }) => stage!));
+  // Keep the entire current stage and the prefix through every stage-linked slice or recorded milestone.
+  let protectedThrough = Math.max(routeState(stages, protectedHours).ci, ...stageChecks.map(({ stage }) => stage!));
   stages.forEach((stage, index) => {
     if (stage.passed || stage.canDone?.length || stage.points?.some((point) => point.done !== undefined)) {
       protectedThrough = Math.max(protectedThrough, index);
@@ -111,5 +116,5 @@ export function planPlacementUpdate(
       ? updated.map((point) => point.title) : stage.grammar;
     return { ...stage, points: updated, grammar };
   });
-  return { stages: next, changes, unknownPoints, ambiguous };
+  return { stages: next, changes, unknownPoints, blockedBy };
 }
