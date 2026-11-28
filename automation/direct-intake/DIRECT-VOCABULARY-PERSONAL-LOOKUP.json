@@ -7,8 +7,10 @@
   "progress": {
     "base_sha": "2044f77648fcf73701fe5f2232817fb817bcec28",
     "branch": "codex/vocabulary-training/my-words-lookup",
-    "next": "Подключить существующий словарный поиск к форме ученика и проверить сохранение карточки",
-    "stage": "implementation"
+    "head_sha": "67457d9d2e1edffdf4972603ea201bd94029938f",
+    "next": "Проверить изменения на точном SHA, дождаться CI и провести выпуск через main",
+    "pr": 114,
+    "stage": "review"
   },
   "release": null,
   "source": "direct",
