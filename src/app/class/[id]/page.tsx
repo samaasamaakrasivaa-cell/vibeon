@@ -155,6 +155,7 @@ export default async function ClassPage({ params, searchParams }: { params: Prom
         rubrics: data?.rubrics ?? [], tasks: (data?.tasks ?? []).filter((x) => role === "teacher" || !x.options?.teacherOnly).map((x) => (role === "teacher" || (!x.options?.teacherKey && !x.options?.help?.hidden) ? x : { ...x, options: { ...x.options, teacherKey: undefined, help: x.options?.help?.hidden ? undefined : x.options?.help } })), /* заметки «только учителю», ответы для учителя и скрытые Useful phrases ученику не отдаём */ answers, statuses, reviews, aiDrafts, times, homeworkReviewStatuses, groupReviewAssignments,
         ...(role === "teacher" && data?.l.teacherInfo ? { teacherInfo: data.l.teacherInfo as TInfo } : {}),
         live, board,
+        canChooseLessonWords: role === "student" && !preview && lesson.status === "DONE",
         ...(role === "teacher" && host.status === "PLANNED" ? { lessonSession: { ...lessonOccurrence(host), active: hasStartedLessonSession(host) } } : {}),
         ...(nextLesson ? { completionNext: {
           startsAt: nextLesson.startsAt.getTime(), initialNow: now.getTime(),

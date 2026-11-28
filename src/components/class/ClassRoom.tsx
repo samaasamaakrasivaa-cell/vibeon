@@ -21,6 +21,8 @@ import { TaskEditor } from "../builder/TaskEditor";
 import { Board, type BObj } from "./Board";
 import { useLive } from "./useLive";
 import { ClassDictionary } from "./ClassDictionary";
+import { LessonWordPicker, type LessonWord } from "./LessonWordPicker";
+import { parse } from "@/lib/tasks/parse";
 import { AiCheckView, type AiCheck } from "../ai/AiCheckView";
 import { AiReviewPanel, StudentCheck, type AiPick, type StudentCheckData } from "../ai/AiReviewPanel";
 import { askAi, checkAnswer } from "@/lib/ai/actions";
@@ -46,6 +48,7 @@ export type ClassData = {
   title: string | null; crumbs: string | null; course: { title: string; cover: string | null } | null; rubrics: Rubric[]; tasks: CTask[]; teacherInfo?: TInfo;
   answers: Answers; statuses: Record<string, string>; reviews: Record<string, Review>; aiDrafts: Record<string, AiCheck>; live: LiveState;
   lessonSession?: LessonOccurrence & { active: boolean };
+  canChooseLessonWords?: boolean;
   completionNext?: { startsAt: number; initialNow: number; when: string };
   homeworkReviewStatuses?: Record<string, Record<string, string>>;
   groupReviewAssignments?: Record<string, HomeworkReviewAssignment>;
@@ -123,6 +126,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
   const [panel, setPanel] = useState<"chat" | "dict" | "timer" | null>(null);
   const [unread, setUnread] = useState(0);
   const [finished, setFinished] = useState(false);
+  const [wordPickerOpen, setWordPickerOpen] = useState(false);
   const [cheers, setCheers] = useState<NewAward[]>([]); // «приятности» от учителя — праздничное окно прямо на уроке
   const [rubric, setRubric] = useState<string | null>(d.live?.rubricId ?? d.rubrics[0]?.id ?? null);
   // прокрутка по разделам: вернулись в раздел — туда, где остановились; новый раздел — с начала
@@ -399,6 +403,22 @@ export function ClassRoom({ d }: { d: ClassData }) {
 
   const patchLive = (p: LiveState) => { setLive((l) => ({ ...l, ...p })); send("live", { patch: p }); };
   const hidden = new Set(live.hidden ?? []);
+  const suggestedWords = useMemo(() => {
+    if (teacher || d.preview) return [];
+    const hiddenTasks = new Set(live.hidden);
+    const words = new Map<string, LessonWord>();
+    for (const task of d.tasks) {
+      if (task.type !== "wordset" || task.section === "homework" || task.hidden || hiddenTasks.has(task.id)) continue;
+      const parsed = parse("wordset", task.content);
+      if (parsed.kind !== "wordset") continue;
+      for (const item of parsed.items) {
+        if (!item.tr) continue;
+        const key = JSON.stringify([item.word, item.tr].map((part) => part.replace(/\s+/g, " ").toLowerCase()));
+        if (!words.has(key)) words.set(key, item);
+      }
+    }
+    return [...words.values()];
+  }, [teacher, d.preview, d.tasks, live.hidden]);
   // «Выдели слова»: выделения учителя живут в состоянии урока; ученику показываются, только если учитель нажал «Показать ученику»
   // что смотрит учитель в «Выдели слова» на индивидуальном уроке (свои / ученика) — не сбрасывается при смене секции
   const [markView, setMarkView] = useState<Record<string, "mine" | "student">>({});
@@ -718,7 +738,19 @@ export function ClassRoom({ d }: { d: ClassData }) {
                 selfId={d.id} goPrev={(url) => { if (teacher) void send("goto", { url }); router.push(url); }} back={back} onBack={() => { const url = `/class/${back}`; if (teacher) { patchLive({ hwErr: false }); void send("goto", { url }); } router.push(url); }} tasks={hwTasks} errTasks={errTasks} prevHw={d.prevHw ?? null} prepared={prepared} onAssign={assignHw} removed={teacher && !manual ? (hw.removedTaskIds ?? []).length : 0} onRestore={() => { setHw((h) => ({ ...h, removedTaskIds: [] })); void send("hwRestore", {}); }} training={hw.wordTraining} comment={hw.teacherComment} render={renderTasks}
                 cards={[...d.lessonWords.map((w) => ({ word: w.word, tr: w.tr, ex: w.ex })), ...words.filter((w) => !d.lessonWords.some((l) => l.word.toLowerCase() === w.word.toLowerCase())).map((w) => ({ word: w.word, tr: w.translation ?? "", ex: w.example ?? "" }))].filter((w) => w.tr || w.ex)} />
             )}
-            {tab === "words" && <Words key={viewSid} teacher={teacher} lessonWords={d.lessonWords} words={words} training={hw.wordTraining} send={send} setHw={setHw} />}
+            {tab === "words" && (
+              wordPickerOpen && suggestedWords.length > 0 ? (
+                <LessonWordPicker words={suggestedWords} close={() => setWordPickerOpen(false)}
+                  save={(word, confirmation) => send("word", { op: "add", word: word.word, tr: word.tr, ex: word.ex, dictionary: true, confirmation })} />
+              ) : (
+                <>
+                  {d.canChooseLessonWords && suggestedWords.length > 0 && (
+                    <button type="button" className="btn secondary mb-3" onClick={() => setWordPickerOpen(true)}>{t("cls.chooseLessonWords")}</button>
+                  )}
+                  <Words key={viewSid} teacher={teacher} lessonWords={d.lessonWords} words={words} training={hw.wordTraining} send={send} setHw={setHw} />
+                </>
+              )
+            )}
             {tab === "board" && (
               <Board pages={board} setPages={setBoard} page={page} setPage={setPage} role={d.role} me={d.me.id} locked={!!live.lockBoard} follow={!!live.follow}
                 send={(type, data) => send(type, data)} onLive={(p) => patchLive(p as LiveState)} />
@@ -845,7 +877,15 @@ export function ClassRoom({ d }: { d: ClassData }) {
                 <time className="small muted" dateTime={new Date(d.completionNext.startsAt).toISOString()}>{d.completionNext.when}</time>
               </div>
             )}
-            <div className="actions"><button className="btn secondary" onClick={() => { setFinished(false); setTab("homework"); }}>{t("nav.homework")}</button><Link className="btn primary" href={d.homeHref} prefetch={false}>{t("cls.toCabinet")}</Link></div>
+            <div className="actions">
+              {suggestedWords.length > 0 && <button type="button" className="btn secondary" onClick={() => {
+                setFinished(false);
+                setTab("words");
+                setWordPickerOpen(true);
+              }}>{t("cls.chooseLessonWords")}</button>}
+              <button className="btn secondary" onClick={() => { setFinished(false); setTab("homework"); }}>{t("nav.homework")}</button>
+              <Link className="btn primary" href={d.homeHref} prefetch={false}>{t("cls.toCabinet")}</Link>
+            </div>
           </Dialog>
         )}
       </div>
