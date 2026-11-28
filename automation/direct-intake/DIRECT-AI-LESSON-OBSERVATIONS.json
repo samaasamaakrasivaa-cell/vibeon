@@ -9,9 +9,9 @@
     "branch": "codex/ai-quality/lesson-observations",
     "head_sha": "65951ad033875a00a1d92b0c1dfc248653915c22",
     "merge_sha": "82473a1199a160651ae2bed2f8365b5e536d7c72",
-    "next": "Platform и Tech Lead сверяют место для копии. После устранения повторить CI для актуальной main.",
+    "next": "Публичная проверка успешна. Зафиксировать выпуск и закрыть карточку.",
     "pr": 82,
-    "stage": "blocked",
+    "stage": "publication",
     "test_run": 46067752930
   },
   "release": null,
