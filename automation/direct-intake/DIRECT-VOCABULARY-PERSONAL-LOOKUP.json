@@ -8,9 +8,10 @@
     "base_sha": "2044f77648fcf73701fe5f2232817fb817bcec28",
     "branch": "codex/vocabulary-training/my-words-lookup",
     "head_sha": "2980c5f5ead478675e70de457942f62e9bbd8ebe",
-    "next": "Ревью и CI пройдены; объединить PR после сверки итогового дерева и проверить CD",
+    "merge_sha": "5d07042533faee38382ddf4097b7e83c89ef6dd7",
+    "next": "Подтвердить автоматическую публикацию на production и точный SHA в health",
     "pr": 114,
-    "stage": "integration",
+    "stage": "publication",
     "test_run": 46151367137
   },
   "release": null,
