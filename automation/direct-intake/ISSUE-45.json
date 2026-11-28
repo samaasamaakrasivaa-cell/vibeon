@@ -4,7 +4,14 @@
   "issue": 45,
   "key": "ISSUE-45",
   "owner": "vocabulary-training",
-  "progress": null,
+  "progress": {
+    "base_sha": "41505e1a97ee5e282d3915b8064e00d45b7681a1",
+    "branch": "codex/vocabulary-training/classroom-context",
+    "head_sha": "3e426bd01c50abea787dac79e1015d882216164d",
+    "next": "Нужен штатный переход схемы с проверенным откатом; полный сценарий проверен на синтетике",
+    "pr": 134,
+    "stage": "blocked"
+  },
   "release": null,
   "source": "direct",
   "version": 1

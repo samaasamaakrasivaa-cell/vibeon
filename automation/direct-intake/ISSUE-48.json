@@ -4,8 +4,35 @@
   "issue": 48,
   "key": "ISSUE-48",
   "owner": "vocabulary-training",
-  "progress": null,
-  "release": null,
+  "progress": {
+    "base_sha": "8e4215a2988ba3c0df1917584d49e0b7948eb302",
+    "branch": "codex/vocabulary-training/personal-card-formats",
+    "head_sha": "d5c33c9f62a72b1016783666a582697bb4f9ca03",
+    "merge_sha": "a88618bae9f9bdf45428a01fcd1b7d4d6172b947",
+    "next": "Проверено в сборке с партией №122; сайт подтвердил версию с №129",
+    "pr": 129,
+    "stage": "publication",
+    "test_run": 46164748388
+  },
+  "release": {
+    "ci": {
+      "result": "success",
+      "run": 46164748388,
+      "sha": "d5c33c9f62a72b1016783666a582697bb4f9ca03"
+    },
+    "delivery": {
+      "result": "success",
+      "run": 46165830878,
+      "sha": "a88618bae9f9bdf45428a01fcd1b7d4d6172b947"
+    },
+    "owner_note": "Для владельца: Словарь и тренировки — ученик может добавить карточку с переводом, определением или обоими.",
+    "review": {
+      "comment": 7242191817,
+      "result": "success",
+      "sha": "d5c33c9f62a72b1016783666a582697bb4f9ca03"
+    },
+    "site_sha": "a88618bae9f9bdf45428a01fcd1b7d4d6172b947"
+  },
   "source": "direct",
   "version": 1
 }

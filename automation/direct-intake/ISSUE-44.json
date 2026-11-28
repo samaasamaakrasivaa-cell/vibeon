@@ -4,7 +4,16 @@
   "issue": 44,
   "key": "ISSUE-44",
   "owner": "vocabulary-training",
-  "progress": null,
+  "progress": {
+    "base_sha": "21000544bf5d5dc027bd5ae0c20985192faf7656",
+    "branch": "codex/vocabulary-training/context-translation-preview",
+    "head_sha": "50c66adab9e4a2ac082d8f0562a5c971b915e3c6",
+    "merge_sha": "9c9e2494619b31bf535ad68e5b39359de4400400",
+    "next": "Подтвердить публичный SHA сайта для выключателя урока",
+    "pr": 135,
+    "stage": "publication",
+    "test_run": 46166143104
+  },
   "release": null,
   "source": "direct",
   "version": 1
