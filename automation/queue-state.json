@@ -10,7 +10,11 @@
     16,
     18
   ],
-  "lease": null,
+  "lease": {
+    "token": "41e49b7b64c24c32be14a17737cc323c",
+    "started_at": "2026-11-28T16:06:28.418217Z",
+    "expires_at": "2026-11-28T19:06:28.418217Z"
+  },
   "checkpoint": {
     "issue": 25,
     "stage": "await_live_verification",
