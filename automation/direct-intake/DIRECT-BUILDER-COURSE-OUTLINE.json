@@ -8,7 +8,7 @@
     "base_sha": "7aa0781b4f6046a2c1184426b6c76a9c9aa9d746",
     "branch": "codex/builder/course-outline",
     "head_sha": "29d449070d5c4ca3e0ae3b7ab6c22007cd2142dc",
-    "next": "Проверки PostgreSQL, браузера и CI прошли на новом SHA. Результат в PR #117. Ожидается повторное независимое ревью.",
+    "next": "Сквозной прогон Builder на df8ab40: 10/10 тем, JSON 1218/1219. Результат в PR #117. Правка Roadmap #123 в Draft. Ожидаются интеграция и CI итогового SHA.",
     "pr": 117,
     "stage": "review",
     "test_run": 46153645730
