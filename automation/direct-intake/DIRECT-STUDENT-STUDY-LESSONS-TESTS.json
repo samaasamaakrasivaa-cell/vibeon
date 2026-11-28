@@ -5,13 +5,13 @@
   "key": "DIRECT-STUDENT-STUDY-LESSONS-TESTS",
   "owner": "student",
   "progress": {
-    "base_sha": "82473a1199a160651ae2bed2f8365b5e536d7c72",
+    "base_sha": "47fa1c441d0dfff1e2423db146912175e544ab08",
     "branch": "codex/student/study-lessons-tests",
-    "head_sha": "c894c07a30aaca269e57740042d54da8c9303578",
-    "next": "Повторные ревью и CI. Место освобождено, подтвердить безопасный слот с Platform и сверить актуальную main.",
+    "head_sha": "9abc1da6e3bf30ae6dd753ce45ea04930bcdd050",
+    "next": "Подтвердить ревью, CI, обслуживание хранилища и свежую суточную пару после P0. Затем штатный выпуск #83.",
     "pr": 83,
     "stage": "review",
-    "test_run": 46120473189
+    "test_run": 46121209298
   },
   "release": null,
   "source": "direct",
