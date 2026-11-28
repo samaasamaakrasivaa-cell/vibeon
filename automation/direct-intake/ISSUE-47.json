@@ -8,9 +8,11 @@
     "base_sha": "daacd5bf1e2f13c4c0b063f5db07f2f47c887dbc",
     "branch": "codex/live-classroom/voc-08-explicit-vocabulary",
     "head_sha": "6509f00b61aafb74727ff46cca45330ccb65551c",
-    "next": "Независимое ревью прошло. Проверить CI точного head и предметный сценарий с изолированной БД перед интеграцией.",
+    "merge_sha": "4351e6ecb1bc65dca3d69cf9ba2c63cbcdb0b7be",
+    "next": "PR 95 в main. Дождаться CD 46131247565, сверить health и публичную версию, оформить результат в Issue 47.",
     "pr": 95,
-    "stage": "review"
+    "stage": "publication",
+    "test_run": 46130115325
   },
   "release": null,
   "source": "pm",
