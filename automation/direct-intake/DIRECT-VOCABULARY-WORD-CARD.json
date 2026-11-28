@@ -1,10 +1,15 @@
 {
   "claim_id": "d5a82f42ae194621bf1e8c7dfda3aada",
   "handoff": null,
-  "issue": null,
+  "issue": 96,
   "key": "DIRECT-VOCABULARY-WORD-CARD",
   "owner": "vocabulary-training",
-  "progress": null,
+  "progress": {
+    "base_sha": "daacd5bf1e2f13c4c0b063f5db07f2f47c887dbc",
+    "branch": "codex/vocabulary-training/word-card-details",
+    "next": "Реализовать и проверить дополнение карточек в «Моих словах» с существующим кэшем.",
+    "stage": "implementation"
+  },
   "release": null,
   "source": "direct",
   "version": 1
