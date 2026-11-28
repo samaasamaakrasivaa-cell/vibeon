@@ -13,14 +13,14 @@
   "lease": {
     "token": "e62d3676a2a34aabaf7a8002c156ee55",
     "started_at": "2026-11-28T14:06:30.227205Z",
-    "expires_at": "2026-11-28T17:06:30.227205Z"
+    "expires_at": "2026-11-28T17:07:12.173625Z"
   },
   "checkpoint": {
     "issue": 25,
-    "stage": "await_cd",
+    "stage": "await_live_verification",
     "branch": "codex/vocabulary/voc-09",
     "base_sha": "348c4a99fd27cbc8ee9ac813d2cdc07b7abdbc30",
-    "next": "PR 54 merged; read-back main equals merge SHA. CD-01 run 46147737925 in progress. Verify exact integrated SHA CI, released image and full health/version plus accessible site scenario; only then owner note and close issue 25. No repeat merge.",
+    "next": "Record partial release in issue 25, keep open. Then obtain public /api/version and safe live scenario evidence through existing access; confirm current released SHA contains merge; only then owner note/close. No repeat merge or rollout.",
     "head_sha": "9d3cb5ebcc719c4051fdc6bf56fb9146dfaf8b29",
     "pr": 54,
     "review_request_comment_id": 7238969762,
@@ -31,17 +31,14 @@
     "subject_tests": "passed synthetic PostgreSQL/HTTP/Chromium, scope/archive/foreign/role denial, empty/legacy source, repeat, RU/EN, 320/1280",
     "review_summary_id": 7224060100,
     "review_receipt_id": 7238990218,
-    "refresh_base_sha": "348c4a99fd27cbc8ee9ac813d2cdc07b7abdbc30",
-    "prior_head_sha": "d983a2b46788cc3c84342a42811670e2db35b398",
-    "prior_ci_run_id": 46129070900,
-    "prior_review_summary_id": 7224060100,
-    "observed_main_sha": "acdb16e95f55a2cad7be7ef9559fe647608a829e",
-    "release_blocker": null,
+    "observed_main_sha": "7aa0781b4f6046a2c1184426b6c76a9c9aa9d746",
+    "release_blocker": "curl /api/health and /api/version: DNS error 6; web fetch unavailable. No direct version or authenticated live subject scenario evidence. CD-01 verified exact public health and image.",
     "release_run_id": 46147737925,
-    "last_confirmed_release_sha": "acdb16e95f55a2cad7be7ef9559fe647608a829e",
-    "last_confirmed_release_run_id": 46139612650,
+    "last_confirmed_release_sha": "5d07042533faee38382ddf4097b7e83c89ef6dd7",
+    "last_confirmed_release_run_id": 46151962729,
     "merge_sha": "0fcef7b9e18fcb9a3165d1e2a7b7e9f7cc172075",
-    "release_status": "in_progress"
+    "release_status": "released exact SHA; public/local health verified by CD-01",
+    "release_image": "sha256:cfb3dfdcfb57675fb1e1329c927ce7ab6c1cf4b1d370e318ddf40aff00791e69"
   },
   "last_probe": {
     "type": "background_native_review",
