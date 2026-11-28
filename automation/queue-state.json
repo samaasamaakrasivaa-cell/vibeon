@@ -13,27 +13,29 @@
   "lease": {
     "token": "fac7948cbf8149ff82eb10b069952d27",
     "started_at": "2026-11-28T12:03:16.094646Z",
-    "expires_at": "2026-11-28T15:03:16.094646Z"
+    "expires_at": "2026-11-28T15:03:41.048463Z"
   },
   "checkpoint": {
     "issue": 25,
-    "stage": "await_ci_review",
+    "stage": "request_native_review",
     "branch": "codex/vocabulary/voc-09",
     "base_sha": "348c4a99fd27cbc8ee9ac813d2cdc07b7abdbc30",
-    "next": "Refreshed main including related vocabulary semantics; seven task blobs preserved, branch readback verified. Await isolated CI for new head, then one native review request; verify release gates. No merge yet.",
+    "next": "Request one native review for exact current head; main advanced 3 disjoint Placement files. Recheck actual merge gates and release. No merge yet.",
     "head_sha": "9d3cb5ebcc719c4051fdc6bf56fb9146dfaf8b29",
     "pr": 54,
     "review_request_comment_id": null,
-    "ci_run_ids": [],
-    "ci_status": "not yet listed",
-    "subject_tests": "pending on refreshed head",
+    "ci_run_ids": [
+      46138039813
+    ],
+    "ci_status": "success exact head",
+    "subject_tests": "passed synthetic PostgreSQL/HTTP/Chromium, scope/archive/foreign/role denial, empty/legacy source, repeat, RU/EN, 320/1280",
     "review_summary_id": null,
     "review_receipt_id": null,
     "refresh_base_sha": "348c4a99fd27cbc8ee9ac813d2cdc07b7abdbc30",
     "prior_head_sha": "d983a2b46788cc3c84342a42811670e2db35b398",
     "prior_ci_run_id": 46129070900,
     "prior_review_summary_id": 7224060100,
-    "observed_main_sha": "348c4a99fd27cbc8ee9ac813d2cdc07b7abdbc30",
+    "observed_main_sha": "acdb16e95f55a2cad7be7ef9559fe647608a829e",
     "release_blocker": null,
     "release_run_id": 46068517899,
     "last_confirmed_release_sha": "348c4a99fd27cbc8ee9ac813d2cdc07b7abdbc30",
