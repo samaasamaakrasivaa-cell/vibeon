@@ -20,7 +20,7 @@ export default async function StudentLayout({ children }: { children: React.Reac
     db.student.findUnique({ where: { userId: user.id }, select: { id: true, avatar: true, awards: { where: { kind: "title", pinned: true, onMain: true, OR: [{ until: null }, { until: { gt: new Date() } }] }, select: { id: true }, take: 1 } } }),
     db.article.count({ where: { published: true, audience: { in: ["student", "all"] } } }),
   ]);
-  // меню ученика — коротко: учёба (уроки и слова), прогресс (темы, маршрут, тесты, награды, фидбэк), чат (преподаватель и ответы на вопросы);
+  // Учёба: уроки, слова и тестирование. Прогресс: темы, маршрут, результаты тестов, награды и обратная связь.
   // профиль — по аватарке справа вверху, помощь — внизу
   const groups = [
     [
@@ -28,7 +28,7 @@ export default async function StudentLayout({ children }: { children: React.Reac
       { href: "/student/schedule", label: t("nav.schedule"), icon: "cal" as const },
     ],
     [
-      { href: "/student/lessons", label: t("nav.study"), icon: "book" as const, also: ["/student/words"] },
+      { href: "/student/lessons", label: t("nav.study"), icon: "book" as const, also: ["/student/words", "/student/tests"] },
       { href: "/student/progress", label: t("nav.myProgress"), icon: "chart" as const, also: ["/student/route", "/student/test"] },
       { href: "/student/messages", label: t("nav.chat"), icon: "msg" as const, count: msgs + answers, also: ["/student/questions", "/student/teacher"] },
     ],
