@@ -104,6 +104,31 @@ class ReleaseTest(unittest.TestCase):
         self.assertEqual(json.loads(self.release.journal.read_text())["status"], "released")
         self.assertNotIn("switch_fallback", self.release.events)
 
+    def prepare_storage_only(self, status="released"):
+        self.release.image = self.release.rollback_image = PREVIOUS
+        self.release.rollback_sha = SHA
+        self.release.retention_enabled = True
+        release_apply.atomic_json(self.release.override, self.release.override_content(PREVIOUS, SHA))
+        release_apply.atomic_json(self.release.journal, {"schema_version": 1, "status": status, "sha": SHA,
+                                  "image": PREVIOUS, "rollback_image": FALLBACK, "previous_image": CANDIDATE})
+        return self.release.journal.read_bytes()
+
+    def test_storage_only_preserves_running_app_journal_and_prior_images(self):
+        before = self.prepare_storage_only()
+        with patch.object(self.release, "post_publication_retention", return_value={"status": "ok"}) as rotate:
+            report = self.release.maintain_storage()
+        rotate.assert_called_once_with({FALLBACK, CANDIDATE})
+        self.assertEqual(report["status"], "storage_maintained")
+        self.assertEqual(self.release.journal.read_bytes(), before)
+        for event in ("stop", "snapshot", "switch_candidate", "switch_fallback"):
+            self.assertNotIn(event, self.release.events)
+
+    def test_storage_only_rejects_pending_or_uncertain_release(self):
+        self.prepare_storage_only("unchanged")
+        with self.assertRaisesRegex(release_apply.ReleaseError, "storage_only_identity_invalid"):
+            self.release.maintain_storage()
+        self.assertEqual(self.release.events, [])
+
     def test_backup_failure_restarts_exact_original_before_any_override(self):
         self.release.fail = "backup"
         report = self.release.apply()

@@ -22,6 +22,10 @@ on:
     - cron: "23 */6 * * *"
   workflow_dispatch:
     inputs:
+      storage_observation:
+        description: Observe VibeOn disk capacity without changing the server
+        type: boolean
+        default: false
       pt02_placementedit_check:
         description: Check the fixed PT-02 inventory for editor overrides
         type: boolean
@@ -67,6 +71,7 @@ jobs:
         env:
           SSH_KEY: ${{ secrets.SSH_KEY }}
           SSH_HOST: ${{ secrets.SSH_HOST }}
+          STORAGE_OBSERVATION: ${{ inputs.storage_observation }}
           PT02_PLACEMENTEDIT_CHECK: ${{ github.event_name == 'workflow_dispatch' && inputs.pt02_placementedit_check }}
         shell: bash
         run: |
@@ -89,7 +94,7 @@ jobs:
           test -s "$DELIVERY_SSH_DIR/known_hosts"
           printf 'Host srv\n  HostName %s\n  User root\n  IdentityFile %s/id\n  UserKnownHostsFile %s/known_hosts\n  StrictHostKeyChecking yes\n  IdentitiesOnly yes\n  BatchMode yes\n  ConnectTimeout 15\n  ServerAliveInterval 15\n  ServerAliveCountMax 3\n' \
             "$SSH_HOST" "$DELIVERY_SSH_DIR" "$DELIVERY_SSH_DIR" > "$DELIVERY_SSH_DIR/config"
-          if [[ "$GITHUB_EVENT_NAME" == schedule ]]; then
+          if [[ "$GITHUB_EVENT_NAME" == schedule || "$STORAGE_OBSERVATION" == true ]]; then
             capacity=$(ssh -F "$DELIVERY_SSH_DIR/config" srv 'python3 - probe 0 1' < deploy/release_capacity.py)
             CAPACITY="$capacity" python3 - <<'PY_CAPACITY'
           import json

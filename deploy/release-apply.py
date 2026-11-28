@@ -416,14 +416,48 @@ class Release:
         command(["docker", "start", self.app_id], reason="original_app_restart_failed", timeout=60)
         self.verify(self.app_id, self.current_image, None)
 
-    def post_publication_retention(self):
+    def post_publication_retention(self, protected=()):
         from release_retention import rotate
 
         def docker(*args):
             return command(["docker", *args], reason="storage_inventory_failed").decode().strip()
 
-        return rotate(self.root, self.image, self.sha, {self.current_image, self.rollback_image},
+        return rotate(self.root, self.image, self.sha, {self.current_image, self.rollback_image, *protected},
                       docker=docker, write_json=atomic_json)
+
+    def retention_report(self, status, protected=()):
+        report = {"status": status, "sha": self.sha, "image": self.image}
+        if self.retention_enabled:
+            try:
+                report["storage_retention"] = self.post_publication_retention(protected)
+            except (Exception, KeyboardInterrupt):
+                report["storage_retention"] = {"status": "attention", "images_removed": 0,
+                                               "verified_full_backups": 0, "full_backup_candidates": 0,
+                                               "full_backup_candidate_bytes": 0,
+                                               "full_backups_removed": 0, "full_backups_removed_bytes": 0}
+        return report
+
+    def maintain_storage(self):
+        with release_lock(self.root):
+            if self.image != self.expected_current_image or self.rollback_image != self.image or self.rollback_sha != self.sha:
+                raise ReleaseError("storage_only_identity_invalid")
+            try:
+                journal = json.loads(self.journal.read_text())
+                override = json.loads(self.override.read_text())
+                if (journal.get("schema_version") != 1 or journal.get("status") != "released"
+                        or journal.get("sha") != self.sha or journal.get("image") != self.image
+                        or override != self.override_content(self.image, self.sha)):
+                    raise ValueError()
+                protected = {journal["rollback_image"], journal["previous_image"]}
+                if not all(isinstance(image, str) and DIGEST.fullmatch(image) for image in protected):
+                    raise ValueError()
+            except (OSError, ValueError, KeyError, TypeError, AttributeError):
+                raise ReleaseError("storage_only_identity_invalid") from None
+            self.inspect()
+            self.verify(self.app_id, self.image, self.sha)
+            report = self.retention_report("storage_maintained", protected)
+            self.verify(self.app_id, self.image, self.sha)
+            return report
 
     def apply(self):
         with release_lock(self.root):
@@ -455,16 +489,7 @@ class Release:
                         self.state("rollback_failed")
                         raise ReleaseError("rollback_failed") from None
 
-            report = {"status": "released", "sha": self.sha, "image": self.image}
-            if self.retention_enabled:
-                try:
-                    report["storage_retention"] = self.post_publication_retention()
-                except (Exception, KeyboardInterrupt):
-                    report["storage_retention"] = {"status": "attention", "images_removed": 0,
-                                                   "verified_full_backups": 0, "full_backup_candidates": 0,
-                                                   "full_backup_candidate_bytes": 0,
-                                                   "full_backups_removed": 0, "full_backups_removed_bytes": 0}
-            return report
+            return self.retention_report("released")
 
 
 class SafeParser(argparse.ArgumentParser):
@@ -477,6 +502,7 @@ def main():
     for name in ("sha", "image", "rollback-sha", "rollback-image", "compose-sha256", "expected-current-image"):
         parser.add_argument("--" + name, required=True)
     parser.add_argument("--allowed-proxy-image", default=None)
+    parser.add_argument("--storage-only", action="store_true")
     def interrupted(_signum, _frame):
         # Once recovery begins, a repeated signal must not interrupt it again.
         for sig in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP):
@@ -485,13 +511,16 @@ def main():
     for sig in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP):
         signal.signal(sig, interrupted)
     try:
-        report = Release(**vars(parser.parse_args()), retention_enabled=True).apply()
+        options = vars(parser.parse_args())
+        storage_only = options.pop("storage_only")
+        release = Release(**options, retention_enabled=True)
+        report = release.maintain_storage() if storage_only else release.apply()
     except ReleaseError as error:
         report = {"status": "blocked", "reason": str(error)}
     except BaseException:
         report = {"status": "blocked", "reason": "release_executor_failed"}
     print(json.dumps(report, sort_keys=True, separators=(",", ":")))
-    return 0 if report["status"] == "released" else 1
+    return 0 if report["status"] in ("released", "storage_maintained") else 1
 
 
 if __name__ == "__main__":
