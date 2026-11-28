@@ -8,9 +8,9 @@
     "base_sha": "57d38ef98578c1a3a3d7b8281e98b0cd4f1731b5",
     "branch": "codex/vocabulary-training/lesson-dictionary",
     "head_sha": "d2d6b5e2c33bcedeb744a4554790c85ceb6644d4",
-    "next": "Проверить точный URI Alice Flash и дождаться CI и независимого ревью.",
+    "next": "CI и ревью прошли. Автопроверка отклонила merge с последующим CD. Нужны явное разрешение владельца и штатный выпуск.",
     "pr": 94,
-    "stage": "review",
+    "stage": "blocked",
     "test_run": 46127304408
   },
   "release": null,
