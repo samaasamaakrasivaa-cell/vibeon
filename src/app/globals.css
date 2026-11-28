@@ -2812,60 +2812,76 @@ details.prblock[open] .prchev { transform: rotate(180deg); }
 .hintcard { display: flex; gap: 12px; align-items: flex-start; }
 .hintcard > .i { color: var(--accent); flex: none; margin-top: 2px; }
 /* Главная ученика */
-.student-home-clock {
-  display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px 12px;
-  padding: 6px 12px; border: 1px solid var(--sep); border-radius: 999px;
-  color: var(--text2); font-size: 13px; font-variant-numeric: tabular-nums;
-}
-.student-home-clock b { color: var(--text); }
-.student-lesson-card { padding: 16px 18px; }
+.student-greeting-clock { max-width: 100%; }
 .student-lesson-heading {
-  grid-column: 1 / -1; display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 12px;
-  padding-bottom: 9px; border-bottom: 1px solid var(--sep);
+  margin: 0 0 12px; font-size: clamp(19px, 3vw, 24px); line-height: 1.25; letter-spacing: -.025em;
 }
-.student-lesson-heading h3, .student-lesson-empty h3, .student-home-task h3 {
-  margin: 0; font-size: 18px; line-height: 1.25; letter-spacing: -.015em;
+.tl.student-lesson-grid {
+  grid-template-columns: minmax(94px, 110px) minmax(0, 1fr) minmax(180px, max-content);
+  align-items: start; gap: 14px 16px;
 }
-.student-lesson-card .tl-main { overflow-wrap: anywhere; }
-.student-lesson-card .tl-time, .student-lesson-card .tl-act { padding-top: 0; }
-.student-lesson-card .tl-act { width: auto; min-width: 0; }
-.student-lesson-card .tl-quick { flex-wrap: wrap; }
-.student-lesson-card .tl-who .avatar { flex: none; }
-.student-lesson-countdown { font-size: 13px; color: var(--text2); font-variant-numeric: tabular-nums; }
-.student-lesson-countdown b { color: var(--text); }
-.student-lesson-no-call { display: flex; align-items: center; gap: 6px; justify-content: center; margin: 2px 0; }
-.student-lesson-no-call .i, .student-lesson-homework .i { flex: none; }
-.student-lesson-homework {
-  grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
-  gap: 10px 14px; padding-top: 10px; border-top: 1px solid var(--sep);
-}
-.student-lesson-homework .i { margin-top: 3px; color: var(--accent-text); }
-.student-lesson-empty { display: grid; gap: 6px; padding: 16px 18px; background: var(--surface2); border-radius: 16px; }
-.student-lesson-empty .student-lesson-homework { margin-top: 6px; }
+.student-lesson-grid .tl-main { overflow-wrap: anywhere; }
+.student-lesson-grid .tl-time, .student-lesson-grid .tl-act { padding-top: 3px; }
+.student-lesson-grid .tl-act { width: auto; min-width: 0; }
+.student-lesson-grid .tl-quick { flex-wrap: wrap; }
+.student-lesson-grid .tl-who .avatar { flex: none; }
+.student-lesson-date { margin-bottom: 5px; font-weight: 600; font-size: 12px; color: var(--text2); }
+.student-lesson-countdown { display: block; margin-top: 8px; font-size: 12px; color: var(--text2); font-variant-numeric: tabular-nums; }
+.student-lesson-countdown b { font-size: inherit; color: var(--text); }
+.student-lesson-grid .student-lesson-note { margin-left: 0; }
+.student-lesson-note span { white-space: pre-line; }
+.student-lesson-no-call { display: flex; align-items: center; gap: 6px; justify-content: center; margin: 3px 0; max-width: 225px; }
+.student-lesson-no-call .i, .student-homework-empty .i { flex: none; }
+.student-lesson-homework { display: grid; gap: 6px; justify-items: start; margin-top: 13px; }
+.student-homework-progress { width: min(100%, 270px); display: grid; gap: 4px; font-size: 13px; color: var(--text2); }
+.student-homework-progress progress { width: 100%; height: 6px; accent-color: var(--accent); }
+.student-homework-empty { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; }
+.student-homework-empty .i { margin-top: 3px; color: var(--accent-text); }
+.student-homework-empty p { margin: 2px 0 4px; color: var(--text2); }
+.student-previous-homework { display: flex; flex-wrap: wrap; gap: 4px 10px; margin-top: 9px; font-size: 13px; color: var(--text2); }
+.student-lesson-empty { padding: 16px 18px; background: var(--surface2); border-radius: 16px; }
+
+.student-home-activities { display: grid; margin-block: 20px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 310px), 1fr)); gap: 14px; }
 .student-home-task {
-  --home-task-color: var(--accent-text);
-  --home-task-bg: var(--accent-bg);
-  padding: 15px 18px; border-radius: 16px; border: 1px solid var(--sep);
-  background: color-mix(in srgb, var(--home-task-bg) 72%, var(--surface));
+  --student-task-accent: #7842d0;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 12px;
+  min-width: 0; padding: clamp(16px, 2.4vw, 23px); border-radius: 22px;
+  border: 1px solid var(--sep); background: var(--surface);
 }
-.student-home-placement { --home-task-color: var(--violet); --home-task-bg: var(--violet-bg); }
-.student-home-task-head { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 8px 12px; }
+.student-home-placement { --student-task-accent: #006ad7; }
+.student-home-placement-active {
+  color: #fff; border-color: transparent;
+  background: radial-gradient(110% 140% at 0 0, #007fba 0%, transparent 54%), linear-gradient(125deg, #0064c3, #3647ca 54%, #6734ae);
+}
+.student-home-placement-active .muted { color: rgba(255,255,255,.92); }
+.student-home-task-head { display: flex; gap: 13px; align-items: center; }
+.student-home-task h3 { margin: 0; font-size: clamp(18px, 2.2vw, 22px); line-height: 1.2; letter-spacing: -.025em; }
 .student-home-task-icon {
-  display: grid; place-items: center; width: 42px; height: 42px; border-radius: 13px;
-  color: var(--home-task-color); background: var(--surface); box-shadow: inset 0 0 0 1px var(--sep);
+  display: grid; place-items: center; flex: none; width: 48px; height: 48px; border-radius: 14px;
+  color: #fff; background: var(--student-task-accent);
 }
-.student-home-task-body { margin-top: 11px; font-size: 14px; }
-.student-home-task .btn, .student-lesson-homework .btn { height: auto; min-height: 34px; white-space: normal; text-align: center; }
+.student-home-placement-active .student-home-task-icon { background: rgba(255,255,255,.16); box-shadow: inset 0 0 0 1px rgba(255,255,255,.34); }
+.student-home-task-body { width: 100%; font-size: 14px; }
+.student-home-task > .btn { margin-top: auto; }
+.student-home-task .btn, .student-lesson-homework .btn { height: auto; min-height: 36px; padding-block: 7px; white-space: normal; text-align: center; }
 .student-home-word-count { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 12px; margin-bottom: 6px; }
-@media (max-width: 900px) {
-  .tl.student-lesson-card { grid-template-columns: 56px minmax(0, 1fr); }
-  .student-lesson-card .tl-act { grid-column: 1 / -1; }
-  .student-lesson-card .tl-what { margin-left: 0; }
+@media (max-width: 800px) {
+  .tl.student-lesson-grid { grid-template-columns: 86px minmax(0, 1fr); }
+  .student-lesson-grid .tl-act { grid-column: 1 / -1; }
+  .student-lesson-grid .student-lesson-no-call { max-width: none; }
+  .student-lesson-grid .tl-quick { justify-content: flex-start; }
 }
-@media (max-width: 600px) {
-  .student-home-task, .student-lesson-card, .student-lesson-empty { padding: 13px; }
-  .student-home-task-head { grid-template-columns: auto minmax(0, 1fr); }
-  .student-home-task-head .btn { grid-column: 1 / -1; justify-content: center; }
+@media (max-width: 480px) {
+  .student-greeting-clock > div > div { padding-inline: 13px; }
+  .student-greeting-clock > div > div:last-child > span:first-child { font-size: clamp(29px, 9vw, 40px); }
+  .tl.student-lesson-grid { padding: 12px; gap: 12px; grid-template-columns: minmax(0, 1fr); }
+  .student-lesson-grid .student-lesson-time { flex-flow: row wrap; align-items: baseline; gap: 4px 9px; }
+  .student-lesson-grid .student-lesson-time > * { margin: 0; }
+  .student-lesson-time > span::before { content: "–"; margin-left: -4px; margin-right: 5px; }
+  .student-lesson-grid .student-lesson-time > .student-lesson-countdown { flex-basis: 100%; }
+  .student-lesson-grid .tl-time b { font-size: 17px; }
+  .student-lesson-grid .student-lesson-countdown b { font-size: inherit; }
+  .student-lesson-homework .btn, .student-home-task > .btn { width: 100%; justify-content: center; }
 }
 .feedhead { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
 /* Проверка ИИ (эссе, открытый ответ, запись): текст с подсветкой, исправленная версия, правки, сравнение моделей */
