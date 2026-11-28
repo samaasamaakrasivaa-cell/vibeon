@@ -29,6 +29,22 @@ jobs:
           done
           printf '%s\n' 'The cat sleeps on the sofa. The teacher checks the exercises.' | python -m piper -m "$RUNNER_TEMP/en_US-lessac-medium.onnx" -f "$RUNNER_TEMP/en.wav"
           printf '%s\n' 'Мне нравится читать книги. На уроке мы повторили прошедшее время.' | python -m piper -m "$RUNNER_TEMP/ru_RU-irina-medium.onnx" -f "$RUNNER_TEMP/ru.wav"
+          python - <<'PYTHON'
+          import os, wave
+          import numpy as np
+          for lang in ("en", "ru"):
+              root = os.environ["RUNNER_TEMP"]
+              with wave.open(root + "/" + lang + ".wav") as file:
+                  assert file.getnchannels() == 1 and file.getsampwidth() == 2
+                  raw = np.frombuffer(file.readframes(file.getnframes()), dtype="<i2")
+                  duration = len(raw) / file.getframerate()
+                  interpolated = np.interp(np.arange(round(duration * 48000)) / 48000,
+                    np.arange(len(raw)) / file.getframerate(), raw).astype("<i2")
+              samples = np.pad(interpolated, (48000, 72000))
+              with wave.open(root + "/" + lang + "-mic.wav", "wb") as file:
+                  file.setnchannels(1); file.setsampwidth(2); file.setframerate(48000)
+                  file.writeframes(samples.tobytes())
+          PYTHON
           for item in en:vosk-model-small-en-us-0.15 ru:vosk-model-small-ru-0.22; do
             lang="${item%%:*}"
             model="${item#*:}"

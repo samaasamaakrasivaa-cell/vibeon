@@ -69,11 +69,29 @@ async function main() {
     ["/ru.wav", path.join(scratch, "ru.wav")],
   ]);
   let outgoing = 0;
-  let writes = 0;
-  const server = http.createServer((req, res) => {
-    if (req.method !== "GET") {
-      writes++;
-      return res.writeHead(405).end();
+  const saves = [];
+  const server = http.createServer(async (req, res) => {
+    if (req.method === "POST" && req.url === "/mic") {
+      const chunks = [];
+      for await (const data of req) chunks.push(data);
+      const form = new URLSearchParams(Buffer.concat(chunks).toString("utf8"));
+      assert.deepEqual(Array.from(form.keys()), ["observation"]);
+      saves.push(form.get("observation"));
+      return res.end("Saved");
+    }
+    if (req.method !== "GET") return res.writeHead(405).end();
+    const url = new URL(req.url, origin);
+    if (url.pathname === "/pcm-worklet.js" || url.pathname === "/vosk-mic-client.js") {
+      res.setHeader("Content-Type", "application/javascript");
+      return res.end(fs.readFileSync(path.join(__dirname, url.pathname.slice(1))));
+    }
+    if (url.pathname === "/mic") {
+      res.setHeader("Content-Type", "text/html;charset=utf-8");
+      res.setHeader("Content-Security-Policy", "default-src 'none'; script-src 'self'; connect-src 'self'; worker-src 'self'; form-action 'self'");
+      return res.end('<!doctype html><html lang="en"><script src="/vosk.js" defer></script><script src="/vosk-mic-client.js" defer></script>' +
+        '<form method="post" action="/mic"><label for="note">Observation</label><textarea id="note" name="observation">Manual prefix</textarea>' +
+        '<button type="button" id="start">Start</button><button type="button" id="stop" disabled>Stop</button>' +
+        '<p role="status" id="status"></p><button type="submit">Save</button></form></html>');
     }
     if (req.url === "/vosk.js" || req.url === "/vosk-worker.js") {
       res.setHeader("Content-Type", "application/javascript");
@@ -122,7 +140,35 @@ async function main() {
       } finally { await page.close(); }
     }
     assert.equal(outgoing, 0);
-    assert.equal(writes, 0);
+    assert.equal(saves.length, 0);
+    await browser.close();
+    for (const [language, expected, speechMs] of [
+      ["en", /cat|sleeps|teacher|exercises/i, 7000],
+      ["ru", /читать|книг|урок|время/i, 8000],
+    ]) {
+      browser = await chromium.launch({ executablePath: "/usr/bin/google-chrome", args: ["--no-sandbox",
+        "--use-fake-ui-for-media-stream", "--use-fake-device-for-media-stream",
+        "--use-file-for-fake-audio-capture=" + path.join(scratch, language + "-mic.wav")] });
+      const page = await browser.newPage({ permissions: ["microphone"] });
+      await page.goto(origin + "/mic?lang=" + language);
+      const previous = saves.length;
+      await page.getByRole("button", { name: "Start", exact: true }).click();
+      await page.getByText("Recording", { exact: true }).waitFor({ timeout: 30_000 });
+      await page.waitForTimeout(speechMs);
+      assert.equal(saves.length, previous);
+      await page.getByRole("button", { name: "Stop", exact: true }).click();
+      await page.getByText("Ready", { exact: true }).waitFor({ timeout: 15_000 });
+      const value = await page.getByLabel("Observation").inputValue();
+      assert.match(value, expected);
+      assert.ok(value.startsWith("Manual prefix "));
+      assert.equal(saves.length, previous);
+      const request = page.waitForResponse(response => response.request().method() === "POST" && response.url() === origin + "/mic");
+      await page.getByRole("button", { name: "Save", exact: true }).click();
+      assert.equal((await request).status(), 200);
+      assert.equal(saves.at(-1), value);
+      console.log(language, "virtual microphone through AudioWorklet appended to the draft and reached the server only after explicit save; transcript:", value);
+      await browser.close();
+    }
     console.log("Both languages recognized. Loopback only, no outgoing browser requests and no audio uploads.");
   } finally {
     await browser?.close();
