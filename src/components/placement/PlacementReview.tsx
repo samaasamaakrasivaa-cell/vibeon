@@ -29,6 +29,7 @@ export type ReviewProps = {
   parts?: string[]; dates?: Record<string, string>; // разделы теста и даты, когда каждый пройден
   base?: { sub: string; from: "test" | "teacher" } | null; // грамматику не проверяли: от какого уровня шли остальные разделы
   who?: string; reveal?: string[]; // имя ученика (для PDF таблицы и списков) и скрипты, открытые ученику
+  assessment?: { writing: React.ReactNode; speaking: React.ReactNode };
 };
 const nums = (m?: Record<string, unknown>): Marks => Object.fromEntries(Object.entries(m ?? {}).filter(([, v]) => typeof v === "number")) as Marks;
 const prevLevel = (l: string) => PL_LEVELS[Math.max(0, PL_LEVELS.indexOf(l as PLevel) - 1)];
@@ -341,6 +342,7 @@ export function PlacementReview(p: ReviewProps) {
           <p className="small muted m-0">{t("pr.wsTaskLevel", { l: p.d.writing.level })}</p>
           <p className="m-0">{p.d.writing.prompt_en}</p>
           <div className="tpassage plpassage">{p.d.writing.text || <span className="muted">{t("pl.noAnswer")}</span>}</div>
+          {p.assessment?.writing}
           {aiPanel("writing")}
           <div className="small muted">{t("pl.wordsOf", { n: p.d.writing.text.trim() ? p.d.writing.text.trim().split(/\s+/).length : 0, a: p.d.writing.min, b: p.d.writing.max })}</div>
           {p.d.writing.points.length > 0 && (
@@ -370,6 +372,7 @@ export function PlacementReview(p: ReviewProps) {
             </div>
           ))}
           <details><summary className="small">{t("pl.expects")}</summary><ul className="small mt-2">{p.d.speaking.expects.map((e) => <li key={e}>{e}</li>)}</ul></details>
+          {p.assessment?.speaking}
           {aiPanel("speaking")}
           {rubric(t("pl.part.speaking"), RS.speaking, s, setS, sTask, p.d.speaking.level, "speaking")}
           {noteBox("pl-snote", sNote, setSNote)}
