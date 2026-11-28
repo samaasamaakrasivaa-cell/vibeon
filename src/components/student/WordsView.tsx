@@ -284,7 +284,7 @@ function WordList({ words, accent }: { words: W[]; accent: string }) {
   const [lookingUp, setLookingUp] = useState(false);
   const lookupRequest = useRef(0);
   const [notice, setNotice] = useState<"wd.wordExists" | "wd.translationUpdated" | "wd.wordSaveError" | null>(null);
-  const [confirmation, setConfirmation] = useState<Extract<Awaited<ReturnType<typeof addMyWord>>, { status: "confirm" }> | null>(null);
+  const [confirmation, setConfirmation] = useState<(Extract<Awaited<ReturnType<typeof addMyWord>>, { status: "confirm" }> & { preserveDraft: boolean }) | null>(null);
   const [pending, start] = useTransition();
   const levels = [t("cls.lv0"), t("cls.lv1"), t("cls.lv2"), t("cls.lv3"), t("cls.lv4")];
   const [word, translation = "", example = ""] = q.split(/\s+[—–-]\s+/);
@@ -309,20 +309,20 @@ function WordList({ words, accent }: { words: W[]; accent: string }) {
     }
   };
 
-  const saveWord = (word: string, translation: string, example: string, existing?: NonNullable<typeof confirmation>["existing"], suppliedDefinition?: string) => {
+  const saveWord = (word: string, translation: string, example: string, existing?: NonNullable<typeof confirmation>["existing"], suppliedDefinition?: string, preserveDraft = false) => {
     setNotice(null);
     start(async () => {
       try {
         const result = await addMyWord(word, translation, example, { definition: suppliedDefinition, confirmation: existing });
         if (result.status === "confirm") {
-          setConfirmation(result);
+          setConfirmation({ ...result, preserveDraft });
           return;
         }
         setConfirmation(null);
         if (result.status === "existing") setNotice("wd.wordExists");
         if (result.status === "updated") setNotice("wd.translationUpdated");
         if (result.status === "empty" || result.status === "changed") setNotice("wd.wordSaveError");
-        if (result.status === "added" || result.status === "updated") {
+        if (!preserveDraft && (result.status === "added" || result.status === "updated")) {
           setQ("");
           setDefinition("");
           setShowDefinition(false);
@@ -390,7 +390,7 @@ function WordList({ words, accent }: { words: W[]; accent: string }) {
             {current && <p className="small muted mt-2 mb-0 break-words">{t("wd.currentTranslation", { value: current })}</p>}
             <div className="actions">
               <button type="button" className="btn secondary" disabled={pending} onClick={() => setConfirmation(null)}>{t("common.cancel")}</button>
-              <button type="button" className="btn primary" disabled={pending} onClick={() => saveWord(confirmation.existing.word, confirmation.value, "", confirmation.existing)}>
+              <button type="button" className="btn primary" disabled={pending} onClick={() => saveWord(confirmation.existing.word, confirmation.value, "", confirmation.existing, undefined, confirmation.preserveDraft)}>
                 {t("wd.updateTranslation")}
               </button>
             </div>
@@ -401,7 +401,7 @@ function WordList({ words, accent }: { words: W[]; accent: string }) {
       {words.length > 0 && <div className={styles.list}>
         {words.map((w) => (
           <PersonalWordCard key={w.id} word={w} accent={accent} level={levels[w.level]}
-            onAddSynonym={(synonym, meaning) => { if (!pending) saveWord(synonym, meaning, ""); }}
+            onAddSynonym={(synonym, meaning) => { if (!pending) saveWord(synonym, meaning, "", undefined, undefined, true); }}
             onDelete={() => confirm(t("wd.delQ", { w: w.word })) && start(async () => { await deleteMyWord(w.id); })} />
         ))}
       </div>}
