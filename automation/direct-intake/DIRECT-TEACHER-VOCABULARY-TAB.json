@@ -5,13 +5,13 @@
   "key": "DIRECT-TEACHER-VOCABULARY-TAB",
   "owner": "teacher",
   "progress": {
-    "base_sha": "f87d8b6f0993b79819ba8d568d0051585f98ec3e",
+    "base_sha": "5d07042533faee38382ddf4097b7e83c89ef6dd7",
     "branch": "codex/teacher/student-vocabulary-tab",
-    "head_sha": "a765e447a09e2fd39f5cbdbf3de93e8033ca6484",
-    "next": "Сборка и Chromium на синтетике пройдены. Идут независимое ревью и CI, затем согласовать обычную выкладку после восстановления CD.",
+    "head_sha": "a025431473b33f0726da1b9ff2fd312ae33509ef",
+    "next": "Обновлена обязательная проверка вкладки, сборка и локальный Chromium прошли. Ждём ревью, CI и подтверждения восстановления обычного CD.",
     "pr": 119,
     "stage": "review",
-    "test_run": 46151667273
+    "test_run": 46152078797
   },
   "release": null,
   "source": "direct",
