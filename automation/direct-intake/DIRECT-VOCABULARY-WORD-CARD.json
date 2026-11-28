@@ -14,7 +14,25 @@
     "stage": "publication",
     "test_run": 46130707159
   },
-  "release": null,
+  "release": {
+    "ci": {
+      "result": "success",
+      "run": 46130707159,
+      "sha": "82450c8e5566a2ae1a506bfcf3ae41ab3aabb479"
+    },
+    "delivery": {
+      "result": "success",
+      "run": 46131341612,
+      "sha": "a3673f8bf137eb165bf6fe5e311baf531bb30a2f"
+    },
+    "owner_note": "Для владельца: Словарь и тренировки — карточка в «Моих словах» дополняется транскрипцией, английской дефиницией и готовым примером, сохраняя фразу ученика.",
+    "review": {
+      "comment": 7237291370,
+      "result": "success",
+      "sha": "82450c8e5566a2ae1a506bfcf3ae41ab3aabb479"
+    },
+    "site_sha": "a3673f8bf137eb165bf6fe5e311baf531bb30a2f"
+  },
   "source": "direct",
   "version": 1
 }
