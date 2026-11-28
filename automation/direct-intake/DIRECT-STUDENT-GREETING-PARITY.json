@@ -1,10 +1,15 @@
 {
   "claim_id": "7ccc5d73b4a547359c1f047e1b92b8e5",
   "handoff": null,
-  "issue": null,
+  "issue": 112,
   "key": "DIRECT-STUDENT-GREETING-PARITY",
   "owner": "student",
-  "progress": null,
+  "progress": {
+    "base_sha": "2044f77648fcf73701fe5f2232817fb817bcec28",
+    "branch": "codex/student/greeting-parity",
+    "next": "Вынести текущую шапку преподавателя в общий компонент и проверить совпадение на двух ролях.",
+    "stage": "implementation"
+  },
   "release": null,
   "source": "direct",
   "version": 1
