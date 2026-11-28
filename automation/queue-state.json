@@ -13,14 +13,14 @@
   "lease": {
     "token": "2896543509264a3bba204a5549a89f74",
     "started_at": "2026-11-28T13:01:35.051744Z",
-    "expires_at": "2026-11-28T16:03:03.404267Z"
+    "expires_at": "2026-11-28T16:03:34.996042Z"
   },
   "checkpoint": {
     "issue": 25,
-    "stage": "mark_ready",
+    "stage": "merge_pending",
     "branch": "codex/vocabulary/voc-09",
     "base_sha": "348c4a99fd27cbc8ee9ac813d2cdc07b7abdbc30",
-    "next": "PR evidence updated and read back, no automatic issue close. Mark draft ready once; recheck review status, PR head, main and policy, then merge with expected head. No duplicate manual review.",
+    "next": "Draft false read back. Exact-head review completed no findings, all 3 checks success; main protected=false, rulesets empty, main adds 3 disjoint files. Merge PR 54 with expected exact head; reconcile result before any repeat; then CD-01.",
     "head_sha": "9d3cb5ebcc719c4051fdc6bf56fb9146dfaf8b29",
     "pr": 54,
     "review_request_comment_id": 7238969762,
