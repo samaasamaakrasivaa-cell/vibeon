@@ -8,9 +8,10 @@
     "base_sha": "ff7dc26aa22c6626b408a58f2dfebc5a0e9febbf",
     "branch": "codex/teacher/courses-tests-navigation",
     "head_sha": "d406fb26aa4cf5d51db8f257d1c21d0b763ca89b",
-    "next": "Точные CI и ревью зелёные. Совместное дерево с #83 и #86 проверено. Ждём публичного результата уже запущенного выпуска #83 по общей очереди.",
+    "merge_sha": "8824b7d9246986d23a3e6b92c2fe413aeb7ca104",
+    "next": "Обе правки объединены, итоговое дерево совпадает с совместной проверкой. Ожидается результат общего CD.",
     "pr": 85,
-    "stage": "integration",
+    "stage": "publication",
     "test_run": 46121790784
   },
   "release": null,
