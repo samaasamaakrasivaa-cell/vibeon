@@ -1,0 +1,16 @@
+{
+  "claim_id": "92712f3c7e6948b094e1e3971b412c33",
+  "handoff": null,
+  "issue": 32,
+  "key": "ISSUE-32",
+  "owner": "placement-test",
+  "progress": {
+    "base_sha": "a3673f8bf137eb165bf6fe5e311baf531bb30a2f",
+    "branch": "codex/placement/pt-08-ws-review",
+    "next": "Изолированный контракт и синтетические проверки для AI & Quality.",
+    "stage": "implementation"
+  },
+  "release": null,
+  "source": "direct",
+  "version": 1
+}
