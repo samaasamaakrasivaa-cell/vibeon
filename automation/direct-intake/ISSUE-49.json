@@ -7,8 +7,8 @@
   "progress": {
     "base_sha": "6b57ad51f4d7d48fe661461f9ab52b2d1fc18098",
     "branch": "codex/vocabulary-training/card-example-synonyms",
-    "head_sha": "7dad3d8cd4e1a429987fd2ad5288d832ce80053c",
-    "next": "Дождаться независимого ревью и CI; повторить браузерную проверку точного SHA",
+    "head_sha": "950a2d84ae2496ae6181325e0423339bf9a04ed4",
+    "next": "Перепроверить общий запрос при двух вкладках и повтор после сбоя; дождаться нового CI",
     "pr": 126,
     "stage": "review"
   },
