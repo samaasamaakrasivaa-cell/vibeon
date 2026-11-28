@@ -62,6 +62,15 @@ export type StudentVocabularyActivity = {
   practiceDays: { day: string; count: number }[];
 };
 
+function practiceDay(now: Date, timezone: string) {
+  try {
+    return isoDay(now, timezone);
+  } catch (error) {
+    if (!(error instanceof RangeError)) throw error;
+    return isoDay(now, "Europe/Moscow");
+  }
+}
+
 /** Practice days use the student's calendar, just as practiceResult records them. */
 export async function activeTeacherVocabulary(teacherId: string, now = new Date()): Promise<StudentVocabularyActivity[]> {
   const scope = { teacherId, status: "ACTIVE" } as const;
@@ -74,7 +83,7 @@ export async function activeTeacherVocabulary(teacherId: string, now = new Date(
     if (students.length === 0) return [];
 
     const windows = students.map(({ id, name, lastName, timezone }) => {
-      const today = isoDay(now, timezone);
+      const today = practiceDay(now, timezone);
       const days = Array.from({ length: 14 }, (_, i) => addDaysIso(today, i - 13));
       return { id, name, lastName, days };
     });
