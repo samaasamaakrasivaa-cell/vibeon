@@ -1,0 +1,16 @@
+{
+  "claim_id": "8454899279a547b09fb2e8cedc6d1ba5",
+  "handoff": null,
+  "issue": 37,
+  "key": "ISSUE-37",
+  "owner": "placement-test",
+  "progress": {
+    "base_sha": "2044f77648fcf73701fe5f2232817fb817bcec28",
+    "branch": "codex/placement/pt-12-roadmap-result",
+    "next": "Изолированная запись подтверждённого снимка и синтетическая регрессия.",
+    "stage": "implementation"
+  },
+  "release": null,
+  "source": "direct",
+  "version": 1
+}
