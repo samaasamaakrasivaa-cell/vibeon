@@ -14,7 +14,25 @@
     "stage": "publication",
     "test_run": 46124982925
   },
-  "release": null,
+  "release": {
+    "ci": {
+      "result": "success",
+      "run": 46124982925,
+      "sha": "5a96e9fd46404ad6f9ff2500fa2a1c123b535b67"
+    },
+    "delivery": {
+      "result": "success",
+      "run": 46125784907,
+      "sha": "57d38ef98578c1a3a3d7b8281e98b0cd4f1731b5"
+    },
+    "owner_note": "Для владельца: Кабинет преподавателя и расписание — в «Что нового» можно скрыть уведомление крестиком, а «Открыть», «Проверить» и другие действия выглядят как кнопки.",
+    "review": {
+      "comment": 7236406531,
+      "result": "success",
+      "sha": "5a96e9fd46404ad6f9ff2500fa2a1c123b535b67"
+    },
+    "site_sha": "57d38ef98578c1a3a3d7b8281e98b0cd4f1731b5"
+  },
   "source": "direct",
   "version": 1
 }
