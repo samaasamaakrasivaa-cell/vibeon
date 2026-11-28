@@ -446,9 +446,28 @@ details.how[open] summary { margin-bottom: 6px; }
 .nrow.unread { background: var(--accent-bg); }
 .nrow .grow { flex: 1; min-width: 0; }
 .nrow.done .t { color: var(--text2); font-weight: 500; }
-.nrow-dismissible { position: relative; padding-inline-end: 52px; }
-.nrow-dismissible .t { overflow-wrap: anywhere; }
-.nrow-dismissible .ndismiss { position: absolute; inset-block-start: 8px; inset-inline-end: 8px; }
+.nrow-dismissible {
+  --control-height: 36px;
+  --title-line-height: 1.375rem;
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) clamp(6rem, 24vw, 10rem) var(--control-height);
+  align-items: start;
+  gap: clamp(6px, 1.5vw, 12px);
+  padding-inline: clamp(8px, 2.5vw, 14px);
+}
+.nrow-dismissible > .check { margin-block-start: calc((var(--control-height) - 20px) / 2); }
+.nrow-dismissible > .grow { padding-block-start: calc((var(--control-height) - var(--title-line-height)) / 2); }
+.nrow-dismissible .t { line-height: var(--title-line-height); overflow-wrap: anywhere; }
+.nrow-dismissible > .nact.btn {
+  grid-column: 3;
+  min-height: var(--control-height);
+  padding-inline: 6px;
+  gap: 4px;
+  line-height: 1.15;
+  text-align: center;
+  white-space: normal;
+}
+.nrow-dismissible > .ndismiss { grid-column: 4; }
 }
 
 /* ───────── Задания (этап 4) ───────── */
@@ -993,12 +1012,11 @@ select.iedit { cursor: pointer; }
 /* история уроков: граница между ближайшими и прошедшими */
 .hist .row.histsep { border-top: 2px solid var(--sep); margin-top: 6px; padding-top: 14px; }
 
-/* «Что нового» на телефоне: действие — под текстом, текст не сжимается в столбик */
+/* «Что нового» у ученика на телефоне: действие располагается под текстом */
 @media (max-width: 560px) {
-  .nrow { flex-wrap: wrap; }
-  .nrow > .grow { flex-basis: calc(100% - 40px); }
-  .nrow > .nact { margin-left: 34px; }
-  .nrow-dismissible > .nact { max-width: calc(100% - 34px); white-space: normal; text-align: center; }
+  .nrow:not(.nrow-dismissible) { flex-wrap: wrap; }
+  .nrow:not(.nrow-dismissible) > .grow { flex-basis: calc(100% - 40px); }
+  .nrow:not(.nrow-dismissible) > .nact { margin-left: 34px; }
 }
 
 /* юридические страницы */
