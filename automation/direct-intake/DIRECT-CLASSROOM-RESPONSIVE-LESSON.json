@@ -8,9 +8,10 @@
     "base_sha": "2044f77648fcf73701fe5f2232817fb817bcec28",
     "branch": "codex/live-classroom/responsive-lesson",
     "head_sha": "990e9bf9087c5aebfacdb84f7053e52e3922b6fd",
-    "next": "PR №109 проверен на базе №114. Дождаться CI точного SHA и успешного CD текущей совместимой main.",
+    "merge_sha": "7aa0781b4f6046a2c1184426b6c76a9c9aa9d746",
+    "next": "PR №109 объединён, проверить публикуемый SHA и публичный health через штатный CD.",
     "pr": 109,
-    "stage": "review",
+    "stage": "publication",
     "test_run": 46152062683
   },
   "release": null,
