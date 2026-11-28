@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Synthetic failure/recovery contracts; never connects to Docker or production."""
+import datetime
 import importlib.util
 import hashlib
 import json
@@ -36,6 +37,7 @@ class FakeRelease(release_apply.Release):
             raise release_apply.ReleaseError("migration_set_mismatch")
         self.app_id, self.db_id, self.current_image = "1" * 64, "2" * 64, PREVIOUS
         self.migrations = MIGRATIONS
+        self.schema_sha256 = "a" * 64
         self.config_before = {"docker-compose.prod.yml": CONFIG, ".env": "9" * 64}
 
     def config_fingerprint(self):
@@ -94,6 +96,88 @@ class ReleaseTest(unittest.TestCase):
         self.assertEqual(override["services"]["app"]["image"], CANDIDATE)
         self.assertEqual(override["services"]["app"]["entrypoint"], ["node"])
         self.assertEqual(override["services"]["app"]["command"], ["server.js"])
+
+    def test_retention_failure_does_not_rollback_a_published_release(self):
+        self.release.retention_enabled = True
+        with patch.object(self.release, "post_publication_retention", side_effect=OSError):
+            report = self.release.apply()
+        self.assertEqual(report["status"], "released")
+        self.assertEqual(report["storage_retention"]["status"], "attention")
+        self.assertEqual(json.loads(self.release.journal.read_text())["status"], "released")
+        self.assertNotIn("switch_fallback", self.release.events)
+
+    def prepare_storage_only(self, status="released"):
+        self.release.image = self.release.rollback_image = PREVIOUS
+        self.release.rollback_sha = SHA
+        self.release.retention_enabled = True
+        release_apply.atomic_json(self.release.override, self.release.override_content(PREVIOUS, SHA))
+        release_apply.atomic_json(self.release.journal, {"schema_version": 1, "status": status, "sha": SHA,
+                                  "image": PREVIOUS, "rollback_image": FALLBACK, "previous_image": CANDIDATE,
+                                  "rollback_sha": FALLBACK_SHA})
+        return self.release.journal.read_bytes()
+
+    def test_storage_only_preserves_running_app_journal_and_prior_images(self):
+        before = self.prepare_storage_only()
+        with (patch.object(self.release, "post_publication_retention", return_value={"status": "ok"}) as rotate,
+              patch.object(release_apply, "command", side_effect=lambda args, **_: args[-1].encode()),
+              patch.object(release_apply, "json_command", return_value=FALLBACK_SHA)):
+            report = self.release.maintain_storage()
+        rotate.assert_called_once_with({FALLBACK, CANDIDATE})
+        self.assertEqual(report["status"], "storage_maintained")
+        self.assertEqual(self.release.journal.read_bytes(), before)
+        for event in ("stop", "snapshot", "switch_candidate", "switch_fallback"):
+            self.assertNotIn(event, self.release.events)
+
+    def test_routine_release_uses_verified_daily_copy_without_creating_another(self):
+        self.release.daily_policy = True
+        with patch.object(self.release, "fresh_verified_backup", return_value=True):
+            self.assertEqual(self.release.apply()["status"], "released")
+        self.assertNotIn("snapshot", self.release.events)
+        self.assertNotIn("stop", self.release.events)
+
+    def test_routine_release_stops_before_mutations_without_fresh_daily_copy(self):
+        self.release.daily_policy = True
+        with (patch.object(self.release, "fresh_verified_backup", return_value=None),
+              self.assertRaisesRegex(release_apply.ReleaseError, "daily_backup_not_fresh")):
+            self.release.apply()
+        self.assertEqual(self.release.events, ["inspect"])
+
+    def test_daily_copy_does_not_overwrite_release_state_or_switch(self):
+        before = self.prepare_storage_only()
+        self.release.daily_policy = True
+        with (patch.object(self.release, "verified_running_release", return_value={FALLBACK}),
+              patch.object(self.release, "fresh_verified_backup", return_value=None),
+              patch.object(self.release, "post_publication_retention", return_value={"status": "ok"})):
+            self.release.inspect()
+            report = self.release.daily_full_backup()
+        self.assertEqual(report["status"], "daily_backup_completed")
+        self.assertEqual((self.release.root / "release-state.json").read_bytes(), before)
+        self.assertEqual(json.loads(self.release.daily_journal.read_bytes())["status"], "daily_backup_completed")
+        self.assertIn("snapshot", self.release.events)
+        self.assertNotIn("switch_candidate", self.release.events)
+
+    def test_same_day_daily_copy_does_not_pause_app(self):
+        self.prepare_storage_only()
+        self.release.daily_policy = True
+        with (patch.object(self.release, "verified_running_release", return_value={FALLBACK}),
+              patch.object(self.release, "fresh_verified_backup", return_value=datetime.datetime.now(datetime.timezone.utc))):
+            report = self.release.daily_full_backup()
+        self.assertEqual(report["status"], "daily_backup_already_completed")
+        self.assertNotIn("stop", self.release.events)
+
+    def test_storage_only_rejects_missing_rollback_image(self):
+        self.prepare_storage_only()
+        with (patch.object(release_apply, "command", return_value=b""),
+              patch.object(self.release, "post_publication_retention") as rotate):
+            with self.assertRaisesRegex(release_apply.ReleaseError, "storage_only_identity_invalid"):
+                self.release.maintain_storage()
+        rotate.assert_not_called()
+
+    def test_storage_only_rejects_pending_or_uncertain_release(self):
+        self.prepare_storage_only("unchanged")
+        with self.assertRaisesRegex(release_apply.ReleaseError, "storage_only_identity_invalid"):
+            self.release.maintain_storage()
+        self.assertEqual(self.release.events, [])
 
     def test_backup_failure_restarts_exact_original_before_any_override(self):
         self.release.fail = "backup"
@@ -235,7 +319,10 @@ class ReleaseTest(unittest.TestCase):
         def resume():
             order.append("resume_original")
 
-        with patch.object(release_apply, "command", command), patch.object(self.release, "files_manifest", return_value=manifest), patch.object(self.release, "resume_original", resume):
+        with (patch.object(release_apply, "command", command),
+              patch.object(release_apply.shutil, "disk_usage", return_value=type("Usage", (), {"free": 1024 ** 3})()),
+              patch.object(self.release, "files_manifest", return_value=manifest),
+              patch.object(self.release, "resume_original", resume)):
             release_apply.Release.backup(self.release)
         self.assertEqual(order, ["dump", "uploads_snapshot", "resume_original", "restore"])
         self.assertFalse(self.release.stopped)
