@@ -11,7 +11,7 @@ import { startLessonSession, withLessonLifecycleLock, type LessonFinishedEvent }
 import { inLessonNow } from "@/lib/student/in-lesson";
 import { savePersonalWord, withPersonalWordTransaction } from "@/lib/student/save-personal-word";
 import { rateLimit } from "@/lib/rate-limit";
-import { isAssignedHomeworkTask } from "@/lib/homework-review";
+import { canReviewHomeworkTask, isAssignedHomeworkTask, wasReturnedForRevision } from "@/lib/homework-review";
 import { setHomeworkAssignment } from "@/lib/tasks/homework-selection";
 import { completeNotes, notify, notifyPayer } from "@/lib/notify";
 
@@ -19,6 +19,22 @@ type Board = { pages: Record<string, unknown>[][] };
 const json = (v: unknown) => JSON.parse(JSON.stringify(v)) as Prisma.InputJsonValue;
 const str = (v: unknown, max = 2000) => (typeof v === "string" ? v.slice(0, max) : "");
 const bad = (m = "bad") => NextResponse.json({ ok: false, error: m }, { status: 400 });
+const conflict = () => NextResponse.json({ ok: false, error: "homework revision" }, { status: 409 });
+
+async function writeAnswer(where: Prisma.AnswerWhereUniqueInput, revision: number | null, create: Prisma.AnswerUncheckedCreateInput, update: Prisma.AnswerUncheckedUpdateInput) {
+  try {
+    const data = { ...update, homeworkRevision: { increment: 1 } };
+    if (revision === null) {
+      await db.answer.upsert({ where: { ...where, homeworkRevision: 0 }, create: { ...create, homeworkRevision: 1 }, update: data });
+    } else {
+      await db.answer.update({ where: { ...where, homeworkRevision: revision }, data });
+    }
+    return true;
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && (error.code === "P2002" || error.code === "P2025")) return false;
+    throw error;
+  }
+}
 
 /** Все действия в классе. Тело: { type, ...данные }. Изменения сразу рассылаются участникам. */
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -54,6 +70,14 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       const where = { lessonInstanceId_taskId_studentId: { lessonInstanceId: tg.id, taskId, studentId: sid } };
       return withLock(`answer:${tg.id}:${taskId}`, async () => {
       const prev0 = await db.answer.findUnique({ where });
+      const teacherNote = ["gnotes", "corr", "corrSent", "worked"].includes(key);
+      if (teacherNote && !teacher) return bad("teacher only");
+      if (key === "rounds") return bad("rounds");
+      if (prev0?.previousHomeworkAttemptId && (!teacherNote || prev0.status === "DRAFT")) return conflict();
+      if (prev0?.status === "REVIEWED" && wasReturnedForRevision(prev0.teacherReview) && canReviewHomeworkTask(task.type) && !teacherNote) {
+        const hw = await db.homework.findUnique({ where: { lessonInstanceId: tg.id } });
+        if (hw && isAssignedHomeworkTask(task, hw)) return conflict();
+      }
       // ответа здесь ещё нет, а на прошлом занятии того же урока был — продолжаем с него (копия в это занятие)
       const carried = !prev0 || isEmptyPayload(prev0.payload) ? await carriedOne(tg.id, sid, taskId) : null;
       const prev = carried ? { ...(prev0 ?? {}), payload: carried.payload, status: carried.status } as NonNullable<typeof prev0> : prev0;
@@ -62,10 +86,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       // комментарии учителя к полям (gnotes) — не ответ ученика: статус не меняется
       // комментарии и исправленная версия от учителя (gnotes, corr, corrSent) — не ответ ученика; ученик их не пишет
       // «проработали» (worked) — отметка учителя в уроке, тоже не ответ ученика
-      if (["gnotes", "corr", "corrSent", "worked"].includes(key) && !teacher) return bad("teacher only");
-      if (key === "rounds") return bad("rounds");
-      const status = ["gnotes", "corr", "corrSent", "worked"].includes(key) ? prev?.status ?? "DRAFT" : key === "checked" && body.value ? (teacherCheck ? "NEEDS_REVIEW" : "AUTO_CHECKED") : prev?.status === "REVIEWED" ? "REVIEWED" : teacherCheck ? "NEEDS_REVIEW" : "SUBMITTED";
-      await db.answer.upsert({ where, create: { lessonInstanceId: tg.id, taskId, studentId: sid, payload: json(payload), status }, update: { payload: json(payload), status } });
+      const status = teacherNote ? prev?.status ?? "DRAFT" : key === "checked" && body.value ? (teacherCheck ? "NEEDS_REVIEW" : "AUTO_CHECKED") : prev?.status === "REVIEWED" ? "REVIEWED" : teacherCheck ? "NEEDS_REVIEW" : "SUBMITTED";
+      if (!await writeAnswer(where, prev0?.homeworkRevision ?? null, { lessonInstanceId: tg.id, taskId, studentId: sid, payload: json(payload), status }, { payload: json(payload), status })) return conflict();
       publish(ch, "answer", { taskId, key, value: body.value ?? null, by, sid });
       // учитель отправил исправленную версию — ученику уведомление (один раз на задание)
       if (key === "corrSent" && teacher && tg.student?.userId) {
@@ -91,8 +113,13 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       const who = str(body.studentId, 60) || null;
       const ids = who ? slot.filter((x) => x.studentId === who).map((x) => x.id) : slotIds;
       if (!ids.length) return bad("student");
-      await db.answer.deleteMany({ where: { lessonInstanceId: { in: ids }, taskId } });
-      publish(ch, "reset", { taskId, sid: who ?? (group ? null : lesson.studentId) });
+      const rows = await db.answer.findMany({ where: { lessonInstanceId: { in: ids }, taskId }, include: { lessonInstance: { include: { homework: true } }, task: true } });
+      for (const row of rows) {
+        if (row.previousHomeworkAttemptId || (row.status === "REVIEWED" && wasReturnedForRevision(row.teacherReview) &&
+            row.lessonInstance.homework && canReviewHomeworkTask(row.task.type) && isAssignedHomeworkTask(row.task, row.lessonInstance.homework))) continue;
+        const deleted = await db.answer.deleteMany({ where: { id: row.id, homeworkRevision: row.homeworkRevision } });
+        if (deleted.count === 1) publish(ch, "reset", { taskId, sid: row.studentId });
+      }
       return NextResponse.json({ ok: true });
     }
     // ── активное время ученика над заданиями (клиент шлёт раз в минуту): во время урока по расписанию — lessonMs, иначе — hwMs
@@ -122,6 +149,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       const where = { lessonInstanceId_taskId_studentId: { lessonInstanceId: tg.id, taskId, studentId: sid } };
       return withLock(`answer:${tg.id}:${taskId}`, async () => {
         const prev0 = await db.answer.findUnique({ where });
+        if (prev0?.previousHomeworkAttemptId) return conflict();
+        if (prev0?.status === "REVIEWED" && wasReturnedForRevision(prev0.teacherReview)) {
+          const [hw, task] = await Promise.all([db.homework.findUnique({ where: { lessonInstanceId: tg.id } }), db.task.findUnique({ where: { id: taskId } })]);
+          if (hw && task && canReviewHomeworkTask(task.type) && isAssignedHomeworkTask(task, hw)) return conflict();
+        }
         const carried = !prev0 || isEmptyPayload(prev0.payload) ? await carriedOne(tg.id, sid, taskId) : null;
         const prev = carried ? { payload: carried.payload } : prev0;
         const p = ((prev?.payload as Record<string, unknown>) ?? {});
@@ -130,7 +162,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         if (!prev || !Object.keys(snap).length) return NextResponse.json({ ok: true });
         const rounds = [...((p.rounds as unknown[]) ?? []), { at: new Date().toISOString(), by: teacher ? "teacher" : "student", p: snap }].slice(-10);
         const payload = { ...Object.fromEntries(Object.entries(p).filter(([k]) => KEEP.includes(k) && k !== "rounds")), rounds };
-        await db.answer.upsert({ where, create: { lessonInstanceId: tg.id, taskId, studentId: sid, payload: json(payload), status: "DRAFT" }, update: { payload: json(payload), status: "DRAFT", teacherReview: Prisma.DbNull, shownToStudent: false } });
+        if (!await writeAnswer(where, prev0?.homeworkRevision ?? null, { lessonInstanceId: tg.id, taskId, studentId: sid, payload: json(payload), status: "DRAFT" }, { payload: json(payload), status: "DRAFT", teacherReview: Prisma.DbNull, shownToStudent: false })) return conflict();
         publish(ch, "retry", { taskId, sid, payload, by });
         return NextResponse.json({ ok: true });
       });
@@ -333,6 +365,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       if (!teacher || !tg?.studentId) return bad();
       const taskId = str(body.taskId, 60);
       const where = { lessonInstanceId_taskId_studentId: { lessonInstanceId: tg.id, taskId, studentId: tg.studentId } };
+      const prior = await db.answer.findUnique({ where });
+      if (prior?.previousHomeworkAttemptId && prior.status === "DRAFT") return conflict();
       // исправления ИИ (после правки учителем) показываются ученику вместе с отзывом
       const a = body.ai && typeof body.ai === "object" ? body.ai : null;
       const ai = a ? {
@@ -354,7 +388,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         }
       }
       const review = { ok: !!body.ok, comment: str(body.comment, 3000) || null, at: new Date().toISOString(), ...(ai ? { ai } : {}), ...(ai2 ? { ai2: { ...ai2, source: ai2src } } : {}) };
-      await db.answer.upsert({ where, create: { lessonInstanceId: tg.id, taskId, studentId: tg.studentId, payload: {}, status: "REVIEWED", teacherReview: review, shownToStudent: !!ai || !!ai2 }, update: { status: "REVIEWED", teacherReview: review, shownToStudent: !!ai || !!ai2 } });
+      const reviewData = { status: "REVIEWED" as const, teacherReview: review, shownToStudent: !!ai || !!ai2 };
+      if (!await writeAnswer(where, prior?.homeworkRevision ?? null, { lessonInstanceId: tg.id, taskId, studentId: tg.studentId, payload: {}, ...reviewData }, reviewData)) return conflict();
       publish(ch, "review", { taskId, review, sid: tg.studentId });
       // всё в домашке проверено — уведомления о ней у учителя сделаны
       if (!(await db.answer.count({ where: { lessonInstanceId: tg.id, status: "NEEDS_REVIEW", teacherReview: { equals: Prisma.AnyNull } } })))

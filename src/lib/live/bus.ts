@@ -7,6 +7,8 @@ type Bus = { subs: Map<string, Set<Listener>>; presence: Map<string, Map<string,
 const g = globalThis as unknown as { __bus?: Bus };
 const bus = (g.__bus ??= { subs: new Map(), presence: new Map() });
 
+export const teacherReviewChannel = (teacherId: string) => `teacher-review:${teacherId}`;
+
 export function subscribe(channel: string, fn: Listener) {
   let set = bus.subs.get(channel);
   if (!set) bus.subs.set(channel, (set = new Set()));

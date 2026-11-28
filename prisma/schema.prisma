@@ -468,12 +468,26 @@ model Answer {
   hwMs             Int            @default(0) // активное время над заданием вне урока (домашка, самостоятельно)
   teacherReview    Json?
   shownToStudent   Boolean        @default(false)
+  homeworkRevision Int            @default(0)
+  previousHomeworkAttemptId String?
   updatedAt        DateTime       @updatedAt
   lessonInstance   LessonInstance @relation(fields: [lessonInstanceId], references: [id], onDelete: Cascade)
   task             Task           @relation(fields: [taskId], references: [id], onDelete: Cascade)
   student          Student        @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  homeworkAttempts HomeworkAttempt[]
 
   @@unique([lessonInstanceId, taskId, studentId])
+}
+
+model HomeworkAttempt {
+  id             String   @id
+  answerId       String
+  sourceRevision Int
+  snapshot       Json
+  createdAt      DateTime @default(now())
+  answer         Answer   @relation(fields: [answerId], references: [id], onDelete: Cascade)
+
+  @@unique([answerId, sourceRevision])
 }
 
 enum HomeworkStatus {

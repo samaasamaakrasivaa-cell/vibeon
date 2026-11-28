@@ -22,6 +22,7 @@ import { Board, type BObj } from "./Board";
 import { useLive } from "./useLive";
 import { ClassContextDictionary } from "./ClassContextDictionary";
 import { ClassDictionary } from "./ClassDictionary";
+import { HomeworkHistory, HomeworkResubmission } from "./HomeworkResubmission";
 import { LessonWordPicker, type LessonWord } from "./LessonWordPicker";
 import { parse } from "@/lib/tasks/parse";
 import { AiCheckView, type AiCheck } from "../ai/AiCheckView";
@@ -52,6 +53,7 @@ export type ClassData = {
   canChooseLessonWords?: boolean;
   completionNext?: { startsAt: number; initialNow: number; when: string };
   homeworkReviewStatuses?: Record<string, Record<string, string>>;
+  homeworkResubmissions: Record<string, Record<string, string>>;
   groupReviewAssignments?: Record<string, HomeworkReviewAssignment>;
   times?: Record<string, [number, number]>; // активное время над заданием: [на уроке, вне урока (домашка)], мс
   tgLinked?: boolean | null; // ученик: подключён ли Telegram-бот (кнопка под сообщением «подключите бот»)
@@ -145,6 +147,31 @@ export function ClassRoom({ d }: { d: ClassData }) {
   const msgsRef = useRef(msgs); msgsRef.current = msgs;
   const [wordsBy, setWordsBy] = useState<Record<string, Word[]>>(() => (gTeacher ? Object.fromEntries(Object.entries(d.byStudent ?? {}).map(([k, v]) => [k, v.words])) : { [own]: d.words }));
   const words = wordsBy[viewSid] ?? [];
+  useEffect(() => {
+    // Draft contents are read from the server, never from SSE.
+    const tracked = Object.entries(d.homeworkResubmissions).filter(([, tasks]) => Object.keys(tasks).length);
+    if (!tracked.length) return;
+    setAnsBy((previous) => {
+      const next = { ...previous };
+      for (const [sid, tasks] of tracked) {
+        const stored = gTeacher ? d.byStudent?.[sid]?.answers : d.answers;
+        next[sid] = { ...next[sid], ...Object.fromEntries(Object.keys(tasks).map((id) => [id, stored?.[id] ?? {}])) };
+      }
+      return next;
+    });
+    setRevBy((previous) => {
+      const next = { ...previous };
+      for (const [sid, tasks] of tracked) {
+        const stored = gTeacher ? d.byStudent?.[sid]?.reviews : d.reviews;
+        next[sid] = { ...next[sid] };
+        for (const id of Object.keys(tasks)) {
+          if (stored?.[id]) next[sid][id] = stored[id];
+          else delete next[sid][id];
+        }
+      }
+      return next;
+    });
+  }, [gTeacher, d.homeworkResubmissions, d.byStudent, d.answers, d.reviews]);
   const homeworkReviewRefresh = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   useEffect(() => () => clearTimeout(homeworkReviewRefresh.current), []);
   const [online, setOnline] = useState<string[]>([]);
@@ -291,7 +318,13 @@ export function ClassRoom({ d }: { d: ClassData }) {
       setRevBy((all) => Object.fromEntries(Object.entries(all).map(([k, r]) => [k, who && k !== who ? r : Object.fromEntries(Object.entries(r).filter(([tk]) => tk !== taskId))])));
       setResetTick((r) => ({ ...r, [taskId]: (r[taskId] ?? 0) + 1 }));
     }
-    else if (ev === "review") { if (!mineOnly) setRevBy((all) => ({ ...all, [sid]: { ...(all[sid] ?? {}), [x.taskId as string]: x.review as Review } })); }
+    else if (ev === "review") {
+      if (!mineOnly) {
+        setRevBy((all) => ({ ...all, [sid]: { ...(all[sid] ?? {}), [x.taskId as string]: x.review as Review } }));
+        if (!teacher) router.refresh();
+      }
+    }
+    else if (ev === "homeworkRevision" && teacher) router.refresh();
     else if (ev === "word" && !mineOnly) {
       setWordsBy((all) => {
         const words = all[sid] ?? [];
@@ -354,6 +387,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
   };
   const needsReviewFor = (task: CTask, sid: string) => needsHomeworkReview(
     task, reviewAssignmentFor(sid), ansBy[sid]?.[task.id], d.homeworkReviewStatuses?.[sid]?.[task.id], !!revBy[sid]?.[task.id],
+    !!d.homeworkResubmissions[sid]?.[task.id],
   );
   const sidFor = (task: CTask): string | null => {
     if (!gTeacher) return viewSid;
@@ -362,6 +396,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
     const openingReview = tab === "homework" && needsHomeworkReview(
       task, reviewAssignmentFor(viewSid), ansBy[viewSid]?.[task.id], d.homeworkReviewStatuses?.[viewSid]?.[task.id],
       !!d.byStudent?.[viewSid]?.reviews[task.id],
+      !!d.homeworkResubmissions[viewSid]?.[task.id],
     );
     const defaultSid = openingReview ? viewSid : "";
     return (taskView[task.id] ?? defaultSid) || null;
@@ -530,7 +565,9 @@ export function ClassRoom({ d }: { d: ClassData }) {
         <button type="button" className="iconbtn" title={t("cls.pointT")} aria-label={t("cls.pointT")} onClick={() => { void send("point", { taskId: task.id, where: inHw ? "homework" : "lesson" }); setFlash(null); requestAnimationFrame(() => setFlash(task.id)); setTimeout(() => setFlash(null), 1800); }}><Icon name="pointer" size="sm" /></button>
         <AskButton task={task} send={send} context={`${d.crumbs ?? ""} · ${cur?.title ?? ""}`} />
         {/* решить задание заново: свои ответы — с чистого листа (прошлые учитель видит в попытках) */}
-        {STUDENT_KEYS(answers[task.id] as Record<string, unknown> | undefined) && !TYPES[task.type].teacherCheck && <button type="button" className="iconbtn" title={t("cls.retry")} aria-label={t("cls.retry")} onClick={() => { if (confirm(t("cls.retryQ"))) void send("retry", { taskId: task.id }); }}><Icon name="undo" size="sm" /></button>}
+        {STUDENT_KEYS(answers[task.id] as Record<string, unknown> | undefined) && !TYPES[task.type].teacherCheck &&
+          !d.homeworkResubmissions[own]?.[task.id] && !(revBy[own]?.[task.id]?.ok === false && isAssignedHomeworkTask(task, hw)) &&
+          <button type="button" className="iconbtn" title={t("cls.retry")} aria-label={t("cls.retry")} onClick={() => { if (confirm(t("cls.retryQ"))) void send("retry", { taskId: task.id }); }}><Icon name="undo" size="sm" /></button>}
       </span>
     );
     const sid = sidFor(task);
@@ -565,7 +602,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
         {isHidden && <span className="pill violet">{t("bld.notSeen")}</span>}
         {/* глазик: открыт — ученик видит; закрыт — скрыто от ученика (для учителя задание остаётся обычным, не полупрозрачным) */}
         <button className={`iconbtn ${isHidden ? "text-violet" : ""}`} title={isHidden ? t("bld.eyeOff") : t("bld.eyeOn")} aria-label={isHidden ? t("bld.eyeOff") : t("bld.eyeOn")} aria-pressed={isHidden} onClick={() => patchLive({ hidden: isHidden ? [...hidden].filter((x) => x !== task.id) : [...hidden, task.id] })}><Icon name={isHidden ? "eyeoff" : "eye"} size="sm" /></button>
-        {hasAnswer && <button type="button" className="iconbtn" title={gTeacher && !sid ? t("cls.resetAll") : t("cls.reset")} aria-label={gTeacher && !sid ? t("cls.resetAll") : t("cls.reset")} onClick={reset}><Icon name="undo" size="sm" /></button>}
+        {hasAnswer && !d.homeworkResubmissions[sid ?? own]?.[task.id] && reviews[task.id]?.ok !== false && <button type="button" className="iconbtn" title={gTeacher && !sid ? t("cls.resetAll") : t("cls.reset")} aria-label={gTeacher && !sid ? t("cls.resetAll") : t("cls.reset")} onClick={reset}><Icon name="undo" size="sm" /></button>}
         <button type="button" className="iconbtn" title={t("bld.editTask")} aria-label={t("bld.editTask")} onClick={() => setEditing({ task, index: -1 })}><Icon name="pencil" size="sm" /></button>
       </span>
     );
@@ -627,6 +664,11 @@ export function ClassRoom({ d }: { d: ClassData }) {
         // и ученик сразу видит это у себя. Никто не выбран — учитель пробует задание сам, это никуда не сохраняется
         const sid = sidFor(task);
         const m = sid ? d.group?.members.find((x) => x.sid === sid) : undefined;
+        const revisionStatus = d.homeworkResubmissions[sid ?? own]?.[task.id];
+        const revisionActive = revisionStatus === "DRAFT" || revisionStatus === "NEEDS_REVIEW";
+        const returned = canReviewHomeworkTask(task.type) && isAssignedHomeworkTask(task, hw) &&
+          d.homeworkReviewStatuses?.[own]?.[task.id] === "REVIEWED" && reviews[task.id]?.ok === false;
+        const revisionLesson = m?.instanceId ?? d.id;
         const sendFor = (type: string, x: Record<string, unknown> = {}) => rawSend(type, { ...x, studentId: sid });
         return (
         <div key={task.id} id={`task-${task.id}`}
@@ -647,14 +689,17 @@ export function ClassRoom({ d }: { d: ClassData }) {
               onSet={(tid, k, v) => { if (!sid) setSandbox((sb) => ({ ...sb, [tid]: { ...(sb[tid] ?? {}), [k]: v } })); else setAnswerFor(sid, tid, k, v); }} role="teacher">
               <MarkCtx.Provider value={{ ...marks, student: m?.name ?? "", members: d.group!.members, sid: sid ?? "", pick: (taskId, x) => setTaskView((v) => ({ ...v, [taskId]: x })) }}>{card}</MarkCtx.Provider>
             </AnswerProvider>
-          ) : card}
+          ) : !teacher && !d.preview && inHw && (returned || revisionActive) ? (
+            <HomeworkResubmission key={revisionStatus === "REVIEWED" ? "returned" : "revision"} lessonId={revisionLesson} taskId={task.id} active={revisionActive} card={card0} onChange={() => router.refresh()} />
+          ) : !teacher && (returned || !!revisionStatus) ? <fieldset disabled>{card}</fieldset> : card}
+          {inHw && revisionStatus && !d.preview && <HomeworkHistory key={revisionLesson} lessonId={revisionLesson} task={task} teacher={teacher} />}
           {gTeacher && sid && <div className="tk-viewing-note small muted">{t("grp.viewing", { name: m?.name ?? "" })}</div>}
           {/* ученик решал заново — учителю видно, что было до сброса */}
           {teacher && <Rounds task={task} a={ansOf(task)} />}
           {teacher && !inHw && ((tm) => tm && (tm[0] + tm[1]) >= 30_000 ? <div className="tasktime small muted"><Icon name="clock" size="sm" />{t("cls.timeTask")}: {tm[1] >= 30_000 ? `${t("cls.timeHw")} ${fmtMin(tm[1])}` : ""}{tm[1] >= 30_000 && tm[0] >= 30_000 ? " · " : ""}{tm[0] >= 30_000 ? `${t("cls.timeLesson")} ${fmtMin(tm[0])}` : ""}</div> : null)(timesOf(task))}
-          {inHw && teacher && (!gTeacher || sid) && canReviewHomeworkTask(task.type) && <ReviewBox key={sid ?? "_"} lessonId={m?.instanceId ?? d.id} task={task} review={(revBy[sid ?? own] ?? {})[task.id]} draft={(gTeacher ? d.byStudent?.[sid ?? ""]?.aiDrafts ?? {} : aiDrafts)[task.id]} answered={!!(ansBy[sid ?? own] ?? {})[task.id]} send={gTeacher ? sendFor : send} />}
-          {inHw && !teacher && reviews[task.id] && <div className={`alert mt-2 ${reviews[task.id].ok ? "ok" : ""}`}>{reviews[task.id].ok ? "✓ " : ""}{t("cls.teacherSays")}: {reviews[task.id].comment || (reviews[task.id].ok ? t("cls.reviewedOk") : "—")}</div>}
-          {inHw && !teacher && reviews[task.id]?.ai2 ? <div className="mt-2"><StudentCheck check={reviews[task.id].ai2!} /></div> : inHw && !teacher && reviews[task.id]?.ai && <div className="mt-2"><AiCheckView check={reviews[task.id].ai!} /></div>}
+          {inHw && teacher && (!gTeacher || sid) && revisionStatus !== "DRAFT" && canReviewHomeworkTask(task.type) && <ReviewBox key={`${sid ?? "_"}:${revisionStatus ?? "original"}`} lessonId={revisionLesson} task={task} review={(revBy[sid ?? own] ?? {})[task.id]} draft={(gTeacher ? d.byStudent?.[sid ?? ""]?.aiDrafts ?? {} : aiDrafts)[task.id]} answered={!!(ansBy[sid ?? own] ?? {})[task.id]} send={gTeacher ? sendFor : send} />}
+          {inHw && !teacher && !revisionActive && reviews[task.id] && <div className={`alert mt-2 ${reviews[task.id].ok ? "ok" : ""}`}>{reviews[task.id].ok ? "✓ " : ""}{t("cls.teacherSays")}: {reviews[task.id].comment || (reviews[task.id].ok ? t("cls.reviewedOk") : "—")}</div>}
+          {inHw && !teacher && !revisionActive && (reviews[task.id]?.ai2 ? <div className="mt-2"><StudentCheck check={reviews[task.id].ai2!} /></div> : reviews[task.id]?.ai && <div className="mt-2"><AiCheckView check={reviews[task.id].ai!} /></div>)}
           {teacher && !inHw && <Plus onClick={() => setCatalog({ index: i + 1 })} />}
         </div>
         );

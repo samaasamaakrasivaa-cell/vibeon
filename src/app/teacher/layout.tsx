@@ -9,6 +9,8 @@ import { accessOf } from "@/lib/admin/features";
 import { isAdmin } from "@/lib/admin/access";
 import { TrialBanner } from "@/components/admin/TrialBanner";
 
+import { HomeworkReviewRefresh } from "@/components/teacher/HomeworkReviewRefresh";
+
 export const dynamic = "force-dynamic";
 
 export default async function TeacherLayout({ children }: { children: React.ReactNode }) {
@@ -56,6 +58,7 @@ export default async function TeacherLayout({ children }: { children: React.Reac
   return (
     <>
       <ActivityPing />
+      <HomeworkReviewRefresh />
       <AppHeader subtitle={t("ws.teacher")} user={user} homeHref="/teacher" profileHref="/teacher/profile" cabinet="teacher" />
       <div className="shell">
         <Sidebar groups={groups} bottom={bottom} ariaLabel={t("ws.teacher")} />
