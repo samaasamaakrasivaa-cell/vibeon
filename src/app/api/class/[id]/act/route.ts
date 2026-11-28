@@ -427,7 +427,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       publish(ch, "reload", {});
       return NextResponse.json({ ok: true });
     }
-    // ── завершить урок: статус «проведён», домашка ученику, слова урока — в его список
+    // ── завершить урок: статус «проведён» и назначенная домашка
     case "finish": {
       if (!teacher) return bad();
       const completed = await withLessonLifecycleLock(user.id, host, async () => {
