@@ -5,13 +5,13 @@
   "key": "DIRECT-STUDENT-HOME-REFINE",
   "owner": "student",
   "progress": {
-    "base_sha": "ff7dc26aa22c6626b408a58f2dfebc5a0e9febbf",
+    "base_sha": "8824b7d9246986d23a3e6b92c2fe413aeb7ca104",
     "branch": "codex/student/home-visual-refresh",
-    "head_sha": "c6c6a11c59f31cfeef2f3cbc4331f4a8da016ef9",
-    "next": "Draft до явного утверждения дизайна владельцем. Предпросмотры отправлены. #81 продолжает отдельный выпуск.",
+    "head_sha": "aede88ca281e4242c4f7e5e387a536a15ed1a9a1",
+    "next": "Обновлены варианты для компьютера и телефона по референсам владельца. Draft до явного утверждения оформления владельцем.",
     "pr": 89,
     "stage": "review",
-    "test_run": 46121845837
+    "test_run": 46123727736
   },
   "release": null,
   "source": "direct",
