@@ -5,13 +5,13 @@
   "key": "DIRECT-STUDENT-STUDY-LESSONS-TESTS",
   "owner": "student",
   "progress": {
-    "base_sha": "437986d954400f8b44ba456f02a68df18b5f0e31",
+    "base_sha": "82473a1199a160651ae2bed2f8365b5e536d7c72",
     "branch": "codex/student/study-lessons-tests",
-    "head_sha": "463bd2d21b34ffa8eba9bd9bf91d2127e7956ef1",
-    "next": "Выпуск 82473a1 подтверждён. После восстановления запаса места и выпуска P0 #87 синхронизировать #83 с актуальной main и довести до сайта.",
+    "head_sha": "c894c07a30aaca269e57740042d54da8c9303578",
+    "next": "Повторные ревью и CI. Место освобождено, подтвердить безопасный слот с Platform и сверить актуальную main.",
     "pr": 83,
-    "stage": "blocked",
-    "test_run": 46067999207
+    "stage": "review",
+    "test_run": 46120473189
   },
   "release": null,
   "source": "direct",
