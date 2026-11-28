@@ -67,7 +67,9 @@ export async function startPlacement(id: string): Promise<R> {
     if (fin) return submit(await load(id), st);
     // добавленные разделы: точка А с уровнем остаётся в маршруте
     if (a.checkpointId && !st.added) await db.checkpoint.update({ where: { id: a.checkpointId }, data: { status: "assigned" } }).catch(() => null);
-    return save(id, st, { status: "active", startedAt: a.startedAt ?? new Date() });
+    const result = await save(id, st, { status: "active", startedAt: a.startedAt ?? new Date() });
+    if (a.mode === "student" && a.status === "new") revalidatePath("/student/tests");
+    return result;
   });
 }
 
@@ -234,7 +236,10 @@ async function submit(l: Loaded, st: Loaded["st"], sec?: Later): Promise<R> {
     await notify({ userId: a.teacherId, kind: "test", title, action: "review", link: `/teacher/placement/${a.id}` });
   }
   revalidatePath("/teacher/placement");
-  if (a.studentId) revalidatePath(`/teacher/students/${a.studentId}`);
+  if (a.studentId) {
+    revalidatePath(`/teacher/students/${a.studentId}`);
+    revalidatePath("/student/tests");
+  }
   return r;
 }
 
@@ -306,7 +311,7 @@ const revision = (a: { id: string; updatedAt: Date; review: unknown; status: str
 const changed = { ok: false as const, error: "Проверка изменилась. Обновите страницу и повторите действие." };
 const refreshT = (studentId?: string | null) => {
   revalidatePath("/teacher/placement");
-  if (studentId) { revalidatePath(`/teacher/students/${studentId}`); revalidatePath("/student/route"); revalidatePath("/student"); }
+  if (studentId) { revalidatePath(`/teacher/students/${studentId}`); revalidatePath("/student/route"); revalidatePath("/student/tests"); revalidatePath("/student"); }
 };
 
 /** «Пройти самой»: учитель проходит тест как ученик, результат видит сразу. */
@@ -793,6 +798,7 @@ export async function sendReport(id: string, intent: ReportSend): Promise<R> {
           refreshT(a.studentId);
         }
         revalidatePath(`/teacher/placement/${id}`);
+        revalidatePath("/student/tests");
         if (a.checkpointId) revalidatePath(`/student/test/${a.checkpointId}`);
         return { ok: true };
       }

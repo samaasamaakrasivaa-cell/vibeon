@@ -25,7 +25,7 @@ async function own(studentId: string) {
   if (!s || s.teacherId !== me.id) throw new Error("not found");
   return { me, s };
 }
-const refresh = (sid: string) => { revalidatePath(`/teacher/students/${sid}`); revalidatePath("/teacher/students"); revalidatePath("/student/route"); revalidatePath("/student/schedule"); revalidatePath("/student"); };
+const refresh = (sid: string) => { revalidatePath(`/teacher/students/${sid}`); revalidatePath("/teacher/students"); revalidatePath("/student/route"); revalidatePath("/student/schedule"); revalidatePath("/student/tests"); revalidatePath("/student"); };
 
 // ───────── Тесты ─────────
 
