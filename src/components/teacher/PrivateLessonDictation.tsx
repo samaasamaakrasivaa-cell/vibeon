@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
+import { translate } from "@/lib/i18n/dict";
 import { Icon } from "../Icon";
 
 type Language = "ru-RU" | "en-US";
@@ -40,16 +41,16 @@ function abort(recognition: Recognition | null) {
 
 const labels = {
   ru: {
-    language: "Язык диктовки", start: "Диктовать", stop: "Остановить", cancel: "Отменить диктовку",
-    checking: "Проверяем язык…", starting: "Включаем микрофон…", recording: "Диктовка на устройстве…", stopping: "Завершаем диктовку…",
+    language: "Язык диктовки", cancel: "Отменить диктовку",
+    checking: "Проверяем язык…", starting: "Включаем микрофон…", recording: "Запись на устройстве началась.",
     unavailable: "Диктовка для этого языка недоступна. Заметку можно набрать.",
     permission: "Микрофон недоступен. Проверьте разрешение или наберите заметку.",
     failed: "Диктовка прервалась. Можно повторить или набрать заметку.",
     empty: "Речь не распознана. Можно повторить.", full: "Достигнут лимит длины заметки.",
   },
   en: {
-    language: "Dictation language", start: "Dictate", stop: "Stop", cancel: "Cancel dictation",
-    checking: "Checking the language…", starting: "Starting the microphone…", recording: "Dictating on this device…", stopping: "Finishing dictation…",
+    language: "Dictation language", cancel: "Cancel dictation",
+    checking: "Checking the language…", starting: "Starting the microphone…", recording: "Recording on this device started.",
     unavailable: "Dictation is unavailable for this language. You can type your note.",
     permission: "Microphone unavailable. Check permission or type your note.",
     failed: "Dictation was interrupted. Try again or type your note.",
@@ -65,6 +66,7 @@ export function PrivateLessonDictation({ lang, initialText, maxLength, placehold
   const [language, setLanguage] = useState<Language>(lang === "ru" ? "ru-RU" : "en-US");
   const [phase, setPhase] = useState<Phase>("idle");
   const [issue, setIssue] = useState<Issue | null>(null);
+  const [seconds, setSeconds] = useState(0);
   const text = useRef<HTMLTextAreaElement>(null);
   const active = useRef<Attempt | null>(null);
   const { pending } = useFormStatus();
@@ -88,6 +90,13 @@ export function PrivateLessonDictation({ lang, initialText, maxLength, placehold
       abandon();
     };
   }, [onBusy]);
+
+  useEffect(() => {
+    if (phase !== "recording") return;
+    const startedAt = performance.now();
+    const timer = window.setInterval(() => setSeconds(Math.floor((performance.now() - startedAt) / 1000)), 1000);
+    return () => window.clearInterval(timer);
+  }, [phase]);
 
   function finish(attempt: Attempt, issue: Issue | null, commit = false) {
     if (active.current !== attempt) return;
@@ -114,6 +123,7 @@ export function PrivateLessonDictation({ lang, initialText, maxLength, placehold
     const attempt: Attempt = { recognition: null, transcript: "", started: false };
     active.current = attempt;
     setIssue(null);
+    setSeconds(0);
     setPhase("checking");
     onBusy(true);
     try {
@@ -158,21 +168,36 @@ export function PrivateLessonDictation({ lang, initialText, maxLength, placehold
     try { attempt.recognition.stop(); } catch { finish(attempt, "failed"); }
   }
 
+  const ready = supported && phase === "idle";
+  const recording = phase === "recording";
+  const clock = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
+  const dictate = translate(lang, "dict.go");
+  const stage = phase === "stopping" ? translate(lang, "dict.busy") : phase !== "idle" ? t[phase] : null;
+
   return <>
-    <textarea id="lesson-observation" name="observation" rows={3} maxLength={maxLength} className="input" ref={text}
-      placeholder={placeholder} aria-describedby="observation-privacy" defaultValue={initialText} />
-    {supported && <div className="flex flex-wrap items-center gap-2">
-      {phase === "idle" ? <>
-        <button type="button" className="btn plain sm" disabled={pending} onClick={start}><Icon name="mic" size="sm" />{t.start}</button>
-        <select aria-label={t.language} className="select w-auto" value={language} disabled={pending}
-          onChange={(event) => { setLanguage(event.target.value as Language); setIssue(null); }}>
-          <option value="ru-RU">Русский</option><option value="en-US">English</option>
-        </select>
-      </> : <>
-        {phase === "recording" && <button type="button" className="btn secondary sm" onClick={stop}>{t.stop}</button>}
-        <button type="button" className="btn plain sm" onClick={() => { if (active.current) finish(active.current, null); }}>{t.cancel}</button>
-      </>}
+    <div className={ready ? "dictbox" : undefined}>
+      <textarea id="lesson-observation" name="observation" rows={3} maxLength={maxLength} className="input" ref={text}
+        placeholder={placeholder} aria-describedby="observation-privacy" defaultValue={initialText} />
+      {ready && <span className="dict round">
+        <button type="button" className="dict-mic disabled:opacity-50" disabled={pending} onClick={start} aria-label={dictate} title={dictate}>
+          <Icon name="mic" />
+        </button>
+      </span>}
+    </div>
+    {ready && <div>
+      <select aria-label={t.language} className="select w-auto" value={language} disabled={pending}
+        onChange={(event) => { setLanguage(event.target.value as Language); setIssue(null); }}>
+        <option value="ru-RU">Русский</option><option value="en-US">English</option>
+      </select>
     </div>}
-    {(issue || phase !== "idle") && <p className="small muted m-0" role="status">{issue ? t[issue] : phase !== "idle" ? t[phase] : null}</p>}
+    {phase !== "idle" && <div className={`dict-bar ${recording ? "rec" : "busy"} flex-wrap`}>
+      <span className={recording ? "dict-dot" : "dict-spin"} aria-hidden="true" />
+      <span className="dict-lbl grow" aria-hidden="true">{recording ? translate(lang, "dict.rec", { t: clock }) : stage}</span>
+      {recording && <button type="button" className="btn danger sm" onClick={stop}>
+        <span className="dict-sq" aria-hidden="true" />{translate(lang, "dict.stop")}
+      </button>}
+      <button type="button" className="btn plain sm" onClick={() => { if (active.current) finish(active.current, null); }}>{t.cancel}</button>
+    </div>}
+    <p className={issue ? "small muted m-0" : "sr-only"} role="status" aria-live="polite">{issue ? t[issue] : stage}</p>
   </>;
 }
