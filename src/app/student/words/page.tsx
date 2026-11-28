@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { wordCardKey } from "@/lib/ai/gateway";
 import { parseWordCard, wordCardInput } from "@/lib/ai/word-card";
 import { addDaysIso, isoDay, mondayOf } from "@/lib/time";
+import { wordTranslations } from "@/lib/student/word-translations";
 
 export const metadata = { title: "Слова" };
 export const dynamic = "force-dynamic";
@@ -24,7 +25,7 @@ export default async function Words({ searchParams }: { searchParams: Promise<{ 
   const cardKeys = new Map<string, string>();
   if (sp.tab === "list" && sp.train !== "today" && sp.train !== "all") {
     for (const word of words) {
-      const input = wordCardInput(word.word, word.translation);
+      const input = wordCardInput(word.word, wordTranslations(word.translation)[0]);
       if (input) cardKeys.set(word.id, wordCardKey(input));
     }
   }
@@ -46,7 +47,7 @@ export default async function Words({ searchParams }: { searchParams: Promise<{ 
           const key = cardKeys.get(w.id);
           const details = key ? cardDetails.get(key) : null;
           return {
-            id: w.id, word: w.word, translation: w.translation, definition: w.definition,
+            id: w.id, word: w.word, translation: wordTranslations(w.translation).join("; ") || null, definition: w.definition,
             example: w.example, ownExample: w.ownExample, level: w.level, due: !w.nextReviewAt || w.nextReviewAt <= now,
             ipa: details?.ipa ?? null, enrich: !!key && (!w.definition?.trim() || !w.example?.trim() || !details),
           };
