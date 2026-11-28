@@ -14,7 +14,25 @@
     "stage": "publication",
     "test_run": 46121209298
   },
-  "release": null,
+  "release": {
+    "ci": {
+      "result": "success",
+      "run": 46121209298,
+      "sha": "9abc1da6e3bf30ae6dd753ce45ea04930bcdd050"
+    },
+    "delivery": {
+      "result": "success",
+      "run": 46121773153,
+      "sha": "ff7dc26aa22c6626b408a58f2dfebc5a0e9febbf"
+    },
+    "owner_note": "Для владельца: Кабинет ученика — в «Учёбе» уроки показаны по датам с отдельным переходом к актуальной домашке. В «Моём тестировании» можно начать назначенный тест и открыть опубликованный результат.",
+    "review": {
+      "comment": 7228133181,
+      "result": "success",
+      "sha": "9abc1da6e3bf30ae6dd753ce45ea04930bcdd050"
+    },
+    "site_sha": "ff7dc26aa22c6626b408a58f2dfebc5a0e9febbf"
+  },
   "source": "direct",
   "version": 1
 }
