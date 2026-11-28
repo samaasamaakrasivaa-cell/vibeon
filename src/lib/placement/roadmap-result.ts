@@ -49,6 +49,19 @@ function topicFact(fact: TopicFact): TopicFact {
   };
 }
 
+function productiveScope(state: PState, kind: ProductiveSkill): Origin["scope"] | null {
+  const extra = state.wsExtra?.[kind];
+  if (extra !== undefined) return extra === 1 || extra === -1 ? "additional" : null;
+  const added = state.added;
+  if (added === undefined) return "initial";
+
+  // addSections overwrites the global timestamp, so earlier completions cannot identify the round.
+  const completed = state.sdates?.[kind];
+  if (!state.parts?.includes(kind) || !Number.isSafeInteger(added) || added <= 0 ||
+      completed === undefined || !Number.isSafeInteger(completed) || completed <= added) return null;
+  return "additional";
+}
+
 function productiveFact(attempt: Attempt, state: PState, review: Prisma.JsonObject, kind: ProductiveSkill, verified: VerifiedFacts): SkillFact {
   const unknown = (reason: Unknown["reason"]): SkillFact => ({ skill: kind, status: "unknown", reason });
   const source = wsAssessmentSource(state, kind, RUB_V2);
@@ -62,10 +75,12 @@ function productiveFact(attempt: Attempt, state: PState, review: Prisma.JsonObje
   if (marks.some((mark) => !Number.isInteger(mark) || mark < 0 || mark > RUB_V2.max)) return unknown("not-confirmed");
   const step = stepBy(RUB_V2, marks, item.level, kind === "writing" ? confirmation.marks[gateKey(RUB_V2)] : undefined);
   if (step === null) return unknown("not-confirmed");
+  const scope = productiveScope(state, kind);
+  if (!scope) return unknown("unknown-origin");
   return {
     skill: kind, status: "checked", level: STEPS[step],
     provenance: {
-      scope: state.wsExtra?.[kind] ? "additional" : "initial",
+      scope,
       evidenceId: `ws:${kind}:${digest([attempt.id, source.fingerprint, generation, confirmation])}`,
     },
   };

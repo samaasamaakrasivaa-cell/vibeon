@@ -116,6 +116,8 @@ async function main() {
   assert.deepEqual(writes.find((response) => response.status === "unchanged")?.result, first.result);
   assert.deepEqual((initialRow.review as Prisma.JsonObject).roadmapResultV1, first.result);
   assert.equal(first.result.level, "B1");
+  assert.deepEqual(first.result.skills.flatMap((entry) => entry.status === "checked" &&
+    (entry.skill === "writing" || entry.skill === "speaking") ? [entry.provenance.scope] : []), ["initial", "initial"]);
   assert.equal(new Date(first.result.confirmedAt).toISOString(), first.result.confirmedAt);
   assert.deepEqual(await writeRoadmapResult(db, teacher.id, prepared.command, verify), { status: "unchanged", result: first.result });
   assert.deepEqual(await read(), initialRow);
@@ -150,11 +152,55 @@ async function main() {
     review: { ...review, report: editedReport, roadmapResultV1: saved.result } });
   assert.deepEqual(await protection(), baseline);
 
+  const confirmationMs = at.getTime();
+  const added = confirmationMs - 60_000;
+  const afterAdd = confirmationMs - 30_000;
+  const beforeAdd = confirmationMs - 120_000;
+  // addSections keeps only the latest added timestamp and the final list of parts.
+  const addedState = { ...state, parts: ["reading", "writing", "speaking"], added };
+  const cases = [
+    { label: "both added", sdates: { reading: beforeAdd, writing: afterAdd, speaking: afterAdd },
+      expected: ["additional", "additional"] },
+    { label: "older Writing", sdates: { reading: beforeAdd, writing: beforeAdd, speaking: afterAdd },
+      expected: ["unknown-origin", "additional"] },
+    { label: "older Speaking", sdates: { reading: beforeAdd, writing: afterAdd, speaking: beforeAdd },
+      expected: ["additional", "unknown-origin"] },
+    { label: "missing or tied dates", sdates: { reading: beforeAdd, speaking: added },
+      expected: ["unknown-origin", "unknown-origin"] },
+    { label: "unlisted Speaking", parts: ["reading", "writing"], sdates: { reading: beforeAdd, writing: afterAdd, speaking: afterAdd },
+      expected: ["additional", "unknown-origin"] },
+    { label: "explicit extra assignment", sdates: { reading: beforeAdd, writing: beforeAdd, speaking: beforeAdd },
+      wsExtra: { writing: 1, speaking: -1 }, expected: ["additional", "additional"] },
+  ];
+  const snapshots = [first.result, saved.result];
+  for (const scenario of cases) {
+    const row = await db.placementAttempt.create({ data: {
+      mode: "student", teacherId: teacher.id, studentId: learner.id, token: randomUUID(),
+      state: json({ ...addedState, parts: scenario.parts ?? addedState.parts, sdates: scenario.sdates, wsExtra: scenario.wsExtra }),
+      review: json(review), status: "submitted", submittedAt: at,
+    } });
+    const { command } = prepareRoadmapResult(row, teacher.id, verify)!;
+    const result = await writeRoadmapResult(db, teacher.id, command, verify);
+    assert.ok(result.status === "saved", scenario.label);
+    const persisted = await db.placementAttempt.findUniqueOrThrow({ where: { id: row.id } });
+    assert.deepEqual((persisted.review as Prisma.JsonObject).roadmapResultV1, result.result);
+    const expected = ["writing", "speaking"].map((skill, index) => {
+      const scope = scenario.expected[index];
+      return scope === "unknown-origin" ? { skill, status: "unknown", reason: scope } : { skill, status: "checked", scope };
+    });
+    const productive = result.result.skills.filter(({ skill }) => skill === "writing" || skill === "speaking");
+    assert.deepEqual(productive.map((fact) => fact.status === "checked"
+      ? { skill: fact.skill, status: fact.status, scope: fact.provenance.scope }
+      : fact), expected, scenario.label);
+    snapshots.push(result.result);
+  }
+  assert.deepEqual(await protection(), baseline);
+  console.log("PASS persisted Writing/Speaking provenance after addSections, mixed and ambiguous history, explicit extra assignments");
+
   if (process.env.ROADMAP_CONTRACT_MODULE) {
     const { confirmedPlacementSchema } = await import(pathToFileURL(process.env.ROADMAP_CONTRACT_MODULE).href);
-    assert.deepEqual(confirmedPlacementSchema.parse(first.result), first.result);
-    assert.deepEqual(confirmedPlacementSchema.parse(saved.result), saved.result);
-    console.log("PASS both snapshots accepted by Roadmap PR #105 schema");
+    for (const snapshot of snapshots) assert.deepEqual(confirmedPlacementSchema.parse(snapshot), snapshot);
+    console.log("PASS all persisted snapshots accepted by Roadmap PR #105 schema");
   }
   console.log("PASS first write, concurrent replay, immutable timestamp, obsolete inputs, current Writing/Speaking, concurrent report draft, old publication, Roadmap, progress and Checkpoint");
 }
