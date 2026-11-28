@@ -202,7 +202,8 @@ function WordList({ words, accent }: { words: W[]; accent: string }) {
       </form>
       {notice && <p className="small mb-4 mt-0" role="status">{t(notice)}</p>}
       {confirmation && (
-        <Dialog open onClose={() => { if (!pending) setConfirmation(null); }} title={t("wd.updateTranslation")}>
+        <Dialog key={JSON.stringify([confirmation.existing.id, confirmation.existing.translation])}
+          open onClose={() => { if (!pending) setConfirmation(null); }} title={t("wd.updateTranslation")}>
           <p className="m-0 break-words">{t("wd.addTranslation", { word: confirmation.existing.word, value: confirmation.value })}</p>
           {current && <p className="small muted mt-2 mb-0 break-words">{t("wd.currentTranslation", { value: current })}</p>}
           <div className="actions">
