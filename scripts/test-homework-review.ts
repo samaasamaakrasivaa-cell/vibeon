@@ -142,6 +142,37 @@ test("a partial draft stays outside the queue and only a complete new submission
   assert.equal(transition.archivedAttempt.snapshot.payload.text, essayAnswer.text);
 });
 
+test("a translation or transformation draft with an unanswered row stays out of the review queue", () => {
+  for (const type of ["translate", "transform"]) {
+    const task = { ...essay, type, content: "First sentence → First answer\nSecond sentence" };
+    const transition = planHomeworkResubmission(ownHomework, task, assigned, returnedEssay(), archiveId);
+    assert.ok(transition);
+    assert.equal(transition.draft.status, "DRAFT");
+
+    const partialAnswers = [{ 0: "First answer" }, { 0: "First answer", 1: " \t" }];
+    for (const val of partialAnswers) {
+      assert.equal(submitHomeworkResubmission(ownHomework, task, assigned, {
+        archivedAttempt: transition.archivedAttempt,
+        draft: { ...transition.draft, payload: { val } },
+      }), null, type);
+    }
+  }
+});
+
+test("a complete translation or transformation without answer keys can be submitted for review", () => {
+  for (const type of ["translate", "transform"]) {
+    const task = { ...essay, type, content: "First sentence\n\nSecond sentence" };
+    const transition = planHomeworkResubmission(ownHomework, task, assigned, returnedEssay(), archiveId);
+    assert.ok(transition);
+
+    const draft = { ...transition.draft, payload: { val: { 0: "First answer", 1: "Second answer" } } };
+    assert.deepEqual(submitHomeworkResubmission(ownHomework, task, assigned, { ...transition, draft }), {
+      status: pending,
+      expectedRevision: draft.revision,
+    }, type);
+  }
+});
+
 test("a neighbouring task, lesson, or group member cannot reuse the returned decision or draft", () => {
   const original = returnedEssay();
   const transition = planHomeworkResubmission(ownHomework, essay, assigned, original, archiveId);

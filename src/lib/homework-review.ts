@@ -1,4 +1,5 @@
 import { TYPES, type TaskOptions, type TaskType } from "./tasks/catalog";
+import { parse } from "./tasks/parse";
 import { progressOf, summary } from "./tasks/progress";
 
 type HomeworkTask = {
@@ -86,6 +87,22 @@ function isReturnedHomeworkAttempt(
     canReviewHomeworkTask(task.type) && attempt.status === "REVIEWED" && wasReturnedForRevision(attempt.teacherReview);
 }
 
+function isCompleteHomeworkResubmission(task: HomeworkTask, payload: unknown) {
+  if (task.type !== "translate" && task.type !== "transform") return homeworkTaskDone(task, payload) === true;
+
+  // The answer form renders an input for each parsed row, including rows without an auto-check key.
+  const parsed = parse(task.type, task.content);
+  if (parsed.kind !== "pairsArrow" || !parsed.items.length) return false;
+  if (!payload || typeof payload !== "object" || !("val" in payload)) return false;
+  if (!payload.val || typeof payload.val !== "object") return false;
+
+  const values = payload.val as Record<number, unknown>;
+  return parsed.items.every((_, i) => {
+    const value = values[i];
+    return typeof value === "string" && value.trim().length > 0;
+  });
+}
+
 /** The adapter allocates a unique archive ID for this attempt and commits the archive and draft together at the expected revision. */
 export function planHomeworkResubmission<Attempt extends HomeworkAttempt>(
   scope: HomeworkAttemptScope,
@@ -127,7 +144,7 @@ export function submitHomeworkResubmission(
   if (!archivedAttempt || !draft.previousAttemptId || draft.previousAttemptId !== archivedAttempt.id ||
       !isReturnedHomeworkAttempt(scope, task, assignment, archivedAttempt.snapshot) ||
       !matchesHomeworkAttempt(scope, task, draft) || draft.status !== "DRAFT" || draft.teacherReview !== null ||
-      !needsHomeworkReview(task, assignment, draft.payload, "NEEDS_REVIEW", false)) {
+      !isCompleteHomeworkResubmission(task, draft.payload)) {
     return null;
   }
 
