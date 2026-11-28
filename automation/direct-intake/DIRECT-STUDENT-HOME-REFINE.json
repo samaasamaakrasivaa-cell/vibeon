@@ -5,8 +5,10 @@
   "key": "DIRECT-STUDENT-HOME-REFINE",
   "owner": "student",
   "progress": {
-    "next": "Подтвердить выпуск #81, затем создать отдельную ветку от актуальной main и обновить карточки главной.",
-    "stage": "registered"
+    "base_sha": "82473a1199a160651ae2bed2f8365b5e536d7c72",
+    "branch": "codex/student/home-visual-refresh",
+    "next": "Проверить дизайн и сценарии на синтетике. Публикация после #81 по подтверждению владельца.",
+    "stage": "implementation"
   },
   "release": null,
   "source": "direct",
