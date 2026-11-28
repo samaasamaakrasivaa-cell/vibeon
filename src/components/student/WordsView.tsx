@@ -16,6 +16,7 @@ export type W = {
   word: string;
   translation: string | null;
   definition: string | null;
+  contexts: { lessonId: string; translation: string; sentence: string; example: string }[];
   ipa: string | null;
   synonyms: string[] | null;
   synonymMeaning: string | null;
@@ -205,6 +206,14 @@ function PersonalWordCard({ word, accent, level, onDelete }: { word: W; accent: 
       {canSuggest && (
         <button type="button" className={styles.suggest} onClick={() => void load(true)}>{t("wd.cardSuggestSynonyms")}</button>
       )}
+      {word.contexts.map((context) => (
+        <details key={context.translation}>
+          <summary className={styles.suggest}>{t("wd.lessonContext", { meaning: context.translation })}</summary>
+          <p className={styles.detail}><b>{t("cls.contextOriginal")}</b> <span lang="en">{context.sentence}</span></p>
+          <p className={styles.detail}><b>{t("cls.contextExample")}</b> <span lang="en">{context.example}</span></p>
+          <Link href={`/class/${encodeURIComponent(context.lessonId)}`} className="btn plain sm">{t("wd.openSourceLesson")}</Link>
+        </details>
+      ))}
       <label className={styles.ownExample}>
         <span>{t("tk.ownExample")}</span>
         <input className="input" defaultValue={word.ownExample ?? ""} lang="en"

@@ -28,6 +28,7 @@ export async function savePersonalWord(studentId: string, input: {
   translation: string;
   example: string;
   sourceLessonId?: string;
+  context?: { lessonId: string; sentence: string; example: string };
   confirmation?: WordConfirmation;
 }): Promise<SaveResult> {
   const word = collapse(text(input.word, 120));
@@ -42,18 +43,25 @@ export async function savePersonalWord(studentId: string, input: {
       ORDER BY "createdAt", "id"
     `;
     const existing = matches[0];
+    const normalized = translation.toLowerCase();
+    const saveContext = async (wordId: string) => {
+      if (!input.context) return;
+      const data = { wordId, meaning: normalized, translation, ...input.context };
+      await tx.wordLessonContext.upsert({ where: { wordId_meaning: { wordId, meaning: normalized } }, create: data, update: {} });
+    };
     if (input.confirmation && input.confirmation.id !== existing?.id) return { status: "changed" };
     if (!existing) {
       const saved = await tx.word.create({
         data: { studentId, word, translation: translation || null, example: text(input.example, 400) || null, sourceLessonId: input.sourceLessonId },
         select: selection,
       });
+      await saveContext(saved.id);
       return { status: "added", saved };
     }
 
-    const normalized = translation.toLowerCase();
-    const seen = matches.some((match) => wordTranslations(match.translation).some((value) => collapse(value).toLowerCase() === normalized));
-    if (!translation || seen) return { status: "existing", saved: existing };
+    const seen = matches.find((match) => wordTranslations(match.translation).some((value) => collapse(value).toLowerCase() === normalized));
+    if (seen) await saveContext(seen.id);
+    if (!translation || seen) return { status: "existing", saved: seen ?? existing };
     if (!input.confirmation || input.confirmation.translation !== existing.translation) {
       return { status: "confirm", existing: { id: existing.id, word: existing.word, translation: existing.translation }, value: translation };
     }
@@ -63,6 +71,8 @@ export async function savePersonalWord(studentId: string, input: {
       where: { id: existing.id, studentId, translation: existing.translation },
       data: { translation: next },
     });
-    return count ? { status: "updated", saved: { ...existing, translation: next } } : { status: "changed" };
+    if (!count) return { status: "changed" };
+    await saveContext(existing.id);
+    return { status: "updated", saved: { ...existing, translation: next } };
   });
 }

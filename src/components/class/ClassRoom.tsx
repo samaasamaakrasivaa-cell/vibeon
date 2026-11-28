@@ -20,6 +20,7 @@ import { Catalog } from "../builder/Catalog";
 import { TaskEditor } from "../builder/TaskEditor";
 import { Board, type BObj } from "./Board";
 import { useLive } from "./useLive";
+import { ClassContextDictionary } from "./ClassContextDictionary";
 import { ClassDictionary } from "./ClassDictionary";
 import { AiCheckView, type AiCheck } from "../ai/AiCheckView";
 import { AiReviewPanel, StudentCheck, type AiPick, type StudentCheckData } from "../ai/AiReviewPanel";
@@ -566,6 +567,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
         const sendFor = (type: string, x: Record<string, unknown> = {}) => rawSend(type, { ...x, studentId: sid });
         return (
         <div key={task.id} id={`task-${task.id}`}
+          data-lesson-context={!inHw && task.section === "lesson" && task.type === "text" && !task.hidden && !task.options?.teacherOnly && !hidden.has(task.id) ? task.id : undefined}
           {...(inHw && teacher ? {
             draggable: dragHw === task.id,
             onDragStart: (e: React.DragEvent) => { e.dataTransfer.effectAllowed = "move"; e.dataTransfer.setData("text/plain", task.id); },
@@ -657,6 +659,13 @@ export function ClassRoom({ d }: { d: ClassData }) {
               <button className="iconbtn dlgx" onClick={() => setPanel(null)} aria-label="close"><Icon name="close" size="sm" /></button>
               {panel === "chat" && <Chat msgs={msgs} me={d.me.id} send={send} tgLinked={d.tgLinked} names={{ [d.teacher.id]: d.teacher.name, ...(d.chatNames ?? {}), ...(d.student?.userId ? { [d.student.userId]: d.student.name } : {}) }} />}
               {panel === "dict" && (
+                <>
+                {teacher && !d.preview && (
+                  <button type="button" className="btn secondary sm mb-2" aria-pressed={live.contextTranslation !== false}
+                    onClick={() => patchLive({ contextTranslation: live.contextTranslation === false })}>
+                    {t("cls.contextToggle")}
+                  </button>
+                )}
                 <ClassDictionary
                   key={`${d.id}:${viewSid}`}
                   lessonId={d.id}
@@ -665,6 +674,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
                   recipient={gTeacher ? viewMember?.name : undefined}
                   save={(word, translation, confirmation) => send("word", { op: "add", word, tr: translation, dictionary: true, confirmation })}
                 />
+                </>
               )}
               {panel === "timer" && <Timer left={live.timer ? timerLeft : 0} paused={timerPaused} task={timerTask ? lessonTasks.concat(hwTasks).find((x) => x.id === timerTask)?.title || t("cls.thisTask") : null}
                 onClearTask={() => setTimerTask(null)}
@@ -673,6 +683,15 @@ export function ClassRoom({ d }: { d: ClassData }) {
           )}
 
           <main className="cls-main">
+            {!d.preview && tab === "lesson" && (teacher || live.contextTranslation !== false) && (
+              <ClassContextDictionary lessonId={d.id}
+                recipients={gTeacher ? d.group?.members.map((member) => ({ id: member.sid, name: member.name })) : undefined}
+                save={gTeacher || d.student ? (selection, suggestion, studentId, confirmation) => send("word", {
+                  op: "add", dictionary: true, word: selection.query, tr: suggestion.translation, ex: suggestion.example,
+                  context: { taskId: selection.taskId, sentence: selection.sentence }, confirmation,
+                  ...(gTeacher ? { studentId } : {}),
+                }) : undefined} />
+            )}
            <KeyCtx.Provider value={teacher && showKeys}>
             {gTeacher && tab === "words" && (
               <div className="cls-who" role="group" aria-label={t("grp.answersOf")}>

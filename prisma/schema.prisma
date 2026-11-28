@@ -512,9 +512,22 @@ model Word {
   sourceLessonId String?
   nextReviewAt   DateTime?
   createdAt      DateTime  @default(now())
+  contexts       WordLessonContext[]
   student        Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@index([studentId])
+}
+
+model WordLessonContext {
+  wordId      String
+  meaning     String
+  translation String
+  lessonId    String
+  sentence    String
+  example     String
+  word        Word   @relation(fields: [wordId], references: [id], onDelete: Cascade)
+
+  @@id([wordId, meaning])
 }
 
 model Roadmap {
