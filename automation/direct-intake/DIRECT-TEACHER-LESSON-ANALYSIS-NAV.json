@@ -8,9 +8,10 @@
     "base_sha": "47fa1c441d0dfff1e2423db146912175e544ab08",
     "branch": "codex/teacher/lesson-analysis-navigation",
     "head_sha": "933f29d9bdffbe0c23d3c8a38b7004a58c30f316",
-    "next": "CI и независимое ревью нового SHA зелёные. Общее дерево с актуальной main и #85 проверено. Ожидается завершение выпуска #83 по согласованной очереди.",
+    "merge_sha": "8824b7d9246986d23a3e6b92c2fe413aeb7ca104",
+    "next": "Обе правки объединены, итоговое дерево совпадает с совместной проверкой. Ожидается результат общего CD.",
     "pr": 86,
-    "stage": "integration",
+    "stage": "publication",
     "test_run": 46121482608
   },
   "release": null,
