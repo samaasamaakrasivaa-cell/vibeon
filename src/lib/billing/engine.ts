@@ -107,29 +107,34 @@ export async function acceptInvoice(inv: Invoice, auto: boolean) {
     if (!await lockStudentBilling(tx, inv.studentId)) return false;
     const current = await tx.invoice.findFirst({ where: { id: inv.id, studentId: inv.studentId, status: { in: ["SENT", "PROOF_SENT"] } } });
     if (!current) return false;
-    await tx.invoice.update({ where: { id: current.id }, data: { status: "PAID", paidAt: new Date(), autoAccepted: auto, closedAt: auto ? null : new Date() } });
-    if (current.kind !== "pack" || !current.packLessons || await tx.pack.findUnique({ where: { invoiceId: current.id } })) return true;
-
-    const pack = await tx.pack.create({
-      data: { studentId: current.studentId, lessonsTotal: current.packLessons, lessonsLeft: current.packLessons, price: current.amount, invoiceId: current.id },
-    });
-    const owed = await tx.lessonInstance.findMany({
-      where: { studentId: current.studentId, deductedAt: null, billedAt: null, isTrial: false, charged: true, status: { in: ["DONE", "MISSED"] } },
-      orderBy: [{ startsAt: "asc" }, { id: "asc" }], take: current.packLessons, select: { id: true },
-    });
-    for (const lesson of owed) await spendPackLesson(tx, pack, lesson.id);
+    await acceptInvoiceLocked(tx, current, auto);
     return true;
   });
+}
+
+async function acceptInvoiceLocked(tx: Prisma.TransactionClient, current: Invoice, auto: boolean) {
+  await tx.invoice.update({ where: { id: current.id }, data: { status: "PAID", paidAt: new Date(), autoAccepted: auto, closedAt: auto ? null : new Date() } });
+  if (current.kind !== "pack" || !current.packLessons || await tx.pack.findUnique({ where: { invoiceId: current.id } })) return;
+
+  const pack = await tx.pack.create({
+    data: { studentId: current.studentId, lessonsTotal: current.packLessons, lessonsLeft: current.packLessons, price: current.amount, invoiceId: current.id },
+  });
+  const owed = await tx.lessonInstance.findMany({
+    where: { studentId: current.studentId, deductedAt: null, billedAt: null, isTrial: false, charged: true, status: { in: ["DONE", "MISSED"] } },
+    orderBy: [{ startsAt: "asc" }, { id: "asc" }], take: current.packLessons, select: { id: true },
+  });
+  for (const lesson of owed) await spendPackLesson(tx, pack, lesson.id);
 }
 
 /** Отменить приём оплаты (кнопка «Отменить» у автоприёма): счёт снова ждёт проверки. */
 export async function undoAccept(inv: Invoice) {
   return db.$transaction(async (tx) => {
     if (!await lockStudentBilling(tx, inv.studentId)) return "unchanged";
-    const current = await tx.invoice.findFirst({ where: { id: inv.id, studentId: inv.studentId, status: "PAID" } });
+    const current = await tx.invoice.findFirst({ where: { id: inv.id, studentId: inv.studentId } });
     if (!current) return "unchanged";
     const pack = await tx.pack.findUnique({ where: { invoiceId: current.id } });
     if (pack && (pack.used || pack.lessonsLeft !== pack.lessonsTotal)) return "used";
+    if (current.status !== "PAID") return "unchanged";
     if (pack) await tx.pack.delete({ where: { id: pack.id } });
     await tx.invoice.update({
       where: { id: current.id },
@@ -159,12 +164,24 @@ export async function submitProof(inv: Invoice, proof: { text?: string; file?: s
     } catch { read.failed = true; }
   }
   const matches = read.matches;
-  await db.invoice.update({
-    where: { id: inv.id },
-    data: { status: "PROOF_SENT", proofKind: proof.file ? "screenshot" : "text", proofFile: proof.file ?? null, proofText: text, proofAt: new Date(), aiRead: read },
+  const fresh = await db.$transaction(async (tx) => {
+    if (!await lockStudentBilling(tx, inv.studentId)) return null;
+    const current = await tx.invoice.findFirst({
+      where: { id: inv.id, studentId: inv.studentId, status: { in: ["SENT", "PROOF_SENT"] }, paidAt: null, proofAt: inv.proofAt, amount: inv.amount },
+    });
+    if (!current || current.status !== inv.status) return null;
+    // The review card carries proofAt as its version. Each submission advances it
+    // even when the clock has the same millisecond or is behind the stored value.
+    const proofAt = new Date(Math.max(Date.now(), (current.proofAt?.getTime() ?? 0) + 1));
+    const saved = await tx.invoice.update({
+      where: { id: current.id },
+      data: { status: "PROOF_SENT", proofKind: proof.file ? "screenshot" : "text", proofFile: proof.file ?? null, proofText: text, proofAt, aiRead: read },
+      include: { student: true },
+    });
+    if (matches) await acceptInvoiceLocked(tx, saved, true);
+    return saved;
   });
-  const fresh = await db.invoice.findUniqueOrThrow({ where: { id: inv.id }, include: { student: true } });
-  if (matches) await acceptInvoice(fresh, true);
+  if (!fresh) return null;
   await notify({
       userId: fresh.student.teacherId, kind: "payment",
       title: `${fresh.student.name} ${matches ? "оплатил(а)" : "прислал(а) подтверждение оплаты"}: ${new Intl.NumberFormat("ru-RU").format(inv.amount)} ₽`,

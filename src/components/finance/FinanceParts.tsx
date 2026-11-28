@@ -61,7 +61,7 @@ export function InvoiceEdit({ id }: { id: string }) {
   );
 }
 
-export function CheckActions({ id, kind }: { id: string; kind: "waiting" | "toCheck" | "auto" }) {
+export function CheckActions({ id, kind, proofAt }: { id: string; kind: "waiting" | "toCheck" | "auto"; proofAt?: string }) {
   const { t } = useT();
   const { pending, err, act } = useAct();
   return (
@@ -74,7 +74,7 @@ export function CheckActions({ id, kind }: { id: string; kind: "waiting" | "toCh
       ) : (
         <>
           <button className="btn primary sm" disabled={pending} onClick={() => act(() => markPaid(id))}><Icon name="check" size="sm" />{t("pay.markPaid")}</button>
-          {kind === "toCheck" && <button className="btn secondary sm" disabled={pending} onClick={() => act(() => rejectProof(id, ""))}>{t("pay.notFound")}</button>}
+          {kind === "toCheck" && proofAt && <button className="btn secondary sm" disabled={pending} onClick={() => act(() => rejectProof(id, "", proofAt))}>{t("pay.notFound")}</button>}
           <button className="iconbtn" title={t("pay.cancelInvoice")} aria-label={t("pay.cancelInvoice")} disabled={pending} onClick={() => confirm(t("pay.cancelQ")) && act(() => cancelInvoice(id))}>✕</button>
         </>
       )}

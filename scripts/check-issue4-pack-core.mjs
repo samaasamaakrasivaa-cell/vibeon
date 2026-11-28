@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { PrismaClient } from "@prisma/client";
 
@@ -85,12 +86,15 @@ async function verify() {
   console.log("Two manual requests and scheduler versus manual use passed");
 
   const debt = await record("debt");
-  const due = await invoice(debt, "pack", { packLessons: 2, status: "PROOF_SENT" });
+  const due = await invoice(debt, "pack", { packLessons: 2, status: "PROOF_SENT", proofAt: new Date("2024-02-06T12:00:00Z") });
   const older = await lesson(debt, "08", "06");
   const next = await lesson(debt, "09", "06");
   const billed = await lesson(debt, "07", "06", { billedAt: new Date("2024-02-07") });
   assert.equal(await action("markPaid", [due.id]), true);
   const paidPack = await db.pack.findUniqueOrThrow({ where: { invoiceId: due.id } });
+  const paidSnapshot = await db.invoice.findUniqueOrThrow({ where: { id: due.id } });
+  assert.ok(paidSnapshot.paidAt);
+  const paidLessons = await Promise.all([older, next, billed].map(current));
   assert.equal(paidPack.lessonsLeft, 0);
   assert.equal(paidPack.used, true);
   assert.ok((await current(older)).deductedAt);
@@ -98,6 +102,23 @@ async function verify() {
   assert.equal((await current(billed)).deductedAt, null);
   for (const op of ["undoPaid", "undoAuto", "cancelInvoice"]) assert.equal(await action(op, [due.id]), false);
   assert.equal((await db.invoice.findUniqueOrThrow({ where: { id: due.id } })).status, "PAID");
+
+  // Reproduce the old open review card after markPaid has created the pack and
+  // deducted debt. The stale action must preserve all persisted records.
+  assert.equal(await action("rejectProof", [due.id, "", due.proofAt.toISOString()]), false);
+  const paidInvoice = await db.invoice.findUniqueOrThrow({ where: { id: due.id } });
+  assert.equal(paidInvoice.status, "PAID");
+  assert.deepEqual(paidInvoice, paidSnapshot);
+  assert.deepEqual(await balance(paidPack), paidPack);
+  for (const snapshot of paidLessons) assert.deepEqual(await current(snapshot), snapshot);
+
+  // Legacy inconsistent rows already exist in the reported scenario. Introduce
+  // one only in this synthetic database to test every ordinary cancellation path.
+  const inconsistent = await db.invoice.update({ where: { id: due.id }, data: { status: "SENT" } });
+  for (const op of ["cancelInvoice", "undoAuto", "undoPaid"]) assert.equal(await action(op, [due.id]), false);
+  assert.deepEqual(await db.invoice.findUniqueOrThrow({ where: { id: due.id } }), inconsistent);
+  assert.deepEqual(await balance(paidPack), paidPack);
+  for (const snapshot of paidLessons) assert.deepEqual(await current(snapshot), snapshot);
 
   const local = await record("return");
   const consumedInvoice = await invoice(local, "pack", { packLessons: 1, status: "PAID" });
@@ -112,6 +133,39 @@ async function verify() {
   await pack(local, 1, unusedInvoice.id);
   assert.equal(await action("undoPaid", [unusedInvoice.id]), true);
   assert.equal(await db.pack.findUnique({ where: { invoiceId: unusedInvoice.id } }), null);
+  // A full returned balance still marks a previously used pack, even when
+  // the persisted invoice status no longer describes the actual payment.
+  const inconsistentReturned = await db.invoice.update({ where: { id: consumedInvoice.id }, data: { status: "PROOF_SENT" } });
+  assert.equal(await action("cancelInvoice", [consumedInvoice.id]), false);
+  assert.deepEqual(await db.invoice.findUniqueOrThrow({ where: { id: consumedInvoice.id } }), inconsistentReturned);
+  assert.deepEqual(await balance(consumed), { ...consumed, used: true });
+
+  const review = await record("proof-version");
+  const proofStudent = await db.user.create({ data: { id: "proof-student", email: "proof@example.invalid", name: "Synthetic student", role: "STUDENT" } });
+  await db.student.update({ where: { id: review.id }, data: { userId: proofStudent.id } });
+  await db.session.create({ data: {
+    userId: proofStudent.id, tokenHash: createHash("sha256").update("fixture-proof-student").digest("hex"),
+    expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+  } });
+  const studentAction = { actor: proofStudent.id, page: "/student/payments?tab=bills" };
+  // Simulate a stored version ahead of the local clock to make the monotonic
+  // increment deterministic instead of depending on scheduling precision.
+  const previous = await invoice(review, "manual", { status: "PROOF_SENT", proofText: "First synthetic proof", proofAt: new Date(Date.now() + 60_000) });
+  assert.equal(await action("iPaid", [previous.id, { text: "Updated synthetic proof" }], studentAction), true);
+  const newer = await db.invoice.findUniqueOrThrow({ where: { id: previous.id } });
+  assert.equal(newer.status, "PROOF_SENT");
+  assert.equal(newer.proofAt.getTime(), previous.proofAt.getTime() + 1);
+  assert.equal(await action("rejectProof", [newer.id, "", previous.proofAt.toISOString()]), false);
+  assert.equal(await action("rejectProof", [newer.id, "", "invalid"]), false);
+  assert.deepEqual(await db.invoice.findUniqueOrThrow({ where: { id: newer.id } }), newer);
+  assert.equal(await db.notification.count({ where: { userId: proofStudent.id } }), 0);
+  assert.equal(await action("rejectProof", [newer.id, "", newer.proofAt.toISOString()]), true);
+  assert.equal(await action("rejectProof", [newer.id, "", newer.proofAt.toISOString()]), false);
+  assert.deepEqual(await db.invoice.findUniqueOrThrow({ where: { id: newer.id } }), { ...newer, status: "SENT" });
+  assert.equal(await db.notification.count({ where: { userId: proofStudent.id } }), 1);
+  assert.equal(await action("iPaid", [newer.id, { text: "Перевёл 500 руб" }], studentAction), true);
+  assert.equal((await db.invoice.findUniqueOrThrow({ where: { id: newer.id } })).status, "PAID");
+  console.log("Late rejection, proof version, automatic acceptance and out-of-sync used-pack cancellation passed");
   console.log("Debt repayment and used/unused cancellation, including after a return, passed");
 
   const separate = await record("separate");

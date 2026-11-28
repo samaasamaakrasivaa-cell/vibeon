@@ -136,7 +136,7 @@ async function reopenPaid(inv: Invoice) {
 /** Отменить подтверждение оплаты (нажали по ошибке) — сутки после подтверждения, в «Финансах» → «Недавние оплаты». */
 export async function undoPaid(invoiceId: string): Promise<R> {
   const inv = await teacherInvoice(invoiceId);
-  if (inv.status !== "PAID") return { ok: true };
+  if (inv.status !== "PAID" && inv.kind !== "pack") return { ok: true };
   if (await reopenPaid(inv) === "used") return { ok: false, error: (await getT()).t("pay.err.packUsed") };
   refresh();
   return { ok: true };
@@ -218,9 +218,21 @@ export async function undoAuto(id: string): Promise<R> {
 }
 
 /** Подтверждение не подошло — счёт снова ждёт оплаты, ученику уведомление. */
-export async function rejectProof(id: string, comment: string): Promise<R> {
+export async function rejectProof(id: string, comment: string, expectedProofAt: string): Promise<R> {
   const inv = await teacherInvoice(id);
-  await db.invoice.update({ where: { id }, data: { status: "SENT", autoAccepted: false } });
+  const proofAt = typeof expectedProofAt === "string" && expectedProofAt.length === 24 ? new Date(expectedProofAt) : null;
+  const stale = async (): Promise<R> => ({ ok: false, error: (await getT()).t("pay.err.proofChanged") });
+  if (!proofAt || !Number.isFinite(proofAt.getTime()) || proofAt.toISOString() !== expectedProofAt) return stale();
+
+  const changed = await db.$transaction(async (tx) => {
+    if (!await lockStudentBilling(tx, inv.studentId)) return false;
+    const result = await tx.invoice.updateMany({
+      where: { id, studentId: inv.studentId, student: { teacherId: inv.student.teacherId }, status: "PROOF_SENT", paidAt: null, proofAt },
+      data: { status: "SENT", autoAccepted: false },
+    });
+    return result.count === 1;
+  });
+  if (!changed) return stale();
   if (inv.student.userId) await notify({ userId: inv.student.userId, kind: "invoice", title: `Оплата не найдена${comment ? `: ${comment.slice(0, 100)}` : ""}. Проверь, пожалуйста`, action: "decide", link: "/student/payments?tab=bills" });
   refresh();
   return { ok: true };
@@ -239,11 +251,11 @@ export async function cancelInvoice(id: string): Promise<R> {
   const result = await db.$transaction(async (tx) => {
     if (!await lockStudentBilling(tx, inv.studentId)) return "unchanged";
     const current = await tx.invoice.findFirst({ where: { id: inv.id, studentId: inv.studentId } });
-    if (!current || current.status === "CANCELLED") return "unchanged";
-    if (current.kind === "pack" && current.status === "PAID") {
-      const pack = await tx.pack.findUnique({ where: { invoiceId: current.id } });
-      return pack && (pack.used || pack.lessonsLeft !== pack.lessonsTotal) ? "used" : "paid";
-    }
+    if (!current) return "unchanged";
+    const pack = await tx.pack.findUnique({ where: { invoiceId: current.id } });
+    if (pack && (pack.used || pack.lessonsLeft !== pack.lessonsTotal)) return "used";
+    if (current.status === "CANCELLED") return "unchanged";
+    if (pack || (current.kind === "pack" && (current.status === "PAID" || current.paidAt))) return "paid";
     await tx.invoice.update({ where: { id: current.id }, data: { status: "CANCELLED" } });
     if (current.lessonIds.length) await tx.lessonInstance.updateMany({ where: { id: { in: current.lessonIds } }, data: { billedAt: null } });
     return "ok";
@@ -322,6 +334,7 @@ export async function iPaid(id: string, proof: { text?: string; file?: string })
   if (!proof.text?.trim() && !proof.file) return { ok: false, error: t("pay.err.proof") };
   if (proof.file && !proof.file.startsWith("/api/files/")) return { ok: false, error: "file" };
   const auto = await submitProof(inv, proof);
+  if (auto === null) return { ok: false, error: t("pay.err.proofChanged") };
   // Без revalidatePath: он обновил бы и эту страницу, и карточка счёта исчезла бы вместе с сообщением «Оплата принята».
   // Страницу ученика обновляет окно после закрытия; страницы учителя динамические и покажут новое при открытии.
   return { ok: true, auto };
