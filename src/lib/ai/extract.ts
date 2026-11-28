@@ -51,6 +51,13 @@ export const EXTRACT_MAX = 30 * 1024 * 1024;
 export const extractable = (name: string, mime: string) =>
   /\.(docx|pptx|pdf|txt|md|png|jpe?g|webp)$/i.test(name) || /^(text\/|image\/(png|jpe?g|webp)|application\/pdf)/.test(mime);
 
+/** Course outlines must be available for server validation before using a model. */
+export async function extractCourseOutlineText(buf: Buffer, name: string): Promise<string> {
+  if (/\.docx$/i.test(name)) return docx(buf);
+  if (/\.pdf$/i.test(name)) return pdf(buf);
+  return "";
+}
+
 /** Текст из файла. Сканы и фото — через распознавание (OCR) шлюза. */
 export async function extractText(buf: Buffer, name: string, mime: string, ctx: Ctx): Promise<{ text: string; ocr: boolean }> {
   const ext = name.toLowerCase().split(".").pop() ?? "";

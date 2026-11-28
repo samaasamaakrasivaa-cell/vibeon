@@ -10,7 +10,7 @@ import { randomId } from "../builder/rid";
 import { Dialog } from "../Dialog";
 import { Icon } from "../Icon";
 
-const formats = ".jpg,.jpeg,.png,.webp,.pdf,.docx";
+const formats = ".pdf,.docx";
 const extractionErrors = ["type", "size", "limit", "tariff", "off"] as const;
 const textFields = [
   ["topics", "crs.outline.topics"],
@@ -70,13 +70,17 @@ export function CourseOutlineImport({ courseId, onClose, onSaved }: {
       const pages: string[] = [];
       for (const file of files) {
         try {
-          const page = (await extractFile(file)).trim();
+          const page = (await extractFile(file, "course-outline")).trim();
           if (!page) {
             setError(`${file.name} · ${t("ai.err.empty")}`);
             return;
           }
           pages.push(page);
         } catch (problem) {
+          if (problem instanceof Error && problem.message === "outlineText") {
+            setError(`${file.name} · ${t("crs.outline.localText")}`);
+            return;
+          }
           const code = extractionErrors.find((code) => problem instanceof Error && problem.message === code);
           setError(`${file.name} · ${code ? t(`ai.err.${code}`) : t("ai.err.fail")}`);
           return;

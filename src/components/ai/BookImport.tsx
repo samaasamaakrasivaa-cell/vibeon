@@ -11,9 +11,10 @@ import { Dialog } from "../Dialog";
 import { Icon } from "../Icon";
 
 /** Текст из файла (Word, PDF, PowerPoint, фото) — через /api/ai/extract. */
-export async function extractFile(f: File): Promise<string> {
+export async function extractFile(f: File, purpose?: "course-outline"): Promise<string> {
   const fd = new FormData();
   fd.append("file", f);
+  if (purpose) fd.append("purpose", purpose);
   const r = await fetch("/api/ai/extract", { method: "POST", body: fd });
   const j = await r.json().catch(() => ({}));
   if (!r.ok) throw new Error(j.error || "fail");

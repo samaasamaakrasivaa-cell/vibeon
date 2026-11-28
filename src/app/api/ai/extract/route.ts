@@ -2,7 +2,8 @@ import { NextResponse, type NextRequest } from "next/server";
 import { getSessionUser } from "@/lib/auth/session";
 import { rateLimit } from "@/lib/rate-limit";
 import { aiCode, aiCtx } from "@/lib/ai/ctx";
-import { EXTRACT_MAX, extractable, extractText } from "@/lib/ai/extract";
+import { OUTLINE_SOURCE_LIMIT } from "@/lib/tasks/course-outline";
+import { EXTRACT_MAX, extractable, extractCourseOutlineText, extractText } from "@/lib/ai/extract";
 
 /** «Из файла»: текст из Word / PDF / PowerPoint / фото. Файл не сохраняется. Ответ: { text, ocr }. */
 export async function POST(req: NextRequest) {
@@ -13,6 +14,11 @@ export async function POST(req: NextRequest) {
   const file = form?.get("file");
   if (!(file instanceof File)) return NextResponse.json({ error: "file" }, { status: 400 });
   if (file.size > EXTRACT_MAX) return NextResponse.json({ error: "size" }, { status: 413 });
+  if (form?.get("purpose") === "course-outline") {
+    const text = await extractCourseOutlineText(Buffer.from(await file.arrayBuffer()), file.name).catch(() => "");
+    if (!text.trim()) return NextResponse.json({ error: "outlineText" }, { status: 422 });
+    return NextResponse.json({ text: text.slice(0, OUTLINE_SOURCE_LIMIT + 1), ocr: false });
+  }
   if (!extractable(file.name, file.type)) return NextResponse.json({ error: "type" }, { status: 415 });
   try {
     const r = await extractText(Buffer.from(await file.arrayBuffer()), file.name, file.type, await aiCtx(user));
