@@ -7,11 +7,11 @@
   "progress": {
     "base_sha": "2044f77648fcf73701fe5f2232817fb817bcec28",
     "branch": "codex/roadmap/pt-05-placement-proposal",
-    "head_sha": "1f193a5cac39875917e3794a4e522c1d2c63dd89",
-    "next": "Подтвердить контракт и источник Placement в №37, завершить CI и независимое ревью №105.",
+    "head_sha": "d31e336c4ea7e8e4934120ac954ee0cef5f693d4",
+    "next": "Повторное ревью PR №105 после регрессий PostgreSQL. Подтвердить готовность источника Placement в №37.",
     "pr": 105,
     "stage": "review",
-    "test_run": 46148836203
+    "test_run": 46151154195
   },
   "release": null,
   "source": "direct",
