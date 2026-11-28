@@ -43,7 +43,7 @@ export default async function TeacherLessonAnalysis({ params }: { params: Promis
       {report && !pending && tasks.length > 0 && <p className="small muted m-0">{report.source === "ai"
         ? (ru ? "Рекомендации подобраны ИИ по результатам урока." : "AI selected the recommendations from the lesson results.")
         : (ru ? "Рекомендации собраны по сохранённым результатам." : "Recommendations are based on the saved lesson results.")}</p>}
-      <LessonAnalysisActions lessonId={id} state={report?.state ?? null} hasEvidence={tasks.length > 0} canGenerate={canCallAi}
+      <LessonAnalysisActions key={id} lessonId={id} state={report?.state ?? null} hasEvidence={tasks.length > 0} canGenerate={canCallAi}
         estimate={estimate} lang={lang} pending={pending} observation={observation} observationMax={LESSON_OBSERVATION_MAX}
         lessonTopics={lessonTopics}
         saveObservation={saveObservationAction.bind(null, id)} generate={generateAnalysisAction.bind(null, id, canCallAi)}
