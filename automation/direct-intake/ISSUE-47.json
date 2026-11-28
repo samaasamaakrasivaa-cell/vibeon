@@ -1,0 +1,16 @@
+{
+  "claim_id": "b2e0bbc78448428f9cfab5d834bdeb4a",
+  "handoff": null,
+  "issue": 47,
+  "key": "ISSUE-47",
+  "owner": "live-classroom",
+  "progress": {
+    "base_sha": "daacd5bf1e2f13c4c0b063f5db07f2f47c887dbc",
+    "branch": "codex/live-classroom/voc-08-explicit-vocabulary",
+    "next": "Прекратить автоперенос слов при Finish и проверить группу, повтор, выдачу ДЗ и явное добавление на синтетике.",
+    "stage": "implementation"
+  },
+  "release": null,
+  "source": "pm",
+  "version": 1
+}
