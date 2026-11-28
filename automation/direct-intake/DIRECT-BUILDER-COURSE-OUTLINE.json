@@ -14,7 +14,25 @@
     "stage": "publication",
     "test_run": 46167901410
   },
-  "release": null,
+  "release": {
+    "ci": {
+      "result": "success",
+      "run": 46167901410,
+      "sha": "886846193b61f6072c02482c22418978df1dd42b"
+    },
+    "delivery": {
+      "result": "success",
+      "run": 46182158795,
+      "sha": "d4454a0b7210c4aa534f9a3c9464fb0d9ca1536e"
+    },
+    "owner_note": "Для владельца: Уроки и конструктор — преподаватель может загрузить оглавление, отредактировать распознанные юниты и уроки и добавить их в существующий курс.",
+    "review": {
+      "comment": 7242783782,
+      "result": "success",
+      "sha": "886846193b61f6072c02482c22418978df1dd42b"
+    },
+    "site_sha": "d4454a0b7210c4aa534f9a3c9464fb0d9ca1536e"
+  },
   "source": "direct",
   "version": 1
 }
