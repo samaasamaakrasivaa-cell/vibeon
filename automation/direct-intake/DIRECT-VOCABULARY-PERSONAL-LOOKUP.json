@@ -1,10 +1,15 @@
 {
   "claim_id": "2abefbfdc6b8459090ba7050e4b64981",
   "handoff": null,
-  "issue": null,
+  "issue": 111,
   "key": "DIRECT-VOCABULARY-PERSONAL-LOOKUP",
   "owner": "vocabulary-training",
-  "progress": null,
+  "progress": {
+    "base_sha": "2044f77648fcf73701fe5f2232817fb817bcec28",
+    "branch": "codex/vocabulary-training/my-words-lookup",
+    "next": "Подключить существующий словарный поиск к форме ученика и проверить сохранение карточки",
+    "stage": "implementation"
+  },
   "release": null,
   "source": "direct",
   "version": 1
