@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Synthetic VibeOn retention safeguards; no server or Docker dependency."""
+import datetime
 import hashlib
 import json
 import os
@@ -56,8 +57,8 @@ class RetentionTest(unittest.TestCase):
         return retention.rotate(self.root, self.current["image"], self.current["sha"], protected,
                                 docker=self.docker, write_json=self.write)
 
-    def backup(self, day, record, marked=True, checksummed=False):
-        path = self.root / "backups" / "releases" / f"202611{day:02}T010101Z-{record['sha'][:12]}-abcd1234"
+    def backup(self, day, record, marked=True, checksummed=False, hour=1):
+        path = self.root / "backups" / "releases" / f"202611{day:02}T{hour:02}0101Z-{record['sha'][:12]}-abcd1234"
         path.mkdir(parents=True, mode=0o700)
         (path / "database.dump").write_bytes(b"dump")
         (path / "uploads.tar.gz").write_bytes(b"archive")
@@ -95,6 +96,14 @@ class RetentionTest(unittest.TestCase):
         self.assertEqual(report["full_backup_candidates"], 1)
         self.assertEqual(report["full_backup_candidate_bytes"], 11)
         self.assertTrue(all(path.exists() for path in paths))
+
+    def test_keep_three_newest_and_exclude_future_receipts(self):
+        for hour in (8, 9, 14, 15, 16, 17, 18):
+            self.backup(23, row(hour), hour=hour)
+        now = datetime.datetime(2026, 11, 23, 18, 2, tzinfo=datetime.timezone.utc)
+        verified, old, _ = retention.full_backup_plan(self.root, now=now)
+        self.assertEqual(len(verified), 7)
+        self.assertEqual([backup.timestamp.hour for backup in old], [15, 14, 9, 8])
 
     def test_expires_only_old_verified_pairs_with_three_intact_replacements(self):
         old = self.backup(1, row(1))

@@ -1,5 +1,6 @@
 """Post-publication retention of VibeOn images and read-only backup planning."""
 import datetime
+from dataclasses import dataclass
 import hashlib
 import json
 import os
@@ -29,6 +30,17 @@ KEEP_FULL_BACKUPS = 3
 MAX_REMOVE = 3
 TAG_PREFIX = "vibeon-retained:sha256-"
 INSPECT = '{{json .Id}} {{json .RepoTags}} {{json .RepoDigests}} {{json .Config.Labels}}'
+
+
+@dataclass(frozen=True)
+class FullBackup:
+    path: Path
+    sha: str
+    source: str
+    image: str
+    images: set[str]
+    bytes: int
+    timestamp: datetime.datetime
 
 
 def load_json(path, *, directory_fd=None, expected_inode=None):
@@ -89,13 +101,12 @@ def full_backup_plan(root, now=None):
                     raise ValueError("invalid backup app override")
                 images.add(previous)
             timestamp = datetime.datetime.strptime(entry.name[:16], "%Y%m%dT%H%M%SZ").replace(tzinfo=datetime.timezone.utc)
-            verified.append((sha, sum(sizes), images, timestamp, entry, source))
+            verified.append(FullBackup(entry, sha, source, record["image"], images, sum(sizes), timestamp))
         except (KeyError, TypeError) as error:
             raise ValueError("invalid verified backup") from error
-    cutoff = now - datetime.timedelta(hours=48)
     candidates = [item for item in verified[KEEP_FULL_BACKUPS:]
-                  if item[0] not in PINS and item[5] not in PINS and item[3] < cutoff]
-    return verified, candidates, set().union(*(record[2] for record in verified))
+                  if item.sha not in PINS and item.source not in PINS and item.timestamp <= now]
+    return verified, candidates, set().union(*(record.images for record in verified))
 
 
 def backup_mounts():
@@ -128,7 +139,8 @@ def confirm_replacements(verified):
     if len(verified) < KEEP_FULL_BACKUPS:
         return False
     seen = set()
-    for _, _, _, _, entry, _ in verified[:KEEP_FULL_BACKUPS]:
+    for backup in verified[:KEEP_FULL_BACKUPS]:
+        entry = backup.path
         directory_fd = os.open(entry, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
         try:
             files = private_backup_files(entry, directory_fd)
@@ -195,24 +207,9 @@ def rotate(root, image, sha, protected, *, docker, write_json):
     report = {
         "status": "ok", "images_removed": 0, "verified_full_backups": len(verified),
         "full_backup_candidates": len(backup_candidates),
-        "full_backup_candidate_bytes": sum(item[1] for item in backup_candidates),
+        "full_backup_candidate_bytes": sum(item.bytes for item in backup_candidates),
         "full_backups_removed": 0, "full_backups_removed_bytes": 0,
     }
-    if backup_candidates and confirm_replacements(verified):
-        for item in reversed(backup_candidates):
-            try:
-                if retire_backup(item[4]):
-                    report["full_backups_removed"] += 1
-                    report["full_backups_removed_bytes"] += item[1]
-                    if report["full_backups_removed"] == MAX_REMOVE:
-                        break
-                else:
-                    report["status"] = "attention"
-            except OSError:
-                report["status"] = "attention"
-                break
-        # Keep the pre-sweep recovery images for this release. The next
-        # successful release can reconsider references to retired pairs.
     history_path = root / "release-image-retention.json"
     history = load_json(history_path) if history_path.exists() or history_path.is_symlink() else []
     if (not isinstance(history, list) or any(
@@ -220,13 +217,38 @@ def rotate(root, image, sha, protected, *, docker, write_json):
             or not IMAGE.fullmatch(str(row["image"])) or not SHA.fullmatch(str(row["sha"]))
             for row in history)):
         raise ValueError("invalid retention history")
-    # Only releases recorded after successful public health enter the automatic
-    # allowlist. Historical manual tags and incomplete releases are left alone.
-    if len({row["image"] for row in history}) != len(history):
+    indexed = {row["image"]: row["sha"] for row in history}
+    if len(indexed) != len(history):
         raise ValueError("duplicate retention history")
-    history = [row for row in history if row["image"] != image]
-    history.append({"image": image, "sha": sha})
+    # Admit only the current successful release and images recorded in private
+    # full-backup receipts. Persist their ownership before expiring a receipt.
+    for backup in reversed(verified):
+        directory_fd = os.open(backup.path, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+        try:
+            if private_backup_files(backup.path, directory_fd):
+                if indexed.setdefault(backup.image, backup.sha) != backup.sha:
+                    raise ValueError("conflicting recorded image revision")
+        finally:
+            os.close(directory_fd)
+    if indexed.setdefault(image, sha) != sha:
+        raise ValueError("conflicting current image revision")
+    history = [{"image": digest, "sha": source} for digest, source in indexed.items()]
     write_json(history_path, history)
+    if backup_candidates and confirm_replacements(verified):
+        for item in reversed(backup_candidates):
+            try:
+                if retire_backup(item.path):
+                    report["full_backups_removed"] += 1
+                    report["full_backups_removed_bytes"] += item.bytes
+                    if report["full_backups_removed"] == MAX_REMOVE:
+                        break
+                else:
+                    report["status"] = "attention"
+            except OSError:
+                report["status"] = "attention"
+                break
+        if report["full_backups_removed"] and report["status"] == "ok":
+            _, _, recovery_images = full_backup_plan(root)
     protected = set(protected) | recovery_images | {image}
     present = set(docker("image", "ls", "--filter", "reference=vibeon-retained:*",
                          "--format", "{{.Repository}}:{{.Tag}}").splitlines())
