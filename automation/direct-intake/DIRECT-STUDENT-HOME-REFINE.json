@@ -8,9 +8,10 @@
     "base_sha": "57d38ef98578c1a3a3d7b8281e98b0cd4f1731b5",
     "branch": "codex/student/home-visual-refresh",
     "head_sha": "3ec5aada65a04e813ef113b2e83c115f9fe83220",
-    "next": "CI точного SHA и независимое ревью успешны. Предыдущий релиз завершён. Интеграция через PR #89 и штатный выпуск.",
+    "merge_sha": "75e4bb87f6e144ab25582e31839921e1bf1d2636",
+    "next": "PR #89 интегрирован. Подтвердить штатный CD, проверенный образ и полный SHA главной через публичный health.",
     "pr": 89,
-    "stage": "integration",
+    "stage": "publication",
     "test_run": 46126264368
   },
   "release": null,
