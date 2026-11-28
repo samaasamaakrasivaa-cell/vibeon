@@ -8,6 +8,12 @@ type Suggestion = { translation: string; example: string };
 const sentences = typeof Intl.Segmenter === "function" ? new Intl.Segmenter("en", { granularity: "sentence" }) : null;
 const compact = (text: string) => text.replace(/\s+/g, " ").trim();
 
+function renderedText(range: Range) {
+  const contents = range.cloneContents();
+  for (const line of contents.querySelectorAll("br")) line.replaceWith(" ");
+  return contents.textContent ?? "";
+}
+
 function getLessonSelection(): Selection | null {
   const selected = document.getSelection();
   if (!selected || selected.isCollapsed || selected.rangeCount !== 1) return null;
@@ -16,15 +22,17 @@ function getLessonSelection(): Selection | null {
   const container = paragraph?.closest<HTMLElement>("[data-lesson-context]");
   if (!paragraph || !container?.dataset.lessonContext || !paragraph.contains(range.endContainer)) return null;
 
-  const query = compact(range.toString());
+  const selectedText = renderedText(range);
+  const query = compact(selectedText);
   if (!query || query.length > 80) return null;
-  const before = range.cloneRange();
-  before.selectNodeContents(paragraph);
+  const full = document.createRange();
+  full.selectNodeContents(paragraph);
+  const before = full.cloneRange();
   before.setEnd(range.startContainer, range.startOffset);
-  const offset = before.toString().length;
-  const plain = paragraph.textContent ?? "";
+  const offset = renderedText(before).length;
+  const plain = renderedText(full);
   for (const { segment, index } of sentences?.segment(plain) ?? [{ segment: plain, index: 0 }]) {
-    if (offset < index || offset + range.toString().length > index + segment.length) continue;
+    if (offset < index || offset + selectedText.length > index + segment.length) continue;
     const sentence = compact(segment);
     if (sentence.length <= 320) return { taskId: container.dataset.lessonContext, query, sentence };
   }
