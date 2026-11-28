@@ -7,8 +7,10 @@
   "progress": {
     "base_sha": "6b57ad51f4d7d48fe661461f9ab52b2d1fc18098",
     "branch": "codex/student/section-tabs-dashboard",
-    "next": "Выровнять главные вкладки, усилить кнопки первых шагов и показать дневную цель слов. Проверить браузером и пройти штатный выпуск.",
-    "stage": "implementation"
+    "head_sha": "22a16eab02202755a249cdad462c3e7b6a3dd01d",
+    "next": "Сборка и Chromium на синтетике прошли. Ждать CI и ревью точного PR #127. Согласовать последовательность после #122.",
+    "pr": 127,
+    "stage": "review"
   },
   "release": null,
   "source": "direct",
