@@ -1,10 +1,15 @@
 {
   "claim_id": "5acfaf6fae614c519f5c6899d5cc5bb4",
   "handoff": null,
-  "issue": null,
+  "issue": 91,
   "key": "DIRECT-TEACHER-NOTIFICATION-DISMISS",
   "owner": "teacher",
-  "progress": null,
+  "progress": {
+    "base_sha": "8824b7d9246986d23a3e6b92c2fe413aeb7ca104",
+    "branch": "codex/teacher/dismiss-news-notifications",
+    "next": "Добавить ручное скрытие и кнопку действия в учительском блоке. Проверить списки и права.",
+    "stage": "implementation"
+  },
   "release": null,
   "source": "direct",
   "version": 1
