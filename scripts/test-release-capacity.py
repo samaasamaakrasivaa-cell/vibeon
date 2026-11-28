@@ -137,11 +137,62 @@ class CapacityTest(unittest.TestCase):
                 patch.object(delivery, "committed_file", return_value=b"synthetic"), \
                 patch.object(delivery, "make_plan", return_value=[delivery.Phase(target, live, state.image)]), \
                 patch.object(delivery, "verify_local_image"), patch.object(delivery, "command") as command, \
+                patch.object(delivery, "storage_only_changes", return_value=False), \
                 patch.object(delivery, "Connection", return_value=connection):
             report = delivery.deliver(target, {"shared_proxy_image": "synthetic"}, image)
         self.assertEqual(report["reason"], "insufficient_pretransfer_space")
         self.assertEqual(report["storage_capacity"], {"minimum_space_margin_bytes": -1})
         for operation in (command, connection.stage, connection.transfer, connection.apply):
+            operation.assert_not_called()
+
+    def test_storage_only_diff_is_exact_and_ordinary(self):
+        live, target = "b" * 40, "a" * 40
+        image = "sha256:" + "d" * 64
+        state = delivery.State(image, live, live)
+        phases = [delivery.Phase(target, live, image)]
+        for paths, expected in (
+            (b"deploy/release_capacity.py\0scripts/run-delivery.py\0", True),
+            (b"deploy/release_capacity.py\0src/app/api/health/route.ts\0", False),
+            (b".github/workflows/ci.yml.backup\0", False),
+            (b"Dockerfile\0", False),
+            (b"deploy/release_capacity.py", False),
+            (b"", False),
+        ):
+            with self.subTest(paths=paths), patch.object(delivery, "command", return_value=paths) as git:
+                self.assertEqual(delivery.storage_only_changes(target, state, phases), expected)
+                self.assertIn("--no-renames", git.call_args.args[0])
+        with patch.object(delivery, "command") as git:
+            self.assertFalse(delivery.storage_only_changes(target, state, [delivery.Phase(target, live)]))
+            self.assertFalse(delivery.storage_only_changes(target, delivery.State(image, live, target), phases))
+            git.assert_not_called()
+
+    def test_storage_only_driver_never_builds_or_transfers_application(self):
+        live, target = "b" * 40, "a" * 40
+        image = "sha256:" + "d" * 64
+        state = delivery.State(image, live, live)
+        phase = delivery.Phase(live, live, image)
+        policy = {"shared_proxy_image": "synthetic"}
+        connection = Mock()
+        connection.preflight.return_value = state
+        connection.capacity.return_value = {"minimum_space_margin_bytes": 1}
+        connection.apply.return_value = {"status": "storage_maintained", "sha": live, "image": image}
+        connection.stage_operation.return_value = 0
+        with patch.object(delivery, "assert_current_main") as main, patch.object(delivery, "ensure_commit"), \
+                patch.object(delivery, "committed_file", return_value=b"synthetic"), \
+                patch.object(delivery, "make_plan", return_value=[delivery.Phase(target, live, image)]), \
+                patch.object(delivery, "verify_local_image") as verify, patch.object(delivery, "command") as command, \
+                patch.object(delivery, "storage_only_changes", return_value=True), \
+                patch.object(delivery, "Connection", return_value=connection):
+            report = delivery.deliver(target, policy, "sha256:" + "c" * 64)
+        self.assertEqual((report["status"], report["sha"], report["maintenance_revision"]),
+                         ("storage_maintained", live, target))
+        connection.stage.assert_called_once_with(target)
+        connection.apply.assert_called_once_with(phase, image, image, image, policy, storage_only=True)
+        for call in connection.capacity.call_args_list:
+            self.assertEqual(call.args, (target, 0, 1))
+        self.assertEqual(connection.preflight.call_count, 2)
+        self.assertEqual(main.call_count, 3)
+        for operation in (verify, command, connection.transfer, connection.install_tooling):
             operation.assert_not_called()
 
     def test_pr_measurement_has_no_server_or_release_steps(self):

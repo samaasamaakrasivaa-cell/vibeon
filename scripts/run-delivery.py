@@ -31,6 +31,12 @@ REMOTE_DIRECTORY = re.compile(r"/tmp/vibeon-delivery\.[A-Za-z0-9]{8}\Z")
 IMAGE_LABELS = r'''{{$l := index .Config "Labels"}}{"id":{{json .Id}},"source":{{if $l}}{{json (index $l "org.opencontainers.image.revision")}}{{else}}null{{end}},"recipe":{{if $l}}{{json (index $l "io.vibeon.recipe-revision")}}{{else}}null{{end}}}'''
 POLICY_KEYS = {"schema_version", "enabled", "shared_proxy_image", "compose_sha256", "legacy_tooling_sha256", "legacy_source", "legacy_image", "teacher_source", "placement_base", "placement_fallback"}
 TOOLING_NAMES = {"vibeon.sh", "attach-proxy.sh"}
+STORAGE_ONLY_PATHS = frozenset({
+    b".github/workflows/ci.yml", b".github/workflows/delivery-preflight.yml",
+    b"deploy/release-apply.py", b"deploy/release_capacity.py", b"deploy/release_retention.py",
+    b"docs/CD-01-delivery.md", b"scripts/run-delivery.py", b"scripts/test-delivery-plan.py",
+    b"scripts/test-release-apply.py", b"scripts/test-release-capacity.py", b"scripts/test-release-retention.py",
+})
 STAGE_MARKER = ".vibeon-stage-v1"
 CAPACITY_METRICS = {"archive_bytes", "backup_restore_bytes", "minimum_inode_margin", "minimum_space_margin_bytes"}
 CAPACITY_ERRORS = {"capacity_inventory_unavailable", "insufficient_pretransfer_space",
@@ -38,7 +44,7 @@ CAPACITY_ERRORS = {"capacity_inventory_unavailable", "insufficient_pretransfer_s
 CAPACITY_WARNING_MARGIN = 1024**3
 RETENTION_METRICS = {"images_removed", "verified_full_backups", "full_backup_candidates", "full_backup_candidate_bytes"}
 OPTIONAL_RETENTION_METRICS = {"full_backups_removed", "full_backups_removed_bytes"}
-ENGINE_CODES = {"unexpected_current_image", "migration_set_mismatch", "schema_change_requires_separate_release", "configuration_changed_during_backup", "database_clients_still_connected", "insufficient_backup_space", "database_backup_failed", "uploads_backup_failed", "database_restore_verification_failed", "uploads_restore_verification_failed", "uploads_restore_content_mismatch", "restore_cleanup_failed", "app_switch_failed", "app_health_failed", "rollback_failed", "release_already_running", "interrupted_release_requires_recovery", "unknown_database_peer", "unsupported_volume_topology", "compose_contract_mismatch", "release_interrupted"}
+ENGINE_CODES = {"unexpected_current_image", "migration_set_mismatch", "schema_change_requires_separate_release", "configuration_changed_during_backup", "database_clients_still_connected", "insufficient_backup_space", "database_backup_failed", "uploads_backup_failed", "database_restore_verification_failed", "uploads_restore_verification_failed", "uploads_restore_content_mismatch", "restore_cleanup_failed", "app_switch_failed", "app_health_failed", "rollback_failed", "release_already_running", "interrupted_release_requires_recovery", "unknown_database_peer", "unsupported_volume_topology", "compose_contract_mismatch", "release_interrupted", "storage_only_identity_invalid"}
 TOOLING_INSTALLER = r'''
 import fcntl, hashlib, json, os, pathlib, re, sys, tempfile
 NAMES = {"vibeon.sh", "attach-proxy.sh"}
@@ -285,6 +291,21 @@ def make_plan(policy, target, state, is_ancestor):
     raise DeliveryError("unknown_server_source")
 
 
+def storage_only_changes(target, state, phases):
+    # Reuse the release planner's ancestor/bootstrap checks. Only an ordinary
+    # release with the current, healthy application as fallback can skip an image.
+    if phases != [Phase(target, state.revision, state.image)]:
+        return False
+    if not SHA.fullmatch(state.revision) or state.health_version != state.revision:
+        return False
+    raw = command(["git", "diff", "--no-ext-diff", "--no-renames", "--name-only", "-z",
+                   state.revision, target, "--"], "release_diff_unavailable")
+    if not raw or not raw.endswith(b"\0"):
+        return False
+    changed = set(raw[:-1].split(b"\0"))
+    return changed <= STORAGE_ONLY_PATHS
+
+
 def ensure_commit(sha):
     try:
         command(["git", "cat-file", "-e", sha + "^{commit}"], "git_source_unavailable")
@@ -453,11 +474,13 @@ class Connection:
             if reply.decode().strip() != image:
                 raise DeliveryError("loaded_image_identity_mismatch")
 
-    def apply(self, phase, image, fallback, expected, policy):
+    def apply(self, phase, image, fallback, expected, policy, *, storage_only=False):
         args = ["python3", "-B", self.remote_directory + "/release-apply.py", "--sha", phase.source, "--image", image,
                 "--rollback-sha", phase.fallback_source, "--rollback-image", fallback,
                 "--compose-sha256", policy["compose_sha256"], "--expected-current-image", expected,
                 "--allowed-proxy-image", policy["shared_proxy_image"]]
+        if storage_only:
+            args.append("--storage-only")
         # An executor may correctly return nonzero after rollback. Capture its
         # JSON separately from transport errors without ever forwarding stderr.
         try:
@@ -469,12 +492,13 @@ class Connection:
             raise DeliveryError("release_result_unknown")
         report = object_reply(reply.stdout, "release_result_unknown")
         status = report.get("status")
-        if status == "released" and reply.returncode == 0 and report.get("sha") == phase.source and report.get("image") == image:
-            result = {"status": "released", "sha": phase.source, "image": image}
+        expected_status = "storage_maintained" if storage_only else "released"
+        if status == expected_status and reply.returncode == 0 and report.get("sha") == phase.source and report.get("image") == image:
+            result = {"status": expected_status, "sha": phase.source, "image": image}
             if summary := retention_reply(report):
                 result["storage_retention"] = summary
             return result
-        if status == "rolled_back" and reply.returncode != 0 and report.get("sha") == phase.fallback_source and report.get("image") == fallback:
+        if not storage_only and status == "rolled_back" and reply.returncode != 0 and report.get("sha") == phase.fallback_source and report.get("image") == fallback:
             return {"status": "rolled_back", "sha": phase.fallback_source, "image": fallback,
                     "reason": report.get("reason") if report.get("reason") in ENGINE_CODES else "executor_failed"}
         if status in {"blocked", "unchanged"} and reply.returncode != 0:
@@ -498,6 +522,13 @@ class Connection:
             self.stage_operation(recipe, "cleanup")
 
 
+def sweep_staging(connection, recipe, report):
+    try:
+        report["obsolete_stages_removed"] = connection.stage_operation(recipe, "sweep")
+    except DeliveryError:
+        report["staging_cleanup"] = "attention"
+
+
 def deliver(target, policy, candidate_image=None):
     assert_current_main(target)
     ensure_commit(target)
@@ -516,6 +547,22 @@ def deliver(target, policy, candidate_image=None):
             phases = make_plan(policy, target, state, is_ancestor)
             if not phases:
                 return {"status": "already_current", "sha": target, "image": state.image}
+            if storage_only_changes(target, state, phases):
+                before_transfer = last_probe = connection.capacity(target, 0, 1)
+                assert_current_main(target)
+                connection.stage(target)
+                last_probe = connection.capacity(target, 0, 1)
+                if connection.preflight(policy["shared_proxy_image"], target) != state:
+                    raise DeliveryError("current_image_changed_before_release")
+                assert_current_main(target)
+                phase = Phase(state.revision, state.revision, state.image)
+                report = connection.apply(phase, state.image, state.image, state.image, policy, storage_only=True)
+                report["storage_capacity"] = capacity_metrics(before_transfer)
+                report["storage_capacity_latest"] = capacity_metrics(last_probe)
+                if report["status"] == "storage_maintained":
+                    report["maintenance_revision"] = target
+                    sweep_staging(connection, target, report)
+                return report
             built = {}
             if candidate_image:
                 verify_local_image(candidate_image, target, target)
@@ -575,10 +622,7 @@ def deliver(target, policy, candidate_image=None):
                       "storage_capacity_latest": capacity_metrics(last_probe)}
             if retention is not None:
                 report["storage_retention"] = retention
-            try:
-                report["obsolete_stages_removed"] = connection.stage_operation(target, "sweep")
-            except DeliveryError:
-                report["staging_cleanup"] = "attention"
+            sweep_staging(connection, target, report)
             return report
         except DeliveryError as error:
             report = {"status": "unknown" if str(error) == "release_result_unknown" else "blocked", "reason": str(error)}
@@ -619,6 +663,9 @@ def job_summary(report, measurement=False):
     lines = [f"## {heading}", "", f"Result: `{report['status']}`."]
     if report.get("reason"):
         lines.append(f"Reason: `{report['reason']}`.")
+    if report["status"] == "storage_maintained":
+        lines.extend(["", f"Storage rules revision: `{report['maintenance_revision']}`.",
+                      f"The site still runs application revision `{report['sha']}`; no application image was uploaded or published."])
     if measurement and report["status"] == "measured":
         lines.extend(["", f"Verified CI revision: `{report['sha']}`.",
                       f"Verified local Docker image: `{report['image']}`.",
@@ -693,7 +740,7 @@ def main():
               flush=True)
     job_summary(report, measurement)
     print(json.dumps(report, sort_keys=True, separators=(",", ":")))
-    return 0 if report["status"] in {"released", "already_current", "disabled", "measured"} else 1
+    return 0 if report["status"] in {"released", "already_current", "disabled", "measured", "storage_maintained"} else 1
 
 
 if __name__ == "__main__":
