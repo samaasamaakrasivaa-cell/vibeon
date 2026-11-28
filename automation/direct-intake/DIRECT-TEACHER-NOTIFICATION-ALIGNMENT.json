@@ -5,13 +5,13 @@
   "key": "DIRECT-TEACHER-NOTIFICATION-ALIGNMENT",
   "owner": "teacher",
   "progress": {
-    "base_sha": "2044f77648fcf73701fe5f2232817fb817bcec28",
+    "base_sha": "7aa0781b4f6046a2c1184426b6c76a9c9aa9d746",
     "branch": "codex/teacher/align-news-notifications",
-    "head_sha": "225ddcc6ef8c05f44e942fb33adb46bde277c89f",
-    "next": "CI и ревью зелёные. Пока #107 не восстановит совместимую main, CD блокирует расхождение миграций. Затем обновить базу #106, перепроверить SHA и выпуск.",
+    "head_sha": "ba9302cad72b93b4d2d3214c09e4249dad6a0a02",
+    "next": "Обычный CD восстановился и подтвердил 5d07042 на сайте. База обновлена, идут повторные Chromium, ревью и CI согласованного SHA.",
     "pr": 106,
-    "stage": "blocked",
-    "test_run": 46149273978
+    "stage": "review",
+    "test_run": 46152777890
   },
   "release": null,
   "source": "direct",
