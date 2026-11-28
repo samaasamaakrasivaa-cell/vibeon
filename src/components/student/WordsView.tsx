@@ -1,14 +1,15 @@
 "use client";
 import Link from "next/link";
-import { useMemo, useState, useTransition } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Dialog } from "../Dialog";
 import { Icon } from "../Icon";
 import { useT } from "@/lib/i18n/client";
-import { addMyWord, deleteMyWord, practiceResult, setWordGoal, updateMyWord } from "@/lib/student/actions";
+import { addMyWord, deleteMyWord, enrichMyWord, practiceResult, setWordGoal, updateMyWord } from "@/lib/student/actions";
+import { wordTranslations } from "@/lib/student/word-translations";
 import { dictationGrade, shuffle } from "@/lib/tasks/parse";
 
-export type W = { id: string; word: string; translation: string | null; example: string | null; ownExample: string | null; level: number; due: boolean };
+export type W = { id: string; word: string; translation: string | null; definition: string | null; ipa: string | null; enrich: boolean; example: string | null; ownExample: string | null; level: number; due: boolean };
 type Props = { words: W[]; goal: number; days: number[]; remindAt: string; doneToday: number; week: { label: string; done: boolean; planned: boolean; today: boolean }[]; streak: number; train: "today" | "all" | null; tab: "overview" | "list"; editGoal: boolean };
 
 const say = (w: string, lang: string) => { if (typeof window === "undefined" || !("speechSynthesis" in window)) return; const u = new SpeechSynthesisUtterance(w); u.lang = lang; u.rate = 0.9; speechSynthesis.cancel(); speechSynthesis.speak(u); };
@@ -99,26 +100,127 @@ function GoalDialog({ p, onClose }: { p: Props; onClose: () => void }) {
   );
 }
 
+function PersonalWordDetails({ word }: { word: W }) {
+  const { t } = useT();
+  const area = useRef<HTMLDivElement>(null);
+  const inFlight = useRef(false);
+  const [result, setResult] = useState<Awaited<ReturnType<typeof enrichMyWord>> | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const load = useCallback(async () => {
+    if (inFlight.current) return;
+    inFlight.current = true;
+    setLoading(true);
+    setResult(null);
+    try {
+      setResult(await enrichMyWord(word.id));
+    } catch {
+      setResult({ ok: false, error: "unavailable" });
+    } finally {
+      setLoading(false);
+      inFlight.current = false;
+    }
+  }, [word.id]);
+
+  useEffect(() => {
+    if (!word.enrich || !area.current) return;
+    if (!("IntersectionObserver" in window)) {
+      void load();
+      return;
+    }
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry?.isIntersecting) return;
+      observer.disconnect();
+      void load();
+    });
+    observer.observe(area.current);
+    return () => observer.disconnect();
+  }, [load, word.enrich, word.translation]);
+
+  const completed = result?.ok ? result : null;
+  const definition = completed?.definition || word.definition;
+  const example = completed?.example || word.example;
+  const ipa = completed?.ipa || word.ipa;
+  return (
+    <div ref={area}>
+      <div className="flex flex-wrap items-baseline gap-x-2">
+        <b lang="en">{word.word}</b>
+        {ipa && <span className="small muted">{ipa}</span>}
+      </div>
+      {word.translation && <span className="small muted">{word.translation}</span>}
+      {definition && <div className="small mt-1"><b>{t("wd.cardDefinition")}</b> <span lang="en">{definition}</span></div>}
+      {example && <div className="small mt-1"><b>{t("wd.cardExample")}</b> <i lang="en">{example}</i></div>}
+      {loading && <p className="small muted mt-1 mb-0" role="status">{t("wd.cardLoading")}</p>}
+      {word.enrich && result && !result.ok && (
+        <div className="flex flex-wrap items-center gap-x-2">
+          <span className="small muted" role="status">{t(result.error === "limit" ? "wd.cardLimit" : "wd.cardUnavailable")}</span>
+          <button type="button" className="btn plain sm" onClick={() => void load()}>{t("wd.cardRetry")}</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function WordList({ words, accent }: { words: W[]; accent: string }) {
   const { t } = useT();
   const router = useRouter();
   const [q, setQ] = useState("");
+  const [notice, setNotice] = useState<"wd.wordExists" | "wd.translationUpdated" | "wd.wordSaveError" | null>(null);
+  const [confirmation, setConfirmation] = useState<Extract<Awaited<ReturnType<typeof addMyWord>>, { status: "confirm" }> | null>(null);
   const [pending, start] = useTransition();
   const levels = [t("cls.lv0"), t("cls.lv1"), t("cls.lv2"), t("cls.lv3"), t("cls.lv4")];
+  const saveWord = (word: string, translation: string, example: string, existing?: NonNullable<typeof confirmation>["existing"]) => {
+    setNotice(null);
+    start(async () => {
+      try {
+        const result = await addMyWord(word, translation, example, existing && { id: existing.id, translation: existing.translation });
+        if (result.status === "confirm") {
+          setConfirmation(result);
+          return;
+        }
+        setConfirmation(null);
+        if (result.status === "existing") setNotice("wd.wordExists");
+        if (result.status === "updated") setNotice("wd.translationUpdated");
+        if (result.status === "empty" || result.status === "changed") setNotice("wd.wordSaveError");
+        if (result.status === "added" || result.status === "updated") setQ("");
+      } catch {
+        setConfirmation(null);
+        setNotice("wd.wordSaveError");
+      }
+    });
+  };
+  const current = confirmation ? wordTranslations(confirmation.existing.translation).join("; ") : "";
   return (
     <section className="card">
-      <form className="mb-4 flex gap-2" onSubmit={(e) => { e.preventDefault(); const [w, tr = "", ex = ""] = q.split(/\s+[—–-]\s+/); if (!w.trim()) return; start(async () => { await addMyWord(w, tr, ex); setQ(""); }); }}>
-        <input className="input" value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("cls.addWordPh")} aria-label={t("cls.addWordPh")} />
+      <form className="mb-4 flex gap-2" onSubmit={(e) => {
+        e.preventDefault();
+        const [word, translation = "", example = ""] = q.split(/\s+[—–-]\s+/);
+        if (!pending && word.trim()) saveWord(word, translation, example);
+      }}>
+        <input className="input" value={q} onChange={(e) => { setQ(e.target.value); setNotice(null); }} placeholder={t("cls.addWordPh")} aria-label={t("cls.addWordPh")} />
         <button className="btn primary" disabled={pending || !q.trim()}>{t("cls.addWord")}</button>
       </form>
+      {notice && <p className="small mb-4 mt-0" role="status">{t(notice)}</p>}
+      {confirmation && (
+        <Dialog key={JSON.stringify([confirmation.existing.id, confirmation.existing.translation])}
+          open onClose={() => { if (!pending) setConfirmation(null); }} title={t("wd.updateTranslation")}>
+          <p className="m-0 break-words">{t("wd.addTranslation", { word: confirmation.existing.word, value: confirmation.value })}</p>
+          {current && <p className="small muted mt-2 mb-0 break-words">{t("wd.currentTranslation", { value: current })}</p>}
+          <div className="actions">
+            <button type="button" className="btn secondary" disabled={pending} onClick={() => setConfirmation(null)}>{t("common.cancel")}</button>
+            <button type="button" className="btn primary" disabled={pending} onClick={() => saveWord(confirmation.existing.word, confirmation.value, "", confirmation.existing)}>
+              {t("wd.updateTranslation")}
+            </button>
+          </div>
+        </Dialog>
+      )}
       {words.length === 0 && <p className="hint">{t("cls.noWords")}</p>}
       <div className="flex flex-col">
         {words.map((w) => (
           <div key={w.id} className="row" style={{ alignItems: "flex-start" }}>
             <button className="iconbtn" style={{ background: "var(--fill)" }} onClick={() => say(w.word, accent)} aria-label={t("tk.listen")}><Icon name="sound" size="sm" /></button>
             <div className="grow">
-              <b className="block">{w.word}</b><span className="small muted">{w.translation}</span>
-              {w.example && <div className="small mt-1"><i>{w.example}</i></div>}
+              <PersonalWordDetails word={w} />
               <input className="input mt-2" style={{ fontSize: 13, padding: "6px 10px" }} defaultValue={w.ownExample ?? ""} placeholder={t("tk.ownExample")} onBlur={(e) => e.target.value !== (w.ownExample ?? "") && updateMyWord(w.id, { ownExample: e.target.value })} aria-label={t("tk.ownExample")} />
             </div>
             <div className="text-right"><div className="flex justify-end gap-1">{[0, 1, 2, 3].map((i) => <i key={i} className="lvl" style={{ background: w.level > i ? "var(--accent)" : "var(--fill)" }} />)}</div><span className="small muted">{levels[w.level]}</span></div>
