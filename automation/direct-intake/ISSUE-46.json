@@ -4,7 +4,12 @@
   "issue": 46,
   "key": "ISSUE-46",
   "owner": "student",
-  "progress": null,
+  "progress": {
+    "base_sha": "a3673f8bf137eb165bf6fe5e311baf531bb30a2f",
+    "branch": "codex/student/personal-dictionary-duplicate",
+    "next": "Выполнить и проверить ручное добавление в личном словаре по прямому уточнению владельца. Проверить стык с выпущенным #97.",
+    "stage": "implementation"
+  },
   "release": null,
   "source": "direct",
   "version": 1
