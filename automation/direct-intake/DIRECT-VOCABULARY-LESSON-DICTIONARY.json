@@ -8,8 +8,8 @@
     "base_sha": "57d38ef98578c1a3a3d7b8281e98b0cd4f1731b5",
     "branch": "codex/vocabulary-training/lesson-dictionary",
     "head_sha": "d2d6b5e2c33bcedeb744a4554790c85ceb6644d4",
-    "merge_sha": "8df23febfca60638f59b8192c399c753c90e232f",
-    "next": "PR объединён. Проверить выпуск автоматически запущенного workflow и публичный SHA.",
+    "merge_sha": "daacd5bf1e2f13c4c0b063f5db07f2f47c887dbc",
+    "next": "PR №94 входит в актуальную main. Проверить её штатный выпуск после смены версии во время первой выкладки.",
     "pr": 94,
     "stage": "publication",
     "test_run": 46127304408
