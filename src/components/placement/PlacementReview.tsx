@@ -65,6 +65,7 @@ export function PlacementReview(p: ReviewProps) {
   const [texts, setTexts] = useState(p.transcript.texts);
   const [showScript, setShowScript] = useState(false);
   const speechQuestions = p.d.speaking?.questions ?? [];
+  const recordedSpeech = speechQuestions.filter((q) => q.url).length;
   const needsTranscript = speechQuestions.some((q, i) => q.url && !texts[i]?.trim());
   const getTexts = async () => {
     if (!needsTranscript && texts.some((x) => x.trim())) return texts;
@@ -364,7 +365,10 @@ export function PlacementReview(p: ReviewProps) {
         <Block title={t("pl.part.speaking")} step={sTask !== null ? STEPS[sTask] : p.d.speaking.level} time={tm.speaking ? fmtSec(tm.speaking) : null} idle={idle.speaking ? fmtSec(idle.speaking) : null} note={!waiting && sTask === null ? t("pr.wsPending") : null}>
           <div className="flex flex-col gap-3">
           <p className="small muted m-0">{t("pr.wsTaskLevel", { l: p.d.speaking.level })}</p>
-          {p.d.speaking.noMic && <div className="alert">{t("pl.noMicNote")}</div>}
+          {recordedSpeech === 0 && <p className="small muted m-0">{t(p.d.speaking.noMic ? "pl.noMicNote" : "pl.noRec")}</p>}
+          {recordedSpeech > 0 && (recordedSpeech < speechQuestions.length || p.d.speaking.noMic) &&
+            <p className="small muted m-0">{t("pl.speechRecorded", { n: recordedSpeech, total: speechQuestions.length })}</p>}
+          {recordedSpeech > 0 && p.d.speaking.noMic && <p className="small muted m-0">{t("pl.speechMicReported")}</p>}
           {p.d.speaking.questions.map((q, i) => (
             <div key={i} className="flex flex-col gap-1">
               <span className="small"><b>{i + 1}.</b> {q.q}{q.rerec > 0 && <span className="muted"> · {t("pl.rerecN", { n: q.rerec })}</span>}{q.peek && <span className="pill orange ml-1">{t("pl.peeked")}</span>}</span>
