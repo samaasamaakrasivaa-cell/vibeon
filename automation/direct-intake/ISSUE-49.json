@@ -14,7 +14,25 @@
     "stage": "publication",
     "test_run": 46158290528
   },
-  "release": null,
+  "release": {
+    "ci": {
+      "result": "success",
+      "run": 46158290528,
+      "sha": "950a2d84ae2496ae6181325e0423339bf9a04ed4"
+    },
+    "delivery": {
+      "result": "success",
+      "run": 46159117305,
+      "sha": "f8d9bf25b193a0540c73df132857db5f2e93abce"
+    },
+    "owner_note": "Для владельца: Словарь и тренировки — в карточке изучаемое слово выделено в примере. Синонимы основного значения перечислены через запятую.",
+    "review": {
+      "comment": 7241193066,
+      "result": "success",
+      "sha": "950a2d84ae2496ae6181325e0423339bf9a04ed4"
+    },
+    "site_sha": "f8d9bf25b193a0540c73df132857db5f2e93abce"
+  },
   "source": "direct",
   "version": 1
 }
