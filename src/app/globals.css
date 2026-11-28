@@ -449,10 +449,13 @@ details.how[open] summary { margin-bottom: 6px; }
 .nrow-dismissible {
   --control-height: 36px;
   --title-line-height: 1.375rem;
+  --action-width: clamp(5.5rem, 24vw, 10rem);
+  --close-width: clamp(1.75rem, 6vw, 2.25rem);
+  --column-gap: clamp(6px, 1.5vw, 12px);
   display: grid;
-  grid-template-columns: 20px minmax(0, 1fr) clamp(6rem, 24vw, 10rem) var(--control-height);
+  grid-template-columns: 20px minmax(0, 1fr) var(--action-width) var(--close-width);
   align-items: start;
-  gap: clamp(6px, 1.5vw, 12px);
+  gap: var(--column-gap);
   padding-inline: clamp(8px, 2.5vw, 14px);
 }
 .nrow-dismissible > .check { margin-block-start: calc((var(--control-height) - 20px) / 2); }
@@ -467,7 +470,21 @@ details.how[open] summary { margin-bottom: 6px; }
   text-align: center;
   white-space: normal;
 }
-.nrow-dismissible > .ndismiss { grid-column: 4; }
+.nrow-dismissible > .ndismiss { grid-column: 4; width: 100%; }
+@media (max-width: 480px) {
+  .nrow-dismissible > .grow { grid-column: 2 / -1; grid-row: 1; }
+  .nrow-dismissible > :is(.nact, .ndismiss) { grid-row: 1; z-index: 1; }
+  .nrow-dismissible > .grow::before {
+    content: "";
+    float: right;
+    width: calc(var(--close-width) + var(--column-gap));
+    height: calc((var(--control-height) + var(--title-line-height)) / 2);
+  }
+  .nrow-dismissible:has(> .nact) > .grow::before {
+    width: calc(var(--action-width) + var(--close-width) + 2 * var(--column-gap));
+  }
+  .nrow-dismissible > .nact > .i { display: none; }
+}
 }
 
 /* ───────── Задания (этап 4) ───────── */
