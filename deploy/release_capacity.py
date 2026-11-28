@@ -4,6 +4,7 @@ import argparse
 import contextlib
 import datetime
 import fcntl
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -186,7 +187,7 @@ def private_backup_file(metadata, device):
             and not metadata.st_mode & 0o077 and metadata.st_size > 0)
 
 
-def daily_receipt(pair, match, now):
+def daily_receipt(pair, match, now, fingerprints):
     try:
         metadata = pair.lstat()
         if (not stat.S_ISDIR(metadata.st_mode) or metadata.st_uid != STAGE_OWNER_UID
@@ -213,10 +214,41 @@ def daily_receipt(pair, match, now):
         captured = datetime.datetime.fromisoformat(receipt["captured_at"])
         verified = datetime.datetime.fromisoformat(receipt["verified_at"])
         utc = datetime.timedelta(0)
-        return (captured.utcoffset() == utc and verified.utcoffset() == utc
-                and captured <= verified <= now <= captured + datetime.timedelta(hours=24))
+        if not (captured.utcoffset() == utc and verified.utcoffset() == utc
+                and captured <= verified <= now <= captured + datetime.timedelta(hours=24)):
+            return False
+        if fingerprints != (receipt["migration_fingerprint"], receipt["schema_sha256"]):
+            return False
+        for name, key in (("database.dump", "database_dump_sha256"), ("uploads.tar.gz", "uploads_archive_sha256")):
+            fd = os.open(pair / name, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+            with os.fdopen(fd, "rb") as stream:
+                if (not private_backup_file(os.fstat(stream.fileno()), metadata.st_dev)
+                        or hashlib.file_digest(stream, "sha256").hexdigest() != receipt[key]):
+                    return False
+        return True
     except (OSError, ValueError, KeyError, TypeError):
         return False
+
+
+def live_backup_fingerprints():
+    query = """SELECT COALESCE(json_agg(json_build_object(
+      'name', migration_name, 'checksum', checksum, 'finished', finished_at IS NOT NULL,
+      'rolled_back', rolled_back_at IS NOT NULL)), '[]'::json) FROM "_prisma_migrations";"""
+    rows = json.loads(run("docker", "exec", "-e", "PGOPTIONS=-c default_transaction_read_only=on",
+                          "vibeon-db-1", "psql", "-XAt", "-v", "ON_ERROR_STOP=1", "-U", "vibeon",
+                          "-d", "vibeon", "-c", query))
+    migrations = {}
+    for row in rows:
+        name, checksum = row["name"], row["checksum"]
+        if (not re.fullmatch(r"[0-9]{14}_[a-zA-Z0-9_]+", name) or not HASH.fullmatch(checksum)
+                or name in migrations or row["finished"] is not True or row["rolled_back"] is not False):
+            raise CapacityError("daily_backup_not_fresh")
+        migrations[name] = checksum
+    schema = run("docker", "exec", "vibeon-app-1", "node", "-e",
+                 "console.log(require('crypto').createHash('sha256').update(require('fs').readFileSync('/app/prisma/schema.prisma')).digest('hex'))")
+    if not migrations or not HASH.fullmatch(schema):
+        raise CapacityError("daily_backup_not_fresh")
+    return hashlib.sha256(json.dumps(migrations, sort_keys=True, separators=(",", ":")).encode()).hexdigest(), schema
 
 
 def has_fresh_daily_backup(root, now=None):
@@ -225,7 +257,8 @@ def has_fresh_daily_backup(root, now=None):
     if backups.is_symlink() or releases.is_symlink() or not releases.is_dir():
         return False
     now = now or datetime.datetime.now(datetime.timezone.utc)
-    return any(daily_receipt(pair, match, now) for pair in sorted(releases.iterdir(), reverse=True)
+    fingerprints = live_backup_fingerprints()
+    return any(daily_receipt(pair, match, now, fingerprints) for pair in sorted(releases.iterdir(), reverse=True)
                if (match := FULL_PAIR_NAME.fullmatch(pair.name)))
 
 
@@ -298,7 +331,7 @@ def main():
         report = {"status": "blocked", "reason": str(error)}
     except subprocess.CalledProcessError:
         report = {"status": "blocked", "reason": "image_transfer_failed" if args.mode == "load" else "capacity_inventory_unavailable"}
-    except (OSError, ValueError, subprocess.TimeoutExpired):
+    except (OSError, ValueError, KeyError, TypeError, subprocess.TimeoutExpired):
         report = {"status": "blocked", "reason": "capacity_inventory_unavailable"}
     print(json.dumps(report, separators=(",", ":")), flush=True)
 

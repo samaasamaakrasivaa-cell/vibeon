@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Capacity checks with synthetic files, devices and Docker metadata."""
 import datetime
+import hashlib
 import gzip
 import importlib.util
 import io
@@ -198,7 +199,9 @@ class CapacityTest(unittest.TestCase):
 
     def test_freshness_requires_private_daily_verified_pair_and_known_journal(self):
         now = datetime.datetime(2026, 11, 28, 12, tzinfo=datetime.timezone.utc)
-        with tempfile.TemporaryDirectory() as temporary, patch.object(capacity, "STAGE_OWNER_UID", os.getuid()):
+        with (tempfile.TemporaryDirectory() as temporary,
+              patch.object(capacity, "STAGE_OWNER_UID", os.getuid()),
+              patch.object(capacity, "live_backup_fingerprints", return_value=("f"*64, "1"*64))):
             root = Path(temporary)
             pair = root / "backups/releases/20261128T060000Z-aaaaaaaaaaaa-bbbbbbbb"
             pair.mkdir(parents=True, mode=0o700)
@@ -210,7 +213,8 @@ class CapacityTest(unittest.TestCase):
             record = {"schema_version": 1, "kind": "daily", "sha": "a"*40,
                       "captured_at": (now - datetime.timedelta(hours=6)).isoformat(),
                       "verified_at": (now - datetime.timedelta(hours=5)).isoformat(),
-                      "database_dump_sha256": "d"*64, "uploads_archive_sha256": "e"*64,
+                      "database_dump_sha256": hashlib.sha256(b"fixture").hexdigest(),
+                      "uploads_archive_sha256": hashlib.sha256(b"fixture").hexdigest(),
                       "migration_fingerprint": "f"*64, "schema_sha256": "1"*64}
             def write(path, content):
                 path.write_text(json.dumps(content))
@@ -222,6 +226,9 @@ class CapacityTest(unittest.TestCase):
                 self.assertFalse(capacity.has_fresh_daily_backup(root, now))
             write(marker, record)
             self.assertTrue(capacity.has_fresh_daily_backup(root, now))
+            (pair / "uploads.tar.gz").write_bytes(b"damaged")
+            self.assertFalse(capacity.has_fresh_daily_backup(root, now))
+            (pair / "uploads.tar.gz").write_bytes(b"fixture")
             (pair / "database.dump").chmod(0o644)
             self.assertFalse(capacity.has_fresh_daily_backup(root, now))
 
