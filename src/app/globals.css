@@ -2822,21 +2822,6 @@ details.prblock[open] .prchev { transform: rotate(180deg); }
   --student-home-action-width: clamp(190px, 22vw, 250px);
 }
 .student-home-main { padding-inline: var(--student-home-panel-inset); }
-.student-home-greeting {
-  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px;
-  padding-bottom: 14px; border-bottom: 1px solid var(--sep);
-}
-.student-home-greeting > div { min-width: 0; }
-.student-greeting-line { display: flex; flex-wrap: wrap; align-items: baseline; gap: 3px 8px; color: var(--text2); font-size: 19px; }
-.student-greeting-line .gname { font-size: clamp(24px, 3vw, 36px); overflow-wrap: anywhere; }
-.student-greeting-clock {
-  display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px; margin-inline-start: auto;
-  border-radius: 12px; background: var(--surface2); color: var(--text2); white-space: nowrap; font-size: 13px;
-}
-.student-greeting-clock b {
-  padding-inline-start: 8px; border-inline-start: 1px solid var(--sep); color: var(--text);
-  font-size: 17px; font-variant-numeric: tabular-nums;
-}
 .student-lesson-heading {
   margin: 0 0 12px; font-size: clamp(19px, 3vw, 24px); line-height: 1.25; letter-spacing: -.025em;
 }
@@ -2926,10 +2911,6 @@ details.prblock[open] .prchev { transform: rotate(180deg); }
 }
 @media (max-width: 520px) {
   .tl.student-lesson-grid { padding: 12px; gap: 12px; grid-template-columns: minmax(0, 1fr); }
-  .student-greeting-line { font-size: 15px; }
-  .student-greeting-line .gname { font-size: 21px; }
-  .student-greeting-clock { font-size: 12px; }
-  .student-greeting-clock b { font-size: 15px; }
   .student-lesson-time { grid-template-columns: auto auto; justify-content: center; align-items: center; column-gap: 12px; }
   .student-lesson-hours { flex-flow: row wrap; justify-content: center; align-items: baseline; gap: 3px 5px; white-space: nowrap; }
   .student-lesson-hours b { font-size: 17px; }

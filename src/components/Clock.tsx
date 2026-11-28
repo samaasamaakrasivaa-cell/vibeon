@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 
 /** Карточка «день + часы» как в прототипе. */
-export function Clock({ lang, tz, compact }: { lang: "ru" | "en"; tz: string; compact?: boolean }) {
+export function Clock({ lang, tz }: { lang: "ru" | "en"; tz: string }) {
   const [now, setNow] = useState<Date | null>(null);
   useEffect(() => {
     setNow(new Date());
@@ -13,12 +13,6 @@ export function Clock({ lang, tz, compact }: { lang: "ru" | "en"; tz: string; co
   const d = now ?? new Date(0);
   // Время и дата — в часовом поясе пользователя, а не браузера
   const part = (o: Intl.DateTimeFormatOptions) => d.toLocaleString(loc, { ...o, timeZone: tz });
-  if (compact) return (
-    <time className="student-greeting-clock" dateTime={now?.toISOString()} style={{ visibility: now ? "visible" : "hidden" }}>
-      <span>{part({ weekday: "short", day: "numeric", month: "short" })}</span>
-      <b>{d.toLocaleTimeString("en-GB", { timeZone: tz, hour: "2-digit", minute: "2-digit", hourCycle: "h23" })}</b>
-    </time>
-  );
   const wd = part({ weekday: "short" }).replace(".", "").toUpperCase();
   const month = part({ day: "numeric", month: "long" }).replace(/^\d+\s*/, "");
   const day = Number(part({ day: "numeric" }));
