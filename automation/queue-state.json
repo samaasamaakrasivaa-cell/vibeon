@@ -10,11 +10,7 @@
     16,
     18
   ],
-  "lease": {
-    "token": "41e49b7b64c24c32be14a17737cc323c",
-    "started_at": "2026-11-28T16:06:28.418217Z",
-    "expires_at": "2026-11-28T19:06:28.418217Z"
-  },
+  "lease": null,
   "checkpoint": {
     "issue": 25,
     "stage": "await_live_verification",
@@ -31,11 +27,11 @@
     "subject_tests": "passed synthetic PostgreSQL/HTTP/Chromium, scope/archive/foreign/role denial, empty/legacy source, repeat, RU/EN, 320/1280",
     "review_summary_id": 7224060100,
     "review_receipt_id": 7238990218,
-    "observed_main_sha": "7aa0781b4f6046a2c1184426b6c76a9c9aa9d746",
-    "release_blocker": "curl /api/health and /api/version: DNS error 6; web fetch unavailable. No direct version or authenticated live subject scenario evidence. CD-01 verified exact public health and image.",
+    "observed_main_sha": "8e4215a2988ba3c0df1917584d49e0b7948eb302",
+    "release_blocker": "curl /api/health and /api/version: DNS error 6; web fetch inaccessible. No direct version or live teacher scenario evidence. Related direct task #113: existing browser proxy CONNECT 403; access denied (comments 7241873296, 7241898592). CD-01 released exact SHA.",
     "release_run_id": 46147737925,
-    "last_confirmed_release_sha": "5d07042533faee38382ddf4097b7e83c89ef6dd7",
-    "last_confirmed_release_run_id": 46151962729,
+    "last_confirmed_release_sha": "8e4215a2988ba3c0df1917584d49e0b7948eb302",
+    "last_confirmed_release_run_id": 46162280847,
     "merge_sha": "0fcef7b9e18fcb9a3165d1e2a7b7e9f7cc172075",
     "release_status": "released exact SHA; public/local health verified by CD-01",
     "release_image": "sha256:cfb3dfdcfb57675fb1e1329c927ce7ab6c1cf4b1d370e318ddf40aff00791e69",
