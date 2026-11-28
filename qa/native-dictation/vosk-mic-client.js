@@ -15,7 +15,7 @@ start.onclick = async () => {
   let model, input, context, recording, recognizer;
   start.disabled = true;
   try {
-    model = await Vosk.createModel(new URL("/models/" + lang + ".tar.gz", location.href).href);
+    model = await verifiedModel(lang);
     input = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1 } });
     context = new AudioContext({ sampleRate: 16000 });
     await context.resume();

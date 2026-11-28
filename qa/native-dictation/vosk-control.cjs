@@ -14,10 +14,9 @@ const origin = "http://127.0.0.1:3334";
 async function recognizeLanguage(page, lang) {
   return page.evaluate(async (language) => {
     const started = performance.now();
-    const modelUrl = new URL("/models/" + language + ".tar.gz", location.href).href;
     let loadTimer;
     const model = await Promise.race([
-      Vosk.createModel(modelUrl),
+      verifiedModel(language),
       new Promise((_, reject) => {
         loadTimer = setTimeout(() => reject(new Error("Worker model startup exceeded 30 seconds")), 30000);
       }),
@@ -61,7 +60,12 @@ async function main() {
   const encoded = original.slice(start, end).match(/createBase64WorkerFactory\('([A-Za-z0-9+/=]+)'/);
   assert.ok(start >= 0 && end > start && encoded, "Pinned worker packaging changed");
   const worker = Buffer.from(encoded[1], "base64").toString("utf8");
-  const standalone = worker.slice(worker.indexOf("\n", 10) + 1);
+  const cacheKey = "modelUrl.replace(/[" + String.fromCharCode(92) + 'W]/g, "_")';
+  const archiveRead = "return this.Vosk.downloadAndExtract(fullModelUrl.toString(), modelPath);";
+  assert.ok(worker.includes(cacheKey) && worker.includes(archiveRead), "Pinned model loader changed");
+  const standalone = worker.slice(worker.indexOf("\n", 10) + 1)
+    .replace(cacheKey, "new URL(modelUrl).hash.slice(1)")
+    .replace(archiveRead, "fullModelUrl.hash = ''; " + archiveRead);
   const library = original.slice(0, start) +
     'var WorkerFactory = function WorkerFactory(options) { return new Worker("/vosk-worker.js", options); };' + original.slice(end);
   for (const [label, source] of [["loader", library], ["worker", standalone]]) {
@@ -87,14 +91,14 @@ async function main() {
     }
     if (req.method !== "GET") return res.writeHead(405).end();
     const url = new URL(req.url, origin);
-    if (url.pathname === "/pcm-worklet.js" || url.pathname === "/vosk-mic-client.js") {
+    if (["/pcm-worklet.js", "/vosk-mic-client.js", "/model-asset.js"].includes(url.pathname)) {
       res.setHeader("Content-Type", "application/javascript");
       return res.end(fs.readFileSync(path.join(__dirname, url.pathname.slice(1))));
     }
     if (url.pathname === "/mic") {
       res.setHeader("Content-Type", "text/html;charset=utf-8");
       res.setHeader("Content-Security-Policy", "default-src 'none'; script-src 'self'; connect-src 'self'; worker-src 'self'; form-action 'self'");
-      return res.end('<!doctype html><html lang="en"><script src="/vosk.js" defer></script><script src="/vosk-mic-client.js" defer></script>' +
+      return res.end('<!doctype html><html lang="en"><script src="/vosk.js" defer></script><script src="/model-asset.js" defer></script><script src="/vosk-mic-client.js" defer></script>' +
         '<form method="post" action="/mic"><label for="note">Observation</label><textarea id="note" name="observation">Manual prefix</textarea>' +
         '<button type="button" id="start">Start</button><button type="button" id="stop" disabled>Stop</button>' +
         '<p role="status" id="status"></p><button type="submit">Save</button></form></html>');
@@ -103,7 +107,7 @@ async function main() {
       res.setHeader("Content-Type", "application/javascript");
       if (req.url === "/vosk-worker.js") {
         res.setHeader("Content-Security-Policy", "default-src 'none'; script-src 'self' 'unsafe-eval'; " +
-          "connect-src " + origin + "/models/; worker-src 'none'");
+          "connect-src blob:; worker-src 'none'");
       }
       return res.end(req.url === "/vosk.js" ? library : standalone);
     }
@@ -116,7 +120,7 @@ async function main() {
     if (req.url !== "/") return res.writeHead(404).end();
     res.setHeader("Content-Type", "text/html;charset=utf-8");
     res.setHeader("Content-Security-Policy", "default-src 'none'; script-src 'self'; connect-src 'self'; worker-src 'self'");
-    res.end('<!doctype html><html><title>Local worker prototype</title><script src="/vosk.js"></script></html>');
+    res.end('<!doctype html><html><title>Local worker prototype</title><script src="/vosk.js"></script><script src="/model-asset.js"></script></html>');
   }).listen(3334, "127.0.0.1");
 
   await new Promise(resolve => server.once("listening", resolve));
@@ -154,7 +158,7 @@ async function main() {
     ]) {
       browser = await chromium.launch({ executablePath: "/usr/bin/google-chrome", args: ["--no-sandbox",
         "--use-fake-ui-for-media-stream", "--use-fake-device-for-media-stream",
-        "--use-file-for-fake-audio-capture=" + path.join(scratch, language + "-mic.wav")] });
+        "--use-file-for-fake-audio-capture=" + path.join(scratch, language + "-mic.wav") + "%noloop"] });
       const page = await browser.newPage({ permissions: ["microphone"] });
       await page.goto(origin + "/mic?lang=" + language);
       const previous = saves.length;
