@@ -27,6 +27,7 @@ export async function savePersonalWord(studentId: string, input: {
   word: string;
   translation: string;
   example: string;
+  definition?: string;
   sourceLessonId?: string;
   confirmation?: WordConfirmation;
 }): Promise<SaveResult> {
@@ -45,7 +46,10 @@ export async function savePersonalWord(studentId: string, input: {
     if (input.confirmation && input.confirmation.id !== existing?.id) return { status: "changed" };
     if (!existing) {
       const saved = await tx.word.create({
-        data: { studentId, word, translation: translation || null, example: text(input.example, 400) || null, sourceLessonId: input.sourceLessonId },
+        data: {
+          studentId, word, translation: translation || null, example: text(input.example, 400) || null,
+          definition: text(input.definition, 400) || null, sourceLessonId: input.sourceLessonId,
+        },
         select: selection,
       });
       return { status: "added", saved };
