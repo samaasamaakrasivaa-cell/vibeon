@@ -41,7 +41,10 @@ export default async function TeacherLayout({ children }: { children: React.Reac
     [
       { href: "/teacher/homework", label: t("nav.toReview"), icon: "inbox" as const, count: toReview }, // домашка, тесты и вопросы учеников
     ],
-    [{ href: "/teacher/courses", label: t("nav.courses"), icon: "book" as const }],
+    [
+      { href: "/teacher/courses", label: t("nav.courses"), icon: "book" as const },
+      { href: "/teacher/placement", label: t("pl.tab"), icon: "target" as const },
+    ],
     [{ href: "/teacher/finance", label: t("nav.finance"), icon: "coin" as const, count: toCheck }],
   ];
   // внизу меню — о платформе: новости и база знаний, тариф, поддержка

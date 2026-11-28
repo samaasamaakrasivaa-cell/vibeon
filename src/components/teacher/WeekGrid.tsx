@@ -17,6 +17,7 @@ export type GridLesson = {
   weekly: boolean; past: boolean; studentId: string | null; charged: boolean; moved: boolean; price: number;
   group?: { id: string; members: string[] } | null; // групповое занятие: состав
   hw: "review" | "partial" | "notdone" | "checked" | null;
+  analysisLessonId?: string;
   prices?: { id: string; name: string; price: number; locked: boolean; counts: boolean; pay?: { state: "paid" | "billed" | "pack" | "unpaid"; invId: string | null; quick: boolean } | null }[]; // цена и оплата урока; у группового — по ученикам
   callLink?: string | null; // ссылка на созвон (одна на ученика / группу)
   short?: string; // имя в сетке: «Анна», а если Ань несколько — «Анна К.»
@@ -684,6 +685,7 @@ function LessonDialog({ l, onClose, initial = "main", moveTo }: { l: GridLesson;
       {l.callLink !== undefined && <CallRow l={l} />}
       <div className="mt-4 flex flex-wrap items-center gap-2">
         <span className={`pill ${statusPill[l.status][0]}`}>{t(statusPill[l.status][1])}</span>
+        {l.status === "DONE" && l.analysisLessonId && <Link href={`/teacher/lesson-analysis/${l.analysisLessonId}`} className="btn secondary sm"><Icon name="spark" size="sm" />{t("today.analysis")}</Link>}
         {l.status === "MISSED" && <span className="pill grey">{l.charged ? t("sch.charged") : t("sch.notCharged")}</span>}
         {l.moved && <span className="pill violet">{t("sch.moved")}</span>}
         {l.hw ? <Link href={`/class/${l.id}?tab=homework`} className={`pill ${{ review: "orange", partial: "blue", notdone: "red", checked: "green" }[l.hw]}`}>{t("nav.homework")}: {t(({ review: "hwT.review", partial: "hwT.partial", notdone: "hwT.notdone", checked: "hwT.checked" } as const)[l.hw])}</Link> : l.status === "DONE" && <span className="pill grey">{t("today.noHw")}</span>}
