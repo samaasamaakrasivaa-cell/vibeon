@@ -1,6 +1,13 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { countsAsAutoCheckedHomework, currentHomeworkAnswers, isAssignedHomeworkTask, needsHomeworkReview } from "../src/lib/homework-review";
+import {
+  countsAsAutoCheckedHomework,
+  currentHomeworkAnswers,
+  isAssignedHomeworkTask,
+  needsHomeworkReview,
+  planHomeworkResubmission,
+  submitHomeworkResubmission,
+} from "../src/lib/homework-review";
 
 const essay = { id: "essay", type: "essay", content: "Explain your choice.", options: {}, section: "homework", hidden: false };
 const essayAnswer = { text: "I chose the longer route." };
@@ -58,4 +65,95 @@ test("a group member's review uses only that member's answer for this lesson", (
   const otherAssignment = { manual: true, extraTaskIds: [] };
   assert.equal(needsHomeworkReview(essay, otherAssignment, essayAnswer, other.status, false), false);
   assert.equal(needsHomeworkReview(essay, undefined, essayAnswer, other.status, false), false);
+});
+
+const ownHomework = { lessonInstanceId: "lesson-a", studentId: "student-a" };
+
+function returnedEssay() {
+  return {
+    id: "answer-a",
+    ...ownHomework,
+    taskId: essay.id,
+    status: "REVIEWED",
+    payload: {
+      ...essayAnswer,
+      rounds: Array.from({ length: 10 }, (_, i) => ({ p: { text: `Earlier answer ${i}` } })),
+    },
+    teacherReview: { ok: false, comment: "Explain the trade-off", at: "2026-11-27", ai: { corrected: "The longer route is quieter." } },
+    shownToStudent: true,
+    attempts: 3,
+    updatedAt: new Date("2026-11-27T12:00:00Z"),
+  };
+}
+
+test("a returned assigned task opens an empty draft and archives the complete reviewed attempt separately", () => {
+  const original = returnedEssay();
+  const transition = planHomeworkResubmission(ownHomework, essay, assigned, original);
+  assert.ok(transition);
+  assert.deepEqual(transition.archivedAttempt, original);
+  assert.notEqual(transition.archivedAttempt.payload, original.payload);
+  assert.notEqual(transition.archivedAttempt.teacherReview, original.teacherReview);
+  assert.deepEqual(transition.draft, {
+    ...ownHomework,
+    taskId: essay.id,
+    payload: {},
+    status: "DRAFT",
+    teacherReview: null,
+    shownToStudent: false,
+  });
+  assert.equal(transition.archivedAttempt.payload.rounds.length, 10);
+});
+
+test("retry excludes approved or malformed reviews, non-reviewed attempts and unavailable homework", () => {
+  const original = returnedEssay();
+  for (const teacherReview of [{ ok: true }, { ok: "false" }, null, { comment: "Old feedback" }]) {
+    assert.equal(planHomeworkResubmission(ownHomework, essay, assigned, { ...original, teacherReview }), null);
+  }
+  for (const status of ["DRAFT", "AUTO_CHECKED", "NEEDS_REVIEW"]) {
+    assert.equal(planHomeworkResubmission(ownHomework, essay, assigned, { ...original, status }), null);
+  }
+  assert.equal(planHomeworkResubmission(ownHomework, essay, { manual: true, extraTaskIds: [] }, original), null);
+  assert.equal(planHomeworkResubmission(ownHomework, essay, { ...assigned, removedTaskIds: [essay.id] }, original), null);
+  assert.equal(planHomeworkResubmission(ownHomework, { ...essay, hidden: true }, assigned, original), null);
+  assert.equal(planHomeworkResubmission(ownHomework, { ...essay, options: { teacherOnly: true } }, assigned, original), null);
+  assert.ok(planHomeworkResubmission(ownHomework, essay, { manual: false, extraTaskIds: [] }, original));
+});
+
+test("a partial draft stays outside the queue and only a complete new submission re-enters it", () => {
+  const transition = planHomeworkResubmission(ownHomework, essay, assigned, returnedEssay());
+  assert.ok(transition);
+  const partial = { ...transition.draft, payload: { text: " " } };
+  assert.equal(submitHomeworkResubmission(ownHomework, essay, assigned, { ...transition, draft: partial }), null);
+  const completed = { ...transition.draft, payload: { text: "The route has less traffic and more shade." } };
+  assert.equal(needsHomeworkReview(essay, assigned, completed.payload, completed.status, false), false);
+  assert.equal(submitHomeworkResubmission(ownHomework, essay, assigned, { archivedAttempt: null, draft: completed }), null);
+  const submission = submitHomeworkResubmission(ownHomework, essay, assigned, { ...transition, draft: completed });
+  assert.ok(submission);
+  assert.equal(needsHomeworkReview(essay, assigned, completed.payload, submission.status, false), true);
+  assert.equal(submitHomeworkResubmission(ownHomework, essay, assigned, { ...transition, draft: { ...completed, ...submission } }), null);
+  assert.equal(submitHomeworkResubmission(ownHomework, essay, { ...assigned, removedTaskIds: [essay.id] }, { ...transition, draft: completed }), null);
+  assert.equal(transition.archivedAttempt.teacherReview.comment, "Explain the trade-off");
+  assert.equal(transition.archivedAttempt.payload.text, essayAnswer.text);
+});
+
+test("a neighbouring task, lesson, or group member cannot reuse the returned decision or draft", () => {
+  const original = returnedEssay();
+  const transition = planHomeworkResubmission(ownHomework, essay, assigned, original);
+  assert.ok(transition);
+  const complete = { ...transition.draft, payload: { text: "My updated answer" } };
+  for (const scope of [
+    { ...ownHomework, studentId: "student-b" },
+    { ...ownHomework, lessonInstanceId: "other-lesson" },
+  ]) {
+    assert.equal(planHomeworkResubmission(scope, essay, assigned, original), null);
+    assert.equal(submitHomeworkResubmission(scope, essay, assigned, { ...transition, draft: complete }), null);
+  }
+  assert.equal(submitHomeworkResubmission(ownHomework, essay, assigned, {
+    archivedAttempt: { ...original, studentId: "student-b" },
+    draft: complete,
+  }), null);
+  const neighbour = { ...essay, id: "neighbour" };
+  const bothAssigned = { ...assigned, extraTaskIds: [essay.id, neighbour.id] };
+  assert.equal(planHomeworkResubmission(ownHomework, neighbour, bothAssigned, original), null);
+  assert.equal(submitHomeworkResubmission(ownHomework, neighbour, bothAssigned, { ...transition, draft: complete }), null);
 });
