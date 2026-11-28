@@ -8,8 +8,8 @@
     "base_sha": "6b57ad51f4d7d48fe661461f9ab52b2d1fc18098",
     "branch": "codex/student/section-tabs-dashboard",
     "head_sha": "22a16eab02202755a249cdad462c3e7b6a3dd01d",
-    "merge_sha": "cfaf344cf94fef2a1be7ee6cec6e71e8436db8a0",
-    "next": "PR #127 в main, итоговое дерево совпадает с проверенным. Ждать CD 46158731180 и подтверждения публичной версии.",
+    "merge_sha": "f8d9bf25b193a0540c73df132857db5f2e93abce",
+    "next": "CD первого SHA остановлен после смены main. Новый SHA содержит #127, совместный CD 46159117305 идёт. Повторить Chromium и подтвердить сайт.",
     "pr": 127,
     "stage": "publication",
     "test_run": 46158126936
