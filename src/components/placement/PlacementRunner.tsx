@@ -132,7 +132,7 @@ export function PlacementRunner({ id, initial, sample, done, home, canFlag = fal
         {(v.section === "reading" || v.section === "listening") && (
           <TextStep key={(v as unknown as TextV).items.map((x) => x.id).join()} v={v as unknown as TextV} pending={pending} attempt={id} onFinish={() => step(() => finishTexts(id))} />
         )}
-        {v.section === "writing" && <WriteStep v={v as WriteV} pending={pending} onSave={(text, final) => final ? step(() => saveWriting(id, text, true)) : saveWriting(id, text, false)} />}
+        {v.section === "writing" && <WriteStep v={v as WriteV} pending={pending} onSave={(text, final) => final ? step(() => saveWriting(id, text, true, v.item?.id)) : saveWriting(id, text, false, v.item?.id)} />}
         {v.section === "speaking" && <SpeakStep v={v as SpeakV} attempt={id} pending={pending} last={open.length <= 1} onFinish={(noMic) => step(() => finishPlacement(id, noMic))} />}
       </>}
       {err && <div className="alert">{err}</div>}
@@ -584,6 +584,7 @@ function SpeakStep({ v, attempt, pending, onFinish, last }: { v: SpeakV; attempt
     c.r.onstop = async () => {
       c.s.getTracks().forEach((x) => x.stop());
       const fd = new FormData(); fd.append("file", new Blob(c.chunks, { type: c.r.mimeType || "audio/webm" }), "answer.webm");
+      fd.append("taskId", it!.id);
       for (let tries = 0; tries < 3; tries++) {
         const res = await fetch(`/api/placement/${attempt}/rec/${n}`, { method: "POST", body: fd }).catch(() => null);
         if (res?.ok) {
@@ -593,6 +594,7 @@ function SpeakStep({ v, attempt, pending, onFinish, last }: { v: SpeakV; attempt
           setCur(nx >= 0 ? nx : null);
           return;
         }
+        if (res?.status === 409) break;
         await new Promise((r) => setTimeout(r, 1500));
       }
       setMicErr(true); setPhase("ready");
