@@ -31,10 +31,8 @@ jobs:
             curl -fsSL --retry 2 "https://huggingface.co/rhasspy/piper-voices/resolve/main/$model.onnx?download=true" -o "$RUNNER_TEMP/$name.onnx"
             curl -fsSL --retry 2 "https://huggingface.co/rhasspy/piper-voices/resolve/main/$model.onnx.json?download=true" -o "$RUNNER_TEMP/$name.onnx.json"
           done
-          printf '%s
-' 'The cat sleeps on the sofa. The cat sleeps on the sofa.' | python -m piper -m "$RUNNER_TEMP/en_US-lessac-medium.onnx" -f "$RUNNER_TEMP/en-raw.wav"
-          printf '%s
-' 'Мне нравится читать книги. Мне нравится читать книги.' | python -m piper -m "$RUNNER_TEMP/ru_RU-irina-medium.onnx" -f "$RUNNER_TEMP/ru-raw.wav"
+          printf '%s\n' 'The cat sleeps on the sofa. The cat sleeps on the sofa.' | python -m piper -m "$RUNNER_TEMP/en_US-lessac-medium.onnx" -f "$RUNNER_TEMP/en-raw.wav"
+          printf '%s\n' 'Мне нравится читать книги. Мне нравится читать книги.' | python -m piper -m "$RUNNER_TEMP/ru_RU-irina-medium.onnx" -f "$RUNNER_TEMP/ru-raw.wav"
           ffmpeg -loglevel error -i "$RUNNER_TEMP/en-raw.wav" -af 'adelay=500|500,apad=pad_dur=4' -ac 1 -ar 48000 "$RUNNER_TEMP/en.wav"
           ffmpeg -loglevel error -i "$RUNNER_TEMP/ru-raw.wav" -af 'adelay=500|500,apad=pad_dur=4' -ac 1 -ar 48000 "$RUNNER_TEMP/ru.wav"
           ./node_modules/.bin/esbuild qa/native-dictation/fixture.tsx --bundle --jsx=automatic --define:process.env.NODE_ENV='"production"' --outfile="$RUNNER_TEMP/fixture.js"
