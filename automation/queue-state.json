@@ -13,14 +13,14 @@
   "lease": {
     "token": "8689ffce830b4f8db626381b06b3dea2",
     "started_at": "2026-11-28T07:58:55.251641Z",
-    "expires_at": "2026-11-28T10:58:55.251641Z"
+    "expires_at": "2026-11-28T10:59:31.888278Z"
   },
   "checkpoint": {
     "issue": 25,
-    "stage": "blocked_global_release",
+    "stage": "refresh_branch",
     "branch": "codex/vocabulary/voc-09",
     "base_sha": "8c71158ca82a234370f6b1ae39b99c3aa4485e42",
-    "next": "Global CD-01 failure: publish returned status unchanged/insufficient_backup_space. Platform/Tech Lead must verify safe backup capacity and successful current-main release first; no merge or other product work. Then recheck Issue #25 ownership, latest main and overlaps, refresh PR #54 and rerun exact-head subject CI/review. Local git and public health/version DNS unavailable. Do not delete backups or bypass CD-01.",
+    "next": "CD-01 recovered: 46122419463 released current main; refresh existing PR #54 from 8824b7d9246986d23a3e6b92c2fe413aeb7ca104, preserving CD-01 and StudentRoadmap changes. Then exact-head isolated CI and one native review. Direct site and Git DNS unavailable.",
     "head_sha": "9c78a8dd0ae2b4bed5348c14ea12d6b83401e120",
     "pr": 54,
     "review_request_comment_id": 7227146200,
@@ -35,11 +35,11 @@
     "prior_head_sha": "589b43e29c47e11cbbe349266c918f869b585b50",
     "prior_ci_run_id": 46054332372,
     "prior_review_summary_id": 7224060100,
-    "observed_main_sha": "82473a1199a160651ae2bed2f8365b5e536d7c72",
-    "release_blocker": "insufficient_backup_space",
+    "observed_main_sha": "8824b7d9246986d23a3e6b92c2fe413aeb7ca104",
+    "release_blocker": null,
     "release_run_id": 46068517899,
-    "last_confirmed_release_sha": "437986d954400f8b44ba456f02a68df18b5f0e31",
-    "last_confirmed_release_run_id": 46066858835
+    "last_confirmed_release_sha": "8824b7d9246986d23a3e6b92c2fe413aeb7ca104",
+    "last_confirmed_release_run_id": 46122419463
   },
   "last_probe": {
     "type": "background_native_review",
