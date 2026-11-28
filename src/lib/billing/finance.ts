@@ -82,6 +82,8 @@ export async function financeData(teacherId: string, tz: string, range: Range) {
   const invDates = new Map((await db.lessonInstance.findMany({ where: { id: { in: openInv.flatMap((i) => i.lessonIds) } }, select: { id: true, startsAt: true } })).map((l) => [l.id, l.startsAt]));
   const datesOf = (i: { lessonIds: string[] }) => i.lessonIds.map((id) => invDates.get(id)).filter((x): x is Date => !!x).sort((a, b) => a.getTime() - b.getTime());
   const perStudent = students.map((s) => {
+    const open = openInv.filter((i) => i.studentId === s.id);
+    const debts = open.filter((i) => i.kind !== "pack");
     const ls = inRange.filter((l) => l.studentId === s.id);
     const lp = inPeriod.filter((l) => l.studentId === s.id);
     return {
@@ -89,8 +91,9 @@ export async function financeData(teacherId: string, tz: string, range: Range) {
       cancelRate: lp.length ? lp.filter((l) => l.status === "CANCELLED").length / lp.length : 0,
       moveRate: lp.length ? lp.filter((l) => l.movedFrom).length / lp.length : 0,
       debtLessons: owed.filter((l) => l.student.id === s.id).map((l) => l.startsAt).sort((a, b) => a.getTime() - b.getTime()),
-      debtInvoices: invoices.filter((i) => i.studentId === s.id && (i.status === "SENT" || i.status === "PROOF_SENT")).map((i) => ({ title: i.title ?? "", amount: i.amount, dates: datesOf(i) })),
-      debt: invoices.filter((i) => i.studentId === s.id && (i.status === "SENT" || i.status === "PROOF_SENT")).reduce((a, i) => a + i.amount, 0) + owed.filter((l) => l.student.id === s.id).reduce((a, l) => a + l.amount, 0),
+      debtInvoices: debts.map((i) => ({ title: i.title ?? "", amount: i.amount, dates: datesOf(i) })),
+      debt: debts.reduce((a, i) => a + i.amount, 0) + owed.filter((l) => l.student.id === s.id).reduce((a, l) => a + l.amount, 0),
+      packDue: open.filter((i) => i.kind === "pack").reduce((sum, i) => sum + i.amount, 0),
       left: s.payType === "PACK" ? s.packs.reduce((a, p) => a + p.lessonsLeft, 0) : null,
     };
   }).sort((a, b) => b.earned - a.earned);
