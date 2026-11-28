@@ -4,7 +4,12 @@
   "issue": 42,
   "key": "ISSUE-42",
   "owner": "ai-quality",
-  "progress": null,
+  "progress": {
+    "base_sha": "ff7dc26aa22c6626b408a58f2dfebc5a0e9febbf",
+    "branch": "codex/ai-quality/private-lesson-dictation",
+    "next": "Проверить локальную диктовку и ручной ввод, провести ревью и CI.",
+    "stage": "implementation"
+  },
   "release": null,
   "source": "direct",
   "version": 1
