@@ -24,9 +24,9 @@ type RecognitionClass = {
   new (): Recognition;
   available?: (options: { langs: Language[]; processLocally: true }) => Promise<string>;
 };
-type Phase = "idle" | "checking" | "recording" | "stopping";
+type Phase = "idle" | "checking" | "starting" | "recording" | "stopping";
 type Issue = "unavailable" | "permission" | "failed" | "empty" | "full";
-type Attempt = { recognition: Recognition | null; transcript: string };
+type Attempt = { recognition: Recognition | null; transcript: string; started: boolean };
 
 function localRecognition() {
   if (!window.isSecureContext) return null;
@@ -41,7 +41,7 @@ function abort(recognition: Recognition | null) {
 const labels = {
   ru: {
     language: "Язык диктовки", start: "Диктовать", stop: "Остановить", cancel: "Отменить диктовку",
-    checking: "Проверяем язык…", recording: "Диктовка на устройстве…", stopping: "Завершаем диктовку…",
+    checking: "Проверяем язык…", starting: "Включаем микрофон…", recording: "Диктовка на устройстве…", stopping: "Завершаем диктовку…",
     unavailable: "Диктовка для этого языка недоступна. Заметку можно набрать.",
     permission: "Микрофон недоступен. Проверьте разрешение или наберите заметку.",
     failed: "Диктовка прервалась. Можно повторить или набрать заметку.",
@@ -49,7 +49,7 @@ const labels = {
   },
   en: {
     language: "Dictation language", start: "Dictate", stop: "Stop", cancel: "Cancel dictation",
-    checking: "Checking the language…", recording: "Dictating on this device…", stopping: "Finishing dictation…",
+    checking: "Checking the language…", starting: "Starting the microphone…", recording: "Dictating on this device…", stopping: "Finishing dictation…",
     unavailable: "Dictation is unavailable for this language. You can type your note.",
     permission: "Microphone unavailable. Check permission or type your note.",
     failed: "Dictation was interrupted. Try again or type your note.",
@@ -71,12 +71,23 @@ export function PrivateLessonDictation({ lang, initialText, maxLength, placehold
 
   useEffect(() => {
     setSupported(!!localRecognition());
-    return () => {
+    const abandon = () => {
       const attempt = active.current;
       active.current = null;
       abort(attempt?.recognition ?? null);
     };
-  }, []);
+    const leave = () => {
+      abandon();
+      setPhase("idle");
+      setIssue(null);
+      onBusy(false);
+    };
+    window.addEventListener("pagehide", leave);
+    return () => {
+      window.removeEventListener("pagehide", leave);
+      abandon();
+    };
+  }, [onBusy]);
 
   function finish(attempt: Attempt, issue: Issue | null, commit = false) {
     if (active.current !== attempt) return;
@@ -100,7 +111,7 @@ export function PrivateLessonDictation({ lang, initialText, maxLength, placehold
     if (active.current || pending) return;
     const api = localRecognition();
     if (!api?.available) return setIssue("unavailable");
-    const attempt: Attempt = { recognition: null, transcript: "" };
+    const attempt: Attempt = { recognition: null, transcript: "", started: false };
     active.current = attempt;
     setIssue(null);
     setPhase("checking");
@@ -118,7 +129,11 @@ export function PrivateLessonDictation({ lang, initialText, maxLength, placehold
       recognition.continuous = true;
       recognition.interimResults = false;
       recognition.onstart = recognition.onaudiostart = () => {
-        if (active.current !== attempt) abort(recognition);
+        if (active.current !== attempt) return abort(recognition);
+        if (!attempt.started) {
+          attempt.started = true;
+          setPhase("recording");
+        }
       };
       recognition.onresult = ({ results }) => {
         if (active.current === attempt) {
@@ -129,8 +144,8 @@ export function PrivateLessonDictation({ lang, initialText, maxLength, placehold
       recognition.onerror = ({ error }) => finish(attempt,
         error === "not-allowed" || error === "service-not-allowed" ? "permission" : "failed");
       recognition.onend = () => finish(attempt, null, true);
+      setPhase("starting");
       recognition.start();
-      if (active.current === attempt) setPhase("recording");
     } catch {
       finish(attempt, "failed");
     }
@@ -138,7 +153,7 @@ export function PrivateLessonDictation({ lang, initialText, maxLength, placehold
 
   function stop() {
     const attempt = active.current;
-    if (!attempt?.recognition) return;
+    if (!attempt?.started || !attempt.recognition) return;
     setPhase("stopping");
     try { attempt.recognition.stop(); } catch { finish(attempt, "failed"); }
   }
