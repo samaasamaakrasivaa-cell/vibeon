@@ -8,9 +8,10 @@
     "base_sha": "2044f77648fcf73701fe5f2232817fb817bcec28",
     "branch": "codex/builder/course-outline",
     "head_sha": "040b50957510a012a23d9dc8b620c84b6a60a863",
-    "next": "Нужно независимое ревью Tech Lead, AI и Roadmap и проверка CI перед выпуском",
+    "next": "CI и браузерные проверки пройдены. Требуется независимое ревью Tech Lead и согласование AI и Roadmap перед выпуском.",
     "pr": 117,
-    "stage": "review"
+    "stage": "review",
+    "test_run": 46151465778
   },
   "release": null,
   "source": "direct",
