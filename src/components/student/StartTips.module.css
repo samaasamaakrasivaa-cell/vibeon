@@ -112,15 +112,24 @@
   overflow-wrap: anywhere;
 }
 
-.action {
+.step .action {
   grid-area: action;
-  justify-self: start;
-  max-width: 100%;
-  min-height: 36px;
-  padding-block: 5px;
+  justify-self: stretch;
+  min-width: 0;
+  min-height: 42px;
+  padding: 7px 12px;
+  border-radius: 12px;
+  background: var(--step-tone);
+  color: #fff;
+  font-size: 14px;
+  line-height: 1.2;
   text-align: center;
+  text-wrap: balance;
   white-space: normal;
 }
+
+.action:hover { filter: brightness(1.1); }
+.action:focus-visible { outline: 2px solid var(--accent-text); outline-offset: 2px; }
 
 .lock {
   grid-area: lock;

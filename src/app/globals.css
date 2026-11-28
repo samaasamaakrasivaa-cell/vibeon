@@ -2927,12 +2927,18 @@ details.prblock[open] .prchev { transform: rotate(180deg); }
 .student-home-task-body { width: 100%; font-size: 14px; }
 .student-home-task > .btn { width: 100%; height: auto; min-height: 36px; padding-block: 7px; white-space: normal; text-align: center; }
 .student-home-placement-active > .btn { min-height: 40px; }
-.student-home-word-count { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 12px; margin-bottom: 6px; }
+.student-home-words > .btn { min-height: 44px; }
+.student-home-word-goal { display: grid; gap: 8px; padding: 12px 14px; border-radius: 14px; background: var(--surface2); }
+.student-home-word-goal[data-goal-reached] { background: var(--ok-bg); }
+.student-home-word-line { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 3px 12px; }
+.student-home-word-success { display: inline-flex; align-items: center; gap: 5px; color: var(--ok-text); }
 @media (min-width: 801px) {
   .student-home-task { grid-template-columns: minmax(0, 1fr) var(--student-home-action-width); column-gap: 24px; }
   .student-home-task > .btn { grid-column: 2; grid-row: 1 / span 2; align-self: center; }
   .student-home-placement-active > .btn { grid-row: 1; align-self: center; }
   .student-home-placement-active > .student-home-task-body { grid-column: 1 / -1; }
+  .student-home-words > .btn { grid-row: 1; }
+  .student-home-words > .student-home-task-body { grid-column: 1 / -1; }
 }
 @media (max-width: 800px) {
   .tl.student-lesson-grid { grid-template-columns: 114px minmax(0, 1fr); }
