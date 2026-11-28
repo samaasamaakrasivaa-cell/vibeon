@@ -10,20 +10,16 @@
     16,
     18
   ],
-  "lease": {
-    "token": "fac7948cbf8149ff82eb10b069952d27",
-    "started_at": "2026-11-28T12:03:16.094646Z",
-    "expires_at": "2026-11-28T15:03:41.048463Z"
-  },
+  "lease": null,
   "checkpoint": {
     "issue": 25,
-    "stage": "request_native_review",
+    "stage": "await_native_review",
     "branch": "codex/vocabulary/voc-09",
     "base_sha": "348c4a99fd27cbc8ee9ac813d2cdc07b7abdbc30",
-    "next": "Request one native review for exact current head; main advanced 3 disjoint Placement files. Recheck actual merge gates and release. No merge yet.",
+    "next": "Exact-head CI and subject tests passed. Native review request 7238969762 read back, no current-head review yet. Await full bot marker, inspect findings, compare fresh main and actual branch requirements, then release gates; no merge.",
     "head_sha": "9d3cb5ebcc719c4051fdc6bf56fb9146dfaf8b29",
     "pr": 54,
-    "review_request_comment_id": null,
+    "review_request_comment_id": 7238969762,
     "ci_run_ids": [
       46138039813
     ],
