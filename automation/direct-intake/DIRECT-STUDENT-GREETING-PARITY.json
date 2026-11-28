@@ -5,13 +5,13 @@
   "key": "DIRECT-STUDENT-GREETING-PARITY",
   "owner": "student",
   "progress": {
-    "base_sha": "f87d8b6f0993b79819ba8d568d0051585f98ec3e",
+    "base_sha": "5d07042533faee38382ddf4097b7e83c89ef6dd7",
     "branch": "codex/student/greeting-parity",
-    "head_sha": "d41e3a85c21a5ba868f228a585b0712ecd18416e",
-    "next": "Chromium и независимое ревью прошли. Дождаться подтверждённого восстановления #107 и точного CI #116.",
+    "head_sha": "40ac395fb936b039d38389fbbd90051874222445",
+    "next": "После продвижения main пересобрано и проверено. Дождаться совместимого #114 CD 46151962729 и точного CI.",
     "pr": 116,
     "stage": "review",
-    "test_run": 46151558787
+    "test_run": 46152070513
   },
   "release": null,
   "source": "direct",
