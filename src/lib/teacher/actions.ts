@@ -6,12 +6,11 @@ import { Prisma, type LessonStatus, type PayType } from "@prisma/client";
 import { callLinkOf } from "../lessons/call-link";
 import { db } from "../db";
 import { requireUser } from "../auth/session";
-import { addDaysIso, fromZoned, hhmm, isoDay, parseIsoDay } from "../time";
+import { fromZoned, hhmm, isoDay, parseIsoDay } from "../time";
 import { getT } from "../i18n/server";
 import { invalidateLessonSessions, withLessonLifecycleLock } from "../live/lesson-session";
 import { notify, notifyPayer } from "../notify";
 import { repriceLessons } from "../billing/engine";
-import { lockStudentBilling, spendPackLesson } from "../billing/pack-usage";
 import { scheduleRangeMinutes } from "./schedule-range";
 import { patchStudentForm } from "../student/form";
 
@@ -440,40 +439,18 @@ export async function packFreeze(studentId: string, until: string | null): Promi
 export async function packDeduct(studentId: string, date: string, start: string): Promise<Result> {
   const { t } = await getT();
   const teacher = await me();
+  const s = await ownStudent(studentId, teacher.id);
+  const pack = await db.pack.findFirst({ where: { studentId, lessonsLeft: { gt: 0 } }, orderBy: { startsAt: "asc" } });
+  if (!pack) return { ok: false, error: t("prof.packEmpty") };
   const from = parseWhen(date, "00:00", teacher.timezone);
   const at = parseWhen(date, start || "12:00", teacher.timezone);
   if (!from || !at) return { ok: false, error: t("sch.err.time") };
-  const until = parseWhen(addDaysIso(date, 1), "00:00", teacher.timezone);
-  if (!until) return { ok: false, error: t("sch.err.time") };
-
-  const result = await db.$transaction(async (tx) => {
-    if (!await lockStudentBilling(tx, studentId)) return "missing";
-    const student = await tx.student.findFirst({ where: { id: studentId, teacherId: teacher.id } });
-    if (!student) return "missing";
-
-    const lessons = await tx.lessonInstance.findMany({
-      where: { studentId, teacherId: teacher.id, isTrial: false, status: { not: "CANCELLED" }, startsAt: { gte: from, lt: until } },
-    });
-    const candidates = start ? lessons.filter((lesson) => +lesson.startsAt === +at) : lessons;
-    if (lessons.length && candidates.length !== 1) return "ambiguous";
-    const selected = candidates[0];
-    if (selected && (selected.deductedAt || selected.billedAt)) return "used";
-
-    const pack = await tx.pack.findFirst({
-      where: { studentId, lessonsLeft: { gt: 0 } },
-      orderBy: [{ startsAt: "asc" }, { id: "asc" }],
-    });
-    if (!pack) return "empty";
-    const lesson = selected ?? await tx.lessonInstance.create({
-      data: { teacherId: teacher.id, studentId, startsAt: at, durationMin: 60, status: at < new Date() ? "DONE" : "PLANNED", price: student.price },
-    });
-    const status = lesson.status === "PLANNED" && lesson.startsAt < new Date() ? "DONE" : lesson.status;
-    return await spendPackLesson(tx, pack, lesson.id, status) ? "ok" : "used";
-  });
-  if (result === "missing") return { ok: false, error: t("pay.err.notFound") };
-  if (result === "empty") return { ok: false, error: t("prof.packEmpty") };
-  if (result === "ambiguous") return { ok: false, error: t("prof.packChooseTime") };
-  if (result === "used") return { ok: false, error: t("prof.packAlreadyDeducted") };
+  let l = await db.lessonInstance.findFirst({ where: { studentId, isTrial: false, deductedAt: null, status: { not: "CANCELLED" }, startsAt: { gte: from, lt: new Date(from.getTime() + 864e5) } }, orderBy: { startsAt: "asc" } });
+  if (!l) l = await db.lessonInstance.create({ data: { teacherId: teacher.id, studentId, startsAt: at, durationMin: 60, status: at < new Date() ? "DONE" : "PLANNED", price: s.price ?? null } });
+  await db.$transaction([
+    db.pack.update({ where: { id: pack.id }, data: { lessonsLeft: { decrement: 1 } } }),
+    db.lessonInstance.update({ where: { id: l.id }, data: { deductedAt: new Date(), charged: true, ...(l.status === "PLANNED" && at < new Date() ? { status: "DONE" } : {}) } }),
+  ]);
   refresh(studentId);
   return { ok: true };
 }

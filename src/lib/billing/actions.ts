@@ -11,7 +11,6 @@ import { buildMessage } from "../invite";
 import { shortCode } from "../auth/crypto";
 import { tgEnabled, botUsername } from "../notify/telegram";
 import { payable } from "./lesson-pay";
-import { lockStudentBilling } from "./pack-usage";
 import { pluralForm } from "@/lib/i18n/dict";
 
 const zan = (n: number) => `${n} ${pluralForm("ru", n, ["занятие", "занятия", "занятий"])}`;
@@ -46,58 +45,33 @@ async function me() {
 export async function confirmLessonPaid(lessonId: string, amount?: number): Promise<R> {
   const { t } = await getT();
   const u = await requireUser("TEACHER");
-  const target = await db.lessonInstance.findFirst({ where: { id: lessonId, teacherId: u.id }, select: { studentId: true } });
-  const studentId = target?.studentId;
-  if (!studentId) return { ok: false, error: t("pay.err.notFound") };
-
-  const result = await db.$transaction(async (tx) => {
-    if (!await lockStudentBilling(tx, studentId)) return { error: "pay.err.notFound" } as const;
-    const l = await tx.lessonInstance.findFirst({
-      where: { id: lessonId, teacherId: u.id, studentId }, include: { student: true },
-    });
-    if (!l?.student) return { error: "pay.err.notFound" } as const;
-    if (!payable(l)) return { error: "pay.err.notPayable" } as const;
-    const sum = Math.round(amount && amount > 0 ? amount : l.price ?? l.student.price ?? 0);
-    if (!(sum > 0 && sum < 10_000_000)) return { error: "pay.err.noPrice" } as const;
-
-    const invs = await tx.invoice.findMany({ where: { studentId, lessonIds: { has: l.id }, status: { not: "CANCELLED" } } });
-    if (invs.some((i) => i.status === "PAID")) return { alreadyPaid: true } as const;
-    if (l.deductedAt) return { error: "prof.packAlreadyDeducted" } as const;
-
-    const now = new Date();
-    const open = invs[0];
-    if (open && open.lessonIds.length === 1) {
-      await tx.invoice.update({
-        where: { id: open.id },
-        data: { status: "PAID", paidAt: now, autoAccepted: false, closedAt: now, ...(amount && amount > 0 ? { amount: sum } : {}) },
-      });
-    } else {
-      if (open) {
-        const left = open.lessonIds.filter((id) => id !== l.id);
-        await tx.invoice.update({
-          where: { id: open.id },
-          data: { lessonIds: left, amount: Math.max(0, open.amount - (l.price ?? l.student.price ?? 0)), title: left.length === 1 ? open.title : `Уроки: ${left.length}` },
-        });
-      }
-      const when = l.startsAt.toLocaleString("ru-RU", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: l.student.timezone });
-      await tx.invoice.create({ data: {
-        studentId, amount: sum, kind: "lessons", title: `Урок ${when}`, lessonIds: [l.id], status: "PAID", paidAt: now,
-        closedAt: now, proofKind: "teacher", payerName: l.student.payerName, payerContact: l.student.payerContact,
-      } });
+  const l = await db.lessonInstance.findUnique({ where: { id: lessonId }, include: { student: true } });
+  if (!l || l.teacherId !== u.id || !l.student) return { ok: false, error: t("pay.err.notFound") };
+  if (!payable(l)) return { ok: false, error: t("pay.err.notPayable") };
+  const sum = Math.round(amount && amount > 0 ? amount : l.price ?? l.student.price ?? 0);
+  if (!(sum > 0 && sum < 10_000_000)) return { ok: false, error: t("pay.err.noPrice") };
+  const invs = await db.invoice.findMany({ where: { studentId: l.student.id, lessonIds: { has: l.id }, status: { not: "CANCELLED" } } });
+  if (invs.some((i) => i.status === "PAID")) return { ok: true }; // уже оплачен
+  const open = invs[0];
+  if (open && open.lessonIds.length === 1) {
+    if (amount && amount > 0 && amount !== open.amount) await db.invoice.update({ where: { id: open.id }, data: { amount: sum } });
+    await acceptInvoice({ ...open, amount: sum }, false);
+  } else {
+    if (open) {
+      // урок выходит из общего счёта: в нём остаются другие уроки, сумма — без этого урока
+      const left = open.lessonIds.filter((x) => x !== l.id);
+      await db.invoice.update({ where: { id: open.id }, data: { lessonIds: left, amount: Math.max(0, open.amount - (l.price ?? l.student.price ?? 0)), title: left.length === 1 ? open.title : `Уроки: ${left.length}` } });
     }
-    await tx.lessonInstance.update({ where: { id: l.id }, data: {
-      billedAt: l.billedAt ?? now,
-      ...(l.student.payType === "PACK" && (!open || open.lessonIds.length > 1) ? { deductedAt: now } : {}),
-      ...(l.price === null || (amount && amount > 0 && amount !== l.price) ? { price: sum } : {}),
-    } });
-    return { lesson: l, sum } as const;
-  });
-  if (result.error) return { ok: false, error: t(result.error) };
-  if (result.alreadyPaid) return { ok: true };
-  const { lesson: l, sum } = result;
+    const when = l.startsAt.toLocaleString("ru-RU", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: l.student.timezone });
+    const now = new Date();
+    await db.invoice.create({ data: { studentId: l.student.id, amount: sum, kind: "lessons", title: `Урок ${when}`, lessonIds: [l.id], status: "PAID", paidAt: now, closedAt: now, proofKind: "teacher", payerName: l.student.payerName, payerContact: l.student.payerContact } });
+    // абонемент: урок оплачен отдельно — из абонемента не списывается
+    await db.lessonInstance.update({ where: { id: l.id }, data: { billedAt: l.billedAt ?? now, ...(l.student.payType === "PACK" && !l.deductedAt ? { deductedAt: now } : {}) } });
+  }
+  if (l.price === null || (amount && amount > 0 && amount !== l.price)) await db.lessonInstance.update({ where: { id: l.id }, data: { price: sum } });
   await checksDone(u.id);
   // ученику — в «Что нового»: преподаватель отметил урок оплаченным
-  if (l.student?.userId) {
+  if (l.student.userId) {
     const day = l.startsAt.toLocaleDateString("ru-RU", { day: "numeric", month: "long", timeZone: l.student.timezone });
     await notify({ userId: l.student.userId, kind: "paid", title: `Преподаватель отметил оплату урока ${day}: ${new Intl.NumberFormat("ru-RU").format(sum)} ₽. Спасибо!`, link: "/student/payments?tab=bills" }).catch(() => null);
   }
@@ -122,22 +96,17 @@ export async function payLater(lessonId: string, back = false): Promise<R> {
  *  Счёт за абонемент — обратно в ожидание оплаты (абонемент, если ещё не начат, снимается). */
 async function reopenPaid(inv: Invoice) {
   if (inv.kind === "pack" || !inv.lessonIds.length) return undoAccept(inv);
-  return db.$transaction(async (tx) => {
-    if (!await lockStudentBilling(tx, inv.studentId)) return "unchanged";
-    const current = await tx.invoice.findFirst({ where: { id: inv.id, studentId: inv.studentId, status: "PAID" } });
-    if (!current) return "unchanged";
-    if (current.proofKind === "teacher") await tx.invoice.delete({ where: { id: current.id } });
-    else await tx.invoice.update({ where: { id: current.id }, data: { status: "CANCELLED", paidAt: null, closedAt: null, autoAccepted: false } });
-    await tx.lessonInstance.updateMany({ where: { id: { in: current.lessonIds } }, data: { billedAt: null, deductedAt: null, payLaterAt: null, noBill: true } });
-    return "ok";
-  });
+  await db.$transaction([
+    inv.proofKind === "teacher" ? db.invoice.delete({ where: { id: inv.id } }) : db.invoice.update({ where: { id: inv.id }, data: { status: "CANCELLED", paidAt: null, closedAt: null, autoAccepted: false } }),
+    db.lessonInstance.updateMany({ where: { id: { in: inv.lessonIds } }, data: { billedAt: null, deductedAt: null, payLaterAt: null, noBill: true } }),
+  ]);
 }
 
 /** Отменить подтверждение оплаты (нажали по ошибке) — сутки после подтверждения, в «Финансах» → «Недавние оплаты». */
 export async function undoPaid(invoiceId: string): Promise<R> {
   const inv = await teacherInvoice(invoiceId);
-  if (inv.status !== "PAID" && inv.kind !== "pack") return { ok: true };
-  if (await reopenPaid(inv) === "used") return { ok: false, error: (await getT()).t("pay.err.packUsed") };
+  if (inv.status !== "PAID") return { ok: true };
+  await reopenPaid(inv);
   refresh();
   return { ok: true };
 }
@@ -150,7 +119,7 @@ export async function undoLessonPaid(lessonId: string): Promise<R> {
   if (!l || l.teacherId !== u.id || !l.studentId) return { ok: false, error: t("pay.err.notFound") };
   const inv = await db.invoice.findFirst({ where: { studentId: l.studentId, lessonIds: { has: l.id }, status: "PAID" } });
   if (!inv) return { ok: true };
-  if (await reopenPaid(inv) === "used") return { ok: false, error: (await getT()).t("pay.err.packUsed") };
+  await reopenPaid(inv);
   refresh();
   return { ok: true };
 }
@@ -164,7 +133,8 @@ async function checksDone(teacherId: string) {
 
 export async function markPaid(id: string): Promise<R> {
   const inv = await teacherInvoice(id);
-  if (inv.status === "PAID" || !await acceptInvoice(inv, false)) return { ok: true };
+  if (inv.status === "PAID") return { ok: true };
+  await acceptInvoice(inv, false);
   await checksDone(inv.student.teacherId);
   await notifyPayer(inv.studentId, `Оплата ${new Intl.NumberFormat("ru-RU").format(inv.amount)} ₽ за занятия английским (${inv.student.name}) получена. Спасибо!`);
   if (inv.student.userId) await notify({ userId: inv.student.userId, kind: "paid", title: `Оплата получена: ${new Intl.NumberFormat("ru-RU").format(inv.amount)} ₽. Спасибо!`, link: "/student/payments?tab=bills" });
@@ -212,27 +182,15 @@ export async function closeInvoice(id: string): Promise<R> {
 /** «Отменить» — автоприём отменяется, счёт снова ждёт проверки. */
 export async function undoAuto(id: string): Promise<R> {
   const inv = await teacherInvoice(id);
-  if (await undoAccept(inv) === "used") return { ok: false, error: (await getT()).t("pay.err.packUsed") };
+  await undoAccept(inv);
   refresh();
   return { ok: true };
 }
 
 /** Подтверждение не подошло — счёт снова ждёт оплаты, ученику уведомление. */
-export async function rejectProof(id: string, comment: string, expectedProofAt: string): Promise<R> {
+export async function rejectProof(id: string, comment: string): Promise<R> {
   const inv = await teacherInvoice(id);
-  const proofAt = typeof expectedProofAt === "string" && expectedProofAt.length === 24 ? new Date(expectedProofAt) : null;
-  const stale = async (): Promise<R> => ({ ok: false, error: (await getT()).t("pay.err.proofChanged") });
-  if (!proofAt || !Number.isFinite(proofAt.getTime()) || proofAt.toISOString() !== expectedProofAt) return stale();
-
-  const changed = await db.$transaction(async (tx) => {
-    if (!await lockStudentBilling(tx, inv.studentId)) return false;
-    const result = await tx.invoice.updateMany({
-      where: { id, studentId: inv.studentId, student: { teacherId: inv.student.teacherId }, status: "PROOF_SENT", paidAt: null, proofAt },
-      data: { status: "SENT", autoAccepted: false },
-    });
-    return result.count === 1;
-  });
-  if (!changed) return stale();
+  await db.invoice.update({ where: { id }, data: { status: "SENT", autoAccepted: false } });
   if (inv.student.userId) await notify({ userId: inv.student.userId, kind: "invoice", title: `Оплата не найдена${comment ? `: ${comment.slice(0, 100)}` : ""}. Проверь, пожалуйста`, action: "decide", link: "/student/payments?tab=bills" });
   refresh();
   return { ok: true };
@@ -248,22 +206,8 @@ export async function resendInvoice(id: string): Promise<R> {
 
 export async function cancelInvoice(id: string): Promise<R> {
   const inv = await teacherInvoice(id);
-  const result = await db.$transaction(async (tx) => {
-    if (!await lockStudentBilling(tx, inv.studentId)) return "unchanged";
-    const current = await tx.invoice.findFirst({ where: { id: inv.id, studentId: inv.studentId } });
-    if (!current) return "unchanged";
-    const pack = await tx.pack.findUnique({ where: { invoiceId: current.id } });
-    if (pack && (pack.used || pack.lessonsLeft !== pack.lessonsTotal)) return "used";
-    if (current.status === "CANCELLED") return "unchanged";
-    if (pack || (current.kind === "pack" && (current.status === "PAID" || current.paidAt))) return "paid";
-    await tx.invoice.update({ where: { id: current.id }, data: { status: "CANCELLED" } });
-    if (current.lessonIds.length) await tx.lessonInstance.updateMany({ where: { id: { in: current.lessonIds } }, data: { billedAt: null } });
-    return "ok";
-  });
-  if (result === "used" || result === "paid") {
-    const { t } = await getT();
-    return { ok: false, error: t(result === "used" ? "pay.err.packUsed" : "pay.err.packUndoFirst") };
-  }
+  await db.invoice.update({ where: { id }, data: { status: "CANCELLED" } });
+  if (inv.lessonIds.length) await db.lessonInstance.updateMany({ where: { id: { in: inv.lessonIds } }, data: { billedAt: null } });
   refresh();
   return { ok: true };
 }
@@ -272,12 +216,11 @@ export async function cancelInvoice(id: string): Promise<R> {
 export async function billNow(studentId: string): Promise<R> {
   const { t } = await getT();
   const s = await ownStudent(studentId);
-  const lessons = await db.lessonInstance.findMany({ where: { studentId, billedAt: null, deductedAt: null, NOT: { isTrial: true, OR: [{ price: null }, { price: { lte: 0 } }] }, // платный пробный — в счёт; бесплатный — нет
+  const lessons = await db.lessonInstance.findMany({ where: { studentId, billedAt: null, NOT: { isTrial: true, OR: [{ price: null }, { price: { lte: 0 } }] }, // платный пробный — в счёт; бесплатный — нет
        OR: [{ status: "DONE" }, { status: "MISSED", charged: true }] }, orderBy: { startsAt: "asc" } });
   if (!lessons.length) return { ok: false, error: t("pay.err.nothingToBill") };
   const amount = lessons.reduce((a, l) => a + (l.price ?? s.price ?? 0), 0);
-  const invoice = await createInvoice(s, { amount, kind: "lessons", lessonIds: lessons.map((l) => l.id), title: lessons.length === 1 ? "Урок" : `Уроки: ${lessons.length}` });
-  if (!invoice) return { ok: false, error: t("pay.err.nothingToBill") };
+  await createInvoice(s, { amount, kind: "lessons", lessonIds: lessons.map((l) => l.id), title: lessons.length === 1 ? "Урок" : `Уроки: ${lessons.length}` });
   refresh();
   return { ok: true };
 }
@@ -334,7 +277,6 @@ export async function iPaid(id: string, proof: { text?: string; file?: string })
   if (!proof.text?.trim() && !proof.file) return { ok: false, error: t("pay.err.proof") };
   if (proof.file && !proof.file.startsWith("/api/files/")) return { ok: false, error: "file" };
   const auto = await submitProof(inv, proof);
-  if (auto === null) return { ok: false, error: t("pay.err.proofChanged") };
   // Без revalidatePath: он обновил бы и эту страницу, и карточка счёта исчезла бы вместе с сообщением «Оплата принята».
   // Страницу ученика обновляет окно после закрытия; страницы учителя динамические и покажут новое при открытии.
   return { ok: true, auto };
