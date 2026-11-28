@@ -706,7 +706,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
                   preview={!!d.preview}
                   canSave={gTeacher ? !!viewMember : !!d.student}
                   recipient={gTeacher ? viewMember?.name : undefined}
-                  save={(word, translation) => send("word", { op: "add", word, tr: translation, dictionary: true })}
+                  save={(word, translation, confirmation) => send("word", { op: "add", word, tr: translation, dictionary: true, confirmation })}
                 />
               )}
               {panel === "timer" && <Timer left={live.timer ? timerLeft : 0} paused={timerPaused} task={timerTask ? lessonTasks.concat(hwTasks).find((x) => x.id === timerTask)?.title || t("cls.thisTask") : null}

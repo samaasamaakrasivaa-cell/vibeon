@@ -9,6 +9,7 @@ import { classAccess, type LiveState } from "@/lib/live/access";
 import { publish, withLock } from "@/lib/live/bus";
 import { startLessonSession, withLessonLifecycleLock, type LessonFinishedEvent } from "@/lib/live/lesson-session";
 import { inLessonNow } from "@/lib/student/in-lesson";
+import { savePersonalWord, withPersonalWordTransaction } from "@/lib/student/save-personal-word";
 import { rateLimit } from "@/lib/rate-limit";
 import { isAssignedHomeworkTask } from "@/lib/homework-review";
 import { setHomeworkAssignment } from "@/lib/tasks/homework-selection";
@@ -367,37 +368,40 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       if (body.op === "add") {
         const word = str(body.word, 120).trim();
         if (!word) return bad();
-        const dictionary = body.dictionary === true;
         const inputTranslation = str(body.tr, 200);
-        const translation = (dictionary ? inputTranslation.trim() : inputTranslation) || null;
-        if (dictionary && !translation) return bad();
-        return withLock(`word:${studentId}`, async () => {
+        if (body.dictionary === true) {
+          if (!inputTranslation.trim()) return bad();
+          const confirmation = body.confirmation;
+          if (confirmation !== undefined && (
+            !confirmation || typeof confirmation.id !== "string" || confirmation.id.length > 100 ||
+            (confirmation.translation !== null && typeof confirmation.translation !== "string")
+          )) return bad();
+
+          const result = await savePersonalWord(studentId, {
+            word, translation: inputTranslation, example: str(body.ex, 400), sourceLessonId: tg.id, confirmation,
+          });
+          if (result.status === "confirm") return NextResponse.json({ ok: true, ...result });
+          if (!("saved" in result)) return bad(result.status);
+
+          publish(ch, "word", { op: "add", word: result.saved, sid: studentId });
+          return NextResponse.json({ ok: true, status: result.status, translation: result.saved.translation });
+        }
+
+        const translation = inputTranslation || null;
+        const saved = await withPersonalWordTransaction(studentId, async (tx) => {
           const select = { id: true, word: true, translation: true, example: true, level: true };
-          const existing = await db.word.findFirst({
+          const existing = await tx.word.findFirst({
             where: { studentId, word: { equals: word, mode: "insensitive" } },
             orderBy: [{ createdAt: "asc" }, { id: "asc" }],
             select,
           });
-          let saved = existing;
-          let status = "existing";
-          if (!saved) {
-            saved = await db.word.create({
-              data: { studentId, word, translation, example: str(body.ex, 400) || null, sourceLessonId: tg.id },
-              select,
-            });
-            status = "added";
-          } else if (dictionary && translation && !saved.translation?.trim()) {
-            const { count } = await db.word.updateMany({
-              where: { id: saved.id, studentId, translation: saved.translation },
-              data: { translation },
-            });
-            saved = await db.word.findUnique({ where: { id: saved.id }, select });
-            if (!saved) return bad();
-            if (count) status = "updated";
-          }
-          publish(ch, "word", { op: "add", word: saved, sid: studentId });
-          return NextResponse.json({ ok: true, ...(dictionary ? { status, translation: saved.translation } : {}) });
+          return existing ?? await tx.word.create({
+            data: { studentId, word, translation, example: str(body.ex, 400) || null, sourceLessonId: tg.id },
+            select,
+          });
         });
+        publish(ch, "word", { op: "add", word: saved, sid: studentId });
+        return NextResponse.json({ ok: true });
       } else if (body.op === "del" && teacher) {
         const w = await db.word.findUnique({ where: { id: str(body.wid, 60) } });
         if (w?.studentId !== tg.studentId) return bad();

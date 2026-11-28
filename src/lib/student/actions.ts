@@ -9,12 +9,13 @@ import { searchDictionary } from "../ai/dictionary-lookup";
 import { AiError, lookupWordCard, scrub } from "../ai/gateway";
 import { wordCardInput } from "../ai/word-card";
 import { rateLimit } from "../rate-limit";
-import { publish, withLock } from "../live/bus";
+import { publish } from "../live/bus";
 import { hashPassword, MIN_PASSWORD, verifyPassword } from "../auth/password";
 import { isoDay } from "../time";
 import { completeNotes, notify } from "../notify";
 import { learningAnswers, patchStudentForm } from "./form";
-import { appendWordTranslation, wordTranslations } from "./word-translations";
+import { wordTranslations } from "./word-translations";
+import { savePersonalWord, type WordConfirmation } from "./save-personal-word";
 
 export type R = { ok: true } | { ok: false; error: string };
 const str = (v: unknown, max = 2000) => (typeof v === "string" ? v.trim().slice(0, max) : "");
@@ -123,10 +124,6 @@ export async function practiceResult(wordId: string, correct: boolean): Promise<
   return { ok: true };
 }
 
-type ExistingWord = { id: string; word: string; translation: string | null };
-type AddWordResult = { status: "added" | "existing" | "updated" | "changed" | "empty" }
-  | { status: "confirm"; existing: ExistingWord; value: string };
-
 export async function lookupMyWord(query: string) {
   const { u, s } = await myStudent();
   return searchDictionary(() => query, {
@@ -136,49 +133,16 @@ export async function lookupMyWord(query: string) {
   });
 }
 
-export async function addMyWord(word: string, tr: string, ex: string, confirmation?: Pick<ExistingWord, "id" | "translation">): Promise<AddWordResult> {
+export async function addMyWord(word: string, tr: string, ex: string, confirmation?: WordConfirmation) {
   const { s } = await myStudent();
-  const clean = (value: unknown, max: number) => str(value, max).replace(/\s+/g, " ").trim();
-  const w = clean(word, 120);
-  const translation = clean(tr, 200);
-  if (!w) return { status: "empty" };
-
-  // The lesson uses the same per-student lock for its read-before-create path.
-  const result = await withLock<AddWordResult>(`word:${s.id}`, async () => {
-    const matches = await db.$queryRaw<ExistingWord[]>`
-      SELECT "id", "word", "translation" FROM "Word"
-      WHERE "studentId" = ${s.id}
-        AND lower(btrim(regexp_replace("word", '[[:space:]]+', ' ', 'g'))) = lower(${w})
-      ORDER BY "createdAt", "id"
-    `;
-    const existing = matches[0];
-    if (!existing) {
-      if (confirmation) return { status: "changed" };
-      await db.word.create({ data: { studentId: s.id, word: w, translation: translation || null, example: str(ex, 400) || null } });
-      return { status: "added" };
-    }
-
-    const normalized = translation.toLowerCase();
-    const seen = matches.some((match) => wordTranslations(match.translation).some((value) => value.replace(/\s+/g, " ").toLowerCase() === normalized));
-    if (!translation || seen) return { status: "existing" };
-    if (confirmation?.id !== existing.id || confirmation.translation !== existing.translation) {
-      return { status: "confirm", existing, value: translation };
-    }
-
-    const { count } = await db.word.updateMany({
-      where: { id: existing.id, studentId: s.id, translation: existing.translation },
-      data: { translation: appendWordTranslation(existing.translation, translation) },
-    });
-    return { status: count ? "updated" : "changed" };
-  });
-
+  const result = await savePersonalWord(s.id, { word, translation: tr, example: ex, confirmation });
   if (result.status === "added" || result.status === "updated") revalidatePath("/student/words");
-  return result;
+  return result.status === "confirm" ? result : { status: result.status };
 }
 
-/** Дополняет только пустые поля личного слова. IPA остаётся в словарном кэше. */
-export async function enrichMyWord(id: string): Promise<
-  | { ok: true; definition: string | null; example: string | null; ipa: string | null }
+/** Дополняет только пустые поля личного слова. IPA и синонимы остаются в словарном кэше. */
+export async function enrichMyWord(id: string, suggestSynonyms = false): Promise<
+  | { ok: true; definition: string | null; example: string | null; ipa: string | null; synonyms: string[] | null }
   | { ok: false; error: "not-found" | "limit" | "unavailable" }
 > {
   const { u, s } = await myStudent();
@@ -194,7 +158,7 @@ export async function enrichMyWord(id: string): Promise<
   if (!(await rateLimit(`word-card:${s.id}`, 20))) return { ok: false, error: "limit" };
 
   try {
-    const details = await lookupWordCard(input, { userId: u.id, teacherId: s.teacherId });
+    const details = await lookupWordCard(input, { userId: u.id, teacherId: s.teacherId }, suggestSynonyms === true);
     const where = { id: word.id, studentId: s.id, word: word.word, translation: word.translation };
     const writes = [];
     if (!word.definition?.trim()) {
@@ -206,7 +170,7 @@ export async function enrichMyWord(id: string): Promise<
     if (writes.length) await db.$transaction(writes);
     const saved = await db.word.findFirst({ where, select: { definition: true, example: true } });
     if (!saved) return { ok: false, error: "unavailable" };
-    return { ok: true, ...saved, ipa: details.ipa };
+    return { ok: true, ...saved, ipa: details.ipa, synonyms: details.synonyms ?? null };
   } catch (error) {
     return { ok: false, error: error instanceof AiError && error.code === "limit" ? "limit" : "unavailable" };
   }
