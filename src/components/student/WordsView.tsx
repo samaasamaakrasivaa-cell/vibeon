@@ -6,6 +6,7 @@ import { Dialog } from "../Dialog";
 import { Icon } from "../Icon";
 import { useT } from "@/lib/i18n/client";
 import { addMyWord, deleteMyWord, enrichMyWord, practiceResult, setWordGoal, updateMyWord } from "@/lib/student/actions";
+import { wordTranslations } from "@/lib/student/word-translations";
 import { dictationGrade, shuffle } from "@/lib/tasks/parse";
 
 export type W = { id: string; word: string; translation: string | null; definition: string | null; ipa: string | null; enrich: boolean; example: string | null; ownExample: string | null; level: number; due: boolean };
@@ -164,14 +165,55 @@ function WordList({ words, accent }: { words: W[]; accent: string }) {
   const { t } = useT();
   const router = useRouter();
   const [q, setQ] = useState("");
+  const [notice, setNotice] = useState<"wd.wordExists" | "wd.translationUpdated" | "wd.wordSaveError" | null>(null);
+  const [confirmation, setConfirmation] = useState<Extract<Awaited<ReturnType<typeof addMyWord>>, { status: "confirm" }> | null>(null);
   const [pending, start] = useTransition();
   const levels = [t("cls.lv0"), t("cls.lv1"), t("cls.lv2"), t("cls.lv3"), t("cls.lv4")];
+  const saveWord = (word: string, translation: string, example: string, existing?: NonNullable<typeof confirmation>["existing"]) => {
+    setNotice(null);
+    start(async () => {
+      try {
+        const result = await addMyWord(word, translation, example, existing && { id: existing.id, translation: existing.translation });
+        if (result.status === "confirm") {
+          setConfirmation(result);
+          return;
+        }
+        setConfirmation(null);
+        if (result.status === "existing") setNotice("wd.wordExists");
+        if (result.status === "updated") setNotice("wd.translationUpdated");
+        if (result.status === "empty" || result.status === "changed") setNotice("wd.wordSaveError");
+        if (result.status === "added" || result.status === "updated") setQ("");
+      } catch {
+        setConfirmation(null);
+        setNotice("wd.wordSaveError");
+      }
+    });
+  };
+  const current = confirmation ? wordTranslations(confirmation.existing.translation).join("; ") : "";
   return (
     <section className="card">
-      <form className="mb-4 flex gap-2" onSubmit={(e) => { e.preventDefault(); const [w, tr = "", ex = ""] = q.split(/\s+[—–-]\s+/); if (!w.trim()) return; start(async () => { await addMyWord(w, tr, ex); setQ(""); }); }}>
-        <input className="input" value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("cls.addWordPh")} aria-label={t("cls.addWordPh")} />
+      <form className="mb-4 flex gap-2" onSubmit={(e) => {
+        e.preventDefault();
+        const [word, translation = "", example = ""] = q.split(/\s+[—–-]\s+/);
+        if (!pending && word.trim()) saveWord(word, translation, example);
+      }}>
+        <input className="input" value={q} onChange={(e) => { setQ(e.target.value); setNotice(null); }} placeholder={t("cls.addWordPh")} aria-label={t("cls.addWordPh")} />
         <button className="btn primary" disabled={pending || !q.trim()}>{t("cls.addWord")}</button>
       </form>
+      {notice && <p className="small mb-4 mt-0" role="status">{t(notice)}</p>}
+      {confirmation && (
+        <Dialog key={JSON.stringify([confirmation.existing.id, confirmation.existing.translation])}
+          open onClose={() => { if (!pending) setConfirmation(null); }} title={t("wd.updateTranslation")}>
+          <p className="m-0 break-words">{t("wd.addTranslation", { word: confirmation.existing.word, value: confirmation.value })}</p>
+          {current && <p className="small muted mt-2 mb-0 break-words">{t("wd.currentTranslation", { value: current })}</p>}
+          <div className="actions">
+            <button type="button" className="btn secondary" disabled={pending} onClick={() => setConfirmation(null)}>{t("common.cancel")}</button>
+            <button type="button" className="btn primary" disabled={pending} onClick={() => saveWord(confirmation.existing.word, confirmation.value, "", confirmation.existing)}>
+              {t("wd.updateTranslation")}
+            </button>
+          </div>
+        </Dialog>
+      )}
       {words.length === 0 && <p className="hint">{t("cls.noWords")}</p>}
       <div className="flex flex-col">
         {words.map((w) => (
