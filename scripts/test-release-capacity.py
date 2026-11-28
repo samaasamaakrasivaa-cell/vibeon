@@ -12,6 +12,7 @@ import tempfile
 from types import SimpleNamespace
 import unittest
 from unittest.mock import Mock, patch
+from contextlib import redirect_stdout
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -142,6 +143,40 @@ class CapacityTest(unittest.TestCase):
         self.assertEqual(report["storage_capacity"], {"minimum_space_margin_bytes": -1})
         for operation in (command, connection.stage, connection.transfer, connection.apply):
             operation.assert_not_called()
+
+    def test_pr_measurement_has_no_server_or_release_steps(self):
+        sha = "a" * 40
+        image = "sha256:" + "b" * 64
+        env = {"GITHUB_ACTIONS": "true", "GITHUB_REPOSITORY": delivery.REPO,
+               "GITHUB_EVENT_NAME": "pull_request", "GITHUB_SHA": sha}
+        with tempfile.TemporaryDirectory() as root:
+            summary = Path(root) / "summary"
+            env["GITHUB_STEP_SUMMARY"] = str(summary)
+            with patch.dict(os.environ, env, clear=True), patch.object(sys, "argv", ["runner", "--measure-image", image]), \
+                    patch.object(delivery, "verify_local_image") as verify, patch.object(delivery, "command") as command, \
+                    patch.object(delivery, "archive_bytes", return_value=42), patch.object(delivery, "Connection") as ssh, \
+                    redirect_stdout(io.StringIO()):
+                self.assertEqual(delivery.main(), 0)
+                verify.assert_called_once_with(image, sha, sha)
+                self.assertEqual(command.call_args.args[0][:3], ["docker", "save", "-o"])
+                ssh.assert_not_called()
+            text = summary.read_text()
+            self.assertIn("Expanded archive: 42 bytes", text)
+            self.assertIn("Ingest reserve if absent on server: 126 bytes", text)
+
+    def test_failure_summary_keeps_pre_transfer_and_final_measurements(self):
+        with tempfile.TemporaryDirectory() as root:
+            summary = Path(root) / "summary"
+            report = {"status": "blocked", "reason": "insufficient_pretransfer_space",
+                      "storage_capacity": {"archive_bytes": 300, "minimum_space_margin_bytes": 600},
+                      "storage_capacity_latest": {"archive_bytes": 0, "minimum_space_margin_bytes": -50}}
+            with patch.dict(os.environ, {"GITHUB_STEP_SUMMARY": str(summary)}):
+                delivery.job_summary(report)
+            text = summary.read_text()
+            self.assertIn("Reason: `insufficient_pretransfer_space`", text)
+            self.assertIn("| Lowest filesystem headroom (bytes) | 600 |", text)
+            self.assertIn("| Lowest filesystem headroom (bytes) | -50 |", text)
+            self.assertIn("1 GiB warning margin", text)
 
     def test_block_reason_and_retention_metrics_are_allowlisted(self):
         raw = json.dumps({"status": "blocked", "reason": ["synthetic unrelated data"]}).encode()

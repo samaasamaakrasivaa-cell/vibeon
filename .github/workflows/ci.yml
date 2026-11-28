@@ -87,6 +87,11 @@ jobs:
           module.verify_local_image(sys.argv[1], sys.argv[2], sys.argv[2])
           PY
           bash scripts/check-release-image.sh "$DELIVERY_IMAGE" "$DELIVERY_SHA"
+      - name: Measure candidate storage without server access
+        if: github.event_name == 'pull_request' && github.repository == 'samaasamaakrasivaa-cell/vibeon'
+        run: |
+          DELIVERY_IMAGE=$(docker image inspect --format '{{.Id}}' "vibeon-release:$GITHUB_SHA")
+          python3 scripts/run-delivery.py --measure-image "$DELIVERY_IMAGE"
       - name: Publish the verified main revision
         if: >-
           github.repository == 'samaasamaakrasivaa-cell/vibeon' &&

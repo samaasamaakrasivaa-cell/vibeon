@@ -35,8 +35,9 @@ STAGE_MARKER = ".vibeon-stage-v1"
 CAPACITY_METRICS = {"archive_bytes", "backup_restore_bytes", "minimum_inode_margin", "minimum_space_margin_bytes"}
 CAPACITY_ERRORS = {"capacity_inventory_unavailable", "insufficient_pretransfer_space",
                    "release_already_running", "image_transfer_failed"}
-CAPACITY_WARNING_MARGIN = 512 * 1024**2
+CAPACITY_WARNING_MARGIN = 1024**3
 RETENTION_METRICS = {"images_removed", "verified_full_backups", "full_backup_candidates", "full_backup_candidate_bytes"}
+OPTIONAL_RETENTION_METRICS = {"full_backups_removed", "full_backups_removed_bytes"}
 ENGINE_CODES = {"unexpected_current_image", "migration_set_mismatch", "schema_change_requires_separate_release", "configuration_changed_during_backup", "database_clients_still_connected", "insufficient_backup_space", "database_backup_failed", "uploads_backup_failed", "database_restore_verification_failed", "uploads_restore_verification_failed", "uploads_restore_content_mismatch", "restore_cleanup_failed", "app_switch_failed", "app_health_failed", "rollback_failed", "release_already_running", "interrupted_release_requires_recovery", "unknown_database_peer", "unsupported_volume_topology", "compose_contract_mismatch", "release_interrupted"}
 TOOLING_INSTALLER = r'''
 import fcntl, hashlib, json, os, pathlib, re, sys, tempfile
@@ -152,7 +153,10 @@ def retention_reply(report):
     summary = report.get("storage_retention")
     if (isinstance(summary, dict) and summary.get("status") in ("ok", "attention")
             and all(type(summary.get(key)) is int and summary[key] >= 0 for key in RETENTION_METRICS)):
-        return {key: summary[key] for key in RETENTION_METRICS | {"status"}}
+        safe = {key: summary[key] for key in RETENTION_METRICS | {"status"}}
+        if all(type(summary.get(key)) is int and summary[key] >= 0 for key in OPTIONAL_RETENTION_METRICS):
+            safe.update({key: summary[key] for key in OPTIONAL_RETENTION_METRICS})
+        return safe
     return None
 
 
@@ -450,7 +454,7 @@ class Connection:
                 raise DeliveryError("loaded_image_identity_mismatch")
 
     def apply(self, phase, image, fallback, expected, policy):
-        args = ["python3", self.remote_directory + "/release-apply.py", "--sha", phase.source, "--image", image,
+        args = ["python3", "-B", self.remote_directory + "/release-apply.py", "--sha", phase.source, "--image", image,
                 "--rollback-sha", phase.fallback_source, "--rollback-image", fallback,
                 "--compose-sha256", policy["compose_sha256"], "--expected-current-image", expected,
                 "--allowed-proxy-image", policy["shared_proxy_image"]]
@@ -500,6 +504,8 @@ def deliver(target, policy, candidate_image=None):
     recipe_bytes = committed_file(target, "Dockerfile")
     completed = []
     import_candidates = []
+    before_transfer = None
+    last_probe = None
     with tempfile.TemporaryDirectory(prefix="vibeon-delivery-") as temporary:
         workspace = Path(temporary)
         checker = workspace / "check-release-image.sh"
@@ -522,6 +528,7 @@ def deliver(target, policy, candidate_image=None):
             images = sorted({built[source] for source in needed})
             assert_current_main(target)
             probe = connection.capacity(target, 0, len(phases), images)
+            last_probe = probe
             present = probe.get("present_images")
             if not isinstance(present, list) or any(not isinstance(image, str) or image not in images for image in present):
                 raise DeliveryError("capacity_reply_invalid")
@@ -531,22 +538,23 @@ def deliver(target, policy, candidate_image=None):
                 command(["docker", "save", "-o", str(archive), *missing], "release_archive_failed", timeout=300)
                 size = archive_bytes(archive)
                 probe = connection.capacity(target, size, len(phases))
+            before_transfer = last_probe = probe
             if probe["minimum_space_margin_bytes"] < CAPACITY_WARNING_MARGIN:
-                print("::warning::VibeOn has less than 512 MiB beyond the calculated release budget. "
-                      "Review the storage measurements in issue #67.", file=sys.stderr)
+                print("::warning::VibeOn has less than 1 GiB beyond the calculated release budget. "
+                      "Review the storage measurements in issue #67.", flush=True)
             assert_current_main(target)
             connection.stage(target)
             if missing:
                 import_candidates = missing
                 connection.transfer(archive, size, len(phases), missing)
             connection.verify_loaded(images)
-            connection.capacity(target, 0, len(phases))
+            last_probe = connection.capacity(target, 0, len(phases))
             assert_current_main(target)
             connection.install_tooling(target, policy)
             expected = state.image
             retention = None
             for index, phase in enumerate(phases):
-                connection.capacity(target, 0, len(phases) - index)
+                last_probe = connection.capacity(target, 0, len(phases) - index)
                 latest = connection.preflight(policy["shared_proxy_image"], target)
                 if latest.image != expected:
                     raise DeliveryError("current_image_changed_before_release")
@@ -554,6 +562,8 @@ def deliver(target, policy, candidate_image=None):
                 result = connection.apply(phase, built[phase.source], phase.fallback_image or built[phase.fallback_source], expected, policy)
                 if result["status"] != "released":
                     result["completed_phases"] = completed
+                    result["storage_capacity"] = capacity_metrics(before_transfer)
+                    result["storage_capacity_latest"] = capacity_metrics(last_probe)
                     if import_candidates:
                         result["storage_import_candidates"] = import_candidates
                     return result
@@ -561,7 +571,8 @@ def deliver(target, policy, candidate_image=None):
                 expected = result["image"]
                 retention = result.get("storage_retention")
             report = {"status": "released", "sha": target, "image": expected, "completed_phases": completed,
-                      "storage_capacity": {key: probe[key] for key in CAPACITY_METRICS}}
+                      "storage_capacity": capacity_metrics(before_transfer),
+                      "storage_capacity_latest": capacity_metrics(last_probe)}
             if retention is not None:
                 report["storage_retention"] = retention
             try:
@@ -571,8 +582,12 @@ def deliver(target, policy, candidate_image=None):
             return report
         except DeliveryError as error:
             report = {"status": "unknown" if str(error) == "release_result_unknown" else "blocked", "reason": str(error)}
+            if before_transfer is not None:
+                report["storage_capacity"] = capacity_metrics(before_transfer)
             if isinstance(error, CapacityBlocked) and error.metrics:
-                report["storage_capacity"] = error.metrics
+                report["storage_capacity_latest" if before_transfer is not None else "storage_capacity"] = error.metrics
+            elif last_probe is not None:
+                report["storage_capacity_latest" if before_transfer is not None else "storage_capacity"] = capacity_metrics(last_probe)
             if completed:
                 report["completed_phases"] = completed
             if import_candidates:
@@ -582,26 +597,92 @@ def deliver(target, policy, candidate_image=None):
             connection.cleanup(target)
 
 
+def capacity_metrics(probe):
+    return {key: probe[key] for key in CAPACITY_METRICS if type(probe.get(key)) is int}
+
+
+def measure_image(image, target):
+    verify_local_image(image, target, target)
+    with tempfile.TemporaryDirectory(prefix="vibeon-capacity-") as temporary:
+        archive = Path(temporary) / "release.tar"
+        command(["docker", "save", "-o", str(archive), image], "release_archive_failed", timeout=300)
+        size = archive_bytes(archive)
+    return {"status": "measured", "sha": target, "image": image, "archive_bytes": size,
+            "image_ingest_reserve_bytes": 3 * size}
+
+
+def job_summary(report, measurement=False):
+    path = os.environ.get("GITHUB_STEP_SUMMARY")
+    if not path:
+        return
+    heading = "VibeOn candidate archive measurement" if measurement else "VibeOn release storage checks"
+    lines = [f"## {heading}", "", f"Result: `{report['status']}`."]
+    if report.get("reason"):
+        lines.append(f"Reason: `{report['reason']}`.")
+    if measurement and report["status"] == "measured":
+        lines.extend(["", f"Verified CI revision: `{report['sha']}`.",
+                      f"Verified local Docker image: `{report['image']}`.",
+                      f"Expanded archive: {report['archive_bytes']:,} bytes.",
+                      f"Ingest reserve if absent on server: {report['image_ingest_reserve_bytes']:,} bytes.",
+                      "This isolated runner measurement does not inspect the production server."])
+    metrics = (
+        ("Archive used by the storage guard (bytes)", "archive_bytes"),
+        ("Backup and restore budget (bytes)", "backup_restore_bytes"),
+        ("Lowest filesystem headroom (bytes)", "minimum_space_margin_bytes"),
+        ("Lowest inode headroom", "minimum_inode_margin"),
+    )
+    for key, title in (("storage_capacity", "Before staging"), ("storage_capacity_latest", "Most recent check")):
+        if (snapshot := report.get(key)):
+            lines.extend(["", f"### {title}", "", "| Measurement | Value |", "| --- | ---: |"])
+            lines.extend(f"| {label} | {snapshot[name]:,} |" for label, name in metrics if name in snapshot)
+    if (retention := retention_reply(report)):
+        lines.extend(["", f"Retention result: `{retention['status']}`."])
+        for key, label in (("images_removed", "Old images removed"),
+                           ("verified_full_backups", "Verified full backups"),
+                           ("full_backups_removed", "Old full backups removed"),
+                           ("full_backups_removed_bytes", "Logical size of removed full backups (bytes)")):
+            if key in retention:
+                lines.append(f"- {label}: {retention[key]:,}")
+    if any(report.get(key, {}).get("minimum_space_margin_bytes", CAPACITY_WARNING_MARGIN) < CAPACITY_WARNING_MARGIN
+           for key in ("storage_capacity", "storage_capacity_latest")):
+        lines.extend(["", "Storage is below the 1 GiB warning margin. Review issue #67 before another release."])
+    try:
+        with Path(path).open("a", encoding="utf-8") as summary:
+            summary.write("\n".join(lines) + "\n")
+    except OSError:
+        print("::warning::Could not append the VibeOn release storage job summary.", flush=True)
+
+
 class SafeParser(argparse.ArgumentParser):
     def error(self, _message):
         raise DeliveryError("invalid_arguments")
 
 
 def main():
+    measurement = False
     try:
         parser = SafeParser(add_help=False)
-        parser.add_argument("--candidate-image")
+        mode = parser.add_mutually_exclusive_group()
+        mode.add_argument("--candidate-image")
+        mode.add_argument("--measure-image")
         args = parser.parse_args()
         target = os.environ.get("GITHUB_SHA", "")
+        measurement = args.measure_image is not None
         if (os.environ.get("GITHUB_ACTIONS") != "true" or os.environ.get("GITHUB_REPOSITORY") != REPO
-                or os.environ.get("GITHUB_REF") != "refs/heads/main" or os.environ.get("GITHUB_EVENT_NAME") != "push"
                 or not SHA.fullmatch(target)):
-            raise DeliveryError("trusted_main_ci_required")
-        policy = validate_policy(object_reply(committed_file(target, "deploy/release-policy.json"), "release_policy_invalid"))
-        if not policy["enabled"]:
-            report = {"status": "disabled", "reason": "release_policy_disabled"}
+            raise DeliveryError("trusted_ci_required")
+        if measurement:
+            if os.environ.get("GITHUB_EVENT_NAME") != "pull_request":
+                raise DeliveryError("pull_request_measurement_required")
+            report = measure_image(args.measure_image, target)
         else:
-            report = deliver(target, policy, args.candidate_image)
+            if os.environ.get("GITHUB_REF") != "refs/heads/main" or os.environ.get("GITHUB_EVENT_NAME") != "push":
+                raise DeliveryError("trusted_main_ci_required")
+            policy = validate_policy(object_reply(committed_file(target, "deploy/release-policy.json"), "release_policy_invalid"))
+            if not policy["enabled"]:
+                report = {"status": "disabled", "reason": "release_policy_disabled"}
+            else:
+                report = deliver(target, policy, args.candidate_image)
     except DeliveryError as error:
         report = {"status": "blocked", "reason": str(error)}
     except BaseException:
@@ -609,9 +690,10 @@ def main():
     if report.get("reason") == "insufficient_pretransfer_space":
         print("::warning::VibeOn CD stopped at a storage check. Confirm free space and inode counts "
               "in issue #67 before retrying. The storage_capacity fields show the limiting margins.",
-              file=sys.stderr)
+              flush=True)
+    job_summary(report, measurement)
     print(json.dumps(report, sort_keys=True, separators=(",", ":")))
-    return 0 if report["status"] in {"released", "already_current", "disabled"} else 1
+    return 0 if report["status"] in {"released", "already_current", "disabled", "measured"} else 1
 
 
 if __name__ == "__main__":
