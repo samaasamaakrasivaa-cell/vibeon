@@ -14,7 +14,25 @@
     "stage": "publication",
     "test_run": 46151367137
   },
-  "release": null,
+  "release": {
+    "ci": {
+      "result": "success",
+      "run": 46151367137,
+      "sha": "2980c5f5ead478675e70de457942f62e9bbd8ebe"
+    },
+    "delivery": {
+      "result": "success",
+      "run": 46151962729,
+      "sha": "5d07042533faee38382ddf4097b7e83c89ef6dd7"
+    },
+    "owner_note": "Для владельца: Словарь и тренировки — ученик может найти перевод по Enter в «Моих словах» и сохранить выбранный вариант по «+». Карточка подгружает дефиницию, пример и транскрипцию.",
+    "review": {
+      "comment": 7240175788,
+      "result": "success",
+      "sha": "2980c5f5ead478675e70de457942f62e9bbd8ebe"
+    },
+    "site_sha": "5d07042533faee38382ddf4097b7e83c89ef6dd7"
+  },
   "source": "direct",
   "version": 1
 }
