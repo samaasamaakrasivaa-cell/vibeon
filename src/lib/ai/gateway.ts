@@ -132,11 +132,11 @@ export function wordCardKey(input: WordCardInput) {
   return createHash("sha256").update(JSON.stringify(["word-card-v1", model, input.word, input.translation])).digest("hex");
 }
 
-export async function lookupWordCard(input: WordCardInput, ctx: Ctx) {
+export async function lookupWordCard(input: WordCardInput, ctx: Ctx, suggestSynonyms = false) {
   const key = wordCardKey(input);
   return withLock(`word-card:${key}`, async () => {
-    const cached = parseWordCard((await db.aiCache.findUnique({ where: { key } }))?.value);
-    if (cached) return cached;
+    const cached = parseWordCard((await db.aiCache.findUnique({ where: { key } }))?.value, input.word);
+    if (cached && (!suggestSynonyms || cached.synonyms !== undefined)) return cached;
 
     let details;
     if (provider() === "mock") {
@@ -147,11 +147,12 @@ export async function lookupWordCard(input: WordCardInput, ctx: Ctx) {
         { role: "system", content: wordCardPrompt },
         { role: "user", content: JSON.stringify(input) },
       ], { maxTokens: 180, temperature: 0, timeoutMs: 8000, dataLogging: false });
-      details = parseWordCard(JSON.parse(response.text.trim().replace(/^```(?:json)?\s*|\s*```$/gi, "")));
+      details = parseWordCard(JSON.parse(response.text.trim().replace(/^```(?:json)?\s*|\s*```$/gi, "")), input.word);
     }
     if (!details) throw new AiError("fail");
-    await db.aiCache.upsert({ where: { key }, create: { key, value: details }, update: { value: details } }).catch(() => undefined);
-    return details;
+    const card = { ...(cached ?? details), synonyms: details.synonyms ?? [] };
+    await db.aiCache.upsert({ where: { key }, create: { key, value: card }, update: { value: card } }).catch(() => undefined);
+    return card;
   });
 }
 
