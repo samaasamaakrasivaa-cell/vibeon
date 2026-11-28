@@ -16,6 +16,8 @@ import { Dialog } from "../Dialog";
 import { Icon } from "../Icon";
 import { Mountain } from "./Mountain";
 import { TestPackView } from "./TestPack";
+import { PlacementProposalCard } from "./PlacementProposalCard";
+import type { PlacementProposal } from "@/lib/roadmap/placement-proposal-data";
 import { SelfPlan } from "./SelfPlan";
 import { Dossier } from "./Dossier";
 import type { DossierTopic, SummaryView } from "@/lib/lessons/dossier";
@@ -29,6 +31,7 @@ export type EditorData = {
   pack?: TestPack | null; stats?: AccountStats; schedPerWeek?: number | null;
   dossier?: { threshold: number; topics: DossierTopic[]; summaries: SummaryView[]; words: string[] }; noSummary?: { id: string; date: string; title: string }[];
   checkpoints: CP[];
+  placementProposal?: PlacementProposal | null;
   roadmap: null | {
     id: string; type: string; goal: string; fromLevel: string | null; deadline: string | null; showDate: boolean; pace: string; mood: string; note: string;
     courseIds: string[]; leadCourseId: string | null; approved: boolean; built: boolean; summary: string | null; ai: RouteAi | null;
@@ -295,10 +298,11 @@ export function RoadmapEditor({ d, oralFocus }: { d: EditorData; oralFocus?: Rea
   return (
     <div className="rmgrid">
       <div className="flex flex-col gap-4">
+        {r?.approved && <PlacementProposalCard preview={d.placementProposal ?? null} studentId={d.studentId} roadmapId={r.id} />}
         <Checkpoints d={d} oralFocus={oralFocus} />
         {d.stats && <TestPackView pack={d.pack ?? null} stats={d.stats} />}
         {d.dossier && (d.dossier.summaries.length > 0 || (d.noSummary?.length ?? 0) > 0) && <Dossier studentId={d.studentId} {...d.dossier} noSummary={d.noSummary ?? []} />}
-        {d.stats && <InsightCard studentId={d.studentId} f={{ ...f, goal }} brief={brief} insight={r?.insight ?? null} hasPack={!!d.pack} />}
+        {d.stats && <InsightCard studentId={d.studentId} f={{ ...f, goal }} brief={brief} insight={r?.insight ?? null} hasPack={!!d.pack} autoAnalyze={!r?.approved} />}
         <section className="card flex flex-col gap-4">
           <StepHead n={4} title={t("rm.data")} sub={t("rm2.dataSub")} />
           {blk(t("rm.type"), <div className="flex flex-wrap gap-1.5">{Object.entries(ROUTE_TYPES).map(([k, v]) => <button key={k} type="button" className={`pchip ${f.type === k ? "on" : ""}`} aria-pressed={f.type === k} onClick={() => setF({ ...f, type: k, goal: "" })}>{txt(v.name, lang)}</button>)}</div>)}

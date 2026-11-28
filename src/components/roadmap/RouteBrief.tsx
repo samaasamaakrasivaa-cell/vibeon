@@ -57,7 +57,7 @@ function InsightBlock({ icon, title, tone, items, numbered, edit, value, onChang
   );
 }
 
-export function InsightCard({ studentId, f, brief, insight, hasPack }: { studentId: string; f: RoadmapForm; brief: Brief; insight: InsightSaved | null; hasPack: boolean }) {
+export function InsightCard({ studentId, f, brief, insight, hasPack, autoAnalyze = true }: { studentId: string; f: RoadmapForm; brief: Brief; insight: InsightSaved | null; hasPack: boolean; autoAnalyze?: boolean }) {
   const { t, lang } = useT();
   const { run, pending, error } = useRun();
   const [edit, setEdit] = useState(false);
@@ -71,7 +71,7 @@ export function InsightCard({ studentId, f, brief, insight, hasPack }: { student
   useEffect(() => { setTxt3(init(insight)); setGaps(insight?.gaps ?? []); }, [insight]);
   // ИИ сам изучает комплект, как только он есть, — до того, как учитель что-то заполнит
   const auto = useRef(false);
-  useEffect(() => { if (!insight && hasPack && !auto.current) { auto.current = true; run(() => routeInsight(studentId, f, brief)); } }, [insight, hasPack]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (autoAnalyze && !insight && hasPack && !auto.current) { auto.current = true; run(() => routeInsight(studentId, f, brief)); } }, [autoAnalyze, insight, hasPack]); // eslint-disable-line react-hooks/exhaustive-deps
   const move = (i: number, d: -1 | 1) => { const n = [...gaps]; const j = i + d; if (j < 0 || j >= n.length) return; [n[i], n[j]] = [n[j], n[i]]; setGaps(n); };
   // перетаскивание пробелов мышью: новый порядок сохраняется сразу
   const [drag, setDrag] = useState<number | null>(null);
