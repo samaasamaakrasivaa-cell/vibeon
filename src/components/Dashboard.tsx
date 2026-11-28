@@ -53,7 +53,11 @@ export async function Dashboard({ user, role, day, top }: { user: User; role: "T
   const from = dayStart(windowStart, tz);
   const to = dayStart(addDaysIso(windowStart, 7), tz);
   const dayHref = (iso: string) => iso === todayIso ? "?" : `?d=${iso}`;
-  if (role === "TEACHER") await syncSchedule(user.id);
+  const [prof] = role === "TEACHER" ? await Promise.all([
+    db.teacherProfile.findUnique({ where: { userId: user.id }, select: { callLink: true, settings: true } }),
+    syncSchedule(user.id),
+  ]) : [null];
+  const hiddenNotices = Object.keys((prof?.settings as { dismissedNotifications?: Record<string, true> } | null)?.dismissedNotifications ?? {});
 
   const where = role === "TEACHER" ? { teacherId: user.id } : { student: { userId: user.id } };
   const [lessonsAll, notifications, hws] = await Promise.all([
@@ -61,7 +65,7 @@ export async function Dashboard({ user, role, day, top }: { user: User; role: "T
     // сделанные (галочка) уходят из списка через сутки; непрочитанные висят, пока их не откроют;
     // прочитанные без действия (просто новость) — тоже через сутки после прочтения; с действием — пока не отмечены сделанными
     db.notification.findMany({
-      where: { userId: user.id, OR: [{ doneAt: { gt: new Date(Date.now() - 864e5) } }, { doneAt: null, OR: [{ readAt: null }, { action: { not: null } }, { readAt: { gt: new Date(Date.now() - 864e5) } }] }] },
+      where: { userId: user.id, id: { notIn: hiddenNotices }, OR: [{ doneAt: { gt: new Date(Date.now() - 864e5) } }, { doneAt: null, OR: [{ readAt: null }, { action: { not: null } }, { readAt: { gt: new Date(Date.now() - 864e5) } }] }] },
       orderBy: { createdAt: "desc" }, take: 15,
     }),
     role === "TEACHER" ? homeworkFor({ teacherId: user.id }) : Promise.resolve([]),
@@ -153,11 +157,10 @@ export async function Dashboard({ user, role, day, top }: { user: User; role: "T
   let steps: { done: boolean; href: string; label: string; sub: string }[] = [];
   let teacherCallLink: string | null = null;
   if (role === "TEACHER") {
-    const [courses, students, anyLesson, prof] = await Promise.all([
+    const [courses, students, anyLesson] = await Promise.all([
       db.course.count({ where: { teacherId: user.id } }),
       db.student.count({ where: { teacherId: user.id } }),
       db.lessonInstance.count({ where: { teacherId: user.id } }),
-      db.teacherProfile.findUnique({ where: { userId: user.id }, select: { callLink: true, settings: true } }),
     ]);
     const pay = !!(prof?.settings as { payDetails?: string } | null)?.payDetails;
     teacherCallLink = prof?.callLink ?? null;
@@ -335,6 +338,7 @@ export async function Dashboard({ user, role, day, top }: { user: User; role: "T
 
       <section className="card">
         <NotificationList
+          teacher={role === "TEACHER"}
           items={notifications.map((n) => ({ id: n.id, title: n.title, when: ago(n.createdAt), unread: !n.readAt, done: !!n.doneAt, link: n.link, action: n.action }))}
         />
       </section>

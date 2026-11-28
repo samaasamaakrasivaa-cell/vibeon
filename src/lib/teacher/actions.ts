@@ -562,6 +562,28 @@ export async function setNotificationDone(id: string, done: boolean): Promise<Re
   return { ok: true };
 }
 
+/** Hide a notice on the teacher dashboard without changing its action or delivery. */
+export async function dismissTeacherNotification(id: string): Promise<Result> {
+  const user = await me();
+  const where = { id, userId: user.id };
+  const saved = await db.$transaction(async (tx) => {
+    if (!(await tx.notification.findFirst({ where, select: { id: true } }))) return false;
+    // Update just this preference so two dismissals can be saved concurrently.
+    const profiles = await tx.$executeRaw`
+      UPDATE "TeacherProfile"
+      SET "settings" = jsonb_set("settings", '{dismissedNotifications}',
+        COALESCE("settings"->'dismissedNotifications', '{}'::jsonb) || jsonb_build_object(${id}::text, true))
+      WHERE "userId" = ${user.id}
+    `;
+    if (!profiles) return false;
+    await tx.notification.updateMany({ where: { ...where, readAt: null }, data: { readAt: new Date() } });
+    return true;
+  });
+  if (!saved) return { ok: false, error: "not found" };
+  revalidatePath("/teacher", "layout");
+  return { ok: true };
+}
+
 export async function markAllRead(): Promise<Result> {
   const user = await requireUser();
   await db.notification.updateMany({ where: { userId: user.id, readAt: null }, data: { readAt: new Date() } });
