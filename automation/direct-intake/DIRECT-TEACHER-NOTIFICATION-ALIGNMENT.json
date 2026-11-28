@@ -1,10 +1,15 @@
 {
   "claim_id": "84e1bc5766744896bd59f4494890fb05",
   "handoff": null,
-  "issue": null,
+  "issue": 103,
   "key": "DIRECT-TEACHER-NOTIFICATION-ALIGNMENT",
   "owner": "teacher",
-  "progress": null,
+  "progress": {
+    "base_sha": "0fcef7b9e18fcb9a3165d1e2a7b7e9f7cc172075",
+    "branch": "codex/teacher/align-news-notifications",
+    "next": "Выровнять учительский список и проверить длинные заголовки и кнопки в двух локалях на 320 px и широком экране.",
+    "stage": "implementation"
+  },
   "release": null,
   "source": "direct",
   "version": 1
