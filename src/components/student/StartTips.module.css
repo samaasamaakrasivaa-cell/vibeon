@@ -1,0 +1,190 @@
+.panel {
+  padding: clamp(14px, 3vw, 24px);
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 20px;
+  margin-bottom: 14px;
+}
+
+.header h2 {
+  margin: 0;
+  font-size: clamp(22px, 3vw, 28px);
+  letter-spacing: -.035em;
+  line-height: 1.15;
+}
+
+.progress {
+  display: grid;
+  min-width: 100px;
+  max-width: 155px;
+  gap: 4px;
+  color: var(--text2);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.segments { display: flex; gap: 3px; }
+.segments span { flex: 1; height: 4px; border-radius: 4px; background: var(--fill); }
+.segments [data-complete] { background: var(--ok-text); }
+
+.steps {
+  display: grid;
+  gap: 8px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.step {
+  --step-tone: #5c48cb;
+  --icon-size: 42px;
+  --gutter: 14px;
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--icon-size) minmax(0, 1fr) auto;
+  grid-template-areas: "icon copy action";
+  align-items: center;
+  gap: 8px 14px;
+  padding: 12px var(--gutter);
+  border: 1px solid color-mix(in srgb, var(--step-tone) 25%, var(--sep));
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--step-tone) 19%, var(--surface));
+}
+
+.step[data-start-tip="tg"] { --step-tone: #006e9f; }
+.step[data-start-tip="test"] { --step-tone: #923689; }
+.step[data-start-tip="schedule"] { --step-tone: #087451; }
+.step[data-start-tip="route"] { --step-tone: #246b78; }
+.step[data-state="done"] { background: color-mix(in srgb, var(--step-tone) 8%, var(--surface)); }
+.step[data-state="locked"] { background: var(--surface2); border-color: var(--sep); }
+
+.step:not(:last-child)::after {
+  position: absolute;
+  top: calc(100% + 1px);
+  left: calc(var(--gutter) + var(--icon-size) / 2 - 1px);
+  width: 2px;
+  height: 8px;
+  background: var(--sep);
+  content: "";
+}
+
+.icon {
+  grid-area: icon;
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: var(--icon-size);
+  height: var(--icon-size);
+  border-radius: 13px;
+  background: var(--step-tone);
+  color: #fff;
+}
+
+.step[data-state="locked"] .icon { background: var(--fill); color: var(--text2); }
+
+.check {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  display: grid;
+  place-items: center;
+  width: 19px;
+  height: 19px;
+  border: 2px solid var(--surface);
+  border-radius: 50%;
+  background: var(--ok-bg);
+  color: var(--ok-text);
+}
+
+.copy { grid-area: copy; }
+.copy h3 { margin: 0; font-size: 15px; line-height: 1.25; font-weight: 650; }
+.copy p {
+  margin: 4px 0 0;
+  color: color-mix(in srgb, var(--text) 71%, var(--surface));
+  font-size: 13px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+.step[data-state="locked"] .copy p { color: var(--text2); }
+
+.action {
+  grid-area: action;
+  justify-self: end;
+  max-width: 190px;
+  min-height: 36px;
+  padding-block: 5px;
+  background: var(--surface);
+  text-align: center;
+  white-space: normal;
+}
+
+.lock {
+  grid-area: action;
+  position: relative;
+  justify-self: end;
+}
+
+.lockButton {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid var(--sep);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--text2);
+}
+
+.tooltip {
+  position: absolute;
+  z-index: 5;
+  top: 100%;
+  right: 0;
+  visibility: hidden;
+  width: min(235px, 68vw);
+  padding: 9px 11px;
+  border: 1px solid var(--sep);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: 0 6px 20px #0002;
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.lock[data-visibility="open"] .tooltip,
+.lock:not([data-visibility="dismissed"]):has(.lockButton:focus-visible) .tooltip {
+  visibility: visible;
+}
+
+@media (hover: hover) {
+  .lock:not([data-visibility="dismissed"]):hover .tooltip { visibility: visible; }
+}
+
+.footer { display: flex; justify-content: flex-end; margin-top: 12px; }
+
+@media (max-width: 620px) {
+  .step {
+    --icon-size: 34px;
+    --gutter: 10px;
+    gap: 6px 10px;
+    padding-block: 9px;
+    border-radius: 13px;
+  }
+
+  .step:not([data-state="locked"]) {
+    grid-template-columns: var(--icon-size) minmax(0, 1fr);
+    grid-template-areas: "icon copy" ". action";
+    align-items: start;
+  }
+
+  .step:not(:has(.action)):not([data-state="locked"]) { grid-template-areas: "icon copy"; }
+  .icon { border-radius: 10px; }
+  .action { justify-self: start; max-width: 100%; }
+}

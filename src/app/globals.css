@@ -2811,27 +2811,62 @@ details.prblock[open] .prchev { transform: rotate(180deg); }
 .topicblk .blkh + .can { border-top: 0; }
 .hintcard { display: flex; gap: 12px; align-items: flex-start; }
 .hintcard > .i { color: var(--accent); flex: none; margin-top: 2px; }
-/* Главная ученика: стартовые шаги, уроки и диагностика */
-.tl[data-student-lesson-status] .tl-main { overflow-wrap: anywhere; }
-.tl[data-student-lesson-status] .lesson-countdown { margin-top: 8px; }
-.tl[data-student-lesson-status] .tl-quick { flex-wrap: wrap; }
-@media (641px <= width <= 900px) {
-  .tl[data-student-lesson-status] { grid-template-columns: 64px minmax(0, 1fr); }
-  .tl[data-student-lesson-status] .tl-act { grid-column: 1 / -1; width: auto; }
+/* Главная ученика */
+.student-home-clock {
+  display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px 12px;
+  padding: 6px 12px; border: 1px solid var(--sep); border-radius: 999px;
+  color: var(--text2); font-size: 13px; font-variant-numeric: tabular-nums;
 }
-.starttips { border: 1.5px solid color-mix(in srgb, var(--accent) 35%, transparent); }
-.tipgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 10px; }
-.tipitem { display: flex; gap: 12px; padding: 14px; border-radius: 14px; background: var(--fill); }
-.tipico { width: 32px; height: 32px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; background: var(--accent-bg); color: var(--accent); flex: none; }
-.tipitem.done .tipico { background: color-mix(in srgb, var(--ok) 16%, transparent); color: var(--ok); }
-.tiplock { position: relative; flex: none; align-self: flex-start; }
-.tiplock .tipico { border: 0; background: var(--surface); color: var(--text2); cursor: help; }
-.tiplock-info { visibility: hidden; position: absolute; z-index: 5; top: 100%; left: 0; width: min(220px, 60vw); padding: 8px 10px; border: 1px solid var(--sep); border-radius: 10px; background: var(--surface); color: var(--text); font-size: 13px; box-shadow: 0 5px 20px #0002; }
-.tiplock:is(:hover, :focus-within) .tiplock-info { visibility: visible; }
-.placecard { border-radius: 20px; padding: 20px 22px; background: var(--violet-bg, var(--accent-bg)); border: 1.5px solid color-mix(in srgb, #AF52DE 30%, transparent); }
-.placecard ul { margin: 10px 0 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 6px 16px; }
-.placecard li { display: flex; gap: 8px; font-size: 14px; }
-.placecard li .i { color: #AF52DE; flex: none; margin-top: 2px; }
+.student-home-clock b { color: var(--text); }
+.student-lesson-card { padding: 16px 18px; }
+.student-lesson-heading {
+  grid-column: 1 / -1; display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 12px;
+  padding-bottom: 9px; border-bottom: 1px solid var(--sep);
+}
+.student-lesson-heading h3, .student-lesson-empty h3, .student-home-task h3 {
+  margin: 0; font-size: 18px; line-height: 1.25; letter-spacing: -.015em;
+}
+.student-lesson-card .tl-main { overflow-wrap: anywhere; }
+.student-lesson-card .tl-time, .student-lesson-card .tl-act { padding-top: 0; }
+.student-lesson-card .tl-act { width: auto; min-width: 0; }
+.student-lesson-card .tl-quick { flex-wrap: wrap; }
+.student-lesson-card .tl-who .avatar { flex: none; }
+.student-lesson-countdown { font-size: 13px; color: var(--text2); font-variant-numeric: tabular-nums; }
+.student-lesson-countdown b { color: var(--text); }
+.student-lesson-no-call { display: flex; align-items: center; gap: 6px; justify-content: center; margin: 2px 0; }
+.student-lesson-no-call .i, .student-lesson-homework .i { flex: none; }
+.student-lesson-homework {
+  grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+  gap: 10px 14px; padding-top: 10px; border-top: 1px solid var(--sep);
+}
+.student-lesson-homework .i { margin-top: 3px; color: var(--accent-text); }
+.student-lesson-empty { display: grid; gap: 6px; padding: 16px 18px; background: var(--surface2); border-radius: 16px; }
+.student-lesson-empty .student-lesson-homework { margin-top: 6px; }
+.student-home-task {
+  --home-task-color: var(--accent-text);
+  --home-task-bg: var(--accent-bg);
+  padding: 15px 18px; border-radius: 16px; border: 1px solid var(--sep);
+  background: color-mix(in srgb, var(--home-task-bg) 72%, var(--surface));
+}
+.student-home-placement { --home-task-color: var(--violet); --home-task-bg: var(--violet-bg); }
+.student-home-task-head { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 8px 12px; }
+.student-home-task-icon {
+  display: grid; place-items: center; width: 42px; height: 42px; border-radius: 13px;
+  color: var(--home-task-color); background: var(--surface); box-shadow: inset 0 0 0 1px var(--sep);
+}
+.student-home-task-body { margin-top: 11px; font-size: 14px; }
+.student-home-task .btn, .student-lesson-homework .btn { height: auto; min-height: 34px; white-space: normal; text-align: center; }
+.student-home-word-count { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 12px; margin-bottom: 6px; }
+@media (max-width: 900px) {
+  .tl.student-lesson-card { grid-template-columns: 56px minmax(0, 1fr); }
+  .student-lesson-card .tl-act { grid-column: 1 / -1; }
+  .student-lesson-card .tl-what { margin-left: 0; }
+}
+@media (max-width: 600px) {
+  .student-home-task, .student-lesson-card, .student-lesson-empty { padding: 13px; }
+  .student-home-task-head { grid-template-columns: auto minmax(0, 1fr); }
+  .student-home-task-head .btn { grid-column: 1 / -1; justify-content: center; }
+}
 .feedhead { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
 /* Проверка ИИ (эссе, открытый ответ, запись): текст с подсветкой, исправленная версия, правки, сравнение моделей */
 .aireview { border: 1px solid var(--sep); border-radius: 16px; padding: 14px 16px; background: var(--surface); }

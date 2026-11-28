@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 
 /** Карточка «день + часы» как в прототипе. */
-export function Clock({ lang, tz }: { lang: "ru" | "en"; tz: string }) {
+export function Clock({ lang, tz, compact = false }: { lang: "ru" | "en"; tz: string; compact?: boolean }) {
   const [now, setNow] = useState<Date | null>(null);
   useEffect(() => {
     setNow(new Date());
@@ -18,6 +18,12 @@ export function Clock({ lang, tz }: { lang: "ru" | "en"; tz: string }) {
   const day = Number(part({ day: "numeric" }));
   const [hh, mm, ss] = d.toLocaleTimeString("en-GB", { timeZone: tz, hourCycle: "h23" }).split(":").map(Number);
   const p = (n: number) => String(n).padStart(2, "0");
+  if (compact) return (
+    <time className="student-home-clock" dateTime={d.toISOString()} style={{ visibility: now ? "visible" : "hidden" }}>
+      <span>{part({ weekday: "short", day: "numeric", month: "short" })}</span>
+      <b>{p(hh)}:{p(mm)}</b>
+    </time>
+  );
   return (
     <div className="flex overflow-hidden rounded-[20px] border border-sep bg-surface" style={{ visibility: now ? "visible" : "hidden", boxShadow: "var(--shadow)" }}>
       <div className="flex min-w-[86px] flex-col items-center justify-center border-r border-sep px-5 py-3">

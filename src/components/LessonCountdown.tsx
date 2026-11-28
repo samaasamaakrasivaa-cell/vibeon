@@ -19,6 +19,7 @@ type CountdownProps = {
   startsAt: number;
   initialNow: number;
   variant: "teacher" | "student";
+  compact?: boolean;
 };
 
 function FlipDigit({ digit }: { digit: string }) {
@@ -44,7 +45,7 @@ function FlipDigit({ digit }: { digit: string }) {
   );
 }
 
-export function LessonCountdown({ startsAt, initialNow, variant }: CountdownProps) {
+export function LessonCountdown({ startsAt, initialNow, variant, compact }: CountdownProps) {
   const router = useRouter();
   const [now, setNow] = useState(initialNow);
   const refreshedTargets = useRef(new Set<number>());
@@ -82,16 +83,16 @@ export function LessonCountdown({ startsAt, initialNow, variant }: CountdownProp
   const remaining = startsAt - Math.max(now, initialNow);
   const visible = remaining > 0 && (variant === "student" || remaining < TEACHER_WINDOW_MS);
   return visible && (
-    <CountdownFace key={startsAt} startsAt={startsAt} initialNow={initialNow} variant={variant} remaining={remaining} />
+    <CountdownFace key={startsAt} startsAt={startsAt} initialNow={initialNow} variant={variant} compact={compact} remaining={remaining} />
   );
 }
 
-function CountdownFace({ startsAt, initialNow, variant, remaining }: CountdownProps & { remaining: number }) {
+function CountdownFace({ startsAt, initialNow, variant, compact, remaining }: CountdownProps & { remaining: number }) {
   const { lang, t } = useT();
   const [initialMinutes] = useState(() => Math.ceil((startsAt - initialNow) / MINUTE_MS));
   const dayDigits = Math.max(2, String(Math.floor(initialMinutes / DAY_MINUTES)).length);
   const minutes = Math.ceil(remaining / MINUTE_MS);
-  const prefix = t(variant === "teacher" ? "lessonCountdown.teacher" : "lessonCountdown.student");
+  const prefix = t(compact ? "st.timeToLesson" : variant === "teacher" ? "lessonCountdown.teacher" : "lessonCountdown.student");
   const units: [Unit, number][] = [];
   if (variant === "teacher") {
     units.push(["minute", Math.min(minutes, 60)]);
@@ -101,9 +102,16 @@ function CountdownFace({ startsAt, initialNow, variant, remaining }: CountdownPr
     if (initialMinutes >= 60 || minutes >= 60) units.push(["hour", Math.floor(minutes / 60) % 24]);
     units.push(["minute", minutes % 60]);
   }
-  const accessible = units.filter(([unit, value]) => unit === "minute" || value > 0).map(([unit, value]) =>
+  const duration = units.filter(([, value]) => value > 0);
+  const accessible = (compact ? duration : units.filter(([unit, value]) => unit === "minute" || value > 0)).map(([unit, value]) =>
     new Intl.NumberFormat(lang, { style: "unit", unit, unitDisplay: "long" }).format(value)
   ).join(", ");
+
+  if (compact) return (
+    <time className="student-lesson-countdown" role="timer" dateTime={new Date(startsAt).toISOString()} aria-label={`${prefix} ${accessible}`}>
+      <span>{prefix}</span>{" "}<b>{duration.map(([unit, value]) => `${value} ${t(unitLabels[unit])}`).join(" ")}</b>
+    </time>
+  );
 
   return (
     <time className={`lesson-countdown lesson-countdown--${variant}`} role="timer"
