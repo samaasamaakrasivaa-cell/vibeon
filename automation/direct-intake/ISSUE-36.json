@@ -7,8 +7,11 @@
   "progress": {
     "base_sha": "6b57ad51f4d7d48fe661461f9ab52b2d1fc18098",
     "branch": "codex/placement/pt-10-objective-facts",
-    "next": "Сбор объективных фактов и фикстуры четырёх навыков.",
-    "stage": "implementation"
+    "head_sha": "104e9bdb6b7f7722c8c4fad3cf313405e64d558a",
+    "next": "Ревью AI & Quality сборщика четырёх навыков. Рабочее подключение отдельно.",
+    "pr": 124,
+    "stage": "review",
+    "test_run": 46157345398
   },
   "release": null,
   "source": "direct",
