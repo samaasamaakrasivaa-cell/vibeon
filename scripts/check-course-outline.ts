@@ -96,7 +96,7 @@ async function main() {
     const mixedPlan = courseOutlineSchema.parse({ units: [{ title: "Travel", lessons: [{
       title: "Transport", topics: "Directions — Анна Синтетическая 84",
     }] }] });
-    assert.equal(await saveCourseOutlineUnits(course.id, teacher.id, draft(teacher.id, course.id), mixedPlan), "student-records");
+    assert.equal(await saveCourseOutlineUnits(course, teacher, draft(teacher, course), mixedPlan), "student-records");
     assert.equal(await db.unit.count({ where: { courseId: { in: courseIds } } }), 0);
 
     await db.unit.create({ data: { courseId: secondCourse, title: "Unit after a gap", order: 5 } });
