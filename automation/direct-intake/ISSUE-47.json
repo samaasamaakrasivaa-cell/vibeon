@@ -8,13 +8,31 @@
     "base_sha": "daacd5bf1e2f13c4c0b063f5db07f2f47c887dbc",
     "branch": "codex/live-classroom/voc-08-explicit-vocabulary",
     "head_sha": "6509f00b61aafb74727ff46cca45330ccb65551c",
-    "merge_sha": "4351e6ecb1bc65dca3d69cf9ba2c63cbcdb0b7be",
-    "next": "PR 95 в main. Дождаться CD 46131247565, сверить health и публичную версию, оформить результат в Issue 47.",
+    "merge_sha": "a3673f8bf137eb165bf6fe5e311baf531bb30a2f",
+    "next": "Первый этап на сайте. Открыты авторизованная приёмка и отдельное решение по следующему этапу.",
     "pr": 95,
     "stage": "publication",
     "test_run": 46130115325
   },
-  "release": null,
+  "release": {
+    "ci": {
+      "result": "success",
+      "run": 46130115325,
+      "sha": "6509f00b61aafb74727ff46cca45330ccb65551c"
+    },
+    "delivery": {
+      "result": "success",
+      "run": 46131341612,
+      "sha": "a3673f8bf137eb165bf6fe5e311baf531bb30a2f"
+    },
+    "owner_note": "Для владельца: Словарь и тренировки — при завершении урока слова больше не переносятся автоматически, их можно добавить вручную.",
+    "review": {
+      "comment": 7237199563,
+      "result": "success",
+      "sha": "6509f00b61aafb74727ff46cca45330ccb65551c"
+    },
+    "site_sha": "a3673f8bf137eb165bf6fe5e311baf531bb30a2f"
+  },
   "source": "pm",
   "version": 1
 }
