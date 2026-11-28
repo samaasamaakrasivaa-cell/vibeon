@@ -9,7 +9,7 @@
     "branch": "codex/student/personal-dictionary-duplicate",
     "head_sha": "c15a123c88cb6c0106516c7c285c85ef84365a0a",
     "merge_sha": "348c4a99fd27cbc8ee9ac813d2cdc07b7abdbc30",
-    "next": "PR #98 интегрирован. Подтвердить точный CD и site SHA для ручного этапа #46.",
+    "next": "Ручной этап опубликован и подтверждён сайтом, CD 46132491430. Для исходного контекстного этапа требуется решение #43.",
     "pr": 98,
     "stage": "publication",
     "test_run": 46131942705
