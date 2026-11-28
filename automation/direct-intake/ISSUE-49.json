@@ -4,7 +4,12 @@
   "issue": 49,
   "key": "ISSUE-49",
   "owner": "vocabulary-training",
-  "progress": null,
+  "progress": {
+    "base_sha": "6b57ad51f4d7d48fe661461f9ab52b2d1fc18098",
+    "branch": "codex/vocabulary-training/card-example-synonyms",
+    "next": "Оформить карточку, подчеркнуть слово в примере и показывать синонимы основного значения",
+    "stage": "implementation"
+  },
   "release": null,
   "source": "direct",
   "version": 1
