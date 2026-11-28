@@ -1,5 +1,7 @@
 const assert = require("node:assert/strict");
 const { execFileSync } = require("node:child_process");
+const { createHash } = require("node:crypto");
+const { gzipSync } = require("node:zlib");
 const fs = require("node:fs");
 const http = require("node:http");
 const path = require("node:path");
@@ -62,6 +64,10 @@ async function main() {
   const standalone = worker.slice(worker.indexOf("\n", 10) + 1);
   const library = original.slice(0, start) +
     'var WorkerFactory = function WorkerFactory(options) { return new Worker("/vosk-worker.js", options); };' + original.slice(end);
+  for (const [label, source] of [["loader", library], ["worker", standalone]]) {
+    console.log(label, "sha256:", createHash("sha256").update(source).digest("hex"),
+      "raw bytes:", Buffer.byteLength(source), "gzip bytes:", gzipSync(source).length);
+  }
   const files = new Map([
     ["/models/en.tar.gz", path.join(scratch, "en.tar.gz")],
     ["/models/ru.tar.gz", path.join(scratch, "ru.tar.gz")],

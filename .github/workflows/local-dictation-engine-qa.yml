@@ -49,8 +49,12 @@ jobs:
             lang="${item%%:*}"
             model="${item#*:}"
             curl -fsSL --retry 2 --max-time 75 "https://alphacephei.com/vosk/models/$model.zip" -o "$RUNNER_TEMP/$model.zip"
+            sha256sum "$RUNNER_TEMP/$model.zip"
             unzip -q "$RUNNER_TEMP/$model.zip" -d "$RUNNER_TEMP"
-            tar -C "$RUNNER_TEMP" -czf "$RUNNER_TEMP/$lang.tar.gz" "$model"
+            test -f "$RUNNER_TEMP/$model/COPYING"
+            tar --sort=name --mtime=@0 --owner=0 --group=0 --numeric-owner -C "$RUNNER_TEMP" -cf - "$model" |
+              gzip -n > "$RUNNER_TEMP/$lang.tar.gz"
+            sha256sum "$RUNNER_TEMP/$lang.tar.gz"
           done
       - name: Recognize both synthetic samples in a browser with only loopback
         run: |
