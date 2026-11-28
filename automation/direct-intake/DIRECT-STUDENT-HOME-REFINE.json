@@ -14,7 +14,25 @@
     "stage": "publication",
     "test_run": 46126264368
   },
-  "release": null,
+  "release": {
+    "ci": {
+      "result": "success",
+      "run": 46126264368,
+      "sha": "3ec5aada65a04e813ef113b2e83c115f9fe83220"
+    },
+    "delivery": {
+      "result": "success",
+      "run": 46126745224,
+      "sha": "75e4bb87f6e144ab25582e31839921e1bf1d2636"
+    },
+    "owner_note": "Для владельца: Кабинет ученика — Назначенный тест виден перед ближайшим уроком. Домашнее задание выделено в карточке урока, на телефоне время начала и окончания показано одной строкой.",
+    "review": {
+      "comment": 7236660409,
+      "result": "success",
+      "sha": "3ec5aada65a04e813ef113b2e83c115f9fe83220"
+    },
+    "site_sha": "75e4bb87f6e144ab25582e31839921e1bf1d2636"
+  },
   "source": "direct",
   "version": 1
 }
