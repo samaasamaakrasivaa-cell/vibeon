@@ -8,7 +8,7 @@ import { Dialog } from "../Dialog";
 import { Icon } from "../Icon";
 
 type Lookup = { translations: string[] } | { error: string };
-type SavedWord =
+export type SavedWord =
   | { ok: true; status: "added" | "updated" | "existing"; translation: string | null }
   | { ok: true; status: "confirm"; existing: WordConfirmation & { word: string }; value: string }
   | { ok: false };
