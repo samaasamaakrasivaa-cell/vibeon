@@ -5,10 +5,13 @@
   "key": "DIRECT-TEACHER-NOTIFICATION-ALIGNMENT",
   "owner": "teacher",
   "progress": {
-    "base_sha": "0fcef7b9e18fcb9a3165d1e2a7b7e9f7cc172075",
+    "base_sha": "2044f77648fcf73701fe5f2232817fb817bcec28",
     "branch": "codex/teacher/align-news-notifications",
-    "next": "Выровнять учительский список и проверить длинные заголовки и кнопки в двух локалях на 320 px и широком экране.",
-    "stage": "implementation"
+    "head_sha": "225ddcc6ef8c05f44e942fb33adb46bde277c89f",
+    "next": "Сборка и Chromium пройдены. Повторное ревью и CI идут. Штатный выпуск #101 остановился на расхождении миграций, ждём согласованного порядка в #103.",
+    "pr": 106,
+    "stage": "review",
+    "test_run": 46149273978
   },
   "release": null,
   "source": "direct",
