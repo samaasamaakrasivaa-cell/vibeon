@@ -31,6 +31,7 @@ export type ReviewProps = {
   parts?: string[]; dates?: Record<string, string>; // разделы теста и даты, когда каждый пройден
   base?: { sub: string; from: "test" | "teacher" } | null; // грамматику не проверяли: от какого уровня шли остальные разделы
   who?: string; reveal?: string[]; // имя ученика (для PDF таблицы и списков) и скрипты, открытые ученику
+  assessment?: { writing: React.ReactNode; speaking: React.ReactNode };
 };
 const nums = (m?: Record<string, unknown>): Marks => Object.fromEntries(Object.entries(m ?? {}).filter(([, v]) => typeof v === "number")) as Marks;
 const prevLevel = (l: string) => PL_LEVELS[Math.max(0, PL_LEVELS.indexOf(l as PLevel) - 1)];
@@ -66,6 +67,7 @@ export function PlacementReview(p: ReviewProps) {
   const [texts, setTexts] = useState(p.transcript.texts);
   const [showScript, setShowScript] = useState(false);
   const speechQuestions = p.d.speaking?.questions ?? [];
+  const recordedSpeech = speechQuestions.filter((q) => q.url).length;
   const needsTranscript = speechQuestions.some((q, i) => q.url && !texts[i]?.trim());
   const getTexts = async () => {
     if (!needsTranscript && texts.some((x) => x.trim())) return texts;
@@ -343,6 +345,7 @@ export function PlacementReview(p: ReviewProps) {
           <p className="small muted m-0">{t("pr.wsTaskLevel", { l: p.d.writing.level })}</p>
           <p className="m-0">{p.d.writing.prompt_en}</p>
           <div className="tpassage plpassage">{p.d.writing.text || <span className="muted">{t("pl.noAnswer")}</span>}</div>
+          {p.assessment?.writing}
           {!p.wsDecision?.writing && aiPanel("writing")}
           <div className="small muted">{t("pl.wordsOf", { n: p.d.writing.text.trim() ? p.d.writing.text.trim().split(/\s+/).length : 0, a: p.d.writing.min, b: p.d.writing.max })}</div>
           {p.d.writing.points.length > 0 && (
@@ -368,7 +371,10 @@ export function PlacementReview(p: ReviewProps) {
         <Block title={t("pl.part.speaking")} step={sTask !== null ? STEPS[sTask] : p.d.speaking.level} time={tm.speaking ? fmtSec(tm.speaking) : null} idle={idle.speaking ? fmtSec(idle.speaking) : null} note={!waiting && sTask === null ? t("pr.wsPending") : null}>
           <div className="flex flex-col gap-3">
           <p className="small muted m-0">{t("pr.wsTaskLevel", { l: p.d.speaking.level })}</p>
-          {p.d.speaking.noMic && <div className="alert">{t("pl.noMicNote")}</div>}
+          {recordedSpeech === 0 && <p className="small muted m-0">{t(p.d.speaking.noMic ? "pl.noMicNote" : "pl.noRec")}</p>}
+          {recordedSpeech > 0 && (recordedSpeech < speechQuestions.length || p.d.speaking.noMic) &&
+            <p className="small muted m-0">{t("pl.speechRecorded", { n: recordedSpeech, total: speechQuestions.length })}</p>}
+          {recordedSpeech > 0 && p.d.speaking.noMic && <p className="small muted m-0">{t("pl.speechMicReported")}</p>}
           {p.d.speaking.questions.map((q, i) => (
             <div key={i} className="flex flex-col gap-1">
               <span className="small"><b>{i + 1}.</b> {q.q}{q.rerec > 0 && <span className="muted"> · {t("pl.rerecN", { n: q.rerec })}</span>}{q.peek && <span className="pill orange ml-1">{t("pl.peeked")}</span>}</span>
@@ -376,6 +382,7 @@ export function PlacementReview(p: ReviewProps) {
             </div>
           ))}
           <details><summary className="small">{t("pl.expects")}</summary><ul className="small mt-2">{p.d.speaking.expects.map((e) => <li key={e}>{e}</li>)}</ul></details>
+          {p.assessment?.speaking}
           {!p.wsDecision?.speaking && aiPanel("speaking")}
           {p.wsDecision?.speaking
             ? <WsTeacherDecision key={`${p.wsDecision?.speaking.expected.source}-${p.wsDecision?.speaking.expected.generation}-${p.wsDecision?.speaking.at}`} id={p.id} kind="speaking" view={p.wsDecision?.speaking} />

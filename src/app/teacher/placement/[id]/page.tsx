@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { HidePublishedReport } from "@/components/placement/HidePublishedReport";
 import { PlacementReview } from "@/components/placement/PlacementReview";
+import { WsAssessmentStatus, wsAssessmentView } from "@/components/placement/WsAssessmentStatus";
 import { requireUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { lastPublication, publicationStamp, reportDraft, storedReport } from "@/lib/placement/report-publication";
@@ -49,6 +50,7 @@ export default async function PlacementReviewPage({ params, searchParams }: { pa
   const canHidePublished = a.mode === "student" && a.status !== "new" && (a.status !== "reviewed" || !a.showResult)
     && stored.sent && stored.resultVisible === true && lastPublication(stored)?.schema === 1;
   const draft = teacherReview(a);
+  const { wsAssessment: _wsAssessment, ...editableReview } = draft.active;
   const transcript = speechTranscript(st, draft);
   const hasRep = !!(rep && (rep.sent || rep.student || rep.parent));
   const dates = Object.fromEntries(Object.entries(st.sdates ?? {}).map(([k, v]) => [k, dfmt(v as number)]));
@@ -90,7 +92,11 @@ export default async function PlacementReviewPage({ params, searchParams }: { pa
         <PlacementReview key={`${id}-${draft.regrading}-${st.writing?.id}-${transcript.source}`} transcript={transcript} regrading={draft.regrading} reportHref={reportHref} backHref={back}
           parts={partsOf(st)} dates={dates} base={base} who={who} reveal={a.reveal}
           id={id} teen={st.track === "teen"} lessonQs={lessonQs} mode={a.mode} status={a.status} level={a.level} showResult={a.showResult} tgSent={((a.review ?? {}) as { tgSentAt?: string }).tgSentAt ? new Date(((a.review ?? {}) as { tgSentAt: string }).tgSentAt).toLocaleString("ru-RU", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: me.timezone }) : null} sm={sm} d={d}
-          review={{ ...draft.active, report: rep } as never}
+          review={{ ...editableReview, report: rep } as never}
+          assessment={{
+            writing: d.writing && <WsAssessmentStatus kind="writing" view={wsAssessmentView(st, draft.stored, "writing")} lang={lang} timeZone={me.timezone} />,
+            speaking: d.speaking && <WsAssessmentStatus kind="speaking" view={wsAssessmentView(st, draft.stored, "speaking")} lang={lang} timeZone={me.timezone} />,
+          }}
           wsDecision={{ writing: wsTeacherDecisionView(a, "writing"), speaking: wsTeacherDecisionView(a, "speaking") }}
           howTo={RUBRICS.how_to_decide_ru} sublevels={RUBRICS.sublevels_ru}
         />
