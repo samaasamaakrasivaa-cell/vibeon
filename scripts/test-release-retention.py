@@ -119,6 +119,18 @@ class RetentionTest(unittest.TestCase):
         self.assertTrue(foreign.exists())
         self.assertTrue(all(entry.exists() for entry in latest))
 
+    def test_daily_receipt_must_be_fresh_and_match_release_schema(self):
+        current = self.backup(23, row(23), checksummed=True)
+        marker = retention.load_json(current / "verified.json")
+        captured = datetime.datetime(2026, 11, 23, 1, 1, 1, tzinfo=datetime.timezone.utc)
+        marker.update(kind="daily", captured_at=captured.isoformat(), verified_at=captured.isoformat(),
+                      migration_fingerprint="a" * 64, schema_sha256="b" * 64)
+        self.write(current / "verified.json", marker)
+        now = captured + datetime.timedelta(hours=12)
+        self.assertEqual(retention.fresh_daily_backup(self.root, "a" * 64, "b" * 64, now), captured)
+        self.assertIsNone(retention.fresh_daily_backup(self.root, "a" * 64, "c" * 64, now))
+        self.assertIsNone(retention.fresh_daily_backup(self.root, "a" * 64, "b" * 64, now + datetime.timedelta(hours=13)))
+
     def test_legacy_restore_digest_proves_three_replacements(self):
         old = self.backup(1, row(1))
         for day in (21, 22, 23):

@@ -137,11 +137,11 @@ def private_backup_files(entry, directory_fd):
     return files
 
 
-def confirm_replacements(verified):
-    if len(verified) < KEEP_FULL_BACKUPS:
+def confirm_replacements(verified, count=KEEP_FULL_BACKUPS):
+    if len(verified) < count:
         return False
     seen = set()
-    for backup in verified[:KEEP_FULL_BACKUPS]:
+    for backup in verified[:count]:
         entry = backup.path
         directory_fd = os.open(entry, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
         try:
@@ -170,6 +170,27 @@ def confirm_replacements(verified):
         finally:
             os.close(directory_fd)
     return True
+
+
+def fresh_daily_backup(root, migration_fingerprint, schema_sha256, now=None):
+    now = now or datetime.datetime.now(datetime.timezone.utc)
+    verified, _, _ = full_backup_plan(root, now)
+    for backup in verified:
+        marker = load_json(backup.path / "verified.json")
+        if (marker.get("kind") != "daily" or marker.get("migration_fingerprint") != migration_fingerprint
+                or marker.get("schema_sha256") != schema_sha256):
+            continue
+        try:
+            captured = datetime.datetime.fromisoformat(marker["captured_at"])
+            completed = datetime.datetime.fromisoformat(marker["verified_at"])
+        except (KeyError, TypeError, ValueError):
+            continue
+        if (captured.utcoffset() != datetime.timedelta(0) or completed.utcoffset() != datetime.timedelta(0)
+                or not now - datetime.timedelta(hours=24) <= captured <= completed <= now):
+            continue
+        if confirm_replacements([backup], count=1):
+            return captured
+    return None
 
 
 def retire_backup(entry):

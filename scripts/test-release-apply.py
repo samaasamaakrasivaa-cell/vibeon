@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Synthetic failure/recovery contracts; never connects to Docker or production."""
+import datetime
 import importlib.util
 import hashlib
 import json
@@ -36,6 +37,7 @@ class FakeRelease(release_apply.Release):
             raise release_apply.ReleaseError("migration_set_mismatch")
         self.app_id, self.db_id, self.current_image = "1" * 64, "2" * 64, PREVIOUS
         self.migrations = MIGRATIONS
+        self.schema_sha256 = "a" * 64
         self.config_before = {"docker-compose.prod.yml": CONFIG, ".env": "9" * 64}
 
     def config_fingerprint(self):
@@ -125,6 +127,43 @@ class ReleaseTest(unittest.TestCase):
         self.assertEqual(self.release.journal.read_bytes(), before)
         for event in ("stop", "snapshot", "switch_candidate", "switch_fallback"):
             self.assertNotIn(event, self.release.events)
+
+    def test_routine_release_uses_verified_daily_copy_without_creating_another(self):
+        self.release.daily_policy = True
+        with patch.object(self.release, "fresh_verified_backup", return_value=True):
+            self.assertEqual(self.release.apply()["status"], "released")
+        self.assertNotIn("snapshot", self.release.events)
+        self.assertNotIn("stop", self.release.events)
+
+    def test_routine_release_stops_before_mutations_without_fresh_daily_copy(self):
+        self.release.daily_policy = True
+        with (patch.object(self.release, "fresh_verified_backup", return_value=None),
+              self.assertRaisesRegex(release_apply.ReleaseError, "fresh_daily_backup_required")):
+            self.release.apply()
+        self.assertEqual(self.release.events, ["inspect"])
+
+    def test_daily_copy_does_not_overwrite_release_state_or_switch(self):
+        before = self.prepare_storage_only()
+        self.release.daily_policy = True
+        with (patch.object(self.release, "verified_running_release", return_value={FALLBACK}),
+              patch.object(self.release, "fresh_verified_backup", return_value=None),
+              patch.object(self.release, "post_publication_retention", return_value={"status": "ok"})):
+            self.release.inspect()
+            report = self.release.daily_full_backup()
+        self.assertEqual(report["status"], "daily_backup_completed")
+        self.assertEqual((self.release.root / "release-state.json").read_bytes(), before)
+        self.assertEqual(json.loads(self.release.daily_journal.read_bytes())["status"], "daily_backup_completed")
+        self.assertIn("snapshot", self.release.events)
+        self.assertNotIn("switch_candidate", self.release.events)
+
+    def test_same_day_daily_copy_does_not_pause_app(self):
+        self.prepare_storage_only()
+        self.release.daily_policy = True
+        with (patch.object(self.release, "verified_running_release", return_value={FALLBACK}),
+              patch.object(self.release, "fresh_verified_backup", return_value=datetime.datetime.now(datetime.timezone.utc))):
+            report = self.release.daily_full_backup()
+        self.assertEqual(report["status"], "daily_backup_already_completed")
+        self.assertNotIn("stop", self.release.events)
 
     def test_storage_only_rejects_missing_rollback_image(self):
         self.prepare_storage_only()
