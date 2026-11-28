@@ -1,0 +1,44 @@
+name: Isolated Vosk browser prototype
+on:
+  push:
+    branches: [codex/ai-quality/dictation-local-engine-qa]
+permissions:
+  contents: read
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Prepare public model packages and synthetic audio
+        run: |
+          npm install --prefix "$RUNNER_TEMP/browser" --no-audit --no-fund playwright-core vosk-browser@0.0.8
+          python -m pip install --quiet piper-tts
+          for speaker in en/en_US/lessac/medium/en_US-lessac-medium ru/ru_RU/irina/medium/ru_RU-irina-medium; do
+            name="${speaker##*/}"
+            curl -fsSL --retry 2 "https://huggingface.co/rhasspy/piper-voices/resolve/main/$speaker.onnx?download=true" -o "$RUNNER_TEMP/$name.onnx"
+            curl -fsSL --retry 2 "https://huggingface.co/rhasspy/piper-voices/resolve/main/$speaker.onnx.json?download=true" -o "$RUNNER_TEMP/$name.onnx.json"
+          done
+          printf '%s\n' 'The cat sleeps on the sofa. The teacher checks the exercises.' | python -m piper -m "$RUNNER_TEMP/en_US-lessac-medium.onnx" -f "$RUNNER_TEMP/en.wav"
+          printf '%s\n' 'Мне нравится читать книги. На уроке мы повторили прошедшее время.' | python -m piper -m "$RUNNER_TEMP/ru_RU-irina-medium.onnx" -f "$RUNNER_TEMP/ru.wav"
+          for item in en:vosk-model-small-en-us-0.15 ru:vosk-model-small-ru-0.22; do
+            lang="${item%%:*}"
+            model="${item#*:}"
+            curl -fsSL --retry 2 --max-time 75 "https://alphacephei.com/vosk/models/$model.zip" -o "$RUNNER_TEMP/$model.zip"
+            unzip -q "$RUNNER_TEMP/$model.zip" -d "$RUNNER_TEMP"
+            tar -C "$RUNNER_TEMP" -czf "$RUNNER_TEMP/$lang.tar.gz" "$model"
+          done
+      - name: Recognize both synthetic samples in a browser with only loopback
+        run: |
+          sudo ip netns add vibeon-vosk
+          sudo ip -n vibeon-vosk link set lo up
+          trap 'sudo ip netns del vibeon-vosk' EXIT
+          sudo ip netns exec vibeon-vosk sudo -u "$USER" env HOME="$HOME" PATH="$PATH" RUNNER_TEMP="$RUNNER_TEMP" node qa/native-dictation/vosk-control.cjs
