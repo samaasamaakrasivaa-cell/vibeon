@@ -8,9 +8,9 @@
     "base_sha": "a3673f8bf137eb165bf6fe5e311baf531bb30a2f",
     "branch": "codex/student/personal-dictionary-duplicate",
     "head_sha": "c15a123c88cb6c0106516c7c285c85ef84365a0a",
-    "next": "Локальные сценарии и независимое ревью прошли. Проверить точный PR CI, актуальную базу и выпустить штатно.",
+    "next": "Точный CI и независимое ревью успешны. Совместимый предыдущий выпуск подтверждён, интегрировать PR #98 и проверить выкладку.",
     "pr": 98,
-    "stage": "review",
+    "stage": "integration",
     "test_run": 46131942705
   },
   "release": null,
