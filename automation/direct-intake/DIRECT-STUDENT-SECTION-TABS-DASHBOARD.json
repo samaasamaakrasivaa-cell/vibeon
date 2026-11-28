@@ -8,9 +8,10 @@
     "base_sha": "6b57ad51f4d7d48fe661461f9ab52b2d1fc18098",
     "branch": "codex/student/section-tabs-dashboard",
     "head_sha": "22a16eab02202755a249cdad462c3e7b6a3dd01d",
-    "next": "Сборка и Chromium на синтетике прошли. Ждать CI и ревью точного PR #127. Согласовать последовательность после #122.",
+    "next": "CI и независимое ревью точного #127 прошли. Сверить основную ветку и очередь перед слиянием, подтвердить публичный SHA.",
     "pr": 127,
-    "stage": "review"
+    "stage": "integration",
+    "test_run": 46158126936
   },
   "release": null,
   "source": "direct",
