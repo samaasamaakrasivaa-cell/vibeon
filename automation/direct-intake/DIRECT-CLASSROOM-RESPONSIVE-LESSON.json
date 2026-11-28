@@ -1,10 +1,15 @@
 {
   "claim_id": "8174dc7af3aa4805a74a2dc9bf24f70b",
   "handoff": null,
-  "issue": null,
+  "issue": 108,
   "key": "DIRECT-CLASSROOM-RESPONSIVE-LESSON",
   "owner": "live-classroom",
-  "progress": null,
+  "progress": {
+    "base_sha": "2044f77648fcf73701fe5f2232817fb817bcec28",
+    "branch": "codex/live-classroom/responsive-lesson",
+    "next": "Реализовать адаптивную сетку и проверить три режима урока",
+    "stage": "implementation"
+  },
   "release": null,
   "source": "direct",
   "version": 1
