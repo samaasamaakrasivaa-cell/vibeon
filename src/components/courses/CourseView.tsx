@@ -10,6 +10,7 @@ import {
   placeLessons, reorderUnits, updateCourse, updateLessonMeta, updateTeacherInfo, updateUnit,
 } from "@/lib/teacher/courses";
 import { COVER, COVER_INK } from "./CoursesBoard";
+import { CourseOutlineImport } from "./CourseOutlineImport";
 import { TeacherInfo } from "../lesson/TeacherInfo";
 import { AIM_KEYS, hasInfo, type TInfo } from "@/lib/tasks/teacher-info";
 import type { DictKey } from "@/lib/i18n/dict";
@@ -50,6 +51,7 @@ export function CourseView({ c, students }: { c: CourseData; students: AssignStu
   const [checked, setChecked] = useState<string[]>([]);
   const [assign, setAssign] = useState<Lesson | null>(null);
   const [edit, setEdit] = useState(false);
+  const [importOutline, setImportOutline] = useState(false);
   const [open, setOpen] = useState<string | null>(null); // развёрнутый урок: сведения, цели, ход урока
   const [newIn, setNewIn] = useState<string | null>(null); // «+ Урок»: окно нового урока в этом юните
   const [impTo, setImpTo] = useState<{ id: string; tasks: number } | null>(null); // загрузить файл урока, не открывая конструктор
@@ -98,6 +100,7 @@ export function CourseView({ c, students }: { c: CourseData; students: AssignStu
           <div className="mt-4 flex flex-wrap items-center gap-3">
             <button className="btn primary" disabled={pending} onClick={() => run(() => createUnit(c.id, ""))}><Icon name="plus" size="sm" />{t("crs.newUnit")}</button>
             <button className="btn secondary sm" onClick={() => setEdit(true)}><Icon name="pencil" size="sm" />{t("crs.edit")}</button>
+            <button type="button" className="btn secondary sm" onClick={() => setImportOutline(true)}><Icon name="down" size="sm" />{t("crs.outline.open")}</button>
             <span className="small muted inline-flex items-center gap-1"><Icon name="users" size="sm" />{t("crs.studentsOn", { n: c.studentsOn })}</span>
           </div>
         </div>
@@ -184,6 +187,10 @@ export function CourseView({ c, students }: { c: CourseData; students: AssignStu
         <button className="btn plain" style={{ color: "var(--bad)" }} onClick={() => confirm(t("crs.delCourseQ", { name: c.title })) && run(() => deleteCourse(c.id))}>{t("crs.delCourse")}</button>
       </div>
 
+      {importOutline && <CourseOutlineImport courseId={c.id} onClose={() => setImportOutline(false)} onSaved={() => {
+        setImportOutline(false);
+        router.refresh();
+      }} />}
       {impTo && <ImportDialog lessonId={impTo.id} section="lesson" rubricId={null} hasTasks={impTo.tasks > 0} onDone={() => router.refresh()} onClose={() => setImpTo(null)} />}
       <Dialog open={!!assign} onClose={() => setAssign(null)} title={`${t("crs.assign")}: ${assign?.title ?? ""}`}>
         <p className="muted mt-0">{t("crs.assignLead")}</p>

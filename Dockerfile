@@ -18,7 +18,8 @@ RUN npx prisma generate && npm run build
 FROM base AS runner
 ARG APP_VERSION=dev
 ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 PORT=3000 HOSTNAME=0.0.0.0 APP_VERSION=${APP_VERSION}
-RUN npm i -g prisma@6.19.3 && groupadd -r app && useradd -r -g app app
+RUN apt-get update && apt-get install -y --no-install-recommends tesseract-ocr tesseract-ocr-eng tesseract-ocr-rus poppler-utils && rm -rf /var/lib/apt/lists/* \
+  && npm i -g prisma@6.19.3 && groupadd -r app && useradd -r -g app app
 COPY --from=build /app/public ./public
 COPY --from=build --chown=app:app /app/.next/standalone ./
 COPY --from=build --chown=app:app /app/.next/static ./.next/static

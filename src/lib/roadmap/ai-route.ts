@@ -13,6 +13,7 @@ import { scrubWithMap } from "../ai/check-core";
 import { SHARE_DEFAULT, type Share, type SelfStudy, cleanSelf, BRIEF_KEYS, cleanArticle, cleanInsight, cleanRecs, cleanRoute, compactStages, REC_LISTS, REC_TEXTS, ROUTE_TYPE, runJson, settleHours, toStages, type Insight, type Point, type PointOk } from "../ai/route-core";
 import { aiCode, aiCtx } from "../ai/ctx";
 import { goalLevel, hoursTo, LEVELS, ROUTE_TYPES, type Stage } from "./cefr";
+import { courseOutcomesForRoute } from "./course-outcomes";
 import { paceKey, PACES, parsePace, selfBudget } from "./math";
 import { lessonMinOf } from "./progress";
 import { accountStats, testPack } from "./pack";
@@ -103,10 +104,11 @@ async function context(studentId: string, teacherId: string, f: RoadmapForm, bri
   // программа уровня: темы справочника грамматики между точкой A и целью; освоенные по тесту и досье — отдельно
   const mastered = await masteredTopics(studentId, pack);
   const level_syllabus = topicsBetween(p.from, p.gl).map((t) => ({ id: t.id, level: t.level, topic: t.en, core: t.core, mastered: mastered.has(t.id) || (t.aliases ?? []).some((x) => mastered.has(x)) }));
-  const raw = { pack, account, student: { age, form }, route, brief, hours_guide, self_study_budget, level_syllabus, courses: lead ? { leading: lead.title, units: lead.units.map((u) => ({ title: u.title, outcomes: u.outcomes.slice(0, 6) })) } : null };
+  const raw = { pack, account, student: { age, form }, route, brief, hours_guide, self_study_budget, level_syllabus, courses: lead ? { leading: lead.title, units: lead.units } : null };
   // имена ученика не уходят в ИИ
   const names = [s.name, s.lastName].filter(Boolean) as string[];
-  const scrubbed = JSON.parse(scrubWithMap(JSON.stringify(raw), names).text);
+  const scrubbed: typeof raw = JSON.parse(scrubWithMap(JSON.stringify(raw), names).text);
+  for (const unit of scrubbed.courses?.units ?? []) unit.outcomes = courseOutcomesForRoute(unit.outcomes);
   return { input: scrubbed as Record<string, unknown>, weekly, p: { ...p, pace: `${pc.lessons}:${Math.round((selfH * 60) / 7)}` }, pack, selfMin: Math.round(selfH * 60), mastered };
 }
 

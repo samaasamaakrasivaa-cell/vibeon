@@ -3,10 +3,12 @@ import { HOWTO, PRESET, SAMPLE, TYPES, isType, type TaskType } from "../tasks/ca
 import { liteCorrect, type Note } from "./lite";
 import { goalLevel, ROUTE_TYPES, templateCriteria, templateStages, type L2, type Stage } from "../roadmap/cefr";
 import { pluralForm } from "@/lib/i18n/dict";
+import { courseOutlineSchema, type CourseOutline } from "../tasks/course-outline";
+import { courseOutlinePrompt, mockCourseOutline } from "./course-outline";
 
 // Описания задач ИИ: промпт → разбор ответа; для AI_PROVIDER=mock — правдоподобный ответ без сети.
 
-export type Kind = "help" | "file" | "split" | "book" | "explain" | "draft" | "essay" | "speech" | "precheck" | "partner" | "roadmap" | "plscore" | "awardtr";
+export type Kind = "help" | "file" | "split" | "book" | "course-outline" | "explain" | "draft" | "essay" | "speech" | "precheck" | "partner" | "roadmap" | "plscore" | "awardtr";
 export type { PlacementScore as PlScore } from "../placement/ai-feedback";
 import { answerPassages, parseScore, mockScore, type PlacementScore, type ScoreInput } from "../placement/ai-feedback";
 export type DraftTask = { type: TaskType; title: string; content: string; section?: "lesson" | "homework" | "words"; teacherOnly?: boolean; part?: string; options?: import("../tasks/import-json").ImpOpts }; // part — этап урока (рубрика) при импорте готового JSON
@@ -162,6 +164,14 @@ export const SPECS = {
     parse: (t) => ({ tasks: (extractJson<{ tasks: Partial<DraftTask>[] }>(t).tasks ?? []).map(cleanTask).filter((x): x is DraftTask => !!x) }),
     mock: (i) => ({ tasks: mockSplit(i.text) }),
   } as Spec<{ text: string }, { tasks: DraftTask[] }>,
+
+  "course-outline": {
+    json: true, maxTokens: 8000, temperature: 0,
+    system: () => courseOutlinePrompt,
+    user: (input) => [{ role: "user", text: input.text }],
+    parse: (text) => courseOutlineSchema.parse(extractJson(text)),
+    mock: (input) => courseOutlineSchema.parse(mockCourseOutline(input.text)),
+  } as Spec<{ text: string }, CourseOutline>,
 
   book: {
     json: true, maxTokens: 8000,

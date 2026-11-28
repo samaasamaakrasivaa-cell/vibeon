@@ -1,0 +1,22 @@
+[
+  { "rows": ["Ученица: Синтетическая Марципанова — оценка 47/53"], "error": "studentRecords" },
+  { "rows": ["Вымышленная Сахарова — 91/93"], "error": "studentRecords" },
+  { "rows": ["Пробная Ванилина", "Оценка: 73/79"], "error": "studentRecords" },
+  { "rows": ["Пробная Ванилина 5"], "error": "studentRecords" },
+  { "rows": ["\"Лена Примерова\";\"84/100\""], "error": "studentRecords" },
+  { "rows": ["ира условная\t92/100"], "error": "studentRecords" },
+  { "rows": ["Нина Учебная (B1) — 87/100"], "error": "studentRecords" },
+  { "rows": ["Олег Пробный — сдал после пересдачи — 83/100"], "error": "studentRecords" },
+  { "rows": ["Topics: \"Лена Примерова\";\"84/100\""], "error": "studentRecords" },
+  { "rows": ["Lesson 10 — Нина Учебная (B1) — 87/100"], "error": "studentRecords" },
+  { "rows": ["Topics: нина учебная (B1) 87/100"], "error": "studentRecords" },
+  { "rows": ["Topics: Past simple — Анна Синтетическая 84/100"], "error": "studentRecords" },
+  { "rows": ["Topics: Past simple — анна синтетическая 84 из 100"], "error": "studentRecords" },
+  { "rows": ["Topics: Past simple; Анна Синтетическая; 84 балла"], "error": "studentRecords" },
+  { "rows": ["Topics: Past simple (Анна Синтетическая 84/100, повторить)"], "error": "studentRecords" },
+  { "rows": ["Topics: Past simple — Анна Синтетическая 84"], "error": "studentRecords" },
+  { "rows": ["Topics: Past simple — анна синтетическая 84"], "error": "studentRecords" },
+  { "rows": ["Student name", ": Synthetic Example"], "error": "studentRecords" },
+  { "rows": ["Ведомость оценок", "Вымышленное Имя", "5"], "error": "studentRecords" },
+  { "rows": ["Вставка, которую сервер не может отнести к оглавлению"], "error": "unverified" }
+]

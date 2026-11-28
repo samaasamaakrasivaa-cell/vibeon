@@ -8,9 +8,13 @@ import { getT } from "../i18n/server";
 import { isType, type TaskType } from "../tasks/catalog";
 import { cleanOpts, cleanTitle, MAX_TASKS, type ImpMeta } from "../tasks/import-json";
 import { cleanInfo } from "../tasks/teacher-info";
+import { OUTLINE_SOURCE_LIMIT, type CourseOutline } from "../tasks/course-outline";
 import { parse } from "../tasks/parse";
 import { saveTask } from "../teacher/courses";
+import { issueCourseOutlineDraft } from "../teacher/course-outline-draft";
+import { appendCourseUnit } from "../teacher/course-units";
 import { aiCode, aiCtx } from "./ctx";
+import { verifyCourseOutlineSource } from "./course-outline-privacy";
 import { run } from "./gateway";
 import { sameAnswer } from "./lite";
 import type { Check, DraftTask, Turn } from "./tasks";
@@ -157,6 +161,29 @@ export async function addDraftTasks(lessonId: string, section: "lesson" | "homew
   return { ok: true, n, by, failed };
 }
 
+/** Предпросмотр оглавления. До подтверждения курс не меняется. */
+export async function planCourseOutline(courseId: string, source: string): Promise<Ok<{ outline: CourseOutline; draft: string }>> {
+  const user = await requireUser("TEACHER");
+  const { t } = await getT();
+  const course = await db.course.findFirst({ where: { id: courseId, teacherId: user.id }, select: { id: true } });
+  if (!course) return { ok: false, error: t("crs.outline.saveError") };
+  const text = str(source, OUTLINE_SOURCE_LIMIT + 1);
+  if (!text) return { ok: false, error: t("ai.err.empty") };
+  if (text.length > OUTLINE_SOURCE_LIMIT) return { ok: false, error: t("crs.outline.sourceLimit") };
+  const verified = verifyCourseOutlineSource(text);
+  if ("error" in verified) return { ok: false, error: t(`crs.outline.${verified.error}`) };
+
+  const draft = issueCourseOutlineDraft(user.id, courseId);
+  if (!draft) return { ok: false, error: t("ai.err.fail") };
+  try {
+    const outline = await run("course-outline", { text: verified.text }, await aiCtx(user));
+    if (!outline.units.length) return { ok: false, error: t("crs.outline.noUnits") };
+    return { ok: true, outline, draft };
+  } catch (error) {
+    return fail(error);
+  }
+}
+
 /** «Из учебника»: файлы с ролями → план курса (юниты, уроки, задания) для проверки урок за уроком. */
 export async function bookPlan(files: { role: string; name: string; text: string }[]): Promise<Ok<{ units: { title: string; lessons: { title: string; tasks: DraftTask[] }[] }[] }>> {
   const user = await requireUser("TEACHER");
@@ -199,10 +226,10 @@ export async function bookCreate(plan: { units: { title: string; lessons: { titl
     const order = await db.course.count({ where: { teacherId: user.id } });
     courseId = (await db.course.create({ data: { teacherId: user.id, title, level: str(f.level, 40) || null, category: f.category || "general", order, color: order % 6 } })).id;
   }
-  let uo = await db.unit.count({ where: { courseId } });
   let first: string | null = null;
   for (const u of plan.units.slice(0, 40)) {
-    const unit = await db.unit.create({ data: { courseId, title: str(u.title, 120) || `Unit ${uo + 1}`, order: uo++ } });
+    const unit = await appendCourseUnit(courseId, user.id, str(u.title, 120));
+    if (!unit) return { ok: false, error: "not found" };
     let lo = 0;
     for (const l of u.lessons.slice(0, 20)) {
       const tasks = l.tasks.filter((x) => isType(x.type)).slice(0, MAX_TASKS);
