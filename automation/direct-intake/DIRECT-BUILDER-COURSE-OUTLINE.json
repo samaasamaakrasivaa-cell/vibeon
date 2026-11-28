@@ -1,10 +1,15 @@
 {
   "claim_id": "b739b7ce3624488daf318c9505cdb603",
   "handoff": null,
-  "issue": null,
+  "issue": 110,
   "key": "DIRECT-BUILDER-COURSE-OUTLINE",
   "owner": "builder",
-  "progress": null,
+  "progress": {
+    "base_sha": "2044f77648fcf73701fe5f2232817fb817bcec28",
+    "branch": "codex/builder/course-outline",
+    "next": "Реализация, изолированные проверки и независимое ревью",
+    "stage": "implementation"
+  },
   "release": null,
   "source": "direct",
   "version": 1
