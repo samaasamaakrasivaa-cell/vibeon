@@ -25,7 +25,7 @@ PINS = frozenset({
 })
 FULL_FILES = frozenset({"database.dump", "uploads.tar.gz", "verified.json",
                         ".env", "docker-compose.prod.yml", "release-image.json"})
-KEEP = 3
+KEEP_FULL_BACKUPS = 3
 MAX_REMOVE = 3
 TAG_PREFIX = "vibeon-retained:sha256-"
 INSPECT = '{{json .Id}} {{json .RepoTags}} {{json .RepoDigests}} {{json .Config.Labels}}'
@@ -93,7 +93,7 @@ def full_backup_plan(root, now=None):
         except (KeyError, TypeError) as error:
             raise ValueError("invalid verified backup") from error
     cutoff = now - datetime.timedelta(hours=48)
-    candidates = [item for item in verified[KEEP:]
+    candidates = [item for item in verified[KEEP_FULL_BACKUPS:]
                   if item[0] not in PINS and item[5] not in PINS and item[3] < cutoff]
     return verified, candidates, set().union(*(record[2] for record in verified))
 
@@ -125,10 +125,10 @@ def private_backup_files(entry, directory_fd):
 
 
 def confirm_replacements(verified):
-    if len(verified) < KEEP:
+    if len(verified) < KEEP_FULL_BACKUPS:
         return False
     seen = set()
-    for _, _, _, _, entry, _ in verified[:KEEP]:
+    for _, _, _, _, entry, _ in verified[:KEEP_FULL_BACKUPS]:
         directory_fd = os.open(entry, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
         try:
             files = private_backup_files(entry, directory_fd)
@@ -227,12 +227,12 @@ def rotate(root, image, sha, protected, *, docker, write_json):
     history = [row for row in history if row["image"] != image]
     history.append({"image": image, "sha": sha})
     write_json(history_path, history)
-    protected = set(protected) | recovery_images | {row["image"] for row in history[-KEEP:]}
+    protected = set(protected) | recovery_images | {image}
     present = set(docker("image", "ls", "--filter", "reference=vibeon-retained:*",
                          "--format", "{{.Repository}}:{{.Tag}}").splitlines())
     removed = set()
     try:
-        for row in history[:-KEEP]:
+        for row in history:
             digest, revision = row["image"], row["sha"]
             if digest in protected or revision in PINS:
                 continue

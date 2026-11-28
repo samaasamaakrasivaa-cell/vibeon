@@ -82,8 +82,9 @@ class RetentionTest(unittest.TestCase):
         self.foreign.add(row(3)["image"])
         self.bad_digest.add(row(4)["image"])
         self.backup(28, row(5))
-        self.rotate(protected=(row(6)["image"],))
-        self.assertEqual(self.removed, [])
+        self.rotate(protected=(row(6)["image"], row(7)["image"]))
+        self.assertEqual(self.removed, [tag(row(8))])
+        self.assertNotIn(tag(self.current), self.removed)
 
     def test_backup_plan_counts_only_verified_excess_without_deleting(self):
         paths = [self.backup(i, row(i), marked=i != 5) for i in range(1, 6)]
