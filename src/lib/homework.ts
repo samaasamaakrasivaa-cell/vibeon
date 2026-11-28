@@ -39,9 +39,9 @@ export async function homeworkFor(where: { teacherId?: string; studentId?: strin
     const done = doneTasks.length;
     const all = total > 0 && done >= total;
     const state: HwState = all ? (needs > 0 ? "review" : "checked") : done > 0 || started.length > 0 ? "partial" : "notdone";
-    const needsRevision = !!lessonIds && assigned.some((task) => {
+    const needsRevision = assigned.some((task) => {
       const answer = byTask.get(task.id);
-      return answer?.status === "REVIEWED" && (answer.teacherReview as { ok?: boolean } | null)?.ok === false;
+      return answer?.status === "REVIEWED" && (answer.teacherReview as { ok?: boolean } | null)?.ok === false && isAssignedHomeworkTask(task, hw);
     });
     const ids = new Set(lessonIds ? assigned.map((task) => task.id) : [...hw.taskIds, ...hw.extraTaskIds].filter((id) => !hw.removedTaskIds.includes(id)));
     const ans = l.answers.filter((a) => ids.has(a.taskId));
