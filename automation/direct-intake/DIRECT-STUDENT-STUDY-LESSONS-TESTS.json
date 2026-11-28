@@ -8,9 +8,10 @@
     "base_sha": "47fa1c441d0dfff1e2423db146912175e544ab08",
     "branch": "codex/student/study-lessons-tests",
     "head_sha": "9abc1da6e3bf30ae6dd753ce45ea04930bcdd050",
-    "next": "Ревью и CI зелёные, обслуживание и суточная копия подтверждены. Выпустить #83 и сверить публичный SHA.",
+    "merge_sha": "ff7dc26aa22c6626b408a58f2dfebc5a0e9febbf",
+    "next": "Дождаться штатной выкладки, сверить фактический публичный SHA, записать заметку владельцу.",
     "pr": 83,
-    "stage": "integration",
+    "stage": "publication",
     "test_run": 46121209298
   },
   "release": null,
