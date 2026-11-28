@@ -7,11 +7,11 @@
   "progress": {
     "base_sha": "7aa0781b4f6046a2c1184426b6c76a9c9aa9d746",
     "branch": "codex/builder/course-outline",
-    "head_sha": "5fb3cfb0bdcae53324f42d851a2a8e8257ae3039",
-    "next": "13 отклонённых DOCX дали 0 запросов, 10/10 тем сохранились в Roadmap. Повторное ревью AI & Quality запрошено в PR #117, комментарий 7241645455.",
+    "head_sha": "5b562d91af06e267044a85111edb38749b7c2c21",
+    "next": "Локальный OCR для фото прошёл синтетику, отклонённые материалы дали 0 вызовов. В Roadmap 10/10 тем. Ревью запрошено в PR #117, комментарий 7241840691.",
     "pr": 117,
     "stage": "review",
-    "test_run": 46160875358
+    "test_run": 46162288592
   },
   "release": null,
   "source": "direct",
