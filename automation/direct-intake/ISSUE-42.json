@@ -8,9 +8,10 @@
     "base_sha": "ff7dc26aa22c6626b408a58f2dfebc5a0e9febbf",
     "branch": "codex/ai-quality/private-lesson-dictation",
     "head_sha": "ee13db1246196ff88ee0f708a3a31813ba99650e",
-    "next": "Облачный поток подтверждён владельцем. Проверить релизную сборку и CI, затем выпустить PR #90.",
+    "merge_sha": "daacd5bf1e2f13c4c0b063f5db07f2f47c887dbc",
+    "next": "Проверить объединённую сборку и публичный SHA после CD 46128291612.",
     "pr": 90,
-    "stage": "review",
+    "stage": "publication",
     "test_run": 46127799149
   },
   "release": null,
