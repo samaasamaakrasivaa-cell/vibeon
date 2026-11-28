@@ -84,6 +84,37 @@ async function main() {
     assert.equal(await saveWsTeacherDecision(id, teacherId, "speaking", source("speaking", null, missingAudio), confirm("speaking")), "empty");
     assert.deepEqual(await read(), prior);
     console.log("PASS teacher Writing/Speaking persistence: flag, owner, rubric, parallel confirmation, single reopening, missing and replaced audio, legacy review and report preservation");
+    if (process.env.WS_TEACHER_FIXTURE_ORIGIN) {
+      const origin = new URL(process.env.WS_TEACHER_FIXTURE_ORIGIN);
+      assert.equal(origin.hostname, "127.0.0.1");
+      assert.equal(origin.protocol, "http:");
+      const token = randomUUID();
+      await db.placementAttempt.update({ where: { id }, data: { token, status: "active", state: json({ ...state, section: "speaking" }) } });
+      const upload = (question: number, taskId: string) => {
+        const form = new FormData();
+        form.set("taskId", taskId);
+        form.set("file", new File([new Uint8Array(256)], "fixture.ogg", { type: "audio/ogg" }));
+        return fetch(new URL(`/api/placement/${id}/rec/${question}`, origin), {
+          method: "POST", body: form, headers: { cookie: `vo_pt_${id}=${token}` },
+        });
+      };
+      assert.equal((await upload(1, "previous-task")).status, 409);
+      const responses = await Promise.all([upload(1, speaking.id), upload(2, speaking.id)]);
+      assert.deepEqual(responses.map(({ status }) => status), [200, 200]);
+      const uploaded = await read();
+      const updatedState = uploaded.state as typeof state;
+      assert.deepEqual(Object.keys(updatedState.speaking.rec).sort(), ["1", "2"]);
+      assert.notEqual(updatedState.speaking.rec["1"], state.speaking.rec["1"]);
+      const updatedReview = asReview(uploaded.review);
+      const newSource = wsAssessmentSource(updatedState, "speaking", RUB_V2);
+      const newAssessment = readWsAssessment(updatedReview, newSource);
+      assert.equal(newAssessment.confirmation, null);
+      assert.ok(newAssessment.staleConfirmation);
+      assert.equal(newAssessment.history.length, 1);
+      assert.deepEqual(readWsAssessment(updatedReview, writingSource), readWsAssessment(reopened, writingSource));
+      assert.deepEqual(updatedReview.report, report);
+      console.log("PASS HTTP upload: wrong task rejected, parallel distinct questions preserved, Speaking revision and history updated atomically");
+    }
   } finally {
     await db.placementAttempt.delete({ where: { id } });
   }

@@ -11,6 +11,12 @@ type Decision = { type: "confirm"; marks: Record<string, number>; note?: string 
 
 export const wsTeacherWriteEnabled = () => process.env.PL_WS_TEACHER_WRITE === "1";
 
+export function syncRecordedWsAssessment(review: unknown, state: ReturnType<typeof stateOf>, kind: Skill) {
+  const stored = (review ?? {}) as Record<string, unknown>;
+  if (!wsTeacherWriteEnabled() || !stored.wsAssessment) return stored;
+  return updateWsAssessment(stored, wsAssessmentSource(state, kind, RUB_V2), { type: "sync" });
+}
+
 async function availableRecordings(state: ReturnType<typeof stateOf>) {
   const item = state.items?.[state.speaking?.id ?? ""];
   if (item?.type !== "speaking") return false;
@@ -44,7 +50,7 @@ export async function saveWsTeacherDecision(id: string, teacherId: string, kind:
 
     const state = stateOf(attempt.state);
     const source = wsAssessmentSource(state, kind, RUB_V2);
-    const review = attempt.review as Record<string, unknown>;
+    const review = (attempt.review ?? {}) as Record<string, unknown>;
     const current = readWsAssessment(review, source);
     if (!source.fingerprint || source.fingerprint !== expected.source || current.generation !== expected.generation) return "stale";
     if (!doneOf(state).includes(kind) || !source.hasAnswer) return "empty";
@@ -75,7 +81,7 @@ export function wsTeacherDecisionView(attempt: { status: string; submittedAt: Da
   const state = stateOf(attempt.state);
   const source = wsAssessmentSource(state, kind, RUB_V2);
   if (!source.fingerprint || !doneOf(state).includes(kind)) return undefined;
-  const assessment = readWsAssessment(attempt.review as Record<string, unknown>, source);
+  const assessment = readWsAssessment((attempt.review ?? {}) as Record<string, unknown>, source);
   return {
     expected: { source: source.fingerprint, generation: assessment.generation, submittedAt: attempt.submittedAt?.toISOString() ?? null },
     hasAnswer: source.hasAnswer,
