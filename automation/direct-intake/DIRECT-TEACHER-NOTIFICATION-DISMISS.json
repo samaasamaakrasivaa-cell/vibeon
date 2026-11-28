@@ -7,8 +7,11 @@
   "progress": {
     "base_sha": "8824b7d9246986d23a3e6b92c2fe413aeb7ca104",
     "branch": "codex/teacher/dismiss-news-notifications",
-    "next": "Добавить ручное скрытие и кнопку действия в учительском блоке. Проверить списки и права.",
-    "stage": "implementation"
+    "head_sha": "f50d4722a4e1e3db4f2f777bc3e5edf42f2750c5",
+    "next": "Сборка и браузерная проверка на синтетике пройдены. Идут независимое ревью, CI и согласование Platform.",
+    "pr": 92,
+    "stage": "review",
+    "test_run": 46124490506
   },
   "release": null,
   "source": "direct",
