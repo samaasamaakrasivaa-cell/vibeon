@@ -7,8 +7,11 @@
   "progress": {
     "base_sha": "0fcef7b9e18fcb9a3165d1e2a7b7e9f7cc172075",
     "branch": "codex/placement/pt-15-manual-credit",
-    "next": "Изолированный зачёт неопубликованной попытки на синтетике.",
-    "stage": "implementation"
+    "head_sha": "000dc22e051364cc933d915233b55bc220e67848",
+    "next": "Сверка с Roadmap и Tech Lead. Интерфейс зависит от №31.",
+    "pr": 104,
+    "stage": "review",
+    "test_run": 46148784048
   },
   "release": null,
   "source": "direct",
