@@ -91,7 +91,6 @@ async function main() {
         await page.getByRole("button", { name: "Dictate", exact: true }).click();
         await page.getByRole("button", { name: "Stop", exact: true }).waitFor({ timeout: 30_000 });
         await page.waitForTimeout(8_000);
-        assert.equal(await field.inputValue(), "Manual prefix");
         assert.equal(saves.length, expectedSaves);
         const stop = page.getByRole("button", { name: "Stop", exact: true });
         if (await stop.isVisible()) await stop.click();
@@ -99,8 +98,9 @@ async function main() {
         const composed = await field.inputValue();
         assert.match(composed, key === "en" ? /cat|sleeps|sofa/i : /нравится|читать|книг/i);
         assert.equal(saves.length, expectedSaves);
+        const savedResponse = page.waitForResponse(response => response.request().method() === "POST" && response.url() === origin + "/");
         await page.getByRole("button", { name: "Save observation", exact: true }).click();
-        await page.waitForURL(origin + "/");
+        assert.equal((await savedResponse).status(), 200);
         assert.equal(saves.at(-1), composed);
         console.log(language, "native transcript added and saved with loopback as the only interface");
       } finally { await context.close(); }

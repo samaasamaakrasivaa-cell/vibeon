@@ -20,7 +20,7 @@ jobs:
           npm ci
           npm install --prefix "$RUNNER_TEMP/browser" --no-audit --no-fund playwright-core
           sudo apt-get update -qq
-          sudo apt-get install -y espeak-ng
+          sudo apt-get install -y espeak-ng ffmpeg
           google-chrome --version
           espeak-ng -v en-us -s 125 -w "$RUNNER_TEMP/en-raw.wav" 'The cat sleeps on the sofa. The cat sleeps on the sofa.'
           espeak-ng -v ru -s 115 -w "$RUNNER_TEMP/ru-raw.wav" 'Мне нравится читать книги. Мне нравится читать книги.'
