@@ -7,11 +7,11 @@
   "progress": {
     "base_sha": "2044f77648fcf73701fe5f2232817fb817bcec28",
     "branch": "codex/live-classroom/responsive-lesson",
-    "head_sha": "c9b45277901daf3b08f1a8c95e04c04ec63d870f",
-    "next": "Завершить браузерную проверку, получить независимое ревью и зелёный CI PR #109",
+    "head_sha": "3643453b9629cdf6c34575e3470b91f51e85c640",
+    "next": "Штатный выпуск ждёт восстановления main №107. Ревью и локальный браузерный прогон прошли, повтор Docker-фикстур CI #109 идёт.",
     "pr": 109,
-    "stage": "review",
-    "test_run": 46150142851
+    "stage": "blocked",
+    "test_run": 46150773064
   },
   "release": null,
   "source": "direct",
