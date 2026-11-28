@@ -9,7 +9,7 @@ import { classAccess, type LiveState } from "@/lib/live/access";
 import { publish, withLock } from "@/lib/live/bus";
 import { startLessonSession, withLessonLifecycleLock, type LessonFinishedEvent } from "@/lib/live/lesson-session";
 import { inLessonNow } from "@/lib/student/in-lesson";
-import { savePersonalWord } from "@/lib/student/save-personal-word";
+import { savePersonalWord, withPersonalWordTransaction } from "@/lib/student/save-personal-word";
 import { rateLimit } from "@/lib/rate-limit";
 import { completeNotes, notify, notifyPayer } from "@/lib/notify";
 
@@ -372,20 +372,20 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         }
 
         const translation = inputTranslation || null;
-        return withLock(`word:${studentId}`, async () => {
+        const saved = await withPersonalWordTransaction(studentId, async (tx) => {
           const select = { id: true, word: true, translation: true, example: true, level: true };
-          const existing = await db.word.findFirst({
+          const existing = await tx.word.findFirst({
             where: { studentId, word: { equals: word, mode: "insensitive" } },
             orderBy: [{ createdAt: "asc" }, { id: "asc" }],
             select,
           });
-          const saved = existing ?? await db.word.create({
+          return existing ?? await tx.word.create({
             data: { studentId, word, translation, example: str(body.ex, 400) || null, sourceLessonId: tg.id },
             select,
           });
-          publish(ch, "word", { op: "add", word: saved, sid: studentId });
-          return NextResponse.json({ ok: true });
         });
+        publish(ch, "word", { op: "add", word: saved, sid: studentId });
+        return NextResponse.json({ ok: true });
       } else if (body.op === "del" && teacher) {
         const w = await db.word.findUnique({ where: { id: str(body.wid, 60) } });
         if (w?.studentId !== tg.studentId) return bad();
