@@ -51,7 +51,7 @@ export default async function Words({ searchParams }: { searchParams: Promise<{ 
             id: w.id, word: w.word, translation: translations.join("; ") || null, definition: w.definition, contexts: w.contexts ?? [],
             example: w.example, ownExample: w.ownExample, level: w.level, due: !w.nextReviewAt || w.nextReviewAt <= now,
             ipa: details?.ipa ?? null, synonyms: details?.synonyms ?? null, canEnrich: !!key,
-            synonymMeaning: translations.length > 1 ? translations[0] : null,
+            meanings: sp.tab === "list" ? translations : [],
             enrich: !!key && (!w.definition?.trim() || !w.example?.trim() || !details),
           };
         })}
