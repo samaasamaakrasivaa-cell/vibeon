@@ -56,7 +56,7 @@ export function SkillBars({ skills, prev }: { skills: Partial<Record<Skill, numb
   );
 }
 
-function Checkpoints({ d }: { d: EditorData }) {
+function Checkpoints({ d, oralFocus }: { d: EditorData; oralFocus?: React.ReactNode }) {
   const { t, lang } = useT();
   const { run, pending } = useRun();
   const doneList = d.checkpoints.filter((c) => c.status === "done");
@@ -92,6 +92,7 @@ function Checkpoints({ d }: { d: EditorData }) {
         </div>
       )}
       {c?.placement && <a className="small alink mt-2 inline-block" href={`/teacher/placement/${c.placement}`}>{t("pl.openResult")}</a>}
+      {oralFocus}
       <div className="mt-4 flex flex-wrap gap-2">
         {/* placement test можно назначить и после первого — по разделам: добавить новые или повторить для сравнения */}
         <button className={`btn ${doneList.length ? "secondary" : "primary"} sm`} disabled={pending} onClick={() => setAsg(true)}>{t("rm.assignEntry")}</button>
@@ -272,7 +273,7 @@ function ShareBox({ id, share, hasSelf, hasMsg }: { id: string; share: Share; ha
   );
 }
 
-export function RoadmapEditor({ d }: { d: EditorData }) {
+export function RoadmapEditor({ d, oralFocus }: { d: EditorData; oralFocus?: React.ReactNode }) {
   const { t, lang } = useT();
   const { run, pending, error } = useRun();
   const r = d.roadmap;
@@ -294,7 +295,7 @@ export function RoadmapEditor({ d }: { d: EditorData }) {
   return (
     <div className="rmgrid">
       <div className="flex flex-col gap-4">
-        <Checkpoints d={d} />
+        <Checkpoints d={d} oralFocus={oralFocus} />
         {d.stats && <TestPackView pack={d.pack ?? null} stats={d.stats} />}
         {d.dossier && (d.dossier.summaries.length > 0 || (d.noSummary?.length ?? 0) > 0) && <Dossier studentId={d.studentId} {...d.dossier} noSummary={d.noSummary ?? []} />}
         {d.stats && <InsightCard studentId={d.studentId} f={{ ...f, goal }} brief={brief} insight={r?.insight ?? null} hasPack={!!d.pack} />}

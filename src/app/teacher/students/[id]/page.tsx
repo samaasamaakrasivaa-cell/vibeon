@@ -30,6 +30,8 @@ import { earnedOf, rub, syncSchedule } from "@/lib/teacher/data";
 import { addDaysIso, hhmm, isoDay, TIMEZONES } from "@/lib/time";
 import { RoadmapEditor } from "@/components/roadmap/RoadmapEditor";
 import { editorData } from "@/lib/roadmap/progress";
+import { lessonCheckpointFocus } from "@/lib/lessons/analysis";
+import { focusDetails } from "@/lib/lessons/observation-focus";
 
 export const metadata = { title: "Анкета ученика" };
 
@@ -339,7 +341,7 @@ export default async function StudentProfile({ params, searchParams }: { params:
         </>
       )}
 
-      {tab === "roadmap" && <RoadmapEditor d={await editorData(s.id, me.id, tz, lang)} />}
+      {tab === "roadmap" && <StudentRoadmap studentId={s.id} teacherId={me.id} tz={tz} lang={lang} />}
       {tab === "study" && <StudyTab studentId={s.id} tz={s.timezone} w={sp.w} />}
       {tab === "progress" && <ProgressStats studentId={s.id} tz={tz} lang={lang} t={t} topics={held.filter((l) => l.templateId).length} />}
       {tab === "feedback" && <FeedbackTab studentId={s.id} tz={tz} lang={lang} t={t} />}
@@ -349,6 +351,22 @@ export default async function StudentProfile({ params, searchParams }: { params:
       </div>
     </div>
   );
+}
+
+async function StudentRoadmap({ studentId, teacherId, tz, lang }: {
+  studentId: string; teacherId: string; tz: string; lang: "ru" | "en";
+}) {
+  const { checkpointFocusSince, ...data } = await editorData(studentId, teacherId, tz, lang);
+  const focus = await lessonCheckpointFocus(studentId, teacherId, new Date(checkpointFocusSince));
+  const oralFocus = focus.length > 0 && <div className="flex flex-col gap-2 mt-4">
+    <h3 className="m-0">{lang === "ru" ? "Что проверить устно на следующем срезе" : "What to check aloud at the next checkpoint"}</h3>
+    <ul className="m-0 pl-5">{focus.map(({ focus: code, lessonId }) => <li key={lessonId} className="mt-1">
+      <Link href={`/teacher/lesson-analysis/${lessonId}`} className="alink">{code ? focusDetails(code).label[lang] :
+        lang === "ru" ? "Открыть наблюдение к уроку" : "Open lesson observation"}</Link>
+      {code && <p className="small muted m-0">{focusDetails(code).prompt[lang]}</p>}
+    </li>)}</ul>
+  </div>;
+  return <RoadmapEditor d={data} oralFocus={oralFocus} />;
 }
 
 type TT = Awaited<ReturnType<typeof getT>>["t"];

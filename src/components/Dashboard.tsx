@@ -23,9 +23,10 @@ import { hasStartedLessonSession } from "@/lib/live/lesson-session";
 import { LessonCountdown } from "./LessonCountdown";
 import { LessonCall } from "./teacher/LessonCall";
 import { callLinkOf } from "@/lib/lessons/call-link";
+import { assignedHomeworkTasks } from "@/lib/tasks/homework-selection";
 import type { LessonInstance, User } from "@prisma/client";
 
-type ScheduledLesson = Pick<LessonInstance, "startsAt" | "status" | "live" | "callLink">;
+type ScheduledLesson = Pick<LessonInstance, "startsAt" | "status" | "live" | "callLink" | "templateId">;
 
 function teacherLessonCardStatus(lesson: LessonInstance, host: ScheduledLesson | undefined, now: Date) {
   if (!host || host.status !== lesson.status || +host.startsAt !== +lesson.startsAt) return;
@@ -74,7 +75,7 @@ export async function Dashboard({ user, role, day, top }: { user: User; role: "T
   const slotMembers = slotIds.length ? await db.lessonInstance.findMany({
     where: { teacherId: user.id, slotId: { in: slotIds } },
     orderBy: { id: "asc" },
-    select: { slotId: true, status: true, startsAt: true, live: true, callLink: true },
+    select: { slotId: true, status: true, startsAt: true, live: true, callLink: true, templateId: true },
   }) : [];
   const hosts = new Map<string, ScheduledLesson>();
   const inconsistentSlots = new Set<string>();
@@ -93,13 +94,35 @@ export async function Dashboard({ user, role, day, top }: { user: User; role: "T
   )?.id : undefined;
   // подробности уроков выбранного дня: материал, абонемент, долг, первый урок, день рождения
   const extra = new Map((await db.lessonInstance.findMany({
-    where: { id: { in: todayLessons.map((l) => l.id) } },
+    where: { ...where, id: { in: todayLessons.map((l) => l.id) } },
     select: {
       id: true, movedFrom: true,
+      homework: { select: { manual: true, extraTaskIds: true, removedTaskIds: true, wordTraining: true } },
       template: { select: { title: true, subtitle: true, unit: { select: { title: true, course: { select: { title: true } } } } } },
       student: { select: { id: true, avatar: true, payType: true, birthday: true, packs: { orderBy: { startsAt: "desc" }, take: 1, select: { lessonsLeft: true, lessonsTotal: true } }, invoices: { where: { status: { in: ["SENT", "PROOF_SENT"] } }, select: { id: true, amount: true, status: true } }, _count: { select: { lessons: { where: { status: "DONE" } } } } } },
     },
   })).map((x) => [x.id, x]));
+  const canManageHomework = (lesson: LessonInstance) => role === "TEACHER" && lesson.status === "DONE" && !!lesson.studentId;
+  const homeworkTemplate = (lesson: LessonInstance) => (lesson.slotId ? hosts.get(lesson.slotId)?.templateId : null) ?? lesson.templateId;
+  const homeworkTemplateIds = new Set(todayLessons.filter((lesson) => canManageHomework(lesson) && extra.get(lesson.id)?.homework).map(homeworkTemplate).filter((id) => id !== null));
+  const homeworkMaterial = homeworkTemplateIds.size ? await db.lessonTemplate.findMany({
+    where: { id: { in: [...homeworkTemplateIds] } },
+    select: { id: true, tasks: { select: { id: true, section: true, hidden: true, options: true } } },
+  }) : [];
+  const tasksByTemplate = new Map(homeworkMaterial.map(({ id, tasks }) => [id, tasks]));
+  const homeworkPlural = new Intl.PluralRules(lang);
+  const homeworkAction = (lesson: LessonInstance) => {
+    const homework = extra.get(lesson.id)?.homework;
+    const template = homeworkTemplate(lesson);
+    const tasks = homework && template ? assignedHomeworkTasks(tasksByTemplate.get(template) ?? [], homework) : [];
+    const count = new Set(tasks.filter((task) => !(task.options as { teacherOnly?: boolean } | null)?.teacherOnly).map((task) => task.id)).size;
+    if (count > 0) {
+      const form = homeworkPlural.select(count);
+      return { reminder: false, label: t(form === "one" ? "today.hwOne" : form === "few" ? "today.hwFew" : "today.hwMany", { n: count }) };
+    }
+    if (homework?.wordTraining.length) return { reminder: false, label: t("today.hwWords") };
+    return { reminder: true, label: t("today.hwAdd") };
+  };
   // прошедшие уроки дня: следующий урок того же ученика (группы) — туда уходит «Комментарий после урока»
   const nextOf = new Map(role === "TEACHER" ? await Promise.all(todayLessons.filter((l) => l.startsAt.getTime() + l.durationMin * 60000 <= now.getTime()).map(async (l) => {
     const who = l.groupId ? { groupId: l.groupId } : l.studentId ? { studentId: l.studentId, groupId: null } : null;
@@ -211,6 +234,7 @@ export async function Dashboard({ user, role, day, top }: { user: User; role: "T
               const pack = st?.payType === "PACK" ? st.packs[0] : null;
               const debt = st?.invoices.reduce((a, i) => a + i.amount, 0) ?? 0;
               const hw = l.slotId ? null : hwBefore(l.studentId, l.startsAt);
+              const currentHomework = canManageHomework(l) ? homeworkAction(l) : null;
               const bday = st?.birthday && isoDay(st.birthday, "UTC").slice(5) === sel.slice(5);
               const first = !!st && !l.isTrial && st._count.lessons === 0;
               const callLink = callLinkOf(
@@ -262,6 +286,7 @@ export async function Dashboard({ user, role, day, top }: { user: User; role: "T
                   </div>
                   <div className="tl-act">
                     <Link href={`/class/${l.id}`} className={`btn sm ${role === "TEACHER" || soon || live ? "primary" : "secondary"}`}><Icon name="class" size="sm" />{role === "TEACHER" ? t("dash.openClass") : t("cls.enter")}</Link>
+                    {currentHomework && <Link href={`/class/${l.id}?tab=homework`} className={`btn sm ${currentHomework.reminder ? "tinted" : "secondary"}`}><Icon name="home" size="sm" /><span className="min-w-0 whitespace-normal">{currentHomework.label}</span></Link>}
                     {role === "TEACHER" && <LessonCall lessonId={l.id} href={callLink} canAdd={l.status === "PLANNED"} />}
                     <div className="tl-quick">
                     {/* урок прошёл — вместо «Перенести / Отменить» комментарий после урока (уйдёт в заметку к следующему) */}

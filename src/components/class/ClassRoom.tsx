@@ -12,6 +12,7 @@ import { LessonCountdown } from "@/components/LessonCountdown";
 import { LogoMark } from "../Logo";
 import { ErrOnlyCtx, KeyCtx, MarkCtx, markMap, TaskCard, type MarkLayer, type TaskData } from "../tasks/TaskView";
 import { hadWrongTry, isFinal, progressOf, summary, type Step } from "@/lib/tasks/progress";
+import { assignedHomeworkTasks } from "@/lib/tasks/homework-selection";
 import { canReviewHomeworkTask, countsAsAutoCheckedHomework, isAssignedHomeworkTask, needsHomeworkReview, type HomeworkReviewAssignment } from "@/lib/homework-review";
 import { AnswerProvider, type Answers } from "../tasks/store";
 import { Catalog } from "../builder/Catalog";
@@ -21,7 +22,7 @@ import { useLive } from "./useLive";
 import { AiCheckView, type AiCheck } from "../ai/AiCheckView";
 import { AiReviewPanel, StudentCheck, type AiPick, type StudentCheckData } from "../ai/AiReviewPanel";
 import { askAi, checkAnswer } from "@/lib/ai/actions";
-import { setCallLink } from "@/lib/teacher/actions";
+import { refreshTeacherDashboard, setCallLink } from "@/lib/teacher/actions";
 import { useT } from "@/lib/i18n/client";
 import { numbered, PRESET, RUBRICS, SAMPLE, TYPES, type Rubric, type TaskType } from "@/lib/tasks/catalog";
 import { saveTask, setRubrics } from "@/lib/teacher/courses";
@@ -32,6 +33,7 @@ import type { CatalogItem } from "@/lib/awards/catalog";
 import { CelebrateAwards, type NewAward } from "../awards/StudentAwards";
 
 type CTask = TaskData & { section: "lesson" | "homework" | "words"; rubricId: string | null; hidden: boolean };
+const dashboardChanges = new Set(["hw", "hwRemove", "hwRestore", "training", "finish"]);
 type Word = { id: string; word: string; translation: string | null; example: string | null; level: number };
 type Msg = { id: string; text: string; by: string; at: string; replyTo?: string | null; edited?: boolean; deleted?: boolean };
 export type Review = { ok: boolean; comment: string | null; ai?: AiCheck; ai2?: StudentCheckData };
@@ -272,8 +274,29 @@ export function ClassRoom({ d }: { d: ClassData }) {
   // просмотр «как видит ученик»: ничего не отправляем — только смотрим, живые изменения приходят
   const rawSend = useMemo(() => (d.preview ? (async () => ({ ok: true })) as typeof liveSend : liveSend), [d.preview, liveSend]);
   const [studentView, setStudentView] = useState(false);
+  const homeworkWrites = useRef(new Set<ReturnType<typeof liveSend>>());
   // учитель в группе действует за выбранного ученика: ответы, проверка, слова, отзыв
-  const send = useCallback((type: string, data: Record<string, unknown> = {}) => rawSend(type, gTeacher ? { studentId: viewRef.current, ...data } : data), [rawSend, gTeacher]);
+  const send = useCallback((type: string, data: Record<string, unknown> = {}) => {
+    const request = rawSend(type, gTeacher ? { studentId: viewRef.current, ...data } : data);
+    if (teacher && dashboardChanges.has(type)) {
+      homeworkWrites.current.add(request);
+      const forget = () => { homeworkWrites.current.delete(request); };
+      void request.then(forget, forget);
+    }
+    return request;
+  }, [rawSend, gTeacher, teacher]);
+  const returnToCabinet = async () => {
+    await Promise.allSettled(homeworkWrites.current);
+    try {
+      await refreshTeacherDashboard();
+    } finally {
+      router.push(d.homeHref);
+    }
+  };
+  const onCabinetNavigate = teacher ? (event: { preventDefault: () => void }) => {
+    event.preventDefault();
+    void returnToCabinet().catch(() => {});
+  } : undefined;
   // групповой урок: над каждым заданием — чьи ответы смотрим (по умолчанию первый ученик)
   const [taskView, setTaskView] = useState<Record<string, string>>({});
   // новая секция прямо на уроке: сохраняется в урок, у всех обновляется
@@ -383,10 +406,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
   // новые домашки (manual): задания раздела «Домашка» — заготовки, ученик их не видит; у ученика — только заданное учителем,
   // в том порядке, как учитель задавал (первым задал — первым в списке). Старые домашки — как раньше: раздел «Домашка» + отправленные с урока
   const manual = hw.manual !== false;
-  const byId = new Map(d.tasks.map((x) => [x.id, x]));
-  const hwBase = manual
-    ? hw.extraTaskIds.map((id) => byId.get(id)).filter((x): x is CTask => !!x && !x.hidden)
-    : [...d.tasks.filter((x) => x.section === "homework" && !x.hidden && !(hw.removedTaskIds ?? []).includes(x.id)), ...d.tasks.filter((x) => hw.extraTaskIds.includes(x.id))];
+  const hwBase = assignedHomeworkTasks(d.tasks, hw);
   const prepared = manual && teacher ? d.tasks.filter((x) => x.section === "homework" && !x.hidden && !x.options?.teacherOnly && !hw.extraTaskIds.includes(x.id)) : [];
   const assignHw = (ids: string[]) => { if (!ids.length) return; setHw((h) => ({ ...h, extraTaskIds: [...new Set([...h.extraTaskIds, ...ids])] })); void send("hw", { ids, on: true }); };
   // крестик: убрать из домашки (по ошибке добавили)
@@ -577,7 +597,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
           </div>
         )}
         <header className="cls-top">
-          <Link href={d.homeHref} className="cls-logo" aria-label="VibeOn"><LogoMark size={36} /><small>Vibe<span>On</span></small></Link>
+          <Link href={d.homeHref} onNavigate={onCabinetNavigate} className="cls-logo" aria-label="VibeOn"><LogoMark size={36} /><small>Vibe<span>On</span></small></Link>
           <div className="cls-crumb"><small>{d.crumbs ?? t("cls.lesson")}</small><b>{d.title ?? t("cls.noTemplate")}</b></div>
           <nav className="cls-tabs">
             {([["lesson", "book", t("bld.lesson")], ["homework", "inbox", t("nav.homework")], ["words", "cards", teacher ? t("bld.newWords") : t("cls.myWords")], ["board", "pencil", t("cls.board")]] as const).map(([k, ic, label]) => (
@@ -606,7 +626,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
                 </span>
               ))}
             </span>
-            <Link href={d.homeHref} className="iconbtn" title={t("cls.exit")} aria-label={t("cls.exit")}><Icon name="logout" size="sm" /></Link>
+            <Link href={d.homeHref} onNavigate={onCabinetNavigate} className="iconbtn" title={t("cls.exit")} aria-label={t("cls.exit")}><Icon name="logout" size="sm" /></Link>
           </div>
         </header>
 
@@ -765,7 +785,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
               setSaving(false); setEditing(null); await send("reload"); router.refresh();
             }} />
         )}
-        <ClassDialogs which={dlg === "cheer" ? null : dlg} close={() => setDlg(null)} d={d} hwComment={hw.teacherComment} hwInfo={{ given: hwTasks.length, prepared: prepared.length }} send={send} onFinished={() => router.push(d.homeHref)} onCheer={() => setDlg("cheer")} />
+        <ClassDialogs which={dlg === "cheer" ? null : dlg} close={() => setDlg(null)} d={d} hwComment={hw.teacherComment} hwInfo={{ given: hwTasks.length, prepared: prepared.length }} send={send} onFinished={() => { void returnToCabinet().catch(() => {}); }} onCheer={() => setDlg("cheer")} />
         {dlg === "cheer" && (
           <LessonCheer catalog={d.cheers ?? []} onClose={() => setDlg(null)} onGiven={(awardId) => rawSend("cheer", { awardId })}
             to={d.group ? d.group.members.map((m) => ({ sid: m.sid, name: m.name, gender: m.gender ?? null, inClass: !!m.userId && online.includes(m.userId) }))
