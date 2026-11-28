@@ -10,20 +10,16 @@
     16,
     18
   ],
-  "lease": {
-    "token": "9be7c89369044679ae11bd2d676f42e1",
-    "started_at": "2026-11-28T10:07:15.283592Z",
-    "expires_at": "2026-11-28T13:07:51.248743Z"
-  },
+  "lease": null,
   "checkpoint": {
     "issue": 25,
-    "stage": "request_review",
+    "stage": "await_ci_review",
     "branch": "codex/vocabulary/voc-09",
     "base_sha": "daacd5bf1e2f13c4c0b063f5db07f2f47c887dbc",
-    "next": "CI exact head confirmed. Intent: one native review request for d983a2b46788cc3c84342a42811670e2db35b398. Main advanced 8 commits, no task path overlap; assess compatible source semantics and exact-head review before integration.",
+    "next": "Exact-head CI and VOC-09 isolated subject checks passed; native review requested in comment 7237693840. Await bot summary for full head and inspect findings; verify main compatibility, branch requirements and release readiness before merge. Direct DNS unavailable.",
     "head_sha": "d983a2b46788cc3c84342a42811670e2db35b398",
     "pr": 54,
-    "review_request_comment_id": null,
+    "review_request_comment_id": 7237693840,
     "ci_run_ids": [
       46129070900
     ],
