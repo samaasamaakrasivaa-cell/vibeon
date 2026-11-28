@@ -141,7 +141,7 @@ export async function addMyWord(word: string, tr: string, ex: string, options?: 
 }
 
 /** Дополняет только пустые поля личного слова. IPA и синонимы остаются в словарном кэше. */
-export async function enrichMyWord(id: string, suggestSynonyms = false): Promise<
+export async function enrichMyWord(id: string, suggestSynonyms = false, selectedMeaning?: string): Promise<
   | { ok: true; definition: string | null; example: string | null; ipa: string | null; synonyms: string[] | null }
   | { ok: false; error: "not-found" | "limit" | "unavailable" }
 > {
@@ -150,7 +150,11 @@ export async function enrichMyWord(id: string, suggestSynonyms = false): Promise
   const word = await db.word.findFirst({ where: { id, studentId: s.id } });
   if (!word) return { ok: false, error: "not-found" };
 
-  const input = wordCardInput(word.word, wordTranslations(word.translation)[0]);
+  const meanings = wordTranslations(word.translation);
+  if (selectedMeaning !== undefined && (suggestSynonyms !== true || !meanings.includes(selectedMeaning))) {
+    return { ok: false, error: "not-found" };
+  }
+  const input = wordCardInput(word.word, selectedMeaning ?? meanings[0]);
   const names = [u.name, u.lastName, s.name, s.lastName];
   if (!input || scrub(input.word, names) !== input.word || scrub(input.translation, names) !== input.translation) {
     return { ok: false, error: "unavailable" };
@@ -159,6 +163,9 @@ export async function enrichMyWord(id: string, suggestSynonyms = false): Promise
 
   try {
     const details = await lookupWordCard(input, { userId: u.id, teacherId: s.teacherId }, suggestSynonyms === true);
+    if (selectedMeaning !== undefined && selectedMeaning !== meanings[0]) {
+      return { ok: true, definition: word.definition, example: word.example, ipa: details.ipa, synonyms: details.synonyms ?? null };
+    }
     const where = { id: word.id, studentId: s.id, word: word.word, translation: word.translation };
     const writes = [];
     if (!word.definition?.trim()) {
