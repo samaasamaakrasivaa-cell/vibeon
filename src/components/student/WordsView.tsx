@@ -309,7 +309,12 @@ function WordList({ words, accent }: { words: W[]; accent: string }) {
     }
   };
 
-  const saveWord = (word: string, translation: string, example: string, existing?: NonNullable<typeof confirmation>["existing"], suppliedDefinition?: string, preserveDraft = false) => {
+  const saveWord = (word: string, translation: string, example: string, options?: {
+    existing?: NonNullable<typeof confirmation>["existing"];
+    definition?: string;
+    preserveDraft?: boolean;
+  }) => {
+    const { existing, definition: suppliedDefinition, preserveDraft = false } = options ?? {};
     setNotice(null);
     start(async () => {
       try {
@@ -341,7 +346,7 @@ function WordList({ words, accent }: { words: W[]; accent: string }) {
         <form className="flex flex-col gap-2" onSubmit={(e) => {
           e.preventDefault();
           if (pending || lookingUp || !word.trim()) return;
-          if (manual) saveWord(word, translation, example, undefined, definition);
+          if (manual) saveWord(word, translation, example, { definition });
           else void search(word);
         }}>
           <div className="flex gap-2">
@@ -373,14 +378,14 @@ function WordList({ words, accent }: { words: W[]; accent: string }) {
               <li key={option} className="flex items-center justify-between gap-2">
                 <span>{option}</span>
                 <button type="button" className="iconbtn wplus" disabled={pending} aria-label={t("cls.dictAdd", { translation: option })}
-                  onClick={() => saveWord(word, option, "", undefined, definition)}><Icon name="plus" size="sm" /></button>
+                  onClick={() => saveWord(word, option, "", { definition })}><Icon name="plus" size="sm" /></button>
               </li>
             ))}
           </ul>
         )}
         {lookupMessage && (
           <button type="button" className="btn plain sm mb-4" disabled={pending}
-            onClick={() => saveWord(word, "", "")}>{t("wd.wordWithoutTranslation")}</button>
+            onClick={() => saveWord(word, "", "", { definition })}>{t("wd.wordWithoutTranslation")}</button>
         )}
         {notice && <p className="small mb-4 mt-0" role="status">{t(notice)}</p>}
         {confirmation && (
@@ -390,7 +395,7 @@ function WordList({ words, accent }: { words: W[]; accent: string }) {
             {current && <p className="small muted mt-2 mb-0 break-words">{t("wd.currentTranslation", { value: current })}</p>}
             <div className="actions">
               <button type="button" className="btn secondary" disabled={pending} onClick={() => setConfirmation(null)}>{t("common.cancel")}</button>
-              <button type="button" className="btn primary" disabled={pending} onClick={() => saveWord(confirmation.existing.word, confirmation.value, "", confirmation.existing, undefined, confirmation.preserveDraft)}>
+              <button type="button" className="btn primary" disabled={pending} onClick={() => saveWord(confirmation.existing.word, confirmation.value, "", { existing: confirmation.existing, preserveDraft: confirmation.preserveDraft })}>
                 {t("wd.updateTranslation")}
               </button>
             </div>
@@ -401,7 +406,7 @@ function WordList({ words, accent }: { words: W[]; accent: string }) {
       {words.length > 0 && <div className={styles.list}>
         {words.map((w) => (
           <PersonalWordCard key={w.id} word={w} accent={accent} level={levels[w.level]}
-            onAddSynonym={(synonym, meaning) => { if (!pending) saveWord(synonym, meaning, "", undefined, undefined, true); }}
+            onAddSynonym={(synonym, meaning) => { if (!pending) saveWord(synonym, meaning, "", { preserveDraft: true }); }}
             onDelete={() => confirm(t("wd.delQ", { w: w.word })) && start(async () => { await deleteMyWord(w.id); })} />
         ))}
       </div>}
