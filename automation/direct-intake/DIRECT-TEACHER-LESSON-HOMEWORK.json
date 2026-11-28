@@ -14,7 +14,25 @@
     "stage": "publication",
     "test_run": 46065674487
   },
-  "release": null,
+  "release": {
+    "ci": {
+      "result": "success",
+      "run": 46065674487,
+      "sha": "dd24abc7888f71128ed9539dba6c6a3e6d01089f"
+    },
+    "delivery": {
+      "result": "success",
+      "run": 46068517899,
+      "sha": "82473a1199a160651ae2bed2f8365b5e536d7c72"
+    },
+    "owner_note": "Для владельца: Домашние задания — преподаватель может открыть или добавить задание прямо из карточки проведённого урока на главной.",
+    "review": {
+      "comment": 7227061815,
+      "result": "success",
+      "sha": "dd24abc7888f71128ed9539dba6c6a3e6d01089f"
+    },
+    "site_sha": "82473a1199a160651ae2bed2f8365b5e536d7c72"
+  },
   "source": "direct",
   "version": 1
 }
