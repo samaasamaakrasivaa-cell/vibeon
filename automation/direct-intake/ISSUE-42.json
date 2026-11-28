@@ -7,8 +7,11 @@
   "progress": {
     "base_sha": "ff7dc26aa22c6626b408a58f2dfebc5a0e9febbf",
     "branch": "codex/ai-quality/private-lesson-dictation",
-    "next": "Проверить локальную диктовку и ручной ввод, провести ревью и CI.",
-    "stage": "implementation"
+    "head_sha": "74072caa4975f12818e811558430f57ff7f1cce1",
+    "next": "Подтвердить нативное распознавание русского и английского без сети, дождаться CI.",
+    "pr": 90,
+    "stage": "review",
+    "test_run": 46122536654
   },
   "release": null,
   "source": "direct",
