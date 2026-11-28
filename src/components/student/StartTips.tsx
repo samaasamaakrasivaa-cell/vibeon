@@ -78,7 +78,7 @@ export function StartTips({ tips }: { tips: Tip[] }) {
             {tip.locked ? (
               <LockHint label={`${tip.title}. ${t("tips.locked")}`} reason={tip.locked} />
             ) : tip.href && tip.cta && (!tip.done || tip.keepLink) && (
-              <Link href={tip.href} className={`btn secondary sm ${styles.action}`}>{tip.cta}</Link>
+              <Link href={tip.href} className={`btn ${styles.action}`}>{tip.cta}</Link>
             )}
           </li>
         ))}

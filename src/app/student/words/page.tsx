@@ -46,10 +46,13 @@ export default async function Words({ searchParams }: { searchParams: Promise<{ 
         words={words.map((w) => {
           const key = cardKeys.get(w.id);
           const details = key ? cardDetails.get(key) : null;
+          const translations = wordTranslations(w.translation);
           return {
-            id: w.id, word: w.word, translation: wordTranslations(w.translation).join("; ") || null, definition: w.definition,
+            id: w.id, word: w.word, translation: translations.join("; ") || null, definition: w.definition,
             example: w.example, ownExample: w.ownExample, level: w.level, due: !w.nextReviewAt || w.nextReviewAt <= now,
-            ipa: details?.ipa ?? null, enrich: !!key && (!w.definition?.trim() || !w.example?.trim() || !details),
+            ipa: details?.ipa ?? null, synonyms: details?.synonyms ?? null, canEnrich: !!key,
+            synonymMeaning: translations.length > 1 ? translations[0] : null,
+            enrich: !!key && (!w.definition?.trim() || !w.example?.trim() || !details),
           };
         })}
         goal={s.wordGoal} days={s.wordDays} remindAt={s.remindAt} doneToday={byDay.get(today) ?? 0} week={week} streak={streak}
