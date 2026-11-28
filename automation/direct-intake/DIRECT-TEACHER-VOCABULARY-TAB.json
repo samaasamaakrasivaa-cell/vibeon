@@ -8,9 +8,9 @@
     "base_sha": "5d07042533faee38382ddf4097b7e83c89ef6dd7",
     "branch": "codex/teacher/student-vocabulary-tab",
     "head_sha": "a025431473b33f0726da1b9ff2fd312ae33509ef",
-    "next": "Обновлена обязательная проверка вкладки, сборка и локальный Chromium прошли. Ждём ревью, CI и подтверждения восстановления обычного CD.",
+    "next": "Все проверки точного SHA, Chromium и ревью пройдены. Ждём штатного восстановления и согласования порядка #119 и #106.",
     "pr": 119,
-    "stage": "review",
+    "stage": "integration",
     "test_run": 46152078797
   },
   "release": null,
