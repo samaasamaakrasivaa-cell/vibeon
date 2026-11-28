@@ -1,10 +1,15 @@
 {
   "claim_id": "f771319ef12e466699ee9fe18c6d7bb2",
   "handoff": null,
-  "issue": null,
+  "issue": 93,
   "key": "DIRECT-VOCABULARY-LESSON-DICTIONARY",
   "owner": "vocabulary-training",
-  "progress": null,
+  "progress": {
+    "base_sha": "57d38ef98578c1a3a3d7b8281e98b0cd4f1731b5",
+    "branch": "codex/vocabulary-training/lesson-dictionary",
+    "next": "Реализовать поиск перевода и явное сохранение в классе. Проверить роли, кэш и ошибки на синтетике.",
+    "stage": "implementation"
+  },
   "release": null,
   "source": "direct",
   "version": 1
