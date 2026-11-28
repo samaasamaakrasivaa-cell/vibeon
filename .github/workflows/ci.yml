@@ -30,9 +30,10 @@ jobs:
       - name: Smoke test
         run: |
           npm run db:seed
-          (PORT=3000 npm start &) && sleep 5
+          (BILLING_SCHEDULER=off TELEGRAM_BOT_TOKEN="" SMTP_HOST="" PORT=3000 npm start &) && sleep 5
           curl -fsS localhost:3000/api/health
           for p in / /teacher /student /ui; do curl -fsS -o /dev/null "localhost:3000$p"; done
+          npx --no-install tsx scripts/check-vocabulary-stats.ts
 
   delivery:
     runs-on: ubuntu-latest
