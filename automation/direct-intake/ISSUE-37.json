@@ -7,8 +7,11 @@
   "progress": {
     "base_sha": "2044f77648fcf73701fe5f2232817fb817bcec28",
     "branch": "codex/placement/pt-12-roadmap-result",
-    "next": "Изолированная запись подтверждённого снимка и синтетическая регрессия.",
-    "stage": "implementation"
+    "head_sha": "38efe98620cab4d70597326047b83bf082c0c3e7",
+    "next": "Ревью изолированной записи. Штатный вызов ждёт №32 и №36.",
+    "pr": 118,
+    "stage": "review",
+    "test_run": 46151584258
   },
   "release": null,
   "source": "direct",
