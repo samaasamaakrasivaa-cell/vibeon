@@ -16,7 +16,7 @@ type Checked<T> = T & { status: "checked"; provenance: Origin };
 type TopicFact = { topicId: string } & (Unknown | Checked<{ verdict: "gap" | "partial" | "secure"; correct: number; total: number }>);
 type SkillFact<K extends Skill = Skill> = { skill: K } & (Unknown | Checked<{ level: Level }>);
 type Facts = { level: Level; topics: TopicFact[]; skills: SkillFact[] };
-type VerifiedFacts = {
+export type VerifiedRoadmapFacts = {
   level: Level;
   topics: TopicFact[];
   skills: SkillFact<Exclude<Skill, ProductiveSkill>>[];
@@ -24,9 +24,9 @@ type VerifiedFacts = {
   // The caller verifies per-recording provenance and supplies the matching server-side source fingerprint.
   verifiedSpeakingSource?: string;
 };
-type Attempt = Pick<PlacementAttempt, "id" | "teacherId" | "studentId" | "mode" | "status" | "updatedAt" | "level" | "state" | "review">;
-type Command = { attemptId: string; revision: string; previousVersion: string | null };
-type Verify = (attempt: Attempt) => VerifiedFacts | null;
+export type RoadmapResultAttempt = Pick<PlacementAttempt, "id" | "teacherId" | "studentId" | "mode" | "status" | "updatedAt" | "submittedAt" | "level" | "state" | "review">;
+export type RoadmapCommand = { attemptId: string; revision: string; previousVersion: string | null };
+type Verify = (attempt: RoadmapResultAttempt) => VerifiedRoadmapFacts | null;
 type ConfirmedRoadmapResult = Facts & { attemptId: string; version: string; confirmedAt: string };
 
 function digest(value: unknown) {
@@ -62,14 +62,15 @@ function productiveScope(state: PState, kind: ProductiveSkill): Origin["scope"] 
   return "additional";
 }
 
-function productiveFact(attempt: Attempt, state: PState, review: Prisma.JsonObject, kind: ProductiveSkill, verified: VerifiedFacts): SkillFact {
+function productiveFact(attempt: RoadmapResultAttempt, state: PState, review: Prisma.JsonObject, kind: ProductiveSkill, verified: VerifiedRoadmapFacts): SkillFact {
   const unknown = (reason: Unknown["reason"]): SkillFact => ({ skill: kind, status: "unknown", reason });
   const source = wsAssessmentSource(state, kind, RUB_V2);
   if (!source.hasAnswer) return unknown("not-tested");
-  if (!verified.selectedProductiveSkills.includes(kind)) return unknown("not-confirmed");
+  if (kind === "speaking" && !verified.verifiedSpeakingSource) return unknown("unknown-origin");
   const { confirmation, generation } = readWsAssessment(review, source);
   if (!confirmation || generation === null || confirmation.teacherId !== attempt.teacherId) return unknown("not-confirmed");
   if (kind === "speaking" && (!verified.verifiedSpeakingSource || verified.verifiedSpeakingSource !== source.fingerprint)) return unknown("unknown-origin");
+  if (!verified.selectedProductiveSkills.includes(kind)) return unknown("not-confirmed");
   const item = state.items[state[kind]!.id];
   const marks = RUB_V2[kind].map(({ id }) => confirmation.marks[id]);
   if (marks.some((mark) => !Number.isInteger(mark) || mark < 0 || mark > RUB_V2.max)) return unknown("not-confirmed");
@@ -87,7 +88,7 @@ function productiveFact(attempt: Attempt, state: PState, review: Prisma.JsonObje
 }
 
 /** Build a command from the same server-verified inputs that will be checked again at confirmation. */
-export function prepareRoadmapResult(attempt: Attempt, teacherId: string, verify: Verify) {
+export function prepareRoadmapResult(attempt: RoadmapResultAttempt, teacherId: string, verify: Verify) {
   const { review, state } = attempt;
   if (attempt.teacherId !== teacherId || attempt.mode !== "student" || !attempt.studentId ||
       (attempt.status !== "submitted" && attempt.status !== "reviewed") || !isObject(review) || !isObject(state)) return null;
@@ -116,7 +117,7 @@ export function prepareRoadmapResult(attempt: Attempt, teacherId: string, verify
     }),
   };
   // Reports and unrelated review writes are deliberately excluded from the revision.
-  const revision = digest([attempt.id, attempt.teacherId, attempt.studentId, attempt.status, attempt.level, state, facts]);
+  const revision = digest([attempt.id, attempt.teacherId, attempt.studentId, attempt.status, attempt.submittedAt, attempt.level, state, facts]);
   return { facts, command: { attemptId: attempt.id, revision, previousVersion: stored?.version as string | undefined ?? null } };
 }
 
@@ -124,17 +125,18 @@ export function prepareRoadmapResult(attempt: Attempt, teacherId: string, verify
 export async function writeRoadmapResult(
   client: Pick<Prisma.TransactionClient, "placementAttempt">,
   teacherId: string,
-  command: Command,
-  verify: Verify,
+  command: RoadmapCommand,
+  verify: (attempt: RoadmapResultAttempt) => ReturnType<Verify> | Promise<ReturnType<Verify>>,
 ) {
   const version = digest([command.attemptId, command.revision, command.previousVersion]);
   for (let retry = 0; retry < 3; retry++) {
     const attempt = await client.placementAttempt.findFirst({
       where: { id: command.attemptId, teacherId, mode: "student", studentId: { not: null } },
-      select: { id: true, teacherId: true, studentId: true, mode: true, status: true, updatedAt: true, level: true, state: true, review: true },
+      select: { id: true, teacherId: true, studentId: true, mode: true, status: true, updatedAt: true, submittedAt: true, level: true, state: true, review: true },
     });
     if (!attempt || !isObject(attempt.state) || !isObject(attempt.review)) return { status: "unavailable" as const };
-    const prepared = prepareRoadmapResult(attempt, teacherId, verify);
+    const verified = await verify(attempt);
+    const prepared = prepareRoadmapResult(attempt, teacherId, () => verified);
     if (!prepared || prepared.command.revision !== command.revision) return { status: "stale" as const };
     if (prepared.command.previousVersion === version) {
       return { status: "unchanged" as const, result: attempt.review.roadmapResultV1 as ConfirmedRoadmapResult };

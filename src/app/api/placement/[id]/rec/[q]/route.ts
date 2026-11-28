@@ -4,6 +4,7 @@ import { attemptFor } from "@/lib/placement/access";
 import { json, stateOf } from "@/lib/placement/run";
 import { syncRecordedWsAssessment, wsTeacherWriteEnabled } from "@/lib/placement/ws-teacher-write";
 import { readStored, saveFile } from "@/lib/storage";
+import { recordSpeakingUpload, recordingDigest } from "@/lib/placement/speaking-recording-proof";
 import { rateLimit } from "@/lib/rate-limit";
 
 // Записи ответов на говорение. Не попадают в общие файлы (/api/files): слушать может только сам ученик и его учитель.
@@ -25,7 +26,10 @@ export async function POST(req: NextRequest, { params }: P) {
   const file = form?.get("file");
   if (!(file instanceof File) || file.size < 200 || file.size > 15 * 1024 * 1024) return NextResponse.json({ error: "file" }, { status: 400 });
   const mime = /^audio\/(webm|ogg|mp4|mpeg|wav|x-m4a|aac)/.exec(file.type)?.[0] ?? "audio/webm";
-  const key = await saveFile(Buffer.from(await file.arrayBuffer()), mime);
+  const bytes = Buffer.from(await file.arrayBuffer());
+  const key = await saveFile(bytes, mime);
+  const reference = `${key}|${mime}`;
+  const proof = process.env.PL_ROADMAP_CONFIRM === "1" && taskId === sp.id ? { attemptId: id, taskId: sp.id, question: qi, reference, digest: recordingDigest(bytes) } : null;
   const previous = st.speaking?.rec?.[qi];
   for (let retry = 0; retry < 3; retry++) {
     const fresh = await db.placementAttempt.findUnique({ where: { id } });
@@ -33,8 +37,9 @@ export async function POST(req: NextRequest, { params }: P) {
     const state = stateOf(structuredClone(fresh.state));
     if (state.section !== "speaking" || state.speaking?.id !== sp.id || state.speaking.rec?.[qi] !== previous) break;
     if (previous) state.rerec = { ...(state.rerec ?? {}), [qi]: (state.rerec?.[qi] ?? 0) + 1 };
-    state.speaking.rec = { ...state.speaking.rec, [qi]: `${key}|${mime}` };
-    const review = syncRecordedWsAssessment(fresh.review, state, "speaking");
+    state.speaking.rec = { ...state.speaking.rec, [qi]: reference };
+    const syncedReview = syncRecordedWsAssessment(fresh.review, state, "speaking");
+    const review = proof ? recordSpeakingUpload(syncedReview, proof) : syncedReview;
     const save = await db.placementAttempt.updateMany({
       where: {
         id, status: "active", updatedAt: fresh.updatedAt, state: { equals: json(fresh.state) }, review: { equals: json(fresh.review) },

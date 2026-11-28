@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { HidePublishedReport } from "@/components/placement/HidePublishedReport";
+import { PlacementLevelConfirmation } from "@/components/placement/PlacementLevelConfirmation";
+import { placementLevelView } from "@/lib/placement/level-confirmation";
 import { PlacementReview } from "@/components/placement/PlacementReview";
 import { WsAssessmentStatus, wsAssessmentView } from "@/components/placement/WsAssessmentStatus";
 import { requireUser } from "@/lib/auth/session";
@@ -28,6 +30,7 @@ export default async function PlacementReviewPage({ params, searchParams }: { pa
   const reportHref = attemptHref(id, filter, "report");
   const a = await db.placementAttempt.findUnique({ where: { id }, include: { student: true } });
   if (!a || a.teacherId !== me.id) notFound();
+  const levelView = await placementLevelView(a, me.id);
   const st = stateOf(a.state);
   const { bank } = await getBank(trackOf(st.track));
   const sm = summarize(st, bank);
@@ -50,7 +53,7 @@ export default async function PlacementReviewPage({ params, searchParams }: { pa
   const canHidePublished = a.mode === "student" && a.status !== "new" && (a.status !== "reviewed" || !a.showResult)
     && stored.sent && stored.resultVisible === true && lastPublication(stored)?.schema === 1;
   const draft = teacherReview(a);
-  const { wsAssessment: _wsAssessment, ...editableReview } = draft.active;
+  const { wsAssessment: _wsAssessment, speakingRecordingsV1: _recordingProofs, roadmapResultV1: _roadmapResult, ...editableReview } = draft.active;
   const transcript = speechTranscript(st, draft);
   const hasRep = !!(rep && (rep.sent || rep.student || rep.parent));
   const dates = Object.fromEntries(Object.entries(st.sdates ?? {}).map(([k, v]) => [k, dfmt(v as number)]));
@@ -100,6 +103,7 @@ export default async function PlacementReviewPage({ params, searchParams }: { pa
           wsDecision={{ writing: wsTeacherDecisionView(a, "writing"), speaking: wsTeacherDecisionView(a, "speaking") }}
           howTo={RUBRICS.how_to_decide_ru} sublevels={RUBRICS.sublevels_ru}
         />
+        {levelView && <PlacementLevelConfirmation key={`${levelView.revision}-${levelView.previousVersion}`} id={id} view={levelView} />}
       </div>
     </div>
   );
