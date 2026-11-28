@@ -8,9 +8,10 @@
     "base_sha": "7aa0781b4f6046a2c1184426b6c76a9c9aa9d746",
     "branch": "codex/teacher/align-news-notifications",
     "head_sha": "ba9302cad72b93b4d2d3214c09e4249dad6a0a02",
-    "next": "Общий PR #121 на 019d6e8 прошёл ревью и CI. Автопроверка отклонила слияние в main без прямого подтверждения владельцем общего выпуска.",
+    "merge_sha": "6b57ad51f4d7d48fe661461f9ab52b2d1fc18098",
+    "next": "Владелец подтвердил выпуск PR #121. Main совпадает с проверенным деревом. Сверяю фактическую публикацию по CD 46154922297.",
     "pr": 106,
-    "stage": "blocked",
+    "stage": "publication",
     "test_run": 46152777890
   },
   "release": null,
