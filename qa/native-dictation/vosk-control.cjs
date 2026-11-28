@@ -12,7 +12,14 @@ const origin = "http://127.0.0.1:3334";
 async function recognizeLanguage(page, lang) {
   return page.evaluate(async (language) => {
     const started = performance.now();
-    const model = await Vosk.createModel("/" + language + ".tar.gz");
+    const modelUrl = new URL("/" + language + ".tar.gz", location.href).href;
+    let loadTimer;
+    const model = await Promise.race([
+      Vosk.createModel(modelUrl),
+      new Promise((_, reject) => {
+        loadTimer = setTimeout(() => reject(new Error("Worker model startup exceeded 30 seconds")), 30000);
+      }),
+    ]).finally(() => clearTimeout(loadTimer));
     const loading = performance.now() - started;
     const context = new AudioContext({ sampleRate: 16000 });
     const sound = await fetch("/" + language + ".wav").then(response => response.arrayBuffer())
@@ -25,7 +32,8 @@ async function recognizeLanguage(page, lang) {
         const timer = setTimeout(() => reject(new Error("Final result not received")), 30000);
         recognizer.on("result", message => {
           const text = message.result.text?.trim();
-          if (text) parts.push(text);
+          if (!text) return;
+          parts.push(text);
           clearTimeout(timer);
           resolve(parts.join(" "));
         });
@@ -82,6 +90,8 @@ async function main() {
       page.on("console", event => {
         if (event.type() === "error") console.log("Browser error:", event.text());
       });
+      page.on("pageerror", error => console.log("Native page error:", error.message));
+      page.on("requestfailed", request => console.log("Local fixture request failed:", new URL(request.url()).pathname, request.failure()?.errorText));
       page.on("request", request => {
         if (!request.url().startsWith(origin + "/") && !request.url().startsWith("blob:" + origin + "/")) outgoing++;
       });
