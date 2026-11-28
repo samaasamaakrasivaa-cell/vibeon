@@ -25,7 +25,7 @@ export function Clock({ lang, tz }: { lang: "ru" | "en"; tz: string }) {
         <span className="text-[34px] leading-tight font-medium">{day}</span>
         <span className="text-[11px] text-text3">{month}</span>
       </div>
-      <div className="flex items-baseline px-6 py-3" style={{ fontVariantNumeric: "tabular-nums", background: "linear-gradient(135deg,var(--surface),var(--accent-bg))" }}>
+      <div className="flex items-baseline px-6 py-3 max-[360px]:px-3" style={{ fontVariantNumeric: "tabular-nums", background: "linear-gradient(135deg,var(--surface),var(--accent-bg))" }}>
         <span className="self-center text-[46px] font-medium tracking-tight">
           {p(hh)}
           <span className="text-text3">:</span>
