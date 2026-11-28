@@ -14,7 +14,25 @@
     "stage": "publication",
     "test_run": 46127799149
   },
-  "release": null,
+  "release": {
+    "ci": {
+      "result": "success",
+      "run": 46127799149,
+      "sha": "ee13db1246196ff88ee0f708a3a31813ba99650e"
+    },
+    "delivery": {
+      "result": "success",
+      "run": 46128291612,
+      "sha": "daacd5bf1e2f13c4c0b063f5db07f2f47c887dbc"
+    },
+    "owner_note": "Для владельца: Уроки и конструктор — в частной заметке после урока доступна диктовка как в Roadmap. Текст можно отредактировать и сохранить отдельно.",
+    "review": {
+      "comment": 6096842161,
+      "result": "success",
+      "sha": "ee13db1246196ff88ee0f708a3a31813ba99650e"
+    },
+    "site_sha": "daacd5bf1e2f13c4c0b063f5db07f2f47c887dbc"
+  },
   "source": "direct",
   "version": 1
 }
