@@ -1,0 +1,16 @@
+{
+  "claim_id": "98f8e88b21f045f6befd5caeccd1bf41",
+  "handoff": null,
+  "issue": 36,
+  "key": "ISSUE-36",
+  "owner": "placement-test",
+  "progress": {
+    "base_sha": "6b57ad51f4d7d48fe661461f9ab52b2d1fc18098",
+    "branch": "codex/placement/pt-10-objective-facts",
+    "next": "Сбор объективных фактов и фикстуры четырёх навыков.",
+    "stage": "implementation"
+  },
+  "release": null,
+  "source": "direct",
+  "version": 1
+}
