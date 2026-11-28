@@ -19,7 +19,7 @@ export async function searchDictionary(readQuery: () => unknown, ctx: Ctx): Prom
   if (!(await allowDictionaryRequest(ctx))) return { error: "limit" };
 
   const query = dictionaryQuery(await readQuery());
-  if (!query || scrub(query, names) !== query) return { error: "input" };
+  if (!query || scrub(query, ctx.names) !== query) return { error: "input" };
 
   try {
     const translations = await withLock(`dictionary:${query}`, () => lookupDictionary(query, ctx));
