@@ -7,11 +7,11 @@
   "progress": {
     "base_sha": "a3673f8bf137eb165bf6fe5e311baf531bb30a2f",
     "branch": "codex/placement/pt-08-ws-review",
-    "head_sha": "0e2d1084ae24faa27fd3fbaa955e988865589449",
-    "next": "Готово к проверке AI & Quality. Изолированный этап PT-08.",
+    "head_sha": "ba0e9781276bcdc94657d70835092daf423cbee9",
+    "next": "Блокер исправлен. Готово к повторной проверке AI & Quality.",
     "pr": 99,
     "stage": "review",
-    "test_run": 46132370566
+    "test_run": 46138331055
   },
   "release": null,
   "source": "direct",
