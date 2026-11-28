@@ -43,4 +43,4 @@ jobs:
           sudo ip netns add vibeon-dictation
           sudo ip -n vibeon-dictation link set lo up
           trap 'sudo ip netns del vibeon-dictation' EXIT
-          sudo ip netns exec vibeon-dictation sudo -u "$USER" env HOME="$HOME" PATH="$PATH" RUNNER_TEMP="$RUNNER_TEMP" xvfb-run --auto-servernum node qa/native-dictation/probe.cjs offline
+          sudo ip netns exec vibeon-dictation sudo -u "$USER" env HOME="$HOME" PATH="$PATH" RUNNER_TEMP="$RUNNER_TEMP" xvfb-run --auto-servernum node qa/native-dictation/native-control.cjs
