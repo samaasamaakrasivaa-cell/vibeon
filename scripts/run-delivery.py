@@ -34,17 +34,21 @@ TOOLING_NAMES = {"vibeon.sh", "attach-proxy.sh"}
 STORAGE_ONLY_PATHS = frozenset({
     b".github/workflows/ci.yml", b".github/workflows/delivery-preflight.yml",
     b"deploy/release-apply.py", b"deploy/release_capacity.py", b"deploy/release_retention.py",
+    b"deploy/release_uploads_manifest.py",
     b"docs/CD-01-delivery.md", b"scripts/run-delivery.py", b"scripts/test-delivery-plan.py",
-    b"scripts/test-release-apply.py", b"scripts/test-release-capacity.py", b"scripts/test-release-retention.py",
+    b"scripts/test-release-apply.py", b"scripts/test-release-apply-docker.py",
+    b"scripts/test-release-capacity.py", b"scripts/test-release-retention.py",
+    b"scripts/test-release-uploads-manifest.py",
 })
 STAGE_MARKER = ".vibeon-stage-v1"
 CAPACITY_METRICS = {"archive_bytes", "backup_restore_bytes", "minimum_inode_margin", "minimum_space_margin_bytes"}
 CAPACITY_ERRORS = {"capacity_inventory_unavailable", "insufficient_pretransfer_space",
-                   "release_already_running", "image_transfer_failed"}
+                   "release_already_running", "image_transfer_failed", "daily_backup_not_fresh", "daily_backup_interrupted"}
 CAPACITY_WARNING_MARGIN = 1024**3
 RETENTION_METRICS = {"images_removed", "verified_full_backups", "full_backup_candidates", "full_backup_candidate_bytes"}
 OPTIONAL_RETENTION_METRICS = {"full_backups_removed", "full_backups_removed_bytes"}
-ENGINE_CODES = {"unexpected_current_image", "migration_set_mismatch", "schema_change_requires_separate_release", "configuration_changed_during_backup", "database_clients_still_connected", "insufficient_backup_space", "database_backup_failed", "uploads_backup_failed", "database_restore_verification_failed", "uploads_restore_verification_failed", "uploads_restore_content_mismatch", "restore_cleanup_failed", "app_switch_failed", "app_health_failed", "rollback_failed", "release_already_running", "interrupted_release_requires_recovery", "unknown_database_peer", "unsupported_volume_topology", "compose_contract_mismatch", "release_interrupted", "storage_only_identity_invalid"}
+ENGINE_CODES = {"unexpected_current_image", "migration_set_mismatch", "schema_change_requires_separate_release", "configuration_changed_during_backup", "database_clients_still_connected", "insufficient_backup_space", "database_backup_failed", "uploads_backup_failed", "database_restore_verification_failed", "uploads_restore_verification_failed", "uploads_restore_content_mismatch", "restore_cleanup_failed", "app_switch_failed", "app_health_failed", "rollback_failed", "release_already_running", "interrupted_release_requires_recovery", "unknown_database_peer", "unsupported_volume_topology", "compose_contract_mismatch", "release_interrupted", "storage_only_identity_invalid", "daily_backup_identity_invalid", "daily_backup_not_fresh",
+                "daily_backup_interrupted"}
 TOOLING_INSTALLER = r'''
 import fcntl, hashlib, json, os, pathlib, re, sys, tempfile
 NAMES = {"vibeon.sh", "attach-proxy.sh"}
@@ -412,7 +416,7 @@ class Connection:
         self.run("umask 077; cat > " + shlex.quote(path + "/" + STAGE_MARKER),
                  "remote_staging_failed", data=b"vibeon-delivery-v1\n")
         names = ("release-preflight.sh", "release-apply.py", "release_capacity.py",
-                 "release_retention.py", "vibeon.sh", "attach-proxy.sh")
+                 "release_retention.py", "release_uploads_manifest.py", "vibeon.sh", "attach-proxy.sh")
         for name in names:
             destination = shlex.quote(path + "/" + name)
             self.run("umask 077; cat > " + destination + " && chmod 700 " + destination,
@@ -424,8 +428,11 @@ class Connection:
         raw = self.run(remote, "server_preflight_blocked", data=source)
         return preflight_state(object_reply(raw, "preflight_reply_invalid"))
 
-    def capacity(self, recipe, archive, phases, images=()):
-        remote = shlex.join(["python3", "-", "probe", str(archive), str(phases), *images])
+    def capacity(self, recipe, archive, phases, images=(), *, fresh_daily=False):
+        args = ["python3", "-", "probe", str(archive), str(phases), *images]
+        if fresh_daily:
+            args.append("--fresh-daily")
+        remote = shlex.join(args)
         source = committed_file(recipe, "deploy/release_capacity.py")
         raw = self.run(remote, "capacity_probe_failed", data=source)
         return capacity_reply(raw)
@@ -438,11 +445,13 @@ class Connection:
         if report != {"status": "installed"}:
             raise DeliveryError("legacy_tooling_installation_failed")
 
-    def transfer(self, archive, size, phases, images):
+    def transfer(self, archive, size, phases, images, *, fresh_daily=False):
         # The first probe has already passed. Recheck under the server release
         # lock and hold the same lock until docker load exits.
-        remote = shlex.join(["python3", self.remote_directory + "/release_capacity.py", "load",
-                             str(size), str(phases), *images])
+        args = ["python3", self.remote_directory + "/release_capacity.py", "load", str(size), str(phases), *images]
+        if fresh_daily:
+            args.append("--fresh-daily")
+        remote = shlex.join(args)
         processes = []
         with archive.open("rb") as stream, tempfile.TemporaryFile() as errors:
             try:
@@ -474,13 +483,15 @@ class Connection:
             if reply.decode().strip() != image:
                 raise DeliveryError("loaded_image_identity_mismatch")
 
-    def apply(self, phase, image, fallback, expected, policy, *, storage_only=False):
+    def apply(self, phase, image, fallback, expected, policy, *, storage_only=False, daily_full_backup=False):
         args = ["python3", "-B", self.remote_directory + "/release-apply.py", "--sha", phase.source, "--image", image,
                 "--rollback-sha", phase.fallback_source, "--rollback-image", fallback,
                 "--compose-sha256", policy["compose_sha256"], "--expected-current-image", expected,
                 "--allowed-proxy-image", policy["shared_proxy_image"]]
         if storage_only:
             args.append("--storage-only")
+        elif daily_full_backup:
+            args.append("--daily-full-backup")
         # An executor may correctly return nonzero after rollback. Capture its
         # JSON separately from transport errors without ever forwarding stderr.
         try:
@@ -492,16 +503,17 @@ class Connection:
             raise DeliveryError("release_result_unknown")
         report = object_reply(reply.stdout, "release_result_unknown")
         status = report.get("status")
-        expected_status = "storage_maintained" if storage_only else "released"
-        if status == expected_status and reply.returncode == 0 and report.get("sha") == phase.source and report.get("image") == image:
-            result = {"status": expected_status, "sha": phase.source, "image": image}
+        expected_statuses = ("daily_backup_completed", "daily_backup_already_completed") if daily_full_backup else (
+            ("storage_maintained",) if storage_only else ("released",))
+        if status in expected_statuses and reply.returncode == 0 and report.get("sha") == phase.source and report.get("image") == image:
+            result = {"status": status, "sha": phase.source, "image": image}
             if summary := retention_reply(report):
                 result["storage_retention"] = summary
             return result
-        if not storage_only and status == "rolled_back" and reply.returncode != 0 and report.get("sha") == phase.fallback_source and report.get("image") == fallback:
+        if not storage_only and not daily_full_backup and status == "rolled_back" and reply.returncode != 0 and report.get("sha") == phase.fallback_source and report.get("image") == fallback:
             return {"status": "rolled_back", "sha": phase.fallback_source, "image": fallback,
                     "reason": report.get("reason") if report.get("reason") in ENGINE_CODES else "executor_failed"}
-        if status in {"blocked", "unchanged"} and reply.returncode != 0:
+        if (status in {"blocked", "unchanged"} or daily_full_backup and status == "daily_backup_failed") and reply.returncode != 0:
             return {"status": status, "reason": report.get("reason") if report.get("reason") in ENGINE_CODES else "executor_failed"}
         raise DeliveryError("release_result_unknown")
 
@@ -563,6 +575,9 @@ def deliver(target, policy, candidate_image=None):
                     report["maintenance_revision"] = target
                     sweep_staging(connection, target, report)
                 return report
+            need_daily = bool(SHA.fullmatch(state.revision))
+            if need_daily:
+                last_probe = connection.capacity(target, 0, len(phases), fresh_daily=True)
             built = {}
             if candidate_image:
                 verify_local_image(candidate_image, target, target)
@@ -584,7 +599,7 @@ def deliver(target, policy, candidate_image=None):
                 archive = workspace / "release.tar"
                 command(["docker", "save", "-o", str(archive), *missing], "release_archive_failed", timeout=300)
                 size = archive_bytes(archive)
-                probe = connection.capacity(target, size, len(phases))
+                probe = connection.capacity(target, size, len(phases), fresh_daily=need_daily)
             before_transfer = last_probe = probe
             if probe["minimum_space_margin_bytes"] < CAPACITY_WARNING_MARGIN:
                 print("::warning::VibeOn has less than 1 GiB beyond the calculated release budget. "
@@ -593,9 +608,9 @@ def deliver(target, policy, candidate_image=None):
             connection.stage(target)
             if missing:
                 import_candidates = missing
-                connection.transfer(archive, size, len(phases), missing)
+                connection.transfer(archive, size, len(phases), missing, fresh_daily=need_daily)
             connection.verify_loaded(images)
-            last_probe = connection.capacity(target, 0, len(phases))
+            last_probe = connection.capacity(target, 0, len(phases), fresh_daily=need_daily)
             assert_current_main(target)
             connection.install_tooling(target, policy)
             expected = state.image
@@ -641,6 +656,37 @@ def deliver(target, policy, candidate_image=None):
             connection.cleanup(target)
 
 
+def daily_full_backup(target, policy):
+    assert_current_main(target)
+    with tempfile.TemporaryDirectory(prefix="vibeon-daily-backup-") as temporary:
+        connection = Connection(Path(temporary) / "ssh")
+        try:
+            state = connection.preflight(policy["shared_proxy_image"], target)
+            # A daily backup snapshots a fully initialized, already published app.
+            if (state.image == policy["legacy_image"] or not SHA.fullmatch(state.revision)
+                    or state.health_version != state.revision or not is_ancestor(state.revision, target)
+                    or (state.revision != policy["placement_fallback"]
+                        and not is_ancestor(policy["placement_base"], state.revision))):
+                raise DeliveryError("daily_backup_identity_invalid")
+            before = connection.capacity(target, 0, 1)
+            assert_current_main(target)
+            connection.stage(target)
+            if connection.preflight(policy["shared_proxy_image"], target) != state:
+                raise DeliveryError("current_image_changed_before_release")
+            latest = connection.capacity(target, 0, 1)
+            assert_current_main(target)
+            phase = Phase(state.revision, state.revision, state.image)
+            report = connection.apply(phase, state.image, state.image, state.image, policy, daily_full_backup=True)
+            report["storage_capacity"] = capacity_metrics(before)
+            report["storage_capacity_latest"] = capacity_metrics(latest)
+            if report["status"] in ("daily_backup_completed", "daily_backup_already_completed"):
+                report["maintenance_revision"] = target
+                sweep_staging(connection, target, report)
+            return report
+        finally:
+            connection.cleanup(target)
+
+
 def capacity_metrics(probe):
     return {key: probe[key] for key in CAPACITY_METRICS if type(probe.get(key)) is int}
 
@@ -663,7 +709,7 @@ def job_summary(report, measurement=False):
     lines = [f"## {heading}", "", f"Result: `{report['status']}`."]
     if report.get("reason"):
         lines.append(f"Reason: `{report['reason']}`.")
-    if report["status"] == "storage_maintained":
+    if report["status"] in ("storage_maintained", "daily_backup_completed", "daily_backup_already_completed"):
         lines.extend(["", f"Storage rules revision: `{report['maintenance_revision']}`.",
                       f"The site still runs application revision `{report['sha']}`; no application image was uploaded or published."])
     if measurement and report["status"] == "measured":
@@ -712,6 +758,7 @@ def main():
         mode = parser.add_mutually_exclusive_group()
         mode.add_argument("--candidate-image")
         mode.add_argument("--measure-image")
+        mode.add_argument("--daily-full-backup", action="store_true")
         args = parser.parse_args()
         target = os.environ.get("GITHUB_SHA", "")
         measurement = args.measure_image is not None
@@ -723,24 +770,33 @@ def main():
                 raise DeliveryError("pull_request_measurement_required")
             report = measure_image(args.measure_image, target)
         else:
-            if os.environ.get("GITHUB_REF") != "refs/heads/main" or os.environ.get("GITHUB_EVENT_NAME") != "push":
+            event = os.environ.get("GITHUB_EVENT_NAME")
+            if os.environ.get("GITHUB_REF") != "refs/heads/main" or (
+                    args.daily_full_backup and (event != "schedule" or os.environ.get("GITHUB_WORKFLOW") != "Delivery preflight")
+                    or not args.daily_full_backup and event != "push"):
                 raise DeliveryError("trusted_main_ci_required")
             policy = validate_policy(object_reply(committed_file(target, "deploy/release-policy.json"), "release_policy_invalid"))
             if not policy["enabled"]:
                 report = {"status": "disabled", "reason": "release_policy_disabled"}
+            elif args.daily_full_backup:
+                report = daily_full_backup(target, policy)
             else:
                 report = deliver(target, policy, args.candidate_image)
     except DeliveryError as error:
         report = {"status": "blocked", "reason": str(error)}
     except BaseException:
         report = {"status": "unknown", "reason": "delivery_interrupted_or_failed"}
+    if report.get("reason") == "daily_backup_not_fresh":
+        print("::warning::VibeOn CD blocked until the daily full backup is verified. "
+              "No application image was sent. Review the latest Delivery preflight job.", flush=True)
     if report.get("reason") == "insufficient_pretransfer_space":
         print("::warning::VibeOn CD stopped at a storage check. Confirm free space and inode counts "
               "in issue #67 before retrying. The storage_capacity fields show the limiting margins.",
               flush=True)
     job_summary(report, measurement)
     print(json.dumps(report, sort_keys=True, separators=(",", ":")))
-    return 0 if report["status"] in {"released", "already_current", "disabled", "measured", "storage_maintained"} else 1
+    return 0 if report["status"] in {"released", "already_current", "disabled", "measured", "storage_maintained",
+                                     "daily_backup_completed", "daily_backup_already_completed"} else 1
 
 
 if __name__ == "__main__":

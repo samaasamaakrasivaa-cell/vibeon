@@ -2,6 +2,7 @@
 """Read-only capacity probe and guarded Docker import for VibeOn CD."""
 import argparse
 import contextlib
+import datetime
 import fcntl
 import json
 import os
@@ -14,12 +15,15 @@ import time
 
 ROOT = Path("/opt/vibeon/deploy")
 DIGEST = re.compile(r"sha256:[0-9a-f]{64}\Z")
+FULL_PAIR_NAME = re.compile(r"[0-9]{8}T[0-9]{6}Z-([0-9a-f]{12})-[0-9a-f]{8}\Z")
+HASH = re.compile(r"[0-9a-f]{64}\Z")
+REVISION = re.compile(r"[0-9a-f]{40}\Z")
 STAGE_RE = re.compile(r"vibeon-delivery\.[A-Za-z0-9]{8}\Z")
 STAGE_MARKER = ".vibeon-stage-v1"
 STAGE_OWNER_UID = 0
 STAGE_FILES = {
     STAGE_MARKER, "release-preflight.sh", "release-apply.py", "release_capacity.py",
-    "release_retention.py", "vibeon.sh", "attach-proxy.sh",
+    "release_retention.py", "release_uploads_manifest.py", "vibeon.sh", "attach-proxy.sh",
 }
 MIN_RESERVE = 512 * 1024**2
 MIN_INODES = 4096
@@ -176,6 +180,75 @@ def sweep_stages(active, stages=Path("/tmp"), now=None):
                for path in stages.iterdir() if path != active)
 
 
+def private_backup_file(metadata, device):
+    return (stat.S_ISREG(metadata.st_mode) and metadata.st_uid == STAGE_OWNER_UID
+            and metadata.st_nlink == 1 and metadata.st_dev == device
+            and not metadata.st_mode & 0o077 and metadata.st_size > 0)
+
+
+def daily_receipt(pair, match, now):
+    try:
+        metadata = pair.lstat()
+        if (not stat.S_ISDIR(metadata.st_mode) or metadata.st_uid != STAGE_OWNER_UID
+                or metadata.st_mode & 0o077 or metadata.st_dev != pair.parent.stat().st_dev):
+            return False
+        for name in ("database.dump", "uploads.tar.gz"):
+            if not private_backup_file((pair / name).lstat(), metadata.st_dev):
+                return False
+        fd = os.open(pair / "verified.json", os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+        with os.fdopen(fd, "rb") as stream:
+            marker = os.fstat(stream.fileno())
+            if not private_backup_file(marker, metadata.st_dev) or marker.st_size > 1024**2:
+                return False
+            receipt = json.load(stream)
+        if not isinstance(receipt, dict) or receipt.get("schema_version") != 1 or receipt.get("kind") != "daily":
+            return False
+        revision = receipt.get("sha")
+        if not isinstance(revision, str) or not REVISION.fullmatch(revision) or not revision.startswith(match[1]):
+            return False
+        for key in ("database_dump_sha256", "uploads_archive_sha256", "migration_fingerprint", "schema_sha256"):
+            value = receipt.get(key)
+            if not isinstance(value, str) or not HASH.fullmatch(value):
+                return False
+        captured = datetime.datetime.fromisoformat(receipt["captured_at"])
+        verified = datetime.datetime.fromisoformat(receipt["verified_at"])
+        utc = datetime.timedelta(0)
+        return (captured.utcoffset() == utc and verified.utcoffset() == utc
+                and captured <= verified <= now <= captured + datetime.timedelta(hours=24))
+    except (OSError, ValueError, KeyError, TypeError):
+        return False
+
+
+def has_fresh_daily_backup(root, now=None):
+    backups = root / "backups"
+    releases = backups / "releases"
+    if backups.is_symlink() or releases.is_symlink() or not releases.is_dir():
+        return False
+    now = now or datetime.datetime.now(datetime.timezone.utc)
+    return any(daily_receipt(pair, match, now) for pair in sorted(releases.iterdir(), reverse=True)
+               if (match := FULL_PAIR_NAME.fullmatch(pair.name)))
+
+
+def check_backup_journal(root):
+    try:
+        fd = os.open(root / "backup-state.json", os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+    except FileNotFoundError:
+        return  # First deployment of the daily protocol.
+    except OSError:
+        raise CapacityError("daily_backup_interrupted") from None
+    try:
+        with os.fdopen(fd, "rb") as stream:
+            metadata = os.fstat(stream.fileno())
+            if not private_backup_file(metadata, root.stat().st_dev) or metadata.st_size > 1024**2:
+                raise ValueError()
+            state = json.load(stream)
+        if (not isinstance(state, dict) or state.get("schema_version") != 1
+                or state.get("status") not in ("daily_backup_completed", "daily_backup_failed")):
+            raise ValueError()
+    except (OSError, ValueError, TypeError):
+        raise CapacityError("daily_backup_interrupted") from None
+
+
 def operation(args, root=ROOT):
     with release_lock(root, create=args.mode != "probe"):
         if args.mode in ("sweep", "cleanup"):
@@ -188,6 +261,9 @@ def operation(args, root=ROOT):
             else:
                 removed = int(remove_stage(active, stages, float("inf")))
             return {"status": "ready", "stages_removed": removed}
+        check_backup_journal(root)
+        if getattr(args, "fresh_daily", False) and not has_fresh_daily_backup(root):
+            raise CapacityError("daily_backup_not_fresh")
         db, uploads, backup, stores = inventory(root)
         report = budget(db, uploads, backup, stores, args.archive, args.phases)
         if args.mode == "probe":
@@ -209,11 +285,13 @@ def main():
     parser.add_argument("phases", type=int)
     parser.add_argument("images", nargs="*")
     parser.add_argument("--stage")
+    parser.add_argument("--fresh-daily", action="store_true")
     args = parser.parse_args()
     try:
         if (args.archive < 0 or args.phases not in (1, 2)
                 or any(not DIGEST.fullmatch(image) for image in args.images)
-                or (args.mode == "load" and (args.archive == 0 or not args.images))):
+                or (args.mode == "load" and (args.archive == 0 or not args.images))
+                or (args.fresh_daily and args.mode not in ("probe", "load"))):
             raise CapacityError("capacity_arguments_invalid")
         report = operation(args)
     except CapacityError as error:

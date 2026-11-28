@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Capacity checks with synthetic files, devices and Docker metadata."""
+import datetime
 import gzip
 import importlib.util
 import io
@@ -193,6 +194,80 @@ class CapacityTest(unittest.TestCase):
         self.assertEqual(connection.preflight.call_count, 2)
         self.assertEqual(main.call_count, 3)
         for operation in (verify, command, connection.transfer, connection.install_tooling):
+            operation.assert_not_called()
+
+    def test_freshness_requires_private_daily_verified_pair_and_known_journal(self):
+        now = datetime.datetime(2026, 11, 28, 12, tzinfo=datetime.timezone.utc)
+        with tempfile.TemporaryDirectory() as temporary, patch.object(capacity, "STAGE_OWNER_UID", os.getuid()):
+            root = Path(temporary)
+            pair = root / "backups/releases/20261128T060000Z-aaaaaaaaaaaa-bbbbbbbb"
+            pair.mkdir(parents=True, mode=0o700)
+            for name in ("database.dump", "uploads.tar.gz"):
+                path = pair / name
+                path.write_bytes(b"fixture")
+                path.chmod(0o600)
+            marker = pair / "verified.json"
+            record = {"schema_version": 1, "kind": "daily", "sha": "a"*40,
+                      "captured_at": (now - datetime.timedelta(hours=6)).isoformat(),
+                      "verified_at": (now - datetime.timedelta(hours=5)).isoformat(),
+                      "database_dump_sha256": "d"*64, "uploads_archive_sha256": "e"*64,
+                      "migration_fingerprint": "f"*64, "schema_sha256": "1"*64}
+            def write(path, content):
+                path.write_text(json.dumps(content))
+                path.chmod(0o600)
+            for key, invalid in (("kind", "release"), ("migration_fingerprint", "bad"),
+                                 ("captured_at", (now - datetime.timedelta(hours=25)).isoformat()),
+                                 ("verified_at", (now + datetime.timedelta(hours=1)).isoformat())):
+                write(marker, {**record, key: invalid})
+                self.assertFalse(capacity.has_fresh_daily_backup(root, now))
+            write(marker, record)
+            self.assertTrue(capacity.has_fresh_daily_backup(root, now))
+            (pair / "database.dump").chmod(0o644)
+            self.assertFalse(capacity.has_fresh_daily_backup(root, now))
+
+            capacity.check_backup_journal(root)
+            for state in ("stopping", "stopped", "verifying", "unknown"):
+                write(root / "backup-state.json", {"schema_version": 1, "status": state})
+                with self.assertRaisesRegex(capacity.CapacityError, "daily_backup_interrupted"):
+                    capacity.check_backup_journal(root)
+            write(root / "backup-state.json", {"schema_version": 1, "status": "daily_backup_completed"})
+            capacity.check_backup_journal(root)
+
+    def test_normal_release_blocks_before_image_storage_if_daily_pair_is_stale(self):
+        target, live = "a"*40, "b"*40
+        image = "sha256:" + "c"*64
+        state = delivery.State(image, live, live)
+        connection = Mock()
+        connection.preflight.return_value = state
+        connection.capacity.side_effect = delivery.CapacityBlocked("daily_backup_not_fresh", {})
+        with patch.object(delivery, "assert_current_main"), patch.object(delivery, "ensure_commit"), \
+                patch.object(delivery, "committed_file", return_value=b"synthetic"), \
+                patch.object(delivery, "make_plan", return_value=[delivery.Phase(target, live, image)]), \
+                patch.object(delivery, "storage_only_changes", return_value=False), \
+                patch.object(delivery, "command") as command, \
+                patch.object(delivery, "Connection", return_value=connection):
+            report = delivery.deliver(target, {"shared_proxy_image": "synthetic"}, image)
+        self.assertEqual(report["reason"], "daily_backup_not_fresh")
+        connection.capacity.assert_called_once_with(target, 0, 1, fresh_daily=True)
+        for operation in (command, connection.stage, connection.transfer, connection.apply):
+            operation.assert_not_called()
+
+    def test_daily_backup_executor_uses_current_image_only(self):
+        target, live = "a"*40, "b"*40
+        image = "sha256:" + "c"*64
+        policy = {"shared_proxy_image": "synthetic", "legacy_image": "legacy", "placement_fallback": live}
+        connection = Mock()
+        connection.preflight.return_value = delivery.State(image, live, live)
+        connection.capacity.return_value = {"minimum_space_margin_bytes": 1}
+        connection.apply.return_value = {"status": "daily_backup_completed", "sha": live, "image": image}
+        with patch.object(delivery, "assert_current_main") as main, patch.object(delivery, "is_ancestor", return_value=True), \
+                patch.object(delivery, "Connection", return_value=connection), patch.object(delivery, "command") as cmd:
+            report = delivery.daily_full_backup(target, policy)
+        self.assertEqual(report["status"], "daily_backup_completed")
+        connection.apply.assert_called_once_with(delivery.Phase(live, live, image), image, image, image,
+                                                 policy, daily_full_backup=True)
+        self.assertEqual(main.call_count, 3)
+        for operation in (cmd, connection.transfer, connection.install_tooling):
             operation.assert_not_called()
 
     def test_pr_measurement_has_no_server_or_release_steps(self):

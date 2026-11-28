@@ -1,7 +1,7 @@
 name: Delivery preflight
 
 # CD-01: observe the existing delivery connection before activating releases.
-# This workflow never updates containers, files, configuration or the database.
+# Only the daily scheduled tick writes the verified full backup of VibeOn.
 on:
   pull_request:
     paths:
@@ -19,7 +19,8 @@ on:
       - scripts/test-release-preflight.py
       - deploy/release-policy.json
   schedule:
-    - cron: "23 */6 * * *"
+    - cron: "23 0 * * *"
+    - cron: "23 6,12,18 * * *"
   workflow_dispatch:
     inputs:
       storage_observation:
@@ -59,9 +60,9 @@ jobs:
       github.ref == 'refs/heads/main' &&
       (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule')
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: ${{ github.event.schedule == '23 0 * * *' && 25 || 5 }}
     concurrency:
-      group: ${{ github.event_name == 'schedule' && 'vibeon-storage-observation' || 'server' }}
+      group: ${{ github.event_name == 'schedule' && github.event.schedule != '23 0 * * *' && 'vibeon-storage-observation' || 'server' }}
       cancel-in-progress: false
     steps:
       - uses: actions/checkout@v4
@@ -138,3 +139,10 @@ jobs:
           fi
           DELIVERY_PROXY_IMAGE=$(python3 -c 'import json,re; from pathlib import Path; p=Path("deploy/release-policy.json"); v=(json.loads(p.read_text()).get("shared_proxy_image") or "") if p.exists() else ""; assert not v or re.fullmatch(r"sha256:[0-9a-f]{64}",v); print(v)')
           ssh -F "$DELIVERY_SSH_DIR/config" srv "env VIBEON_EXPECTED_PROXY_IMAGE='$DELIVERY_PROXY_IMAGE' bash -s" < deploy/release-preflight.sh
+
+      - name: Capture and verify the daily full VibeOn backup
+        if: github.event_name == 'schedule' && github.event.schedule == '23 0 * * *'
+        env:
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+        run: python3 scripts/run-delivery.py --daily-full-backup
