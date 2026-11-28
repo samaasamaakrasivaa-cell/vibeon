@@ -8,7 +8,7 @@
     "base_sha": "7aa0781b4f6046a2c1184426b6c76a9c9aa9d746",
     "branch": "codex/teacher/align-news-notifications",
     "head_sha": "ba9302cad72b93b4d2d3214c09e4249dad6a0a02",
-    "next": "На точном SHA пройдены Chromium, независимое ревью и CI. Совместное дерево 23ad1df также проверено, ждём решения Tech Lead о слиянии.",
+    "next": "Включено в PR #121. Точное дерево 3fccc74 проверено на синтетике. Ждём итоговое ревью и CI партии 46153917118.",
     "pr": 106,
     "stage": "integration",
     "test_run": 46152777890
