@@ -7,8 +7,11 @@
   "progress": {
     "base_sha": "2044f77648fcf73701fe5f2232817fb817bcec28",
     "branch": "codex/live-classroom/responsive-lesson",
-    "next": "Реализовать адаптивную сетку и проверить три режима урока",
-    "stage": "implementation"
+    "head_sha": "c9b45277901daf3b08f1a8c95e04c04ec63d870f",
+    "next": "Завершить браузерную проверку, получить независимое ревью и зелёный CI PR #109",
+    "pr": 109,
+    "stage": "review",
+    "test_run": 46150142851
   },
   "release": null,
   "source": "direct",
