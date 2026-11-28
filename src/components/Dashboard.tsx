@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Clock } from "./Clock";
+import { DashboardGreeting } from "./DashboardGreeting";
 import { GroupAvatar } from "./teacher/Groups";
 import { Icon } from "./Icon";
 import { NotificationList } from "./NotificationList";
@@ -212,13 +212,7 @@ export async function Dashboard({ user, role, day, top }: { user: User; role: "T
       )}
 
       <section className="card">
-        <div className="flex flex-wrap items-center justify-between gap-6 border-b border-sep pb-6">
-          <div>
-            <div className="text-[19px] text-text2">{t(greetingKey(hourIn(tz)))}</div>
-            <div className="gname">{user.name}</div>
-          </div>
-          <Clock lang={lang} tz={tz} />
-        </div>
+        <DashboardGreeting greeting={t(greetingKey(hourIn(tz)))} name={user.name} lang={lang} tz={tz} />
 
         <h2 className="mt-6 mb-3">{selTitle}</h2>
         {todayLessons.length === 0 ? (

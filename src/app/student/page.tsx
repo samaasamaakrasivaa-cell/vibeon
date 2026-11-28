@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Clock } from "@/components/Clock";
+import { DashboardGreeting } from "@/components/DashboardGreeting";
 import { Icon } from "@/components/Icon";
 import { NotificationList } from "@/components/NotificationList";
 import { NoteChecklist } from "@/components/student/NoteChecklist";
@@ -139,35 +139,30 @@ export default async function StudentHome({ searchParams }: { searchParams: Prom
       {tips && <StartTips tips={tips} />}
       <section className="card student-home-main">
         {s?.avatarNotice && <AvatarNotice id={s.id} avatar={s.avatar} />}
-        <div className="student-home-greeting">
-          <div className={mains.length && s ? "stgreet" : undefined}>
-            {mains.length > 0 && s && <Link href="/student/profile#avatar" className="stgreet-av" aria-label={t("av.title")}><StudentAvatar id={s.id} avatar={s.avatar} size={104} crown={!!pinned} /></Link>}
-            <div className="min-w-0">
-              <div className="student-greeting-line">
-                <span>{t(greetingKey(hourIn(tz)))}</span>
-                <span className="gname">{me.name}</span>
-              </div>
-              {pinned && (
-                <span className="awmainline" tabIndex={0}>
-                  <Medal icon={pinned.icon} color={pinned.color} size={34} />
-                  <b>{pinned.name}</b>
-                  <span className="awtip" role="tooltip">{pinned.why && <span>{pinned.why}</span>}<Link href="/student/progress?tab=awards">{t("aw.allMine")} →</Link></span>
+        <DashboardGreeting greeting={t(greetingKey(hourIn(tz)))} name={me.name} lang={lang} tz={tz}
+          avatar={mains.length > 0 && s ? (
+            <Link href="/student/profile#avatar" className="stgreet-av" aria-label={t("av.title")}>
+              <StudentAvatar id={s.id} avatar={s.avatar} size={104} crown={!!pinned} />
+            </Link>
+          ) : null}>
+          {pinned && (
+            <span className="awmainline" tabIndex={0}>
+              <Medal icon={pinned.icon} color={pinned.color} size={34} />
+              <b>{pinned.name}</b>
+              <span className="awtip" role="tooltip">{pinned.why && <span>{pinned.why}</span>}<Link href="/student/progress?tab=awards">{t("aw.allMine")} →</Link></span>
+            </span>
+          )}
+          {others.length > 0 && (
+            <div className="awothers">
+              {others.map((a) => (
+                <span key={a.id} className="awchip" tabIndex={0}>
+                  <Medal icon={a.icon} color={a.color} size={22} />{a.name}
+                  <span className="awtip" role="tooltip">{a.why && <span>{a.why}</span>}<Link href="/student/progress?tab=awards">{t("aw.allMine")} →</Link></span>
                 </span>
-              )}
-              {others.length > 0 && (
-                <div className="awothers">
-                  {others.map((a) => (
-                    <span key={a.id} className="awchip" tabIndex={0}>
-                      <Medal icon={a.icon} color={a.color} size={22} />{a.name}
-                      <span className="awtip" role="tooltip">{a.why && <span>{a.why}</span>}<Link href="/student/progress?tab=awards">{t("aw.allMine")} →</Link></span>
-                    </span>
-                  ))}
-                </div>
-              )}
+              ))}
             </div>
-          </div>
-          <Clock lang={lang} tz={tz} compact />
-        </div>
+          )}
+        </DashboardGreeting>
 
         <div className="mt-5 flex flex-col gap-3">
           {testLink && (

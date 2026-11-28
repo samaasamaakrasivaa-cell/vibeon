@@ -446,9 +446,45 @@ details.how[open] summary { margin-bottom: 6px; }
 .nrow.unread { background: var(--accent-bg); }
 .nrow .grow { flex: 1; min-width: 0; }
 .nrow.done .t { color: var(--text2); font-weight: 500; }
-.nrow-dismissible { position: relative; padding-inline-end: 52px; }
-.nrow-dismissible .t { overflow-wrap: anywhere; }
-.nrow-dismissible .ndismiss { position: absolute; inset-block-start: 8px; inset-inline-end: 8px; }
+.nrow-dismissible {
+  --control-height: 36px;
+  --title-line-height: 1.375rem;
+  --action-width: clamp(5.5rem, 24vw, 10rem);
+  --close-width: clamp(1.75rem, 6vw, 2.25rem);
+  --column-gap: clamp(6px, 1.5vw, 12px);
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) var(--action-width) var(--close-width);
+  align-items: start;
+  gap: var(--column-gap);
+  padding-inline: clamp(8px, 2.5vw, 14px);
+}
+.nrow-dismissible > .check { margin-block-start: calc((var(--control-height) - 20px) / 2); }
+.nrow-dismissible > .grow { padding-block-start: calc((var(--control-height) - var(--title-line-height)) / 2); }
+.nrow-dismissible .t { line-height: var(--title-line-height); overflow-wrap: anywhere; }
+.nrow-dismissible > .nact.btn {
+  grid-column: 3;
+  min-height: var(--control-height);
+  padding-inline: 6px;
+  gap: 4px;
+  line-height: 1.15;
+  text-align: center;
+  white-space: normal;
+}
+.nrow-dismissible > .ndismiss { grid-column: 4; width: 100%; }
+@media (max-width: 480px) {
+  .nrow-dismissible > .grow { grid-column: 2 / -1; grid-row: 1; }
+  .nrow-dismissible > :is(.nact, .ndismiss) { grid-row: 1; z-index: 1; }
+  .nrow-dismissible > .grow::before {
+    content: "";
+    float: right;
+    width: calc(var(--close-width) + var(--column-gap));
+    height: calc((var(--control-height) + var(--title-line-height)) / 2);
+  }
+  .nrow-dismissible:has(> .nact) > .grow::before {
+    width: calc(var(--action-width) + var(--close-width) + 2 * var(--column-gap));
+  }
+  .nrow-dismissible > .nact > .i { display: none; }
+}
 }
 
 /* ───────── Задания (этап 4) ───────── */
@@ -993,12 +1029,11 @@ select.iedit { cursor: pointer; }
 /* история уроков: граница между ближайшими и прошедшими */
 .hist .row.histsep { border-top: 2px solid var(--sep); margin-top: 6px; padding-top: 14px; }
 
-/* «Что нового» на телефоне: действие — под текстом, текст не сжимается в столбик */
+/* «Что нового» у ученика на телефоне: действие располагается под текстом */
 @media (max-width: 560px) {
-  .nrow { flex-wrap: wrap; }
-  .nrow > .grow { flex-basis: calc(100% - 40px); }
-  .nrow > .nact { margin-left: 34px; }
-  .nrow-dismissible > .nact { max-width: calc(100% - 34px); white-space: normal; text-align: center; }
+  .nrow:not(.nrow-dismissible) { flex-wrap: wrap; }
+  .nrow:not(.nrow-dismissible) > .grow { flex-basis: calc(100% - 40px); }
+  .nrow:not(.nrow-dismissible) > .nact { margin-left: 34px; }
 }
 
 /* юридические страницы */
@@ -2822,21 +2857,6 @@ details.prblock[open] .prchev { transform: rotate(180deg); }
   --student-home-action-width: clamp(190px, 22vw, 250px);
 }
 .student-home-main { padding-inline: var(--student-home-panel-inset); }
-.student-home-greeting {
-  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px;
-  padding-bottom: 14px; border-bottom: 1px solid var(--sep);
-}
-.student-home-greeting > div { min-width: 0; }
-.student-greeting-line { display: flex; flex-wrap: wrap; align-items: baseline; gap: 3px 8px; color: var(--text2); font-size: 19px; }
-.student-greeting-line .gname { font-size: clamp(24px, 3vw, 36px); overflow-wrap: anywhere; }
-.student-greeting-clock {
-  display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px; margin-inline-start: auto;
-  border-radius: 12px; background: var(--surface2); color: var(--text2); white-space: nowrap; font-size: 13px;
-}
-.student-greeting-clock b {
-  padding-inline-start: 8px; border-inline-start: 1px solid var(--sep); color: var(--text);
-  font-size: 17px; font-variant-numeric: tabular-nums;
-}
 .student-lesson-heading {
   margin: 0 0 12px; font-size: clamp(19px, 3vw, 24px); line-height: 1.25; letter-spacing: -.025em;
 }
@@ -2926,10 +2946,6 @@ details.prblock[open] .prchev { transform: rotate(180deg); }
 }
 @media (max-width: 520px) {
   .tl.student-lesson-grid { padding: 12px; gap: 12px; grid-template-columns: minmax(0, 1fr); }
-  .student-greeting-line { font-size: 15px; }
-  .student-greeting-line .gname { font-size: 21px; }
-  .student-greeting-clock { font-size: 12px; }
-  .student-greeting-clock b { font-size: 15px; }
   .student-lesson-time { grid-template-columns: auto auto; justify-content: center; align-items: center; column-gap: 12px; }
   .student-lesson-hours { flex-flow: row wrap; justify-content: center; align-items: baseline; gap: 3px 5px; white-space: nowrap; }
   .student-lesson-hours b { font-size: 17px; }
