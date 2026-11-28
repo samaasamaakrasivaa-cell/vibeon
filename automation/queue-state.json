@@ -11,9 +11,9 @@
     18
   ],
   "lease": {
-    "token": "23de6659789c43d1be967ea31bb536b3",
-    "started_at": "2026-11-27T20:59:55.088973Z",
-    "expires_at": "2026-11-27T23:59:55.088973Z"
+    "token": "2f52f17925bb4f7193ca1534cd9201ce",
+    "started_at": "2026-11-28T00:01:23.784722Z",
+    "expires_at": "2026-11-28T03:01:23.784722Z"
   },
   "checkpoint": {
     "issue": 25,
