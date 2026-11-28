@@ -95,6 +95,15 @@ class ReleaseTest(unittest.TestCase):
         self.assertEqual(override["services"]["app"]["entrypoint"], ["node"])
         self.assertEqual(override["services"]["app"]["command"], ["server.js"])
 
+    def test_retention_failure_does_not_rollback_a_published_release(self):
+        self.release.retention_enabled = True
+        with patch.object(self.release, "post_publication_retention", side_effect=OSError):
+            report = self.release.apply()
+        self.assertEqual(report["status"], "released")
+        self.assertEqual(report["storage_retention"]["status"], "attention")
+        self.assertEqual(json.loads(self.release.journal.read_text())["status"], "released")
+        self.assertNotIn("switch_fallback", self.release.events)
+
     def test_backup_failure_restarts_exact_original_before_any_override(self):
         self.release.fail = "backup"
         report = self.release.apply()
@@ -235,7 +244,10 @@ class ReleaseTest(unittest.TestCase):
         def resume():
             order.append("resume_original")
 
-        with patch.object(release_apply, "command", command), patch.object(self.release, "files_manifest", return_value=manifest), patch.object(self.release, "resume_original", resume):
+        with (patch.object(release_apply, "command", command),
+              patch.object(release_apply.shutil, "disk_usage", return_value=type("Usage", (), {"free": 1024 ** 3})()),
+              patch.object(self.release, "files_manifest", return_value=manifest),
+              patch.object(self.release, "resume_original", resume)):
             release_apply.Release.backup(self.release)
         self.assertEqual(order, ["dump", "uploads_snapshot", "resume_original", "restore"])
         self.assertFalse(self.release.stopped)

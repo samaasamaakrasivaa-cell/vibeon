@@ -152,7 +152,7 @@ def volume_is(container, destination, name):
 
 
 class Release:
-    def __init__(self, sha, image, rollback_sha, rollback_image, compose_sha256, expected_current_image, root=ROOT, allowed_proxy_image=None):
+    def __init__(self, sha, image, rollback_sha, rollback_image, compose_sha256, expected_current_image, root=ROOT, allowed_proxy_image=None, retention_enabled=False):
         if not SHA.fullmatch(sha) or not SHA.fullmatch(rollback_sha) or not DIGEST.fullmatch(image) or not DIGEST.fullmatch(rollback_image) or not HEX.fullmatch(compose_sha256) or not DIGEST.fullmatch(expected_current_image):
             raise ReleaseError("invalid_release_identity")
         if allowed_proxy_image is not None and not DIGEST.fullmatch(allowed_proxy_image):
@@ -163,6 +163,7 @@ class Release:
         self.expected_current_image = expected_current_image
         self.allowed_proxy_image = allowed_proxy_image
         self.proxy_qualification = None
+        self.retention_enabled = retention_enabled
         self.override = self.root / "release-image.json"
         self.journal = self.root / "release-state.json"
         self.backup_dir = None
@@ -363,7 +364,7 @@ class Release:
         finally:
             self.cleanup_restore()
         atomic_json(self.backup_dir / "verified.json", {"schema_version": 1, "sha": self.sha,
-                    "image": self.image, "rollback_image": self.rollback_image,
+                    "image": self.image, "rollback_image": self.rollback_image, "previous_image": self.current_image,
                     "uploads_sha256": source_files["sha256"],
                     "database_dump_sha256": file_sha256(dump)})
 
@@ -414,6 +415,15 @@ class Release:
         command(["docker", "start", self.app_id], reason="original_app_restart_failed", timeout=60)
         self.verify(self.app_id, self.current_image, None)
 
+    def post_publication_retention(self):
+        from release_retention import rotate
+
+        def docker(*args):
+            return command(["docker", *args], reason="storage_inventory_failed").decode().strip()
+
+        return rotate(self.root, self.image, self.sha, {self.current_image, self.rollback_image},
+                      docker=docker, write_json=atomic_json)
+
     def apply(self):
         with release_lock(self.root):
             self.inspect()
@@ -428,7 +438,6 @@ class Release:
                 self.cutover = True
                 self.switch(self.image, self.sha)
                 self.state("released")
-                return {"status": "released", "sha": self.sha, "image": self.image}
             except (Exception, KeyboardInterrupt) as error:
                 reason = str(error) if isinstance(error, ReleaseError) else "release_failed"
                 with recovery_signals():
@@ -444,6 +453,16 @@ class Release:
                     except BaseException:
                         self.state("rollback_failed")
                         raise ReleaseError("rollback_failed") from None
+
+            report = {"status": "released", "sha": self.sha, "image": self.image}
+            if self.retention_enabled:
+                try:
+                    report["storage_retention"] = self.post_publication_retention()
+                except (Exception, KeyboardInterrupt):
+                    report["storage_retention"] = {"status": "attention", "images_removed": 0,
+                                                   "verified_full_backups": 0, "full_backup_candidates": 0,
+                                                   "full_backup_candidate_bytes": 0}
+            return report
 
 
 class SafeParser(argparse.ArgumentParser):
@@ -464,7 +483,7 @@ def main():
     for sig in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP):
         signal.signal(sig, interrupted)
     try:
-        report = Release(**vars(parser.parse_args())).apply()
+        report = Release(**vars(parser.parse_args()), retention_enabled=True).apply()
     except ReleaseError as error:
         report = {"status": "blocked", "reason": str(error)}
     except BaseException:
