@@ -7,11 +7,11 @@
   "progress": {
     "base_sha": "7aa0781b4f6046a2c1184426b6c76a9c9aa9d746",
     "branch": "codex/builder/course-outline",
-    "head_sha": "ab4b2e9125c3942ad44802a24714821bb81ccdbd",
-    "next": "На синтетике 0 запросов для четырёх отклонённых DOCX, 10/10 тем в черновике Roadmap. Повторное ревью AI & Quality запрошено в PR #117, комментарий 7241430730.",
+    "head_sha": "5fb3cfb0bdcae53324f42d851a2a8e8257ae3039",
+    "next": "13 отклонённых DOCX дали 0 запросов, 10/10 тем сохранились в Roadmap. Повторное ревью AI & Quality запрошено в PR #117, комментарий 7241645455.",
     "pr": 117,
     "stage": "review",
-    "test_run": 46159341578
+    "test_run": 46160875358
   },
   "release": null,
   "source": "direct",
