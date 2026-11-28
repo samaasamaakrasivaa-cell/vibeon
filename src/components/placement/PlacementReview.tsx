@@ -22,6 +22,7 @@ type LegacyReview = {
 };
 export type ReviewProps = {
   id: string; mode: string; status: string; level: string | null; showResult: boolean; teen?: boolean; tgSent?: string | null;
+  reportHref: string; backHref: string;
   sm: Summary; d: ReviewData; review: { legacyReview?: LegacyReview; writing?: Record<string, unknown>; speaking?: Record<string, unknown>; points?: boolean[]; comment?: string; wNote?: string; sNote?: string; wc?: Record<string, string>; sc?: Record<string, string>; lesson?: { level: string; marks: Record<string, unknown> } | null; report?: { student?: unknown; parent?: unknown; sent?: boolean; sentAt?: string }; ai?: Partial<Record<"writing" | "speaking", PlScore & { level?: string; transcripts?: string[] }>> };
   lessonQs: { level: string; questions: string[] }[]; // говорение на уроке: вопросы уровнем выше и ниже
   transcript: { source: string; texts: string[] }; regrading: boolean; howTo: string; sublevels: string;
@@ -409,7 +410,7 @@ export function PlacementReview(p: ReviewProps) {
               {(() => {
                 const r = p.review.report, has = !!(r && (r.sent || r.student || r.parent));
                 return <>
-                  <a href={`/teacher/placement/${p.id}/report`} className="btn primary sm"><Icon name={has ? "pencil" : "dl"} size="sm" />{t(has ? "pl.editReport" : "pl.genReport")}</a>
+                  <a href={p.reportHref} className="btn primary sm"><Icon name={has ? "pencil" : "dl"} size="sm" />{t(has ? "pl.editReport" : "pl.genReport")}</a>
                   <span className="small muted">{r?.sent ? t("pl.repSent", { d: r.sentAt ? new Date(r.sentAt).toLocaleDateString(lang === "ru" ? "ru-RU" : "en-GB", { day: "numeric", month: "long" }) : "" }) : t(has ? "pl.editReportHint" : "pl.genReportHint")}</span>
                 </>;
               })()}
@@ -425,7 +426,7 @@ export function PlacementReview(p: ReviewProps) {
         </section>
       )}
       {/* удаление — для пробных и случайных прохождений (например, ссылку открыл не тот человек); у ученика пропадёт и результат в кабинете */}
-      <div className="flex flex-wrap items-center justify-end gap-2"><span className="small muted">{t("pl.deleteHint")}</span><button className="btn plain sm" onClick={() => { if (confirm(t("pl.delConfirm"))) run(() => deletePlacement(p.id), () => location.assign("/teacher/courses?tab=tests"), true); }}><Icon name="close" size="sm" />{t("pl.delete")}</button></div>
+      <div className="flex flex-wrap items-center justify-end gap-2"><span className="small muted">{t("pl.deleteHint")}</span><button className="btn plain sm" onClick={() => { if (confirm(t("pl.delConfirm"))) run(() => deletePlacement(p.id), () => location.assign(p.backHref), true); }}><Icon name="close" size="sm" />{t("pl.delete")}</button></div>
     </fieldset>
   );
 }

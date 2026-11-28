@@ -19,7 +19,7 @@ export default async function PlacementPage({ params }: { params: Promise<{ id: 
   const { a, who } = acc;
   if (who === "teacher") redirect(`/teacher/placement/${id}`);
   const st = stateOf(a.state);
-  const home = a.mode === "student" ? "/student" : a.mode === "self" ? "/teacher/courses?tab=tests" : null;
+  const home = a.mode === "student" ? "/student" : a.mode === "self" ? "/teacher/placement" : null;
 
   let done: React.ReactNode = null;
   if (st.section === "done" || a.status === "submitted" || a.status === "reviewed") {

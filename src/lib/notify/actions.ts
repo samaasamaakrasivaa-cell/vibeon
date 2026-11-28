@@ -35,8 +35,33 @@ export async function saveNotify(s: NotifySettings): Promise<R> {
     lessonLead: LEADS.includes(Number(s.lessonLead)) ? Number(s.lessonLead) : settingsOf(u.role, {}).lessonLead,
     quiet: s.quiet ? [Math.abs(Math.round(s.quiet[0])) % 24, Math.abs(Math.round(s.quiet[1])) % 24] : null,
   };
-  await db.user.update({ where: { id: u.id }, data: { notify: clean } });
+  // Merge just the delivery settings so saving from another tab keeps dismissed notices.
+  await db.$executeRaw`
+    UPDATE "User"
+    SET "notify" = "notify" || ${JSON.stringify(clean)}::jsonb
+    WHERE "id" = ${u.id}
+  `;
   revalidatePath(page(u.role));
+  return { ok: true };
+}
+
+/** Hide a notice on the teacher dashboard while preserving its action and delivery. */
+export async function dismissTeacherNotification(id: string): Promise<R> {
+  const u = await requireUser("TEACHER");
+  const where = { id, userId: u.id };
+  const saved = await db.$transaction(async (tx) => {
+    if (!(await tx.notification.findFirst({ where, select: { id: true } }))) return false;
+    await tx.$executeRaw`
+      UPDATE "User"
+      SET "notify" = jsonb_set("notify", '{dismissedNotifications}',
+        COALESCE("notify"->'dismissedNotifications', '{}'::jsonb) || jsonb_build_object(${id}::text, true))
+      WHERE "id" = ${u.id}
+    `;
+    await tx.notification.updateMany({ where: { ...where, readAt: null }, data: { readAt: new Date() } });
+    return true;
+  });
+  if (!saved) return { ok: false, error: "not found" };
+  revalidatePath("/teacher", "layout");
   return { ok: true };
 }
 

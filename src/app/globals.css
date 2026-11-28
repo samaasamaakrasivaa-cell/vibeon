@@ -446,6 +446,9 @@ details.how[open] summary { margin-bottom: 6px; }
 .nrow.unread { background: var(--accent-bg); }
 .nrow .grow { flex: 1; min-width: 0; }
 .nrow.done .t { color: var(--text2); font-weight: 500; }
+.nrow-dismissible { position: relative; padding-inline-end: 52px; }
+.nrow-dismissible .t { overflow-wrap: anywhere; }
+.nrow-dismissible .ndismiss { position: absolute; inset-block-start: 8px; inset-inline-end: 8px; }
 }
 
 /* ───────── Задания (этап 4) ───────── */
@@ -995,6 +998,7 @@ select.iedit { cursor: pointer; }
   .nrow { flex-wrap: wrap; }
   .nrow > .grow { flex-basis: calc(100% - 40px); }
   .nrow > .nact { margin-left: 34px; }
+  .nrow-dismissible > .nact { max-width: calc(100% - 34px); white-space: normal; text-align: center; }
 }
 
 /* юридические страницы */
