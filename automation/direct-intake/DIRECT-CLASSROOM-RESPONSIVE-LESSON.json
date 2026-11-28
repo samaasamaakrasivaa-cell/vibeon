@@ -7,11 +7,11 @@
   "progress": {
     "base_sha": "2044f77648fcf73701fe5f2232817fb817bcec28",
     "branch": "codex/live-classroom/responsive-lesson",
-    "head_sha": "3643453b9629cdf6c34575e3470b91f51e85c640",
-    "next": "Проверки и CI #109 прошли. Выпуск ждёт слияния и штатного CD восстановления main №107, согласованного владельцем.",
+    "head_sha": "322cefa63354be46ff00223c1eb5be27a0b54f73",
+    "next": "После восстановления main дождаться CD №107 и CI текущего SHA №109, затем объединить и проверить выпуск.",
     "pr": 109,
-    "stage": "blocked",
-    "test_run": 46150773064
+    "stage": "review",
+    "test_run": 46151563042
   },
   "release": null,
   "source": "direct",
