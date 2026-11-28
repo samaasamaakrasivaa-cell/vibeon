@@ -14,22 +14,22 @@ type Source = {
   max: number;
 };
 type Marks = Record<string, number>;
-type Draft = { requestId: string; score: PlacementScore; at: string };
+type Run = { id: string; sequence: number };
+type Draft = { requestId: string; requestSequence: number; score: PlacementScore; at: string };
 type Confirmation = { marks: Marks; comments?: Record<string, string>; note?: string; teacherId: string; at: string };
 type ArchivedConfirmation = { source: string | null; generation: number; confirmation: Confirmation; reason: "source-changed" | "reopened" };
 type Block = {
   source: string | null;
   generation: number;
-  request: { id: string; status: "pending" | "complete" | "failed" } | null;
+  request: (Run & { status: "pending" | "complete" | "failed" }) | null;
   draft: Draft | null;
   confirmation: Confirmation | null;
   history: ArchivedConfirmation[];
 };
 type Assessment = { schema: 1 } & Partial<Record<Skill, Block>>;
 type Change = { type: "sync" } | ({ generation: number } & (
-  | { type: "request"; id: string; previousId: string | null }
-  | { type: "result"; id: string; score: PlacementScore; at: string }
-  | { type: "failure"; id: string }
+  | { type: "request"; id: string; previousSequence: number | null }
+  | (Run & ({ type: "result"; score: PlacementScore; at: string } | { type: "failure" }))
   | { type: "confirm"; confirmation: Confirmation }
   | { type: "reopen" }
 ));
@@ -107,14 +107,16 @@ export function updateWsAssessment(review: Review, source: Source, change: Chang
     if (!validMarks(source, change.confirmation.marks)) return review;
     return save({ ...block, request: null, confirmation: structuredClone(change.confirmation) });
   }
+  const request = block.request;
   if (change.type === "request") {
-    if (!change.id || block.request?.id === change.id || (block.request?.id ?? null) !== change.previousId) return review;
-    return save({ ...block, request: { id: change.id, status: "pending" } });
+    const previousSequence = request?.sequence ?? null;
+    if (!change.id || request?.id === change.id || previousSequence !== change.previousSequence) return review;
+    return save({ ...block, request: { id: change.id, sequence: (previousSequence ?? 0) + 1, status: "pending" } });
   }
-  if (block.request?.id !== change.id || block.request.status !== "pending") return review;
-  if (change.type === "failure") return save({ ...block, request: { id: change.id, status: "failed" } });
+  if (request?.status !== "pending" || request.id !== change.id || request.sequence !== change.sequence) return review;
+  if (change.type === "failure") return save({ ...block, request: { ...request, status: "failed" } });
   return save({
-    ...block, request: { id: change.id, status: "complete" },
-    draft: { requestId: change.id, score: structuredClone(change.score), at: change.at },
+    ...block, request: { ...request, status: "complete" },
+    draft: { requestId: request.id, requestSequence: request.sequence, score: structuredClone(change.score), at: change.at },
   });
 }

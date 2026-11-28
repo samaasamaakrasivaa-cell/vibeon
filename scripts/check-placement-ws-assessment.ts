@@ -39,10 +39,10 @@ assert.equal(get(legacy, speaking).draft, null);
 assert.equal(get(legacy, writing).generation, null);
 const withBoth = apply(apply(legacy, writing, { type: "sync" }), speaking, { type: "sync" });
 assert.equal(apply(withBoth, writing, { type: "sync" }), withBoth);
-const pending = apply(withBoth, writing, { type: "request", generation: 1, id: "late-writing", previousId: null });
+const pending = apply(withBoth, writing, { type: "request", generation: 1, id: "late-writing", previousSequence: null });
 const withSpeech = apply(
-  apply(pending, speaking, { type: "request", generation: 1, id: "speaking-draft", previousId: null }),
-  speaking, { type: "result", generation: 1, id: "speaking-draft", score: speechAi, at },
+  apply(pending, speaking, { type: "request", generation: 1, id: "speaking-draft", previousSequence: null }),
+  speaking, { type: "result", generation: 1, id: "speaking-draft", sequence: 1, score: speechAi, at },
 );
 assert.equal(withSpeech.speaking, legacy.speaking);
 assert.equal(get(withSpeech, speaking).draft?.score.scores.pronunciation, null);
@@ -51,7 +51,7 @@ const confirmed = apply(withSpeech, writing, { type: "confirm", generation: 1, c
 assert.deepEqual(get(confirmed, writing).confirmation, teacher);
 assert.deepEqual(get(confirmed, speaking), get(withSpeech, speaking));
 assert.equal(get(confirmed, speaking).confirmation, null);
-const late = apply(confirmed, writing, { type: "result", generation: 1, id: "late-writing", score: ai, at });
+const late = apply(confirmed, writing, { type: "result", generation: 1, id: "late-writing", sequence: 1, score: ai, at });
 assert.equal(late, confirmed);
 assert.equal(get(late, writing).draft, null);
 const speechTeacher = { ...teacher, marks: marks("speaking", 3) };
@@ -61,7 +61,7 @@ assert.deepEqual(get(bothConfirmed, speaking).confirmation, speechTeacher);
 assert.deepEqual(get(bothConfirmed, speaking).draft?.score, speechAi);
 
 const changedWriting = wsAssessmentSource({ ...state, writing: { ...state.writing, text: "I visited another city." } }, "writing", RUB_V2);
-const oldResult = { type: "result", generation: 1, id: "late-writing", score: ai, at } as const;
+const oldResult = { type: "result", generation: 1, id: "late-writing", sequence: 1, score: ai, at } as const;
 assert.equal(apply(pending, changedWriting, oldResult), pending);
 const changedWhilePending = apply(pending, changedWriting, { type: "sync" });
 assert.equal(apply(changedWhilePending, changedWriting, oldResult), changedWhilePending);
@@ -88,7 +88,7 @@ assert.deepEqual(get(newSpeech, writing), get(bothConfirmed, writing));
 const emptySpeech = wsAssessmentSource({ ...state, speaking: { ...state.speaking, rec: {} } }, "speaking", RUB_V2);
 const empty = apply(newSpeech, emptySpeech, { type: "sync" });
 assert.equal(get(empty, emptySpeech).generation, 3);
-assert.equal(apply(empty, emptySpeech, { type: "request", generation: 3, id: "empty", previousId: null }), empty);
+assert.equal(apply(empty, emptySpeech, { type: "request", generation: 3, id: "empty", previousSequence: null }), empty);
 assert.equal(apply(empty, emptySpeech, { type: "confirm", generation: 3, confirmation: speechTeacher }), empty);
 const missingTask = wsAssessmentSource(emptyState(), "speaking", RUB_V2);
 assert.equal(apply(legacy, missingTask, { type: "sync" }), legacy);
@@ -102,27 +102,50 @@ assert.equal(get(reopened, writing).generation, 2);
 assert.equal(get(reopened, writing).confirmation, null);
 assert.equal(get(reopened, writing).staleConfirmation, null);
 assert.equal(get(reopened, writing).history[0].reason, "reopened");
-assert.equal(apply(reopened, writing, { type: "result", generation: 1, id: "late-writing", score: ai, at }), reopened);
+assert.equal(apply(reopened, writing, oldResult), reopened);
 assert.deepEqual(get(reopened, speaking), get(bothConfirmed, speaking));
 
-const first = { type: "request", generation: 2, id: "first", previousId: null } as const;
+const first = { type: "request", generation: 2, id: "first", previousSequence: null } as const;
 const running = apply(reopened, writing, first);
 assert.equal(apply(running, writing, first), running);
-const failed = apply(running, writing, { type: "failure", generation: 2, id: "first" });
+const failed = apply(running, writing, { type: "failure", generation: 2, id: "first", sequence: 1 });
 assert.equal(get(failed, writing).request?.status, "failed");
 assert.equal(get(failed, writing).draft, null);
-const retry = apply(failed, writing, { type: "request", generation: 2, id: "retry", previousId: "first" });
+const retry = apply(failed, writing, { type: "request", generation: 2, id: "retry", previousSequence: 1 });
 assert.equal(apply(retry, writing, first), retry);
-assert.equal(apply(retry, writing, { type: "result", generation: 2, id: "first", score: ai, at }), retry);
-const retryResult = { type: "result", generation: 2, id: "retry", score: ai, at } as const;
+assert.equal(apply(retry, writing, { type: "result", generation: 2, id: "first", sequence: 1, score: ai, at }), retry);
+const retryResult = { type: "result", generation: 2, id: "retry", sequence: 2, score: ai, at } as const;
 const aiDraft = apply(retry, writing, retryResult);
 assert.deepEqual(get(aiDraft, writing).draft?.score, ai);
 assert.equal(apply(aiDraft, writing, retryResult), aiDraft);
 assert.equal(get(aiDraft, writing).confirmation, null);
 assert.deepEqual(get(aiDraft, speaking), get(bothConfirmed, speaking));
-const another = apply(aiDraft, writing, { type: "request", generation: 2, id: "another", previousId: "retry" });
-const anotherFailure = apply(another, writing, { type: "failure", generation: 2, id: "another" });
+const another = apply(aiDraft, writing, { type: "request", generation: 2, id: "another", previousSequence: 2 });
+const anotherFailure = apply(another, writing, { type: "failure", generation: 2, id: "another", sequence: 3 });
 assert.deepEqual(get(anotherFailure, writing).draft, get(aiDraft, writing).draft);
+
+// Reusing A after B keeps a distinct sequence, including after persistence.
+const startA = { type: "request", generation: 1, id: "A", previousSequence: null } as const;
+const resultA = { type: "result", generation: 1, id: "A", sequence: 1, score: { ...ai, summary: "First A" }, at } as const;
+const startB = { type: "request", generation: 1, id: "B", previousSequence: 1 } as const;
+const resultB = { ...resultA, id: "B", sequence: 2, score: { ...ai, summary: "B" } };
+const completedA = apply(apply(withBoth, writing, startA), writing, resultA);
+const completedB = apply(apply(completedA, writing, startB), writing, resultB);
+const secondA = apply(completedB, writing, { ...startA, previousSequence: 2 });
+const resumed = JSON.parse(JSON.stringify(secondA)) as Record<string, unknown>;
+assert.deepEqual(get(resumed, writing).request, { id: "A", sequence: 3, status: "pending" });
+assert.deepEqual(get(resumed, writing).draft?.score, resultB.score);
+assert.equal(apply(resumed, writing, startB), resumed);
+assert.equal(apply(resumed, writing, resultA), resumed);
+const failureA = { type: "failure", generation: 1, id: "A", sequence: 1 } as const;
+assert.equal(apply(resumed, writing, failureA), resumed);
+const resultSecondA = { ...resultA, sequence: 3, score: { ...ai, summary: "Second A" } };
+const completedSecondA = apply(resumed, writing, resultSecondA);
+assert.deepEqual(get(completedSecondA, writing).draft, { requestId: "A", requestSequence: 3, score: resultSecondA.score, at });
+assert.equal(apply(completedSecondA, writing, resultSecondA), completedSecondA);
+const failedSecondA = apply(resumed, writing, { ...failureA, sequence: 3 });
+assert.equal(get(failedSecondA, writing).request?.status, "failed");
+assert.deepEqual(get(failedSecondA, writing).draft?.score, resultB.score);
 
 const restored = JSON.parse(JSON.stringify(aiDraft)) as Record<string, unknown>;
 assert.deepEqual(get(restored, writing), get(aiDraft, writing));
@@ -133,4 +156,4 @@ assert.deepEqual(storedReport(restored), storedReport(legacy));
 assert.deepEqual(teacherReview(asAttempt(restored)).active.legacyReview, teacherReview(asAttempt(legacy)).active.legacyReview);
 const future = { ...legacy, wsAssessment: { schema: 2 } };
 assert.equal(apply(future, writing, { type: "sync" }), future);
-console.log("PASS Placement Writing/Speaking: skill isolation, stale answers/tasks/rubrics, late and duplicate AI, retry, reopen, empty audio, legacy and published report");
+console.log("PASS Placement Writing/Speaking: skill isolation, stale answers/tasks/rubrics, late and duplicate AI, reused request IDs, retry, reopen, empty audio, legacy and published report");
