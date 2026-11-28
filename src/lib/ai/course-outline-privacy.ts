@@ -1,12 +1,18 @@
+import type { CourseOutline } from "../tasks/course-outline";
+
 const studentField = /(?:^|[^\p{L}\p{N}])(?:фио(?:\s+ученика)?|имя\s+учени(?:ка|цы)|ученик|ученица|student(?:\s+(?:full\s+name|name|id))?|learner(?:\s+(?:name|id))?)\s*[:=|\t]/iu;
 const studentTable = /^(?:список\s+учеников|ведомость\s+оценок|журнал\s+успеваемости|student\s+(?:roster|grades|marks)|grade\s*book)(?=$|[^\p{L}])/iu;
 const personalName = String.raw`\p{L}[\p{L}'’.-]*(?:[ ]+\p{L}[\p{L}'’.-]*){1,2}`;
-const score = String.raw`(?:\d{1,3}(?:[.,]\d+)?(?:\s*(?:%|/\s*\d{1,3}))?|[A-F][+-]?)`;
+const gradeValue = String.raw`\d{1,3}(?:[.,]\d+)?`;
+const gradeScale = String.raw`(?:(?:/|из|out of)\s*\d{1,3}|%|балл(?:а|ов)?|pts?|points?)`;
+const markedGrade = String.raw`${gradeValue}\s*${gradeScale}`;
 const scoreLabel = /(?:^|[^\p{L}\p{N}])(?:оценка|балл(?:ы)?|результат|получил[а]?|grade|score|mark|result|received)\s*[:=]?\s*(?:[0-9]|[A-F](?:[+-]|\b))/iu;
-const gradeCell = new RegExp(String.raw`^${score}$`, "iu");
+const gradeCell = new RegExp(String.raw`^(?:${markedGrade}|${gradeValue}|[A-F][+-]?)$`, "iu");
 const nameWithLevel = String.raw`${personalName}(?: +\([^()\n]{1,30}\))?`;
 const nameOnly = new RegExp(String.raw`^${nameWithLevel}$`, "iu");
-const bareGrade = new RegExp(String.raw`^${nameWithLevel} +(?:[1-5][+-]?|\d{1,3}\s*(?:%|/\s*\d{1,3}))$`, "iu");
+const bareGrade = new RegExp(String.raw`^${nameWithLevel} +(?:[1-5][+-]?|${markedGrade})[.!]?$`, "iu");
+const preciseName = String.raw`\p{Lu}[\p{L}'’.-]+(?: +\p{Lu}[\p{L}'’.-]+){1,2}`;
+const inlineGrade = new RegExp(String.raw`(?:^|[^\p{L}\p{N}])${preciseName}(?: +\([^()\n]{1,30}\))? +${markedGrade}(?![\p{L}\p{N}])`, "u");
 const cellSeparator = /\t+| {2,}|\s*[:,;|=–—]\s*|\s+-\s+/u;
 
 const outlineTitle = /^(?:table of contents|contents|syllabus|scope and sequence|student[’']s book|оглавление|содержание|программа курса)[:.]?$/iu;
@@ -19,11 +25,11 @@ function unquote(text: string) {
 }
 
 function isStudentRecord(line: string) {
-  if (studentField.test(line) || studentTable.test(line) || scoreLabel.test(line) || bareGrade.test(line)) return true;
+  if (studentField.test(line) || studentTable.test(line) || scoreLabel.test(line) || inlineGrade.test(line)) return true;
   const cells = line.replace(/^\d+[.)]\s*/, "").split(cellSeparator).map(unquote);
   let nameSeen = false;
   for (const cell of cells) {
-    if (nameSeen && gradeCell.test(cell)) return true;
+    if (bareGrade.test(cell) || (nameSeen && gradeCell.test(cell))) return true;
     if (nameOnly.test(cell)) nameSeen = true;
   }
   return false;
@@ -43,6 +49,12 @@ function hasStudentRecords(lines: string[]) {
 
 export function hasCourseOutlineStudentRecords(source: string) {
   return hasStudentRecords(sourceLines(source));
+}
+
+export function outlinePlanHasStudentRecords(outline: CourseOutline) {
+  return outline.units.some((unit) => [unit, ...unit.lessons].some(({ title, topics, grammar, vocabulary, skills }) =>
+    hasCourseOutlineStudentRecords([title, topics, grammar, vocabulary, skills].join("\n")),
+  ));
 }
 
 /** Admit only lines that can be assigned to the outline, and reject the entire mixed document. */

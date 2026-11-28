@@ -65,6 +65,12 @@ async function main() {
   assert.ok("ocr" in hybrid && hybrid.ocr && hybrid.text.includes("87/100"));
   assert.deepEqual(verifyCourseOutlineSource(hybrid.text), { error: "studentRecords" });
 
+  const embedded = await readCourseOutlinePdf(await imagePdf([
+    ...syllabus.slice(0, 2), "Topics: Timetables - Анна Синтетическая 84/100",
+  ], "Contents"));
+  assert.ok("ocr" in embedded && embedded.ocr && embedded.text.includes("84/100"));
+  assert.deepEqual(verifyCourseOutlineSource(embedded.text), { error: "studentRecords" });
+
   const hiddenRecord = await readCourseOutlinePdf(await imagePdf(syllabus, "Test Student - 88/100"));
   assert.deepEqual(hiddenRecord, { error: "studentRecords" });
 

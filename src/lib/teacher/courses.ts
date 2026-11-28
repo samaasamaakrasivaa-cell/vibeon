@@ -113,6 +113,7 @@ export async function importCourseOutline(courseId: string, draft: string, input
   if (!plan.success || !plan.data.units.length) return { ok: false, error: t("crs.outline.invalid") };
 
   const result = await saveCourseOutlineUnits(courseId, teacher.id, draft, plan.data).catch(() => null);
+  if (result === "student-records") return { ok: false, error: t("crs.outline.studentRecords") };
   if (result === "invalid-draft") return { ok: false, error: t("crs.outline.invalidDraft") };
   if (result !== "saved") return { ok: false, error: t("crs.outline.saveError") };
 

@@ -10,6 +10,10 @@
   { "rows": ["Topics: \"Лена Примерова\";\"84/100\""], "error": "studentRecords" },
   { "rows": ["Lesson 10 — Нина Учебная (B1) — 87/100"], "error": "studentRecords" },
   { "rows": ["Topics: нина учебная (B1) 87/100"], "error": "studentRecords" },
+  { "rows": ["Topics: Past simple — Анна Синтетическая 84/100"], "error": "studentRecords" },
+  { "rows": ["Topics: Past simple — анна синтетическая 84 из 100"], "error": "studentRecords" },
+  { "rows": ["Topics: Past simple; Анна Синтетическая; 84 балла"], "error": "studentRecords" },
+  { "rows": ["Topics: Past simple (Анна Синтетическая 84/100, повторить)"], "error": "studentRecords" },
   { "rows": ["Student name", ": Synthetic Example"], "error": "studentRecords" },
   { "rows": ["Ведомость оценок", "Вымышленное Имя", "5"], "error": "studentRecords" },
   { "rows": ["Вставка, которую сервер не может отнести к оглавлению"], "error": "unverified" }

@@ -2,6 +2,7 @@ import "server-only";
 
 import { randomUUID } from "node:crypto";
 import type { Prisma } from "@prisma/client";
+import { outlinePlanHasStudentRecords } from "../ai/course-outline-privacy";
 import { db } from "../db";
 import { outlineUnitOutcomes, type CourseOutline } from "../tasks/course-outline";
 import { cleanInfo } from "../tasks/teacher-info";
@@ -58,6 +59,7 @@ export function saveCourseOutlineUnits(courseId: string, teacherId: string, draf
     const receiptKey = outlineReceiptPrefix + importId;
     if (await tx.aiCache.findUnique({ where: { key: receiptKey }, select: { key: true } })) return "saved";
 
+    if (outlinePlanHasStudentRecords(plan)) return "student-records";
     const firstOrder = await nextUnitPosition(tx, courseId);
     for (const [index, unit] of plan.units.entries()) {
       await tx.unit.create({
