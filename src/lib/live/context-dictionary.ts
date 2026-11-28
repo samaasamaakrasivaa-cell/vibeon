@@ -23,8 +23,8 @@ export async function lessonDictionaryContext(access: Access, input: unknown) {
   });
   if (!task || (task.options as { teacherOnly?: boolean } | null)?.teacherOnly) return null;
   // Use the public reading text, never free-form input or the teacher-only parts of an exercise.
-  const plain = task.content.replace(/\*\*(.+?)\*\*|__(.+?)__|==(.+?)==/g, "$1$2$3")
-    .replace(/(^|[^*])\*(?!\s)(.+?)\*/g, "$1$2")
+  const plain = task.content.replace(/\*\*(.+?)\*\*/g, "$1").replace(/(^|[^*])\*(?!\s)(.+?)\*/g, "$1$2")
+    .replace(/__(.+?)__/g, "$1").replace(/==(.+?)==/g, "$1")
     .replace(/\{(blue|red|green|purple|orange)\}([\s\S]+?)\{\/\w*\}/g, "$2");
   for (const paragraph of plain.split(/\n\s*\n/)) {
     for (const part of sentences.segment(compact(paragraph))) {
