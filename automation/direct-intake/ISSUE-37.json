@@ -5,13 +5,13 @@
   "key": "ISSUE-37",
   "owner": "placement-test",
   "progress": {
-    "base_sha": "2044f77648fcf73701fe5f2232817fb817bcec28",
+    "base_sha": "d7d94a6d6e76d9a6810a53c4a6434caea821b82d",
     "branch": "codex/placement/pt-12-roadmap-result",
-    "head_sha": "c481a7a7e847fee0b77c9c074b7830a70586c8d8",
-    "next": "Происхождение исправлено. Повторное ревью AI & Quality. Штатный вызов ждёт №32 и №36.",
+    "head_sha": "0a310ad2350c707b969de2274c2c00a7a8fc6717",
+    "next": "Сквозной прогон на синтетике прошёл. Профильное ревью связывания №36/37 и происхождения аудио. Очередь отчёта отдельно.",
     "pr": 118,
     "stage": "review",
-    "test_run": 46154440754
+    "test_run": 46168636591
   },
   "release": null,
   "source": "direct",
