@@ -4,13 +4,14 @@ const studentField = /(?:^|[^\p{L}\p{N}])(?:фио(?:\s+ученика)?|имя\
 const studentTable = /^(?:список\s+учеников|ведомость\s+оценок|журнал\s+успеваемости|student\s+(?:roster|grades|marks)|grade\s*book)(?=$|[^\p{L}])/iu;
 const personalName = String.raw`\p{L}[\p{L}'’.-]*(?:[ ]+\p{L}[\p{L}'’.-]*){1,2}`;
 const gradeValue = String.raw`\d{1,3}(?:[.,]\d+)?`;
+const plainMark = String.raw`(?:0|[1-9]\d{0,2})(?:[.,]\d+)?[+-]?`;
 const gradeScale = String.raw`(?:(?:/|из|out of)\s*\d{1,3}|%|балл(?:а|ов)?|pts?|points?)`;
 const markedGrade = String.raw`${gradeValue}\s*${gradeScale}`;
 const scoreLabel = /(?:^|[^\p{L}\p{N}])(?:оценка|балл(?:ы)?|результат|получил[а]?|grade|score|mark|result|received)\s*[:=]?\s*(?:[0-9]|[A-F](?:[+-]|\b))/iu;
 const gradeCell = new RegExp(String.raw`^(?:${markedGrade}|${gradeValue}|[A-F][+-]?)$`, "iu");
 const nameWithLevel = String.raw`${personalName}(?: +\([^()\n]{1,30}\))?`;
 const nameOnly = new RegExp(String.raw`^${nameWithLevel}$`, "iu");
-const bareGrade = new RegExp(String.raw`^${nameWithLevel} +(?:[1-5][+-]?|${markedGrade})[.!]?$`, "iu");
+const bareGrade = new RegExp(String.raw`^${nameWithLevel} +(?:${plainMark}|${markedGrade})[.!]?$`, "iu");
 const preciseName = String.raw`\p{Lu}[\p{L}'’.-]+(?: +\p{Lu}[\p{L}'’.-]+){1,2}`;
 const inlineGrade = new RegExp(String.raw`(?:^|[^\p{L}\p{N}])${preciseName}(?: +\([^()\n]{1,30}\))? +${markedGrade}(?![\p{L}\p{N}])`, "u");
 const cellSeparator = /\t+| {2,}|\s*[:,;|=–—]\s*|\s+-\s+/u;

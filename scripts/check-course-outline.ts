@@ -22,10 +22,12 @@ assert.deepEqual(verifyCourseOutlineSource([
   "Grammar: Past Simple",
   "Skills: compare two reports",
   "Topics: fractions such as 2/3 in recipes",
+  "Lesson 11: Film Scene 01",
 ].join("\n")), {
   text: [
     "Unit 1 — Jane Austen", "Lesson 10 — JuniperArchive", "Topics: A biography of Jane Austen",
     "Grammar: Past Simple", "Skills: compare two reports", "Topics: fractions such as 2/3 in recipes",
+    "Lesson 11 — Film Scene 01",
   ].join("\n"),
 });
 assert.deepEqual(verifyCourseOutlineSource("Contents"), { error: "noUnits" });
@@ -92,7 +94,7 @@ async function main() {
     assert.equal(await saveCourseOutlineUnits(course, teacher, tampered, plan), "invalid-draft");
     assert.equal(await saveCourseOutlineUnits(course, teacher, randomUUID(), plan), "invalid-draft");
     const mixedPlan = courseOutlineSchema.parse({ units: [{ title: "Travel", lessons: [{
-      title: "Transport", topics: "Directions — Анна Синтетическая 84/100",
+      title: "Transport", topics: "Directions — Анна Синтетическая 84",
     }] }] });
     assert.equal(await saveCourseOutlineUnits(course.id, teacher.id, draft(teacher.id, course.id), mixedPlan), "student-records");
     assert.equal(await db.unit.count({ where: { courseId: { in: courseIds } } }), 0);
