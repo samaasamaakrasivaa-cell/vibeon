@@ -8,9 +8,10 @@
     "base_sha": "7aa0781b4f6046a2c1184426b6c76a9c9aa9d746",
     "branch": "codex/student/greeting-parity",
     "head_sha": "766d164a66803ef2064233333bcbb562a688998a",
-    "next": "PR #121 готов. Автопроверка слияния требует прямого согласия владельца на общий выпуск; запросили его в чате. После согласия сверить SHA сайта.",
+    "merge_sha": "6b57ad51f4d7d48fe661461f9ab52b2d1fc18098",
+    "next": "Выпуск #121 подтверждён CD 46154922297 и публичным health. Заметка есть в #112.",
     "pr": 116,
-    "stage": "blocked",
+    "stage": "publication",
     "test_run": 46152793320
   },
   "release": null,
