@@ -1,10 +1,13 @@
 {
   "claim_id": "1f4f57b2b06042398ad3c36a900dd75d",
   "handoff": null,
-  "issue": null,
+  "issue": 88,
   "key": "DIRECT-STUDENT-HOME-REFINE",
   "owner": "student",
-  "progress": null,
+  "progress": {
+    "next": "Подтвердить выпуск #81, затем создать отдельную ветку от актуальной main и обновить карточки главной.",
+    "stage": "registered"
+  },
   "release": null,
   "source": "direct",
   "version": 1
