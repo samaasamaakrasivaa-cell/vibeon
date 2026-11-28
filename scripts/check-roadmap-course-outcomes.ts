@@ -13,6 +13,11 @@ assert.deepEqual(courseOutcomesForRoute([]), []);
 assert.deepEqual(courseOutcomesForRoute(legacy), legacy.slice(0, 6));
 assert.deepEqual(courseOutcomesForRoute(["Topics — Travel", "Grammar — Past simple"]), ["Topics — Travel", "Grammar — Past simple"]);
 
+const splitTopic = ["Topics — Travel · Market", "Grammar — Past simple", "Topics — Stalls · Archive Visits"];
+assert.deepEqual(courseOutcomesForRoute(splitTopic), [
+  "Topics — Travel · Market Stalls · Archive Visits", "Grammar — Past simple",
+]);
+
 const { units: [longUnit] } = courseOutlineSchema.parse({ units: [{
   title: "Long unit",
   grammar: "Past simple",

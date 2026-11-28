@@ -31,7 +31,9 @@ jobs:
           sudo apt-get install -y --no-install-recommends tesseract-ocr tesseract-ocr-eng tesseract-ocr-rus fonts-dejavu-core
           node --conditions=react-server --import tsx scripts/check-course-outline-ocr.ts
       - name: Check course outline import on PostgreSQL
-        run: node --conditions=react-server --import tsx scripts/check-course-outline.ts
+        run: |
+          node --conditions=react-server --import tsx scripts/check-course-outline.ts
+          node --import tsx scripts/check-roadmap-course-outcomes.ts
       - run: npm run typecheck
       - run: npm run build
       - name: Smoke test

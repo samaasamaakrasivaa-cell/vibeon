@@ -49,7 +49,7 @@ function fitEntries(entries: string[], value: string, budget: number) {
 export function courseOutcomesForRoute(outcomes: string[]): string[] {
   const original = outcomes.slice(0, outcomeCount);
   const imported = outcomes.some((outcome) => importedOutcome.test(outcome));
-  if ((!imported || outcomes.length <= outcomeCount) && JSON.stringify(original).length <= outcomeBudget) return original;
+  if (!imported && JSON.stringify(original).length <= outcomeBudget) return original;
 
   const fragmentsByCategory = new Map<string, string[]>();
   for (const outcome of imported ? outcomes : original) {
