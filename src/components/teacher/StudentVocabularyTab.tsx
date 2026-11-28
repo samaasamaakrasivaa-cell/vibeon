@@ -29,7 +29,7 @@ export async function StudentVocabularyTab({ students }: { students: readonly St
         ] as const;
 
         return (
-          <article key={id} className={`card ${styles.student}`} aria-labelledby={`vocabulary-${id}`}>
+          <article key={id} className={`card ${styles.student}`} aria-labelledby={`vocabulary-${id}`} data-vocabulary-stats="vocabulary">
             <header className={styles.header}>
               <h2 id={`vocabulary-${id}`} className={styles.name}>
                 <Link href={`/teacher/students/${id}?tab=progress`}>
