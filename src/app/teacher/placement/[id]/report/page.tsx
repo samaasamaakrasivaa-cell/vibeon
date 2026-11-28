@@ -8,13 +8,15 @@ import { lastPublication, publicationStamp, reportPublicationEnabled, reportSour
 import { getT } from "@/lib/i18n/server";
 import { teacherReview } from "@/lib/placement/teacher-review";
 import { stateOf } from "@/lib/placement/run";
+import { attemptHref, resultFilter } from "@/lib/placement/results-filter";
 
 export const metadata = { title: "Placement test — отчёт" };
 
-export default async function PlacementReportPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function PlacementReportPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ status?: string }> }) {
   const { t } = await getT();
   const me = await requireUser("TEACHER");
   const { id } = await params;
+  const back = attemptHref(id, resultFilter((await searchParams).status));
   const a = await db.placementAttempt.findUnique({ where: { id }, include: { student: true } });
   if (!a || a.teacherId !== me.id) notFound();
   const r = await reportData(a, stateOf(a.state));
@@ -28,7 +30,7 @@ export default async function PlacementReportPage({ params }: { params: Promise<
       {teacherReview(a).regrading && <p className="alert noprint">{t("pl.lastReportHint")}</p>}
       <ReportBuilder id={id} r={r} drafts={drafts} canSend={a.mode === "student"} source={reportSource(r, me.timezone)} timeZone={me.timezone}
         publication={publicationStamp(stored)} publicationEnabled={reportPublicationEnabled || !lastPublication(stored)}
-        draftIds={stored.draftIds ?? {}} back={`/teacher/placement/${id}`} />
+        draftIds={stored.draftIds ?? {}} back={back} />
     </div>
   );
 }

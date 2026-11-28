@@ -23,7 +23,7 @@ export default async function BankPage({ searchParams }: { searchParams: Promise
   const flags = fl.map((f) => ({ id: f.id, itemId: f.itemId, qid: f.qid, note: f.note, who: users.get(f.userId) ?? "—", when: fmt.format(f.createdAt), resolved: !!f.resolvedAt }));
   return (
     <div className="page" style={{ maxWidth: 1000 }}>
-      <Link href="/teacher/courses?tab=tests" className="small muted">← {t("pl.backTests")}</Link>
+      <Link href="/teacher/placement" className="small muted">← {t("pl.backTests")}</Link>
       <h1 className="mt-2 mb-1">{t("pl.bankTitle")}</h1>
       <p className="muted mt-0 mb-3">{t("pl.bankLead")} <Link className="alink" href="/teacher/placement/quality">{t("q.title")} →</Link></p>
       <nav className="seg mb-5" aria-label={t("pl.track")}>

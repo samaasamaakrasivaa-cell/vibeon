@@ -3,52 +3,14 @@ import { requireUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { getT } from "@/lib/i18n/server";
 import { COURSE_CATEGORIES } from "@/lib/tasks/catalog";
-import Link from "next/link";
-import { PlacementPanel } from "@/components/placement/PlacementPanel";
-import { isOwner, TEEN_READY } from "@/lib/placement/bank";
-
-/** Полных лет на сегодня (по дню рождения из анкеты). */
-const ageOf = (b: Date | null) => { if (!b) return null; const n = new Date(); let a = n.getFullYear() - b.getFullYear(); if (n.getMonth() < b.getMonth() || (n.getMonth() === b.getMonth() && n.getDate() < b.getDate())) a--; return a; };
-import { env } from "@/lib/env";
+import { redirect } from "next/navigation";
 
 export const metadata = { title: "Курсы" };
 
 export default async function Courses({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
-  const { t, lang } = await getT();
+  const { t } = await getT();
   const me = await requireUser("TEACHER");
-  const tab = (await searchParams).tab === "tests" ? "tests" : "courses";
-  const tabs = (
-    <nav className="tabsbar mb-6">
-      <Link href="/teacher/courses" aria-current={tab === "courses" ? "page" : undefined}>{t("nav.courses")}</Link>
-      <Link href="/teacher/courses?tab=tests" aria-current={tab === "tests" ? "page" : undefined}>{t("pl.tab")}</Link>
-    </nav>
-  );
-  if (tab === "tests") {
-    const [students, attempts, link] = await Promise.all([
-      db.student.findMany({ where: { teacherId: me.id, archivedAt: null }, orderBy: { name: "asc" }, select: { id: true, name: true, lastName: true, birthday: true } }),
-      db.placementAttempt.findMany({ where: { teacherId: me.id }, orderBy: { createdAt: "desc" }, take: 60, include: { student: { select: { name: true, lastName: true } } } }),
-      db.placementLink.findMany({ where: { teacherId: me.id, active: true }, orderBy: { createdAt: "desc" } }),
-    ]);
-    const loc = lang === "ru" ? "ru-RU" : "en-GB";
-    return (
-      <div className="page">
-        <h1>{t("nav.courses")}</h1>
-        <p className="muted mt-2 mb-6">{t("pl.tabLead")}</p>
-        {tabs}
-        <PlacementPanel
-          owner={isOwner(me.email)} teen={TEEN_READY || isOwner(me.email)} origin={env.appUrl}
-          links={Object.fromEntries(["adult", "teen"].map((tr) => [tr, link.find((l) => l.track === tr)]).filter(([, l]) => l).map(([tr, l]) => [tr, { code: (l as { code: string }).code, showResult: (l as { showResult: boolean }).showResult }]))}
-          ages={Object.fromEntries(students.map((s) => [s.id, ageOf(s.birthday)]))}
-          students={students.map((s) => ({ id: s.id, name: `${s.name} ${s.lastName ?? ""}`.trim(), initials: `${s.name[0] ?? ""}${s.lastName?.[0] ?? ""}`.toUpperCase() }))}
-          rows={attempts.map((a) => ({
-            id: a.id, mode: a.mode, status: a.status, level: a.level, track: a.track,
-            who: a.mode === "student" ? `${a.student?.name ?? ""} ${a.student?.lastName ?? ""}`.trim() : a.mode === "self" ? t("pl.you") : a.guestName ?? "",
-            when: (a.submittedAt ?? a.createdAt).toLocaleDateString(loc, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: me.timezone }),
-          }))}
-        />
-      </div>
-    );
-  }
+  if ((await searchParams).tab === "tests") redirect("/teacher/placement");
   const [courses, prof] = await Promise.all([
     db.course.findMany({ where: { teacherId: me.id }, orderBy: { order: "asc" }, include: { units: { select: { _count: { select: { lessons: true } } } } } }),
     db.teacherProfile.findUnique({ where: { userId: me.id } }),
@@ -59,7 +21,6 @@ export default async function Courses({ searchParams }: { searchParams: Promise<
     <div className="page">
       <h1>{t("nav.courses")}</h1>
       <p className="muted mt-2 mb-6">{t("crs.lead")}</p>
-      {tabs}
       <CoursesBoard
         order={order}
         courses={courses.map((c) => ({
