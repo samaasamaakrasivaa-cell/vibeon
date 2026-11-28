@@ -8,9 +8,9 @@
     "base_sha": "7aa0781b4f6046a2c1184426b6c76a9c9aa9d746",
     "branch": "codex/teacher/align-news-notifications",
     "head_sha": "ba9302cad72b93b4d2d3214c09e4249dad6a0a02",
-    "next": "Включено в PR #121. Точное дерево 3fccc74 проверено на синтетике. Ждём итоговое ревью и CI партии 46153917118.",
+    "next": "Общий PR #121 на 019d6e8 прошёл ревью и CI. Автопроверка отклонила слияние в main без прямого подтверждения владельцем общего выпуска.",
     "pr": 106,
-    "stage": "integration",
+    "stage": "blocked",
     "test_run": 46152777890
   },
   "release": null,
