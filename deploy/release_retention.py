@@ -2,6 +2,7 @@
 import datetime
 import hashlib
 import json
+import os
 import re
 import stat
 from pathlib import Path
@@ -31,9 +32,12 @@ INSPECT = '{{json .Id}} {{json .RepoTags}} {{json .RepoDigests}} {{json .Config.
 
 
 def load_json(path):
-    if path.is_symlink() or not path.is_file():
-        raise ValueError("unsafe retention metadata")
-    return json.loads(path.read_text())
+    fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+    with os.fdopen(fd, "rb") as handle:
+        metadata = os.fstat(handle.fileno())
+        if not stat.S_ISREG(metadata.st_mode) or metadata.st_nlink != 1 or metadata.st_size > 1024**2:
+            raise ValueError("unsafe retention metadata")
+        return json.load(handle)
 
 
 def full_backup_plan(root, now=None):
@@ -93,49 +97,81 @@ def full_backup_plan(root, now=None):
     return verified, candidates, set().union(*(record[2] for record in verified))
 
 
+def backup_mounts():
+    for line in Path("/proc/self/mountinfo").read_text().splitlines():
+        yield Path(re.sub(r"\\([0-7]{3})", lambda match: chr(int(match[1], 8)), line.split()[4]))
+
+
+def private_backup_files(entry, directory_fd):
+    parent = entry.parent.lstat()
+    directory = os.fstat(directory_fd)
+    if (not stat.S_ISDIR(parent.st_mode) or directory.st_dev != parent.st_dev
+            or directory.st_uid != parent.st_uid or directory.st_mode & 0o077
+            or entry.resolve(strict=True) != entry
+            or any(mount == entry or entry in mount.parents for mount in backup_mounts())):
+        return {}
+    files = {}
+    for name in os.listdir(directory_fd):
+        row = os.stat(name, dir_fd=directory_fd, follow_symlinks=False)
+        if (name not in FULL_FILES or not stat.S_ISREG(row.st_mode)
+                or row.st_uid != directory.st_uid or row.st_dev != directory.st_dev or row.st_nlink != 1):
+            return {}
+        files[name] = (row.st_dev, row.st_ino)
+    if not {"database.dump", "uploads.tar.gz", "verified.json"}.issubset(files):
+        return {}
+    return files
+
+
 def confirm_replacements(verified):
     if len(verified) < KEEP:
         return False
+    seen = set()
     for _, _, _, _, entry, _ in verified[:KEEP]:
-        marker = load_json(entry / "verified.json")
-        # Legacy receipts lack a checksum for the compressed archive. Wait
-        # for three new restore-tested receipts before any automatic expiry.
-        for name, key in (("database.dump", "database_dump_sha256"),
-                          ("uploads.tar.gz", "uploads_archive_sha256")):
-            expected = marker.get(key, "")
-            if not re.fullmatch(r"[0-9a-f]{64}", str(expected)):
+        directory_fd = os.open(entry, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+        try:
+            files = private_backup_files(entry, directory_fd)
+            if not files or seen.intersection(files.values()):
                 return False
-            with (entry / name).open("rb") as handle:
-                if hashlib.file_digest(handle, "sha256").hexdigest() != expected:
-                    raise ValueError("backup replacement failed integrity check")
+            seen.update(files.values())
+            marker = load_json(entry / "verified.json")
+            # Legacy receipts lack a checksum for the compressed archive. Wait
+            # for three new restore-tested receipts before any automatic expiry.
+            for name, key in (("database.dump", "database_dump_sha256"),
+                              ("uploads.tar.gz", "uploads_archive_sha256")):
+                expected = marker.get(key, "")
+                if not re.fullmatch(r"[0-9a-f]{64}", str(expected)):
+                    return False
+                fd = os.open(name, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK, dir_fd=directory_fd)
+                with os.fdopen(fd, "rb") as handle:
+                    row = os.fstat(handle.fileno())
+                    if (not stat.S_ISREG(row.st_mode) or row.st_nlink != 1
+                            or (row.st_dev, row.st_ino) != files[name]
+                            or hashlib.file_digest(handle, "sha256").hexdigest() != expected):
+                        raise ValueError("backup replacement failed integrity check")
+        finally:
+            os.close(directory_fd)
     return True
 
 
 def retire_backup(entry):
-    device = entry.parent.stat().st_dev
-    directory = entry.lstat()
-    if (not stat.S_ISDIR(directory.st_mode) or directory.st_dev != device
-            or directory.st_uid != entry.parent.stat().st_uid or directory.st_mode & 0o077):
-        return False
-    # A same-device bind mount must not masquerade as a project-owned file.
-    for line in Path("/proc/self/mountinfo").read_text().splitlines():
-        mount = Path(re.sub(r"\\([0-7]{3})", lambda match: chr(int(match[1], 8)), line.split()[4]))
-        if mount == entry or entry in mount.parents:
+    directory_fd = os.open(entry, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+    try:
+        files = private_backup_files(entry, directory_fd)
+        if not files:
             return False
-    files = list(entry.iterdir())
-    for path in files:
-        row = path.lstat()
-        if (path.name not in FULL_FILES or not stat.S_ISREG(row.st_mode)
-                or row.st_uid != directory.st_uid or row.st_dev != device or row.st_nlink != 1):
-            return False
-    if not {"database.dump", "uploads.tar.gz", "verified.json"}.issubset({path.name for path in files}):
-        return False
-    # Leave the receipt until last. An interrupted deletion of an old pair
-    # stops future rotation for review, while the replacements stay intact.
-    for path in sorted(files, key=lambda path: path.name == "verified.json"):
-        path.unlink()
-    entry.rmdir()
-    return True
+        # Leave the receipt until last. An interrupted deletion of an old pair
+        # stops future rotation for review, while the replacements stay intact.
+        for name in sorted(files, key=lambda name: name == "verified.json"):
+            row = os.stat(name, dir_fd=directory_fd, follow_symlinks=False)
+            if (row.st_dev, row.st_ino) != files[name] or row.st_nlink != 1:
+                raise OSError("backup entry changed")
+            os.unlink(name, dir_fd=directory_fd)
+        if entry.lstat().st_ino != os.fstat(directory_fd).st_ino:
+            raise OSError("backup directory changed")
+        entry.rmdir()
+        return True
+    finally:
+        os.close(directory_fd)
 
 
 def inspect_image(docker, tag):

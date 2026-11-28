@@ -2,10 +2,12 @@
 """Synthetic VibeOn retention safeguards; no server or Docker dependency."""
 import hashlib
 import json
+import os
 from pathlib import Path
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "deploy"))
 import release_retention as retention
@@ -113,6 +115,18 @@ class RetentionTest(unittest.TestCase):
             self.rotate()
         self.assertTrue(old.exists())
         self.assertEqual(self.removed, [])
+
+    def test_shared_or_mounted_replacement_preserves_old_pair(self):
+        old = self.backup(1, row(1))
+        latest = [self.backup(i, row(i), checksummed=True) for i in range(21, 24)]
+        with patch.object(retention, "backup_mounts", return_value=[latest[1]]):
+            self.assertEqual(self.rotate()["full_backups_removed"], 0)
+        source = latest[0] / "database.dump"
+        target = latest[1] / "database.dump"
+        target.unlink()
+        os.link(source, target)
+        self.assertEqual(self.rotate()["full_backups_removed"], 0)
+        self.assertTrue(old.exists())
 
     def test_docker_failure_does_not_remove_newer_images(self):
         original = self.docker
