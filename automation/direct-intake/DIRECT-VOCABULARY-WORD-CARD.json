@@ -7,8 +7,11 @@
   "progress": {
     "base_sha": "daacd5bf1e2f13c4c0b063f5db07f2f47c887dbc",
     "branch": "codex/vocabulary-training/word-card-details",
-    "next": "Реализовать и проверить дополнение карточек в «Моих словах» с существующим кэшем.",
-    "stage": "implementation"
+    "head_sha": "82450c8e5566a2ae1a506bfcf3ae41ab3aabb479",
+    "next": "Chromium прошёл. Дождаться CI и независимого ревью на проверенном SHA.",
+    "pr": 97,
+    "stage": "review",
+    "test_run": 46130707159
   },
   "release": null,
   "source": "direct",
