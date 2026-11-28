@@ -5,13 +5,13 @@
   "key": "DIRECT-STUDENT-HOME-REFINE",
   "owner": "student",
   "progress": {
-    "base_sha": "82473a1199a160651ae2bed2f8365b5e536d7c72",
+    "base_sha": "47fa1c441d0dfff1e2423db146912175e544ab08",
     "branch": "codex/student/home-visual-refresh",
-    "head_sha": "a4deb9d2d1af80c3cc860e8884fb52fea2b7486c",
-    "next": "Chromium прошёл. Draft зависит от #83; после его выпуска перевести на актуальную main и проверить релизный SHA.",
+    "head_sha": "f6df383ef16774378fc3aa9eacede6ce18a26e07",
+    "next": "Изменения приложения проверены Chromium. Завершить независимое ревью и CI. Retarget в main после публикации #81.",
     "pr": 89,
     "stage": "review",
-    "test_run": 46120523823
+    "test_run": 46121232381
   },
   "release": null,
   "source": "direct",
