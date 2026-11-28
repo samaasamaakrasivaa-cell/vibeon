@@ -72,8 +72,8 @@ async function main() {
     await new Promise(resolve => server.once("listening", resolve));
     const openBrowser = async (locale = "en-US") => {
       const args = ["--no-sandbox","--accept-lang=" + locale];
-      const context = await chromium.launchPersistentContext(profile, { executablePath: "/usr/bin/google-chrome",
-        ignoreDefaultArgs: ["--disable-background-networking", "--disable-component-update"],
+      const context = await chromium.launchPersistentContext(profile, { executablePath: "/usr/bin/google-chrome", headless: false,
+        ignoreDefaultArgs: ["--disable-background-networking", "--disable-component-update", "--mute-audio"],
         args, permissions: ["microphone"], locale });
       await context.grantPermissions(["microphone"], { origin });
       return context;
@@ -126,9 +126,7 @@ async function main() {
             this.addEventListener("result", (event) => window.nativeEvents.push(["result", event.results.length, Math.round(performance.now())]));
             this.addEventListener("error", event => window.nativeEvents.push(["error:" + event.error, Math.round(performance.now())]));
             if (!window.syntheticVoice?.track) throw new Error("Synthetic track is not ready");
-            this.continuous = false;
-            this.interimResults = true;
-            window.nativeEvents.push(["diagnostic mode", this.processLocally, this.quality ?? "default", window.syntheticVoice.peak]);
+            window.nativeEvents.push(["native mode", this.processLocally, this.continuous, this.interimResults, this.quality ?? "default", window.syntheticVoice.peak]);
             return realStart.call(this, window.syntheticVoice.track);
           };
         }, key);
@@ -172,7 +170,6 @@ async function main() {
             await page.locator("[role=status]").allTextContents());
         }
         const composed = await field.inputValue();
-        console.log(language, "diagnostic one-shot yielded a transcript");
         assert.match(composed, key === "en" ? /cat|sleeps|sofa/i : /нравится|читать|книг/i);
         assert.equal(saves.length, expectedSaves);
         const savedResponse = page.waitForResponse(response => response.request().method() === "POST" && response.url() === origin + "/");
