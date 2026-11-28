@@ -1,10 +1,15 @@
 {
   "claim_id": "999300c4b0394a9ea236893612d622e7",
   "handoff": null,
-  "issue": null,
+  "issue": 113,
   "key": "DIRECT-TEACHER-VOCABULARY-TAB",
   "owner": "teacher",
-  "progress": null,
+  "progress": {
+    "base_sha": "2044f77648fcf73701fe5f2232817fb817bcec28",
+    "branch": "codex/teacher/student-vocabulary-tab",
+    "next": "Добавить вкладку и карточки на фактических данных учителя. Проверить роли, измерения, часовые пояса, RU/EN и мобильную вёрстку.",
+    "stage": "implementation"
+  },
   "release": null,
   "source": "direct",
   "version": 1
