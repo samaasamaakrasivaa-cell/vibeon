@@ -152,7 +152,7 @@ def volume_is(container, destination, name):
 
 
 class Release:
-    def __init__(self, sha, image, rollback_sha, rollback_image, compose_sha256, expected_current_image, root=ROOT, allowed_proxy_image=None):
+    def __init__(self, sha, image, rollback_sha, rollback_image, compose_sha256, expected_current_image, root=ROOT, allowed_proxy_image=None, retention_enabled=False, daily_policy=False):
         if not SHA.fullmatch(sha) or not SHA.fullmatch(rollback_sha) or not DIGEST.fullmatch(image) or not DIGEST.fullmatch(rollback_image) or not HEX.fullmatch(compose_sha256) or not DIGEST.fullmatch(expected_current_image):
             raise ReleaseError("invalid_release_identity")
         if allowed_proxy_image is not None and not DIGEST.fullmatch(allowed_proxy_image):
@@ -163,8 +163,12 @@ class Release:
         self.expected_current_image = expected_current_image
         self.allowed_proxy_image = allowed_proxy_image
         self.proxy_qualification = None
+        self.retention_enabled = retention_enabled
+        self.daily_policy = daily_policy
+        self.daily_receipt = None
         self.override = self.root / "release-image.json"
         self.journal = self.root / "release-state.json"
+        self.daily_journal = self.root / "backup-state.json"
         self.backup_dir = None
         self.stopped = self.cutover = False
         self.restore_container = self.restore_db_volume = self.restore_uploads_volume = None
@@ -186,6 +190,10 @@ class Release:
 
     def inspect(self):
         try:
+            if self.daily_policy and (self.daily_journal.exists() or self.daily_journal.is_symlink()):
+                if (self.daily_journal.is_symlink() or json.loads(self.daily_journal.read_text()).get("status")
+                        not in ("daily_backup_completed", "daily_backup_failed")):
+                    raise ReleaseError("daily_backup_interrupted")
             if self.allowed_proxy_image is not None:
                 self.proxy_qualification = self.qualify_proxy()
             if self.journal.exists() and json.loads(self.journal.read_text())["status"] in {"stopping", "stopped", "verifying", "switching", "rollback_failed", "cleanup_failed"}:
@@ -256,6 +264,7 @@ class Release:
                 raise ReleaseError("migration_set_mismatch")
         if len(schema_digests) != 1:
             raise ReleaseError("schema_change_requires_separate_release")
+        self.schema_sha256 = next(iter(schema_digests))
         self.verify(self.app_id, self.current_image, None)
 
     def qualify_proxy(self):
@@ -319,6 +328,8 @@ class Release:
         peers = command(["docker", "exec", self.db_id, "psql", "-X", "-v", "ON_ERROR_STOP=1", "-U", "vibeon", "-d", "vibeon", "-Atqc", "SELECT count(*) FROM pg_stat_activity WHERE datname=current_database() AND backend_type='client backend' AND pid<>pg_backend_pid();"], reason="database_writers_check_failed").strip()
         if peers != b"0":
             raise ReleaseError("database_clients_still_connected")
+        if self.daily_receipt is not None:
+            self.daily_receipt["captured_at"] = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")
         source_files = self.files_manifest("vibeon_uploads")
         db_bytes = command(["docker", "exec", self.db_id, "psql", "-X", "-v", "ON_ERROR_STOP=1", "-U", "vibeon", "-d", "vibeon", "-Atqc", "SELECT pg_database_size(current_database());"], reason="database_size_unavailable").strip()
         if not db_bytes.isdigit():
@@ -362,10 +373,14 @@ class Release:
                 raise ReleaseError("uploads_restore_content_mismatch")
         finally:
             self.cleanup_restore()
+        if self.daily_receipt is not None:
+            self.daily_receipt["verified_at"] = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")
         atomic_json(self.backup_dir / "verified.json", {"schema_version": 1, "sha": self.sha,
-                    "image": self.image, "rollback_image": self.rollback_image,
+                    "image": self.image, "rollback_image": self.rollback_image, "previous_image": self.current_image,
                     "uploads_sha256": source_files["sha256"],
-                    "database_dump_sha256": file_sha256(dump)})
+                    "database_dump_sha256": file_sha256(dump),
+                    "uploads_archive_sha256": file_sha256(self.backup_dir / "uploads.tar.gz"),
+                    **(self.daily_receipt or {})})
 
     def cleanup_restore(self):
         failed = False
@@ -414,13 +429,110 @@ class Release:
         command(["docker", "start", self.app_id], reason="original_app_restart_failed", timeout=60)
         self.verify(self.app_id, self.current_image, None)
 
-    def apply(self):
+    def post_publication_retention(self, protected=()):
+        from release_retention import rotate
+
+        def docker(*args):
+            return command(["docker", *args], reason="storage_inventory_failed").decode().strip()
+
+        return rotate(self.root, self.image, self.sha, {self.current_image, self.rollback_image, *protected},
+                      docker=docker, write_json=atomic_json)
+
+    def retention_report(self, status, protected=()):
+        report = {"status": status, "sha": self.sha, "image": self.image}
+        if self.retention_enabled:
+            try:
+                report["storage_retention"] = self.post_publication_retention(protected)
+            except (Exception, KeyboardInterrupt):
+                report["storage_retention"] = {"status": "attention", "images_removed": 0,
+                                               "verified_full_backups": 0, "full_backup_candidates": 0,
+                                               "full_backup_candidate_bytes": 0,
+                                               "full_backups_removed": 0, "full_backups_removed_bytes": 0}
+        return report
+
+    def verified_running_release(self):
+        if self.image != self.expected_current_image or self.rollback_image != self.image or self.rollback_sha != self.sha:
+            raise ReleaseError("storage_only_identity_invalid")
+        try:
+            if self.journal.is_symlink() or self.override.is_symlink():
+                raise ValueError()
+            journal = json.loads(self.journal.read_text())
+            override = json.loads(self.override.read_text())
+            status = journal.get("status")
+            live = (journal.get("sha"), journal.get("image")) if status == "released" else (
+                journal.get("rollback_sha"), journal.get("rollback_image"))
+            if (journal.get("schema_version") != 1 or status not in ("released", "rolled_back", "unchanged")
+                    or live != (self.sha, self.image) or override != self.override_content(self.image, self.sha)):
+                raise ValueError()
+            protected = {journal["rollback_image"], journal["previous_image"]}
+            if (not all(isinstance(image, str) and DIGEST.fullmatch(image) for image in protected)
+                    or not isinstance(journal["rollback_sha"], str) or not SHA.fullmatch(journal["rollback_sha"])):
+                raise ValueError()
+        except (OSError, ValueError, KeyError, TypeError, AttributeError):
+            raise ReleaseError("storage_only_identity_invalid") from None
+        self.inspect()
+        for image in protected:
+            if command(["docker", "image", "inspect", "--format", "{{.Id}}", image],
+                       reason="storage_only_identity_invalid").decode().strip() != image:
+                raise ReleaseError("storage_only_identity_invalid")
+        if json_command(["docker", "image", "inspect", "--format", IMAGE_REVISION, journal["rollback_image"]],
+                        reason="storage_only_identity_invalid") != journal["rollback_sha"]:
+            raise ReleaseError("storage_only_identity_invalid")
+        self.verify(self.app_id, self.image, self.sha)
+        return protected
+
+    def maintain_storage(self):
         with release_lock(self.root):
-            self.inspect()
-            self.retain()
+            protected = self.verified_running_release()
+            report = self.retention_report("storage_maintained", protected)
+            self.verify(self.app_id, self.image, self.sha)
+            return report
+
+    def migration_fingerprint(self):
+        return hashlib.sha256(json.dumps(self.migrations, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+
+    def fresh_verified_backup(self, now=None):
+        from release_retention import fresh_daily_backup
+        try:
+            return fresh_daily_backup(self.root, self.migration_fingerprint(), self.schema_sha256, now)
+        except (OSError, ValueError):
+            raise ReleaseError("daily_backup_verification_failed") from None
+
+    def daily_full_backup(self):
+        with release_lock(self.root):
+            protected = self.verified_running_release()
+            now = datetime.datetime.now(datetime.timezone.utc)
+            captured = self.fresh_verified_backup(now)
+            if captured is not None and captured.date() == now.date():
+                return {"status": "daily_backup_already_completed", "sha": self.sha, "image": self.image}
+            self.journal = self.daily_journal
+            self.daily_receipt = {"kind": "daily", "migration_fingerprint": self.migration_fingerprint(),
+                                  "schema_sha256": self.schema_sha256}
             try:
                 self.stop()
                 self.backup()
+                self.verify(self.app_id, self.image, self.sha)
+                self.state("daily_backup_completed")
+            except (Exception, KeyboardInterrupt) as error:
+                reason = str(error) if isinstance(error, ReleaseError) else "database_backup_failed"
+                with recovery_signals():
+                    if self.stopped:
+                        self.resume_original()
+                    if reason != "restore_cleanup_failed":
+                        self.state("daily_backup_failed")
+                raise ReleaseError(reason) from None
+            return self.retention_report("daily_backup_completed", protected)
+
+    def apply(self):
+        with release_lock(self.root):
+            self.inspect()
+            if self.daily_policy and self.fresh_verified_backup() is None:
+                raise ReleaseError("daily_backup_not_fresh")
+            self.retain()
+            try:
+                if not self.daily_policy:
+                    self.stop()
+                    self.backup()
                 if self.config_fingerprint() != self.config_before or self.live_migrations(self.db_id) != self.migrations:
                     raise ReleaseError("configuration_changed_during_backup")
                 self.verify(self.app_id, self.current_image, None)
@@ -428,7 +540,6 @@ class Release:
                 self.cutover = True
                 self.switch(self.image, self.sha)
                 self.state("released")
-                return {"status": "released", "sha": self.sha, "image": self.image}
             except (Exception, KeyboardInterrupt) as error:
                 reason = str(error) if isinstance(error, ReleaseError) else "release_failed"
                 with recovery_signals():
@@ -445,6 +556,8 @@ class Release:
                         self.state("rollback_failed")
                         raise ReleaseError("rollback_failed") from None
 
+            return self.retention_report("released")
+
 
 class SafeParser(argparse.ArgumentParser):
     def error(self, message):
@@ -456,6 +569,9 @@ def main():
     for name in ("sha", "image", "rollback-sha", "rollback-image", "compose-sha256", "expected-current-image"):
         parser.add_argument("--" + name, required=True)
     parser.add_argument("--allowed-proxy-image", default=None)
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--storage-only", action="store_true")
+    mode.add_argument("--daily-full-backup", action="store_true")
     def interrupted(_signum, _frame):
         # Once recovery begins, a repeated signal must not interrupt it again.
         for sig in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP):
@@ -464,13 +580,23 @@ def main():
     for sig in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP):
         signal.signal(sig, interrupted)
     try:
-        report = Release(**vars(parser.parse_args())).apply()
+        options = vars(parser.parse_args())
+        storage_only = options.pop("storage_only")
+        daily_full_backup = options.pop("daily_full_backup")
+        release = Release(**options, retention_enabled=True, daily_policy=True)
+        if daily_full_backup:
+            report = release.daily_full_backup()
+        elif storage_only:
+            report = release.maintain_storage()
+        else:
+            report = release.apply()
     except ReleaseError as error:
         report = {"status": "blocked", "reason": str(error)}
     except BaseException:
         report = {"status": "blocked", "reason": "release_executor_failed"}
     print(json.dumps(report, sort_keys=True, separators=(",", ":")))
-    return 0 if report["status"] == "released" else 1
+    return 0 if report["status"] in ("released", "storage_maintained", "daily_backup_completed",
+                                     "daily_backup_already_completed") else 1
 
 
 if __name__ == "__main__":

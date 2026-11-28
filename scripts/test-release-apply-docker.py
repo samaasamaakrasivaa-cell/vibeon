@@ -18,6 +18,7 @@ from unittest.mock import patch
 import uuid
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "deploy"))
 spec = importlib.util.spec_from_file_location("fixture_release", ROOT / "deploy/release-apply.py")
 delivery = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(delivery)
@@ -137,8 +138,8 @@ def main():
             # with a bind mount: optional Labels/Name/PortBindings may be absent.
             run(["docker", "run", "-d", "--name", unlabelled, "--network", "none", "--mount", "type=bind,source=" + str(context) + ",target=/fixture,readonly", "--entrypoint", "sh", "postgres:16-alpine", "-c", "sleep 600"])
 
-            def engine(sha, rollback_sha, cls=delivery.Release):
-                instance = cls(sha, images[sha], rollback_sha, images[rollback_sha], compose_hash, images[rollback_sha], deployment)
+            def engine(sha, rollback_sha, cls=delivery.Release, daily=False):
+                instance = cls(sha, images[sha], rollback_sha, images[rollback_sha], compose_hash, images[rollback_sha], deployment, daily_policy=daily)
                 engines.append(instance)
                 return instance
 
@@ -164,7 +165,19 @@ def main():
                     raise RuntimeError("backup_failure_contract_failed")
                 original_command(["docker", "exec", app_id, "node", "-e", "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"], reason="fixture_original_not_resumed")
 
-                released = engine(CANDIDATE_SHA, INITIAL_SHA).apply()
+                daily = engine(INITIAL_SHA, INITIAL_SHA, daily=True)
+                delivery.atomic_json(daily.override, daily.override_content(images[INITIAL_SHA], INITIAL_SHA))
+                daily.current_image = images[INITIAL_SHA]
+                daily.state("released")
+                before = daily.journal.read_bytes()
+                if daily.daily_full_backup().get("status") != "daily_backup_completed":
+                    raise RuntimeError("daily_backup_not_completed")
+                if (deployment / "release-state.json").read_bytes() != before:
+                    raise RuntimeError("daily_backup_replaced_release_journal")
+                if engine(INITIAL_SHA, INITIAL_SHA, daily=True).daily_full_backup().get("status") != "daily_backup_already_completed":
+                    raise RuntimeError("same_day_backup_not_deduplicated")
+
+                released = engine(CANDIDATE_SHA, INITIAL_SHA, daily=True).apply()
                 if released.get("status") != "released":
                     raise RuntimeError("fixture_release_" + released.get("reason", "failed"))
                 if (root / "REVISION").read_text().strip() != CANDIDATE_SHA:
@@ -182,7 +195,7 @@ def main():
                             run(["docker", "exec", container, "node", "-e", "require('fs').writeFileSync('/app/uploads/third.txt','accepted-after-cutover')"])
                         return super().verify(container, image, sha)
 
-                rolled_back = engine(BAD_SHA, CANDIDATE_SHA, PostCutoverWrite).apply()
+                rolled_back = engine(BAD_SHA, CANDIDATE_SHA, PostCutoverWrite, daily=True).apply()
                 if rolled_back.get("status") != "rolled_back" or rolled_back.get("reason") != "app_health_failed":
                     raise RuntimeError("fixture_rollback_" + rolled_back.get("reason", "failed"))
                 if (root / "REVISION").read_text().strip() != CANDIDATE_SHA:
@@ -195,9 +208,9 @@ def main():
                 if uploads != "initial-upload,after-first-release,accepted-after-cutover":
                     raise RuntimeError("rollback_lost_uploads")
                 verified = list((deployment / "backups/releases").glob("*/verified.json"))
-                if len(verified) != 2:
+                if len(verified) != 1 or json.loads(verified[0].read_text()).get("kind") != "daily":
                     raise RuntimeError("backup_restore_rehearsal_not_verified")
-            print(json.dumps({"status": "passed", "scenarios": ["backup_failure_resumes_original", "verified_snapshot_and_release", "failed_candidate_rolls_back_without_data_loss", "optional_docker_fields"], "production_contact": False}))
+            print(json.dumps({"status": "passed", "scenarios": ["backup_failure_resumes_original", "verified_daily_snapshot", "same_day_backup_idempotent", "routine_release_reuses_daily_snapshot", "failed_candidate_rolls_back_without_data_loss", "optional_docker_fields"], "production_contact": False}))
         finally:
             for instance in engines:
                 if instance.restore_container:
