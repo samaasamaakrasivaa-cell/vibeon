@@ -8,9 +8,9 @@
     "base_sha": "47fa1c441d0dfff1e2423db146912175e544ab08",
     "branch": "codex/teacher/lesson-analysis-navigation",
     "head_sha": "933f29d9bdffbe0c23d3c8a38b7004a58c30f316",
-    "next": "Получен допуск Tech Lead, суточная копия проверена. Ветка синхронизирована с main и проходит точные CI и ревью перед общим выпуском.",
+    "next": "CI и независимое ревью нового SHA зелёные. Общее дерево с актуальной main и #85 проверено. Ожидается завершение выпуска #83 по согласованной очереди.",
     "pr": 86,
-    "stage": "review",
+    "stage": "integration",
     "test_run": 46121482608
   },
   "release": null,
