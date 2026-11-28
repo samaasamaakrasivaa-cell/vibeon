@@ -14,7 +14,25 @@
     "stage": "publication",
     "test_run": 46152777890
   },
-  "release": null,
+  "release": {
+    "ci": {
+      "result": "success",
+      "run": 46152777890,
+      "sha": "ba9302cad72b93b4d2d3214c09e4249dad6a0a02"
+    },
+    "delivery": {
+      "result": "success",
+      "run": 46154922297,
+      "sha": "6b57ad51f4d7d48fe661461f9ab52b2d1fc18098"
+    },
+    "owner_note": "Для владельца: Кабинет преподавателя и расписание — в «Что нового» кнопки одинаковой ширины, а галочка, кнопка и крестик выровнены по первой строке уведомления.",
+    "review": {
+      "comment": 7239846581,
+      "result": "success",
+      "sha": "ba9302cad72b93b4d2d3214c09e4249dad6a0a02"
+    },
+    "site_sha": "6b57ad51f4d7d48fe661461f9ab52b2d1fc18098"
+  },
   "source": "direct",
   "version": 1
 }
