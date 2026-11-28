@@ -18,12 +18,13 @@ type WeekEvent = {
   action: string;
 };
 
-export async function StudentHomeWeek({ studentId, tz, now, day, hasWordGoal }: {
+export async function StudentHomeWeek({ studentId, tz, now, day, hasWordGoal, shownLessonId }: {
   studentId: string;
   tz: string;
   now: Date;
   day?: string;
   hasWordGoal: boolean;
+  shownLessonId?: string;
 }) {
   const { t, lang } = await getT();
   const today = isoDay(now, tz);
@@ -74,7 +75,8 @@ export async function StudentHomeWeek({ studentId, tz, now, day, hasWordGoal }: 
     }
   }
 
-  const selectedEvents = (events.get(selected) ?? []).sort((a, b) => a.startMin - b.startMin);
+  const selectedEvents = events.get(selected) ?? [];
+  const otherEvents = selectedEvents.filter((event) => event.key !== `lesson:${shownLessonId}`).sort((a, b) => a.startMin - b.startMin);
   const locale = lang === "ru" ? "ru-RU" : "en-GB";
   const plural = new Intl.PluralRules(locale);
   const eventCount = (n: number) => {
@@ -102,21 +104,23 @@ export async function StudentHomeWeek({ studentId, tz, now, day, hasWordGoal }: 
           </Link>
         ))}
       </nav>
-      <div className="mt-4">
-        <h4 className="mb-2 mt-0 capitalize">{selected === today ? t("dash.today") : longDate.format(calendarDate(selected))}</h4>
-        {selectedEvents.length ? (
-          <ul className="m-0 grid list-none gap-2 p-0">
-            {selectedEvents.map((event) => (
-              <li key={event.key} className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl bg-surface2 px-3 py-2">
-                <time dateTime={event.dateTime} className="font-semibold tabular-nums">{event.time}</time>
-                <Icon name={event.icon} size="sm" />
-                <span className="min-w-0 flex-1 break-words">{event.title}</span>
-                <Link href={event.href} prefetch={false} className="btn secondary sm">{event.action}</Link>
-              </li>
-            ))}
-          </ul>
-        ) : <p className="small muted m-0">{t("st.weekNoEvents")}</p>}
-      </div>
+      {(otherEvents.length > 0 || selectedEvents.length === 0) && (
+        <div className="mt-4">
+          <h4 className="mb-2 mt-0 capitalize">{selected === today ? t("dash.today") : longDate.format(calendarDate(selected))}</h4>
+          {otherEvents.length > 0 ? (
+            <ul className="m-0 grid list-none gap-2 p-0">
+              {otherEvents.map((event) => (
+                <li key={event.key} className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl bg-surface2 px-3 py-2">
+                  <time dateTime={event.dateTime} className="font-semibold tabular-nums">{event.time}</time>
+                  <Icon name={event.icon} size="sm" />
+                  <span className="min-w-0 flex-1 break-words">{event.title}</span>
+                  <Link href={event.href} prefetch={false} className="btn secondary sm">{event.action}</Link>
+                </li>
+              ))}
+            </ul>
+          ) : <p className="small muted m-0">{t("st.weekNoEvents")}</p>}
+        </div>
+      )}
     </section>
   );
 }

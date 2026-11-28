@@ -50,11 +50,10 @@ export async function StudentLessonCard({ lesson, current, callLink, homework, t
             <span>{datePart("month")}</span>
             <span className="sr-only">{datePart("year")}</span>
           </time>
-          <div>
-            <div className="student-lesson-hours">
-              <time dateTime={start.toISOString()}>{hhmm(start, tz)}</time>–<time dateTime={end.toISOString()}>{hhmm(end, tz)}</time>
-            </div>
-            {current && <span className="small font-semibold">{t("today.live")}</span>}
+          <div className="tl-time student-lesson-hours">
+            <b><time dateTime={start.toISOString()}>{hhmm(start, tz)}</time></b>
+            <span><time dateTime={end.toISOString()}>{hhmm(end, tz)}</time></span>
+            {current && <em>{t("today.live")}</em>}
           </div>
         </div>
         <div className="tl-main min-w-0">

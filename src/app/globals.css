@@ -2812,13 +2812,19 @@ details.prblock[open] .prchev { transform: rotate(180deg); }
 .hintcard { display: flex; gap: 12px; align-items: flex-start; }
 .hintcard > .i { color: var(--accent); flex: none; margin-top: 2px; }
 /* Главная ученика */
+.student-home-page {
+  --student-home-panel-inset: 28px;
+  --student-home-inner-inset: 16px;
+  --student-home-action-width: clamp(190px, 22vw, 250px);
+}
+.student-home-main { padding-inline: var(--student-home-panel-inset); }
 .student-greeting-clock { max-width: 100%; }
 .student-lesson-heading {
   margin: 0 0 12px; font-size: clamp(19px, 3vw, 24px); line-height: 1.25; letter-spacing: -.025em;
 }
 .tl.student-lesson-grid {
-  grid-template-columns: 120px minmax(0, 1fr) clamp(190px, 22vw, 250px);
-  gap: 16px 20px;
+  grid-template-columns: 120px minmax(0, 1fr) var(--student-home-action-width);
+  padding-inline: var(--student-home-inner-inset); gap: 16px 20px;
 }
 .student-lesson-grid .tl-main { overflow-wrap: anywhere; }
 .student-lesson-grid .tl-act { width: auto; min-width: 0; padding-top: 2px; }
@@ -2835,7 +2841,7 @@ details.prblock[open] .prchev { transform: rotate(180deg); }
 .student-lesson-weekday { color: var(--accent-text); font-weight: 700; }
 .student-lesson-weekday::first-letter { text-transform: uppercase; }
 .student-lesson-date b { font-size: 34px; line-height: 1; font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; }
-.student-lesson-hours { font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.student-lesson-hours { padding-top: 0; }
 .student-lesson-countdown {
   display: block; grid-column: 1 / -1; padding-top: 9px; border-top: 1px solid var(--sep);
   font-size: 13px; color: var(--text2); font-variant-numeric: tabular-nums;
@@ -2859,13 +2865,17 @@ details.prblock[open] .prchev { transform: rotate(180deg); }
 .student-home-task {
   --student-task-accent: #7842d0;
   display: grid; justify-items: start; gap: 12px;
-  min-width: 0; padding: clamp(16px, 2.4vw, 23px); border-radius: 22px;
+  min-width: 0; padding: clamp(16px, 2.4vw, 23px) calc(var(--student-home-inner-inset) - 1px); border-radius: 22px;
   border: 1px solid var(--sep); background: var(--surface);
 }
 .student-home-words { margin-top: 7px; }
-.student-home-placement { --student-task-accent: #006ad7; margin-block: 20px; }
+.student-home-placement {
+  --student-task-accent: #006ad7;
+  padding-inline: calc(var(--student-home-panel-inset) + var(--student-home-inner-inset) - 1px);
+  margin-block: 20px;
+}
 .student-home-placement-active {
-  color: #fff; border-color: transparent;
+  margin-top: 0; color: #fff; border-color: transparent;
   background: radial-gradient(110% 140% at 0 0, #007fba 0%, transparent 54%), linear-gradient(125deg, #0064c3, #3647ca 54%, #6734ae);
 }
 .student-home-placement-active .muted { color: rgba(255,255,255,.92); }
@@ -2877,11 +2887,13 @@ details.prblock[open] .prchev { transform: rotate(180deg); }
 }
 .student-home-placement-active .student-home-task-icon { background: rgba(255,255,255,.16); box-shadow: inset 0 0 0 1px rgba(255,255,255,.34); }
 .student-home-task-body { width: 100%; font-size: 14px; }
-.student-home-task .btn { height: auto; min-height: 36px; padding-block: 7px; white-space: normal; text-align: center; }
+.student-home-task > .btn { width: 100%; height: auto; min-height: 36px; padding-block: 7px; white-space: normal; text-align: center; }
+.student-home-placement-active > .btn { min-height: 40px; }
 .student-home-word-count { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 12px; margin-bottom: 6px; }
-@media (min-width: 761px) {
-  .student-home-task { grid-template-columns: minmax(0, 1fr) auto; column-gap: 24px; }
+@media (min-width: 801px) {
+  .student-home-task { grid-template-columns: minmax(0, 1fr) var(--student-home-action-width); column-gap: 24px; }
   .student-home-task > .btn { grid-column: 2; grid-row: 1 / span 2; align-self: center; }
+  .student-home-placement-active > .btn { align-self: start; }
 }
 @media (max-width: 800px) {
   .tl.student-lesson-grid { grid-template-columns: 114px minmax(0, 1fr); }
@@ -2889,10 +2901,13 @@ details.prblock[open] .prchev { transform: rotate(180deg); }
   .student-lesson-grid .student-lesson-no-call { max-width: none; }
   .student-lesson-grid .tl-quick { justify-content: flex-start; }
 }
+@media (max-width: 760px) {
+  .student-home-page { --student-home-panel-inset: 16px; --student-home-inner-inset: 12px; }
+}
 @media (max-width: 520px) {
   .tl.student-lesson-grid { padding: 12px; gap: 12px; grid-template-columns: minmax(0, 1fr); }
   .student-lesson-time { grid-template-columns: auto minmax(0, 1fr); align-items: center; column-gap: 12px; }
-  .student-lesson-homework .student-homework-link, .student-home-task > .btn { width: 100%; }
+  .student-lesson-homework .student-homework-link { width: 100%; }
 }
 @media (max-width: 480px) {
   .student-greeting-clock > div > div { padding-inline: 13px; }

@@ -107,10 +107,54 @@ export default async function StudentHome({ searchParams }: { searchParams: Prom
   const allDone = !homeworkPending && !pendingHomework && done >= goal && wordsTotal > 0;
   const ago = (d: Date) => { const m = Math.round((now.getTime() - d.getTime()) / 60000); return m < 60 ? t("nt.minAgo", { n: Math.max(1, m) }) : m < 1440 ? t("nt.hAgo", { n: Math.round(m / 60) }) : d.toLocaleDateString(loc, { day: "numeric", month: "long", timeZone: tz }); };
 
+  const wordTrainingToday = !needsWordGoal && wordsTotal > 0 && wordTime !== null;
+  const wordsCard = (
+    <section className="student-home-task student-home-words" aria-labelledby="student-words-title">
+      <header className="student-home-task-head">
+        <span className="student-home-task-icon" aria-hidden="true"><Icon name="cards" /></span>
+        <div className="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-1">
+          <h3 id="student-words-title">{t(wordTrainingToday ? "st.wordPractice" : "nav.words")}</h3>
+          {wordTrainingToday && <span className="small muted">{t("st.wordPracticeAt", { time: wordTime })}</span>}
+        </div>
+      </header>
+      {needsWordGoal || wordsTotal === 0 ? <p className="student-home-task-body m-0 muted">{t(needsWordGoal ? "tips.words" : "st.noWordsYet")}</p> : (
+        <div className="student-home-task-body">
+          {done === 0 && <p className="m-0 mb-2 muted">{t("st.wordsNotStarted")}</p>}
+          {done >= goal && <p className="m-0 mb-2 font-semibold">{t("st.wordsDone")}</p>}
+          <div className="student-home-word-count small">
+            <b>{t("st.doneOf", { n: done, total: goal })}</b>
+            <span className="muted">{dueWords ? t("st.due", { n: dueWords }) : t("st.noWordsDue")}</span>
+          </div>
+          <span className="hwbar block" role="progressbar" aria-label={t("st.wordPractice")} aria-valuemin={0} aria-valuemax={goal} aria-valuenow={done}><i style={{ width: `${(done / goal) * 100}%` }} /></span>
+        </div>
+      )}
+      {needsWordGoal ? <Link href="/student/words?goal=1" className="btn primary sm"><Icon name="target" size="sm" />{t("tips.wordsT")}</Link> :
+          wordsTotal === 0 ? <Link href="/student/words?tab=list" className="btn secondary sm">{t("st.openDictionary")}</Link> :
+          <Link href={dueWords ? "/student/words?train=today" : "/student/words?train=all"} className="btn primary sm"><Icon name="cards" size="sm" />{t(dueWords ? "st.startTraining" : "st.reviewWords")}</Link>}
+    </section>
+  );
+
   return (
-    <div className="page">
+    <div className="page student-home-page">
+      {testLink && (
+        <section className="student-home-task student-home-placement student-home-placement-active" aria-labelledby="student-placement-title">
+          <header className="student-home-task-head">
+            <span className="student-home-task-icon" aria-hidden="true"><Icon name="target" /></span>
+            <div className="min-w-0">
+              <h3 id="student-placement-title">{t(taking?.status === "active" ? "st.placementInProgress" : "pl.cardNew")}</h3>
+              {taking?.track === "teen" && <span className="small muted">{t("plt.title")}</span>}
+            </div>
+          </header>
+          <Link href={testLink} className="btn plwhite"><Icon name="target" size="sm" />{t(taking?.status === "active" ? "pl.continue" : "pl.start")}</Link>
+          <div className="student-home-task-body">
+            <p className="m-0 font-semibold">{t("st.placementIntro")}</p>
+            <p className="m-0 mt-1 muted">{t("st.placementHonest")} {t("st.placementHelp")}</p>
+            {taking && <p className="m-0 mt-2 small muted">{t("pl.cardSub")}</p>}
+          </div>
+        </section>
+      )}
       {tips && <StartTips tips={tips} />}
-      <section className="card">
+      <section className="card student-home-main">
         {s?.avatarNotice && <AvatarNotice id={s.id} avatar={s.avatar} />}
         <div className="flex flex-wrap items-center justify-between gap-6 border-b border-sep pb-6">
           <div className={mains.length && s ? "stgreet" : undefined}>
@@ -142,50 +186,11 @@ export default async function StudentHome({ searchParams }: { searchParams: Prom
 
         <div className="mt-5 flex flex-col gap-3">
           <StudentLessonCard lesson={shownLesson} current={!!current} callLink={callLink} homework={homeworkForLesson} tz={tz} now={now} />
-          <section className="student-home-task student-home-words" aria-labelledby="student-words-title">
-            <header className="student-home-task-head">
-              <span className="student-home-task-icon" aria-hidden="true"><Icon name="cards" /></span>
-              <div className="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-1">
-                <h3 id="student-words-title">{t(needsWordGoal || !wordsTotal ? "nav.words" : "st.wordPractice")}</h3>
-                {!needsWordGoal && wordsTotal > 0 && wordTime && <span className="small muted">{t("st.wordPracticeAt", { time: wordTime })}</span>}
-              </div>
-            </header>
-            {needsWordGoal || wordsTotal === 0 ? <p className="student-home-task-body m-0 muted">{t(needsWordGoal ? "tips.words" : "st.noWordsYet")}</p> : (
-              <div className="student-home-task-body">
-                {done === 0 && <p className="m-0 mb-2 muted">{t("st.wordsNotStarted")}</p>}
-                {done >= goal && <p className="m-0 mb-2 font-semibold">{t("st.wordsDone")}</p>}
-                <div className="student-home-word-count small">
-                  <b>{t("st.doneOf", { n: done, total: goal })}</b>
-                  <span className="muted">{dueWords ? t("st.due", { n: dueWords }) : t("st.noWordsDue")}</span>
-                </div>
-                <span className="hwbar block" role="progressbar" aria-label={t("st.wordPractice")} aria-valuemin={0} aria-valuemax={goal} aria-valuenow={done}><i style={{ width: `${(done / goal) * 100}%` }} /></span>
-              </div>
-            )}
-            {needsWordGoal ? <Link href="/student/words?goal=1" className="btn primary sm"><Icon name="target" size="sm" />{t("tips.wordsT")}</Link> :
-                wordsTotal === 0 ? <Link href="/student/words?tab=list" className="btn secondary sm">{t("st.openDictionary")}</Link> :
-                <Link href={dueWords ? "/student/words?train=today" : "/student/words?train=all"} className="btn primary sm"><Icon name="cards" size="sm" />{t(dueWords ? "st.startTraining" : "st.reviewWords")}</Link>}
-          </section>
-          {s && <StudentHomeWeek studentId={s.id} day={d} tz={tz} now={now} hasWordGoal={!needsWordGoal} />}
+          {wordTrainingToday && wordsCard}
+          {s && <StudentHomeWeek studentId={s.id} day={d} tz={tz} now={now} hasWordGoal={!needsWordGoal} shownLessonId={shownLesson?.id} />}
+          {!wordTrainingToday && wordsCard}
         </div>
       </section>
-
-      {testLink && (
-        <section className="student-home-task student-home-placement student-home-placement-active" aria-labelledby="student-placement-title">
-          <header className="student-home-task-head">
-            <span className="student-home-task-icon" aria-hidden="true"><Icon name="target" /></span>
-            <div className="min-w-0">
-              <h3 id="student-placement-title">{t(taking?.status === "active" ? "st.placementInProgress" : "pl.cardNew")}</h3>
-              {taking?.track === "teen" && <span className="small muted">{t("plt.title")}</span>}
-            </div>
-          </header>
-          <div className="student-home-task-body">
-            <p className="m-0 font-semibold">{t("st.placementIntro")}</p>
-            <p className="m-0 mt-1 muted">{t("st.placementHonest")} {t("st.placementHelp")}</p>
-            {taking && <p className="m-0 mt-2 small muted">{t("pl.cardSub")}</p>}
-          </div>
-          <Link href={testLink} className="btn plwhite sm"><Icon name="target" size="sm" />{t(taking?.status === "active" ? "pl.continue" : "pl.start")}</Link>
-        </section>
-      )}
 
       {!testLink && publishedTest && resultLink && (
         <section className="student-home-task student-home-placement" aria-labelledby="student-placement-title">
