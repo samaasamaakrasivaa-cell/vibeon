@@ -1,10 +1,15 @@
 {
   "claim_id": "2bd5c6190d4248d3886130c71a128af4",
   "handoff": null,
-  "issue": null,
+  "issue": 125,
   "key": "DIRECT-STUDENT-SECTION-TABS-DASHBOARD",
   "owner": "student",
-  "progress": null,
+  "progress": {
+    "base_sha": "6b57ad51f4d7d48fe661461f9ab52b2d1fc18098",
+    "branch": "codex/student/section-tabs-dashboard",
+    "next": "Выровнять главные вкладки, усилить кнопки первых шагов и показать дневную цель слов. Проверить браузером и пройти штатный выпуск.",
+    "stage": "implementation"
+  },
   "release": null,
   "source": "direct",
   "version": 1
