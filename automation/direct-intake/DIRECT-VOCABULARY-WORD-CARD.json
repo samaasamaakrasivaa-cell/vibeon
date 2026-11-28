@@ -8,9 +8,9 @@
     "base_sha": "daacd5bf1e2f13c4c0b063f5db07f2f47c887dbc",
     "branch": "codex/vocabulary-training/word-card-details",
     "head_sha": "82450c8e5566a2ae1a506bfcf3ae41ab3aabb479",
-    "next": "Chromium прошёл. Дождаться CI и независимого ревью на проверенном SHA.",
+    "next": "CI, ревью и Chromium прошли. Автопроверка требует явное разрешение на merge PR №97 и рабочий выпуск.",
     "pr": 97,
-    "stage": "review",
+    "stage": "blocked",
     "test_run": 46130707159
   },
   "release": null,
