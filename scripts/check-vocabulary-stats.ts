@@ -5,6 +5,7 @@ import { spawn, spawnSync } from "node:child_process";
 import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { addDaysIso, isoDay } from "../src/lib/time";
 
 if (process.env.GITHUB_ACTIONS !== "true" || process.env.DATABASE_URL !== "postgresql://vibeon:vibeon@localhost:5432/vibeon") {
   throw new Error("VOC-09 test requires the disposable GitHub Actions PostgreSQL service");
@@ -14,7 +15,7 @@ const origin = "http://127.0.0.1:3000";
 const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 const users: string[] = [];
 const suffix = randomUUID();
-const teacherPage = "/teacher/students?tab=profiles";
+const teacherPage = "/teacher/students?tab=vocabulary";
 const studentPage = (id: string) => "/teacher/students/" + id + "?tab=progress";
 
 async function user(name: string, role: "TEACHER" | "STUDENT") {
@@ -33,12 +34,18 @@ async function page(path: string, token: string, lang = "en") {
   return { status: res.status, location: res.headers.get("location"), html: await res.text() };
 }
 
-function stats(html: string, scope: "active" | "student", expected: Record<string, string | number>) {
+function stats(html: string, scope: "vocabulary" | "student", expected: Record<string, string | number>) {
   assert(html.includes('data-vocabulary-stats="' + scope + '"'), "missing vocabulary card: " + scope);
   for (const [key, value] of Object.entries(expected)) {
     const match = html.match(new RegExp('data-vocab-metric="' + key + '"[^>]*data-value="([^"]*)"'));
     assert.equal(match?.[1], String(value), "metric " + key);
   }
+}
+
+function vocabularyCard(html: string, studentId: string) {
+  const start = html.indexOf(`aria-labelledby="vocabulary-${studentId}"`);
+  assert(start >= 0, "missing student in vocabulary tab");
+  return html.slice(start, html.indexOf("</article>", start));
 }
 
 /** Use the existing runner's browser and Chrome DevTools protocol; no installs or external navigation. */
@@ -92,18 +99,20 @@ async function browserCheck(token: string, paths: string[]) {
       await call("Emulation.setDeviceMetricsOverride", { width, height: 900, deviceScaleFactor: 1, mobile: width === 320 });
       for (const path of paths) {
         await call("Page.navigate", { url: origin + path });
-        let bounds: { viewport: number; left: number; right: number; scroll: number; client: number } | null = null;
+        let bounds: { viewport: number; left: number; right: number; scroll: number; client: number }[] | null = null;
         for (let i = 0; i < 100; i++) {
           const result = await call("Runtime.evaluate", { returnByValue: true, expression:
-            "(() => { const el = document.querySelector('[data-vocabulary-stats]'); if (!el || document.readyState !== 'complete' || location.pathname + location.search !== " +
-            JSON.stringify(path) + ") return null; const r = el.getBoundingClientRect(); return { viewport: innerWidth, left: r.left, right: r.right, scroll: el.scrollWidth, client: el.clientWidth }; })()" });
+            "(() => { const cards = [...document.querySelectorAll('[data-vocabulary-stats]')]; if (!cards.length || document.readyState !== 'complete' || location.pathname + location.search !== " +
+            JSON.stringify(path) + ") return null; return cards.map(el => { const r = el.getBoundingClientRect(); return { viewport: innerWidth, left: r.left, right: r.right, scroll: el.scrollWidth, client: el.clientWidth }; }); })()" });
           bounds = result.result?.value ?? null;
           if (bounds) break;
           await sleep(200);
         }
         assert(bounds, "Vocabulary card did not render in browser");
-        assert.equal(bounds.viewport, width, "unexpected layout viewport");
-        assert(bounds.client > 0 && bounds.left >= -1 && bounds.right <= width + 1 && bounds.scroll <= bounds.client + 1, "Vocabulary card overflows viewport at " + width);
+        for (const card of bounds) {
+          assert.equal(card.viewport, width, "unexpected layout viewport");
+          assert(card.client > 0 && card.left >= -1 && card.right <= width + 1 && card.scroll <= card.client + 1, "Vocabulary card overflows viewport at " + width);
+        }
       }
     }
   } finally {
@@ -119,13 +128,16 @@ async function main() {
   const a = await user("voc09-teacher-a", "TEACHER");
   const b = await user("voc09-teacher-b", "TEACHER");
   const learner = await user("voc09-student", "STUDENT");
-  const one = await db.student.create({ data: { teacherId: a.id, userId: learner.id, name: "VOC09 one", gender: "f", status: "ACTIVE" } });
+  const timezone = "Pacific/Kiritimati";
+  const today = isoDay(new Date(), timezone);
+  const prev = addDaysIso(today, -7);
+  const one = await db.student.create({ data: { teacherId: a.id, userId: learner.id, name: "VOC09 one", gender: "f", status: "ACTIVE", timezone } });
   const empty = await db.student.create({ data: { teacherId: a.id, name: "VOC09 empty", gender: "f", status: "ACTIVE" } });
   const archived = await db.student.create({ data: { teacherId: a.id, name: "VOC09 archived", gender: "f", status: "ARCHIVED" } });
   const foreign = await db.student.create({ data: { teacherId: b.id, name: "VOC09 foreign", gender: "f", status: "ACTIVE" } });
   const at = new Date("2026-01-02T08:00:00Z");
   await db.word.createMany({ data: [
-    { studentId: one.id, word: "one", sourceLessonId: "synthetic-lesson", createdAt: at },
+    { studentId: one.id, word: "one", level: 4, sourceLessonId: "synthetic-lesson", createdAt: at },
     { studentId: one.id, word: "two", sourceLessonId: "synthetic-lesson", createdAt: at },
     { studentId: one.id, word: "three", createdAt: at },
     { studentId: one.id, word: "four", sourceLessonId: "", createdAt: at },
@@ -134,16 +146,30 @@ async function main() {
   ] });
   await db.wordPractice.createMany({ data: [
     { studentId: one.id, day: "2026-01-01", count: 2 },
-    { studentId: one.id, day: "2026-01-03", count: 3 },
-    { studentId: one.id, day: "2026-01-04", count: 0 },
+    { studentId: one.id, day: today, count: 3 },
+    { studentId: one.id, day: addDaysIso(today, -1), count: 0 },
+    { studentId: one.id, day: addDaysIso(today, -6), count: 4 },
+    { studentId: one.id, day: prev, count: 8 },
     { studentId: archived.id, day: "2026-01-05", count: 88 },
     { studentId: foreign.id, day: "2026-01-06", count: 99 },
   ] });
-  const common = { words: 4, linked: 2, unlinked: 2, practiced: 5, lastPracticeDay: "2026-01-03" };
-  let result = await page(teacherPage, a.token);
+  const common = { words: 4, linked: 2, unlinked: 2, practiced: 17, lastPracticeDay: today };
+  const tabMetrics = { total: 4, learned: 1, studying: 3, days: 2, reviews: 7 };
+  let result = await page("/teacher/students?tab=profiles", a.token);
   assert.equal(result.status, 200);
-  stats(result.html, "active", { students: 2, ...common });
-  assert(result.html.includes("Active students&#x27; vocabulary") || result.html.includes("Active students' vocabulary"));
+  assert(!result.html.includes('data-vocabulary-stats='), "profiles still show vocabulary stats");
+  result = await page(teacherPage, a.token);
+  assert.equal(result.status, 200);
+  const populated = vocabularyCard(result.html, one.id);
+  stats(populated, "vocabulary", tabMetrics);
+  assert(populated.includes(`datetime="${today}"`) || populated.includes(`dateTime="${today}"`));
+  assert.equal((populated.match(/data-day=/g) ?? []).length, 14);
+  assert(populated.includes(`data-day="${prev}" data-count="8"`));
+  stats(vocabularyCard(result.html, empty.id), "vocabulary", { total: 0, learned: 0, studying: 0, days: 0, reviews: 0 });
+  assert(result.html.includes("No practice yet"));
+  assert(!result.html.includes(`aria-labelledby="vocabulary-${archived.id}"`) && !result.html.includes(`aria-labelledby="vocabulary-${foreign.id}"`));
+  result = await page(teacherPage, a.token, "ru");
+  assert(result.html.includes("Словари") && result.html.includes("Активность за 14 дней"));
   result = await page(studentPage(one.id), a.token, "ru");
   assert.equal(result.status, 200);
   stats(result.html, "student", common);
@@ -157,20 +183,21 @@ async function main() {
   stats(result.html, "student", { words: 1, practiced: 88 });
   result = await page(teacherPage, b.token);
   assert.equal(result.status, 200);
-  stats(result.html, "active", { students: 1, words: 1, practiced: 99 });
+  stats(vocabularyCard(result.html, foreign.id), "vocabulary", { total: 1, learned: 0, studying: 1 });
+  assert(!result.html.includes(`aria-labelledby="vocabulary-${one.id}"`));
   for (const [path, token] of [[studentPage(one.id), b.token], [studentPage(foreign.id), a.token], [studentPage(one.id), learner.token], [teacherPage, learner.token]]) {
     result = await page(path, token);
     assert(!result.html.includes('data-vocabulary-stats="'), "foreign or wrong-role stats exposed");
     assert(result.status === 404 || (result.status >= 300 && result.status < 400) || result.html.includes("NEXT_REDIRECT") || result.html.includes("NEXT_HTTP_ERROR_FALLBACK;404"), "expected denial or redirect");
   }
-  await db.wordPractice.update({ where: { studentId_day: { studentId: one.id, day: "2026-01-03" } }, data: { count: { increment: 1 } } });
+  await db.wordPractice.update({ where: { studentId_day: { studentId: one.id, day: today } }, data: { count: { increment: 1 } } });
   result = await page(teacherPage, a.token);
-  stats(result.html, "active", { students: 2, ...common, practiced: 6 });
+  stats(vocabularyCard(result.html, one.id), "vocabulary", { ...tabMetrics, reviews: 8 });
   result = await page(studentPage(one.id), a.token);
-  stats(result.html, "student", { ...common, practiced: 6 });
+  stats(result.html, "student", { ...common, practiced: 18 });
   await browserCheck(a.token, [teacherPage, studentPage(one.id)]);
   assert.equal(await db.word.count({ where: { studentId: one.id } }), 4);
-  assert.equal((await db.wordPractice.findUniqueOrThrow({ where: { studentId_day: { studentId: one.id, day: "2026-01-03" } } })).count, 4);
+  assert.equal((await db.wordPractice.findUniqueOrThrow({ where: { studentId_day: { studentId: one.id, day: today } } })).count, 4);
   console.log("VOC-09: teacher scope, student scope, archive/foreign/role denial, empty/legacy source, repeat, RU/EN, mobile 320px and desktop 1280px passed");
 }
 

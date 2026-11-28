@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { Icon } from "@/components/Icon";
 import { BuyPack, MessageButton, PaidButton } from "@/components/student/PaymentsParts";
+import { SectionTabs } from "@/components/student/SectionTabs";
 import { requireUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { getT } from "@/lib/i18n/server";
@@ -53,10 +53,10 @@ export default async function Payments({ searchParams }: { searchParams: Promise
   return (
     <div className="page">
       <h1 className="mb-5">{t("nav.payments")}</h1>
-      <nav className="tabsbar fit mb-6">
-        <Link href="?tab=tariff" aria-current={tab === "tariff" ? "page" : undefined}>{t("pay.tariff")}</Link>
-        <Link href="?tab=bills" aria-current={tab === "bills" ? "page" : undefined}>{t("pay.bills")}{open.some((i) => i.status === "SENT") && <span className="dot ml-1.5" style={{ background: "var(--warn)" }} />}</Link>
-      </nav>
+      <SectionTabs wide label={t("nav.payments")} items={[
+        { href: "?tab=tariff", label: t("pay.tariff"), active: tab === "tariff" },
+        { href: "?tab=bills", label: t("pay.bills"), active: tab === "bills", attention: open.some((i) => i.status === "SENT") ? t("pay.billed") : undefined },
+      ]} />
 
       {tab === "tariff" && (s.payType === "PACK" ? (
         <>

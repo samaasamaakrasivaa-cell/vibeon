@@ -203,7 +203,7 @@ export default async function Finance({ searchParams }: { searchParams: Promise<
                   </div>
                   <span className="amt">{R(i.amount)}</span>
                   <InvoiceEdit id={i.id} />
-                  <CheckActions id={i.id} proofAt={i.proofAt?.toISOString()} kind={checkTab as "waiting" | "toCheck" | "auto"} />
+                  <CheckActions id={i.id} kind={checkTab as "waiting" | "toCheck" | "auto"} />
                 </div>
               );
             })}

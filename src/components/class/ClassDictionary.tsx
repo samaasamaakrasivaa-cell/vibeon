@@ -2,16 +2,22 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useT } from "@/lib/i18n/client";
+import type { WordConfirmation } from "@/lib/student/save-personal-word";
+import { wordTranslations } from "@/lib/student/word-translations";
+import { Dialog } from "../Dialog";
 import { Icon } from "../Icon";
 
 type Lookup = { translations: string[] } | { error: string };
-type SavedWord = { ok: boolean; status?: "added" | "updated" | "existing"; translation?: string | null };
+export type SavedWord =
+  | { ok: true; status: "added" | "updated" | "existing"; translation: string | null }
+  | { ok: true; status: "confirm"; existing: WordConfirmation & { word: string }; value: string }
+  | { ok: false };
 type Props = {
   lessonId: string;
   preview: boolean;
   canSave: boolean;
   recipient?: string;
-  save: (word: string, translation: string) => Promise<SavedWord>;
+  save: (word: string, translation: string, confirmation?: WordConfirmation) => Promise<SavedWord>;
 };
 
 export function ClassDictionary({ lessonId, preview, canSave, recipient, save }: Props) {
@@ -27,6 +33,9 @@ export function ClassDictionary({ lessonId, preview, canSave, recipient, save }:
   useEffect(() => () => request.current?.abort(), []);
 
   const word = query.trim();
+  const confirmation = saved?.ok && saved.status === "confirm" ? saved : null;
+  const success = saved?.ok && (saved.status === "added" || saved.status === "updated") ? saved : null;
+  const current = wordTranslations(confirmation?.existing.translation ?? null).join("; ");
   const options = lookup && "translations" in lookup ? lookup.translations : [];
   const lookupMessage = lookup && "error" in lookup
     ? t(lookup.error === "input" ? "cls.dictInput" : lookup.error === "limit" ? "cls.dictLimit" : "cls.dictUnavailable")
@@ -58,12 +67,12 @@ export function ClassDictionary({ lessonId, preview, canSave, recipient, save }:
     }
   };
 
-  const add = async (candidate: string) => {
-    if (!word || !candidate.trim() || preview || !canSave || saving || saved?.ok) return;
+  const add = async (candidate: string, expected?: WordConfirmation) => {
+    if (!word || !candidate.trim() || preview || !canSave || saving || success) return;
     setSaving(true);
     setSaved(null);
     try {
-      setSaved(await save(word, candidate.trim()));
+      setSaved(await save(word, candidate.trim(), expected));
     } catch {
       setSaved({ ok: false });
     } finally {
@@ -92,16 +101,30 @@ export function ClassDictionary({ lessonId, preview, canSave, recipient, save }:
       <div role="status" className="small mt-2">
         {loading && t("cls.dictLoading")}
         {lookupMessage}
-        {saved?.ok && <span className="text-ok">{t(saved.status === "updated" ? "cls.dictUpdated" : "cls.dictSaved", { word, translation: saved.translation ?? "—" })}</span>}
+        {success && <span className="text-ok">{t(success.status === "updated" ? "cls.dictUpdated" : "cls.dictSaved", { word, translation: wordTranslations(success.translation).join("; ") || "—" })}</span>}
+        {saved?.ok && saved.status === "existing" && <span>{t("wd.wordExists")}</span>}
         {saved && !saved.ok && <span className="text-bad">{t("cls.dictSaveFailed")}</span>}
       </div>
+      {confirmation && (
+        <Dialog open title={t("wd.updateTranslation")} onClose={() => { if (!saving) setSaved(null); }}>
+          <p className="m-0 break-words">{t("wd.addTranslation", { word: confirmation.existing.word, value: confirmation.value })}</p>
+          {current && <p className="small muted mt-2 mb-0 break-words">{t("wd.currentTranslation", { value: current })}</p>}
+          <div className="actions">
+            <button type="button" className="btn secondary" disabled={saving} onClick={() => setSaved(null)}>{t("common.cancel")}</button>
+            <button type="button" className="btn primary" disabled={saving}
+              onClick={() => void add(confirmation.value, { id: confirmation.existing.id, translation: confirmation.existing.translation })}>
+              {t("wd.updateTranslation")}
+            </button>
+          </div>
+        </Dialog>
+      )}
       {options.length > 0 && (
         <ul className="mt-2 flex flex-col gap-2">
           {options.map((option) => (
             <li key={option} className="flex items-center justify-between gap-2">
               <span><b>{word}</b> — {option}</span>
               {canSave && !preview && (
-                <button type="button" className="iconbtn wplus" disabled={saving || saved?.ok}
+                <button type="button" className="iconbtn wplus" disabled={saving || !!success}
                   aria-label={t("cls.dictAdd", { translation: option })} onClick={() => void add(option)}>
                   <Icon name="plus" size="sm" />
                 </button>
@@ -112,7 +135,7 @@ export function ClassDictionary({ lessonId, preview, canSave, recipient, save }:
       )}
       {word && (
         <div className="mt-3 flex flex-col gap-2">
-          {canSave && !preview && !saved?.ok && (
+          {canSave && !preview && !success && (
             <>
               <button type="button" className="btn plain sm self-start" aria-expanded={manual} onClick={() => setManual(!manual)}>{t("cls.dictManual")}</button>
               {manual && (

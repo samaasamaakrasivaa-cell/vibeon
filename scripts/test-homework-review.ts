@@ -1,11 +1,34 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { countsAsAutoCheckedHomework, currentHomeworkAnswers, isAssignedHomeworkTask, needsHomeworkReview } from "../src/lib/homework-review";
+import { assignedHomeworkTasks, setHomeworkAssignment } from "../src/lib/tasks/homework-selection";
 
 const essay = { id: "essay", type: "essay", content: "Explain your choice.", options: {}, section: "homework", hidden: false };
 const essayAnswer = { text: "I chose the longer route." };
 const assigned = { manual: true, extraTaskIds: [essay.id] };
 const pending = "NEEDS_REVIEW";
+
+test("a fresh homework only contains exercises assigned from the lesson or prepared section", () => {
+  const inClass = { ...essay, id: "lesson-exercise", section: "lesson" };
+  const tasks = [inClass, essay];
+  const fresh = { manual: true, taskIds: [], extraTaskIds: [], removedTaskIds: [] };
+  assert.deepEqual(assignedHomeworkTasks(tasks, fresh), []);
+  const picked = setHomeworkAssignment(fresh, [essay, inClass], true);
+  assert.deepEqual(assignedHomeworkTasks(tasks, { ...fresh, ...picked }), [essay, inClass]);
+  assert.deepEqual(setHomeworkAssignment({ ...fresh, ...picked }, [essay, inClass], true), picked);
+  assert.deepEqual(assignedHomeworkTasks(tasks, { ...fresh, ...setHomeworkAssignment({ ...fresh, ...picked }, [essay], false) }), [inClass]);
+});
+
+test("legacy prepared homework can be removed and reassigned without showing duplicates", () => {
+  const legacy = { manual: false, taskIds: [essay.id], extraTaskIds: [essay.id], removedTaskIds: [] };
+  assert.deepEqual(assignedHomeworkTasks([essay], legacy), [essay]);
+  const removed = { ...legacy, ...setHomeworkAssignment(legacy, [essay], false) };
+  assert.deepEqual(assignedHomeworkTasks([essay], removed), []);
+  assert.equal(isAssignedHomeworkTask(essay, removed), false);
+  const assignedAgain = { ...legacy, ...setHomeworkAssignment(removed, [essay], true) };
+  assert.deepEqual(assignedHomeworkTasks([essay], assignedAgain), [essay]);
+  assert.equal(isAssignedHomeworkTask(essay, assignedAgain), true);
+});
 
 test("the review signal requires a complete actionable answer without a teacher decision", () => {
   assert.equal(needsHomeworkReview(essay, assigned, essayAnswer, pending, false), true);
