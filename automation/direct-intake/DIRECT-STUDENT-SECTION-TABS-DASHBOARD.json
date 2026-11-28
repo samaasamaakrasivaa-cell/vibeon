@@ -14,7 +14,25 @@
     "stage": "publication",
     "test_run": 46158126936
   },
-  "release": null,
+  "release": {
+    "ci": {
+      "result": "success",
+      "run": 46158126936,
+      "sha": "22a16eab02202755a249cdad462c3e7b6a3dd01d"
+    },
+    "delivery": {
+      "result": "success",
+      "run": 46159117305,
+      "sha": "f8d9bf25b193a0540c73df132857db5f2e93abce"
+    },
+    "owner_note": "Для владельца: Кабинет ученика — верхние вкладки распределены по ширине, первые шаги заметнее, а на главной показаны цель и прогресс тренировки слов.",
+    "review": {
+      "comment": 7241239124,
+      "result": "success",
+      "sha": "22a16eab02202755a249cdad462c3e7b6a3dd01d"
+    },
+    "site_sha": "f8d9bf25b193a0540c73df132857db5f2e93abce"
+  },
   "source": "direct",
   "version": 1
 }
