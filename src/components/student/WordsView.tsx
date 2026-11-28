@@ -1,14 +1,14 @@
 "use client";
 import Link from "next/link";
-import { useMemo, useState, useTransition } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Dialog } from "../Dialog";
 import { Icon } from "../Icon";
 import { useT } from "@/lib/i18n/client";
-import { addMyWord, deleteMyWord, practiceResult, setWordGoal, updateMyWord } from "@/lib/student/actions";
+import { addMyWord, deleteMyWord, enrichMyWord, practiceResult, setWordGoal, updateMyWord } from "@/lib/student/actions";
 import { dictationGrade, shuffle } from "@/lib/tasks/parse";
 
-export type W = { id: string; word: string; translation: string | null; example: string | null; ownExample: string | null; level: number; due: boolean };
+export type W = { id: string; word: string; translation: string | null; definition: string | null; ipa: string | null; enrich: boolean; example: string | null; ownExample: string | null; level: number; due: boolean };
 type Props = { words: W[]; goal: number; days: number[]; remindAt: string; doneToday: number; week: { label: string; done: boolean; planned: boolean; today: boolean }[]; streak: number; train: "today" | "all" | null; tab: "overview" | "list"; editGoal: boolean };
 
 const say = (w: string, lang: string) => { if (typeof window === "undefined" || !("speechSynthesis" in window)) return; const u = new SpeechSynthesisUtterance(w); u.lang = lang; u.rate = 0.9; speechSynthesis.cancel(); speechSynthesis.speak(u); };
@@ -99,6 +99,67 @@ function GoalDialog({ p, onClose }: { p: Props; onClose: () => void }) {
   );
 }
 
+function PersonalWordDetails({ word }: { word: W }) {
+  const { t } = useT();
+  const area = useRef<HTMLDivElement>(null);
+  const inFlight = useRef(false);
+  const [result, setResult] = useState<Awaited<ReturnType<typeof enrichMyWord>> | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const load = useCallback(async () => {
+    if (inFlight.current) return;
+    inFlight.current = true;
+    setLoading(true);
+    setResult(null);
+    try {
+      setResult(await enrichMyWord(word.id));
+    } catch {
+      setResult({ ok: false, error: "unavailable" });
+    } finally {
+      setLoading(false);
+      inFlight.current = false;
+    }
+  }, [word.id]);
+
+  useEffect(() => {
+    if (!word.enrich || !area.current) return;
+    if (!("IntersectionObserver" in window)) {
+      void load();
+      return;
+    }
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry?.isIntersecting) return;
+      observer.disconnect();
+      void load();
+    });
+    observer.observe(area.current);
+    return () => observer.disconnect();
+  }, [load, word.enrich, word.translation]);
+
+  const completed = result?.ok ? result : null;
+  const definition = completed?.definition || word.definition;
+  const example = completed?.example || word.example;
+  const ipa = completed?.ipa || word.ipa;
+  return (
+    <div ref={area}>
+      <div className="flex flex-wrap items-baseline gap-x-2">
+        <b lang="en">{word.word}</b>
+        {ipa && <span className="small muted">{ipa}</span>}
+      </div>
+      {word.translation && <span className="small muted">{word.translation}</span>}
+      {definition && <div className="small mt-1"><b>{t("wd.cardDefinition")}</b> <span lang="en">{definition}</span></div>}
+      {example && <div className="small mt-1"><b>{t("wd.cardExample")}</b> <i lang="en">{example}</i></div>}
+      {loading && <p className="small muted mt-1 mb-0" role="status">{t("wd.cardLoading")}</p>}
+      {word.enrich && result && !result.ok && (
+        <div className="flex flex-wrap items-center gap-x-2">
+          <span className="small muted" role="status">{t(result.error === "limit" ? "wd.cardLimit" : "wd.cardUnavailable")}</span>
+          <button type="button" className="btn plain sm" onClick={() => void load()}>{t("wd.cardRetry")}</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function WordList({ words, accent }: { words: W[]; accent: string }) {
   const { t } = useT();
   const router = useRouter();
@@ -117,8 +178,7 @@ function WordList({ words, accent }: { words: W[]; accent: string }) {
           <div key={w.id} className="row" style={{ alignItems: "flex-start" }}>
             <button className="iconbtn" style={{ background: "var(--fill)" }} onClick={() => say(w.word, accent)} aria-label={t("tk.listen")}><Icon name="sound" size="sm" /></button>
             <div className="grow">
-              <b className="block">{w.word}</b><span className="small muted">{w.translation}</span>
-              {w.example && <div className="small mt-1"><i>{w.example}</i></div>}
+              <PersonalWordDetails word={w} />
               <input className="input mt-2" style={{ fontSize: 13, padding: "6px 10px" }} defaultValue={w.ownExample ?? ""} placeholder={t("tk.ownExample")} onBlur={(e) => e.target.value !== (w.ownExample ?? "") && updateMyWord(w.id, { ownExample: e.target.value })} aria-label={t("tk.ownExample")} />
             </div>
             <div className="text-right"><div className="flex justify-end gap-1">{[0, 1, 2, 3].map((i) => <i key={i} className="lvl" style={{ background: w.level > i ? "var(--accent)" : "var(--fill)" }} />)}</div><span className="small muted">{levels[w.level]}</span></div>

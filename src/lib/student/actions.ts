@@ -5,6 +5,9 @@ import { db } from "../db";
 import { requireUser } from "../auth/session";
 import { chatAccess } from "./access";
 import { getT } from "../i18n/server";
+import { AiError, lookupWordCard, scrub } from "../ai/gateway";
+import { wordCardInput } from "../ai/word-card";
+import { rateLimit } from "../rate-limit";
 import { publish } from "../live/bus";
 import { hashPassword, MIN_PASSWORD, verifyPassword } from "../auth/password";
 import { isoDay } from "../time";
@@ -125,6 +128,42 @@ export async function addMyWord(word: string, tr: string, ex: string): Promise<R
   await db.word.create({ data: { studentId: s.id, word: w, translation: str(tr, 200) || null, example: str(ex, 400) || null } });
   revalidatePath("/student/words");
   return { ok: true };
+}
+
+/** Дополняет только пустые поля личного слова. IPA остаётся в словарном кэше. */
+export async function enrichMyWord(id: string): Promise<
+  | { ok: true; definition: string | null; example: string | null; ipa: string | null }
+  | { ok: false; error: "not-found" | "limit" | "unavailable" }
+> {
+  const { u, s } = await myStudent();
+  if (typeof id !== "string" || id.length > 100) return { ok: false, error: "not-found" };
+  const word = await db.word.findFirst({ where: { id, studentId: s.id } });
+  if (!word) return { ok: false, error: "not-found" };
+
+  const input = wordCardInput(word.word, word.translation);
+  const names = [u.name, u.lastName, s.name, s.lastName];
+  if (!input || scrub(input.word, names) !== input.word || scrub(input.translation, names) !== input.translation) {
+    return { ok: false, error: "unavailable" };
+  }
+  if (!(await rateLimit(`word-card:${s.id}`, 20))) return { ok: false, error: "limit" };
+
+  try {
+    const details = await lookupWordCard(input, { userId: u.id, teacherId: s.teacherId });
+    const where = { id: word.id, studentId: s.id, word: word.word, translation: word.translation };
+    const writes = [];
+    if (!word.definition?.trim()) {
+      writes.push(db.word.updateMany({ where: { ...where, definition: word.definition }, data: { definition: details.definition } }));
+    }
+    if (!word.example?.trim()) {
+      writes.push(db.word.updateMany({ where: { ...where, example: word.example }, data: { example: details.example } }));
+    }
+    if (writes.length) await db.$transaction(writes);
+    const saved = await db.word.findFirst({ where, select: { definition: true, example: true } });
+    if (!saved) return { ok: false, error: "unavailable" };
+    return { ok: true, ...saved, ipa: details.ipa };
+  } catch (error) {
+    return { ok: false, error: error instanceof AiError && error.code === "limit" ? "limit" : "unavailable" };
+  }
 }
 
 export async function updateMyWord(id: string, f: { ownExample?: string; translation?: string }): Promise<R> {

@@ -2,9 +2,11 @@ import "server-only";
 import { createHash } from "node:crypto";
 import type { Prisma } from "@prisma/client";
 import { db } from "../db";
+import { withLock } from "../live/bus";
 import { chat, provider, studioChat, yandexOcr, yandexReady, yandexStt, yandexTts, type ChatRes, type LlmMsg, type LlmOpts } from "./providers";
 import { mockLlm } from "./mock-llm";
 import { dictionaryOptions, dictionaryPrompt, mockDictionary } from "./dictionary";
+import { mockWordCard, parseWordCard, wordCardPrompt, type WordCardInput } from "./word-card";
 import { SPECS, type Kind, type SpecIn, type SpecOut } from "./tasks";
 import { LESSON_ANALYSIS_MODEL, LESSON_ANALYSIS_OUTPUT_TOKENS, lessonAnalysisInput, parseLessonPractice } from "./lesson-analysis-plan";
 
@@ -28,7 +30,7 @@ export async function usage(teacherId: string) {
   return { used, limit };
 }
 
-async function guard(kind: Kind | "stt" | "tts" | "ocr" | "check" | "route" | "image" | "tts-script" | "dictionary", ctx: Ctx) {
+async function guard(kind: Kind | "stt" | "tts" | "ocr" | "check" | "route" | "image" | "tts-script" | "dictionary" | "word-card", ctx: Ctx) {
   if (!ctx.teacherId) return;
   const prof = await db.teacherProfile.findUnique({ where: { userId: ctx.teacherId }, select: { tariff: true } });
   if (prof?.tariff === "START" && PRO_ONLY.includes(kind)) throw new AiError("tariff");
@@ -125,19 +127,47 @@ export async function lookupDictionary(query: string, ctx: Ctx): Promise<string[
   return options;
 }
 
+export function wordCardKey(input: WordCardInput) {
+  const model = provider() === "mock" ? "mock" : DICTIONARY_MODEL;
+  return createHash("sha256").update(JSON.stringify(["word-card-v1", model, input.word, input.translation])).digest("hex");
+}
+
+export async function lookupWordCard(input: WordCardInput, ctx: Ctx) {
+  const key = wordCardKey(input);
+  return withLock(`word-card:${key}`, async () => {
+    const cached = parseWordCard((await db.aiCache.findUnique({ where: { key } }))?.value);
+    if (cached) return cached;
+
+    let details;
+    if (provider() === "mock") {
+      details = mockWordCard(input);
+    } else {
+      if (!yandexReady()) throw new AiError("off");
+      const response = await llmFor("word-card", ctx)(DICTIONARY_MODEL, [
+        { role: "system", content: wordCardPrompt },
+        { role: "user", content: JSON.stringify(input) },
+      ], { maxTokens: 180, temperature: 0, timeoutMs: 8000, dataLogging: false });
+      details = parseWordCard(JSON.parse(response.text.trim().replace(/^```(?:json)?\s*|\s*```$/gi, "")));
+    }
+    if (!details) throw new AiError("fail");
+    await db.aiCache.upsert({ where: { key }, create: { key, value: details }, update: { value: details } }).catch(() => undefined);
+    return details;
+  });
+}
+
 // ───────── Модели AI Studio для проверки работ и маршрута ─────────
 
 export type Llm = (model: string, messages: LlmMsg[], o?: LlmOpts) => Promise<ChatRes>;
 
 /** Вызов модели через шлюз: лимит тарифа, учёт каждого вызова (модель, токены, время). Личные данные убирает вызывающий код
  *  (проверка работ — со сдвигом позиций правок, см. check-core). В режиме mock — заглушка без сети. */
-export function llmFor(kind: "check" | "route", ctx: Ctx): Llm {
+export function llmFor(kind: "check" | "route" | "word-card", ctx: Ctx): Llm {
   return async (model, messages, o) => {
     await guard(kind, ctx);
     const t0 = Date.now();
     try {
       const res = provider() === "mock" ? await mockLlm(model, messages) : await studioChat(model, messages, o);
-      await log(kind, ctx, { model: res.model, tokensIn: res.tokensIn, tokensOut: res.tokensOut, ms: Date.now() - t0 });
+      await log(kind, ctx, { ...(kind === "word-card" ? { provider: "yandex" } : {}), model: res.model, tokensIn: res.tokensIn, tokensOut: res.tokensOut, ms: Date.now() - t0 });
       return res;
     } catch (e) {
       await log(kind, ctx, { ok: false, model, ms: Date.now() - t0 });
