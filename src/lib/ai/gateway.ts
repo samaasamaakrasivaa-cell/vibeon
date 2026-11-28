@@ -4,6 +4,7 @@ import type { Prisma } from "@prisma/client";
 import { db } from "../db";
 import { chat, provider, studioChat, yandexOcr, yandexReady, yandexStt, yandexTts, type ChatRes, type LlmMsg, type LlmOpts } from "./providers";
 import { mockLlm } from "./mock-llm";
+import { dictionaryOptions, dictionaryPrompt, mockDictionary } from "./dictionary";
 import { SPECS, type Kind, type SpecIn, type SpecOut } from "./tasks";
 import { LESSON_ANALYSIS_MODEL, LESSON_ANALYSIS_OUTPUT_TOKENS, lessonAnalysisInput, parseLessonPractice } from "./lesson-analysis-plan";
 
@@ -27,7 +28,7 @@ export async function usage(teacherId: string) {
   return { used, limit };
 }
 
-async function guard(kind: Kind | "stt" | "tts" | "ocr" | "check" | "route" | "image" | "tts-script", ctx: Ctx) {
+async function guard(kind: Kind | "stt" | "tts" | "ocr" | "check" | "route" | "image" | "tts-script" | "dictionary", ctx: Ctx) {
   if (!ctx.teacherId) return;
   const prof = await db.teacherProfile.findUnique({ where: { userId: ctx.teacherId }, select: { tariff: true } });
   if (prof?.tariff === "START" && PRO_ONLY.includes(kind)) throw new AiError("tariff");
@@ -88,6 +89,40 @@ export async function run<K extends Kind>(kind: K, input: SpecIn<K>, ctx: Ctx): 
   }
   if (key) await db.aiCache.upsert({ where: { key }, create: { key, value: out as Prisma.InputJsonValue }, update: { value: out as Prisma.InputJsonValue } }).catch(() => undefined);
   return out;
+}
+
+const DICTIONARY_MODEL = "aliceai-llm-flash/latest";
+
+/** Словарные подсказки общие для всех уроков. Ключ содержит только обезличенный запрос. */
+export async function lookupDictionary(query: string, ctx: Ctx): Promise<string[]> {
+  const mock = provider() === "mock";
+  const model = mock ? "mock" : DICTIONARY_MODEL;
+  const key = createHash("sha256").update(JSON.stringify(["dictionary-en-ru-v1", model, query])).digest("hex");
+  const cached = await db.aiCache.findUnique({ where: { key } });
+  if (cached) return dictionaryOptions(cached.value);
+
+  await guard("dictionary", ctx);
+  if (!mock && !yandexReady()) throw new AiError("off");
+  const started = Date.now();
+  let result: ChatRes;
+  try {
+    result = mock
+      ? { text: JSON.stringify(mockDictionary(query)), model, tokensIn: 0, tokensOut: 0 }
+      : await studioChat(model, [
+          { role: "system", content: dictionaryPrompt },
+          { role: "user", content: query },
+        ], { maxTokens: 100, temperature: 0, timeoutMs: 8000, dataLogging: false });
+  } catch {
+    await log("dictionary", ctx, { provider: "yandex", ok: false, model, ms: Date.now() - started });
+    throw new AiError("fail");
+  }
+  // Учитываем оплаченный ответ провайдера, даже если его формат оказался непригодным.
+  await log("dictionary", ctx, {
+    provider: mock ? "mock" : "yandex", model, tokensIn: result.tokensIn, tokensOut: result.tokensOut, ms: Date.now() - started,
+  });
+  const options = dictionaryOptions(JSON.parse(result.text.trim().replace(/^```(?:json)?\s*|\s*```$/gi, "")));
+  await db.aiCache.upsert({ where: { key }, create: { key, value: options }, update: { value: options } }).catch(() => undefined);
+  return options;
 }
 
 // ───────── Модели AI Studio для проверки работ и маршрута ─────────
