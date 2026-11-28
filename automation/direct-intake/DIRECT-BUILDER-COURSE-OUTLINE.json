@@ -7,11 +7,11 @@
   "progress": {
     "base_sha": "7aa0781b4f6046a2c1184426b6c76a9c9aa9d746",
     "branch": "codex/builder/course-outline",
-    "head_sha": "29d449070d5c4ca3e0ae3b7ab6c22007cd2142dc",
-    "next": "Сквозной прогон Builder на df8ab40: 10/10 тем, JSON 1218/1219. Результат в PR #117. Правка Roadmap #123 в Draft. Ожидаются интеграция и CI итогового SHA.",
+    "head_sha": "ad1ac8a497b89f7f750004c3e0465e354a313c28",
+    "next": "PR #123 интегрирован в #117. На ad1ac8a проверены 10/10 тем в запросе Roadmap, CI #117 прошёл. Результат зафиксирован в PR #117.",
     "pr": 117,
     "stage": "review",
-    "test_run": 46153645730
+    "test_run": 46158427960
   },
   "release": null,
   "source": "direct",
