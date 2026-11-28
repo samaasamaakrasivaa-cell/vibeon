@@ -5,7 +5,9 @@ import type { Prisma } from "@prisma/client";
 import { db } from "../db";
 import { outlineUnitOutcomes, type CourseOutline } from "../tasks/course-outline";
 import { cleanInfo } from "../tasks/teacher-info";
-import { verifyCourseOutlineDraft } from "./course-outline-draft";
+import { courseOutlineDraftLifetimeMs, verifyCourseOutlineDraft } from "./course-outline-draft";
+
+const outlineReceiptPrefix = "course-outline-receipt:";
 
 /** Writers of Unit.order take the same course lock before reading positions. */
 export function withCourseUnits<T>(courseId: string, teacherId: string, write: (tx: Prisma.TransactionClient) => Promise<T>) {
@@ -53,14 +55,13 @@ export function saveCourseOutlineUnits(courseId: string, teacherId: string, draf
   return withCourseUnits(courseId, teacherId, async (tx) => {
     const importId = verifyCourseOutlineDraft(draft, teacherId, courseId);
     if (!importId) return "invalid-draft";
-    const existingImport = { courseId, id: { startsWith: `${importId}-` } };
-    if (await tx.unit.findFirst({ where: existingImport, select: { id: true } })) return "saved";
+    const receiptKey = outlineReceiptPrefix + importId;
+    if (await tx.aiCache.findUnique({ where: { key: receiptKey }, select: { key: true } })) return "saved";
 
     const firstOrder = await nextUnitPosition(tx, courseId);
     for (const [index, unit] of plan.units.entries()) {
       await tx.unit.create({
         data: {
-          id: `${importId}-${index}`,
           courseId,
           title: unit.title,
           order: firstOrder + index,
@@ -80,6 +81,11 @@ export function saveCourseOutlineUnits(courseId: string, teacherId: string, draf
         },
       });
     }
+    // Keep a receipt through the replay window, even if the imported units are later deleted.
+    await tx.aiCache.deleteMany({
+      where: { key: { startsWith: outlineReceiptPrefix }, createdAt: { lt: new Date(Date.now() - courseOutlineDraftLifetimeMs) } },
+    });
+    await tx.aiCache.create({ data: { key: receiptKey, value: true } });
     return "saved";
   });
 }

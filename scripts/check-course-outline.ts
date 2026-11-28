@@ -118,6 +118,11 @@ async function main() {
     ]), ["saved", "saved"]);
     assert.deepEqual(await db.unit.findMany({ where: { courseId: course }, orderBy: { order: "asc" }, select: { id: true } }),
       units.map(({ id }) => ({ id })));
+    await withCourseUnits(course, teacher, (tx) => tx.unit.deleteMany({
+      where: { courseId: course, id: { in: [units[importIndex].id, units[importIndex + 1].id] } },
+    }));
+    assert.equal(await saveCourseOutlineUnits(course, teacher, ticket, plan), "saved");
+    assert.equal(await db.unit.count({ where: { courseId: course } }), 3);
     console.log("Course outline: draft ownership, expiry, replay, and concurrent import, append, and reorder passed");
   } finally {
     await db.course.deleteMany({ where: { id: { in: courseIds } } });

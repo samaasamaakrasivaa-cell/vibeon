@@ -2,7 +2,7 @@ import "server-only";
 
 import { createHmac, randomUUID, timingSafeEqual } from "node:crypto";
 
-const draftLifetimeMs = 60 * 60 * 1_000;
+export const courseOutlineDraftLifetimeMs = 60 * 60 * 1_000;
 const draftPattern = /^([a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12})\.(\d{13})\.([A-Za-z0-9_-]{43})$/;
 
 function signingSecret() {
@@ -20,7 +20,7 @@ export function issueCourseOutlineDraft(teacherId: string, courseId: string, now
   const secret = signingSecret();
   if (!secret) return null;
   const id = randomUUID();
-  const expiresAt = String(now + draftLifetimeMs);
+  const expiresAt = String(now + courseOutlineDraftLifetimeMs);
   const signature = draftSignature(secret, teacherId, courseId, id, expiresAt);
   return `${id}.${expiresAt}.${signature}`;
 }
