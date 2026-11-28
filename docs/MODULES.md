@@ -51,7 +51,7 @@ AI & Quality отвечает за состав данных, передавае
 |---|---|---|
 | `src/lib/student/actions.ts`, главная и `src/lib/study/` | Student | Vocabulary ведёт действия словаря и согласует показатели карточки на главной, `setWordGoal` и `setWordsTime`. |
 | `src/lib/tasks/parse.ts`, `wordset`, `vocab`, редактор, `TaskView` и печать | Builder | Vocabulary проверяет перенос, старые наборы и общую оценку диктанта. AI & Quality проверяет разметку генерируемых наборов. |
-| `ClassRoom.tsx`, страница класса и общий `api/class/[id]/act` | Live Classroom | Vocabulary проверяет `word` и сохранение слов в `finish`. Homework и Vocabulary проверяют `training` и карточки ДЗ. Classroom проверяет участников, события и завершение. |
+| `ClassRoom.tsx`, страница класса и общий `api/class/[id]/act` | Live Classroom | Vocabulary проверяет поштучное сохранение через `word`. Завершение урока не записывает слова в личный словарь. Homework и Vocabulary проверяют `training` и карточки ДЗ. Classroom проверяет участников, события и завершение. |
 | `src/lib/teacher/moments.ts` и `src/lib/roadmap/progress.ts` | Teacher и Roadmap соответственно | Vocabulary проверяет исходный дневной счётчик и критерий «выучено». Roadmap проверяет применение к прогнозу и отсутствие двойного учёта. |
 | `src/lib/notify/reminders.ts`, схема и правила доступа | Platform & Access | Vocabulary согласует условие напоминания, поля словаря и сохранность записей. Platform проверяет доставку и права. |
 | Провайдеры, промпты и генерация словарных подсказок | AI & Quality | Vocabulary определяет предметную необходимость подсказок и их включение в словарь. Builder проверяет их использование в учебных наборах. |
