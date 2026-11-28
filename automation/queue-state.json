@@ -13,14 +13,14 @@
   "lease": {
     "token": "2896543509264a3bba204a5549a89f74",
     "started_at": "2026-11-28T13:01:35.051744Z",
-    "expires_at": "2026-11-28T16:02:30.396701Z"
+    "expires_at": "2026-11-28T16:03:03.404267Z"
   },
   "checkpoint": {
     "issue": 25,
-    "stage": "prepare_merge",
+    "stage": "mark_ready",
     "branch": "codex/vocabulary/voc-09",
     "base_sha": "348c4a99fd27cbc8ee9ac813d2cdc07b7abdbc30",
-    "next": "Update PR evidence; then mark ready and merge only with current head SHA after rechecking main, review and policy. Direct health/version DNS unavailable; CD-01 last release confirmed from logs.",
+    "next": "PR evidence updated and read back, no automatic issue close. Mark draft ready once; recheck review status, PR head, main and policy, then merge with expected head. No duplicate manual review.",
     "head_sha": "9d3cb5ebcc719c4051fdc6bf56fb9146dfaf8b29",
     "pr": 54,
     "review_request_comment_id": 7238969762,
