@@ -7,11 +7,11 @@
   "progress": {
     "base_sha": "ff7dc26aa22c6626b408a58f2dfebc5a0e9febbf",
     "branch": "codex/ai-quality/private-lesson-dictation",
-    "head_sha": "fe2bcb9a0d4403de4b29d584edae35bdc0fea92b",
-    "next": "Интерфейс Roadmap перенесён. Дождаться решения о внешней обработке записи и расходах, затем подключить согласованный движок.",
+    "head_sha": "ee13db1246196ff88ee0f708a3a31813ba99650e",
+    "next": "Облачный поток подтверждён владельцем. Проверить релизную сборку и CI, затем выпустить PR #90.",
     "pr": 90,
-    "stage": "blocked",
-    "test_run": 46126603308
+    "stage": "review",
+    "test_run": 46127799149
   },
   "release": null,
   "source": "direct",
