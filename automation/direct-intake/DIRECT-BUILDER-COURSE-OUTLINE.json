@@ -8,9 +8,10 @@
     "base_sha": "7aa0781b4f6046a2c1184426b6c76a9c9aa9d746",
     "branch": "codex/builder/course-outline",
     "head_sha": "886846193b61f6072c02482c22418978df1dd42b",
-    "next": "Стык с Roadmap прошёл, 10/10 тем. Отдельный выпуск после №132 и допуска Tech Lead. Запрос в PR #117, комментарий 7242634625.",
+    "merge_sha": "d4454a0b7210c4aa534f9a3c9464fb0d9ca1536e",
+    "next": "PR #117 слит по допуску Tech Lead. Штатный CD 46182158795 проверяет отдельный выпуск на d4454a0. Ожидается публичный health.",
     "pr": 117,
-    "stage": "review",
+    "stage": "publication",
     "test_run": 46167901410
   },
   "release": null,
