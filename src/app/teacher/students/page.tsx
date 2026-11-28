@@ -1,5 +1,5 @@
-import { teacherVocabularyStats } from "@/lib/teacher/vocabulary-stats";
-import { VocabularyStatsCard } from "@/components/teacher/VocabularyStatsCard";
+import { activeTeacherVocabulary } from "@/lib/teacher/vocabulary-stats";
+import { StudentVocabularyTab } from "@/components/teacher/StudentVocabularyTab";
 import Link from "next/link";
 import { DeleteInvite, InviteButton, StudentsGrid, type Card } from "@/components/teacher/StudentsGrid";
 import { CopyLink, LinkMaker } from "@/components/teacher/InviteForm";
@@ -19,20 +19,21 @@ import { levelLine, levelsOf } from "@/lib/teacher/levels";
 
 export const metadata = { title: "Ученики" };
 
-const TABS = ["profiles", "roadmaps", "payments"] as const;
+const TABS = ["profiles", "roadmaps", "vocabulary", "payments"] as const;
 
 export default async function Students({ searchParams }: { searchParams: Promise<{ tab?: string; invite?: string }> }) {
   const { t, lang } = await getT();
   const me = await requireUser("TEACHER");
   const sp = await searchParams;
   const tab = sp.tab === "archive" ? "archive" : (TABS as readonly string[]).includes(sp.tab ?? "") ? sp.tab! : "profiles";
+  const vocabularyTab = tab === "vocabulary";
 
-  const all = await db.student.findMany({
+  const all = vocabularyTab ? [] : await db.student.findMany({
     where: { teacherId: me.id },
     include: { invites: { orderBy: { createdAt: "desc" }, take: 1 }, packs: { orderBy: { startsAt: "desc" }, take: 1 }, user: { select: { telegramChatId: true } }, awards: { where: { kind: "title", pinned: true, onMain: true, OR: [{ until: null }, { until: { gt: new Date() } }] }, take: 1, select: { name: true, icon: true, color: true } } },
     orderBy: [{ name: "asc" }],
   });
-  const groups = await db.group.findMany({ where: { teacherId: me.id }, include: { members: true }, orderBy: { createdAt: "asc" } });
+  const groups = vocabularyTab ? [] : await db.group.findMany({ where: { teacherId: me.id }, include: { members: true }, orderBy: { createdAt: "asc" } });
   // время группы в расписании: ближайшее занятие (и «каждую неделю», если это серия)
   const next = await Promise.all(groups.map((g) => db.lessonInstance.findFirst({ where: { groupId: g.id, status: "PLANNED", startsAt: { gt: new Date() } }, orderBy: { startsAt: "asc" }, select: { startsAt: true, seriesId: true, durationMin: true } })));
   const whenOf = (i: number) => {
@@ -45,7 +46,6 @@ export default async function Students({ searchParams }: { searchParams: Promise
       : `${l.startsAt.toLocaleDateString(loc, { weekday: "short", day: "numeric", month: "short", timeZone: me.timezone })}, ${time}`;
   };
   const active = all.filter((s) => s.status === "ACTIVE");
-  const vocabulary = tab === "profiles" ? await teacherVocabularyStats(me.id) : null;
   // «Оплата»: последний счёт каждого ученика (за какие уроки, оплачен ли) и когда закончится абонемент
   const dfmt = (d: Date) => d.toLocaleDateString(lang === "ru" ? "ru-RU" : "en-GB", { day: "numeric", month: "short", timeZone: me.timezone });
   // урок: «12 нояб (ср, 18:00)»
@@ -76,6 +76,10 @@ export default async function Students({ searchParams }: { searchParams: Promise
   }
   const invited = all.filter((s) => s.status === "INVITED");
   const archived = all.filter((s) => s.status === "ARCHIVED");
+  const [vocabulary, archivedCount] = vocabularyTab ? await Promise.all([
+    activeTeacherVocabulary(me.id),
+    db.student.count({ where: { teacherId: me.id, status: "ARCHIVED" } }),
+  ]) : [[], archived.length] as const;
   const full = (s: { name: string; lastName: string | null }) => [s.name, s.lastName].filter(Boolean).join(" ");
   // подпись карточки: уровень сейчас → цель · курс (а не почта)
   const lv = await levelsOf(all);
@@ -85,8 +89,8 @@ export default async function Students({ searchParams }: { searchParams: Promise
   });
   const loc = lang === "ru" ? "ru-RU" : "en-GB";
 
-  const tabLabel: Record<string, string> = {
-    profiles: t("stu.tab.profiles"), roadmaps: t("stu.tab.roadmaps"), payments: t("stu.tab.payments"),
+  const tabLabel: Record<(typeof TABS)[number], string> = {
+    profiles: t("stu.tab.profiles"), roadmaps: t("stu.tab.roadmaps"), vocabulary: t("stu.tab.vocabulary"), payments: t("stu.tab.payments"),
   };
 
   return (
@@ -94,7 +98,7 @@ export default async function Students({ searchParams }: { searchParams: Promise
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <h1>{t("nav.students")}</h1>
         <Link href={tab === "archive" ? "/teacher/students" : "/teacher/students?tab=archive"} className="btn secondary sm">
-          {tab === "archive" ? t("stu.backToActive") : `${t("stu.archive")} (${archived.length})`}
+          {tab === "archive" ? t("stu.backToActive") : `${t("stu.archive")} (${archivedCount})`}
         </Link>
       </div>
 
@@ -110,7 +114,6 @@ export default async function Students({ searchParams }: { searchParams: Promise
 
       {tab === "profiles" && (
         <>
-          {vocabulary && <VocabularyStatsCard stats={vocabulary} scope="active" lang={lang} timezone={me.timezone} />}
           <StudentsGrid title={t("stu.registered")} cards={active.map((s, i) => card(s, i, levelLine(lv.get(s.id)) || t("stu.noLevel")))} empty={t("inviteT.none")} />
           {/* группы: выбрать учеников галочками — и ставить группу в расписание одним занятием */}
           <Groups
@@ -146,6 +149,8 @@ export default async function Students({ searchParams }: { searchParams: Promise
           )}
         </>
       )}
+
+      {vocabularyTab && <StudentVocabularyTab students={vocabulary} />}
 
       {tab === "payments" && (
         active.length === 0 ? <section className="card"><p className="hint m-0">{t("inviteT.none")}</p></section> : (

@@ -1,0 +1,66 @@
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 25rem), 1fr));
+  gap: 16px;
+}
+
+.cards > .student {
+  min-width: 0;
+  margin: 0;
+  padding: 20px;
+}
+
+.header { margin-bottom: 16px; }
+.name { font-size: 20px; overflow-wrap: anywhere; }
+.name a { display: inline-flex; align-items: center; gap: 8px; }
+.name a:hover { color: var(--accent); }
+.name svg { color: var(--accent); }
+.last { margin: 5px 0 0; color: var(--text2); font-size: 13px; }
+.last time { color: var(--text); font-weight: 600; }
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+
+.metric {
+  display: grid;
+  grid-template-rows: auto auto;
+  align-items: start;
+  gap: 6px;
+  padding: 12px;
+  border-radius: 14px;
+  background: var(--metric-bg);
+}
+
+.total { --metric-bg: var(--accent-bg); --metric-icon: var(--accent-text); }
+.learned { --metric-bg: var(--ok-bg); --metric-icon: var(--ok-text); }
+.studying { --metric-bg: var(--violet-bg); --metric-icon: var(--violet); }
+.metric dt { grid-row: 2; color: var(--text2); font-size: 12px; line-height: 1.25; overflow-wrap: anywhere; }
+.metric dd { grid-row: 1; display: flex; justify-content: space-between; gap: 4px; margin: 0; font-size: clamp(19px, 3vw, 27px); font-weight: 700; line-height: 1.12; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.icon { display: grid; place-items: center; flex: none; width: 25px; height: 25px; border-radius: 8px; background: var(--surface); color: var(--metric-icon); }
+
+.activity { margin: 16px 0 0; padding-top: 14px; border-top: 1px solid var(--sep); }
+.activity figcaption { font-size: 14px; font-weight: 700; }
+.week { display: flex; flex-wrap: wrap; gap: 6px 20px; margin: 6px 0 10px; }
+.week > div { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 5px; }
+.week dt { color: var(--text2); font-size: 12px; }
+.week dd { order: -1; margin: 0; font-size: 13px; font-weight: 650; font-variant-numeric: tabular-nums; }
+.chart { display: grid; grid-template-columns: repeat(14, minmax(0, 1fr)); gap: 4px; height: 34px; list-style: none; margin: 0; padding: 0; }
+.chart li { display: flex; align-items: flex-end; min-width: 0; height: 100%; }
+.chart i { display: block; width: 100%; min-height: 2px; border-radius: 4px; background: var(--sep); }
+.chart i.active { min-height: 4px; background: var(--accent); }
+.dates { display: flex; justify-content: space-between; gap: 8px; margin-top: 3px; color: var(--text2); font-size: 11px; }
+
+@media (max-width: 480px) {
+  .cards > .student { padding: 14px; }
+  .metrics { gap: 6px; }
+  .metric { padding: 8px; gap: 4px; }
+  .icon { width: 20px; height: 20px; }
+}
+
+@media (max-width: 360px) {
+  .icon { display: none; }
+}
