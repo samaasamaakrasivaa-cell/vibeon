@@ -71,11 +71,19 @@ export default async function ClassPage({ params, searchParams }: { params: Prom
       const base = await carriedAnswers({ lessonIds: slot.map((x) => x.id), studentId: m.studentId!, templateId, before: host.startsAt });
       for (const [taskId, b] of base) {
         const i = allRows.findIndex((a) => a.lessonInstanceId === m.id && a.taskId === taskId && a.studentId === m.studentId);
-        if (i >= 0 && !isEmptyPayload(allRows[i].payload)) continue;
+        if (i >= 0 && (allRows[i].previousHomeworkAttemptId || !isEmptyPayload(allRows[i].payload))) continue;
         const cur = i >= 0 ? allRows[i] : null;
         const row = { ...(cur ?? { id: `carry-${taskId}`, lessonInstanceId: m.id, taskId, studentId: m.studentId!, lessonMs: 0, hwMs: 0, aiDraft: null, shownToStudent: false, createdAt: b.startsAt, updatedAt: b.startsAt }), payload: b.payload, status: b.status, teacherReview: b.teacherReview } as (typeof rows0)[number];
         if (i >= 0) allRows[i] = row; else allRows.push(row);
         if (!carriedFrom || b.startsAt > carriedFrom) carriedFrom = b.startsAt;
+      }
+    }
+  }
+  if (role === "student") {
+    for (const row of allRows) {
+      if (row.payload && typeof row.payload === "object" && !Array.isArray(row.payload)) {
+        const { corr: _privateCorrection, ...payload } = row.payload;
+        row.payload = payload;
       }
     }
   }
@@ -112,11 +120,16 @@ export default async function ClassPage({ params, searchParams }: { params: Prom
   };
   const members = slot.filter((x) => x.student).map((x) => ({ sid: x.student!.id, instanceId: x.id, userId: x.student!.userId, name: [x.student!.name, x.student!.lastName].filter(Boolean).join(" "), gender: x.student!.gender }));
   // Продолженные с другого урока ответы видны в задании, но сами по себе не требуют проверки этой домашки.
-  const homeworkReviewStatuses = role === "teacher" ? Object.fromEntries(members.map((m) => [
+  const homeworkReviewStatuses = Object.fromEntries(members.filter((m) => ids.includes(m.instanceId)).map((m) => [
     m.sid, Object.fromEntries(currentHomeworkAnswers(rows0, m.instanceId, m.sid)
       .filter((answer) => !isEmptyPayload(answer.payload))
       .map((answer) => [answer.taskId, answer.status])),
-  ])) : undefined;
+  ]));
+  const homeworkResubmissions = Object.fromEntries(members.filter((m) => ids.includes(m.instanceId)).map((m) => [
+    m.sid, Object.fromEntries(currentHomeworkAnswers(rows0, m.instanceId, m.sid)
+      .filter((answer) => answer.previousHomeworkAttemptId)
+      .map((answer) => [answer.taskId, answer.status])),
+  ]));
   const homeworkByLesson = new Map(otherHomework.map(({ lessonInstanceId, ...assignment }) => [lessonInstanceId, assignment]));
   const groupReviewAssignments = group && role === "teacher" ? Object.fromEntries(members.flatMap((m) => {
     const assignment = homeworkByLesson.get(m.instanceId);
@@ -145,6 +158,7 @@ export default async function ClassPage({ params, searchParams }: { params: Prom
     <ClassRoom
       d={{
         id, templateId: templateId, role, me: { id: user.id, name: user.name }, ...(preview ? { preview: true } : {}),
+        homeworkResubmissions,
         ...(group ? { group: { title: grp?.title ?? members.map((m) => m.name.split(" ")[0]).join(", "), members: role === "teacher" ? members : members.filter((m) => m.instanceId === lesson.id) } } : {}),
         ...(group && role === "teacher" ? { byStudent: Object.fromEntries(members.map((m) => [m.sid, pack(m.sid)])) } : {}),
         teacher: { id: teacherUser.id, name: teacherUser.name, lastName: teacherUser.lastName },

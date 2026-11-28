@@ -20,7 +20,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   const stream = new ReadableStream({
     start(ctrl) {
       const send = (event: string, data: unknown) => {
-        if (event === "word" && acc.role === "student" && (data as { sid: string }).sid !== acc.own.studentId) return;
+        if (acc.role === "student" && ["answer", "review", "retry", "reset", "word"].includes(event)) {
+          const { sid, key } = data as { sid: string; key?: string };
+          if (sid !== acc.own.studentId || (event === "answer" && key === "corr")) return;
+        }
         if (event === "finished") {
           const { lessons } = data as LessonFinishedEvent;
           if (acc.role === "student") {
@@ -34,6 +37,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         ctrl.enqueue(enc.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`));
       };
       const unsub = subscribe(ch, send);
+      const unsubTeacher = acc.role === "teacher" ? subscribe(`${ch}:teacher`, send) : undefined;
       join(ch, user.id, conn);
       publish(ch, "presence", { online: online(ch) });
       // раз в 20 секунд — пинг; заодно напоминаем всем, кто в классе (если чьё-то событие о входе потерялось)
@@ -42,7 +46,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       }, 20000);
       let done = false;
       // закрыть соединение — один раз (обрыв и отмена потока приходят оба)
-      cleanup = () => { if (done) return; done = true; clearInterval(ping); unsub(); leave(ch, user.id, conn); publish(ch, "presence", { online: online(ch) }); };
+      cleanup = () => { if (done) return; done = true; clearInterval(ping); unsub(); unsubTeacher?.(); leave(ch, user.id, conn); publish(ch, "presence", { online: online(ch) }); };
       req.signal.addEventListener("abort", () => { cleanup(); try { ctrl.close(); } catch { /* уже закрыто */ } });
     },
     cancel() { cleanup(); },

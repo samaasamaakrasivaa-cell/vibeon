@@ -1,6 +1,6 @@
 import "server-only";
 import { db } from "./db";
-import { currentHomeworkAnswers, homeworkTaskDone, isAssignedHomeworkTask, needsHomeworkReview } from "./homework-review";
+import { currentHomeworkAnswers, homeworkTaskDone, isAssignedHomeworkTask, isCompleteHomeworkResubmission, needsHomeworkReview } from "./homework-review";
 
 export type HwState = "review" | "partial" | "notdone" | "checked";
 
@@ -22,23 +22,31 @@ export async function homeworkFor(where: { teacherId?: string; studentId?: strin
   return lessons.map((l) => {
     const hw = l.homework!;
     const templateTasks = l.template?.tasks ?? [];
-    const assigned = lessonIds
-      ? templateTasks.filter((task) => isAssignedHomeworkTask(task, hw))
-      : templateTasks.filter((task) => (hw.taskIds.includes(task.id) || hw.extraTaskIds.includes(task.id)) && !hw.removedTaskIds.includes(task.id));
-    const materials = !!lessonIds && assigned.length > 0;
     const byTask = new Map(currentHomeworkAnswers(l.answers, l.id, l.studentId).map((a) => [a.taskId, a]));
+    const assigned = templateTasks.filter((task) => lessonIds || byTask.get(task.id)?.previousHomeworkAttemptId
+      ? isAssignedHomeworkTask(task, hw)
+      : (hw.taskIds.includes(task.id) || hw.extraTaskIds.includes(task.id)) && !hw.removedTaskIds.includes(task.id));
+    const materials = !!lessonIds && assigned.length > 0;
     // задания, в которых есть что делать; сделано — когда заполнено целиком (комментарии и исправления учителя не в счёт)
-    const tasks = assigned.map((t) => ({ t, done: homeworkTaskDone(t, byTask.get(t.id)?.payload) })).filter((x) => x.done !== null);
+    const tasks = assigned.map((t) => {
+      const answer = byTask.get(t.id);
+      const done = answer?.previousHomeworkAttemptId
+        ? answer.status !== "DRAFT" && isCompleteHomeworkResubmission(t, answer.payload)
+        : homeworkTaskDone(t, answer?.payload);
+      return { t, done };
+    }).filter((x) => x.done !== null);
     const doneTasks = tasks.filter((x) => x.done);
     const started = tasks.filter((x) => { const p = byTask.get(x.t.id)?.payload as Record<string, unknown> | undefined; return !!p && Object.keys(p).some((k) => !["gnotes", "corr", "corrSent", "hist", "tries", "checked", "rounds"].includes(k)); });
-    const needs = (l.template?.tasks ?? []).filter((task) => {
+    const pending = templateTasks.filter((task) => {
       const answer = byTask.get(task.id);
-      return needsHomeworkReview(task, hw, answer?.payload, answer?.status, !!answer?.teacherReview);
-    }).length;
+      return needsHomeworkReview(task, hw, answer?.payload, answer?.status, !!answer?.teacherReview, !!answer?.previousHomeworkAttemptId);
+    });
+    const needs = pending.length;
     const total = tasks.length;
     const done = doneTasks.length;
     const all = total > 0 && done >= total;
-    const state: HwState = all ? (needs > 0 ? "review" : "checked") : done > 0 || started.length > 0 ? "partial" : "notdone";
+    const submittedRevision = pending.some((task) => byTask.get(task.id)?.previousHomeworkAttemptId);
+    const state: HwState = submittedRevision || (all && needs > 0) ? "review" : all ? "checked" : done > 0 || started.length > 0 ? "partial" : "notdone";
     const needsRevision = assigned.some((task) => {
       const answer = byTask.get(task.id);
       return answer?.status === "REVIEWED" && (answer.teacherReview as { ok?: boolean } | null)?.ok === false && isAssignedHomeworkTask(task, hw);
@@ -48,6 +56,17 @@ export async function homeworkFor(where: { teacherId?: string; studentId?: strin
     const last = ans.reduce<Date | null>((m, a) => (!m || a.updatedAt > m ? a.updatedAt : m), null);
     // активное время над домашкой — вне урока по расписанию
     const timeMs = ans.reduce((a2, x) => a2 + x.hwMs, 0);
-    return { lesson: l, title: l.template?.title ?? "—", total, done, needs, state, lastAt: last, comment: hw.teacherComment, words: hw.wordTraining.length, timeMs, materials, needsRevision };
+    return { lesson: l, title: l.template?.title ?? "—", total, done, needs, state, lastAt: last, comment: hw.teacherComment, words: hw.wordTraining.length, timeMs, materials, needsRevision, submittedRevision };
   }).filter((h) => h.total > 0 || h.words > 0 || h.materials);
+}
+
+export function homeworkWaitingForReview(items: Awaited<ReturnType<typeof homeworkFor>>) {
+  const seen = new Set<string>();
+  return items.filter((item) => {
+    const studentId = item.lesson.studentId;
+    if (!studentId) return false;
+    const latest = !seen.has(studentId);
+    seen.add(studentId);
+    return item.state === "review" && (latest || item.submittedRevision);
+  });
 }

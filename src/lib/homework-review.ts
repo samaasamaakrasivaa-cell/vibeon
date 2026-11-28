@@ -39,9 +39,9 @@ export function homeworkTaskDone(task: Pick<HomeworkTask, "id" | "type" | "conte
   return steps ? summary(steps).done : null;
 }
 
-export function needsHomeworkReview(task: HomeworkTask, hw: HomeworkReviewAssignment | undefined, payload: unknown, status: string | undefined, hasReview: boolean) {
+export function needsHomeworkReview(task: HomeworkTask, hw: HomeworkReviewAssignment | undefined, payload: unknown, status: string | undefined, hasReview: boolean, resubmission = false) {
   return !!hw && status === "NEEDS_REVIEW" && !hasReview && canReviewHomeworkTask(task.type) &&
-    isAssignedHomeworkTask(task, hw) && homeworkTaskDone(task, payload) === true;
+    isAssignedHomeworkTask(task, hw) && (resubmission ? isCompleteHomeworkResubmission(task, payload) : homeworkTaskDone(task, payload) === true);
 }
 
 export function currentHomeworkAnswers<T extends { lessonInstanceId: string; studentId: string }>(rows: T[], lessonId: string, studentId: string | null) {
@@ -53,7 +53,7 @@ type HomeworkAttemptScope = {
   studentId: string;
 };
 
-type HomeworkAttempt = HomeworkAttemptScope & {
+export type HomeworkAttempt = HomeworkAttemptScope & {
   taskId: string;
   revision: number;
   payload: unknown;
@@ -73,7 +73,7 @@ function matchesHomeworkAttempt(scope: HomeworkAttemptScope, task: HomeworkTask,
     attempt.studentId === scope.studentId && attempt.taskId === task.id;
 }
 
-function wasReturnedForRevision(review: unknown) {
+export function wasReturnedForRevision(review: unknown) {
   return typeof review === "object" && review !== null && "ok" in review && review.ok === false;
 }
 
@@ -87,7 +87,7 @@ function isReturnedHomeworkAttempt(
     canReviewHomeworkTask(task.type) && attempt.status === "REVIEWED" && wasReturnedForRevision(attempt.teacherReview);
 }
 
-function isCompleteHomeworkResubmission(task: HomeworkTask, payload: unknown) {
+export function isCompleteHomeworkResubmission(task: HomeworkTask, payload: unknown) {
   if (task.type !== "translate" && task.type !== "transform") return homeworkTaskDone(task, payload) === true;
 
   // The answer form renders an input for each parsed row, including rows without an auto-check key.

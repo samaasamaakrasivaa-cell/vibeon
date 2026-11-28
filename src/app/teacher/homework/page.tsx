@@ -5,7 +5,7 @@ import { AnswerBox } from "@/components/teacher/AnswerBox";
 import { requireUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { getT } from "@/lib/i18n/server";
-import { homeworkFor } from "@/lib/homework";
+import { homeworkFor, homeworkWaitingForReview } from "@/lib/homework";
 import { initials } from "@/lib/invite";
 
 export const metadata = { title: "На проверку" };
@@ -36,7 +36,7 @@ export default async function ToReview({ searchParams }: { searchParams: Promise
   const lastDone = new Map((await db.lessonInstance.findMany({ where: { teacherId: me.id, status: "DONE", studentId: { in: noHw.map((s) => s.id) } }, orderBy: { startsAt: "desc" }, select: { id: true, studentId: true, startsAt: true, template: { select: { title: true } } } }))
     .reverse().map((l) => [l.studentId!, l]));
   const hwList = [...latest.values()];
-  const hw = { review: hwList.filter((h) => h.state === "review"), notdone: hwList.filter((h) => h.state === "notdone" || h.state === "partial"), checked: hwList.filter((h) => h.state === "checked") };
+  const hw = { review: homeworkWaitingForReview(items), notdone: hwList.filter((h) => h.state === "notdone" || h.state === "partial"), checked: hwList.filter((h) => h.state === "checked") };
   // ── тесты учеников
   const tests = await db.placementAttempt.findMany({ where: { teacherId: me.id, mode: "student", studentId: { not: null }, student: { status: "ACTIVE" } }, include: { student: true }, orderBy: { createdAt: "desc" }, take: 80 });
   const ts = { review: tests.filter((x) => x.status === "submitted"), assigned: tests.filter((x) => x.status === "new" || x.status === "active"), checked: tests.filter((x) => x.status === "reviewed").slice(0, 20) };
