@@ -7,8 +7,10 @@
   "progress": {
     "base_sha": "6b57ad51f4d7d48fe661461f9ab52b2d1fc18098",
     "branch": "codex/vocabulary-training/card-example-synonyms",
-    "next": "Оформить карточку, подчеркнуть слово в примере и показывать синонимы основного значения",
-    "stage": "implementation"
+    "head_sha": "7dad3d8cd4e1a429987fd2ad5288d832ce80053c",
+    "next": "Дождаться независимого ревью и CI; повторить браузерную проверку точного SHA",
+    "pr": 126,
+    "stage": "review"
   },
   "release": null,
   "source": "direct",
