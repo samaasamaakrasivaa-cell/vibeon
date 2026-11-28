@@ -136,32 +136,17 @@ export default async function StudentHome({ searchParams }: { searchParams: Prom
 
   return (
     <div className="page student-home-page">
-      {testLink && (
-        <section className="student-home-task student-home-placement student-home-placement-active" aria-labelledby="student-placement-title">
-          <header className="student-home-task-head">
-            <span className="student-home-task-icon" aria-hidden="true"><Icon name="target" /></span>
-            <div className="min-w-0">
-              <h3 id="student-placement-title">{t(taking?.status === "active" ? "st.placementInProgress" : "pl.cardNew")}</h3>
-              {taking?.track === "teen" && <span className="small muted">{t("plt.title")}</span>}
-            </div>
-          </header>
-          <Link href={testLink} className="btn plwhite"><Icon name="target" size="sm" />{t(taking?.status === "active" ? "pl.continue" : "pl.start")}</Link>
-          <div className="student-home-task-body">
-            <p className="m-0 font-semibold">{t("st.placementIntro")}</p>
-            <p className="m-0 mt-1 muted">{t("st.placementHonest")} {t("st.placementHelp")}</p>
-            {taking && <p className="m-0 mt-2 small muted">{t("pl.cardSub")}</p>}
-          </div>
-        </section>
-      )}
       {tips && <StartTips tips={tips} />}
       <section className="card student-home-main">
         {s?.avatarNotice && <AvatarNotice id={s.id} avatar={s.avatar} />}
-        <div className="flex flex-wrap items-center justify-between gap-6 border-b border-sep pb-6">
+        <div className="student-home-greeting">
           <div className={mains.length && s ? "stgreet" : undefined}>
             {mains.length > 0 && s && <Link href="/student/profile#avatar" className="stgreet-av" aria-label={t("av.title")}><StudentAvatar id={s.id} avatar={s.avatar} size={104} crown={!!pinned} /></Link>}
             <div className="min-w-0">
-              <div className="text-[19px] text-text2">{t(greetingKey(hourIn(tz)))}</div>
-              <div className="gname">{me.name}</div>
+              <div className="student-greeting-line">
+                <span>{t(greetingKey(hourIn(tz)))}</span>
+                <span className="gname">{me.name}</span>
+              </div>
               {pinned && (
                 <span className="awmainline" tabIndex={0}>
                   <Medal icon={pinned.icon} color={pinned.color} size={34} />
@@ -181,10 +166,26 @@ export default async function StudentHome({ searchParams }: { searchParams: Prom
               )}
             </div>
           </div>
-          <div className="student-greeting-clock"><Clock lang={lang} tz={tz} /></div>
+          <Clock lang={lang} tz={tz} compact />
         </div>
 
         <div className="mt-5 flex flex-col gap-3">
+          {testLink && (
+            <section className="student-home-task student-home-placement student-home-placement-active" aria-labelledby="student-placement-title">
+              <header className="student-home-task-head">
+                <span className="student-home-task-icon" aria-hidden="true"><Icon name="target" /></span>
+                <div className="min-w-0">
+                  <h3 id="student-placement-title">{t(taking?.status === "active" ? "st.placementInProgress" : "pl.cardNew")}</h3>
+                  {taking?.track === "teen" && <span className="small muted">{t("plt.title")}</span>}
+                </div>
+              </header>
+              <Link href={testLink} className="btn plwhite"><Icon name="target" size="sm" />{t(taking?.status === "active" ? "pl.continue" : "pl.start")}</Link>
+              <div className="student-home-task-body">
+                <p className="m-0 muted"><strong>{t("st.placementIntro")}</strong> {t("st.placementHonest")} {t("st.placementHelp")}</p>
+                {taking && <p className="m-0 mt-2 small muted">{t("pl.cardSub")}</p>}
+              </div>
+            </section>
+          )}
           <StudentLessonCard lesson={shownLesson} current={!!current} callLink={callLink} homework={homeworkForLesson} tz={tz} now={now} />
           {wordTrainingToday && wordsCard}
           {s && <StudentHomeWeek studentId={s.id} day={d} tz={tz} now={now} hasWordGoal={!needsWordGoal} shownLessonId={shownLesson?.id} />}

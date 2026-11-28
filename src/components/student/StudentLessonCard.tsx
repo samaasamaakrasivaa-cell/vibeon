@@ -57,10 +57,6 @@ export async function StudentLessonCard({ lesson, current, callLink, homework, t
           </div>
         </div>
         <div className="tl-main min-w-0">
-          <div className="tl-who">
-            <span className="avatar lg" aria-hidden="true"><Icon name="cal" size="sm" /></span>
-            <span>{lesson.template?.title ?? t("dash.lesson")}</span>
-          </div>
           <div className="student-lesson-homework">
             {homework ? (
               <>
@@ -94,6 +90,7 @@ export async function StudentLessonCard({ lesson, current, callLink, homework, t
               </div>
             )}
           </div>
+          {lesson.template?.title && <div className="student-lesson-topic"><Icon name="cal" size="sm" />{lesson.template.title}</div>}
           {lesson.note && <div className="tl-note student-lesson-note"><Icon name="msg" size="sm" /><span>{lesson.note}</span></div>}
         </div>
         <div className="tl-act">
