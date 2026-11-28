@@ -7,11 +7,11 @@
   "progress": {
     "base_sha": "57d38ef98578c1a3a3d7b8281e98b0cd4f1731b5",
     "branch": "codex/vocabulary-training/lesson-dictionary",
-    "head_sha": "da8a51d76524a3ff12fc213e0e894da2a06a5980",
-    "next": "Проверить сценарии в Chromium и дождаться ревью и CI на указанном SHA.",
+    "head_sha": "9b025f53595690fb8fb294ba5b4f8d216f986d9d",
+    "next": "После обновления main повторить Chromium, независимое ревью и CI на новом SHA.",
     "pr": 94,
     "stage": "review",
-    "test_run": 46126259441
+    "test_run": 46126810784
   },
   "release": null,
   "source": "direct",
