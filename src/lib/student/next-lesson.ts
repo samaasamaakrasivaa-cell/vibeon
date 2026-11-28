@@ -2,7 +2,7 @@ import "server-only";
 import { db } from "../db";
 import { callLinkOf } from "../lessons/call-link";
 
-const lessonCard = { id: true, startsAt: true, durationMin: true, template: { select: { title: true } } } as const;
+const lessonCard = { id: true, startsAt: true, durationMin: true, note: true, template: { select: { title: true } } } as const;
 
 export function nextStudentLesson(userId: string, now: Date, courseId?: string) {
   return db.lessonInstance.findFirst({

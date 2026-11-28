@@ -1,0 +1,203 @@
+.panel {
+  container-type: inline-size;
+  padding: clamp(14px, 3vw, 24px);
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 20px;
+  margin-bottom: 14px;
+}
+
+.header h2 {
+  margin: 0;
+  font-size: clamp(22px, 3vw, 28px);
+  letter-spacing: -.035em;
+  line-height: 1.15;
+}
+
+.progress {
+  display: grid;
+  min-width: 100px;
+  max-width: 155px;
+  gap: 4px;
+  color: var(--text2);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.segments { display: flex; gap: 3px; }
+.segments span { flex: 1; height: 4px; border-radius: 4px; background: var(--fill); }
+.segments [data-complete] { background: var(--ok-text); }
+
+.steps {
+  --step-gap: 12px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--step-gap);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.step {
+  --step-tone: #5c48cb;
+  --icon-size: 44px;
+  display: grid;
+  grid-template-columns: var(--icon-size) minmax(0, 1fr) auto;
+  grid-template-rows: auto 1fr auto;
+  grid-template-areas: "icon title lock" "copy copy copy" "action action action";
+  align-items: start;
+  gap: 10px;
+  min-width: 0;
+  padding: 14px 16px;
+  border: 1px solid var(--sep);
+  border-radius: 18px;
+  background: var(--surface);
+}
+
+.step[data-start-tip="tg"] { --step-tone: #006e9f; }
+.step[data-start-tip="test"] { --step-tone: #923689; }
+.step[data-start-tip="schedule"] { --step-tone: #087451; }
+.step[data-start-tip="route"] { --step-tone: #246b78; }
+.step[data-state="locked"] { background: var(--surface2); }
+
+.icon {
+  grid-area: icon;
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: var(--icon-size);
+  height: var(--icon-size);
+  border-radius: 12px;
+  background: var(--step-tone);
+  color: #fff;
+}
+
+.step[data-state="locked"] .icon { background: var(--fill); color: var(--text2); }
+
+.check {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  display: grid;
+  place-items: center;
+  width: 19px;
+  height: 19px;
+  border: 2px solid var(--surface);
+  border-radius: 50%;
+  background: var(--ok-bg);
+  color: var(--ok-text);
+}
+
+.title {
+  grid-area: title;
+  align-self: center;
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.25;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+.step:not([data-state="locked"]) .title { grid-column-end: -1; }
+.copy {
+  grid-area: copy;
+  margin: 0;
+  color: var(--text2);
+  font-size: 13px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.action {
+  grid-area: action;
+  justify-self: start;
+  max-width: 100%;
+  min-height: 36px;
+  padding-block: 5px;
+  text-align: center;
+  white-space: normal;
+}
+
+.lock {
+  grid-area: lock;
+  position: relative;
+  justify-self: end;
+}
+
+.lockButton {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid var(--sep);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--text2);
+}
+
+.tooltip {
+  position: absolute;
+  z-index: 5;
+  top: 100%;
+  right: 0;
+  visibility: hidden;
+  width: min(235px, 68vw);
+  padding: 9px 11px;
+  border: 1px solid var(--sep);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: 0 6px 20px #0002;
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.lock[data-visibility="open"] .tooltip,
+.lock:not([data-visibility="dismissed"]):has(.lockButton:focus-visible) .tooltip {
+  visibility: visible;
+}
+
+@media (hover: hover) {
+  .lock:not([data-visibility="dismissed"]):hover .tooltip { visibility: visible; }
+}
+
+.footer { display: flex; justify-content: flex-end; margin-top: 12px; }
+
+@container (min-width: 720px) {
+  .steps:has(> :nth-child(5):last-child) {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  .steps:has(> :nth-child(5):last-child) > .step { grid-column: span 2; }
+  .steps:has(> :nth-child(5):last-child) > :nth-child(4) { grid-column: 2 / span 2; }
+}
+
+@container (520px <= width < 720px) {
+  .step:nth-child(5):last-child {
+    grid-column: 1 / -1;
+    width: calc((100% - var(--step-gap)) / 2);
+    justify-self: center;
+  }
+}
+
+@container (width < 520px) {
+  .steps { grid-template-columns: minmax(0, 1fr); }
+
+  .step {
+    --icon-size: 36px;
+    grid-template-rows: auto;
+    grid-template-areas: "icon title lock" "copy copy copy" "action action action";
+    gap: 7px 10px;
+    padding: 11px 12px;
+    border-radius: 14px;
+  }
+
+  .step:not(:has(.action)) { grid-template-areas: "icon title lock" "copy copy copy"; }
+  .icon { border-radius: 10px; }
+  .title { font-size: 15px; }
+}

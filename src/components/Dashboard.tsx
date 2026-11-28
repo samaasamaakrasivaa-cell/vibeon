@@ -54,6 +54,9 @@ export async function Dashboard({ user, role, day, top }: { user: User; role: "T
   const to = dayStart(addDaysIso(windowStart, 7), tz);
   const dayHref = (iso: string) => iso === todayIso ? "?" : `?d=${iso}`;
   if (role === "TEACHER") await syncSchedule(user.id);
+  const dismissedNotifications = role === "TEACHER"
+    ? Object.keys((user.notify as { dismissedNotifications?: Record<string, true> })?.dismissedNotifications ?? {})
+    : [];
 
   const where = role === "TEACHER" ? { teacherId: user.id } : { student: { userId: user.id } };
   const [lessonsAll, notifications, hws] = await Promise.all([
@@ -61,7 +64,7 @@ export async function Dashboard({ user, role, day, top }: { user: User; role: "T
     // сделанные (галочка) уходят из списка через сутки; непрочитанные висят, пока их не откроют;
     // прочитанные без действия (просто новость) — тоже через сутки после прочтения; с действием — пока не отмечены сделанными
     db.notification.findMany({
-      where: { userId: user.id, OR: [{ doneAt: { gt: new Date(Date.now() - 864e5) } }, { doneAt: null, OR: [{ readAt: null }, { action: { not: null } }, { readAt: { gt: new Date(Date.now() - 864e5) } }] }] },
+      where: { userId: user.id, id: { notIn: dismissedNotifications }, OR: [{ doneAt: { gt: new Date(Date.now() - 864e5) } }, { doneAt: null, OR: [{ readAt: null }, { action: { not: null } }, { readAt: { gt: new Date(Date.now() - 864e5) } }] }] },
       orderBy: { createdAt: "desc" }, take: 15,
     }),
     role === "TEACHER" ? homeworkFor({ teacherId: user.id }) : Promise.resolve([]),
@@ -335,6 +338,7 @@ export async function Dashboard({ user, role, day, top }: { user: User; role: "T
 
       <section className="card">
         <NotificationList
+          teacher={role === "TEACHER"}
           items={notifications.map((n) => ({ id: n.id, title: n.title, when: ago(n.createdAt), unread: !n.readAt, done: !!n.doneAt, link: n.link, action: n.action }))}
         />
       </section>

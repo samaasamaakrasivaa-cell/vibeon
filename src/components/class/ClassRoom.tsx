@@ -19,6 +19,7 @@ import { Catalog } from "../builder/Catalog";
 import { TaskEditor } from "../builder/TaskEditor";
 import { Board, type BObj } from "./Board";
 import { useLive } from "./useLive";
+import { ClassDictionary } from "./ClassDictionary";
 import { AiCheckView, type AiCheck } from "../ai/AiCheckView";
 import { AiReviewPanel, StudentCheck, type AiPick, type StudentCheckData } from "../ai/AiReviewPanel";
 import { askAi, checkAnswer } from "@/lib/ai/actions";
@@ -261,7 +262,17 @@ export function ClassRoom({ d }: { d: ClassData }) {
       setResetTick((r) => ({ ...r, [taskId]: (r[taskId] ?? 0) + 1 }));
     }
     else if (ev === "review") { if (!mineOnly) setRevBy((all) => ({ ...all, [sid]: { ...(all[sid] ?? {}), [x.taskId as string]: x.review as Review } })); }
-    else if (ev === "word") { if (!mineOnly) setWordsBy((all) => { const w = all[sid] ?? []; return { ...all, [sid]: x.op === "add" ? (w.some((y) => y.id === (x.word as Word).id) ? w : [...w, x.word as Word]) : w.filter((y) => y.id !== x.id) }; }); }
+    else if (ev === "word" && !mineOnly) {
+      setWordsBy((all) => {
+        const words = all[sid] ?? [];
+        if (x.op !== "add") return { ...all, [sid]: words.filter((word) => word.id !== x.id) };
+        const saved = x.word as Word;
+        const updated = words.some((word) => word.id === saved.id)
+          ? words.map((word) => word.id === saved.id ? saved : word)
+          : [...words, saved];
+        return { ...all, [sid]: updated };
+      });
+    }
     else if (ev === "presence") setOnline(x.online as string[]);
     else if (ev === "reload") router.refresh();
     else if (ev === "finished" && !teacher) {
@@ -642,7 +653,16 @@ export function ClassRoom({ d }: { d: ClassData }) {
             <aside className="cls-panel">
               <button className="iconbtn dlgx" onClick={() => setPanel(null)} aria-label="close"><Icon name="close" size="sm" /></button>
               {panel === "chat" && <Chat msgs={msgs} me={d.me.id} send={send} tgLinked={d.tgLinked} names={{ [d.teacher.id]: d.teacher.name, ...(d.chatNames ?? {}), ...(d.student?.userId ? { [d.student.userId]: d.student.name } : {}) }} />}
-              {panel === "dict" && <Dict send={send} />}
+              {panel === "dict" && (
+                <ClassDictionary
+                  key={`${d.id}:${viewSid}`}
+                  lessonId={d.id}
+                  preview={!!d.preview}
+                  canSave={gTeacher ? !!viewMember : !!d.student}
+                  recipient={gTeacher ? viewMember?.name : undefined}
+                  save={(word, translation) => send("word", { op: "add", word, tr: translation, dictionary: true })}
+                />
+              )}
               {panel === "timer" && <Timer left={live.timer ? timerLeft : 0} paused={timerPaused} task={timerTask ? lessonTasks.concat(hwTasks).find((x) => x.id === timerTask)?.title || t("cls.thisTask") : null}
                 onClearTask={() => setTimerTask(null)}
                 onSet={(x) => patchLive({ timer: x === null ? null : x.paused ? { endsAt: 0, left: x.sec, ...(timerTask ? { taskId: timerTask } : {}) } : { endsAt: Date.now() + x.sec * 1000, ...(timerTask ? { taskId: timerTask } : {}) } })} />}
@@ -1309,28 +1329,6 @@ function Chat({ msgs, me, send, names, tgLinked }: { msgs: Msg[]; me: string; se
         <input ref={input} className="input" value={v} onChange={(e) => setV(e.target.value)} onKeyDown={(e) => { if (e.key === "Escape") { setReply(null); setEditing(null); } }} placeholder={t("cls.message")} aria-label={t("cls.message")} />
         <button className="btn primary sm" disabled={!v.trim()} aria-label={editing ? t("common.save") : t("cls.send")}><Icon name={editing ? "check" : "send"} size="sm" /></button>
       </form>
-    </div>
-  );
-}
-
-function Dict({ send }: { send: (type: string, d: Record<string, unknown>) => Promise<unknown> }) {
-  const { t } = useT();
-  const [q, setQ] = useState("");
-  const [added, setAdded] = useState("");
-  const w = q.trim();
-  return (
-    <div>
-      <h3 className="mb-2">{t("cls.dict")}</h3>
-      <input className="input" value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("cls.dictPh")} aria-label={t("cls.dictPh")} />
-      {w && (
-        <div className="mt-3 flex flex-col gap-2">
-          <a className="btn secondary sm" target="_blank" rel="noreferrer" href={`https://dictionary.cambridge.org/dictionary/english-russian/${encodeURIComponent(w)}`}>Cambridge ↗</a>
-          <a className="btn secondary sm" target="_blank" rel="noreferrer" href={`https://www.multitran.com/m.exe?l1=1&l2=2&s=${encodeURIComponent(w)}`}>Multitran ↗</a>
-          <button className="btn primary sm" onClick={() => { send("word", { op: "add", word: w }); setAdded(w); setQ(""); }}>{t("cls.toLessonWords")}</button>
-        </div>
-      )}
-      {added && <p className="small text-ok mt-2">✓ {added}</p>}
-      <p className="hint mt-3">{t("cls.dictSoon")}</p>
     </div>
   );
 }

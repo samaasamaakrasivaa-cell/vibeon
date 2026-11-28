@@ -349,15 +349,41 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     // ── слова урока у ученика
     case "word": {
       if (!tg?.studentId) return bad();
+      const studentId = tg.studentId;
       if (body.op === "add") {
         const word = str(body.word, 120).trim();
         if (!word) return bad();
-        // уже в словаре ученика — второй раз не добавляем
-        // уже в словаре ученика (например, из другого урока) — не дублируем, но показываем в уроке как добавленное
-        const had = await db.word.findFirst({ where: { studentId: tg.studentId, word: { equals: word, mode: "insensitive" } } });
-        if (had) { publish(ch, "word", { op: "add", word: had, sid: tg.studentId }); return NextResponse.json({ ok: true }); }
-        const w = await db.word.create({ data: { studentId: tg.studentId, word, translation: str(body.tr, 200) || null, example: str(body.ex, 400) || null, sourceLessonId: tg.id } });
-        publish(ch, "word", { op: "add", word: w, sid: tg.studentId });
+        const dictionary = body.dictionary === true;
+        const inputTranslation = str(body.tr, 200);
+        const translation = (dictionary ? inputTranslation.trim() : inputTranslation) || null;
+        if (dictionary && !translation) return bad();
+        return withLock(`word:${studentId}`, async () => {
+          const select = { id: true, word: true, translation: true, example: true, level: true };
+          const existing = await db.word.findFirst({
+            where: { studentId, word: { equals: word, mode: "insensitive" } },
+            orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+            select,
+          });
+          let saved = existing;
+          let status = "existing";
+          if (!saved) {
+            saved = await db.word.create({
+              data: { studentId, word, translation, example: str(body.ex, 400) || null, sourceLessonId: tg.id },
+              select,
+            });
+            status = "added";
+          } else if (dictionary && translation && !saved.translation?.trim()) {
+            const { count } = await db.word.updateMany({
+              where: { id: saved.id, studentId, translation: saved.translation },
+              data: { translation },
+            });
+            saved = await db.word.findUnique({ where: { id: saved.id }, select });
+            if (!saved) return bad();
+            if (count) status = "updated";
+          }
+          publish(ch, "word", { op: "add", word: saved, sid: studentId });
+          return NextResponse.json({ ok: true, ...(dictionary ? { status, translation: saved.translation } : {}) });
+        });
       } else if (body.op === "del" && teacher) {
         const w = await db.word.findUnique({ where: { id: str(body.wid, 60) } });
         if (w?.studentId !== tg.studentId) return bad();

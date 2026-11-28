@@ -20,6 +20,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   const stream = new ReadableStream({
     start(ctrl) {
       const send = (event: string, data: unknown) => {
+        if (event === "word" && acc.role === "student" && (data as { sid: string }).sid !== acc.own.studentId) return;
         if (event === "finished") {
           const { lessons } = data as LessonFinishedEvent;
           if (acc.role === "student") {
