@@ -20,7 +20,7 @@ jobs:
           npm ci
           npm install --prefix "$RUNNER_TEMP/browser" --no-audit --no-fund playwright-core
           sudo apt-get update -qq
-          sudo apt-get install -y espeak-ng ffmpeg pulseaudio pulseaudio-utils
+          sudo apt-get install -y espeak-ng ffmpeg
           google-chrome --version
           espeak-ng -v en-us -s 125 -w "$RUNNER_TEMP/en-raw.wav" 'The cat sleeps on the sofa. The cat sleeps on the sofa.'
           espeak-ng -v ru -s 115 -w "$RUNNER_TEMP/ru-raw.wav" 'Мне нравится читать книги. Мне нравится читать книги.'
@@ -34,10 +34,4 @@ jobs:
           sudo ip netns add vibeon-dictation
           sudo ip -n vibeon-dictation link set lo up
           trap 'sudo ip netns del vibeon-dictation' EXIT
-          mkdir -m 700 "$RUNNER_TEMP/voice-runtime"
-          sudo ip netns exec vibeon-dictation sudo -u "$USER" env HOME="$HOME" PATH="$PATH" RUNNER_TEMP="$RUNNER_TEMP" XDG_RUNTIME_DIR="$RUNNER_TEMP/voice-runtime" bash -e -c '
-            pulseaudio --start --log-target=stderr --exit-idle-time=-1
-            pactl load-module module-null-sink sink_name=dictation_qa >/dev/null
-            pactl set-default-source dictation_qa.monitor
-            PULSE_SOURCE=dictation_qa.monitor node qa/native-dictation/probe.cjs offline
-          '
+          sudo ip netns exec vibeon-dictation sudo -u "$USER" env HOME="$HOME" PATH="$PATH" RUNNER_TEMP="$RUNNER_TEMP" node qa/native-dictation/probe.cjs offline

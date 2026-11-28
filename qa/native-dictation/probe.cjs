@@ -1,6 +1,5 @@
 const assert = require("node:assert/strict");
-const { execFile, execFileSync } = require("node:child_process");
-const run = require("node:util").promisify(execFile);
+const { execFileSync } = require("node:child_process");
 const fs = require("node:fs");
 const http = require("node:http");
 const path = require("node:path");
@@ -21,7 +20,20 @@ const setupPage = `<!doctype html><html lang="en"><button id="en">Prepare Englis
     };
   }
 </script>`;
-const fixturePage = '<!doctype html><html lang="en"><div id="root"></div><script src="/fixture.js"></script>';
+const fixturePage = `<!doctype html><html lang="en"><button id="source">Prepare synthetic voice source</button><div id="root"></div>
+<script>
+  document.getElementById('source').onclick = async () => {
+    const context = new AudioContext({sampleRate:48000});
+    await context.resume();
+    const response = await fetch('/voice-' + window.qaVoice + '.wav');
+    const audio = await context.decodeAudioData(await response.arrayBuffer());
+    const stream = context.createMediaStreamDestination();
+    const buffer = context.createBufferSource();
+    buffer.buffer = audio;
+    buffer.connect(stream);
+    window.syntheticVoice = { buffer, track: stream.stream.getAudioTracks()[0] };
+  };
+</script><script src="/fixture.js"></script>`;
 const languages = { en: "en-US", ru: "ru-RU" };
 
 async function main() {
@@ -42,6 +54,10 @@ async function main() {
       saves.push(new URLSearchParams(Buffer.concat(chunks).toString()).get("observation"));
       return res.end("Saved");
     }
+    if (req.url === "/voice-en.wav" || req.url === "/voice-ru.wav") {
+      res.setHeader("Content-Type", "audio/wav");
+      return res.end(fs.readFileSync(path.join(scratch, req.url.slice(7))));
+    }
     if (req.url === "/fixture.js") {
       res.setHeader("Content-Type", "application/javascript");
       return res.end(fs.readFileSync(path.join(scratch, "fixture.js")));
@@ -51,12 +67,11 @@ async function main() {
   }).listen(3334, "127.0.0.1");
   try {
     await new Promise(resolve => server.once("listening", resolve));
-    const openBrowser = async (audio) => {
-      const args = ["--no-sandbox","--accept-lang=en-US,ru-RU"];
-      if (audio) args.push("--use-fake-ui-for-media-stream", "--enable-logging=stderr");
+    const openBrowser = async (locale = "en-US") => {
+      const args = ["--no-sandbox","--accept-lang=" + locale];
       const context = await chromium.launchPersistentContext(profile, { executablePath: "/usr/bin/google-chrome",
         ignoreDefaultArgs: ["--disable-background-networking", "--disable-component-update"],
-        args, permissions: ["microphone"], locale: "en-US" });
+        args, permissions: ["microphone"], locale });
       await context.grantPermissions(["microphone"], { origin });
       return context;
     };
@@ -92,11 +107,12 @@ async function main() {
       console.log(name, fs.existsSync(dir) ? fs.readdirSync(dir, {recursive: true}).length : 0);
     }
     for (const [key, language] of Object.entries(languages)) {
-      const context = await openBrowser(path.join(scratch, key + ".wav"));
+      const context = await openBrowser(language);
       try {
         const page = context.pages()[0];
         const expectedSaves = saves.length;
-        await page.addInitScript(() => {
+        await page.addInitScript(key => {
+          window.qaVoice = key;
           window.nativeEvents = [];
           const prototype = SpeechRecognition.prototype;
           const realStart = prototype.start;
@@ -106,9 +122,10 @@ async function main() {
             }
             this.addEventListener("result", () => window.nativeEvents.push("result"));
             this.addEventListener("error", event => window.nativeEvents.push("error:" + event.error));
-            return realStart.apply(this, args);
+            if (!window.syntheticVoice?.track) throw new Error("Synthetic track is not ready");
+            return realStart.call(this, window.syntheticVoice.track);
           };
-        });
+        }, key);
         await page.goto(origin);
         let nativeStatus;
         for (let i = 0; i < 20; i++) {
@@ -121,13 +138,23 @@ async function main() {
           languages: navigator.languages,
         })));
         assert.equal(nativeStatus, "available");
+        await page.locator("#source").click();
+        await page.waitForFunction(() => window.syntheticVoice?.track?.readyState === "live");
         const field = page.getByLabel("Synthetic observation");
         await page.getByLabel("Dictation language").selectOption(language);
         await page.getByRole("button", { name: "Dictate", exact: true }).click();
-        await page.getByRole("button", { name: "Stop", exact: true }).waitFor({ timeout: 30_000 });
-        await page.waitForFunction(() => window.nativeEvents.includes("audiostart"), null, { timeout: 10_000 });
-        await run("paplay", ["--device=dictation_qa", path.join(scratch, key + ".wav")]);
-        await page.waitForTimeout(1500);
+        try {
+          await page.getByRole("button", { name: "Stop", exact: true }).waitFor({ timeout: 15_000 });
+        } catch (error) {
+          console.log(language, "startup events", await page.evaluate(() => window.nativeEvents),
+            await page.locator("[role=status]").allTextContents());
+          throw error;
+        }
+        const duration = await page.evaluate(() => {
+          window.syntheticVoice.buffer.start();
+          return window.syntheticVoice.buffer.buffer.duration;
+        });
+        await page.waitForTimeout(Math.ceil(duration * 1000) + 1000);
         assert.equal(saves.length, expectedSaves);
         const stop = page.getByRole("button", { name: "Stop", exact: true });
         if (await stop.isVisible()) await stop.click();
