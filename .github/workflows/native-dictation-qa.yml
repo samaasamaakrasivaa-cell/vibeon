@@ -1,0 +1,37 @@
+name: Isolated native dictation QA
+on:
+  push:
+    branches: [codex/ai-quality/dictation-native-qa]
+permissions:
+  contents: read
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Prepare synthetic audio and browser tools
+        run: |
+          npm ci
+          npm install --prefix "$RUNNER_TEMP/browser" --no-audit --no-fund playwright-core
+          sudo apt-get update -qq
+          sudo apt-get install -y espeak-ng
+          google-chrome --version
+          espeak-ng -v en-us -s 125 -w "$RUNNER_TEMP/en-raw.wav" 'The cat sleeps on the sofa. The cat sleeps on the sofa.'
+          espeak-ng -v ru -s 115 -w "$RUNNER_TEMP/ru-raw.wav" 'Мне нравится читать книги. Мне нравится читать книги.'
+          ffmpeg -loglevel error -i "$RUNNER_TEMP/en-raw.wav" -af 'adelay=500|500,apad=pad_dur=4' -ac 1 -ar 48000 "$RUNNER_TEMP/en.wav"
+          ffmpeg -loglevel error -i "$RUNNER_TEMP/ru-raw.wav" -af 'adelay=500|500,apad=pad_dur=4' -ac 1 -ar 48000 "$RUNNER_TEMP/ru.wav"
+          ./node_modules/.bin/esbuild qa/native-dictation/fixture.tsx --bundle --jsx=automatic --define:process.env.NODE_ENV='"production"' --outfile="$RUNNER_TEMP/fixture.js"
+      - name: Install the official browser language packs in an empty profile
+        run: node qa/native-dictation/probe.cjs prepare
+      - name: Dictate with only loopback networking
+        run: |
+          sudo ip netns add vibeon-dictation
+          sudo ip -n vibeon-dictation link set lo up
+          trap 'sudo ip netns del vibeon-dictation' EXIT
+          sudo ip netns exec vibeon-dictation sudo -u "$USER" env HOME="$HOME" PATH="$PATH" RUNNER_TEMP="$RUNNER_TEMP" node qa/native-dictation/probe.cjs offline
