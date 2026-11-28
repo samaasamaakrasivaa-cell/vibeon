@@ -91,7 +91,7 @@ export async function run<K extends Kind>(kind: K, input: SpecIn<K>, ctx: Ctx): 
   return out;
 }
 
-const DICTIONARY_MODEL = "aliceai-llm-flash/latest";
+const DICTIONARY_MODEL = "aliceai-llm-flash";
 
 /** Словарные подсказки общие для всех уроков. Ключ содержит только обезличенный запрос. */
 export async function lookupDictionary(query: string, ctx: Ctx): Promise<string[]> {
