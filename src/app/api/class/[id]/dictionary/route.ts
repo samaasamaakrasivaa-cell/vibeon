@@ -14,8 +14,10 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const teacherId = access?.lesson.teacherId;
   if (!access || !teacherId) return NextResponse.json({ error: "forbidden" }, { status: 403 });
 
-  const body = await req.json().catch(() => null);
   const names = [user.name, user.lastName, ...access.slot.flatMap(({ student }) => [student?.name, student?.lastName])];
-  const result = await searchDictionary(body?.query, { userId: user.id, teacherId, names });
+  const result = await searchDictionary(async () => {
+    const body = await req.json().catch(() => null);
+    return body?.query;
+  }, { userId: user.id, teacherId, names });
   return NextResponse.json(result, { status: "error" in result ? errorStatus[result.error] : 200 });
 }

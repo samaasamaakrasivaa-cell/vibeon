@@ -129,7 +129,7 @@ type AddWordResult = { status: "added" | "existing" | "updated" | "changed" | "e
 
 export async function lookupMyWord(query: string) {
   const { u, s } = await myStudent();
-  return searchDictionary(query, {
+  return searchDictionary(() => query, {
     userId: u.id,
     teacherId: s.teacherId,
     names: [u.name, u.lastName, s.name, s.lastName],
