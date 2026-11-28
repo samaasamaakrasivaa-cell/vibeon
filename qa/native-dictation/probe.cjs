@@ -55,7 +55,7 @@ async function main() {
       if (audio) args.push("--use-fake-device-for-media-stream", "--use-fake-ui-for-media-stream",
         "--use-file-for-fake-audio-capture=" + audio);
       const context = await chromium.launchPersistentContext(profile, { executablePath: "/usr/bin/google-chrome",
-        ignoreDefaultArgs: mode === "prepare" ? ["--disable-background-networking", "--disable-component-update"] : [],
+        ignoreDefaultArgs: ["--disable-background-networking", "--disable-component-update"],
         args, permissions: ["microphone"], locale: "en-US" });
       await context.grantPermissions(["microphone"], { origin });
       return context;
@@ -79,13 +79,35 @@ async function main() {
       } finally { await context.close(); }
       return;
     }
+    const preferences = path.join(profile, "Default/Preferences");
+    const prefs = JSON.parse(fs.readFileSync(preferences, "utf8"));
+    prefs.intl = { ...prefs.intl, accept_languages: "en-US,ru-RU" };
+    prefs.profile ??= {};
+    prefs.profile.content_settings ??= {};
+    prefs.profile.content_settings.exceptions ??= {};
+    prefs.profile.content_settings.exceptions.media_stream_mic = { [origin + ",*"]: { setting: 1 } };
+    fs.writeFileSync(preferences, JSON.stringify(prefs));
+    for (const name of ["SODA", "SODALanguagePacks"]) {
+      const dir = path.join(profile, name);
+      console.log(name, fs.existsSync(dir) ? fs.readdirSync(dir, {recursive: true}).length : 0);
+    }
     for (const [key, language] of Object.entries(languages)) {
       const context = await openBrowser(path.join(scratch, key + ".wav"));
       try {
         const page = context.pages()[0];
         const expectedSaves = saves.length;
         await page.goto(origin);
-        assert.equal(await availability(page, language), "available");
+        let nativeStatus;
+        for (let i = 0; i < 20; i++) {
+          nativeStatus = await availability(page, language);
+          if (nativeStatus === "available") break;
+          await page.waitForTimeout(1000);
+        }
+        console.log(language, "offline availability", nativeStatus, await page.evaluate(async () => ({
+          microphone: (await navigator.permissions.query({ name: "microphone" })).state,
+          languages: navigator.languages,
+        })));
+        assert.equal(nativeStatus, "available");
         const field = page.getByLabel("Synthetic observation");
         await page.getByLabel("Dictation language").selectOption(language);
         await page.getByRole("button", { name: "Dictate", exact: true }).click();
