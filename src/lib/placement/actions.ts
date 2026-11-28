@@ -18,6 +18,7 @@ import { addNextText, advance, begin, closeSection, doneOf, ensureTasks, enter, 
 import { teacherReview, missingReassessment } from "./teacher-review";
 import { applyScore } from "./ai-feedback";
 import { speechSource } from "./speech-transcript";
+import { syncRecordedWsAssessment, wsTeacherWriteEnabled } from "./ws-teacher-write";
 import { revealedScripts } from "./review";
 import { R_BLOCKS, type RCfg, type RVariant } from "./report";
 import { reportData } from "./report-data";
@@ -36,11 +37,23 @@ async function load(id: string) {
   if (acc.a.status === "submitted" || acc.a.status === "reviewed") throw new Error("done");
   return { ...acc, st: stateOf(acc.a.state) };
 }
-async function save(id: string, st: ReturnType<typeof stateOf>, extra: Record<string, unknown> = {}) {
+type WsSaveGuard = { attempt: Awaited<ReturnType<typeof load>>["a"]; state: ReturnType<typeof json>; kind: "writing" | "speaking" };
+async function save(id: string, st: ReturnType<typeof stateOf>, extra: Record<string, unknown> = {}, guard?: WsSaveGuard): Promise<R> {
   touch(st);
   const view = publicView(st, await getLang(), (await getBank(trackOf(st.track))).bank); // считает и полоску прогресса — до записи
-  await db.placementAttempt.update({ where: { id }, data: { state: json(st), ...extra } });
-  return { ok: true as const, view };
+  const data = { state: json(st), ...extra };
+  if (guard) {
+    const { attempt, kind } = guard;
+    const review = syncRecordedWsAssessment(attempt.review, st, kind);
+    const saved = await db.placementAttempt.updateMany({
+      where: { ...revision(attempt), state: { equals: guard.state } },
+      data: { ...data, ...(review === attempt.review ? {} : { review: json(review) }) },
+    });
+    if (!saved.count) return changed;
+  } else {
+    await db.placementAttempt.update({ where: { id }, data });
+  }
+  return { ok: true, view };
 }
 const wrap = async (fn: () => Promise<R>): Promise<R> => {
   try { return await fn(); } catch (e) {
@@ -171,16 +184,18 @@ export async function notePlay(id: string, itemId: string): Promise<R> {
 }
 
 /** Черновик письма сохраняется по ходу; final — переход к говорению. */
-export async function saveWriting(id: string, text: string, final: boolean): Promise<R> {
+export async function saveWriting(id: string, text: string, final: boolean, taskId?: string): Promise<R> {
   return wrap(async () => {
     const l = await load(id); const { st } = l;
     if (st.section !== "writing") return { ok: true, view: publicView(st, await getLang()) };
+    if ((wsTeacherWriteEnabled() || taskId !== undefined) && st.writing?.id !== taskId) return changed;
+    const guard = wsTeacherWriteEnabled() ? { attempt: l.a, state: json(l.a.state), kind: "writing" as const } : undefined;
     st.writing = { id: st.writing?.id ?? "", text: str(text, 8000) };
     if (final) {
       if (words(st.writing.text) < 3) return { ok: false, error: "empty" };
-      return closeAndGo(l, st, "writing");
+      return closeAndGo(l, st, "writing", guard);
     }
-    return save(id, st);
+    return save(id, st, {}, guard);
   });
 }
 
@@ -192,8 +207,9 @@ export async function finishPlacement(id: string, noMic = false): Promise<R> {
     const sp = st.speaking ? (st.items[st.speaking.id] as SpeakItem) : null;
     const recorded = Object.keys(st.speaking?.rec ?? {}).length;
     if (sp && recorded < sp.questions.length && !noMic) return { ok: false, error: "rec" };
+    const guard = wsTeacherWriteEnabled() ? { attempt: l.a, state: json(l.a.state), kind: "speaking" as const } : undefined;
     if (noMic && st.speaking) (st.speaking as { noMic?: boolean }).noMic = true;
-    return closeAndGo(l, st, "speaking");
+    return closeAndGo(l, st, "speaking", guard);
   });
 }
 
@@ -209,19 +225,20 @@ export async function goSection(id: string, sec: string): Promise<R> {
 }
 
 type Loaded = Awaited<ReturnType<typeof load>>;
-async function closeAndGo(l: Loaded, st: Loaded["st"], sec: Later): Promise<R> {
+async function closeAndGo(l: Loaded, st: Loaded["st"], sec: Later, guard?: WsSaveGuard): Promise<R> {
   const { bank } = await getBank(trackOf(st.track));
-  if (!closeSection(st, sec, bank)) return save(l.a.id, st);
-  return submit(l, st, sec);
+  if (!closeSection(st, sec, bank)) return save(l.a.id, st, {}, guard);
+  return submit(l, st, sec, guard);
 }
 
 /** Разделов больше нет — тест уходит учителю. */
-async function submit(l: Loaded, st: Loaded["st"], sec?: Later): Promise<R> {
+async function submit(l: Loaded, st: Loaded["st"], sec?: Later, guard?: WsSaveGuard): Promise<R> {
   const { a } = l;
   st.section = "done";
   const extra = sec === "writing" || sec === "speaking" ? st.wsExtra?.[sec] : undefined; // ответ на дополнительное задание
   const xdone = st.xdone; st.xdone = undefined; // дополнительное задание другого уровня (грамматика, лексика, чтение, аудирование)
-  const r = await save(a.id, st, { status: "submitted", submittedAt: new Date() });
+  const r = await save(a.id, st, { status: "submitted", submittedAt: new Date() }, guard);
+  if (!r.ok) return r;
   // точка А, уже выставленная по первому заданию, остаётся в маршруте — учитель при желании уточнит итог
   const cp = a.checkpointId ? await db.checkpoint.findUnique({ where: { id: a.checkpointId }, select: { status: true } }) : null;
   if (a.checkpointId && !((extra || xdone || st.added) && cp?.status === "done")) await db.checkpoint.update({ where: { id: a.checkpointId }, data: { status: "review", takenAt: new Date() } }).catch(() => null);
@@ -450,8 +467,11 @@ export async function saveReview(id: string, r: ReviewInput): Promise<R> {
         !!r.regrading !== draft.regrading) return changed;
     const points = Array.isArray(r.points) ? r.points.slice(0, 10).map(Boolean) : [];
     const lesson = r.lesson && PL_LEVELS.includes(r.lesson.level as never) ? { level: r.lesson.level, marks: cleanScores(r.lesson.marks) } : r.lesson === null ? null : draft.active.lesson;
-    const review = draft.edit({ writing: cleanScores(r.writing), speaking: cleanScores(r.speaking), points,
-      comment: str(r.comment, 3000), lesson, wNote: str(r.wNote ?? "", 3000), sNote: str(r.sNote ?? "", 3000), wc: cleanNotes(r.wc), sc: cleanNotes(r.sc) });
+    const legacyMarks = wsTeacherWriteEnabled() ? {} : {
+      writing: cleanScores(r.writing), speaking: cleanScores(r.speaking),
+      wNote: str(r.wNote ?? "", 3000), sNote: str(r.sNote ?? "", 3000), wc: cleanNotes(r.wc), sc: cleanNotes(r.sc),
+    };
+    const review = draft.edit({ ...legacyMarks, points, comment: str(r.comment, 3000), lesson });
     const saved = await db.placementAttempt.updateMany({ where: revision(a), data: { review: json(review) } });
     if (!saved.count) return changed;
     revalidatePath(`/teacher/placement/${id}`);
@@ -612,7 +632,7 @@ export async function assignExtraWS(id: string, kind: "writing" | "speaking", di
     const clear = { [kind]: {}, ...(kind === "writing" ? { points: [], wc: {}, wNote: "" } : { sc: {}, sNote: "", lesson: null }) };
     const nextReview = { ...review, rubric: draft.regrading ? 1 : 2, ...(draft.regrading ? { legacyReview: draft.active.legacyReview } : {}), ...clear,
       ai: { ...draft.stored.ai, [kind]: undefined }, ...(revised ? { cambridgeDraft: { ...revised, ...clear, ai: { ...revised.ai, [kind]: undefined } } } : {}) };
-    if (!(await db.placementAttempt.updateMany({ where: revision(a), data: { state: json(st), review: json(nextReview), status: "active" } })).count) return changed;
+    if (!(await db.placementAttempt.updateMany({ where: revision(a), data: { state: json(st), review: json(syncRecordedWsAssessment(nextReview, st, kind)), status: "active" } })).count) return changed;
     if (a.mode === "student" && a.student?.userId)
       await notify({ userId: a.student.userId, kind: "test", title: kind === "writing" ? "Преподаватель дал дополнительное задание по письму" : "Преподаватель дал дополнительное задание по говорению", action: "decide", link: a.checkpointId ? `/student/test/${a.checkpointId}` : `/placement/${id}` });
     refreshT(a.studentId);
@@ -828,6 +848,7 @@ export async function saveSpeechTranscript(id: string, source: string, texts: st
 export async function aiScore(id: string, kind: "writing" | "speaking", transcripts: string[] = [], rubric?: number, regrading = false, source?: string): Promise<R & { ai?: PlScore; marks?: Record<string, number>; comments?: Record<string, string> }> {
   return wrap(async () => {
     const { me, a } = await teacherAttempt(id);
+    if (wsTeacherWriteEnabled()) return { ok: false, error: "off" };
     // без настоящего ИИ оценка была бы по длине ответа, а расшифровка — шаблонной: честно говорим, что ИИ не подключён
     if (provider() === "mock" && process.env.PL_AI_MOCK !== "1") return { ok: false, error: "off" };
     const st = stateOf(a.state);

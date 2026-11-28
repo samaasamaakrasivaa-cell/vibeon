@@ -9,6 +9,7 @@ import { lastPublication, publicationStamp, reportDraft, storedReport } from "@/
 import { getT } from "@/lib/i18n/server";
 import { getBank, RUBRICS, trackOf } from "@/lib/placement/bank";
 import { teacherReview } from "@/lib/placement/teacher-review";
+import { wsTeacherDecisionView } from "@/lib/placement/ws-teacher-write";
 import { PL_LEVELS, STEPS, summarize } from "@/lib/placement/engine";
 import { speechTranscript } from "@/lib/placement/speech-transcript";
 import { reviewData } from "@/lib/placement/review";
@@ -96,6 +97,7 @@ export default async function PlacementReviewPage({ params, searchParams }: { pa
             writing: d.writing && <WsAssessmentStatus kind="writing" view={wsAssessmentView(st, draft.stored, "writing")} lang={lang} timeZone={me.timezone} />,
             speaking: d.speaking && <WsAssessmentStatus kind="speaking" view={wsAssessmentView(st, draft.stored, "speaking")} lang={lang} timeZone={me.timezone} />,
           }}
+          wsDecision={{ writing: wsTeacherDecisionView(a, "writing"), speaking: wsTeacherDecisionView(a, "speaking") }}
           howTo={RUBRICS.how_to_decide_ru} sublevels={RUBRICS.sublevels_ru}
         />
       </div>
