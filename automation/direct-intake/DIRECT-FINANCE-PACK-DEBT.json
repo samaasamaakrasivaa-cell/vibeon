@@ -1,10 +1,15 @@
 {
   "claim_id": "d722f770211649ac9cf66c93b1577803",
   "handoff": null,
-  "issue": null,
+  "issue": 136,
   "key": "DIRECT-FINANCE-PACK-DEBT",
   "owner": "finance-admin",
-  "progress": null,
+  "progress": {
+    "base_sha": "d7d94a6d6e76d9a6810a53c4a6434caea821b82d",
+    "branch": "codex/finance-admin/pack-debt-overlap",
+    "next": "Проверить взаимное исключение счёта и списания на синтетике",
+    "stage": "implementation"
+  },
   "release": null,
   "source": "direct",
   "version": 1
