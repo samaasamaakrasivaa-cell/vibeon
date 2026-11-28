@@ -7,8 +7,11 @@
   "progress": {
     "base_sha": "82473a1199a160651ae2bed2f8365b5e536d7c72",
     "branch": "codex/student/home-visual-refresh",
-    "next": "Проверить дизайн и сценарии на синтетике. Публикация после #81 по подтверждению владельца.",
-    "stage": "implementation"
+    "head_sha": "a4deb9d2d1af80c3cc860e8884fb52fea2b7486c",
+    "next": "Chromium прошёл. Draft зависит от #83; после его выпуска перевести на актуальную main и проверить релизный SHA.",
+    "pr": 89,
+    "stage": "review",
+    "test_run": 46120523823
   },
   "release": null,
   "source": "direct",
