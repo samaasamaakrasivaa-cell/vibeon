@@ -8,7 +8,7 @@
     "base_sha": "ff7dc26aa22c6626b408a58f2dfebc5a0e9febbf",
     "branch": "codex/student/home-visual-refresh",
     "head_sha": "c6c6a11c59f31cfeef2f3cbc4331f4a8da016ef9",
-    "next": "Draft переведён в main, дерево проверено. После публичного выпуска #83 подтвердить точный CI и согласовать следующий слот.",
+    "next": "Draft до явного утверждения дизайна владельцем. Предпросмотры отправлены. #81 продолжает отдельный выпуск.",
     "pr": 89,
     "stage": "review",
     "test_run": 46121845837
