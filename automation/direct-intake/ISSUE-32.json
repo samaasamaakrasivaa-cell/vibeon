@@ -8,9 +8,10 @@
     "base_sha": "a3673f8bf137eb165bf6fe5e311baf531bb30a2f",
     "branch": "codex/placement/pt-08-ws-review",
     "head_sha": "ba0e9781276bcdc94657d70835092daf423cbee9",
-    "next": "Блокер исправлен. Готово к повторной проверке AI & Quality.",
+    "merge_sha": "acdb16e95f55a2cad7be7ef9559fe647608a829e",
+    "next": "PR 99 в main по подтверждению владельца. Проверить штатный CD 46139612650 и публичную версию. Подключение оценок отдельно.",
     "pr": 99,
-    "stage": "review",
+    "stage": "publication",
     "test_run": 46138331055
   },
   "release": null,
