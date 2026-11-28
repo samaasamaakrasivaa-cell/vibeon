@@ -10,11 +10,7 @@
     16,
     18
   ],
-  "lease": {
-    "token": "593a7a01a841490aaa68cb0c9209fa3b",
-    "started_at": "2026-11-28T19:03:07.110890Z",
-    "expires_at": "2026-11-28T22:03:07.110890Z"
-  },
+  "lease": null,
   "checkpoint": {
     "issue": 25,
     "stage": "await_live_verification",
@@ -39,7 +35,8 @@
     "merge_sha": "0fcef7b9e18fcb9a3165d1e2a7b7e9f7cc172075",
     "release_status": "released exact SHA; health verified by CD-01; current main isolated VOC-09 passed",
     "release_image": "sha256:121a9fff04408534d5d5031f9053ba69b65010bc40284c7cc02219472bcd64b8",
-    "release_comment_id": 7240435699
+    "release_comment_id": 7240435699,
+    "last_attempt": "2026-11-28 19:03 UTC: 6 eligible READY, claim CAS/read-back confirmed; PR 54 merged, CD-01 46167867763 released exact image. curl health/version error 6, web inaccessible, no authorized teacher session or personal Progress acceptance evidence. No new product actions."
   },
   "last_probe": {
     "type": "background_native_review",
