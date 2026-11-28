@@ -1,7 +1,7 @@
 name: Delivery preflight
 
 # CD-01: observe the existing delivery connection before activating releases.
-# Only the daily scheduled tick writes the verified full backup of VibeOn.
+# Only the daily tick or an explicit full-backup dispatch writes a VibeOn backup.
 on:
   pull_request:
     paths:
@@ -23,6 +23,10 @@ on:
     - cron: "23 6,12,18 * * *"
   workflow_dispatch:
     inputs:
+      full_backup:
+        description: Run the idempotent daily VibeOn backup now
+        type: boolean
+        default: false
       storage_observation:
         description: Observe VibeOn disk capacity without changing the server
         type: boolean
@@ -60,7 +64,7 @@ jobs:
       github.ref == 'refs/heads/main' &&
       (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule')
     runs-on: ubuntu-latest
-    timeout-minutes: ${{ github.event.schedule == '23 0 * * *' && 25 || 5 }}
+    timeout-minutes: ${{ (github.event.schedule == '23 0 * * *' || inputs.full_backup) && 25 || 5 }}
     concurrency:
       group: ${{ github.event_name == 'schedule' && github.event.schedule != '23 0 * * *' && 'vibeon-storage-observation' || 'server' }}
       cancel-in-progress: false
@@ -141,7 +145,7 @@ jobs:
           ssh -F "$DELIVERY_SSH_DIR/config" srv "env VIBEON_EXPECTED_PROXY_IMAGE='$DELIVERY_PROXY_IMAGE' bash -s" < deploy/release-preflight.sh
 
       - name: Capture and verify the daily full VibeOn backup
-        if: github.event_name == 'schedule' && github.event.schedule == '23 0 * * *'
+        if: (github.event_name == 'schedule' && github.event.schedule == '23 0 * * *') || inputs.full_backup
         env:
           SSH_KEY: ${{ secrets.SSH_KEY }}
           SSH_HOST: ${{ secrets.SSH_HOST }}

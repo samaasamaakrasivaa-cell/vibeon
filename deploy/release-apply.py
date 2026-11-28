@@ -193,7 +193,7 @@ class Release:
             if self.daily_policy and (self.daily_journal.exists() or self.daily_journal.is_symlink()):
                 if (self.daily_journal.is_symlink() or json.loads(self.daily_journal.read_text()).get("status")
                         not in ("daily_backup_completed", "daily_backup_failed")):
-                    raise ReleaseError("interrupted_daily_backup")
+                    raise ReleaseError("daily_backup_interrupted")
             if self.allowed_proxy_image is not None:
                 self.proxy_qualification = self.qualify_proxy()
             if self.journal.exists() and json.loads(self.journal.read_text())["status"] in {"stopping", "stopped", "verifying", "switching", "rollback_failed", "cleanup_failed"}:
@@ -527,7 +527,7 @@ class Release:
         with release_lock(self.root):
             self.inspect()
             if self.daily_policy and self.fresh_verified_backup() is None:
-                raise ReleaseError("fresh_daily_backup_required")
+                raise ReleaseError("daily_backup_not_fresh")
             self.retain()
             try:
                 if not self.daily_policy:

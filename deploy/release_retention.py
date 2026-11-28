@@ -229,7 +229,10 @@ def inspect_image(docker, tag):
 
 
 def rotate(root, image, sha, protected, *, docker, write_json):
-    verified, backup_candidates, recovery_images = full_backup_plan(root)
+    now = datetime.datetime.now(datetime.timezone.utc)
+    verified, backup_candidates, recovery_images = full_backup_plan(root, now)
+    if any(backup.timestamp > now for backup in verified):
+        raise ValueError("future backup timestamp")
     report = {
         "status": "ok", "images_removed": 0, "verified_full_backups": len(verified),
         "full_backup_candidates": len(backup_candidates),

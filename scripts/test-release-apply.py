@@ -138,7 +138,7 @@ class ReleaseTest(unittest.TestCase):
     def test_routine_release_stops_before_mutations_without_fresh_daily_copy(self):
         self.release.daily_policy = True
         with (patch.object(self.release, "fresh_verified_backup", return_value=None),
-              self.assertRaisesRegex(release_apply.ReleaseError, "fresh_daily_backup_required")):
+              self.assertRaisesRegex(release_apply.ReleaseError, "daily_backup_not_fresh")):
             self.release.apply()
         self.assertEqual(self.release.events, ["inspect"])
 

@@ -35,7 +35,7 @@ STORAGE_ONLY_PATHS = frozenset({
     b".github/workflows/ci.yml", b".github/workflows/delivery-preflight.yml",
     b"deploy/release-apply.py", b"deploy/release_capacity.py", b"deploy/release_retention.py",
     b"deploy/release_uploads_manifest.py",
-    b"docs/CD-01-delivery.md", b"scripts/run-delivery.py", b"scripts/test-delivery-plan.py",
+    b"docs/CD-01-delivery.md", b"docs/RELEASE_RUNBOOK.md", b"scripts/run-delivery.py", b"scripts/test-delivery-plan.py",
     b"scripts/test-release-apply.py", b"scripts/test-release-apply-docker.py",
     b"scripts/test-release-capacity.py", b"scripts/test-release-retention.py",
     b"scripts/test-release-uploads-manifest.py",
@@ -43,12 +43,12 @@ STORAGE_ONLY_PATHS = frozenset({
 STAGE_MARKER = ".vibeon-stage-v1"
 CAPACITY_METRICS = {"archive_bytes", "backup_restore_bytes", "minimum_inode_margin", "minimum_space_margin_bytes"}
 CAPACITY_ERRORS = {"capacity_inventory_unavailable", "insufficient_pretransfer_space",
-                   "release_already_running", "image_transfer_failed", "daily_backup_not_fresh", "daily_backup_interrupted"}
+                   "release_already_running", "image_transfer_failed", "daily_backup_not_fresh", "daily_backup_interrupted", "daily_backup_verification_failed"}
 CAPACITY_WARNING_MARGIN = 1024**3
 RETENTION_METRICS = {"images_removed", "verified_full_backups", "full_backup_candidates", "full_backup_candidate_bytes"}
 OPTIONAL_RETENTION_METRICS = {"full_backups_removed", "full_backups_removed_bytes"}
 ENGINE_CODES = {"unexpected_current_image", "migration_set_mismatch", "schema_change_requires_separate_release", "configuration_changed_during_backup", "database_clients_still_connected", "insufficient_backup_space", "database_backup_failed", "uploads_backup_failed", "database_restore_verification_failed", "uploads_restore_verification_failed", "uploads_restore_content_mismatch", "restore_cleanup_failed", "app_switch_failed", "app_health_failed", "rollback_failed", "release_already_running", "interrupted_release_requires_recovery", "unknown_database_peer", "unsupported_volume_topology", "compose_contract_mismatch", "release_interrupted", "storage_only_identity_invalid", "daily_backup_identity_invalid", "daily_backup_not_fresh",
-                "daily_backup_interrupted"}
+                "daily_backup_interrupted", "daily_backup_verification_failed"}
 TOOLING_INSTALLER = r'''
 import fcntl, hashlib, json, os, pathlib, re, sys, tempfile
 NAMES = {"vibeon.sh", "attach-proxy.sh"}
@@ -772,7 +772,7 @@ def main():
         else:
             event = os.environ.get("GITHUB_EVENT_NAME")
             if os.environ.get("GITHUB_REF") != "refs/heads/main" or (
-                    args.daily_full_backup and (event != "schedule" or os.environ.get("GITHUB_WORKFLOW") != "Delivery preflight")
+                    args.daily_full_backup and (event not in ("schedule", "workflow_dispatch") or os.environ.get("GITHUB_WORKFLOW") != "Delivery preflight")
                     or not args.daily_full_backup and event != "push"):
                 raise DeliveryError("trusted_main_ci_required")
             policy = validate_policy(object_reply(committed_file(target, "deploy/release-policy.json"), "release_policy_invalid"))
