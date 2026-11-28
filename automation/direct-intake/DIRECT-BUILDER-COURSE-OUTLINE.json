@@ -7,8 +7,10 @@
   "progress": {
     "base_sha": "2044f77648fcf73701fe5f2232817fb817bcec28",
     "branch": "codex/builder/course-outline",
-    "next": "Реализация, изолированные проверки и независимое ревью",
-    "stage": "implementation"
+    "head_sha": "040b50957510a012a23d9dc8b620c84b6a60a863",
+    "next": "Нужно независимое ревью Tech Lead, AI и Roadmap и проверка CI перед выпуском",
+    "pr": 117,
+    "stage": "review"
   },
   "release": null,
   "source": "direct",
