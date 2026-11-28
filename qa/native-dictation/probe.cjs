@@ -23,15 +23,18 @@ const setupPage = `<!doctype html><html lang="en"><button id="en">Prepare Englis
 const fixturePage = `<!doctype html><html lang="en"><button id="source">Prepare synthetic voice source</button><div id="root"></div>
 <script>
   document.getElementById('source').onclick = async () => {
-    const context = new AudioContext({sampleRate:48000});
+    const context = new AudioContext({sampleRate:16000});
     await context.resume();
     const response = await fetch('/voice-' + window.qaVoice + '.wav');
     const audio = await context.decodeAudioData(await response.arrayBuffer());
     const stream = context.createMediaStreamDestination();
     const buffer = context.createBufferSource();
     buffer.buffer = audio;
-    buffer.connect(stream);
-    window.syntheticVoice = { buffer, track: stream.stream.getAudioTracks()[0] };
+    const gain = context.createGain();
+    gain.gain.value = 1.8;
+    buffer.connect(gain).connect(stream);
+    const peak = audio.getChannelData(0).reduce((max, sample) => Math.max(max, Math.abs(sample)), 0);
+    window.syntheticVoice = { buffer, peak, track: stream.stream.getAudioTracks()[0] };
   };
 </script><script src="/fixture.js"></script>`;
 const languages = { en: "en-US", ru: "ru-RU" };
@@ -123,6 +126,9 @@ async function main() {
             this.addEventListener("result", (event) => window.nativeEvents.push(["result", event.results.length, Math.round(performance.now())]));
             this.addEventListener("error", event => window.nativeEvents.push(["error:" + event.error, Math.round(performance.now())]));
             if (!window.syntheticVoice?.track) throw new Error("Synthetic track is not ready");
+            this.continuous = false;
+            this.interimResults = true;
+            window.nativeEvents.push(["diagnostic mode", this.processLocally, this.quality ?? "default", window.syntheticVoice.peak]);
             return realStart.call(this, window.syntheticVoice.track);
           };
         }, key);
@@ -166,6 +172,7 @@ async function main() {
             await page.locator("[role=status]").allTextContents());
         }
         const composed = await field.inputValue();
+        console.log(language, "diagnostic one-shot yielded a transcript");
         assert.match(composed, key === "en" ? /cat|sleeps|sofa/i : /нравится|читать|книг/i);
         assert.equal(saves.length, expectedSaves);
         const savedResponse = page.waitForResponse(response => response.request().method() === "POST" && response.url() === origin + "/");
