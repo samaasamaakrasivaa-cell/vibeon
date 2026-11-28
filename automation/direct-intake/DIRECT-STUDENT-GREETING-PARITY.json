@@ -8,9 +8,9 @@
     "base_sha": "5d07042533faee38382ddf4097b7e83c89ef6dd7",
     "branch": "codex/student/greeting-parity",
     "head_sha": "40ac395fb936b039d38389fbbd90051874222445",
-    "next": "После продвижения main пересобрано и проверено. Дождаться совместимого #114 CD 46151962729 и точного CI.",
+    "next": "Штатный CD 46151962729 подтвердил восстановление. Chromium, ревью и точный CI #116 пройдены. Интегрировать и проверить публикацию.",
     "pr": 116,
-    "stage": "review",
+    "stage": "integration",
     "test_run": 46152070513
   },
   "release": null,
