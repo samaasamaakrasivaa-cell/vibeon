@@ -12,7 +12,7 @@ const origin = "http://127.0.0.1:3334";
 async function recognizeLanguage(page, lang) {
   return page.evaluate(async (language) => {
     const started = performance.now();
-    const modelUrl = new URL("/" + language + ".tar.gz", location.href).href;
+    const modelUrl = new URL("/models/" + language + ".tar.gz", location.href).href;
     let loadTimer;
     const model = await Promise.race([
       Vosk.createModel(modelUrl),
@@ -53,10 +53,18 @@ async function main() {
   const interfaces = execFileSync("ip", ["-o", "link", "show"], { encoding: "utf8" }).trim().split("\n");
   assert.equal(interfaces.length, 1);
   assert.match(interfaces[0], /: lo:/);
+  const original = fs.readFileSync(path.join(modules, "vosk-browser/dist/vosk.js"), "utf8");
+  const start = original.indexOf("var WorkerFactory = createBase64WorkerFactory(");
+  const end = original.indexOf(";", start) + 1;
+  const encoded = original.slice(start, end).match(/createBase64WorkerFactory\('([A-Za-z0-9+/=]+)'/);
+  assert.ok(start >= 0 && end > start && encoded, "Pinned worker packaging changed");
+  const worker = Buffer.from(encoded[1], "base64").toString("utf8");
+  const standalone = worker.slice(worker.indexOf("\n", 10) + 1);
+  const library = original.slice(0, start) +
+    'var WorkerFactory = function WorkerFactory(options) { return new Worker("/vosk-worker.js", options); };' + original.slice(end);
   const files = new Map([
-    ["/vosk.js", path.join(modules, "vosk-browser/dist/vosk.js")],
-    ["/en.tar.gz", path.join(scratch, "en.tar.gz")],
-    ["/ru.tar.gz", path.join(scratch, "ru.tar.gz")],
+    ["/models/en.tar.gz", path.join(scratch, "en.tar.gz")],
+    ["/models/ru.tar.gz", path.join(scratch, "ru.tar.gz")],
     ["/en.wav", path.join(scratch, "en.wav")],
     ["/ru.wav", path.join(scratch, "ru.wav")],
   ]);
@@ -67,6 +75,14 @@ async function main() {
       writes++;
       return res.writeHead(405).end();
     }
+    if (req.url === "/vosk.js" || req.url === "/vosk-worker.js") {
+      res.setHeader("Content-Type", "application/javascript");
+      if (req.url === "/vosk-worker.js") {
+        res.setHeader("Content-Security-Policy", "default-src 'none'; script-src 'self' 'unsafe-eval'; " +
+          "connect-src " + origin + "/models/; worker-src 'none'");
+      }
+      return res.end(req.url === "/vosk.js" ? library : standalone);
+    }
     const file = files.get(req.url);
     if (file) {
       if (req.url.endsWith(".js")) res.setHeader("Content-Type", "application/javascript");
@@ -75,13 +91,14 @@ async function main() {
     }
     if (req.url !== "/") return res.writeHead(404).end();
     res.setHeader("Content-Type", "text/html;charset=utf-8");
-    res.setHeader("Content-Security-Policy", "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; connect-src 'self'; worker-src blob: 'self'");
+    res.setHeader("Content-Security-Policy", "default-src 'none'; script-src 'self'; connect-src 'self'; worker-src 'self'");
     res.end('<!doctype html><html><title>Local worker prototype</title><script src="/vosk.js"></script></html>');
   }).listen(3334, "127.0.0.1");
 
   await new Promise(resolve => server.once("listening", resolve));
-  const browser = await chromium.launch({ executablePath: "/usr/bin/google-chrome", args: ["--no-sandbox"] });
+  let browser;
   try {
+    browser = await chromium.launch({ executablePath: "/usr/bin/google-chrome", args: ["--no-sandbox"] });
     for (const [lang, expected] of [
       ["en", /cat|sleeps|teacher|exercises/i],
       ["ru", /читать|книг|урок|время/i],
@@ -108,7 +125,7 @@ async function main() {
     assert.equal(writes, 0);
     console.log("Both languages recognized. Loopback only, no outgoing browser requests and no audio uploads.");
   } finally {
-    await browser.close();
+    await browser?.close();
     server.close();
   }
 }
