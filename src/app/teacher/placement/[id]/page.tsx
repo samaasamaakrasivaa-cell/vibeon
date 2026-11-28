@@ -8,6 +8,7 @@ import { lastPublication, publicationStamp, reportDraft, storedReport } from "@/
 import { getT } from "@/lib/i18n/server";
 import { getBank, RUBRICS, trackOf } from "@/lib/placement/bank";
 import { teacherReview } from "@/lib/placement/teacher-review";
+import { wsTeacherDecisionView } from "@/lib/placement/ws-teacher-write";
 import { PL_LEVELS, STEPS, summarize } from "@/lib/placement/engine";
 import { speechTranscript } from "@/lib/placement/speech-transcript";
 import { reviewData } from "@/lib/placement/review";
@@ -90,6 +91,7 @@ export default async function PlacementReviewPage({ params, searchParams }: { pa
           parts={partsOf(st)} dates={dates} base={base} who={who} reveal={a.reveal}
           id={id} teen={st.track === "teen"} lessonQs={lessonQs} mode={a.mode} status={a.status} level={a.level} showResult={a.showResult} tgSent={((a.review ?? {}) as { tgSentAt?: string }).tgSentAt ? new Date(((a.review ?? {}) as { tgSentAt: string }).tgSentAt).toLocaleString("ru-RU", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: me.timezone }) : null} sm={sm} d={d}
           review={{ ...draft.active, report: rep } as never}
+          wsDecision={{ writing: wsTeacherDecisionView(a, "writing"), speaking: wsTeacherDecisionView(a, "speaking") }}
           howTo={RUBRICS.how_to_decide_ru} sublevels={RUBRICS.sublevels_ru}
         />
       </div>

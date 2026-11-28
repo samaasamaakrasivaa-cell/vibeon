@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useT } from "@/lib/i18n/client";
 import { addSpeakingToLesson, aiScore, assignExtraWS, deletePlacement, finalizePlacement, saveReview, saveSpeechTranscript, sendResultTelegram, setShowResult, type ReviewInput } from "@/lib/placement/actions";
 import { AnnotatedResponse } from "./AnnotatedResponse";
+import { WsTeacherDecision, type WsTeacherDecisionView } from "./WsTeacherDecision";
 import { transcribe } from "../ai/audio";
 import type { PlScore } from "@/lib/ai/tasks";
 import { BASE, finalHint, PL_LEVELS, STEPS, type PLevel, type Summary } from "@/lib/placement/engine";
@@ -26,6 +27,7 @@ export type ReviewProps = {
   sm: Summary; d: ReviewData; review: { legacyReview?: LegacyReview; writing?: Record<string, unknown>; speaking?: Record<string, unknown>; points?: boolean[]; comment?: string; wNote?: string; sNote?: string; wc?: Record<string, string>; sc?: Record<string, string>; lesson?: { level: string; marks: Record<string, unknown> } | null; report?: { student?: unknown; parent?: unknown; sent?: boolean; sentAt?: string }; ai?: Partial<Record<"writing" | "speaking", PlScore & { level?: string; transcripts?: string[] }>> };
   lessonQs: { level: string; questions: string[] }[]; // говорение на уроке: вопросы уровнем выше и ниже
   transcript: { source: string; texts: string[] }; regrading: boolean; howTo: string; sublevels: string;
+  wsDecision?: Partial<Record<"writing" | "speaking", WsTeacherDecisionView>>;
   parts?: string[]; dates?: Record<string, string>; // разделы теста и даты, когда каждый пройден
   base?: { sub: string; from: "test" | "teacher" } | null; // грамматику не проверяли: от какого уровня шли остальные разделы
   who?: string; reveal?: string[]; // имя ученика (для PDF таблицы и списков) и скрипты, открытые ученику
@@ -341,7 +343,7 @@ export function PlacementReview(p: ReviewProps) {
           <p className="small muted m-0">{t("pr.wsTaskLevel", { l: p.d.writing.level })}</p>
           <p className="m-0">{p.d.writing.prompt_en}</p>
           <div className="tpassage plpassage">{p.d.writing.text || <span className="muted">{t("pl.noAnswer")}</span>}</div>
-          {aiPanel("writing")}
+          {!p.wsDecision?.writing && aiPanel("writing")}
           <div className="small muted">{t("pl.wordsOf", { n: p.d.writing.text.trim() ? p.d.writing.text.trim().split(/\s+/).length : 0, a: p.d.writing.min, b: p.d.writing.max })}</div>
           {p.d.writing.points.length > 0 && (
             <div className="plrub"><b className="small">{t("pl.pointsTitle")}</b>
@@ -350,8 +352,12 @@ export function PlacementReview(p: ReviewProps) {
             </div>
           )}
           <details><summary className="small">{t("pl.expects")}</summary><ul className="small mt-2">{p.d.writing.expects.map((e) => <li key={e}>{e}</li>)}</ul></details>
-          {rubric(t("pl.part.writing"), RS.writing, w, setW, wHint, p.d.writing.level, "writing")}
-          {noteBox("pl-wnote", wNote, setWNote)}
+          {p.wsDecision?.writing
+            ? <WsTeacherDecision key={`${p.wsDecision?.writing.expected.source}-${p.wsDecision?.writing.expected.generation}-${p.wsDecision?.writing.at}`} id={p.id} kind="writing" view={p.wsDecision?.writing} />
+            : <>
+                {rubric(t("pl.part.writing"), RS.writing, w, setW, wHint, p.d.writing.level, "writing")}
+                {noteBox("pl-wnote", wNote, setWNote)}
+              </>}
           {extraBox("writing", p.d.writing.level, w, RS.writing)}
           {prevBlock("writing")}
           </div>
@@ -370,9 +376,13 @@ export function PlacementReview(p: ReviewProps) {
             </div>
           ))}
           <details><summary className="small">{t("pl.expects")}</summary><ul className="small mt-2">{p.d.speaking.expects.map((e) => <li key={e}>{e}</li>)}</ul></details>
-          {aiPanel("speaking")}
-          {rubric(t("pl.part.speaking"), RS.speaking, s, setS, sTask, p.d.speaking.level, "speaking")}
-          {noteBox("pl-snote", sNote, setSNote)}
+          {!p.wsDecision?.speaking && aiPanel("speaking")}
+          {p.wsDecision?.speaking
+            ? <WsTeacherDecision key={`${p.wsDecision?.speaking.expected.source}-${p.wsDecision?.speaking.expected.generation}-${p.wsDecision?.speaking.at}`} id={p.id} kind="speaking" view={p.wsDecision?.speaking} />
+            : <>
+                {rubric(t("pl.part.speaking"), RS.speaking, s, setS, sTask, p.d.speaking.level, "speaking")}
+                {noteBox("pl-snote", sNote, setSNote)}
+              </>}
           {extraBox("speaking", p.d.speaking.level, s, RS.speaking)}
           {prevBlock("speaking")}
           {lessonBox()}
