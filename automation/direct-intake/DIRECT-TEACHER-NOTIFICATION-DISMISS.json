@@ -7,11 +7,11 @@
   "progress": {
     "base_sha": "8824b7d9246986d23a3e6b92c2fe413aeb7ca104",
     "branch": "codex/teacher/dismiss-news-notifications",
-    "head_sha": "f50d4722a4e1e3db4f2f777bc3e5edf42f2750c5",
-    "next": "Сборка и браузерная проверка на синтетике пройдены. Идут независимое ревью, CI и согласование Platform.",
+    "head_sha": "5a96e9fd46404ad6f9ff2500fa2a1c123b535b67",
+    "next": "Исправлено замечание о совместной записи настроек без изменения схемы. Сборка и браузерный сценарий с тремя вкладками пройдены. Повторное ревью, CI и согласование Platform.",
     "pr": 92,
     "stage": "review",
-    "test_run": 46124490506
+    "test_run": 46124982925
   },
   "release": null,
   "source": "direct",
