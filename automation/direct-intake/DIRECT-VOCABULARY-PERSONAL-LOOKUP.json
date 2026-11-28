@@ -7,8 +7,8 @@
   "progress": {
     "base_sha": "2044f77648fcf73701fe5f2232817fb817bcec28",
     "branch": "codex/vocabulary-training/my-words-lookup",
-    "head_sha": "67457d9d2e1edffdf4972603ea201bd94029938f",
-    "next": "Проверить изменения на точном SHA, дождаться CI и провести выпуск через main",
+    "head_sha": "2980c5f5ead478675e70de457942f62e9bbd8ebe",
+    "next": "Повторить проверки после закрепления общего лимита словарного поиска",
     "pr": 114,
     "stage": "review"
   },
