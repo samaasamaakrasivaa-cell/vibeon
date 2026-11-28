@@ -54,10 +54,18 @@ type HomeworkAttemptScope = {
 
 type HomeworkAttempt = HomeworkAttemptScope & {
   taskId: string;
+  revision: number;
   payload: unknown;
   status: string;
   teacherReview: unknown;
 };
+
+type ArchivedHomeworkAttempt<Attempt extends HomeworkAttempt = HomeworkAttempt> = {
+  readonly id: string;
+  readonly snapshot: Attempt;
+};
+
+type HomeworkResubmissionDraft = HomeworkAttempt & { previousAttemptId: string };
 
 function matchesHomeworkAttempt(scope: HomeworkAttemptScope, task: HomeworkTask, attempt: HomeworkAttempt) {
   return attempt.lessonInstanceId === scope.lessonInstanceId &&
@@ -78,21 +86,29 @@ function isReturnedHomeworkAttempt(
     canReviewHomeworkTask(task.type) && attempt.status === "REVIEWED" && wasReturnedForRevision(attempt.teacherReview);
 }
 
-/** The adapter must archive this snapshot and open the draft atomically under the answer's current revision. */
+/** The adapter allocates a unique archive ID for this attempt and commits the archive and draft together at the expected revision. */
 export function planHomeworkResubmission<Attempt extends HomeworkAttempt>(
   scope: HomeworkAttemptScope,
   task: HomeworkTask,
   assignment: HomeworkReviewAssignment,
   reviewedAttempt: Attempt,
+  archiveId: string,
 ) {
-  if (!isReturnedHomeworkAttempt(scope, task, assignment, reviewedAttempt)) return null;
+  if (!archiveId || !isReturnedHomeworkAttempt(scope, task, assignment, reviewedAttempt)) return null;
 
+  const archivedAttempt: ArchivedHomeworkAttempt<Attempt> = {
+    id: archiveId,
+    snapshot: structuredClone(reviewedAttempt),
+  };
   return {
-    archivedAttempt: structuredClone(reviewedAttempt),
+    expectedRevision: reviewedAttempt.revision,
+    archivedAttempt,
     draft: {
       lessonInstanceId: scope.lessonInstanceId,
       studentId: scope.studentId,
       taskId: task.id,
+      previousAttemptId: archiveId,
+      revision: reviewedAttempt.revision + 1,
       payload: {},
       status: "DRAFT" as const,
       teacherReview: null,
@@ -101,18 +117,19 @@ export function planHomeworkResubmission<Attempt extends HomeworkAttempt>(
   };
 }
 
-/** Use the current draft and its linked archive as read from trusted storage, with a revision check at commit. */
+/** Load the draft and archive from storage. The adapter commits and advances the revision only if it still matches. */
 export function submitHomeworkResubmission(
   scope: HomeworkAttemptScope,
   task: HomeworkTask,
   assignment: HomeworkReviewAssignment,
-  { archivedAttempt, draft }: { archivedAttempt: HomeworkAttempt | null; draft: HomeworkAttempt },
+  { archivedAttempt, draft }: { archivedAttempt: ArchivedHomeworkAttempt | null; draft: HomeworkResubmissionDraft },
 ) {
-  if (!archivedAttempt || !isReturnedHomeworkAttempt(scope, task, assignment, archivedAttempt) ||
+  if (!archivedAttempt || !draft.previousAttemptId || draft.previousAttemptId !== archivedAttempt.id ||
+      !isReturnedHomeworkAttempt(scope, task, assignment, archivedAttempt.snapshot) ||
       !matchesHomeworkAttempt(scope, task, draft) || draft.status !== "DRAFT" || draft.teacherReview !== null ||
       !needsHomeworkReview(task, assignment, draft.payload, "NEEDS_REVIEW", false)) {
     return null;
   }
 
-  return { status: "NEEDS_REVIEW" as const };
+  return { status: "NEEDS_REVIEW" as const, expectedRevision: draft.revision };
 }
