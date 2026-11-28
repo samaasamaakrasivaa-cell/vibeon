@@ -1,5 +1,9 @@
+"use client";
+
+import { useState } from "react";
 import { Submit } from "../auth/Submit";
 import { focusDetails, observationFocusOptions, type ObservationFocus } from "@/lib/lessons/observation-focus";
+import { PrivateLessonDictation } from "./PrivateLessonDictation";
 
 type LessonAnalysisActionsProps = {
   lessonId: string;
@@ -72,14 +76,15 @@ export function LessonAnalysisActions({
   publish,
 }: LessonAnalysisActionsProps) {
   const t = labels[lang];
+  const [dictating, setDictating] = useState(false);
   return (
     <div id={`lesson-analysis-actions-${lessonId}`} className="flex min-w-0 flex-col gap-2">
       {state && <p className="small muted m-0" role="status">{pending ? t.pending : t[state]}</p>}
-      <form action={saveObservation} className="card flex flex-col gap-3">
+      <form action={saveObservation} className="card flex flex-col gap-3" onSubmit={(event) => { if (dictating) event.preventDefault(); }}>
         <div className="field">
           <label htmlFor="lesson-observation">{t.observation}</label>
-          <textarea id="lesson-observation" name="observation" rows={3} maxLength={observationMax} className="input"
-            placeholder={t.example} aria-describedby="observation-privacy" defaultValue={observation?.note ?? ""} />
+          <PrivateLessonDictation lang={lang} initialText={observation?.note ?? ""} maxLength={observationMax}
+            placeholder={t.example} onBusy={setDictating} />
           <p id="observation-privacy" className="small muted m-0">{t.privacy}</p>
         </div>
         <div className="field">
@@ -91,11 +96,11 @@ export function LessonAnalysisActions({
           </select>
         </div>
         {state === null && canGenerate && <p className="small muted m-0 break-words">{estimate}</p>}
-        <div className="flex flex-wrap gap-2">
+        <fieldset disabled={dictating} className="m-0 flex min-w-0 flex-wrap gap-2 border-0 p-0">
           <Submit className="btn secondary sm">{t.saveObservation}</Submit>
           {state === null && (hasEvidence || observation?.focus) &&
             <Submit className="btn primary sm" formAction={generate}>{canGenerate ? t.generate : t.save}</Submit>}
-        </div>
+        </fieldset>
         {state === null && !hasEvidence && !observation?.focus && <p className="small muted m-0">{t.noEvidence}</p>}
       </form>
       {state === "draft" && !pending && (
