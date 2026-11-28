@@ -28,7 +28,7 @@ jobs:
       - name: Check local course outline image recognition
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends tesseract-ocr tesseract-ocr-eng tesseract-ocr-rus fonts-dejavu-core
+          sudo apt-get install -y --no-install-recommends tesseract-ocr tesseract-ocr-eng tesseract-ocr-rus poppler-utils fonts-dejavu-core
           node --conditions=react-server --import tsx scripts/check-course-outline-ocr.ts
       - name: Check course outline import on PostgreSQL
         run: |

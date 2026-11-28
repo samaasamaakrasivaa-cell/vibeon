@@ -29,10 +29,26 @@ function isStudentRecord(line: string) {
   return false;
 }
 
+function sourceLines(source: string) {
+  return source.normalize("NFKC").replace(/\r\n?/gu, "\n").split("\n").map((line) => line.trim()).filter(Boolean);
+}
+
+function hasStudentRecords(lines: string[]) {
+  return studentField.test(lines.join("\n")) || lines.some((line) => {
+    const content = unitHeading.exec(line)?.groups?.title ?? lessonHeading.exec(line)?.groups?.title ??
+      curriculumField.exec(line)?.groups?.value;
+    return isStudentRecord(line) || (content !== undefined && isStudentRecord(content));
+  });
+}
+
+export function hasCourseOutlineStudentRecords(source: string) {
+  return hasStudentRecords(sourceLines(source));
+}
+
 /** Admit only lines that can be assigned to the outline, and reject the entire mixed document. */
 export function verifyCourseOutlineSource(source: string): { text: string } | { error: "studentRecords" | "unverified" | "noUnits" } {
-  const lines = source.normalize("NFKC").replace(/\r\n?/gu, "\n").split("\n").map((line) => line.trim()).filter(Boolean);
-  if (studentField.test(lines.join("\n")) || lines.some(isStudentRecord)) return { error: "studentRecords" };
+  const lines = sourceLines(source);
+  if (hasStudentRecords(lines)) return { error: "studentRecords" };
 
   const outline: string[] = [];
   let hasUnit = false;
@@ -40,7 +56,6 @@ export function verifyCourseOutlineSource(source: string): { text: string } | { 
     if (outlineTitle.test(line)) continue;
     const unit = unitHeading.exec(line)?.groups;
     if (unit) {
-      if (isStudentRecord(unit.title)) return { error: "studentRecords" };
       hasUnit = true;
       outline.push(unit.title ? `${unit.label} ${unit.number} — ${unit.title}` : `${unit.label} ${unit.number}`);
       continue;
@@ -48,10 +63,8 @@ export function verifyCourseOutlineSource(source: string): { text: string } | { 
     const lesson = lessonHeading.exec(line)?.groups;
     const field = curriculumField.exec(line)?.groups;
     if (hasUnit && lesson) {
-      if (isStudentRecord(lesson.title)) return { error: "studentRecords" };
       outline.push(lesson.title ? `${lesson.label} — ${lesson.title}` : lesson.label);
     } else if (hasUnit && field) {
-      if (isStudentRecord(field.value)) return { error: "studentRecords" };
       if (field.value) outline.push(`${field.label}: ${field.value}`);
     } else {
       return { error: "unverified" };

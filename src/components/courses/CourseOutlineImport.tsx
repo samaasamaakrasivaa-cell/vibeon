@@ -5,13 +5,13 @@ import { planCourseOutline } from "@/lib/ai/actions";
 import { useT } from "@/lib/i18n/client";
 import { isCourseOutlineImage, OUTLINE_FILE_LIMIT, OUTLINE_SOURCE_LIMIT, type CourseOutlineEntry } from "@/lib/tasks/course-outline";
 import { importCourseOutline } from "@/lib/teacher/courses";
-import { extractFile } from "../ai/BookImport";
+import { extractFileResult } from "../ai/BookImport";
 import { randomId } from "../builder/rid";
 import { Dialog } from "../Dialog";
 import { Icon } from "../Icon";
 
 const formats = ".jpg,.jpeg,.png,.webp,.pdf,.docx";
-const outlineErrors = ["outlineText", "outlineImage", "outlineImageSize", "outlineBusy"] as const;
+const outlineErrors = ["outlineText", "outlineImage", "outlineImageSize", "outlineBusy", "outlinePdfPages", "studentRecords"] as const;
 const extractionErrors = ["type", "size", "limit", "tariff", "off"] as const;
 const textFields = [
   ["topics", "crs.outline.topics"],
@@ -24,7 +24,7 @@ type DraftLesson = CourseOutlineEntry & { key: string };
 type DraftUnit = CourseOutlineEntry & { key: string; lessons: DraftLesson[] };
 type Draft = { ticket: string; units: DraftUnit[] };
 
-function OriginalImage({ file }: { file: File }) {
+function OriginalOutline({ file }: { file: File }) {
   const [url, setUrl] = useState<string | null>(null);
   useEffect(() => {
     const preview = URL.createObjectURL(file);
@@ -32,6 +32,7 @@ function OriginalImage({ file }: { file: File }) {
     return () => URL.revokeObjectURL(preview);
   }, [file]);
 
+  if (!isCourseOutlineImage(file.name)) return url && <a href={url} target="_blank" rel="noopener">{file.name}</a>;
   return (
     <details>
       <summary className="cursor-pointer">{file.name}</summary>
@@ -88,9 +89,12 @@ export function CourseOutlineImport({ courseId, onClose, onSaved }: {
       if (source === null) {
         setBusy("reading");
         const pages: string[] = [];
+        let needsReview = false;
         for (const file of files) {
           try {
-            const page = (await extractFile(file, "course-outline")).trim();
+            const extraction = await extractFileResult(file, "course-outline");
+            const page = extraction.text.trim();
+            needsReview ||= extraction.ocr;
             if (!page) {
               setError(`${file.name} · ${t("ai.err.empty")}`);
               return;
@@ -105,7 +109,7 @@ export function CourseOutlineImport({ courseId, onClose, onSaved }: {
           }
         }
         source = pages.join("\n\n");
-        if (source.length <= OUTLINE_SOURCE_LIMIT && files.some((file) => isCourseOutlineImage(file.name))) {
+        if (source.length <= OUTLINE_SOURCE_LIMIT && needsReview) {
           setReviewText(source);
           return;
         }
@@ -212,8 +216,8 @@ export function CourseOutlineImport({ courseId, onClose, onSaved }: {
             }} />
           {reviewText !== null && (
             <>
-              {files.filter((file) => isCourseOutlineImage(file.name)).map((file, index) => (
-                <OriginalImage key={`${index}:${file.name}`} file={file} />
+              {files.filter((file) => isCourseOutlineImage(file.name) || /\.pdf$/i.test(file.name)).map((file, index) => (
+                <OriginalOutline key={`${index}:${file.name}`} file={file} />
               ))}
               <label htmlFor="course-outline-recognized">{t("crs.outline.recognized")}</label>
               <p id="course-outline-recognized-help" className="hint m-0">{t("crs.outline.recognizedHelp")}</p>
