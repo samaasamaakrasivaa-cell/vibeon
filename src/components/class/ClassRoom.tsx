@@ -64,6 +64,16 @@ export type ClassData = {
   byStudent?: Record<string, { answers: Answers; statuses: Record<string, string>; reviews: Record<string, Review>; aiDrafts: Record<string, AiCheck>; words: Word[]; note?: string; times?: Record<string, [number, number]> }>;
 };
 
+function restoreVisibleHomework<T>(current: Record<string, T>, saved: Record<string, T>, taskIds: string[]) {
+  const next = { ...current };
+  for (const id of taskIds) {
+    const value = saved[id];
+    if (value === undefined) delete next[id];
+    else next[id] = value;
+  }
+  return next;
+}
+
 function StartLessonButton({ active, onStart }: { active: boolean; onStart: () => Promise<boolean> }) {
   const { t } = useT();
   const [state, setState] = useState<"pending" | "error" | "done" | null>(null);
@@ -102,7 +112,20 @@ export function ClassRoom({ d }: { d: ClassData }) {
   [openedSid, d.homework, d.groupReviewAssignments]);
   const viewRef = useRef(viewSid); viewRef.current = viewSid;
   const [ansBy, setAnsBy] = useState<Record<string, Answers>>(() => (gTeacher ? Object.fromEntries(Object.entries(d.byStudent ?? {}).map(([k, v]) => [k, v.answers])) : { [own]: d.answers }));
+  const [revBy, setRevBy] = useState<Record<string, Record<string, Review>>>(() => (gTeacher ? Object.fromEntries(Object.entries(d.byStudent ?? {}).map(([k, v]) => [k, v.reviews])) : { [own]: d.reviews }));
+  const [previousTasks, setPreviousTasks] = useState(d.tasks);
+  if (!teacher && previousTasks !== d.tasks) {
+    setPreviousTasks(d.tasks);
+    const previousIds = new Set(previousTasks.map((task) => task.id));
+    const newlyVisible = d.tasks.filter((task) => task.section === "homework" && !previousIds.has(task.id)).map((task) => task.id);
+    if (newlyVisible.length) {
+      // Restore saved data before the new cards mount, keeping local edits to open tasks.
+      setAnsBy((all) => ({ ...all, [own]: restoreVisibleHomework(all[own], d.answers, newlyVisible) }));
+      setRevBy((all) => ({ ...all, [own]: restoreVisibleHomework(all[own], d.reviews, newlyVisible) }));
+    }
+  }
   const answers = ansBy[viewSid] ?? {};
+  const reviews = revBy[viewSid] ?? {};
   const statusesAll = d.statuses;
   const aiDrafts = gTeacher ? d.byStudent?.[viewSid]?.aiDrafts ?? {} : d.aiDrafts;
   const viewMember = d.group?.members.find((m) => m.sid === viewSid);
@@ -117,8 +140,6 @@ export function ClassRoom({ d }: { d: ClassData }) {
   const msgsRef = useRef(msgs); msgsRef.current = msgs;
   const [wordsBy, setWordsBy] = useState<Record<string, Word[]>>(() => (gTeacher ? Object.fromEntries(Object.entries(d.byStudent ?? {}).map(([k, v]) => [k, v.words])) : { [own]: d.words }));
   const words = wordsBy[viewSid] ?? [];
-  const [revBy, setRevBy] = useState<Record<string, Record<string, Review>>>(() => (gTeacher ? Object.fromEntries(Object.entries(d.byStudent ?? {}).map(([k, v]) => [k, v.reviews])) : { [own]: d.reviews }));
-  const reviews = revBy[viewSid] ?? {};
   const homeworkReviewRefresh = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   useEffect(() => () => clearTimeout(homeworkReviewRefresh.current), []);
   const [online, setOnline] = useState<string[]>([]);
