@@ -8,9 +8,9 @@
     "base_sha": "7aa0781b4f6046a2c1184426b6c76a9c9aa9d746",
     "branch": "codex/teacher/student-vocabulary-tab",
     "head_sha": "6bbd34cac1ce3d4a1f5e60bd62d6a9ab04155ed8",
-    "next": "Включено в PR #121. Точное дерево 3fccc74 проверено на синтетике. Ждём итоговое ревью и CI партии 46153917118.",
+    "next": "Общий PR #121 на 019d6e8 прошёл ревью и CI. Автопроверка отклонила слияние в main без прямого подтверждения владельцем общего выпуска.",
     "pr": 119,
-    "stage": "integration",
+    "stage": "blocked",
     "test_run": 46152814680
   },
   "release": null,
