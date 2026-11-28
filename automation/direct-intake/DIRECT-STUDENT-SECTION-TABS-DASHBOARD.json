@@ -8,9 +8,10 @@
     "base_sha": "6b57ad51f4d7d48fe661461f9ab52b2d1fc18098",
     "branch": "codex/student/section-tabs-dashboard",
     "head_sha": "22a16eab02202755a249cdad462c3e7b6a3dd01d",
-    "next": "CI и независимое ревью точного #127 прошли. Сверить основную ветку и очередь перед слиянием, подтвердить публичный SHA.",
+    "merge_sha": "cfaf344cf94fef2a1be7ee6cec6e71e8436db8a0",
+    "next": "PR #127 в main, итоговое дерево совпадает с проверенным. Ждать CD 46158731180 и подтверждения публичной версии.",
     "pr": 127,
-    "stage": "integration",
+    "stage": "publication",
     "test_run": 46158126936
   },
   "release": null,
