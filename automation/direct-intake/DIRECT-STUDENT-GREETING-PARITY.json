@@ -5,10 +5,13 @@
   "key": "DIRECT-STUDENT-GREETING-PARITY",
   "owner": "student",
   "progress": {
-    "base_sha": "2044f77648fcf73701fe5f2232817fb817bcec28",
+    "base_sha": "f87d8b6f0993b79819ba8d568d0051585f98ec3e",
     "branch": "codex/student/greeting-parity",
-    "next": "Вынести текущую шапку преподавателя в общий компонент и проверить совпадение на двух ролях.",
-    "stage": "implementation"
+    "head_sha": "d41e3a85c21a5ba868f228a585b0712ecd18416e",
+    "next": "Chromium и независимое ревью прошли. Дождаться подтверждённого восстановления #107 и точного CI #116.",
+    "pr": 116,
+    "stage": "review",
+    "test_run": 46151558787
   },
   "release": null,
   "source": "direct",
