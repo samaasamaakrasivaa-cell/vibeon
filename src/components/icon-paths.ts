@@ -12,6 +12,7 @@ export const ICONS = {
   chevd: "<path d=\"M6 9l6 6 6-6\"/>",
   down: "<path d=\"M12 5v14M6 13l6 6 6-6\"/>",
   route: "<path d=\"M5 19c3 0 3-5 7-5s4 5 7 5\"/><path d=\"M12 14V4l6 3-6 3\"/>",
+  mountain: '<path d="m2 20 8-11 4 5 2-3 6 9H2Z"/><path d="m7 13 3 2 2-2M10 9V3l6 2-6 2"/>',
   info: "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M12 11v5M12 8h.01\"/>",
   archive: "<rect x=\"3\" y=\"4\" width=\"18\" height=\"5\" rx=\"1.5\"/><path d=\"M5 9v10h14V9M10 13h4\"/>",
   levelI: "<path d=\"M4 20V14M10 20V9M16 20V4M2 20h20\"/>",
