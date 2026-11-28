@@ -14,7 +14,25 @@
     "stage": "publication",
     "test_run": 46166143104
   },
-  "release": null,
+  "release": {
+    "ci": {
+      "result": "success",
+      "run": 46166143104,
+      "sha": "50c66adab9e4a2ac082d8f0562a5c971b915e3c6"
+    },
+    "delivery": {
+      "result": "success",
+      "run": 46166780606,
+      "sha": "9c9e2494619b31bf535ad68e5b39359de4400400"
+    },
+    "owner_note": "Для владельца: Словарь и тренировки — преподаватель управляет контекстным переводом для всех учеников текущего урока.",
+    "review": {
+      "comment": 7242372505,
+      "result": "success",
+      "sha": "50c66adab9e4a2ac082d8f0562a5c971b915e3c6"
+    },
+    "site_sha": "9c9e2494619b31bf535ad68e5b39359de4400400"
+  },
   "source": "direct",
   "version": 1
 }
