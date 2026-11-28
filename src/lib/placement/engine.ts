@@ -875,7 +875,7 @@ export function wsStep(st: PState, kind: "writing" | "speaking"): number | null 
 }
 
 /** Ступень по чтению/аудированию: самый высокий уровень, где верно 50%+ (тексты одного уровня — вместе); там 80%+ → X+. */
-function skillStep(r: Record<string, [number, number]>, level?: PLevel) {
+export function skillStep(r: Record<string, [number, number]>, level?: PLevel) {
   void level;
   const lv = PL_LEVELS.filter((l) => r[l]?.[1]);
   if (!lv.length) return null;
