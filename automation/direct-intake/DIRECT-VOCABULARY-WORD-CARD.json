@@ -8,9 +8,10 @@
     "base_sha": "daacd5bf1e2f13c4c0b063f5db07f2f47c887dbc",
     "branch": "codex/vocabulary-training/word-card-details",
     "head_sha": "82450c8e5566a2ae1a506bfcf3ae41ab3aabb479",
-    "next": "CI, ревью и Chromium прошли. Автопроверка требует явное разрешение на merge PR №97 и рабочий выпуск.",
+    "merge_sha": "a3673f8bf137eb165bf6fe5e311baf531bb30a2f",
+    "next": "PR объединён. Проверить предметный сценарий объединённого коммита, штатный выпуск и публичный SHA.",
     "pr": 97,
-    "stage": "blocked",
+    "stage": "publication",
     "test_run": 46130707159
   },
   "release": null,
