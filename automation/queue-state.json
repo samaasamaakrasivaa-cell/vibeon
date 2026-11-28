@@ -10,31 +10,32 @@
     16,
     18
   ],
-  "lease": {
-    "token": "2f52f17925bb4f7193ca1534cd9201ce",
-    "started_at": "2026-11-28T00:01:23.784722Z",
-    "expires_at": "2026-11-28T03:01:23.784722Z"
-  },
+  "lease": null,
   "checkpoint": {
     "issue": 25,
-    "stage": "await_ci_review",
+    "stage": "blocked_global_release",
     "branch": "codex/vocabulary/voc-09",
     "base_sha": "8c71158ca82a234370f6b1ae39b99c3aa4485e42",
-    "next": "Verify CI 46061027417 and native Codex review of exact 9c78a8dd0ae2b4bed5348c14ea12d6b83401e120; no repeat request. Check latest main and branch requirements before merge; public site DNS unavailable locally. Prior CI and review passed, merged non-overlapping scheduling hunk and other main changes.",
+    "next": "Global CD-01 failure: publish returned status unchanged/insufficient_backup_space. Platform/Tech Lead must verify safe backup capacity and successful current-main release first; no merge or other product work. Then recheck Issue #25 ownership, latest main and overlaps, refresh PR #54 and rerun exact-head subject CI/review. Local git and public health/version DNS unavailable. Do not delete backups or bypass CD-01.",
     "head_sha": "9c78a8dd0ae2b4bed5348c14ea12d6b83401e120",
     "pr": 54,
     "review_request_comment_id": 7227146200,
     "ci_run_ids": [
       46061027417
     ],
-    "ci_status": "in_progress",
-    "subject_tests": "pending_new_head",
-    "review_summary_id": null,
-    "review_receipt_id": null,
+    "ci_status": "success",
+    "subject_tests": "passed_on_prior_base_8c71158",
+    "review_summary_id": 7224060100,
+    "review_receipt_id": 7227179172,
     "refresh_base_sha": "8c71158ca82a234370f6b1ae39b99c3aa4485e42",
     "prior_head_sha": "589b43e29c47e11cbbe349266c918f869b585b50",
     "prior_ci_run_id": 46054332372,
-    "prior_review_summary_id": 7224060100
+    "prior_review_summary_id": 7224060100,
+    "observed_main_sha": "82473a1199a160651ae2bed2f8365b5e536d7c72",
+    "release_blocker": "insufficient_backup_space",
+    "release_run_id": 46068517899,
+    "last_confirmed_release_sha": "437986d954400f8b44ba456f02a68df18b5f0e31",
+    "last_confirmed_release_run_id": 46066858835
   },
   "last_probe": {
     "type": "background_native_review",
