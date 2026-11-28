@@ -366,7 +366,8 @@ class Release:
         atomic_json(self.backup_dir / "verified.json", {"schema_version": 1, "sha": self.sha,
                     "image": self.image, "rollback_image": self.rollback_image, "previous_image": self.current_image,
                     "uploads_sha256": source_files["sha256"],
-                    "database_dump_sha256": file_sha256(dump)})
+                    "database_dump_sha256": file_sha256(dump),
+                    "uploads_archive_sha256": file_sha256(self.backup_dir / "uploads.tar.gz")})
 
     def cleanup_restore(self):
         failed = False
@@ -461,7 +462,8 @@ class Release:
                 except (Exception, KeyboardInterrupt):
                     report["storage_retention"] = {"status": "attention", "images_removed": 0,
                                                    "verified_full_backups": 0, "full_backup_candidates": 0,
-                                                   "full_backup_candidate_bytes": 0}
+                                                   "full_backup_candidate_bytes": 0,
+                                                   "full_backups_removed": 0, "full_backups_removed_bytes": 0}
             return report
 
 

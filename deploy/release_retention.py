@@ -1,7 +1,10 @@
 """Post-publication retention of VibeOn images and read-only backup planning."""
 import datetime
+import hashlib
 import json
 import re
+import stat
+from pathlib import Path
 
 IMAGE = re.compile(r"sha256:[0-9a-f]{64}")
 SHA = re.compile(r"[0-9a-f]{40}")
@@ -19,6 +22,8 @@ PINS = frozenset({
     "437986d954400f8b44ba456f02a68df18b5f0e31",
     "82473a1199a160651ae2bed2f8365b5e536d7c72",
 })
+FULL_FILES = frozenset({"database.dump", "uploads.tar.gz", "verified.json",
+                        ".env", "docker-compose.prod.yml", "release-image.json"})
 KEEP = 3
 MAX_REMOVE = 3
 TAG_PREFIX = "vibeon-retained:sha256-"
@@ -71,18 +76,66 @@ def full_backup_plan(root, now=None):
                     raise ValueError("invalid backup app image")
                 images.add(previous)
             override = entry / "release-image.json"
+            source = sha
             if override.exists() or override.is_symlink():
-                previous = load_json(override)["services"]["app"]["image"]
-                if not isinstance(previous, str) or not IMAGE.fullmatch(previous):
+                app = load_json(override)["services"]["app"]
+                previous, source = app["image"], app["environment"]["APP_VERSION"]
+                if not isinstance(previous, str) or not IMAGE.fullmatch(previous) or not SHA.fullmatch(str(source)):
                     raise ValueError("invalid backup app override")
                 images.add(previous)
             timestamp = datetime.datetime.strptime(entry.name[:16], "%Y%m%dT%H%M%SZ").replace(tzinfo=datetime.timezone.utc)
-            verified.append((sha, sum(sizes), images, timestamp))
+            verified.append((sha, sum(sizes), images, timestamp, entry, source))
         except (KeyError, TypeError) as error:
             raise ValueError("invalid verified backup") from error
     cutoff = now - datetime.timedelta(hours=48)
-    candidates = [size for sha, size, _, timestamp in verified[KEEP:] if sha not in PINS and timestamp < cutoff]
+    candidates = [item for item in verified[KEEP:]
+                  if item[0] not in PINS and item[5] not in PINS and item[3] < cutoff]
     return verified, candidates, set().union(*(record[2] for record in verified))
+
+
+def confirm_replacements(verified):
+    if len(verified) < KEEP:
+        return False
+    for _, _, _, _, entry, _ in verified[:KEEP]:
+        marker = load_json(entry / "verified.json")
+        # Legacy receipts lack a checksum for the compressed archive. Wait
+        # for three new restore-tested receipts before any automatic expiry.
+        for name, key in (("database.dump", "database_dump_sha256"),
+                          ("uploads.tar.gz", "uploads_archive_sha256")):
+            expected = marker.get(key, "")
+            if not re.fullmatch(r"[0-9a-f]{64}", str(expected)):
+                return False
+            with (entry / name).open("rb") as handle:
+                if hashlib.file_digest(handle, "sha256").hexdigest() != expected:
+                    raise ValueError("backup replacement failed integrity check")
+    return True
+
+
+def retire_backup(entry):
+    device = entry.parent.stat().st_dev
+    directory = entry.lstat()
+    if (not stat.S_ISDIR(directory.st_mode) or directory.st_dev != device
+            or directory.st_uid != entry.parent.stat().st_uid or directory.st_mode & 0o077):
+        return False
+    # A same-device bind mount must not masquerade as a project-owned file.
+    for line in Path("/proc/self/mountinfo").read_text().splitlines():
+        mount = Path(re.sub(r"\\([0-7]{3})", lambda match: chr(int(match[1], 8)), line.split()[4]))
+        if mount == entry or entry in mount.parents:
+            return False
+    files = list(entry.iterdir())
+    for path in files:
+        row = path.lstat()
+        if (path.name not in FULL_FILES or not stat.S_ISREG(row.st_mode)
+                or row.st_uid != directory.st_uid or row.st_dev != device or row.st_nlink != 1):
+            return False
+    if not {"database.dump", "uploads.tar.gz", "verified.json"}.issubset({path.name for path in files}):
+        return False
+    # Leave the receipt until last. An interrupted deletion of an old pair
+    # stops future rotation for review, while the replacements stay intact.
+    for path in sorted(files, key=lambda path: path.name == "verified.json"):
+        path.unlink()
+    entry.rmdir()
+    return True
 
 
 def inspect_image(docker, tag):
@@ -104,8 +157,24 @@ def rotate(root, image, sha, protected, *, docker, write_json):
     report = {
         "status": "ok", "images_removed": 0, "verified_full_backups": len(verified),
         "full_backup_candidates": len(backup_candidates),
-        "full_backup_candidate_bytes": sum(backup_candidates),
+        "full_backup_candidate_bytes": sum(item[1] for item in backup_candidates),
+        "full_backups_removed": 0, "full_backups_removed_bytes": 0,
     }
+    if backup_candidates and confirm_replacements(verified):
+        for item in reversed(backup_candidates):
+            try:
+                if retire_backup(item[4]):
+                    report["full_backups_removed"] += 1
+                    report["full_backups_removed_bytes"] += item[1]
+                    if report["full_backups_removed"] == MAX_REMOVE:
+                        break
+                else:
+                    report["status"] = "attention"
+            except OSError:
+                report["status"] = "attention"
+                break
+        # Keep the pre-sweep recovery images for this release. The next
+        # successful release can reconsider references to retired pairs.
     history_path = root / "release-image-retention.json"
     history = load_json(history_path) if history_path.exists() or history_path.is_symlink() else []
     if (not isinstance(history, list) or any(

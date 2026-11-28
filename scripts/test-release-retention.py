@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Synthetic VibeOn retention safeguards; no server or Docker dependency."""
+import hashlib
 import json
 from pathlib import Path
 import sys
@@ -53,14 +54,17 @@ class RetentionTest(unittest.TestCase):
         return retention.rotate(self.root, self.current["image"], self.current["sha"], protected,
                                 docker=self.docker, write_json=self.write)
 
-    def backup(self, day, record, marked=True):
+    def backup(self, day, record, marked=True, checksummed=False):
         path = self.root / "backups" / "releases" / f"202611{day:02}T010101Z-{record['sha'][:12]}-abcd1234"
-        path.mkdir(parents=True)
+        path.mkdir(parents=True, mode=0o700)
         (path / "database.dump").write_bytes(b"dump")
         (path / "uploads.tar.gz").write_bytes(b"archive")
         if marked:
-            self.write(path / "verified.json", {**record, "schema_version": 1, "rollback_image": record["image"],
-                       "uploads_sha256": "a" * 64, "database_dump_sha256": "b" * 64})
+            marker = {**record, "schema_version": 1, "rollback_image": record["image"],
+                      "uploads_sha256": "a" * 64, "database_dump_sha256": hashlib.sha256(b"dump").hexdigest()}
+            if checksummed:
+                marker["uploads_archive_sha256"] = hashlib.sha256(b"archive").hexdigest()
+            self.write(path / "verified.json", marker)
         return path
 
     def test_removes_only_bounded_number_of_managed_old_images(self):
@@ -88,6 +92,27 @@ class RetentionTest(unittest.TestCase):
         self.assertEqual(report["full_backup_candidates"], 1)
         self.assertEqual(report["full_backup_candidate_bytes"], 11)
         self.assertTrue(all(path.exists() for path in paths))
+
+    def test_expires_only_old_verified_pairs_with_three_intact_replacements(self):
+        old = self.backup(1, row(1))
+        foreign = self.backup(2, row(2))
+        (foreign / "foreign").write_text("leave alone")
+        latest = [self.backup(i, row(i), checksummed=True) for i in range(21, 24)]
+        report = self.rotate()
+        self.assertEqual(report["full_backups_removed"], 1)
+        self.assertEqual(report["full_backups_removed_bytes"], 11)
+        self.assertFalse(old.exists())
+        self.assertTrue(foreign.exists())
+        self.assertTrue(all(entry.exists() for entry in latest))
+
+    def test_corrupt_replacement_preserves_every_backup_and_image(self):
+        old = self.backup(1, row(1))
+        latest = [self.backup(i, row(i), checksummed=True) for i in range(21, 24)]
+        (latest[-1] / "uploads.tar.gz").write_bytes(b"corrupt")
+        with self.assertRaises(ValueError):
+            self.rotate()
+        self.assertTrue(old.exists())
+        self.assertEqual(self.removed, [])
 
     def test_docker_failure_does_not_remove_newer_images(self):
         original = self.docker

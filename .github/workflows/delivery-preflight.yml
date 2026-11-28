@@ -18,6 +18,8 @@ on:
       - deploy/pt02-placementedit-check.sh
       - scripts/test-release-preflight.py
       - deploy/release-policy.json
+  schedule:
+    - cron: "23 */6 * * *"
   workflow_dispatch:
     inputs:
       pt02_placementedit_check:
@@ -51,11 +53,11 @@ jobs:
     if: >-
       github.repository == 'samaasamaakrasivaa-cell/vibeon' &&
       github.ref == 'refs/heads/main' &&
-      (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule')
     runs-on: ubuntu-latest
     timeout-minutes: 5
     concurrency:
-      group: server
+      group: ${{ github.event_name == 'schedule' && 'vibeon-storage-observation' || 'server' }}
       cancel-in-progress: false
     steps:
       - uses: actions/checkout@v4
@@ -87,6 +89,29 @@ jobs:
           test -s "$DELIVERY_SSH_DIR/known_hosts"
           printf 'Host srv\n  HostName %s\n  User root\n  IdentityFile %s/id\n  UserKnownHostsFile %s/known_hosts\n  StrictHostKeyChecking yes\n  IdentitiesOnly yes\n  BatchMode yes\n  ConnectTimeout 15\n  ServerAliveInterval 15\n  ServerAliveCountMax 3\n' \
             "$SSH_HOST" "$DELIVERY_SSH_DIR" "$DELIVERY_SSH_DIR" > "$DELIVERY_SSH_DIR/config"
+          if [[ "$GITHUB_EVENT_NAME" == schedule ]]; then
+            capacity=$(ssh -F "$DELIVERY_SSH_DIR/config" srv 'python3 - probe 0 1' < deploy/release_capacity.py)
+            CAPACITY="$capacity" python3 - <<'PY_CAPACITY'
+          import json
+          import os
+          import sys
+          from pathlib import Path
+
+          report = json.loads(os.environ["CAPACITY"])
+          if report.get("reason") == "release_already_running":
+              print("VibeOn storage observation skipped during a release.")
+              sys.exit(0)
+          margin = report.get("minimum_space_margin_bytes")
+          if type(margin) is not int or report.get("status") != "ready":
+              print("::error::VibeOn storage is critical or unavailable. Check issue #67.")
+              sys.exit(1)
+          with Path(os.environ["GITHUB_STEP_SUMMARY"]).open("a") as summary:
+              summary.write(f"VibeOn bytes above the backup and recovery floor: {margin:,}\n")
+          if margin < 2 * 1024 ** 3:
+              print("::warning::VibeOn has less than 2 GiB above the backup and recovery floor. Check issue #67.")
+          PY_CAPACITY
+            exit 0
+          fi
           # Only the allowlisted JSON summary reaches Actions. No server logs,
           # credentials, student records, complete inspect output or backups.
           if [[ "$PT02_PLACEMENTEDIT_CHECK" == true ]]; then
