@@ -14,7 +14,25 @@
     "stage": "publication",
     "test_run": 46152814680
   },
-  "release": null,
+  "release": {
+    "ci": {
+      "result": "success",
+      "run": 46152814680,
+      "sha": "6bbd34cac1ce3d4a1f5e60bd62d6a9ab04155ed8"
+    },
+    "delivery": {
+      "result": "success",
+      "run": 46154922297,
+      "sha": "6b57ad51f4d7d48fe661461f9ab52b2d1fc18098"
+    },
+    "owner_note": "Для владельца: Кабинет преподавателя и расписание — после «Маршрутов» появилась вкладка «Словари». В ней карточки учеников с прогрессом и графиком тренировок.",
+    "review": {
+      "comment": 7240237344,
+      "result": "success",
+      "sha": "6bbd34cac1ce3d4a1f5e60bd62d6a9ab04155ed8"
+    },
+    "site_sha": "6b57ad51f4d7d48fe661461f9ab52b2d1fc18098"
+  },
   "source": "direct",
   "version": 1
 }
