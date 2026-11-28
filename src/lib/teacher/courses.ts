@@ -11,6 +11,7 @@ import { randomToken } from "../auth/crypto";
 import { getT } from "../i18n/server";
 import { COURSE_CATEGORIES, isType, PRESET, SAMPLE, type Rubric, type TaskOptions, type TaskType } from "../tasks/catalog";
 import { cleanInfo, type TInfo } from "../tasks/teacher-info";
+import { courseOutlineSchema, outlineUnitOutcomes } from "../tasks/course-outline";
 
 export type R = { ok: true; id?: string; token?: string } | { ok: false; error: string };
 const clean = (v: unknown, max = 200) => (typeof v === "string" ? v.trim().slice(0, max) : "");
@@ -101,6 +102,59 @@ export async function reorderCategories(keys: string[]): Promise<R> {
   await db.teacherProfile.update({ where: { userId: teacher.id }, data: { settings } });
   revalidatePath("/teacher/courses");
   return { ok: true };
+}
+
+/** Сохраняет подтверждённый план одной транзакцией. ID юнитов защищают повтор отправки. */
+export async function importCourseOutline(courseId: string, importId: string, input: unknown): Promise<R> {
+  const teacher = await me();
+  const { t } = await getT();
+  const plan = courseOutlineSchema.safeParse(input);
+  if (!plan.success || !plan.data.units.length || !/^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/.test(importId)) {
+    return { ok: false, error: t("crs.outline.invalid") };
+  }
+
+  const existingImport = { courseId, id: { startsWith: `${importId}-` }, course: { teacherId: teacher.id } };
+  try {
+    const saved = await db.$transaction(async (tx) => {
+      const course = await tx.course.findFirst({ where: { id: courseId, teacherId: teacher.id }, select: { id: true } });
+      if (!course) return false;
+      if (await tx.unit.findFirst({ where: existingImport, select: { id: true } })) return true;
+      const { _max } = await tx.unit.aggregate({ where: { courseId }, _max: { order: true } });
+      const firstOrder = (_max.order ?? -1) + 1;
+      for (const [index, unit] of plan.data.units.entries()) {
+        await tx.unit.create({
+          data: {
+            id: `${importId}-${index}`,
+            courseId,
+            title: unit.title,
+            order: firstOrder + index,
+            outcomes: outlineUnitOutcomes(unit),
+            lessons: {
+              create: unit.lessons.map((lesson, order) => ({
+                title: lesson.title,
+                order,
+                outcomes: lesson.topics ? [lesson.topics.slice(0, 200)] : [],
+                sections: [{ id: randomUUID(), title: "Lead-in" }],
+                teacherInfo: cleanInfo({
+                  info: lesson.topics,
+                  aims: { grammar: lesson.grammar, vocabulary: lesson.vocabulary, skills: lesson.skills },
+                }) as Prisma.InputJsonObject,
+              })),
+            },
+          },
+        });
+      }
+      return true;
+    }, { isolationLevel: "Serializable", timeout: 15_000 });
+    if (!saved) return { ok: false, error: t("crs.outline.saveError") };
+  } catch {
+    // При одновременной повторной отправке одна из транзакций уже могла сохранить импорт.
+    const saved = await db.unit.findFirst({ where: existingImport, select: { id: true } }).catch(() => null);
+    if (!saved) return { ok: false, error: t("crs.outline.saveError") };
+  }
+
+  refreshCourse(courseId);
+  return { ok: true, id: courseId };
 }
 
 // ───────── Юниты ─────────

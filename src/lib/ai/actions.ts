@@ -8,6 +8,7 @@ import { getT } from "../i18n/server";
 import { isType, type TaskType } from "../tasks/catalog";
 import { cleanOpts, cleanTitle, MAX_TASKS, type ImpMeta } from "../tasks/import-json";
 import { cleanInfo } from "../tasks/teacher-info";
+import { OUTLINE_SOURCE_LIMIT, type CourseOutline } from "../tasks/course-outline";
 import { parse } from "../tasks/parse";
 import { saveTask } from "../teacher/courses";
 import { aiCode, aiCtx } from "./ctx";
@@ -155,6 +156,25 @@ export async function addDraftTasks(lessonId: string, section: "lesson" | "homew
   }
   if (tasks.length > MAX_TASKS) failed.push({ title: "", error: `limit:${tasks.length - MAX_TASKS}` });
   return { ok: true, n, by, failed };
+}
+
+/** Предпросмотр оглавления. До подтверждения курс не меняется. */
+export async function planCourseOutline(courseId: string, source: string): Promise<Ok<{ outline: CourseOutline; importId: string }>> {
+  const user = await requireUser("TEACHER");
+  const { t } = await getT();
+  const course = await db.course.findFirst({ where: { id: courseId, teacherId: user.id }, select: { id: true } });
+  if (!course) return { ok: false, error: t("crs.outline.saveError") };
+  const text = str(source, OUTLINE_SOURCE_LIMIT + 1);
+  if (!text) return { ok: false, error: t("ai.err.empty") };
+  if (text.length > OUTLINE_SOURCE_LIMIT) return { ok: false, error: t("crs.outline.sourceLimit") };
+
+  try {
+    const outline = await run("course-outline", { text }, await aiCtx(user));
+    if (!outline.units.length) return { ok: false, error: t("crs.outline.noUnits") };
+    return { ok: true, outline, importId: randomUUID() };
+  } catch (error) {
+    return fail(error);
+  }
 }
 
 /** «Из учебника»: файлы с ролями → план курса (юниты, уроки, задания) для проверки урок за уроком. */
