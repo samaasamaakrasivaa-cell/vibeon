@@ -1,7 +1,8 @@
 "use client";
 import Link from "next/link";
 import { useOptimistic, useState, useTransition } from "react";
-import { dismissTeacherNotification, markAllRead, openNotification, setNotificationDone } from "@/lib/teacher/actions";
+import { dismissTeacherNotification } from "@/lib/notify/actions";
+import { markAllRead, openNotification, setNotificationDone } from "@/lib/teacher/actions";
 import { useT } from "@/lib/i18n/client";
 import { Icon } from "./Icon";
 
