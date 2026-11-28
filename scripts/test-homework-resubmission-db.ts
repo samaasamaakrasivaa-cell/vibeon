@@ -89,6 +89,12 @@ async function runTest() {
   }
 
   await queue([]);
+  const reviewEvents = "/api/teacher/homework/events";
+  assert.equal((await request(reviewEvents, "")).status, 401);
+  assert.equal((await request(reviewEvents, a.user.cookie)).status, 403);
+  const teacherStream = await request(reviewEvents, teacher.cookie);
+  assert.equal(teacherStream.status, 200);
+  const teacherReader = teacherStream.body!.getReader();
   const groupStream = await request(`${b.base}/events`, b.user.cookie);
   assert.equal(groupStream.status, 200);
   const reader = groupStream.body!.getReader();
@@ -148,6 +154,17 @@ async function runTest() {
     const fullB = await ok(await change(b, "save", (await read(b)).homeworkRevision, fullPayload));
     await ok(await change(b, "submit", fullB.revision));
     await queue([a, b]);
+    // Only successful submissions should emit a signal. Starts, saves and rejected repeats are silent.
+    const teacherDecoder = new TextDecoder();
+    let signals = "";
+    while ((signals.match(/event: homeworkRevision/g) ?? []).length < 2) {
+      const chunk = await teacherReader.read();
+      assert.ok(!chunk.done, "Expected both successful resubmissions to notify the teacher");
+      signals += teacherDecoder.decode(chunk.value, { stream: true });
+    }
+    assert.deepEqual(signals.split("\n").filter((line) => line && !line.startsWith(":")), [
+      "event: homeworkRevision", "data: {}", "event: homeworkRevision", "data: {}",
+    ]);
     await ok(await teacherReview(a, `second-${a.comment}`));
     await queue([b]);
     await ok(await change(a, "start", (await read(a)).homeworkRevision));
@@ -172,7 +189,7 @@ async function runTest() {
     assert.ok(!events.includes(a.original.val[0]));
     assert.ok(!events.includes("event: homeworkRevision"));
   } finally {
-    await reader.cancel();
+    await Promise.all([reader.cancel(), teacherReader.cancel()]);
   }
 }
 

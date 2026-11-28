@@ -3,7 +3,7 @@ import { z } from "zod";
 import { getSessionUser } from "@/lib/auth/session";
 import { changeHomeworkResubmission, readHomeworkResubmission } from "@/lib/homework-resubmission";
 import { classAccess } from "@/lib/live/access";
-import { publish } from "@/lib/live/bus";
+import { publish, teacherReviewChannel } from "@/lib/live/bus";
 import { rateLimit } from "@/lib/rate-limit";
 
 type Context = { params: Promise<{ id: string; taskId: string }> };
@@ -67,5 +67,6 @@ export async function POST(req: NextRequest, context: Context) {
   const result = await changeHomeworkResubmission(acc.target, change);
   if (result.status !== 200) return reply(result.status);
   if (change.type !== "save") publish(`class:${acc.hostId}:teacher`, "homeworkRevision", {});
+  if (change.type === "submit") publish(teacherReviewChannel(acc.target.teacherId), "homeworkRevision", {});
   return NextResponse.json({ ok: true, revision: result.revision });
 }
