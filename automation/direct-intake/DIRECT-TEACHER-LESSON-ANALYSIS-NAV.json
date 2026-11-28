@@ -5,13 +5,13 @@
   "key": "DIRECT-TEACHER-LESSON-ANALYSIS-NAV",
   "owner": "teacher",
   "progress": {
-    "base_sha": "82473a1199a160651ae2bed2f8365b5e536d7c72",
+    "base_sha": "47fa1c441d0dfff1e2423db146912175e544ab08",
     "branch": "codex/teacher/lesson-analysis-navigation",
-    "head_sha": "08377c07c5decc66fb3035dbabbdd9bc49073366",
-    "next": "Точный CI, независимое ревью и сценарии на синтетике прошли. Ожидаются профильный допуск и доступность штатной публикации.",
+    "head_sha": "933f29d9bdffbe0c23d3c8a38b7004a58c30f316",
+    "next": "Получен допуск Tech Lead, суточная копия проверена. Ветка синхронизирована с main и проходит точные CI и ревью перед общим выпуском.",
     "pr": 86,
-    "stage": "integration",
-    "test_run": 46069657805
+    "stage": "review",
+    "test_run": 46121482608
   },
   "release": null,
   "source": "direct",
