@@ -5,13 +5,13 @@
   "key": "DIRECT-BUILDER-COURSE-OUTLINE",
   "owner": "builder",
   "progress": {
-    "base_sha": "2044f77648fcf73701fe5f2232817fb817bcec28",
+    "base_sha": "7aa0781b4f6046a2c1184426b6c76a9c9aa9d746",
     "branch": "codex/builder/course-outline",
-    "head_sha": "040b50957510a012a23d9dc8b620c84b6a60a863",
-    "next": "CI и браузерные проверки пройдены. Требуется независимое ревью Tech Lead и согласование AI и Roadmap перед выпуском.",
+    "head_sha": "29d449070d5c4ca3e0ae3b7ab6c22007cd2142dc",
+    "next": "Замечания исправлены. Проверки на изолированной PostgreSQL и в браузере пройдены. CI и повторное ревью на новом SHA.",
     "pr": 117,
     "stage": "review",
-    "test_run": 46151465778
+    "test_run": 46153645730
   },
   "release": null,
   "source": "direct",
