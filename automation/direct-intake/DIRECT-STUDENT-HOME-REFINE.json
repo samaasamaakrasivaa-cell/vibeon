@@ -8,9 +8,9 @@
     "base_sha": "57d38ef98578c1a3a3d7b8281e98b0cd4f1731b5",
     "branch": "codex/student/home-visual-refresh",
     "head_sha": "3ec5aada65a04e813ef113b2e83c115f9fe83220",
-    "next": "Последние правки проверены в Chromium и независимо проверены Tech Lead. Публикация разрешена владельцем. Дождаться CI точного SHA и завершения предыдущего CD.",
+    "next": "CI точного SHA и независимое ревью успешны. Предыдущий релиз завершён. Интеграция через PR #89 и штатный выпуск.",
     "pr": 89,
-    "stage": "review",
+    "stage": "integration",
     "test_run": 46126264368
   },
   "release": null,
