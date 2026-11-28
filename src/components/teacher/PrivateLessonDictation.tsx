@@ -40,6 +40,7 @@ export function PrivateLessonDictation({ lang, initialText, maxLength, placehold
       <textarea id="lesson-observation" name="observation" rows={3} maxLength={maxLength} className="input" ref={text}
         placeholder={placeholder} aria-describedby="observation-privacy observation-dictation-processing" defaultValue={initialText} />
       <Dictate round lang={language} onText={append} disabled={pending}
+        className="[&_.dict-err]:w-52 [&_.dict-err]:whitespace-normal!"
         describedBy="observation-dictation-processing" cancelLabel={t.cancel}
         onBusy={(value) => { setBusy(value); onBusy(value); }} />
     </div>

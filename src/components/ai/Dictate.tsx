@@ -2,7 +2,7 @@
 // Диктовка без ограничения по времени: звук пишется в PCM 16 кГц, режется на паузах в речи (каждые ~20–28 с)
 // и сразу уходит на распознавание — текст появляется по ходу, ничего не обрывается. Пока идёт запись,
 // видна полоса «● Запись идёт 0:42» с индикатором громкости и кнопкой «Остановить».
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useT } from "@/lib/i18n/client";
 import { Icon } from "../Icon";
 
@@ -165,7 +165,7 @@ export function Dictate({ onText, lang = "ru-RU", label, className = "", round, 
     setSt("idle");
   }, []);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     window.addEventListener("pagehide", cancel);
     return () => {
       window.removeEventListener("pagehide", cancel);
@@ -179,7 +179,7 @@ export function Dictate({ onText, lang = "ru-RU", label, className = "", round, 
   if (st === "idle" && round) return (
     <span className={`dict round ${className}`}>
       <button type="button" className="dict-mic" onClick={start} disabled={disabled} aria-describedby={describedBy} aria-label={label ?? t("dict.go")} title={label ?? t("dict.go")}><Icon name="mic" /></button>
-      {err && <span className="small text-bad dict-err">{err}</span>}
+      {err && <span className="small text-bad dict-err" role="alert">{err}</span>}
     </span>
   );
   if (st === "idle") return (
