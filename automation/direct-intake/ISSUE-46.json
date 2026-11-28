@@ -8,9 +8,10 @@
     "base_sha": "a3673f8bf137eb165bf6fe5e311baf531bb30a2f",
     "branch": "codex/student/personal-dictionary-duplicate",
     "head_sha": "c15a123c88cb6c0106516c7c285c85ef84365a0a",
-    "next": "Точный CI и независимое ревью успешны. Совместимый предыдущий выпуск подтверждён, интегрировать PR #98 и проверить выкладку.",
+    "merge_sha": "348c4a99fd27cbc8ee9ac813d2cdc07b7abdbc30",
+    "next": "PR #98 интегрирован. Подтвердить точный CD и site SHA для ручного этапа #46.",
     "pr": 98,
-    "stage": "integration",
+    "stage": "publication",
     "test_run": 46131942705
   },
   "release": null,
