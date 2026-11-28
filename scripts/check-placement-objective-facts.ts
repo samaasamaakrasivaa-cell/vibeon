@@ -92,6 +92,44 @@ const pendingCore = collectObjectiveFacts({ ...repeated, section: "core", xq: { 
 assert.deepEqual(results(pendingCore, "grammar"), results(original, "grammar"));
 assert.deepEqual(reasons(pendingCore, "grammar"), ["not-confirmed"]);
 
+// Text grades must agree with the stored question, even when ok is a boolean.
+for (const { skill, item } of [{ skill: "reading", item: reads[0] }, { skill: "listening", item: extraListen }] as const) {
+  const [question] = item.questions;
+  const invalidGrades = [{ v: 1, ok: true }, { v: 0, ok: false }, { v: 2, ok: false },
+    { v: 0.5, ok: false }, { v: "0", ok: false }, { v: null, ok: true }];
+  const remaining = results(repeats, skill).filter(([, source]) => !source.items.some(({ itemId }) => itemId === item.id));
+  for (const answer of invalidGrades) {
+    const result = collectObjectiveFacts({ ...repeated, answers: { ...repeated.answers, [question.id]: answer } });
+    assert.deepEqual(reasons(result, skill), ["unknown-origin"], `${skill}: ${JSON.stringify(answer)}`);
+    assert.deepEqual(results(result, skill), remaining);
+  }
+  for (const answer of [undefined, null, 2]) {
+    const invalid = { ...item, questions: [{ ...question, answer }, ...item.questions.slice(1)] };
+    const items = { ...repeated.items, [item.id]: invalid } as PState["items"];
+    const result = collectObjectiveFacts({ ...repeated, items });
+    assert.deepEqual(reasons(result, skill), ["unknown-origin"], `${skill}: snapshot key ${answer}`);
+    assert.deepEqual(results(result, skill), remaining);
+  }
+  const skipped = collectObjectiveFacts({ ...repeated, answers: { ...repeated.answers, [question.id]: { v: null, ok: false, dk: true } } });
+  assert.deepEqual(reasons(skipped, skill), []);
+  const [fact] = results(skipped, skill).find(([, source]) => source.items[0].itemId === item.id)!;
+  assert.equal(fact.correct, skill === "reading" ? 0 : 3);
+}
+
+// A completed retake cannot predate its assignment. An active retake may follow an already completed one.
+for (const { skill, section, item } of [
+  { skill: "grammar", section: "core", item: extraGrammar }, { skill: "vocabulary", section: "vocab", item: extraVocab },
+] as const) {
+  const assignment = repeated.xs!.find(({ kind }) => kind === section)!;
+  const impossible = collectObjectiveFacts({ ...repeated, sdates: { ...repeated.sdates, [section]: assignment.at - 1 } });
+  assert.deepEqual(reasons(impossible, skill), ["unknown-origin"], skill);
+  assert.deepEqual(results(impossible, skill), results(original, skill));
+  const active = collectObjectiveFacts({ ...repeated, section, xq: { kind: section, level: "B1", ids: [`${item.id}-next`] },
+    xs: [...repeated.xs!, { kind: section, level: "B1", at: assignment.at + 100 }] });
+  assert.deepEqual(results(active, skill), results(repeats, skill));
+  assert.deepEqual(reasons(active, skill), ["not-confirmed"]);
+}
+
 const afterAddition = collectObjectiveFacts({ ...completed, added: 115 });
 assert.deepEqual(reasons(afterAddition, "grammar"), ["unknown-origin"]);
 assert.deepEqual(reasons(afterAddition, "vocabulary"), ["unknown-origin"]);

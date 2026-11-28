@@ -1,6 +1,6 @@
 import "server-only";
 import { createHash } from "node:crypto";
-import { byLevelOf, PL_LEVELS, skillStep, STEPS, type PLevel, type PState } from "./engine";
+import { byLevelOf, PL_LEVELS, skillStep, STEPS, type Ans, type PLevel, type PState, type Q } from "./engine";
 
 type CoreSection = "core" | "vocab";
 type TextSection = "reading" | "listening";
@@ -43,6 +43,13 @@ function scored(state: PState, items: EvidenceItem[]) {
   return ids.length > 0 && unique(ids) && ids.every((id) => typeof state.answers?.[id]?.ok === "boolean");
 }
 
+function textGradeMatches({ options, answer: key }: Q, saved: Ans | undefined) {
+  const isOption = (value: unknown): value is number =>
+    typeof value === "number" && Number.isInteger(value) && value >= 0 &&
+    Array.isArray(options) && value < options.length && typeof options[value] === "string";
+  return !!saved && isOption(key) && (saved.v === null || isOption(saved.v)) && saved.ok === (saved.v === key);
+}
+
 function checked(state: PState, skill: Skill, scope: Scope, evidence: Evidence, detail: Pick<Checked, "level" | "topicId"> = {}): Observation {
   const ids = evidence.items.flatMap(({ questionIds }) => questionIds);
   const fact: Checked = {
@@ -60,11 +67,12 @@ function collectCore(state: PState, section: CoreSection): Observation[] {
     if (item?.skill === "grammar" || item?.skill === "vocabulary") return item.skill === skill;
     return !ph || (section === "vocab" ? ph.startsWith("v") : !ph.startsWith("v"));
   });
-  const history = state.xs?.some(({ kind }) => kind === section);
-  const pending = state.xq?.kind === section ? new Set(state.xq.ids) : null;
+  const history = (state.xs ?? []).filter(({ kind }) => kind === section);
+  const active = state.xq?.kind === section ? state.xq : undefined;
+  const pending = active ? new Set(active.ids) : null;
   const repeated = entries.filter(({ ph }) => ph === extraPhase);
   const base = entries.filter(({ id, ph }) => ph !== extraPhase && !pending?.has(id));
-  if (!entries.length && !pending && !history) return [gap(skill, timestamp(state.sdates?.[section]) ? "unknown-origin" : "not-tested")];
+  if (!entries.length && !pending && !history.length) return [gap(skill, timestamp(state.sdates?.[section]) ? "unknown-origin" : "not-tested")];
   if (!unique(entries.map(({ id }) => id)) ||
       entries.some(({ ph }) => (ph === "z" || ph === "vz") && ph !== extraPhase)) return [gap(skill, "unknown-origin")];
   if (!sectionComplete(state, section)) return [gap(skill, "not-confirmed")];
@@ -77,7 +85,7 @@ function collectCore(state: PState, section: CoreSection): Observation[] {
   const observations: Observation[] = [];
   if (base.length) {
     const items = base.map(({ id }) => evidenceOf(id)).filter((item) => item !== null);
-    const scope = baseScope(state, section, !!(history || repeated.length || pending));
+    const scope = baseScope(state, section, history.length > 0 || repeated.length > 0 || pending !== null);
     if (!scope || items.length !== base.length || !scored(state, items)) observations.push(gap(skill, "unknown-origin"));
     else {
       const step = section === "core" ? state.step : state.vstep;
@@ -88,16 +96,20 @@ function collectCore(state: PState, section: CoreSection): Observation[] {
       }
     }
   }
-  // Phase markers prove an extra item, but no longer identify which assignment it belonged to.
+  // The active assignment is appended to history and can legitimately follow an earlier completion.
+  const finishedHistory = active && history.at(-1)?.level === active.level ? history.slice(0, -1) : history;
+  const completedAt = state.sdates?.[section];
+  const inconsistentHistory = timestamp(completedAt) && finishedHistory.some(({ at }) => timestamp(at) && at > completedAt);
+  // Phase markers cannot tie an extra item to an individual assignment with consistent dates.
   for (const { id } of repeated) {
     if (pending?.has(id)) continue;
     const item = evidenceOf(id);
-    observations.push(item && scored(state, [item])
+    observations.push(!inconsistentHistory && item && scored(state, [item])
       ? checked(state, skill, "additional", { section, items: [item] }, { topicId: item.topicId })
       : gap(skill, "unknown-origin"));
   }
   if (pending) observations.push(gap(skill, "not-confirmed"));
-  else if (history && !repeated.length) observations.push(gap(skill, "unknown-origin"));
+  else if (history.length && !repeated.length) observations.push(gap(skill, "unknown-origin"));
   return observations;
 }
 
@@ -132,6 +144,11 @@ function collectTexts(state: PState, section: TextSection): Observation[] {
     if (pending && end === ids.length || ids.slice(start, end).some((id) => !completed.has(id))) return gap(section, "not-confirmed");
     const items = evidence.slice(start, end).filter((item) => item !== null);
     if (!scope || items.length !== end - start || !scored(state, items)) return gap(section, "unknown-origin");
+    const gradesMatch = items.every(({ itemId }) => {
+      const item = state.items[itemId];
+      return item.type === section && item.questions.every((question) => textGradeMatches(question, state.answers[question.id]));
+    });
+    if (!gradesMatch) return gap(section, "unknown-origin");
     const step = skillStep(byLevelOf(state, items.map(({ itemId }) => itemId)));
     return checked(state, section, scope, { section, items, ...(assignedAt !== undefined ? { assignedAt } : {}) },
       step === null ? {} : { level: STEPS[step] });
