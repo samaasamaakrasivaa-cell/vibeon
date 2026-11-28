@@ -14,6 +14,7 @@ import { saveTask } from "../teacher/courses";
 import { issueCourseOutlineDraft } from "../teacher/course-outline-draft";
 import { appendCourseUnit } from "../teacher/course-units";
 import { aiCode, aiCtx } from "./ctx";
+import { containsStudentRecords } from "./course-outline-privacy";
 import { run } from "./gateway";
 import { sameAnswer } from "./lite";
 import type { Check, DraftTask, Turn } from "./tasks";
@@ -169,6 +170,7 @@ export async function planCourseOutline(courseId: string, source: string): Promi
   const text = str(source, OUTLINE_SOURCE_LIMIT + 1);
   if (!text) return { ok: false, error: t("ai.err.empty") };
   if (text.length > OUTLINE_SOURCE_LIMIT) return { ok: false, error: t("crs.outline.sourceLimit") };
+  if (containsStudentRecords(text)) return { ok: false, error: t("crs.outline.studentRecords") };
 
   const draft = issueCourseOutlineDraft(user.id, courseId);
   if (!draft) return { ok: false, error: t("ai.err.fail") };

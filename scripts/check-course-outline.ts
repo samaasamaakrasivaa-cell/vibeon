@@ -2,9 +2,29 @@ import assert from "node:assert/strict";
 import { randomBytes, randomUUID } from "node:crypto";
 import { setTimeout as delay } from "node:timers/promises";
 import { db } from "../src/lib/db";
+import { containsStudentRecords } from "../src/lib/ai/course-outline-privacy";
 import { courseOutlineSchema } from "../src/lib/tasks/course-outline";
 import { issueCourseOutlineDraft } from "../src/lib/teacher/course-outline-draft";
 import { appendCourseUnit, orderCourseUnits, saveCourseOutlineUnits, withCourseUnits } from "../src/lib/teacher/course-units";
+
+for (const record of [
+  "Ученица: Синтетическая Фамилия — оценка 5",
+  "Вымышленное Имя — 97",
+  "Вымышленное Имя, оценка 78",
+  "Пробная Ванилина 5",
+  "Вымышленное Имя\nОценка: 5",
+  "Пробное Имя получил 5",
+  "Synthetic Learner\t87/100",
+  "Synthetic Learner grade B+",
+  "Student name\n: Synthetic Example",
+  "Ведомость оценок\nВымышленное Имя\n5",
+]) assert.ok(containsStudentRecords(`Unit 1 Travel\n${record}\nLesson 2 Food`), record);
+
+for (const outline of [
+  "Student’s Book\nUnit 1 — Great journeys\nLesson 2 — Past Simple",
+  "Unit 1 — Jane Austen\nTopics: A biography of Jane Austen",
+  "Unit 2 Getting around\nLesson 10 — JuniperArchive\nSkills: compare two reports",
+]) assert.equal(containsStudentRecords(outline), false, outline);
 
 function draft(teacherId: string, courseId: string, now?: number) {
   const ticket = issueCourseOutlineDraft(teacherId, courseId, now);
