@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Clock } from "@/components/Clock";
+import { DashboardGreeting } from "@/components/DashboardGreeting";
 import { Icon } from "@/components/Icon";
 import { NotificationList } from "@/components/NotificationList";
 import { NoteChecklist } from "@/components/student/NoteChecklist";
@@ -108,29 +108,32 @@ export default async function StudentHome({ searchParams }: { searchParams: Prom
   const ago = (d: Date) => { const m = Math.round((now.getTime() - d.getTime()) / 60000); return m < 60 ? t("nt.minAgo", { n: Math.max(1, m) }) : m < 1440 ? t("nt.hAgo", { n: Math.round(m / 60) }) : d.toLocaleDateString(loc, { day: "numeric", month: "long", timeZone: tz }); };
 
   const wordTrainingToday = !needsWordGoal && wordsTotal > 0 && wordTime !== null;
+  const wordGoalReached = done >= goal;
   const wordsCard = (
     <section className="student-home-task student-home-words" aria-labelledby="student-words-title">
       <header className="student-home-task-head">
         <span className="student-home-task-icon" aria-hidden="true"><Icon name="cards" /></span>
         <div className="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-1">
-          <h3 id="student-words-title">{t(wordTrainingToday ? "st.wordPractice" : "nav.words")}</h3>
+          <h3 id="student-words-title">{t(!needsWordGoal && wordsTotal > 0 ? "st.wordPractice" : "nav.words")}</h3>
           {wordTrainingToday && <span className="small muted">{t("st.wordPracticeAt", { time: wordTime })}</span>}
         </div>
       </header>
+      {needsWordGoal ? <Link href="/student/words?goal=1" className="btn primary"><Icon name="target" size="sm" />{t("tips.wordsT")}</Link> :
+          wordsTotal === 0 ? <Link href="/student/words?tab=list" className="btn secondary">{t("st.openDictionary")}</Link> :
+          <Link href={dueWords ? "/student/words?train=today" : "/student/words?train=all"} className="btn primary"><Icon name="cards" size="sm" />{t(dueWords ? "st.startTraining" : "st.reviewWords")}</Link>}
       {needsWordGoal || wordsTotal === 0 ? <p className="student-home-task-body m-0 muted">{t(needsWordGoal ? "tips.words" : "st.noWordsYet")}</p> : (
-        <div className="student-home-task-body">
-          {done === 0 && <p className="m-0 mb-2 muted">{t("st.wordsNotStarted")}</p>}
-          {done >= goal && <p className="m-0 mb-2 font-semibold">{t("st.wordsDone")}</p>}
-          <div className="student-home-word-count small">
-            <b>{t("st.doneOf", { n: done, total: goal })}</b>
+        <div className="student-home-task-body student-home-word-goal" data-goal-reached={wordGoalReached || undefined}>
+          <div className="student-home-word-line">
+            <b id="student-words-goal">{t("wd.goalToday")} · {t("tk.words", { n: goal })}</b>
+            <span className="small">{t("st.doneOf", { n: done, total: goal })}</span>
+          </div>
+          <span className="hwbar block" role="progressbar" aria-labelledby="student-words-goal" aria-valuemin={0} aria-valuemax={goal} aria-valuenow={done}><i style={{ width: `${(done / goal) * 100}%` }} /></span>
+          <div className="student-home-word-line small">
+            {wordGoalReached ? <strong className="student-home-word-success"><Icon name="check" size="sm" />{t("st.wordsDone")}</strong> : <strong>{t("wd.left", { n: goal - done })}</strong>}
             <span className="muted">{dueWords ? t("st.due", { n: dueWords }) : t("st.noWordsDue")}</span>
           </div>
-          <span className="hwbar block" role="progressbar" aria-label={t("st.wordPractice")} aria-valuemin={0} aria-valuemax={goal} aria-valuenow={done}><i style={{ width: `${(done / goal) * 100}%` }} /></span>
         </div>
       )}
-      {needsWordGoal ? <Link href="/student/words?goal=1" className="btn primary sm"><Icon name="target" size="sm" />{t("tips.wordsT")}</Link> :
-          wordsTotal === 0 ? <Link href="/student/words?tab=list" className="btn secondary sm">{t("st.openDictionary")}</Link> :
-          <Link href={dueWords ? "/student/words?train=today" : "/student/words?train=all"} className="btn primary sm"><Icon name="cards" size="sm" />{t(dueWords ? "st.startTraining" : "st.reviewWords")}</Link>}
     </section>
   );
 
@@ -139,35 +142,30 @@ export default async function StudentHome({ searchParams }: { searchParams: Prom
       {tips && <StartTips tips={tips} />}
       <section className="card student-home-main">
         {s?.avatarNotice && <AvatarNotice id={s.id} avatar={s.avatar} />}
-        <div className="student-home-greeting">
-          <div className={mains.length && s ? "stgreet" : undefined}>
-            {mains.length > 0 && s && <Link href="/student/profile#avatar" className="stgreet-av" aria-label={t("av.title")}><StudentAvatar id={s.id} avatar={s.avatar} size={104} crown={!!pinned} /></Link>}
-            <div className="min-w-0">
-              <div className="student-greeting-line">
-                <span>{t(greetingKey(hourIn(tz)))}</span>
-                <span className="gname">{me.name}</span>
-              </div>
-              {pinned && (
-                <span className="awmainline" tabIndex={0}>
-                  <Medal icon={pinned.icon} color={pinned.color} size={34} />
-                  <b>{pinned.name}</b>
-                  <span className="awtip" role="tooltip">{pinned.why && <span>{pinned.why}</span>}<Link href="/student/progress?tab=awards">{t("aw.allMine")} →</Link></span>
+        <DashboardGreeting greeting={t(greetingKey(hourIn(tz)))} name={me.name} lang={lang} tz={tz}
+          avatar={mains.length > 0 && s ? (
+            <Link href="/student/profile#avatar" className="stgreet-av" aria-label={t("av.title")}>
+              <StudentAvatar id={s.id} avatar={s.avatar} size={104} crown={!!pinned} />
+            </Link>
+          ) : null}>
+          {pinned && (
+            <span className="awmainline" tabIndex={0}>
+              <Medal icon={pinned.icon} color={pinned.color} size={34} />
+              <b>{pinned.name}</b>
+              <span className="awtip" role="tooltip">{pinned.why && <span>{pinned.why}</span>}<Link href="/student/progress?tab=awards">{t("aw.allMine")} →</Link></span>
+            </span>
+          )}
+          {others.length > 0 && (
+            <div className="awothers">
+              {others.map((a) => (
+                <span key={a.id} className="awchip" tabIndex={0}>
+                  <Medal icon={a.icon} color={a.color} size={22} />{a.name}
+                  <span className="awtip" role="tooltip">{a.why && <span>{a.why}</span>}<Link href="/student/progress?tab=awards">{t("aw.allMine")} →</Link></span>
                 </span>
-              )}
-              {others.length > 0 && (
-                <div className="awothers">
-                  {others.map((a) => (
-                    <span key={a.id} className="awchip" tabIndex={0}>
-                      <Medal icon={a.icon} color={a.color} size={22} />{a.name}
-                      <span className="awtip" role="tooltip">{a.why && <span>{a.why}</span>}<Link href="/student/progress?tab=awards">{t("aw.allMine")} →</Link></span>
-                    </span>
-                  ))}
-                </div>
-              )}
+              ))}
             </div>
-          </div>
-          <Clock lang={lang} tz={tz} compact />
-        </div>
+          )}
+        </DashboardGreeting>
 
         <div className="mt-5 flex flex-col gap-3">
           {testLink && (

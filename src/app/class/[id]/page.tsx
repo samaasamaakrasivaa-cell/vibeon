@@ -16,6 +16,7 @@ import { hhmm } from "@/lib/time";
 import { nextStudentLesson } from "@/lib/student/next-lesson";
 import { homeworkFor } from "@/lib/homework";
 import { currentHomeworkAnswers } from "@/lib/homework-review";
+import { assignedHomeworkTasks } from "@/lib/tasks/homework-selection";
 import { carriedAnswers, isEmptyPayload } from "@/lib/class/carry";
 import { hadWrongTry, isFinal, progressOf } from "@/lib/tasks/progress";
 import type { TaskOptions, TaskType } from "@/lib/tasks/catalog";
@@ -122,7 +123,16 @@ export default async function ClassPage({ params, searchParams }: { params: Prom
     const assignment = homeworkByLesson.get(m.instanceId);
     return assignment ? [[m.sid, assignment] as const] : [];
   })) : undefined;
-  const answersRows = allRows.filter((a) => a.studentId === lesson.studentId);
+  const homeworkAssignment = { extraTaskIds: hw?.extraTaskIds ?? [], wordTraining: hw?.wordTraining ?? [], teacherComment: hw?.teacherComment ?? null, taskOrder: hw?.taskOrder ?? [], removedTaskIds: hw?.removedTaskIds ?? [], manual: hw ? hw.manual : true };
+  const tasks = data?.tasks ?? [];
+  const assigned = new Set(assignedHomeworkTasks(tasks, homeworkAssignment).map((task) => task.id));
+  const visibleTasks = role === "teacher" ? tasks : tasks.filter((task) =>
+    !task.options?.teacherOnly && (task.section !== "homework" || assigned.has(task.id)),
+  ).map((task) => !task.options?.teacherKey && !task.options?.help?.hidden ? task : {
+    ...task, options: { ...task.options, teacherKey: undefined, help: task.options?.help?.hidden ? undefined : task.options?.help },
+  });
+  const visibleIds = new Set(visibleTasks.map((task) => task.id));
+  const answersRows = allRows.filter((a) => a.studentId === lesson.studentId && (role === "teacher" || visibleIds.has(a.taskId)));
   const words = allWords.filter((w) => w.studentId === lesson.studentId);
   const answers: Answers = Object.fromEntries(answersRows.filter((a) => Object.keys((a.payload as object) ?? {}).length).map((a) => [a.taskId, a.payload as Record<string, unknown>]));
   const statuses = Object.fromEntries(answersRows.map((a) => [a.taskId, a.status]));
@@ -131,7 +141,7 @@ export default async function ClassPage({ params, searchParams }: { params: Prom
   const reviews = Object.fromEntries(answersRows.filter((a) => a.teacherReview).map((a) => [a.taskId, a.teacherReview as Review]));
   // черновики проверки ИИ видит только учитель
   const aiDrafts = role === "teacher" ? Object.fromEntries(answersRows.filter((a) => a.aiDraft).map((a) => [a.taskId, a.aiDraft as AiCheck])) : {};
-  const lessonWords = (data?.tasks ?? []).filter((x) => x.type === "wordset").flatMap((x) => { const p = parse("wordset", x.content); return p.kind === "wordset" ? p.items : []; });
+  const lessonWords = visibleTasks.filter((x) => x.type === "wordset").flatMap((x) => { const p = parse("wordset", x.content); return p.kind === "wordset" ? p.items : []; });
   const tz = user.timezone;
   const loc = lang === "ru" ? "ru-RU" : "en-GB";
   const now = new Date();
@@ -152,9 +162,10 @@ export default async function ClassPage({ params, searchParams }: { params: Prom
         title: data?.l.title ?? null,
         crumbs: data ? `${data.l.unit.course.title} · Unit ${data.unitNo} · Lesson ${data.lessonNo}` : null,
         course: data ? { title: data.l.unit.course.title, cover: data.l.cover || data.l.unit.course.cover } : null,
-        rubrics: data?.rubrics ?? [], tasks: (data?.tasks ?? []).filter((x) => role === "teacher" || !x.options?.teacherOnly).map((x) => (role === "teacher" || (!x.options?.teacherKey && !x.options?.help?.hidden) ? x : { ...x, options: { ...x.options, teacherKey: undefined, help: x.options?.help?.hidden ? undefined : x.options?.help } })), /* заметки «только учителю», ответы для учителя и скрытые Useful phrases ученику не отдаём */ answers, statuses, reviews, aiDrafts, times, homeworkReviewStatuses, groupReviewAssignments,
+        rubrics: data?.rubrics ?? [], tasks: visibleTasks, answers, statuses, reviews, aiDrafts, times, homeworkReviewStatuses, groupReviewAssignments,
         ...(role === "teacher" && data?.l.teacherInfo ? { teacherInfo: data.l.teacherInfo as TInfo } : {}),
         live, board,
+        canChooseLessonWords: role === "student" && !preview && lesson.status === "DONE",
         ...(role === "teacher" && host.status === "PLANNED" ? { lessonSession: { ...lessonOccurrence(host), active: hasStartedLessonSession(host) } } : {}),
         ...(nextLesson ? { completionNext: {
           startsAt: nextLesson.startsAt.getTime(), initialNow: now.getTime(),
@@ -163,7 +174,7 @@ export default async function ClassPage({ params, searchParams }: { params: Prom
         prevHw,
         tgLinked: role === "student" ? !!user.telegramChatId : null,
         carriedFrom: carriedFrom ? (carriedFrom as Date).toLocaleDateString(lang === "ru" ? "ru-RU" : "en-GB", { day: "numeric", month: "long", timeZone: user.timezone }) : null,
-        homework: { extraTaskIds: hw?.extraTaskIds ?? [], wordTraining: hw?.wordTraining ?? [], teacherComment: hw?.teacherComment ?? null, taskOrder: hw?.taskOrder ?? [], removedTaskIds: hw?.removedTaskIds ?? [], manual: hw ? hw.manual : true },
+        homework: homeworkAssignment,
         lessonWords, words: words.map((w) => ({ id: w.id, word: w.word, translation: w.translation, example: w.example, level: w.level })),
         messages: (group ? [...(grp?.messages ?? [])] : messages).reverse().map((m) => ({ id: m.id, text: m.deletedAt ? "" : m.text, by: m.senderId, at: m.createdAt.toISOString(), replyTo: m.replyTo, edited: !!m.editedAt, deleted: !!m.deletedAt })),
         ...(group ? { chatNames } : {}),

@@ -9,7 +9,10 @@ import { classAccess, type LiveState } from "@/lib/live/access";
 import { publish, withLock } from "@/lib/live/bus";
 import { startLessonSession, withLessonLifecycleLock, type LessonFinishedEvent } from "@/lib/live/lesson-session";
 import { inLessonNow } from "@/lib/student/in-lesson";
+import { savePersonalWord, withPersonalWordTransaction } from "@/lib/student/save-personal-word";
 import { rateLimit } from "@/lib/rate-limit";
+import { isAssignedHomeworkTask } from "@/lib/homework-review";
+import { setHomeworkAssignment } from "@/lib/tasks/homework-selection";
 import { completeNotes, notify, notifyPayer } from "@/lib/notify";
 
 type Board = { pages: Record<string, unknown>[][] };
@@ -42,8 +45,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       if (!tg || !sid) return bad("no student");
       const taskId = str(body.taskId, 60), key = str(body.key, 40);
       if (!taskId || !key || JSON.stringify(body.value ?? null).length > 20000) return bad();
-      const task = await db.task.findUnique({ where: { id: taskId }, select: { templateId: true, type: true } });
+      const task = await db.task.findUnique({ where: { id: taskId } });
       if (!task || task.templateId !== host.templateId) return bad("task");
+      if (!teacher && task.section === "homework") {
+        const homework = await db.homework.findUnique({ where: { lessonInstanceId: tg.id } });
+        if (!homework || !isAssignedHomeworkTask(task, homework)) return bad("homework");
+      }
       const where = { lessonInstanceId_taskId_studentId: { lessonInstanceId: tg.id, taskId, studentId: sid } };
       return withLock(`answer:${tg.id}:${taskId}`, async () => {
       const prev0 = await db.answer.findUnique({ where });
@@ -139,8 +146,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     case "live": {
       if (!teacher) return bad("teacher only");
       const patch = (body.patch ?? {}) as LiveState;
-      const allowed: (keyof LiveState)[] = ["rubricId", "spotlight", "hidden", "follow", "lockBoard", "page", "timer", "tab", "scriptOpen", "marks", "marksShown", "hwErr"];
-      const clean = Object.fromEntries(Object.entries(patch).filter(([k]) => allowed.includes(k as keyof LiveState)));
+      const allowed: (keyof LiveState)[] = ["rubricId", "spotlight", "hidden", "follow", "lockBoard", "page", "timer", "tab", "scriptOpen", "marks", "marksShown", "hwErr", "contextTranslation"];
+      const clean = Object.fromEntries(Object.entries(patch).filter(([k, v]) => allowed.includes(k as keyof LiveState) && (k !== "contextTranslation" || typeof v === "boolean")));
       if (JSON.stringify(clean).length > 60000) return bad("big");
       await withLock(`live:${host.id}`, async () => {
         await db.$transaction(async (tx) => {
@@ -156,33 +163,43 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       return NextResponse.json({ ok: true });
     }
     // ── задание урока → в домашку (и обратно)
-    case "hw": {
+    case "hw": case "hwRemove": {
       if (!teacher) return bad("teacher only");
-      // одно задание (taskId) или несколько сразу («Задать все заготовки», ids) — в конец списка, в том порядке, как задавали
-      const list = (Array.isArray(body.ids) ? (body.ids as unknown[]).slice(0, 100).map((x) => str(x, 60)) : [str(body.taskId, 60)]).filter(Boolean);
-      let extra: string[] = [];
-      for (const lid of slotIds) { // групповое занятие — домашка всем ученикам
-        const hw = await db.homework.upsert({ where: { lessonInstanceId: lid }, create: { lessonInstanceId: lid, taskIds: [] }, update: {} });
-        extra = body.on ? [...new Set([...hw.extraTaskIds, ...list])] : hw.extraTaskIds.filter((x) => !list.includes(x));
-        await db.homework.update({ where: { id: hw.id }, data: { extraTaskIds: extra } });
-      }
-      publish(ch, "hw", { extraTaskIds: extra });
-      return NextResponse.json({ ok: true });
+      const list = [...new Set((Array.isArray(body.ids) ? (body.ids as unknown[]).slice(0, 100).map((x) => str(x, 60)) : [str(body.taskId, 60)]).filter(Boolean))];
+      if (!list.length || (body.type === "hw" && typeof body.on !== "boolean")) return bad();
+      const on = body.type === "hw" && body.on === true;
+      return withLessonLifecycleLock(user.id, host, async () => {
+        const assignment = await db.$transaction(async (tx) => {
+          const [fresh] = await tx.$queryRaw<{ templateId: string | null }[]>`
+            SELECT "templateId" FROM "LessonInstance" WHERE "id" = ${host.id} AND "teacherId" = ${user.id} FOR UPDATE
+          `;
+          if (!fresh?.templateId) return null;
+          const tasks = await tx.task.findMany({ where: { templateId: fresh.templateId, id: { in: list } } });
+          const byId = new Map(tasks.map((task) => [task.id, task]));
+          if (tasks.length !== list.length || (on && tasks.some((t) => t.hidden || (t.options as { teacherOnly?: boolean } | null)?.teacherOnly))) return null;
+          const ordered = list.map((taskId) => byId.get(taskId)!);
+          let current = null;
+          for (const lid of slotIds) {
+            const hw = await tx.homework.upsert({ where: { lessonInstanceId: lid }, create: { lessonInstanceId: lid, taskIds: [] }, update: {} });
+            const data = setHomeworkAssignment(hw, ordered, on);
+            await tx.homework.update({ where: { id: hw.id }, data });
+            if (lid === lesson.id) current = { extraTaskIds: data.extraTaskIds, removedTaskIds: data.removedTaskIds };
+          }
+          return current;
+        });
+        if (!assignment) return bad("task");
+        // Каждый участник перечитывает своё назначение вместе с доступным содержимым заданий.
+        publish(ch, "reload", {});
+        return NextResponse.json({ ok: true, assignment });
+      });
     }
-    // ── убрать задание из домашки (добавили по ошибке): с урока — снять перенос; из раздела «Домашка» — скрыть для этого занятия
-    case "hwRemove": case "hwRestore": {
+    case "hwRestore": {
       if (!teacher) return bad("teacher only");
-      const taskId = str(body.taskId, 60);
-      let x = { extraTaskIds: [] as string[], removedTaskIds: [] as string[] };
       for (const lid of slotIds) {
         const hw = await db.homework.upsert({ where: { lessonInstanceId: lid }, create: { lessonInstanceId: lid, taskIds: [] }, update: {} });
-        const data = body.type === "hwRemove"
-          ? { extraTaskIds: hw.extraTaskIds.filter((y) => y !== taskId), taskIds: hw.taskIds.filter((y) => y !== taskId), removedTaskIds: hw.extraTaskIds.includes(taskId) ? hw.removedTaskIds : [...new Set([...hw.removedTaskIds, taskId])] }
-          : { removedTaskIds: [], taskIds: hw.taskIds.length ? [...new Set([...hw.taskIds, ...hw.removedTaskIds])] : hw.taskIds };
-        const u = await db.homework.update({ where: { id: hw.id }, data });
-        x = { extraTaskIds: u.extraTaskIds, removedTaskIds: u.removedTaskIds };
+        await db.homework.update({ where: { id: hw.id }, data: { removedTaskIds: [], taskIds: hw.taskIds.length ? [...new Set([...hw.taskIds, ...hw.removedTaskIds])] : hw.taskIds } });
       }
-      publish(ch, "hw", x);
+      publish(ch, "reload", {});
       return NextResponse.json({ ok: true });
     }
     // ── порядок заданий домашки (учитель перетащил или нажал стрелку) — всем ученикам занятия
@@ -351,37 +368,40 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       if (body.op === "add") {
         const word = str(body.word, 120).trim();
         if (!word) return bad();
-        const dictionary = body.dictionary === true;
         const inputTranslation = str(body.tr, 200);
-        const translation = (dictionary ? inputTranslation.trim() : inputTranslation) || null;
-        if (dictionary && !translation) return bad();
-        return withLock(`word:${studentId}`, async () => {
+        if (body.dictionary === true) {
+          if (!inputTranslation.trim()) return bad();
+          const confirmation = body.confirmation;
+          if (confirmation !== undefined && (
+            !confirmation || typeof confirmation.id !== "string" || confirmation.id.length > 100 ||
+            (confirmation.translation !== null && typeof confirmation.translation !== "string")
+          )) return bad();
+
+          const result = await savePersonalWord(studentId, {
+            word, translation: inputTranslation, example: str(body.ex, 400), sourceLessonId: tg.id, confirmation,
+          });
+          if (result.status === "confirm") return NextResponse.json({ ok: true, ...result });
+          if (!("saved" in result)) return bad(result.status);
+
+          publish(ch, "word", { op: "add", word: result.saved, sid: studentId });
+          return NextResponse.json({ ok: true, status: result.status, translation: result.saved.translation });
+        }
+
+        const translation = inputTranslation || null;
+        const saved = await withPersonalWordTransaction(studentId, async (tx) => {
           const select = { id: true, word: true, translation: true, example: true, level: true };
-          const existing = await db.word.findFirst({
+          const existing = await tx.word.findFirst({
             where: { studentId, word: { equals: word, mode: "insensitive" } },
             orderBy: [{ createdAt: "asc" }, { id: "asc" }],
             select,
           });
-          let saved = existing;
-          let status = "existing";
-          if (!saved) {
-            saved = await db.word.create({
-              data: { studentId, word, translation, example: str(body.ex, 400) || null, sourceLessonId: tg.id },
-              select,
-            });
-            status = "added";
-          } else if (dictionary && translation && !saved.translation?.trim()) {
-            const { count } = await db.word.updateMany({
-              where: { id: saved.id, studentId, translation: saved.translation },
-              data: { translation },
-            });
-            saved = await db.word.findUnique({ where: { id: saved.id }, select });
-            if (!saved) return bad();
-            if (count) status = "updated";
-          }
-          publish(ch, "word", { op: "add", word: saved, sid: studentId });
-          return NextResponse.json({ ok: true, ...(dictionary ? { status, translation: saved.translation } : {}) });
+          return existing ?? await tx.word.create({
+            data: { studentId, word, translation, example: str(body.ex, 400) || null, sourceLessonId: tg.id },
+            select,
+          });
         });
+        publish(ch, "word", { op: "add", word: saved, sid: studentId });
+        return NextResponse.json({ ok: true });
       } else if (body.op === "del" && teacher) {
         const w = await db.word.findUnique({ where: { id: str(body.wid, 60) } });
         if (w?.studentId !== tg.studentId) return bad();

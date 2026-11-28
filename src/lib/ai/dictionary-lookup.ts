@@ -10,15 +10,16 @@ type LookupResult = { translations: string[] } | { error: "input" | "limit" | "u
 const globalForDictionary = globalThis as typeof globalThis & { dictionaryRateCounters?: Map<string, number[]> };
 const counters = (globalForDictionary.dictionaryRateCounters ??= new Map());
 
+export async function allowDictionaryRequest({ userId, teacherId }: Ctx) {
+  return await rateLimit(`dictionary:${userId}`, 20, 60, counters) &&
+    (!teacherId || await rateLimit(`dictionary-teacher:${teacherId}`, 60, 60, counters));
+}
+
 export async function searchDictionary(readQuery: () => unknown, ctx: Ctx): Promise<LookupResult> {
-  const { userId, teacherId, names } = ctx;
-  if (!(await rateLimit(`dictionary:${userId}`, 20, 60, counters)) ||
-      (teacherId && !(await rateLimit(`dictionary-teacher:${teacherId}`, 60, 60, counters)))) {
-    return { error: "limit" };
-  }
+  if (!(await allowDictionaryRequest(ctx))) return { error: "limit" };
 
   const query = dictionaryQuery(await readQuery());
-  if (!query || scrub(query, names) !== query) return { error: "input" };
+  if (!query || scrub(query, ctx.names) !== query) return { error: "input" };
 
   try {
     const translations = await withLock(`dictionary:${query}`, () => lookupDictionary(query, ctx));

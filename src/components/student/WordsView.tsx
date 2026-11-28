@@ -6,10 +6,26 @@ import { Dialog } from "../Dialog";
 import { Icon } from "../Icon";
 import { useT } from "@/lib/i18n/client";
 import { addMyWord, deleteMyWord, enrichMyWord, lookupMyWord, practiceResult, setWordGoal, updateMyWord } from "@/lib/student/actions";
+import { splitWordExample } from "@/lib/student/word-example";
 import { wordTranslations } from "@/lib/student/word-translations";
 import { dictationGrade, shuffle } from "@/lib/tasks/parse";
+import styles from "./PersonalWordCard.module.css";
 
-export type W = { id: string; word: string; translation: string | null; definition: string | null; ipa: string | null; enrich: boolean; example: string | null; ownExample: string | null; level: number; due: boolean };
+export type W = {
+  id: string;
+  word: string;
+  translation: string | null;
+  definition: string | null;
+  ipa: string | null;
+  synonyms: string[] | null;
+  meanings: string[];
+  canEnrich: boolean;
+  enrich: boolean;
+  example: string | null;
+  ownExample: string | null;
+  level: number;
+  due: boolean;
+};
 type Props = { words: W[]; goal: number; days: number[]; remindAt: string; doneToday: number; week: { label: string; done: boolean; planned: boolean; today: boolean }[]; streak: number; train: "today" | "all" | null; tab: "overview" | "list"; editGoal: boolean };
 
 const say = (w: string, lang: string) => { if (typeof window === "undefined" || !("speechSynthesis" in window)) return; const u = new SpeechSynthesisUtterance(w); u.lang = lang; u.rate = 0.9; speechSynthesis.cancel(); speechSynthesis.speak(u); };
@@ -100,20 +116,26 @@ function GoalDialog({ p, onClose }: { p: Props; onClose: () => void }) {
   );
 }
 
-function PersonalWordDetails({ word }: { word: W }) {
+function PersonalWordCard({ word, accent, level, onDelete, onAddSynonym }: {
+  word: W;
+  accent: string;
+  level: string;
+  onDelete: () => void;
+  onAddSynonym: (word: string, meaning: string) => void;
+}) {
   const { t } = useT();
-  const area = useRef<HTMLDivElement>(null);
+  const area = useRef<HTMLElement>(null);
   const inFlight = useRef(false);
   const [result, setResult] = useState<Awaited<ReturnType<typeof enrichMyWord>> | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (suggestSynonyms = false) => {
     if (inFlight.current) return;
     inFlight.current = true;
     setLoading(true);
     setResult(null);
     try {
-      setResult(await enrichMyWord(word.id));
+      setResult(await enrichMyWord(word.id, suggestSynonyms));
     } catch {
       setResult({ ok: false, error: "unavailable" });
     } finally {
@@ -141,23 +163,114 @@ function PersonalWordDetails({ word }: { word: W }) {
   const definition = completed?.definition || word.definition;
   const example = completed?.example || word.example;
   const ipa = completed?.ipa || word.ipa;
+  const [chosen, setChosen] = useState("");
+  const [alternateResults, setAlternateResults] = useState(() => new Map<string, Awaited<ReturnType<typeof enrichMyWord>>>());
+  const [loadingAlternate, setLoadingAlternate] = useState(false);
+  const meaning = word.meanings.includes(chosen) ? chosen : word.meanings[0];
+  const alternate = meaning && meaning !== word.meanings[0] ? meaning : null;
+  const alternateResult = alternate ? alternateResults.get(alternate) : null;
+  const synonyms = alternate ? (alternateResult?.ok ? alternateResult.synonyms : null) : completed?.synonyms ?? word.synonyms;
+  const canSuggest = word.canEnrich && synonyms === null && !loading && result?.ok !== false && (!word.enrich || completed);
+
+  const loadAlternate = async (meaning: string) => {
+    setLoadingAlternate(true);
+    try {
+      const details = await enrichMyWord(word.id, true, meaning);
+      setAlternateResults((current) => new Map(current).set(meaning, details));
+    } catch {
+      setAlternateResults((current) => new Map(current).set(meaning, { ok: false, error: "unavailable" }));
+    } finally {
+      setLoadingAlternate(false);
+    }
+  };
+
   return (
-    <div ref={area}>
-      <div className="flex flex-wrap items-baseline gap-x-2">
-        <b lang="en">{word.word}</b>
-        {ipa && <span className="small muted">{ipa}</span>}
-      </div>
-      {word.translation && <span className="small muted">{word.translation}</span>}
-      {definition && <div className="small mt-1"><b>{t("wd.cardDefinition")}</b> <span lang="en">{definition}</span></div>}
-      {example && <div className="small mt-1"><b>{t("wd.cardExample")}</b> <i lang="en">{example}</i></div>}
-      {loading && <p className="small muted mt-1 mb-0" role="status">{t("wd.cardLoading")}</p>}
-      {word.enrich && result && !result.ok && (
-        <div className="flex flex-wrap items-center gap-x-2">
-          <span className="small muted" role="status">{t(result.error === "limit" ? "wd.cardLimit" : "wd.cardUnavailable")}</span>
-          <button type="button" className="btn plain sm" onClick={() => void load()}>{t("wd.cardRetry")}</button>
+    <article className={styles.card} ref={area}>
+      <header className={styles.header}>
+        <div className={styles.heading}>
+          <button type="button" className={`iconbtn ${styles.listen}`} aria-label={t("tk.listen")} onClick={() => say(word.word, accent)}>
+            <Icon name="sound" size="sm" />
+          </button>
+          <div className="min-w-0">
+            <h3 className={styles.word} lang="en">{word.word}</h3>
+            {ipa && <div className={styles.ipa}>{ipa}</div>}
+          </div>
+        </div>
+        <div className={styles.controls}>
+          <div className={styles.progress}>
+            <div className="flex justify-end gap-1" aria-hidden="true">
+              {[0, 1, 2, 3].map((i) => <i key={i} className="lvl" style={{ background: word.level > i ? "var(--accent)" : "var(--fill)" }} />)}
+            </div>
+            <span>{level}</span>
+          </div>
+          <button type="button" className="iconbtn" aria-label={t("common.delete")} onClick={onDelete}><Icon name="close" size="sm" /></button>
+        </div>
+      </header>
+      {word.translation && <p className={styles.translation} lang="ru">{word.translation}</p>}
+      {definition && <p className={styles.detail}><b>{t("wd.cardDefinition")}</b> <span lang="en">{definition}</span></p>}
+      {example && (
+        <div className={styles.example}>
+          <b>{t("wd.cardExample")}</b>
+          <p lang="en">{splitWordExample(example, word.word).map((part, i) => i % 2 ? <strong key={i}>{part}</strong> : part)}</p>
         </div>
       )}
-    </div>
+      {word.meanings.length > 1 && (
+        <label className="field">
+          <span className="flabel">{t("wd.synonymMeaningLabel")}</span>
+          <select className="select" value={meaning} disabled={loadingAlternate} onChange={(event) => setChosen(event.target.value)}>
+            {word.meanings.map((value) => <option key={value}>{value}</option>)}
+          </select>
+        </label>
+      )}
+      {meaning && !!synonyms?.length && (
+        <div>
+          <p className={styles.detail}>
+            <b>{word.meanings.length > 1 ? t("wd.cardSynonymsFor", { meaning }) : t("wd.cardSynonyms")}</b>{" "}
+            <span lang="en">{synonyms.join(", ")}</span>
+          </p>
+          <details className="mt-1">
+            <summary className={styles.suggest}>{t("wd.pickSynonym")}</summary>
+            <ul className="mt-1 flex flex-wrap gap-2">
+              {synonyms.map((synonym) => (
+                <li key={synonym}>
+                  <button type="button" className="btn secondary sm" aria-label={t("cls.dictAdd", { translation: synonym })}
+                    onClick={() => onAddSynonym(synonym, meaning)}><span lang="en">{synonym}</span> +</button>
+                </li>
+              ))}
+            </ul>
+          </details>
+        </div>
+      )}
+      {alternate && (loadingAlternate ? (
+        <p className="small muted m-0" role="status">{t("wd.cardLoading")}</p>
+      ) : alternateResult?.ok && !synonyms?.length ? (
+        <p className="small muted m-0" role="status">{t("wd.noSynonyms")}</p>
+      ) : synonyms === null && (
+        <div className="flex flex-wrap items-center gap-x-2">
+          {alternateResult && !alternateResult.ok && <span className="small muted" role="status">
+            {t(alternateResult.error === "limit" ? "wd.cardLimit" : "wd.cardUnavailable")}
+          </span>}
+          <button type="button" className={styles.suggest} onClick={() => void loadAlternate(alternate)}>
+            {t(alternateResult ? "wd.cardRetry" : "wd.cardSuggestSynonyms")}
+          </button>
+        </div>
+      ))}
+      {loading && <p className="small muted m-0" role="status">{t("wd.cardLoading")}</p>}
+      {result && !result.ok && (
+        <div className="flex flex-wrap items-center gap-x-2">
+          <span className="small muted" role="status">{t(result.error === "limit" ? "wd.cardLimit" : "wd.cardUnavailable")}</span>
+          <button type="button" className="btn plain sm" onClick={() => void load(true)}>{t("wd.cardRetry")}</button>
+        </div>
+      )}
+      {!alternate && canSuggest && (
+        <button type="button" className={styles.suggest} onClick={() => void load(true)}>{t("wd.cardSuggestSynonyms")}</button>
+      )}
+      <label className={styles.ownExample}>
+        <span>{t("tk.ownExample")}</span>
+        <input className="input" defaultValue={word.ownExample ?? ""} lang="en"
+          onBlur={(e) => e.target.value !== (word.ownExample ?? "") && updateMyWord(word.id, { ownExample: e.target.value })} />
+      </label>
+    </article>
   );
 }
 
@@ -165,15 +278,17 @@ function WordList({ words, accent }: { words: W[]; accent: string }) {
   const { t } = useT();
   const router = useRouter();
   const [q, setQ] = useState("");
+  const [showDefinition, setShowDefinition] = useState(false);
+  const [definition, setDefinition] = useState("");
   const [lookup, setLookup] = useState<Awaited<ReturnType<typeof lookupMyWord>> | null>(null);
   const [lookingUp, setLookingUp] = useState(false);
   const lookupRequest = useRef(0);
   const [notice, setNotice] = useState<"wd.wordExists" | "wd.translationUpdated" | "wd.wordSaveError" | null>(null);
-  const [confirmation, setConfirmation] = useState<Extract<Awaited<ReturnType<typeof addMyWord>>, { status: "confirm" }> | null>(null);
+  const [confirmation, setConfirmation] = useState<(Extract<Awaited<ReturnType<typeof addMyWord>>, { status: "confirm" }> & { preserveDraft: boolean }) | null>(null);
   const [pending, start] = useTransition();
   const levels = [t("cls.lv0"), t("cls.lv1"), t("cls.lv2"), t("cls.lv3"), t("cls.lv4")];
   const [word, translation = "", example = ""] = q.split(/\s+[—–-]\s+/);
-  const manual = Boolean(translation.trim() || example.trim());
+  const manual = Boolean(translation.trim() || example.trim() || definition.trim());
   const options = lookup && "translations" in lookup ? lookup.translations : [];
   const lookupMessage = lookup && "error" in lookup
     ? t(lookup.error === "input" ? "cls.dictInput" : lookup.error === "limit" ? "cls.dictLimit" : "cls.dictUnavailable")
@@ -194,21 +309,28 @@ function WordList({ words, accent }: { words: W[]; accent: string }) {
     }
   };
 
-  const saveWord = (word: string, translation: string, example: string, existing?: NonNullable<typeof confirmation>["existing"]) => {
+  const saveWord = (word: string, translation: string, example: string, options?: {
+    existing?: NonNullable<typeof confirmation>["existing"];
+    definition?: string;
+    preserveDraft?: boolean;
+  }) => {
+    const { existing, definition: suppliedDefinition, preserveDraft = false } = options ?? {};
     setNotice(null);
     start(async () => {
       try {
-        const result = await addMyWord(word, translation, example, existing && { id: existing.id, translation: existing.translation });
+        const result = await addMyWord(word, translation, example, { definition: suppliedDefinition, confirmation: existing });
         if (result.status === "confirm") {
-          setConfirmation(result);
+          setConfirmation({ ...result, preserveDraft });
           return;
         }
         setConfirmation(null);
         if (result.status === "existing") setNotice("wd.wordExists");
         if (result.status === "updated") setNotice("wd.translationUpdated");
         if (result.status === "empty" || result.status === "changed") setNotice("wd.wordSaveError");
-        if (result.status === "added" || result.status === "updated") {
+        if (!preserveDraft && (result.status === "added" || result.status === "updated")) {
           setQ("");
+          setDefinition("");
+          setShowDefinition(false);
           setLookup(null);
         }
       } catch {
@@ -219,69 +341,76 @@ function WordList({ words, accent }: { words: W[]; accent: string }) {
   };
   const current = confirmation ? wordTranslations(confirmation.existing.translation).join("; ") : "";
   return (
-    <section className="card">
-      <form className="flex gap-2" onSubmit={(e) => {
-        e.preventDefault();
-        if (pending || lookingUp || !word.trim()) return;
-        if (manual) saveWord(word, translation, example);
-        else void search(word);
-      }}>
-        <input className="input min-w-0" value={q} disabled={pending} placeholder={t("cls.dictPh")} aria-label={t("cls.dictPh")}
-          aria-describedby="my-word-format" onChange={(e) => {
-            lookupRequest.current++;
-            setQ(e.target.value);
-            setLookup(null);
-            setLookingUp(false);
-            setNotice(null);
-          }} />
-        <button type="submit" className="btn primary" disabled={pending || lookingUp || !word.trim()}>{t(manual ? "cls.addWord" : "cls.dictSearch")}</button>
-      </form>
-      <p className="hint mt-2 mb-4" id="my-word-format">{t("wd.wordManualHint")}</p>
-      {(lookingUp || lookupMessage) && <p className="small mb-2 mt-0" role="status">{lookingUp ? t("cls.dictLoading") : lookupMessage}</p>}
-      {options.length > 0 && (
-        <ul className="mb-4 flex flex-col gap-2">
-          {options.map((option) => (
-            <li key={option} className="flex items-center justify-between gap-2">
-              <span>{option}</span>
-              <button type="button" className="iconbtn wplus" disabled={pending} aria-label={t("cls.dictAdd", { translation: option })}
-                onClick={() => saveWord(word, option, "")}><Icon name="plus" size="sm" /></button>
-            </li>
-          ))}
-        </ul>
-      )}
-      {lookupMessage && (
-        <button type="button" className="btn plain sm mb-4" disabled={pending}
-          onClick={() => saveWord(word, "", "")}>{t("wd.wordWithoutTranslation")}</button>
-      )}
-      {notice && <p className="small mb-4 mt-0" role="status">{t(notice)}</p>}
-      {confirmation && (
-        <Dialog key={JSON.stringify([confirmation.existing.id, confirmation.existing.translation])}
-          open onClose={() => { if (!pending) setConfirmation(null); }} title={t("wd.updateTranslation")}>
-          <p className="m-0 break-words">{t("wd.addTranslation", { word: confirmation.existing.word, value: confirmation.value })}</p>
-          {current && <p className="small muted mt-2 mb-0 break-words">{t("wd.currentTranslation", { value: current })}</p>}
-          <div className="actions">
-            <button type="button" className="btn secondary" disabled={pending} onClick={() => setConfirmation(null)}>{t("common.cancel")}</button>
-            <button type="button" className="btn primary" disabled={pending} onClick={() => saveWord(confirmation.existing.word, confirmation.value, "", confirmation.existing)}>
-              {t("wd.updateTranslation")}
-            </button>
+    <div className={styles.layout}>
+      <section className="card">
+        <form className="flex flex-col gap-2" onSubmit={(e) => {
+          e.preventDefault();
+          if (pending || lookingUp || !word.trim()) return;
+          if (manual) saveWord(word, translation, example, { definition });
+          else void search(word);
+        }}>
+          <div className="flex gap-2">
+            <input className="input min-w-0" value={q} disabled={pending} placeholder={t("cls.dictPh")} aria-label={t("cls.dictPh")}
+              aria-describedby="my-word-format" onChange={(e) => {
+                lookupRequest.current++;
+                setQ(e.target.value);
+                setLookup(null);
+                setLookingUp(false);
+                setNotice(null);
+              }} />
+            <button type="submit" className="btn primary" disabled={pending || lookingUp || !word.trim()}>{t(manual ? "cls.addWord" : "cls.dictSearch")}</button>
           </div>
-        </Dialog>
-      )}
-      {words.length === 0 && <p className="hint">{t("cls.noWords")}</p>}
-      <div className="flex flex-col">
-        {words.map((w) => (
-          <div key={w.id} className="row" style={{ alignItems: "flex-start" }}>
-            <button className="iconbtn" style={{ background: "var(--fill)" }} onClick={() => say(w.word, accent)} aria-label={t("tk.listen")}><Icon name="sound" size="sm" /></button>
-            <div className="grow">
-              <PersonalWordDetails word={w} />
-              <input className="input mt-2" style={{ fontSize: 13, padding: "6px 10px" }} defaultValue={w.ownExample ?? ""} placeholder={t("tk.ownExample")} onBlur={(e) => e.target.value !== (w.ownExample ?? "") && updateMyWord(w.id, { ownExample: e.target.value })} aria-label={t("tk.ownExample")} />
+          <button type="button" className="btn plain sm self-start" disabled={pending} aria-expanded={showDefinition}
+            onClick={() => { setShowDefinition(!showDefinition); if (showDefinition) setDefinition(""); }}>
+            {t(showDefinition ? "wd.hideDefinitionInput" : "wd.showDefinitionInput")}
+          </button>
+          {showDefinition && <label className="field">
+            <span className="flabel">{t("wd.cardDefinition")}</span>
+            <textarea className="textarea" value={definition} maxLength={400} rows={2} disabled={pending} lang="en"
+              onChange={(event) => setDefinition(event.target.value)} />
+          </label>}
+        </form>
+        <p className="hint mt-2 mb-4" id="my-word-format">{t("wd.wordManualHint")}</p>
+        {(lookingUp || lookupMessage) && <p className="small mb-2 mt-0" role="status">{lookingUp ? t("cls.dictLoading") : lookupMessage}</p>}
+        {options.length > 0 && (
+          <ul className="mb-4 flex flex-col gap-2">
+            {options.map((option) => (
+              <li key={option} className="flex items-center justify-between gap-2">
+                <span>{option}</span>
+                <button type="button" className="iconbtn wplus" disabled={pending} aria-label={t("cls.dictAdd", { translation: option })}
+                  onClick={() => saveWord(word, option, "", { definition })}><Icon name="plus" size="sm" /></button>
+              </li>
+            ))}
+          </ul>
+        )}
+        {lookupMessage && (
+          <button type="button" className="btn plain sm mb-4" disabled={pending}
+            onClick={() => saveWord(word, "", "", { definition })}>{t("wd.wordWithoutTranslation")}</button>
+        )}
+        {notice && <p className="small mb-4 mt-0" role="status">{t(notice)}</p>}
+        {confirmation && (
+          <Dialog key={JSON.stringify([confirmation.existing.id, confirmation.existing.translation])}
+            open onClose={() => { if (!pending) setConfirmation(null); }} title={t("wd.updateTranslation")}>
+            <p className="m-0 break-words">{t("wd.addTranslation", { word: confirmation.existing.word, value: confirmation.value })}</p>
+            {current && <p className="small muted mt-2 mb-0 break-words">{t("wd.currentTranslation", { value: current })}</p>}
+            <div className="actions">
+              <button type="button" className="btn secondary" disabled={pending} onClick={() => setConfirmation(null)}>{t("common.cancel")}</button>
+              <button type="button" className="btn primary" disabled={pending} onClick={() => saveWord(confirmation.existing.word, confirmation.value, "", { existing: confirmation.existing, preserveDraft: confirmation.preserveDraft })}>
+                {t("wd.updateTranslation")}
+              </button>
             </div>
-            <div className="text-right"><div className="flex justify-end gap-1">{[0, 1, 2, 3].map((i) => <i key={i} className="lvl" style={{ background: w.level > i ? "var(--accent)" : "var(--fill)" }} />)}</div><span className="small muted">{levels[w.level]}</span></div>
-            <button className="iconbtn" aria-label={t("common.delete")} onClick={() => confirm(t("wd.delQ", { w: w.word })) && start(async () => { await deleteMyWord(w.id); })}>✕</button>
-          </div>
+          </Dialog>
+        )}
+        {words.length === 0 && <p className="hint mb-0">{t("cls.noWords")}</p>}
+      </section>
+      {words.length > 0 && <div className={styles.list}>
+        {words.map((w) => (
+          <PersonalWordCard key={w.id} word={w} accent={accent} level={levels[w.level]}
+            onAddSynonym={(synonym, meaning) => { if (!pending) saveWord(synonym, meaning, "", { preserveDraft: true }); }}
+            onDelete={() => confirm(t("wd.delQ", { w: w.word })) && start(async () => { await deleteMyWord(w.id); })} />
         ))}
-      </div>
-    </section>
+      </div>}
+    </div>
   );
 }
 
@@ -339,7 +468,13 @@ function Trainer(p: Props & { accent: string }) {
           <div className="flash" onClick={() => setFlip(true)}>
             <div className="w">{card.w.word}</div>
             <button className="iconbtn" onClick={(e) => { e.stopPropagation(); say(card.w.word, p.accent); }} aria-label={t("tk.listen")}><Icon name="sound" size="sm" /></button>
-            {flip ? <><div className="text-[19px]">{card.w.translation ?? "—"}</div>{card.w.example && <i className="small muted">{card.w.example}</i>}</> : <span className="hint">{t("wd.tapToFlip")}</span>}
+            {flip ? (
+              <>
+                {card.w.translation && <div className="text-[19px]">{card.w.translation}</div>}
+                {card.w.definition?.trim() && <div className={card.w.translation ? "small" : "text-[19px]"} lang="en">{card.w.definition}</div>}
+                {card.w.example && <i className="small muted" lang="en">{card.w.example}</i>}
+              </>
+            ) : <span className="hint">{t("wd.tapToFlip")}</span>}
           </div>
           {state === "ask" ? (
             <div className="mt-4 grid grid-cols-2 gap-3"><button className="btn secondary lg" onClick={() => answer(false).then(next)}>{t("wd.dontKnow")}</button><button className="btn primary lg" onClick={() => answer(true).then(next)}>{t("wd.know")}</button></div>
