@@ -10,17 +10,13 @@
     16,
     18
   ],
-  "lease": {
-    "token": "2896543509264a3bba204a5549a89f74",
-    "started_at": "2026-11-28T13:01:35.051744Z",
-    "expires_at": "2026-11-28T16:03:34.996042Z"
-  },
+  "lease": null,
   "checkpoint": {
     "issue": 25,
-    "stage": "merge_pending",
+    "stage": "await_cd",
     "branch": "codex/vocabulary/voc-09",
     "base_sha": "348c4a99fd27cbc8ee9ac813d2cdc07b7abdbc30",
-    "next": "Draft false read back. Exact-head review completed no findings, all 3 checks success; main protected=false, rulesets empty, main adds 3 disjoint files. Merge PR 54 with expected exact head; reconcile result before any repeat; then CD-01.",
+    "next": "PR 54 merged; read-back main equals merge SHA. CD-01 run 46147737925 in progress. Verify exact integrated SHA CI, released image and full health/version plus accessible site scenario; only then owner note and close issue 25. No repeat merge.",
     "head_sha": "9d3cb5ebcc719c4051fdc6bf56fb9146dfaf8b29",
     "pr": 54,
     "review_request_comment_id": 7238969762,
@@ -37,9 +33,11 @@
     "prior_review_summary_id": 7224060100,
     "observed_main_sha": "acdb16e95f55a2cad7be7ef9559fe647608a829e",
     "release_blocker": null,
-    "release_run_id": 46139612650,
+    "release_run_id": 46147737925,
     "last_confirmed_release_sha": "acdb16e95f55a2cad7be7ef9559fe647608a829e",
-    "last_confirmed_release_run_id": 46139612650
+    "last_confirmed_release_run_id": 46139612650,
+    "merge_sha": "0fcef7b9e18fcb9a3165d1e2a7b7e9f7cc172075",
+    "release_status": "in_progress"
   },
   "last_probe": {
     "type": "background_native_review",
