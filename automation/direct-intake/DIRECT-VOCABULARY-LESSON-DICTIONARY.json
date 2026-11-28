@@ -7,8 +7,11 @@
   "progress": {
     "base_sha": "57d38ef98578c1a3a3d7b8281e98b0cd4f1731b5",
     "branch": "codex/vocabulary-training/lesson-dictionary",
-    "next": "Реализовать поиск перевода и явное сохранение в классе. Проверить роли, кэш и ошибки на синтетике.",
-    "stage": "implementation"
+    "head_sha": "da8a51d76524a3ff12fc213e0e894da2a06a5980",
+    "next": "Проверить сценарии в Chromium и дождаться ревью и CI на указанном SHA.",
+    "pr": 94,
+    "stage": "review",
+    "test_run": 46126259441
   },
   "release": null,
   "source": "direct",
