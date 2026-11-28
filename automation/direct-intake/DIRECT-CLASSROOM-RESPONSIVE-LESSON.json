@@ -14,7 +14,25 @@
     "stage": "publication",
     "test_run": 46152062683
   },
-  "release": null,
+  "release": {
+    "ci": {
+      "result": "success",
+      "run": 46152062683,
+      "sha": "990e9bf9087c5aebfacdb84f7053e52e3922b6fd"
+    },
+    "delivery": {
+      "result": "success",
+      "run": 46152702280,
+      "sha": "7aa0781b4f6046a2c1184426b6c76a9c9aa9d746"
+    },
+    "owner_note": "Для владельца: Уроки и конструктор — рядом с видеозвонком разделы остаются справа, а в узком окне переключаются снизу.",
+    "review": {
+      "comment": 7240301409,
+      "result": "success",
+      "sha": "990e9bf9087c5aebfacdb84f7053e52e3922b6fd"
+    },
+    "site_sha": "7aa0781b4f6046a2c1184426b6c76a9c9aa9d746"
+  },
   "source": "direct",
   "version": 1
 }
