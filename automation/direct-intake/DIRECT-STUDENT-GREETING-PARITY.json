@@ -14,7 +14,25 @@
     "stage": "publication",
     "test_run": 46152793320
   },
-  "release": null,
+  "release": {
+    "ci": {
+      "result": "success",
+      "run": 46152793320,
+      "sha": "766d164a66803ef2064233333bcbb562a688998a"
+    },
+    "delivery": {
+      "result": "success",
+      "run": 46154922297,
+      "sha": "6b57ad51f4d7d48fe661461f9ab52b2d1fc18098"
+    },
+    "owner_note": "Для владельца: Кабинет ученика — приветствие и часы отображаются в той же шапке, что у преподавателя.",
+    "review": {
+      "comment": 7240426031,
+      "result": "success",
+      "sha": "766d164a66803ef2064233333bcbb562a688998a"
+    },
+    "site_sha": "6b57ad51f4d7d48fe661461f9ab52b2d1fc18098"
+  },
   "source": "direct",
   "version": 1
 }
