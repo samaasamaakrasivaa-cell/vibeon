@@ -33,6 +33,8 @@ export default async function Finance({ searchParams }: { searchParams: Promise<
   const q = (p: Record<string, string>) => `?${new URLSearchParams({ tab, r: range, ...p })}`;
   const checkTab = sp.c === "toCheck" || sp.c === "auto" ? sp.c : "waiting";
   const rows = d.check[checkTab as keyof typeof d.check];
+  const waitingTotal = d.check.waiting.reduce((sum, i) => sum + i.amount, d.unbilledSum);
+  const waitingPackDue = d.check.waiting.filter((i) => i.kind === "pack").reduce((sum, i) => sum + i.amount, 0);
   const daysSince = d.oldestProof ? Math.floor((Date.now() - d.oldestProof.getTime()) / 864e5) : 0;
   const maxM = Math.max(1, ...d.months.flatMap((m) => [m.earned, m.received]));
   const maxS = Math.max(1, ...d.perStudent.map((p) => p.earned));
@@ -130,7 +132,11 @@ export default async function Finance({ searchParams }: { searchParams: Promise<
                 <span className="fr-bar hwbar"><i style={{ width: `${(p.earned / maxS) * 100}%` }} /></span>
                 <b className="fr-sum text-right">{R(p.earned)}</b>
                 <span className="fr-cnt text-right small muted">{t("fin.lessonsN", { n: p.lessons })}</span>
-                <span className={`fr-debt text-right small ${p.debt ? "text-bad font-semibold debt-tip" : "text-text3"}`} tabIndex={p.debt ? 0 : undefined} data-tip={p.debt ? [p.debtLessons.length ? t("fin.det.unpaidLessons", { d: p.debtLessons.map(dtt).join("; ") }) : "", ...p.debtInvoices.map((i) => (i.dates.length ? t("fin.det.invLessons", { sum: R(i.amount), d: i.dates.map(dtt).join("; ") }) : t("fin.det.invSum", { title: i.title, sum: R(i.amount) })))].filter(Boolean).join("\n") : undefined}>{p.debt ? t("fin.debt", { sum: R(p.debt) }) : "—"}</span>
+                <div className="fr-debt text-right small">
+                  {p.debt > 0 && <span className="text-bad font-semibold debt-tip" tabIndex={0} data-tip={ [p.debtLessons.length ? t("fin.det.unpaidLessons", { d: p.debtLessons.map(dtt).join("; ") }) : "", ...p.debtInvoices.map((i) => (i.dates.length ? t("fin.det.invLessons", { sum: R(i.amount), d: i.dates.map(dtt).join("; ") }) : t("fin.det.invSum", { title: i.title, sum: R(i.amount) })))].filter(Boolean).join("\n")}>{t("fin.debt", { sum: R(p.debt) })}</span>}
+                  {p.packDue > 0 && <span className="block text-text3">{t("fin.packDue", { sum: R(p.packDue) })}</span>}
+                  {!p.debt && !p.packDue && <span className="text-text3">—</span>}
+                </div>
               </div>
             ))}
             {d.perStudent.length === 0 && <p className="hint m-0">{t("inviteT.none")}</p>}
@@ -141,10 +147,15 @@ export default async function Finance({ searchParams }: { searchParams: Promise<
       {tab === "check" && (
         <>
           <div className="mb-4 flex flex-wrap gap-3">
-            <Link href={q({ c: "waiting" })} className={`chkpill ${checkTab === "waiting" ? "on" : ""}`}><span className="si" style={{ background: "var(--accent)" }}><Icon name="wallet" size="sm" /></span><span className="small muted">{t("fin.c.waiting")}</span><b>{R(d.check.waiting.reduce((a, i) => a + i.amount, 0) + d.unbilledSum)}</b>{d.unbilled.length > 0 && <span className="tabcnt">{d.unbilled.length}</span>}</Link>
+            <Link href={q({ c: "waiting" })} className={`chkpill ${checkTab === "waiting" ? "on" : ""}`}><span className="si" style={{ background: "var(--accent)" }}><Icon name="wallet" size="sm" /></span><span className="small muted">{t("fin.c.waiting")}</span><b>{R(waitingTotal)}</b>{d.unbilled.length > 0 && <span className="tabcnt">{d.unbilled.length}</span>}</Link>
             <Link href={q({ c: "toCheck" })} className={`chkpill ${checkTab === "toCheck" ? "on" : ""}`}><span className="si" style={{ background: "var(--warn)" }}><Icon name="hourglass" size="sm" /></span><span className="small muted">{t("fin.c.toCheck")}</span><b>{d.check.toCheck.length}</b>{d.check.toCheck.length > 0 && <span className="tabcnt">{d.check.toCheck.length}</span>}</Link>
             <Link href={q({ c: "auto" })} className={`chkpill ${checkTab === "auto" ? "on" : ""}`}><span className="si" style={{ background: "var(--ok)" }}><Icon name="check" size="sm" /></span><span className="small muted">{t("fin.c.auto")}</span><b>{d.check.auto.length}</b></Link>
           </div>
+          {checkTab === "waiting" && waitingPackDue > 0 && (
+            <p className="small muted mt-0 mb-4">
+              {t("fin.waitingBreakdown", { other: R(waitingTotal - waitingPackDue), packs: R(waitingPackDue) })}
+            </p>
+          )}
           {/* проведённые уроки, за которые счёт ещё не выставлен: оплату можно подтвердить сразу */}
           {checkTab === "waiting" && d.unbilled.length > 0 && (
             <section className="card mb-4">

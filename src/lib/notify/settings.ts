@@ -8,7 +8,7 @@ export type NotifySettings = { tg: Partial<Record<Cat, boolean>>; email: Partial
 export function catOf(kind: string): Cat {
   if (["lesson", "lesson_done", "homework", "hw_due"].includes(kind)) return "lessons";
   if (["message", "question", "answer", "reply"].includes(kind)) return "messages";
-  if (["invoice", "paid", "receipt", "payment", "pack_request"].includes(kind)) return "payments";
+  if (["invoice", "paid", "receipt", "payment", "pack_request", "pack_renewal"].includes(kind)) return "payments";
   if (["test", "roadmap", "report", "award"].includes(kind)) return "progress";
   if (kind === "words") return "words";
   return "lessons";

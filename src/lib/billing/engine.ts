@@ -10,7 +10,8 @@ import { readStored } from "../storage";
 import { ocr } from "../ai/gateway";
 import { weeklyReports } from "../roadmap/jobs";
 import { notify, notifyPayer } from "../notify";
-import { pluralForm } from "@/lib/i18n/dict";
+import { packEndsAt } from "../teacher/pack";
+import { pluralForm, translate } from "@/lib/i18n/dict";
 
 const zan = (n: number) => `${n} ${pluralForm("ru", n, ["занятие", "занятия", "занятий"])}`;
 
@@ -172,19 +173,34 @@ async function deductPacks() {
   }
 }
 
-/** Счета за новый абонемент: когда осталось 1 или 2 урока или абонемент закончился. */
+/** Напомнить преподавателю перед окончанием. Выставить счёт после исчерпания. */
 async function billPacks() {
-  // правило не сохранено — действует то, что показано в анкете по умолчанию: счёт, когда остался 1 урок
   const students = await db.student.findMany({ where: { payType: "PACK", status: "ACTIVE", OR: [{ billRule: { in: ["pack_left_1", "pack_left_2", "pack_end"] } }, { billRule: null }, { billRule: "" }] }, include: { packs: { orderBy: { startsAt: "desc" } } } });
   for (const s of students) {
     const left = s.packs.reduce((a, p) => a + p.lessonsLeft, 0);
     const rule = s.billRule || "pack_left_1";
     const threshold = rule === "pack_left_2" ? 2 : rule === "pack_left_1" ? 1 : 0;
-    if (!s.packs.length || left > threshold) continue;
+    const latest = s.packs[0];
+    if (!latest || left > threshold) continue;
+
+    if (left > 0) {
+      const dedupe = `pack-renewal:${latest.id}`;
+      if (await db.notification.findUnique({ where: { dedupe }, select: { id: true } })) continue;
+      const teacher = await db.user.findUniqueOrThrow({ where: { id: s.teacherId }, select: { lang: true, timezone: true } });
+      const lang = teacher.lang === "EN" ? "en" : "ru";
+      const name = [s.name, s.lastName].filter(Boolean).join(" ");
+      const available = s.packs.filter((pack) => pack.lessonsLeft > 0);
+      const end = available.length === 1 ? await packEndsAt(s.id, left, available[0].frozenUntil) : null;
+      const date = end?.toLocaleDateString(lang === "en" ? "en-GB" : "ru-RU", { weekday: "long", day: "numeric", month: "long", timeZone: teacher.timezone });
+      const title = translate(lang, left === 1 ? "bill.packReminderOne" : "bill.packReminderTwo", { name }) +
+        (date ? ` ${translate(lang, "bill.packReminderDate", { date })}` : "");
+      await notify({ userId: s.teacherId, kind: "pack_renewal", title, link: `/teacher/students/${s.id}`, dedupe });
+      continue;
+    }
     const open = await db.invoice.count({ where: { studentId: s.id, kind: "pack", status: { in: ["SENT", "PROOF_SENT"] } } });
     if (open) continue; // счёт за абонемент уже выставлен и ждёт оплаты
     const opts = packOptions(s);
-    const opt = opts.find((o) => o.main) ?? opts.find((o) => o.n === s.packs[0].lessonsTotal) ?? opts.find((o) => o.n === 8) ?? opts[opts.length - 1];
+    const opt = opts.find((o) => o.main) ?? opts.find((o) => o.n === latest.lessonsTotal) ?? opts.find((o) => o.n === 8) ?? opts[opts.length - 1];
     if (!opt) continue;
     await createInvoice(s, { amount: opt.price, kind: "pack", title: `Абонемент, ${zan(opt.n)}`, packLessons: opt.n });
   }
@@ -232,7 +248,10 @@ async function billPostpaid(now: Date) {
 
 /** Напоминания о неоплаченных счетах раз в 1 / 3 / 7 дней (из анкеты). */
 async function remind(now: Date) {
-  const open = await db.invoice.findMany({ where: { status: "SENT" }, include: { student: true } });
+  const open = await db.invoice.findMany({
+    where: { status: "SENT", NOT: { kind: "pack", student: { packs: { some: { lessonsLeft: { gt: 0 } } } } } },
+    include: { student: true },
+  });
   for (const inv of open) {
     const every = inv.student.remindEveryDays;
     if (!every) continue;

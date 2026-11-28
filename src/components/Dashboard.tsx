@@ -16,7 +16,7 @@ import { getT } from "@/lib/i18n/server";
 import { greetingKey, hourIn } from "@/lib/greeting";
 import { db } from "@/lib/db";
 import { addDaysIso, dayStart, hhmm, isoDay, mondayOf, parseIsoDay, weekRange } from "@/lib/time";
-import { lessonInclude, lessonWho, oneSlot, syncSchedule } from "@/lib/teacher/data";
+import { lessonInclude, lessonWho, oneSlot, rub, syncSchedule } from "@/lib/teacher/data";
 import { initials } from "@/lib/invite";
 import { homeworkFor, type HwState } from "@/lib/homework";
 import { hasStartedLessonSession } from "@/lib/live/lesson-session";
@@ -37,6 +37,10 @@ function teacherLessonCardStatus(lesson: LessonInstance, host: ScheduledLesson |
   if (lesson.isTrial || lesson.movedFrom || lesson.groupId || lesson.slotId) return;
   if (lesson.status === "DONE") return "DONE";
   if (lesson.status === "PLANNED" && lesson.startsAt > now) return "PLANNED";
+}
+
+function financeInvoiceHref(invoice: { id: string; status: string }) {
+  return `/teacher/finance?tab=check&c=${invoice.status === "PROOF_SENT" ? "toCheck" : "waiting"}&hl=${invoice.id}#inv-${invoice.id}`;
 }
 
 /** Главный экран «Обновления»: приветствие, часы, «Сегодня», неделя, «Что нового». */
@@ -107,7 +111,7 @@ export async function Dashboard({ user, role, day, top }: { user: User; role: "T
       id: true, movedFrom: true,
       homework: { select: { manual: true, extraTaskIds: true, removedTaskIds: true, wordTraining: true } },
       template: { select: { title: true, subtitle: true, unit: { select: { title: true, course: { select: { title: true } } } } } },
-      student: { select: { id: true, avatar: true, payType: true, birthday: true, packs: { orderBy: { startsAt: "desc" }, take: 1, select: { lessonsLeft: true, lessonsTotal: true } }, invoices: { where: { status: { in: ["SENT", "PROOF_SENT"] } }, select: { id: true, amount: true, status: true } }, _count: { select: { lessons: { where: { status: "DONE" } } } } } },
+      student: { select: { id: true, avatar: true, payType: true, birthday: true, packs: { orderBy: { startsAt: "desc" }, take: 1, select: { lessonsLeft: true, lessonsTotal: true } }, invoices: { where: { status: { in: ["SENT", "PROOF_SENT"] } }, select: { id: true, amount: true, status: true, kind: true } }, _count: { select: { lessons: { where: { status: "DONE" } } } } } },
     },
   })).map((x) => [x.id, x]));
   const canManageHomework = (lesson: LessonInstance) => role === "TEACHER" && lesson.status === "DONE" && !!lesson.studentId;
@@ -234,7 +238,12 @@ export async function Dashboard({ user, role, day, top }: { user: User; role: "T
               const x = extra.get(l.id);
               const st = l.slotId ? null : x?.student; // у группы — без абонемента, долга и дня рождения одного ученика
               const pack = st?.payType === "PACK" ? st.packs[0] : null;
-              const debt = st?.invoices.reduce((a, i) => a + i.amount, 0) ?? 0;
+              const invoices = st?.invoices ?? [];
+              const debtInvoices = invoices.filter((i) => i.kind !== "pack");
+              const packInvoices = invoices.filter((i) => i.kind === "pack");
+              const debt = debtInvoices.reduce((sum, i) => sum + i.amount, 0);
+              const packDue = packInvoices.reduce((sum, i) => sum + i.amount, 0);
+              const nextInvoice = (items: typeof invoices) => items.find((i) => i.status === "PROOF_SENT") ?? items[0];
               const hw = l.slotId ? null : hwBefore(l.studentId, l.startsAt);
               const currentHomework = canManageHomework(l) ? homeworkAction(l) : null;
               const bday = st?.birthday && isoDay(st.birthday, "UTC").slice(5) === sel.slice(5);
@@ -273,14 +282,16 @@ export async function Dashboard({ user, role, day, top }: { user: User; role: "T
                       {/* сменить или выбрать урок занятия — откроется класс с выбором урока */}
                       {role === "TEACHER" && <Link href={`/class/${l.id}?pick=1`} className="tl-pick">{x?.template ? t("today.changeLesson") : t("today.pickLesson")}</Link>}
                     </div>
-                    {(hw || pack || debt > 0 || x?.movedFrom) && (
+                    {(hw || pack || debt > 0 || packDue > 0 || x?.movedFrom) && (
                       <div className="tl-tags">
                         {hw && <Link href={`/class/${hw.lesson.id}?tab=homework`} className={`pill ${hwPill[hw.state][0]}`} title={`${hw.title} · ${hw.done}/${hw.total}`}>{t("nav.homework")}: {t(hwPill[hw.state][1]).toLowerCase()}</Link>}
                         {pack && <span className={`pill ${pack.lessonsLeft <= 1 ? "orange" : "grey"}`}>{t("prof.left", { n: pack.lessonsLeft, total: pack.lessonsTotal })}</span>}
-                        {debt > 0 && role === "TEACHER" ? (
-                          // долг — сразу к подтверждению оплаты в «Финансах» (чек прислан — во вкладку «Проверить»)
-                          <Link href={((iv) => `/teacher/finance?tab=check&c=${iv.status === "PROOF_SENT" ? "toCheck" : "waiting"}&hl=${iv.id}#inv-${iv.id}`)(st!.invoices.find((i) => i.status === "PROOF_SENT") ?? st!.invoices[0])} className="pill red" title={t("today.debtGo")}>{t("today.debt", { sum: new Intl.NumberFormat(loc).format(debt) + " ₽" })} →</Link>
-                        ) : debt > 0 && <span className="pill red">{t("today.debt", { sum: new Intl.NumberFormat(loc).format(debt) + " ₽" })}</span>}
+                        {debt > 0 && (role === "TEACHER" ? (
+                          <Link href={financeInvoiceHref(nextInvoice(debtInvoices))} className="pill red" title={t("today.debtGo")}>{t("today.debt", { sum: rub(debt, lang) })} →</Link>
+                        ) : <span className="pill red">{t("today.debt", { sum: rub(debt, lang) })}</span>)}
+                        {packDue > 0 && (role === "TEACHER" ? (
+                          <Link href={financeInvoiceHref(nextInvoice(packInvoices))} className="pill blue" title={t("today.debtGo")}>{t("fin.packDue", { sum: rub(packDue, lang) })} →</Link>
+                        ) : <span className="pill blue">{t("fin.packDue", { sum: rub(packDue, lang) })}</span>)}
                         {x?.movedFrom && <span className="pill grey">{t("sch.moved")}</span>}
                       </div>
                     )}

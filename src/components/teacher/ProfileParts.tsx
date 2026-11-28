@@ -277,10 +277,11 @@ export function PaymentCard({ p, earnedMonth }: { p: PaymentData; earnedMonth: s
             </div>
           )}
           <div className="field">
-            <label htmlFor="pr-rule">{t("prof.whenBill")}</label>
+            <label htmlFor="pr-rule">{t(payType === "PACK" ? "bill.packReminder" : "prof.whenBill")}</label>
             <select id="pr-rule" className="select" value={rule} onChange={(e) => setRule(e.target.value)}>
               {rules.map((r) => <option key={r} value={r}>{t(`bill.${r}` as never)}</option>)}
             </select>
+            {payType === "PACK" && <span className="hint">{t("bill.packEndHint")}</span>}
           </div>
           <div className="setting">
             <span className="muted">{t("prof.remind")}</span>
