@@ -1,10 +1,15 @@
 {
   "claim_id": "0b0222505b9b4126844a2f6d3b06b460",
   "handoff": null,
-  "issue": null,
+  "issue": 115,
   "key": "DIRECT-HOMEWORK-PREPARED-TABS",
   "owner": "homework",
-  "progress": null,
+  "progress": {
+    "base_sha": "2044f77648fcf73701fe5f2232817fb817bcec28",
+    "branch": "codex/homework/prepared-homework-tabs",
+    "next": "Подготовить вкладки, проверить назначение и видимость на синтетике и передать Live Classroom ревью общих файлов.",
+    "stage": "implementation"
+  },
   "release": null,
   "source": "direct",
   "version": 1
