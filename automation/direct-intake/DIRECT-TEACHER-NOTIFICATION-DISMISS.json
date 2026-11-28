@@ -8,9 +8,10 @@
     "base_sha": "8824b7d9246986d23a3e6b92c2fe413aeb7ca104",
     "branch": "codex/teacher/dismiss-news-notifications",
     "head_sha": "5a96e9fd46404ad6f9ff2500fa2a1c123b535b67",
-    "next": "На точном SHA независимое ревью без замечаний, локальные сценарии и все три задачи GitHub CI пройдены. Ждём подтверждения стыка Platform и порядка интеграции Tech Lead в #91.",
+    "merge_sha": "57d38ef98578c1a3a3d7b8281e98b0cd4f1731b5",
+    "next": "Platform и Tech Lead сверили релиз. Интеграция подтверждена, итоговое дерево main точно совпадает с проверенным. Проверяю штатный CD и фактический SHA сайта.",
     "pr": 92,
-    "stage": "integration",
+    "stage": "publication",
     "test_run": 46124982925
   },
   "release": null,
