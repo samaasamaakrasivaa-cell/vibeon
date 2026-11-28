@@ -14,7 +14,25 @@
     "stage": "publication",
     "test_run": 46121482608
   },
-  "release": null,
+  "release": {
+    "ci": {
+      "result": "success",
+      "run": 46121482608,
+      "sha": "933f29d9bdffbe0c23d3c8a38b7004a58c30f316"
+    },
+    "delivery": {
+      "result": "success",
+      "run": 46122419463,
+      "sha": "8824b7d9246986d23a3e6b92c2fe413aeb7ca104"
+    },
+    "owner_note": "Для владельца: Кабинет преподавателя и расписание — на главной можно перейти к прошедшим дням, а из расписания проведённого урока открыть его анализ.",
+    "review": {
+      "comment": 7228390524,
+      "result": "success",
+      "sha": "933f29d9bdffbe0c23d3c8a38b7004a58c30f316"
+    },
+    "site_sha": "8824b7d9246986d23a3e6b92c2fe413aeb7ca104"
+  },
   "source": "direct",
   "version": 1
 }
