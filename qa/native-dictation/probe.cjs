@@ -118,10 +118,10 @@ async function main() {
           const realStart = prototype.start;
           prototype.start = function (...args) {
             for (const key of ["start","audiostart","soundstart","speechstart","audioend","speechend","end","nomatch"]) {
-              this.addEventListener(key, () => window.nativeEvents.push(key));
+              this.addEventListener(key, () => window.nativeEvents.push([key, Math.round(performance.now())]));
             }
-            this.addEventListener("result", () => window.nativeEvents.push("result"));
-            this.addEventListener("error", event => window.nativeEvents.push("error:" + event.error));
+            this.addEventListener("result", (event) => window.nativeEvents.push(["result", event.results.length, Math.round(performance.now())]));
+            this.addEventListener("error", event => window.nativeEvents.push(["error:" + event.error, Math.round(performance.now())]));
             if (!window.syntheticVoice?.track) throw new Error("Synthetic track is not ready");
             return realStart.call(this, window.syntheticVoice.track);
           };
@@ -154,7 +154,8 @@ async function main() {
           window.syntheticVoice.buffer.start();
           return window.syntheticVoice.buffer.buffer.duration;
         });
-        await page.waitForTimeout(Math.ceil(duration * 1000) + 1000);
+        await page.waitForTimeout(Math.ceil(duration * 1000) + 2000);
+        await page.waitForFunction(() => window.nativeEvents.some(([type]) => type === "result" || type === "end"), null, { timeout: 8_000 }).catch(() => {});
         assert.equal(saves.length, expectedSaves);
         const stop = page.getByRole("button", { name: "Stop", exact: true });
         if (await stop.isVisible()) await stop.click();
