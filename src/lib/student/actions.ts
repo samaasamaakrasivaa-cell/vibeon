@@ -176,9 +176,9 @@ export async function addMyWord(word: string, tr: string, ex: string, confirmati
   return result;
 }
 
-/** Дополняет только пустые поля личного слова. IPA остаётся в словарном кэше. */
-export async function enrichMyWord(id: string): Promise<
-  | { ok: true; definition: string | null; example: string | null; ipa: string | null }
+/** Дополняет только пустые поля личного слова. IPA и синонимы остаются в словарном кэше. */
+export async function enrichMyWord(id: string, suggestSynonyms = false): Promise<
+  | { ok: true; definition: string | null; example: string | null; ipa: string | null; synonyms: string[] | null }
   | { ok: false; error: "not-found" | "limit" | "unavailable" }
 > {
   const { u, s } = await myStudent();
@@ -194,7 +194,7 @@ export async function enrichMyWord(id: string): Promise<
   if (!(await rateLimit(`word-card:${s.id}`, 20))) return { ok: false, error: "limit" };
 
   try {
-    const details = await lookupWordCard(input, { userId: u.id, teacherId: s.teacherId });
+    const details = await lookupWordCard(input, { userId: u.id, teacherId: s.teacherId }, suggestSynonyms === true);
     const where = { id: word.id, studentId: s.id, word: word.word, translation: word.translation };
     const writes = [];
     if (!word.definition?.trim()) {
@@ -206,7 +206,7 @@ export async function enrichMyWord(id: string): Promise<
     if (writes.length) await db.$transaction(writes);
     const saved = await db.word.findFirst({ where, select: { definition: true, example: true } });
     if (!saved) return { ok: false, error: "unavailable" };
-    return { ok: true, ...saved, ipa: details.ipa };
+    return { ok: true, ...saved, ipa: details.ipa, synonyms: details.synonyms ?? null };
   } catch (error) {
     return { ok: false, error: error instanceof AiError && error.code === "limit" ? "limit" : "unavailable" };
   }
