@@ -9,6 +9,7 @@ is forwarded, and a lost SSH reply is reported as unknown, never as published.
 import argparse
 import contextlib
 from dataclasses import dataclass
+import gzip
 import hashlib
 import json
 import os
@@ -30,6 +31,12 @@ REMOTE_DIRECTORY = re.compile(r"/tmp/vibeon-delivery\.[A-Za-z0-9]{8}\Z")
 IMAGE_LABELS = r'''{{$l := index .Config "Labels"}}{"id":{{json .Id}},"source":{{if $l}}{{json (index $l "org.opencontainers.image.revision")}}{{else}}null{{end}},"recipe":{{if $l}}{{json (index $l "io.vibeon.recipe-revision")}}{{else}}null{{end}}}'''
 POLICY_KEYS = {"schema_version", "enabled", "shared_proxy_image", "compose_sha256", "legacy_tooling_sha256", "legacy_source", "legacy_image", "teacher_source", "placement_base", "placement_fallback"}
 TOOLING_NAMES = {"vibeon.sh", "attach-proxy.sh"}
+STAGE_MARKER = ".vibeon-stage-v1"
+CAPACITY_METRICS = {"archive_bytes", "backup_restore_bytes", "minimum_inode_margin", "minimum_space_margin_bytes"}
+CAPACITY_ERRORS = {"capacity_inventory_unavailable", "insufficient_pretransfer_space",
+                   "release_already_running", "image_transfer_failed"}
+CAPACITY_WARNING_MARGIN = 512 * 1024**2
+RETENTION_METRICS = {"images_removed", "verified_full_backups", "full_backup_candidates", "full_backup_candidate_bytes"}
 ENGINE_CODES = {"unexpected_current_image", "migration_set_mismatch", "schema_change_requires_separate_release", "configuration_changed_during_backup", "database_clients_still_connected", "insufficient_backup_space", "database_backup_failed", "uploads_backup_failed", "database_restore_verification_failed", "uploads_restore_verification_failed", "uploads_restore_content_mismatch", "restore_cleanup_failed", "app_switch_failed", "app_health_failed", "rollback_failed", "release_already_running", "interrupted_release_requires_recovery", "unknown_database_peer", "unsupported_volume_topology", "compose_contract_mismatch", "release_interrupted"}
 TOOLING_INSTALLER = r'''
 import fcntl, hashlib, json, os, pathlib, re, sys, tempfile
@@ -122,6 +129,56 @@ if __name__ == "__main__":
 
 class DeliveryError(Exception):
     """Only fixed codes chosen by this program are emitted."""
+
+
+class CapacityBlocked(DeliveryError):
+    def __init__(self, reason, metrics):
+        super().__init__(reason)
+        self.metrics = metrics
+
+
+def capacity_reply(raw):
+    report = object_reply(raw, "capacity_reply_invalid")
+    metrics = {key: report[key] for key in CAPACITY_METRICS if type(report.get(key)) is int}
+    if report.get("status") == "blocked":
+        reason = report.get("reason")
+        raise CapacityBlocked(reason if isinstance(reason, str) and reason in CAPACITY_ERRORS else "capacity_reply_invalid", metrics)
+    if report.get("status") != "ready" or set(metrics) != CAPACITY_METRICS:
+        raise DeliveryError("capacity_reply_invalid")
+    return report
+
+
+def retention_reply(report):
+    summary = report.get("storage_retention")
+    if (isinstance(summary, dict) and summary.get("status") in ("ok", "attention")
+            and all(type(summary.get(key)) is int and summary[key] >= 0 for key in RETENTION_METRICS)):
+        return {key: summary[key] for key in RETENTION_METRICS | {"status"}}
+    return None
+
+
+def archive_bytes(path):
+    """Count the Docker save tar and expand already compressed saved layers."""
+    total = path.stat().st_size
+    try:
+        with tarfile.open(path, mode="r:") as archive:
+            manifest = json.load(archive.extractfile("manifest.json"))
+            layers = {layer for image in manifest for layer in image["Layers"]}
+            for layer in layers:
+                member = archive.getmember(layer)
+                if not member.isfile():
+                    raise ValueError()
+                with archive.extractfile(member) as stream:
+                    magic = stream.read(4)
+                    if magic.startswith(b"\x1f\x8b"):
+                        stream.seek(0)
+                        with gzip.GzipFile(fileobj=stream) as expanded:
+                            size = sum(len(chunk) for chunk in iter(lambda: expanded.read(1024**2), b""))
+                        total += max(0, size - member.size)
+                    elif magic == b"\x28\xb5\x2f\xfd":
+                        raise ValueError()  # Refuse an unsupported sizing format.
+        return total
+    except (OSError, EOFError, KeyError, TypeError, ValueError, tarfile.TarError):
+        raise DeliveryError("release_archive_size_unavailable") from None
 
 
 def child_environment():
@@ -327,15 +384,26 @@ class Connection:
         if not REMOTE_DIRECTORY.fullmatch(path):
             raise DeliveryError("remote_staging_identity_invalid")
         self.remote_directory = path
-        for name in ("release-preflight.sh", "release-apply.py", "vibeon.sh", "attach-proxy.sh"):
+        self.run("umask 077; cat > " + shlex.quote(path + "/" + STAGE_MARKER),
+                 "remote_staging_failed", data=b"vibeon-delivery-v1\n")
+        names = ("release-preflight.sh", "release-apply.py", "release_capacity.py",
+                 "release_retention.py", "vibeon.sh", "attach-proxy.sh")
+        for name in names:
             destination = shlex.quote(path + "/" + name)
             self.run("umask 077; cat > " + destination + " && chmod 700 " + destination,
                      "remote_script_upload_failed", data=committed_file(recipe, "deploy/" + name))
 
-    def preflight(self, proxy):
-        remote = "env VIBEON_EXPECTED_PROXY_IMAGE=" + shlex.quote(proxy) + " bash " + shlex.quote(self.remote_directory + "/release-preflight.sh")
-        # A blocked preflight exits nonzero. Discard its private output and stop.
-        return preflight_state(object_reply(self.run(remote, "server_preflight_blocked"), "preflight_reply_invalid"))
+    def preflight(self, proxy, recipe):
+        source = committed_file(recipe, "deploy/release-preflight.sh")
+        remote = "env VIBEON_EXPECTED_PROXY_IMAGE=" + shlex.quote(proxy) + " bash -s"
+        raw = self.run(remote, "server_preflight_blocked", data=source)
+        return preflight_state(object_reply(raw, "preflight_reply_invalid"))
+
+    def capacity(self, recipe, archive, phases, images=()):
+        remote = shlex.join(["python3", "-", "probe", str(archive), str(phases), *images])
+        source = committed_file(recipe, "deploy/release_capacity.py")
+        raw = self.run(remote, "capacity_probe_failed", data=source)
+        return capacity_reply(raw)
 
     def install_tooling(self, recipe, policy):
         approved = {name: hashlib.sha256(committed_file(recipe, "deploy/" + name)).hexdigest() for name in TOOLING_NAMES}
@@ -345,25 +413,26 @@ class Connection:
         if report != {"status": "installed"}:
             raise DeliveryError("legacy_tooling_installation_failed")
 
-    def transfer(self, images):
-        # Stream one shared-layer archive; no persistent runner/server archive.
-        images = sorted(set(images))
-        if not images or any(not DIGEST.fullmatch(i) for i in images):
-            raise DeliveryError("transfer_image_identity_invalid")
+    def transfer(self, archive, size, phases, images):
+        # The first probe has already passed. Recheck under the server release
+        # lock and hold the same lock until docker load exits.
+        remote = shlex.join(["python3", self.remote_directory + "/release_capacity.py", "load",
+                             str(size), str(phases), *images])
         processes = []
-        with tempfile.TemporaryFile() as errors:
+        with archive.open("rb") as stream, tempfile.TemporaryFile() as errors:
             try:
-                save = subprocess.Popen(["docker", "save", *images], stdout=subprocess.PIPE, stderr=errors, env=child_environment())
-                processes.append(save)
-                gzip = subprocess.Popen(["gzip", "-1"], stdin=save.stdout, stdout=subprocess.PIPE, stderr=errors, env=child_environment())
-                processes.append(gzip)
-                save.stdout.close()
-                remote = "bash -o pipefail -c " + shlex.quote("gzip -dc | docker load >/dev/null 2>&1")
-                upload = subprocess.Popen(self.ssh_args(remote), stdin=gzip.stdout, stdout=subprocess.PIPE, stderr=errors, env=child_environment())
+                compressed = subprocess.Popen(["gzip", "-1"], stdin=stream, stdout=subprocess.PIPE,
+                                              stderr=errors, env=child_environment())
+                processes.append(compressed)
+                upload = subprocess.Popen(self.ssh_args(remote), stdin=compressed.stdout, stdout=subprocess.PIPE,
+                                          stderr=errors, env=child_environment())
                 processes.append(upload)
-                gzip.stdout.close()
-                upload.communicate(timeout=1200)
-                if upload.returncode or gzip.wait(timeout=30) or save.wait(timeout=30):
+                compressed.stdout.close()
+                reply, _ = upload.communicate(timeout=1200)
+                if upload.returncode:
+                    raise DeliveryError("image_transfer_failed")
+                capacity_reply(reply)
+                if compressed.wait(timeout=30):
                     raise DeliveryError("image_transfer_failed")
             except (OSError, subprocess.TimeoutExpired):
                 raise DeliveryError("image_transfer_failed") from None
@@ -371,8 +440,10 @@ class Connection:
                 for process in reversed(processes):
                     if process.poll() is None:
                         process.kill()
-                    with contextlib.suppress(Exception):
-                        process.wait(timeout=10)
+                        with contextlib.suppress(subprocess.TimeoutExpired):
+                            process.wait(timeout=10)
+
+    def verify_loaded(self, images):
         for image in images:
             reply = self.run("docker image inspect --format '{{.Id}}' " + shlex.quote(image), "loaded_image_unavailable")
             if reply.decode().strip() != image:
@@ -395,7 +466,10 @@ class Connection:
         report = object_reply(reply.stdout, "release_result_unknown")
         status = report.get("status")
         if status == "released" and reply.returncode == 0 and report.get("sha") == phase.source and report.get("image") == image:
-            return {"status": "released", "sha": phase.source, "image": image}
+            result = {"status": "released", "sha": phase.source, "image": image}
+            if summary := retention_reply(report):
+                result["storage_retention"] = summary
+            return result
         if status == "rolled_back" and reply.returncode != 0 and report.get("sha") == phase.fallback_source and report.get("image") == fallback:
             return {"status": "rolled_back", "sha": phase.fallback_source, "image": fallback,
                     "reason": report.get("reason") if report.get("reason") in ENGINE_CODES else "executor_failed"}
@@ -403,10 +477,21 @@ class Connection:
             return {"status": status, "reason": report.get("reason") if report.get("reason") in ENGINE_CODES else "executor_failed"}
         raise DeliveryError("release_result_unknown")
 
-    def cleanup(self):
-        if self.remote_directory and REMOTE_DIRECTORY.fullmatch(self.remote_directory):
-            with contextlib.suppress(DeliveryError):
-                self.run("rm -rf -- " + shlex.quote(self.remote_directory), "remote_staging_cleanup_failed", timeout=30)
+    def stage_operation(self, recipe, mode):
+        if not self.remote_directory or not REMOTE_DIRECTORY.fullmatch(self.remote_directory):
+            return None
+        args = ["python3", "-", mode, "0", "1", "--stage", self.remote_directory]
+        source = committed_file(recipe, "deploy/release_capacity.py")
+        result = object_reply(self.run(shlex.join(args), "remote_staging_cleanup_failed", data=source),
+                              "remote_staging_cleanup_failed")
+        count = result.get("stages_removed")
+        if result.get("status") != "ready" or type(count) is not int or count < 0:
+            raise DeliveryError("remote_staging_cleanup_failed")
+        return count
+
+    def cleanup(self, recipe):
+        with contextlib.suppress(DeliveryError):
+            self.stage_operation(recipe, "cleanup")
 
 
 def deliver(target, policy, candidate_image=None):
@@ -414,14 +499,14 @@ def deliver(target, policy, candidate_image=None):
     ensure_commit(target)
     recipe_bytes = committed_file(target, "Dockerfile")
     completed = []
+    import_candidates = []
     with tempfile.TemporaryDirectory(prefix="vibeon-delivery-") as temporary:
         workspace = Path(temporary)
         checker = workspace / "check-release-image.sh"
         checker.write_bytes(committed_file(target, "scripts/check-release-image.sh"))
         connection = Connection(workspace / "ssh")
         try:
-            connection.stage(target)
-            state = connection.preflight(policy["shared_proxy_image"])
+            state = connection.preflight(policy["shared_proxy_image"], target)
             phases = make_plan(policy, target, state, is_ancestor)
             if not phases:
                 return {"status": "already_current", "sha": target, "image": state.image}
@@ -434,30 +519,67 @@ def deliver(target, policy, candidate_image=None):
                 if source not in built:
                     built[source] = build_image(source, target, workspace, recipe_bytes, checker)
             # Every bootstrap image and fallback is now tested, before any switch.
+            images = sorted({built[source] for source in needed})
             assert_current_main(target)
-            connection.transfer(built[source] for source in needed)
+            probe = connection.capacity(target, 0, len(phases), images)
+            present = probe.get("present_images")
+            if not isinstance(present, list) or any(not isinstance(image, str) or image not in images for image in present):
+                raise DeliveryError("capacity_reply_invalid")
+            missing = sorted(set(images).difference(present))
+            if missing:
+                archive = workspace / "release.tar"
+                command(["docker", "save", "-o", str(archive), *missing], "release_archive_failed", timeout=300)
+                size = archive_bytes(archive)
+                probe = connection.capacity(target, size, len(phases))
+            if probe["minimum_space_margin_bytes"] < CAPACITY_WARNING_MARGIN:
+                print("::warning::VibeOn has less than 512 MiB beyond the calculated release budget. "
+                      "Review the storage measurements in issue #67.", file=sys.stderr)
+            assert_current_main(target)
+            connection.stage(target)
+            if missing:
+                import_candidates = missing
+                connection.transfer(archive, size, len(phases), missing)
+            connection.verify_loaded(images)
+            connection.capacity(target, 0, len(phases))
             assert_current_main(target)
             connection.install_tooling(target, policy)
             expected = state.image
-            for phase in phases:
-                latest = connection.preflight(policy["shared_proxy_image"])
+            retention = None
+            for index, phase in enumerate(phases):
+                connection.capacity(target, 0, len(phases) - index)
+                latest = connection.preflight(policy["shared_proxy_image"], target)
                 if latest.image != expected:
                     raise DeliveryError("current_image_changed_before_release")
                 assert_current_main(target)  # Last external check before executor.
                 result = connection.apply(phase, built[phase.source], phase.fallback_image or built[phase.fallback_source], expected, policy)
                 if result["status"] != "released":
                     result["completed_phases"] = completed
+                    if import_candidates:
+                        result["storage_import_candidates"] = import_candidates
                     return result
                 completed.append(result["sha"])
                 expected = result["image"]
-            return {"status": "released", "sha": target, "image": expected, "completed_phases": completed}
+                retention = result.get("storage_retention")
+            report = {"status": "released", "sha": target, "image": expected, "completed_phases": completed,
+                      "storage_capacity": {key: probe[key] for key in CAPACITY_METRICS}}
+            if retention is not None:
+                report["storage_retention"] = retention
+            try:
+                report["obsolete_stages_removed"] = connection.stage_operation(target, "sweep")
+            except DeliveryError:
+                report["staging_cleanup"] = "attention"
+            return report
         except DeliveryError as error:
             report = {"status": "unknown" if str(error) == "release_result_unknown" else "blocked", "reason": str(error)}
+            if isinstance(error, CapacityBlocked) and error.metrics:
+                report["storage_capacity"] = error.metrics
             if completed:
                 report["completed_phases"] = completed
+            if import_candidates:
+                report["storage_import_candidates"] = import_candidates
             return report
         finally:
-            connection.cleanup()
+            connection.cleanup(target)
 
 
 class SafeParser(argparse.ArgumentParser):
@@ -484,6 +606,10 @@ def main():
         report = {"status": "blocked", "reason": str(error)}
     except BaseException:
         report = {"status": "unknown", "reason": "delivery_interrupted_or_failed"}
+    if report.get("reason") == "insufficient_pretransfer_space":
+        print("::warning::VibeOn CD stopped at a storage check. Confirm free space and inode counts "
+              "in issue #67 before retrying. The storage_capacity fields show the limiting margins.",
+              file=sys.stderr)
     print(json.dumps(report, sort_keys=True, separators=(",", ":")))
     return 0 if report["status"] in {"released", "already_current", "disabled"} else 1
 

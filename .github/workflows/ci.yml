@@ -45,6 +45,8 @@ jobs:
         run: |
           python3 scripts/test-release-apply.py
           python3 scripts/test-delivery-plan.py
+          python3 scripts/test-release-capacity.py
+          python3 scripts/test-release-retention.py
           bash -n deploy/vibeon.sh deploy/attach-proxy.sh scripts/check-release-image.sh
       - name: Rehearse backup, release and rollback on isolated data
         # The production SSH executor is root; match file ownership semantics
