@@ -1,6 +1,7 @@
 "use client";
 import { TgAskInMsg } from "../TgAskInMsg";
 import Link from "next/link";
+import styles from "./ClassRoom.module.css";
 import { TeacherInfo } from "../lesson/TeacherInfo";
 import type { TInfo } from "@/lib/tasks/teacher-info";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
@@ -412,6 +413,8 @@ export function ClassRoom({ d }: { d: ClassData }) {
   const lessonTasks = d.tasks.filter((x) => x.section === "lesson" && !x.hidden && (teacher || !hidden.has(x.id)));
   const ri = Math.max(0, d.rubrics.findIndex((r) => r.id === rubric));
   const cur = d.rubrics[ri];
+  const previousSection = d.rubrics[ri - 1];
+  const nextSection = d.rubrics[ri + 1];
   const inRubric = lessonTasks.filter((x) => x.rubricId === cur?.id || (!x.rubricId && ri === 0) || (x.rubricId && !d.rubrics.some((r) => r.id === x.rubricId) && ri === 0));
   // домашка: задания раздела «Домашка» + отправленные с урока; порядок — как переставил учитель (новые — в конце)
   // новые домашки (manual): задания раздела «Домашка» — заготовки, ученик их не видит; у ученика — только заданное учителем,
@@ -607,7 +610,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
             <iframe title={t("cls.asStudent")} src={`/class/${d.group ? d.group.members.find((m) => m.sid === viewSid)?.instanceId ?? d.group.members[0]?.instanceId : d.id}?preview=student`} />
           </div>
         )}
-        <header className="cls-top">
+        <header className={`cls-top ${styles.top}`}>
           <Link href={d.homeHref} onNavigate={onCabinetNavigate} className="cls-logo" aria-label="VibeOn"><LogoMark size={36} /><small>Vibe<span>On</span></small></Link>
           <div className="cls-crumb"><small>{d.crumbs ?? t("cls.lesson")}</small><b>{d.title ?? t("cls.noTemplate")}</b></div>
           <nav className="cls-tabs">
@@ -641,7 +644,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
           </div>
         </header>
 
-        <div className="cls-grid">
+        <div className={`cls-grid ${styles.grid} ${tab === "lesson" && cur ? styles.withSectionSwitcher : ""}`}>
           <nav className="cls-rail">
             <button aria-pressed={panel === "chat"} onClick={() => { setPanel(panel === "chat" ? null : "chat"); setUnread(0); }}><Icon name="msg" /><span>{d.group ? t("grp.chat") : t("nav.chat")}</span>{unread > 0 && <i className="count">{unread}</i>}</button>
             <button aria-pressed={panel === "dict"} onClick={() => setPanel(panel === "dict" ? null : "dict")}><Icon name="book" /><span>{t("cls.dict")}</span></button>
@@ -660,7 +663,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
                   preview={!!d.preview}
                   canSave={gTeacher ? !!viewMember : !!d.student}
                   recipient={gTeacher ? viewMember?.name : undefined}
-                  save={(word, translation) => send("word", { op: "add", word, tr: translation, dictionary: true })}
+                  save={(word, translation, confirmation) => send("word", { op: "add", word, tr: translation, dictionary: true, confirmation })}
                 />
               )}
               {panel === "timer" && <Timer left={live.timer ? timerLeft : 0} paused={timerPaused} task={timerTask ? lessonTasks.concat(hwTasks).find((x) => x.id === timerTask)?.title || t("cls.thisTask") : null}
@@ -702,10 +705,10 @@ export function ClassRoom({ d }: { d: ClassData }) {
                     <h1>{cur?.title ?? t("bld.lesson")}</h1>
                   </div>
                   {renderTasks(inRubric)}
-                  <div className="bld-foot">
-                    <button className="btn secondary" disabled={ri <= 0} aria-label={t("sch.prev")} onClick={() => go(d.rubrics[ri - 1].id)}><Icon name="chevl" size="sm" />{d.rubrics[ri - 1]?.title ?? ""}</button>
+                  <div className={`bld-foot ${styles.sectionFoot}`}>
+                    <button type="button" className="btn secondary" disabled={!previousSection} aria-label={t("cls.previousSection")} onClick={() => previousSection && go(previousSection.id)}><Icon name="chevl" size="sm" />{previousSection?.title ?? ""}</button>
                     <span />
-                    <button className="btn secondary" disabled={ri >= d.rubrics.length - 1} onClick={() => go(d.rubrics[ri + 1].id)}>{d.rubrics[ri + 1]?.title ?? ""}<Icon name="right" size="sm" /></button>
+                    <button type="button" className="btn secondary" disabled={!nextSection} aria-label={t("cls.nextSection")} onClick={() => nextSection && go(nextSection.id)}>{nextSection?.title ?? ""}<Icon name="right" size="sm" /></button>
                   </div>
                 </>
               )
@@ -723,7 +726,21 @@ export function ClassRoom({ d }: { d: ClassData }) {
            </KeyCtx.Provider>
           </main>
 
-          <aside className="cls-side">
+          <aside className={`cls-side ${styles.sidebar}`}>
+            {cur && (
+              <nav className={styles.sectionList} aria-label={t("bld.sections")}>
+                <h2>{t("bld.sections")}</h2>
+                {d.rubrics.map((r, i) => {
+                  const current = tab === "lesson" && r.id === cur.id;
+                  return (
+                    <button key={r.id} type="button" className={`bld-sec ${current ? "on" : ""}`} aria-current={current ? "location" : undefined} onClick={() => { setTab("lesson"); go(r.id); }}>
+                      <span className="grow">{r.title}</span>{teacher && live.rubricId === r.id && <i className="dot" style={{ background: "var(--accent)" }} title={t("cls.studentHere")} />}
+                      <small>{lessonTasks.filter((x) => x.rubricId === r.id || (!x.rubricId && i === 0)).length}</small>
+                    </button>
+                  );
+                })}
+              </nav>
+            )}
             {d.callLink ? (
               <a href={d.callLink} target="_blank" rel="noreferrer" className="btn w-full cls-call"><Icon name="phone" size="sm" />{t("cls.joinCall")}</a>
             ) : <span className="btn w-full cls-call off" title={t("cls.noCallHint")}><Icon name="phone" size="sm" />{t("cls.noCall")}</span>}
@@ -733,7 +750,7 @@ export function ClassRoom({ d }: { d: ClassData }) {
               {gTeacher ? t("grp.online", { n: d.group!.members.filter((m) => m.userId && online.includes(m.userId)).length, total: d.group!.members.length })
                 : other ? (teacher ? t("cls.studentIn", { name: d.student?.name ?? "" }) : t("cls.teacherIn")) : (teacher ? t("cls.studentOut", { name: d.student?.name ?? t("cls.student") }) : t("cls.teacherOut"))}
             </div>
-            {/* заметки урока: общие для ученика и учителя — наверху, сразу на виду (на месте прежней картинки курса) */}
+            {/* заметки урока: общие для ученика и учителя */}
             <SharedNotes
               key={noteSid}
               value={snotes[noteSid] ?? ""}
@@ -752,20 +769,11 @@ export function ClassRoom({ d }: { d: ClassData }) {
               } : undefined}
               hint={teacher ? (d.group ? t("cls.snoteHintGroup") : t("cls.snoteHintTeacher", { name: d.student?.name ?? "" })) : t("cls.snoteHint")}
             />
-            {/* курс и урок — подписью над секциями */}
             <div className="cls-what mt-4">
               {d.course?.title && <small>{t("cls.courseOf", { c: d.course.title })}</small>}
               <b>{d.title ?? t("cls.lesson")}</b>
               {teacher ? <button type="button" className="btn tinted sm mt-1 self-start" onClick={() => setDlg("pick")}><Icon name="book" size="sm" />{t("cls.lpOther2")}</button>
                 : <Link href="/student/lessons" className="alink small mt-1">{t("cls.lpMine")}</Link>}
-            </div>
-            <div className="mt-3 flex flex-col gap-1">
-              {d.rubrics.map((r, i) => (
-                <button key={r.id} className={`bld-sec ${tab === "lesson" && r.id === cur?.id ? "on" : ""}`} onClick={() => { setTab("lesson"); go(r.id); }}>
-                  <span className="grow">{r.title}</span>{teacher && live.rubricId === r.id && <i className="dot" style={{ background: "var(--accent)" }} title={t("cls.studentHere")} />}
-                  <small>{lessonTasks.filter((x) => x.rubricId === r.id || (!x.rubricId && i === 0)).length}</small>
-                </button>
-              ))}
             </div>
             {teacher && templateId && (addSec ? (
               <div className="bs-new mt-2">
@@ -789,6 +797,22 @@ export function ClassRoom({ d }: { d: ClassData }) {
             {/* сведения об уроке, цели и ход урока — внизу панели, раскрываются вниз */}
             {teacher && d.teacherInfo && <div className="mt-4"><TeacherInfo info={d.teacherInfo} /></div>}
           </aside>
+          {tab === "lesson" && cur && (
+            <nav className={styles.sectionSwitcher} aria-label={t("bld.sections")}>
+              <button type="button" className="btn secondary" disabled={!previousSection} aria-label={t("cls.previousSection")} onClick={() => previousSection && go(previousSection.id)}>
+                <Icon name="chevl" size="sm" />
+              </button>
+              <div className={styles.sectionSelect}>
+                <select className="input" aria-label={t("bld.sections")} value={cur.id} onChange={(event) => go(event.target.value)}>
+                  {d.rubrics.map((section) => <option key={section.id} value={section.id}>{section.title}</option>)}
+                </select>
+                <span aria-hidden="true"><Icon name="chevd" size="sm" /></span>
+              </div>
+              <button type="button" className="btn secondary" disabled={!nextSection} aria-label={t("cls.nextSection")} onClick={() => nextSection && go(nextSection.id)}>
+                <Icon name="right" size="sm" />
+              </button>
+            </nav>
+          )}
         </div>
 
         {catalog && <Catalog fav={[]} onClose={() => setCatalog(null)} onPick={(ty: TaskType) => { const idx = catalog.index; setCatalog(null); setEditing({ index: idx, task: { id: "new", type: ty, title: PRESET[ty]?.[0] ?? "", content: SAMPLE[ty] ?? "", options: ty === "note" ? { teacherOnly: true } : {}, section: "lesson", rubricId: cur?.id ?? null, hidden: false } }); }} />}

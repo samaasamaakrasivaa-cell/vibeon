@@ -1,0 +1,53 @@
+.container { container-type: inline-size; }
+
+.wide:global(.tabsbar) {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+}
+
+.wide:global(.tabsbar) > a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 44px;
+  line-height: 1.2;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.wide > a > span { min-width: 0; }
+
+.wide > a:focus-visible {
+  outline: 2px solid var(--accent-text);
+  outline-offset: -2px;
+}
+
+.attention {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-inline-start: 6px;
+  border-radius: 50%;
+  vertical-align: middle;
+  background: var(--warn);
+}
+
+@container (width < 650px) {
+  .wide:global(.tabsbar) {
+    row-gap: 3px;
+  }
+
+  .wide:global(.tabsbar) > a {
+    padding-inline: 6px;
+    font-size: 13px;
+  }
+
+  .wide:has(> :nth-child(4)):global(.tabsbar) {
+    grid-auto-flow: row;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .wide:global(.tabsbar) > a:nth-child(4)::before { display: none; }
+}
