@@ -110,18 +110,29 @@ class ReleaseTest(unittest.TestCase):
         self.release.retention_enabled = True
         release_apply.atomic_json(self.release.override, self.release.override_content(PREVIOUS, SHA))
         release_apply.atomic_json(self.release.journal, {"schema_version": 1, "status": status, "sha": SHA,
-                                  "image": PREVIOUS, "rollback_image": FALLBACK, "previous_image": CANDIDATE})
+                                  "image": PREVIOUS, "rollback_image": FALLBACK, "previous_image": CANDIDATE,
+                                  "rollback_sha": FALLBACK_SHA})
         return self.release.journal.read_bytes()
 
     def test_storage_only_preserves_running_app_journal_and_prior_images(self):
         before = self.prepare_storage_only()
-        with patch.object(self.release, "post_publication_retention", return_value={"status": "ok"}) as rotate:
+        with (patch.object(self.release, "post_publication_retention", return_value={"status": "ok"}) as rotate,
+              patch.object(release_apply, "command", side_effect=lambda args, **_: args[-1].encode()),
+              patch.object(release_apply, "json_command", return_value=FALLBACK_SHA)):
             report = self.release.maintain_storage()
         rotate.assert_called_once_with({FALLBACK, CANDIDATE})
         self.assertEqual(report["status"], "storage_maintained")
         self.assertEqual(self.release.journal.read_bytes(), before)
         for event in ("stop", "snapshot", "switch_candidate", "switch_fallback"):
             self.assertNotIn(event, self.release.events)
+
+    def test_storage_only_rejects_missing_rollback_image(self):
+        self.prepare_storage_only()
+        with (patch.object(release_apply, "command", return_value=b""),
+              patch.object(self.release, "post_publication_retention") as rotate):
+            with self.assertRaisesRegex(release_apply.ReleaseError, "storage_only_identity_invalid"):
+                self.release.maintain_storage()
+        rotate.assert_not_called()
 
     def test_storage_only_rejects_pending_or_uncertain_release(self):
         self.prepare_storage_only("unchanged")

@@ -442,6 +442,8 @@ class Release:
             if self.image != self.expected_current_image or self.rollback_image != self.image or self.rollback_sha != self.sha:
                 raise ReleaseError("storage_only_identity_invalid")
             try:
+                if self.journal.is_symlink() or self.override.is_symlink():
+                    raise ValueError()
                 journal = json.loads(self.journal.read_text())
                 override = json.loads(self.override.read_text())
                 if (journal.get("schema_version") != 1 or journal.get("status") != "released"
@@ -449,11 +451,19 @@ class Release:
                         or override != self.override_content(self.image, self.sha)):
                     raise ValueError()
                 protected = {journal["rollback_image"], journal["previous_image"]}
-                if not all(isinstance(image, str) and DIGEST.fullmatch(image) for image in protected):
+                if (not all(isinstance(image, str) and DIGEST.fullmatch(image) for image in protected)
+                        or not isinstance(journal["rollback_sha"], str) or not SHA.fullmatch(journal["rollback_sha"])):
                     raise ValueError()
             except (OSError, ValueError, KeyError, TypeError, AttributeError):
                 raise ReleaseError("storage_only_identity_invalid") from None
             self.inspect()
+            for image in protected:
+                if command(["docker", "image", "inspect", "--format", "{{.Id}}", image],
+                           reason="storage_only_identity_invalid").decode().strip() != image:
+                    raise ReleaseError("storage_only_identity_invalid")
+            if json_command(["docker", "image", "inspect", "--format", IMAGE_REVISION, journal["rollback_image"]],
+                            reason="storage_only_identity_invalid") != journal["rollback_sha"]:
+                raise ReleaseError("storage_only_identity_invalid")
             self.verify(self.app_id, self.image, self.sha)
             report = self.retention_report("storage_maintained", protected)
             self.verify(self.app_id, self.image, self.sha)
