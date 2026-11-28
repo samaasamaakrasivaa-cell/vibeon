@@ -7,8 +7,10 @@
   "progress": {
     "base_sha": "daacd5bf1e2f13c4c0b063f5db07f2f47c887dbc",
     "branch": "codex/live-classroom/voc-08-explicit-vocabulary",
-    "next": "Прекратить автоперенос слов при Finish и проверить группу, повтор, выдачу ДЗ и явное добавление на синтетике.",
-    "stage": "implementation"
+    "head_sha": "6509f00b61aafb74727ff46cca45330ccb65551c",
+    "next": "Независимое ревью прошло. Проверить CI точного head и предметный сценарий с изолированной БД перед интеграцией.",
+    "pr": 95,
+    "stage": "review"
   },
   "release": null,
   "source": "pm",
