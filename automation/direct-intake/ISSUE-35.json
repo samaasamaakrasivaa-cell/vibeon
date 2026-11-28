@@ -4,7 +4,15 @@
   "issue": 35,
   "key": "ISSUE-35",
   "owner": "roadmap-progress",
-  "progress": null,
+  "progress": {
+    "base_sha": "2044f77648fcf73701fe5f2232817fb817bcec28",
+    "branch": "codex/roadmap/pt-05-placement-proposal",
+    "head_sha": "1f193a5cac39875917e3794a4e522c1d2c63dd89",
+    "next": "Подтвердить контракт и источник Placement в №37, завершить CI и независимое ревью №105.",
+    "pr": 105,
+    "stage": "review",
+    "test_run": 46148836203
+  },
   "release": null,
   "source": "direct",
   "version": 1
