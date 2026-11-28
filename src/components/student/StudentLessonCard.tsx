@@ -5,7 +5,7 @@ import { getT } from "@/lib/i18n/server";
 import { hhmm, isoDay } from "@/lib/time";
 
 type Lesson = { id: string; startsAt: Date; durationMin: number; template: { title: string } | null };
-type Homework = { lesson: { id: string; startsAt: Date }; title: string; done: number; total: number };
+type Homework = { lesson: { id: string; startsAt: Date }; title: string; done: number; total: number; needsRevision: boolean };
 
 export async function StudentLessonCard({ lesson, current, callLink, homework, tz, now }: {
   lesson: Lesson | null;
@@ -27,7 +27,8 @@ export async function StudentLessonCard({ lesson, current, callLink, homework, t
             {homework.lesson.id === lesson?.id ? t("st.homeworkSameLesson") : t("st.homeworkFromLesson", { date: formatDay.format(homework.lesson.startsAt) })}
             {homework.title !== "—" && ` · ${homework.title}`}
           </div>
-          {homework.total > homework.done && <div className="small muted">{t("st.hwLeft", { n: homework.total - homework.done, total: homework.total })}</div>}
+          {homework.needsRevision ? <div className="small muted">{t("stl.hwRevise")}</div> :
+            homework.total > homework.done && <div className="small muted">{t("st.hwLeft", { n: homework.total - homework.done, total: homework.total })}</div>}
         </div>
       </div>
       <Link href={`/class/${homework.lesson.id}?tab=homework`} prefetch={false} className="btn secondary sm">{t("st.doHwBig")}</Link>

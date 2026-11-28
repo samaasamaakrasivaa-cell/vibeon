@@ -37,7 +37,7 @@ export default async function StudentHome() {
     s ? db.placementAttempt.findFirst({
       where: { studentId: s.id, mode: "student", status: { in: ["new", "active"] } },
       orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-      select: { id: true, status: true },
+      select: { id: true, status: true, track: true },
     }) : null,
     s ? db.placementAttempt.findFirst({
       where: { studentId: s.id, mode: "student", status: { in: ["submitted", "reviewed"] } },
@@ -49,7 +49,7 @@ export default async function StudentHome() {
         reviewedAt: { gt: new Date(now.getTime() - 14 * 86_400_000) },
       },
       orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-      select: { checkpointId: true, level: true },
+      select: { checkpointId: true, level: true, track: true },
     }) : null,
   ]);
   const legacyEntry = s && !taking && !taken ? await db.checkpoint.findFirst({
@@ -90,15 +90,19 @@ export default async function StudentHome() {
   ]) : [[], []];
   const pinned = mains.find((a) => a.pinned) ?? null;
   const others = mains.filter((a) => a !== pinned);
-  const pendingHomework = hws.find((h) => h.done < h.total);
-  const hw = pendingHomework ?? (hws[0]?.words ? hws[0] : undefined);
   const goal = s?.wordGoal ?? 15;
   const done = Math.min(goal, practice?.count ?? 0);
   const shownLesson = current ?? next;
-  const callLink = shownLesson ? await studentLessonCallLink(me.id, shownLesson.id) : null;
+  const [callLink, lessonWork] = await Promise.all([
+    shownLesson ? studentLessonCallLink(me.id, shownLesson.id) : null,
+    shownLesson && s ? homeworkFor({ studentId: s.id }, [shownLesson.id]) : [],
+  ]);
+  const homeworkForLesson = lessonWork.find((h) => h.needsRevision || h.done < h.total || h.words > 0 || h.total === 0);
+  const pendingHomework = hws.find((h) => h.needsRevision || h.done < h.total);
+  const hw = homeworkForLesson ?? pendingHomework ?? (hws[0]?.words ? hws[0] : undefined);
   const needsWordGoal = studentForm(s?.form).wordGoalConfigured === false;
   const wordTime = s?.wordDays.includes(partsIn(now, tz).dow) ? s.remindAt : null;
-  const allDone = !pendingHomework && done >= goal && wordsTotal > 0;
+  const allDone = !homeworkForLesson && !pendingHomework && done >= goal && wordsTotal > 0;
   const ago = (d: Date) => { const m = Math.round((now.getTime() - d.getTime()) / 60000); return m < 60 ? t("nt.minAgo", { n: Math.max(1, m) }) : m < 1440 ? t("nt.hAgo", { n: Math.round(m / 60) }) : d.toLocaleDateString(loc, { day: "numeric", month: "long", timeZone: tz }); };
 
   return (
@@ -141,7 +145,10 @@ export default async function StudentHome() {
             <section className="student-home-task student-home-placement" aria-labelledby="student-placement-title">
               <header className="student-home-task-head">
                 <span className="student-home-task-icon" aria-hidden="true"><Icon name="target" /></span>
-                <h3 id="student-placement-title">{t(taking?.status === "active" ? "st.placementInProgress" : "pl.cardNew")}</h3>
+                <div className="min-w-0">
+                  <h3 id="student-placement-title">{t(taking?.status === "active" ? "st.placementInProgress" : "pl.cardNew")}</h3>
+                  {taking?.track === "teen" && <span className="small muted">{t("plt.title")}</span>}
+                </div>
                 <Link href={testLink} className="btn primary sm"><Icon name="target" size="sm" />{t(taking?.status === "active" ? "pl.continue" : "pl.start")}</Link>
               </header>
               <div className="student-home-task-body">
@@ -156,7 +163,10 @@ export default async function StudentHome() {
             <section className="student-home-task student-home-placement" aria-labelledby="student-placement-title">
               <header className="student-home-task-head">
                 <span className="student-home-task-icon" aria-hidden="true"><Icon name="target" /></span>
-                <h3 id="student-placement-title">{t("pl.cardDone", { lvl: publishedTest.level ?? "" })}</h3>
+                <div className="min-w-0">
+                  <h3 id="student-placement-title">{t("pl.cardDone", { lvl: publishedTest.level ?? "" })}</h3>
+                  {publishedTest.track === "teen" && <span className="small muted">{t("plt.title")}</span>}
+                </div>
                 <Link href={resultLink} prefetch={false} className="btn primary sm">{t("pl.cardSee")}</Link>
               </header>
               <p className="student-home-task-body m-0 muted">{t("st.placementResultHint")}</p>
