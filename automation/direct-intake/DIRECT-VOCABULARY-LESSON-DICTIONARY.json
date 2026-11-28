@@ -14,7 +14,25 @@
     "stage": "publication",
     "test_run": 46127304408
   },
-  "release": null,
+  "release": {
+    "ci": {
+      "result": "success",
+      "run": 46127304408,
+      "sha": "d2d6b5e2c33bcedeb744a4554790c85ceb6644d4"
+    },
+    "delivery": {
+      "result": "success",
+      "run": 46128291612,
+      "sha": "daacd5bf1e2f13c4c0b063f5db07f2f47c887dbc"
+    },
+    "owner_note": "Для владельца: Словарь и тренировки — в уроке Enter показывает перевод, а «+» сохраняет выбранный вариант в личный словарь ученика.",
+    "review": {
+      "comment": 7236818586,
+      "result": "success",
+      "sha": "d2d6b5e2c33bcedeb744a4554790c85ceb6644d4"
+    },
+    "site_sha": "daacd5bf1e2f13c4c0b063f5db07f2f47c887dbc"
+  },
   "source": "direct",
   "version": 1
 }
