@@ -5,6 +5,7 @@ import { db } from "../db";
 import { requireUser } from "../auth/session";
 import { chatAccess } from "./access";
 import { getT } from "../i18n/server";
+import { searchDictionary } from "../ai/dictionary-lookup";
 import { AiError, lookupWordCard, scrub } from "../ai/gateway";
 import { wordCardInput } from "../ai/word-card";
 import { rateLimit } from "../rate-limit";
@@ -125,6 +126,15 @@ export async function practiceResult(wordId: string, correct: boolean): Promise<
 type ExistingWord = { id: string; word: string; translation: string | null };
 type AddWordResult = { status: "added" | "existing" | "updated" | "changed" | "empty" }
   | { status: "confirm"; existing: ExistingWord; value: string };
+
+export async function lookupMyWord(query: string) {
+  const { u, s } = await myStudent();
+  return searchDictionary(() => query, {
+    userId: u.id,
+    teacherId: s.teacherId,
+    names: [u.name, u.lastName, s.name, s.lastName],
+  });
+}
 
 export async function addMyWord(word: string, tr: string, ex: string, confirmation?: Pick<ExistingWord, "id" | "translation">): Promise<AddWordResult> {
   const { s } = await myStudent();
