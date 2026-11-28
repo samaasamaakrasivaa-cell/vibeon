@@ -14,7 +14,25 @@
     "stage": "publication",
     "test_run": 46138331055
   },
-  "release": null,
+  "release": {
+    "ci": {
+      "result": "success",
+      "run": 46138331055,
+      "sha": "ba0e9781276bcdc94657d70835092daf423cbee9"
+    },
+    "delivery": {
+      "result": "success",
+      "run": 46139612650,
+      "sha": "acdb16e95f55a2cad7be7ef9559fe647608a829e"
+    },
+    "owner_note": "Для владельца: Placement Test — опубликована техническая основа для раздельных черновиков ИИ и подтверждений преподавателя по Writing и Speaking.",
+    "review": {
+      "comment": 7238427693,
+      "result": "success",
+      "sha": "ba0e9781276bcdc94657d70835092daf423cbee9"
+    },
+    "site_sha": "acdb16e95f55a2cad7be7ef9559fe647608a829e"
+  },
   "source": "direct",
   "version": 1
 }
