@@ -31,11 +31,12 @@ TAG_PREFIX = "vibeon-retained:sha256-"
 INSPECT = '{{json .Id}} {{json .RepoTags}} {{json .RepoDigests}} {{json .Config.Labels}}'
 
 
-def load_json(path):
-    fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+def load_json(path, *, directory_fd=None, expected_inode=None):
+    fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK, dir_fd=directory_fd)
     with os.fdopen(fd, "rb") as handle:
         metadata = os.fstat(handle.fileno())
-        if not stat.S_ISREG(metadata.st_mode) or metadata.st_nlink != 1 or metadata.st_size > 1024**2:
+        if (not stat.S_ISREG(metadata.st_mode) or metadata.st_nlink != 1 or metadata.st_size > 1024**2
+                or (expected_inode is not None and (metadata.st_dev, metadata.st_ino) != expected_inode)):
             raise ValueError("unsafe retention metadata")
         return json.load(handle)
 
@@ -108,7 +109,8 @@ def private_backup_files(entry, directory_fd):
     if (not stat.S_ISDIR(parent.st_mode) or directory.st_dev != parent.st_dev
             or directory.st_uid != parent.st_uid or directory.st_mode & 0o077
             or entry.resolve(strict=True) != entry
-            or any(mount == entry or entry in mount.parents for mount in backup_mounts())):
+            or any(mount in (entry.parent, entry.parent.parent, entry) or entry in mount.parents
+                   for mount in backup_mounts())):
         return {}
     files = {}
     for name in os.listdir(directory_fd):
@@ -133,7 +135,7 @@ def confirm_replacements(verified):
             if not files or seen.intersection(files.values()):
                 return False
             seen.update(files.values())
-            marker = load_json(entry / "verified.json")
+            marker = load_json("verified.json", directory_fd=directory_fd, expected_inode=files["verified.json"])
             # Legacy receipts lack a checksum for the compressed archive. Wait
             # for three new restore-tested receipts before any automatic expiry.
             for name, key in (("database.dump", "database_dump_sha256"),

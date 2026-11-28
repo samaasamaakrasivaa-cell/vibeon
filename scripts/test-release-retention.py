@@ -119,8 +119,9 @@ class RetentionTest(unittest.TestCase):
     def test_shared_or_mounted_replacement_preserves_old_pair(self):
         old = self.backup(1, row(1))
         latest = [self.backup(i, row(i), checksummed=True) for i in range(21, 24)]
-        with patch.object(retention, "backup_mounts", return_value=[latest[1]]):
-            self.assertEqual(self.rotate()["full_backups_removed"], 0)
+        for mount in (latest[1], latest[1].parent, latest[1].parent.parent):
+            with patch.object(retention, "backup_mounts", return_value=[mount]):
+                self.assertEqual(self.rotate()["full_backups_removed"], 0)
         source = latest[0] / "database.dump"
         target = latest[1] / "database.dump"
         target.unlink()
